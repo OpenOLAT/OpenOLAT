@@ -36,13 +36,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.groupsandrights.BGRightsRow.BGRight;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.right.BGRightManager;
@@ -90,13 +89,13 @@ public class GroupsAndRightsController extends FormBasicController {
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		int colIndex = 0;
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", colIndex++));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", colIndex++, new BGRightsResourceNameRenderer()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.role", colIndex++));
 		for(String right : CourseRights.getAvailableRights()) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(right, colIndex++));
 		}
 
-		tableDataModel = new GroupsAndRightsDataModel(tableColumnModel);
+		tableDataModel = new GroupsAndRightsDataModel(tableColumnModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "rightList", tableDataModel, getTranslator(), formLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -124,30 +123,30 @@ public class GroupsAndRightsController extends FormBasicController {
 			}	
 		}
 
-		List<BGRightsOption> options = new ArrayList<>();
+		List<BGRightsRow> options = new ArrayList<>();
 		String courseName = courseEntry.getDisplayname();
 		Group defGroup = repositoryService.getDefaultGroup(courseEntry);
-		options.add(getRightsOption(defGroup, courseName, tutorToRightsMap.get(defGroup), BGRightsRole.tutor));
-		options.add(getRightsOption(defGroup, courseName, participantToRightsMap.get(defGroup), BGRightsRole.participant));
+		options.add(getRightsOption(defGroup, courseName, tutorToRightsMap.get(defGroup), BGRightsRole.tutor, BGRightsResourceType.repositoryEntry));
+		options.add(getRightsOption(defGroup, courseName, participantToRightsMap.get(defGroup), BGRightsRole.participant, BGRightsResourceType.repositoryEntry));
 
 		for(BusinessGroup group:groups) {
 			String name = group.getName();
 			Group bGroup = group.getBaseGroup();
-			options.add(getRightsOption(bGroup, name, tutorToRightsMap.get(bGroup), BGRightsRole.tutor));
-			options.add(getRightsOption(bGroup, name, participantToRightsMap.get(bGroup), BGRightsRole.participant));
+			options.add(getRightsOption(bGroup, name, tutorToRightsMap.get(bGroup), BGRightsRole.tutor, BGRightsResourceType.businessGroup));
+			options.add(getRightsOption(bGroup, name, participantToRightsMap.get(bGroup), BGRightsRole.participant, BGRightsResourceType.businessGroup));
 		}
 		tableDataModel.setObjects(options);
 	}
 	
-	private BGRightsOption getRightsOption(Group group, String name, BGRights r, BGRightsRole role) {
-		BGRightsOption options = new BGRightsOption(group, name, role);
+	private BGRightsRow getRightsOption(Group group, String name, BGRights r, BGRightsRole role, BGRightsResourceType type) {
+		BGRightsRow options = new BGRightsRow(group, name, role, type);
 		fillCheckbox(options, r == null ? null : r.getRights());
 		FormLink rmLink = uifactory.addFormLink("remove_" + (++counter), "table.header.remove", "table.header.remove", flc, Link.LINK);
 		rmLink.setUserObject(options);
 		return options;
 	}
 	
-	private void fillCheckbox(BGRightsOption groupRights, List<String> permissions) {
+	private void fillCheckbox(BGRightsRow groupRights, List<String> permissions) {
 		List<BGRight> selections = new ArrayList<>();
 		for(String permission : CourseRights.getAvailableRights()) {
 			BGRight permissionEl = new BGRight(permission);
@@ -162,7 +161,7 @@ public class GroupsAndRightsController extends FormBasicController {
 	
 	private MultipleSelectionElement createSelection(boolean selected) {
 		String name = "cb_" + (++counter);
-		MultipleSelectionElement selection = uifactory.addCheckboxesHorizontal(name, flc, keys, values);
+		MultipleSelectionElement selection = uifactory.addCheckboxesHorizontal(name, null, flc, keys, values);
 		selection.setEnabled(!readOnly);
 		flc.add(name, selection);
 		if(selected) {
@@ -192,7 +191,7 @@ public class GroupsAndRightsController extends FormBasicController {
 	
 	private void doSaveChanges() {
 		//collect group
-		List<BGRightsOption> options = tableDataModel.getObjects();
+		List<BGRightsRow> options = tableDataModel.getObjects();
 		List<Group> groups = getAllBaseGroups();
 
 		//collect current rights
@@ -207,7 +206,7 @@ public class GroupsAndRightsController extends FormBasicController {
 			}	
 		}
 		
-		for(BGRightsOption option:options) {
+		for(BGRightsRow option:options) {
 			List<String> newPermissions = option.getSelectedPermissions();
 			
 			BGRights rights = null;
@@ -258,101 +257,5 @@ public class GroupsAndRightsController extends FormBasicController {
 		rightManager.removeBGRights(groups, courseEntry.getOlatResource());
 		loadModel();
 		tableEl.reset(false, false, true);
-	}
-
-	private class GroupsAndRightsDataModel extends DefaultFlexiTableDataModel<BGRightsOption> implements FlexiTableDataModel<BGRightsOption> {
-
-		public GroupsAndRightsDataModel(FlexiTableColumnModel columnModel) {
-			super(columnModel);
-		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			BGRightsOption groupRights = getObject(row);
-			if(col == 0) {
-				return groupRights.getName();
-			} else if (col == 1) {
-				BGRightsRole role = groupRights.getRole();
-				switch(role) {
-					case tutor: return translate("tutor");
-					case participant: return translate("participant");
-				}
-				return "";
-			}
-			
-			//rights
-			int rightPos = col - 2;
-			return groupRights.getRightsEl().get(rightPos).getSelection();
-		}
-
-		@Override
-		public GroupsAndRightsDataModel createCopyWithEmptyList() {
-			return new GroupsAndRightsDataModel(getTableColumnModel());
-		}
-	}
-	
-	private static class BGRight {
-		private final String permission;
-		private MultipleSelectionElement selection;
-		
-		public BGRight(String permission) {
-			this.permission = permission;
-		}
-
-		public MultipleSelectionElement getSelection() {
-			return selection;
-		}
-
-		public void setSelection(MultipleSelectionElement selection) {
-			this.selection = selection;
-		}
-
-		public String getPermission() {
-			return permission;
-		}
-	}
-	
-	private static class BGRightsOption {
-		private final String name;
-		private final Group baseGroup;
-		private final BGRightsRole role;
-		
-		private List<BGRight> rightsEl;
-		
-		public BGRightsOption(Group baseGroup, String name, BGRightsRole role) {
-			this.name = name;
-			this.role = role;
-			this.baseGroup = baseGroup;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		public Group getBaseGroup() {
-			return baseGroup;
-		}
-		
-		public BGRightsRole getRole() {
-			return role;
-		}
-		
-		public List<String> getSelectedPermissions() {
-			List<String> permissions = new ArrayList<String>(rightsEl.size());
-			for(BGRight rightEl:rightsEl) {
-				if(rightEl.getSelection().isAtLeastSelected(1)) {
-					permissions.add(rightEl.getPermission());
-				}	
-			}
-			return permissions;
-		}
-		
-		public List<BGRight> getRightsEl() {
-			return rightsEl;
-		}
-		
-		public void setRightsEl(List<BGRight> rightsEl) {
-			this.rightsEl = rightsEl;
-		}
 	}
 }
