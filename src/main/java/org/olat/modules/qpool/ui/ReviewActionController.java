@@ -27,8 +27,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.ui.events.QItemReviewEvent;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,10 +46,16 @@ public class ReviewActionController extends BasicController {
 	private Link reviewLink;
 	
 	private QuestionItemSecurityCallback securityCallback;
+	private final LockResult lock;
+	
+	@Autowired
+	private UserManager userManager;
 
-	protected ReviewActionController(UserRequest ureq, WindowControl wControl, QuestionItemSecurityCallback securityCallback) {
+	protected ReviewActionController(UserRequest ureq, WindowControl wControl,
+			QuestionItemSecurityCallback securityCallback, LockResult lock) {
 		super(ureq, wControl);
 		this.securityCallback = securityCallback;
+		this.lock = lock;
 		
 		mainVC = createVelocityContainer("review_action");
 		
@@ -65,12 +74,20 @@ public class ReviewActionController extends BasicController {
 	}
 	
 	private void updateUI() {
-		startReviewLink.setVisible(securityCallback.canStartReview());
+		startReviewLink.setVisible(securityCallback.canStartReview() && lock.isSuccess());
 		reviewLink.setVisible(securityCallback.canReview());
 
 		String translatedMessage = null;
 		if (securityCallback.canStartReview()) {
-			translatedMessage = translate("process.activate.start.review.description");
+			if (lock.isSuccess()) {
+				translatedMessage = translate("process.activate.start.review.description");
+			} else {
+				String displayName = "???";
+				if (lock.getOwner() != null) {
+					displayName = userManager.getUserDisplayName(lock.getOwner());
+				}
+				translatedMessage = translate("process.activate.locked", new String[] {displayName});
+			}
 		} else if (securityCallback.canReviewNotStartable()) {
 			translatedMessage = translate("process.activate.not.reviewable.description");
 		} else if (securityCallback.canReview()) {

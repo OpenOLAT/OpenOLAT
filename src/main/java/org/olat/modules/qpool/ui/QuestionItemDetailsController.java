@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -70,6 +71,7 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.metadata.MetadatasController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -120,11 +122,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final Integer itemIndex;
 	private final int numberOfItems;
 	private Boolean showMetadatas;
+	private LockResult lock;
 	
 	@Autowired
 	private QuestionPoolModule poolModule;
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private UserManager userManager;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item,
@@ -138,6 +143,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		this.itemSource = itemSource;
+		lock = qpoolService.acquireLock(item, getIdentity());
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
@@ -158,7 +164,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void setReviewActionController(UserRequest ureq) {
-		reviewActionCtrl = new ReviewActionController(ureq, getWindowControl(), qItemSecurityCallback);
+		reviewActionCtrl = new ReviewActionController(ureq, getWindowControl(), qItemSecurityCallback, lock);
 		mainVC.put("review", reviewActionCtrl.getInitialComponent());
 		listenTo(reviewActionCtrl);
 	}
@@ -167,9 +173,17 @@ public class QuestionItemDetailsController extends BasicController implements To
 			QuestionItemSecurityCallback securityCallback) {
 		removeAsListenerAndDispose(questionCtrl);
 		questionCtrl = null;
-		
+	
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		boolean canEditContent = securityCallback.canEditQuestion() && (spi != null && spi.isTypeEditable());
+		if (canEditContent && !lock.isSuccess()) {
+			canEditContent = false;
+			String displayName = "???";
+			if (lock.getOwner() != null) {
+				displayName = userManager.getUserDisplayName(lock.getOwner());
+			}
+			showWarning("locked.readonly", new String[] {displayName});
+		}
 		
 		if (spi != null) {
 			if (canEditContent) {
@@ -364,6 +378,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+		qpoolService.releaseLock(lock);
+		lock = null;
 	}
 
 	@Override
