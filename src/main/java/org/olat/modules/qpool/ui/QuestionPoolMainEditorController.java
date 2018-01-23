@@ -57,6 +57,8 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItem2Resource;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionStatus;
@@ -352,6 +354,12 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doCopyToMy(QuestionItemShort item) {
 		List<QuestionItem> copiedItems = qpoolService.copyItems(getIdentity(), singletonList(item));
+		for (QuestionItem copy: copiedItems) {
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.CREATE_QUESTION_ITEM_BY_COPY);
+			builder.withAfter(copy);
+			qpoolService.persist(builder.create());
+		}
 		showInfo("item.copied", Integer.toString(copiedItems.size()));
 		if (currentCtrl instanceof QuestionsController) {
 			((QuestionsController)currentCtrl).updateSource();

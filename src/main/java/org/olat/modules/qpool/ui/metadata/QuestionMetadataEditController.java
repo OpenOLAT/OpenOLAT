@@ -42,6 +42,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QItemType;
@@ -201,6 +203,9 @@ public class QuestionMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.UPDATE_QUESTION_ITEM_METADATA);
+			builder.withBefore(itemImpl);
 
 			int day = learningTimeDayElement.getIntValue();
 			int hour = learningTimeHourElement.getIntValue();
@@ -220,9 +225,12 @@ public class QuestionMetadataEditController extends FormBasicController {
 			
 			int numOfAnswerAlternatives = toInt(numAnswerAltEl.getValue());
 			itemImpl.setNumOfAnswerAlternatives(numOfAnswerAlternatives);
+
+			item = qpoolService.updateItem(itemImpl);
+			builder.withAfter(item);
+			qpoolService.persist(builder.create());
+			fireEvent(ureq, new QItemEdited(item));
 		}
-		item = qpoolService.updateItem(item);
-		fireEvent(ureq, new QItemEdited(item));
 	}
 
 }

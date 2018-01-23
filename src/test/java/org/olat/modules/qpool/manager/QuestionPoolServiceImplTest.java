@@ -77,6 +77,8 @@ public class QuestionPoolServiceImplTest {
 	@Mock
 	private CommentAndRatingService commentAndRatingServiceMock;
 	@Mock
+	private QuestionItemAuditLogDAO auditlogDAOMock;
+	@Mock
 	private Identity identityDummy;
 	
 	private QuestionItemImpl item = new QuestionItemImpl();

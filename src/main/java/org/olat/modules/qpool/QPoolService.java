@@ -34,6 +34,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
@@ -123,7 +124,7 @@ public interface QPoolService {
 	
 	public VFSContainer getRootContainer(QuestionItemShort item);
 	
-public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
+	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 
 	//pools
 	public List<Pool> getPools(Identity identity, Roles roles);
@@ -249,5 +250,14 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 	public QLicense updateLicense(QLicense license);
 	
 	public boolean deleteLicense(QLicense license);
+
+	// Audit log
+	public QuestionItemAuditLogBuilder createAuditLogBuilder(Identity author, Action action);
+	
+	public void persist(QuestionItemAuditLog auditLog);
+	
+	public String toAuditXml(QuestionItem item);
+	
+	public QuestionItem toAuditQuestionItem(String xml);
 
 }

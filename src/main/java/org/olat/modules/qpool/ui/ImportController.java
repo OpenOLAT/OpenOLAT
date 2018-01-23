@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,7 +52,7 @@ public class ImportController extends FormBasicController {
 	
 	private final QuestionItemsSource source;
 	@Autowired
-	private QPoolService qpoolservice;
+	private QPoolService qpoolService;
 	
 	public ImportController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
 		super(ureq, wControl);
@@ -104,13 +106,19 @@ public class ImportController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String filename = fileEl.getUploadFileName();
 		File file = fileEl.getUploadFile();
-		List<QuestionItem> importItems = qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
+		List<QuestionItem> importItems = qpoolService.importItems(getIdentity(), getLocale(), filename, file);
 		if(importItems == null || importItems.isEmpty()) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			showWarning("import.failed");
 		} else {
 			boolean editable = editableEl == null ? true : editableEl.isSelected(0);
 			source.postImport(importItems, editable);
+			for (QuestionItem item: importItems) {
+				QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+						Action.CREATE_QUESTION_ITEM_BY_IMPORT);
+				builder.withAfter(item);
+				qpoolService.persist(builder.create());
+			}
 			fireEvent(ureq, Event.DONE_EVENT);
 			showInfo("import.success", Integer.toString(importItems.size()));
 		}

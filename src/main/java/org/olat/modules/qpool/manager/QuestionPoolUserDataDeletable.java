@@ -26,7 +26,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,14 +64,20 @@ public class QuestionPoolUserDataDeletable implements UserDataDeletable {
 	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		if (!qpoolModule.isDeleteQuestionsWithoutAuthor()) return;
 			
-		List<QuestionItemShort> itemsWithOneAuthor = questionItemDao.getItemsWithOneAuthor(identity);
+		List<QuestionItem> itemsWithOneAuthor = questionItemDao.getItemsWithOneAuthor(identity);
 		qpoolService.deleteItems(itemsWithOneAuthor);
+		for (QuestionItem item: itemsWithOneAuthor) {
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(null, Action.DELETE_QUESTION_ITEM);
+			builder.withBefore(item);
+			builder.withMessage("Author deleted");
+			qpoolService.persist(builder.create());
+		}
 		
 		String logMessage = getLogMessage(identity, itemsWithOneAuthor);
 		log.info(logMessage);
 	}
 
-	private String getLogMessage(Identity identity, List<QuestionItemShort> items) {
+	private String getLogMessage(Identity identity, List<QuestionItem> items) {
 		return new StringBuilder()
 				.append("Deleted ")
 				.append(items.size())

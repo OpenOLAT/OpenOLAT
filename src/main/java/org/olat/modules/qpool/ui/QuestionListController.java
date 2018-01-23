@@ -80,6 +80,8 @@ import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -769,6 +771,11 @@ public class QuestionListController extends AbstractItemListController implement
 		dbInstance.commit();
 		qpoolService.index(newItems);
 		
+		QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+				Action.CREATE_QUESTION_ITEM_NEW);
+		builder.withAfter(item);
+		qpoolService.persist(builder.create());
+		
 		QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
 		fireEvent(ureq, qce);
 		doOpenDetails(ureq, item);
@@ -807,6 +814,12 @@ public class QuestionListController extends AbstractItemListController implement
 			QTIQPoolServiceProvider spi
 				= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 			importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
+		}
+		for (QuestionItem item: importItems) {
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.CREATE_QUESTION_ITEM_BY_IMPORT);
+			builder.withAfter(item);
+			qpoolService.persist(builder.create());
 		}
 
 		if(getSource().askEditable()) {
@@ -871,6 +884,12 @@ public class QuestionListController extends AbstractItemListController implement
 				List<ItemAndMetadata> itemsToImport = importPackage.getItems();
 				QTIQPoolServiceProvider spi = CoreSpringFactory.getImpl (QTIQPoolServiceProvider.class);
 				List<QuestionItem> importItems = spi.importBeecomItem(getIdentity(), itemsToImport, getLocale());
+				for (QuestionItem item: importItems) {
+					QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+							Action.CREATE_QUESTION_ITEM_BY_IMPORT);
+					builder.withAfter(item);
+					qpoolService.persist(builder.create());
+				}
 				
 				boolean editable = true;
 				if(getSource().askEditable()) {
@@ -915,6 +934,12 @@ public class QuestionListController extends AbstractItemListController implement
 					if(importedItem != null) {
 						importItems.add(importedItem);
 					}
+				}
+				for (QuestionItem item: importItems) {
+					QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+							Action.CREATE_QUESTION_ITEM_BY_IMPORT);
+					builder.withAfter(item);
+					qpoolService.persist(builder.create());
 				}
 
 				boolean editable = true;
@@ -1105,6 +1130,13 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doDelete(List<QuestionItemShort> items) {
+		for (QuestionItemShort item: items) {
+			QuestionItem qitem = qpoolService.loadItemById(item.getKey());
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.DELETE_QUESTION_ITEM);
+			builder.withBefore(qitem);
+			qpoolService.persist(builder.create());
+		}
 		qpoolService.deleteItems(items);
 		getItemsTable().reset(true, true, true);
 		showInfo("item.deleted");
@@ -1195,6 +1227,12 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {
 		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), items);
+		for (QuestionItem copy: copies) {
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.CREATE_QUESTION_ITEM_BY_COPY);
+			builder.withAfter(copy);
+			qpoolService.persist(builder.create());
+		}
 		getItemsTable().reset();
 		showInfo("item.copied", Integer.toString(copies.size()));
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
@@ -1240,6 +1278,10 @@ public class QuestionListController extends AbstractItemListController implement
 			if(convertedQuestion != null) {
 				count++;
 			}
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.CREATE_QUESTION_ITEM_BY_CONVERSION);
+			builder.withAfter(convertedQuestion);
+			qpoolService.persist(builder.create());
 		}
 		
 		if(count == items.size()) {

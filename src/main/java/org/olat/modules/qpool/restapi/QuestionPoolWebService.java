@@ -48,6 +48,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
@@ -93,7 +95,7 @@ public class QuestionPoolWebService {
 			if(length > 0) {
 				String filename = partsReader.getValue("filename");
 				String language = partsReader.getValue("language");
-				QuestionItemVOes voes = importQuestionItem(identity, filename, tmpFile, language);
+				QuestionItemVOes voes = importQuestionItem(identity, filename, tmpFile, language, identity);
 				return Response.ok(voes).build();
 			}
 			return Response.serverError().status(Status.NO_CONTENT).build();
@@ -105,11 +107,17 @@ public class QuestionPoolWebService {
 		return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 	}
 	
-	private QuestionItemVOes importQuestionItem(Identity owner, String filename, File tmpFile, String language) {
+	private QuestionItemVOes importQuestionItem(Identity owner, String filename, File tmpFile, String language, Identity executor) {
 		Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getLocaleOrDefault(language);
 		
-		List<QuestionItem> items = CoreSpringFactory.getImpl(QPoolService.class)
-			.importItems(owner, locale, filename, tmpFile);
+		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		List<QuestionItem> items = qpoolService.importItems(owner, locale, filename, tmpFile);
+		for (QuestionItem item: items) {
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(executor,
+					Action.CREATE_QUESTION_ITEM_BY_IMPORT);
+			builder.withAfter(item);
+			qpoolService.persist(builder.create());
+		}
 		QuestionItemVOes voes = new QuestionItemVOes();
 		QuestionItemVO[] voArray = new QuestionItemVO[items.size()];
 		for(int i=items.size(); i-->0; ) {
@@ -143,6 +151,11 @@ public class QuestionPoolWebService {
 		}
 		List<QuestionItem> itemToDelete = Collections.singletonList(item);
 		poolService.deleteItems(itemToDelete);
+		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
+		QuestionItemAuditLogBuilder builder = poolService.createAuditLogBuilder(identity,
+				Action.DELETE_QUESTION_ITEM);
+		builder.withBefore(item);
+		poolService.persist(builder.create());
 		
 		return Response.ok().build();
 	}

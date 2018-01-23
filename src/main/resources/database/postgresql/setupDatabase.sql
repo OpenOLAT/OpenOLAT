@@ -1781,6 +1781,18 @@ create table o_qp_item (
    primary key (id)
 );
 
+create table o_qp_item_audit_log (
+  id bigserial,
+  creationdate timestamp not null,
+  q_action varchar(64),
+  q_val_before text,
+  q_val_after text,
+  q_message text,
+  fk_author_id int8,
+  fk_item_id int8,
+  primary key (id)
+);
+
 create table o_qp_pool_2_item (
    id int8 not null,
    creationdate timestamp not null,
@@ -3093,6 +3105,8 @@ create index idx_taxon_parent_idx on o_qp_taxonomy_level (fk_parent_field);
 create index idx_taxon_mat_path on o_qp_taxonomy_level (q_mat_path_ids);
 
 alter table o_qp_item_type add constraint cst_unique_item_type unique (q_type);
+
+create index idx_item_audit_item_idx on o_qp_item_audit_log (fk_item_id);
 
 -- lti outcome
 alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);

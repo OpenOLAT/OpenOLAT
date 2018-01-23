@@ -49,6 +49,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
@@ -331,6 +333,10 @@ public class MetadataBulkChangeController extends FormBasicController {
 			QuestionItem fullItem = qpoolService.loadItemById(item.getKey());
 			if(fullItem instanceof QuestionItemImpl) {
 				QuestionItemImpl itemImpl = (QuestionItemImpl)fullItem;
+				QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+						Action.UPDATE_QUESTION_ITEM_METADATA);
+				builder.withBefore(itemImpl);
+				
 				formOKGeneral(itemImpl);
 				formOKQuestion(itemImpl);
 				formOKTechnical(itemImpl);
@@ -340,6 +346,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 					RightsMetadataEditController.formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
 				}
 				QuestionItem merged = qpoolService.updateItem(itemImpl);
+				builder.withAfter(itemImpl);
+				qpoolService.persist(builder.create());
 				updatedItems.add(merged);
 			}
 		}

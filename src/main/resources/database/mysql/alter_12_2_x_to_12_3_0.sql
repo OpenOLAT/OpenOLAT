@@ -3,7 +3,20 @@ alter table o_qp_item add column q_topic varchar(1024);
 alter table o_qp_item add column q_creator varchar(1024);
 alter table o_qp_item add column q_status_last_modified datetime;
 
+create table o_qp_item_audit_log (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  q_action varchar(64),
+  q_val_before mediumtext,
+  q_val_after mediumtext,
+  q_message mediumtext,
+  fk_author_id bigint,
+  fk_item_id bigint,
+  primary key (id)
+);
+
 create index idx_tax_level_path_key_idx on o_tax_taxonomy_level (t_m_path_keys);
+create index idx_item_audit_item_idx on o_qp_item_audit_log (fk_item_id);
 
 
 

@@ -58,6 +58,9 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItem2Resource;
+import org.olat.modules.qpool.QuestionItemAuditLog;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -71,6 +74,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
+import org.olat.modules.qpool.model.QuestionItemAuditLogBuilderImpl;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ReviewDecision;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -141,6 +145,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private MarkManager markManager;
 	@Autowired
 	private ReviewService reviewService;
+	@Autowired
+	private QuestionItemAuditLogDAO auditLogDao;
 
 	@Override
 	public void deleteItems(List<? extends QuestionItemShort> items) {
@@ -976,7 +982,10 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			// Review is only in status review possible
 			QuestionItem previousItem = loadItemById(item.getKey());
 			if (QuestionStatus.review.equals(previousItem.getQuestionStatus())) {
+				QuestionItemAuditLogBuilder builder = createAuditLogBuilder(identity, Action.REVIEW_QUESTION_ITEM);
+				builder.withBefore(item);
 				Integer newRating = Float.valueOf(rating).intValue();
+				builder.withMessage("Rating: " + newRating);
 				commentAndRatingService.createRating(identity, item, null, newRating);
 				ReviewDecision decision = reviewService.decideStatus(item, rating);
 				if (item instanceof QuestionItemImpl && decision.isStatusChanged()) {
@@ -984,11 +993,33 @@ public class QuestionPoolServiceImpl implements QPoolService {
 					itemImpl.setQuestionStatus(decision.getStatus());
 					updateItem(itemImpl);
 				}
+				builder.withAfter(item);
+				persist(builder.create());
 			}
 		}
 		if (StringHelper.containsNonWhitespace(comment)) {
 			commentAndRatingService.createComment(identity, item, null, comment);
 		}
+	}
+
+	@Override
+	public QuestionItemAuditLogBuilder createAuditLogBuilder(Identity author, Action action) {
+		return new QuestionItemAuditLogBuilderImpl(author, action);
+	}
+
+	@Override
+	public void persist(QuestionItemAuditLog auditLog) {
+		auditLogDao.persist(auditLog);
+	}
+
+	@Override
+	public String toAuditXml(QuestionItem item) {
+		return auditLogDao.toXml(item);
+	}
+
+	@Override
+	public QuestionItem toAuditQuestionItem(String xml) {
+		return auditLogDao.questionItemFromXml(xml);
 	}
 
 }

@@ -236,7 +236,7 @@ public class QuestionItemDAO {
 				.getResultList();
 	}
 	
-	public List<QuestionItemShort> getItemsWithOneAuthor(Identity author) {
+	public List<QuestionItem> getItemsWithOneAuthor(Identity author) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item");
 		sb.append(" where exists (").append("select sgmi.key from ");
@@ -248,7 +248,7 @@ public class QuestionItemDAO {
 		sb.append("   where sgmi.securityGroup=item.ownerGroup");
 		sb.append(" )");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemShort.class)
+				.createQuery(sb.toString(), QuestionItem.class)
 				.setParameter("identityKey", author.getKey())
 				.getResultList();
 	}

@@ -204,6 +204,7 @@
 		<class>org.olat.modules.qpool.model.QEducationalContext</class>
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
+		<class>org.olat.modules.qpool.model.QuestionItemAuditLogImpl</class>
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>

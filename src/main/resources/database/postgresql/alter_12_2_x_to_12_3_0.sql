@@ -3,8 +3,20 @@ alter table o_qp_item add column q_topic varchar(1024);
 alter table o_qp_item add column q_creator varchar(1024);
 alter table o_qp_item add column q_status_last_modified timestamp;
 
-create index idx_tax_level_path_key_idx on o_tax_taxonomy_level (t_m_path_keys);
+create table o_qp_item_audit_log (
+  id bigserial,
+  creationdate timestamp not null,
+  q_action varchar(64),
+  q_val_before text,
+  q_val_after text,
+  q_message text,
+  fk_author_id int8,
+  fk_item_id int8,
+  primary key (id)
+);
 
+create index idx_tax_level_path_key_idx on o_tax_taxonomy_level (t_m_path_keys);
+create index idx_item_audit_item_idx on o_qp_item_audit_log (fk_item_id);
 
 
 alter table o_as_entry add column a_current_run_completion float(24);

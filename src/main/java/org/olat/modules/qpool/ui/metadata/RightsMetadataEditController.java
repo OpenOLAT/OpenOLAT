@@ -49,6 +49,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -258,11 +260,18 @@ public class RightsMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.UPDATE_QUESTION_ITEM_METADATA);
+			builder.withBefore(itemImpl);
+			
 			itemImpl.setCreator(creatorEl.getValue());
 			formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
+			
+			item = qpoolService.updateItem(item);
+			builder.withAfter(itemImpl);
+			qpoolService.persist(builder.create());
+			fireEvent(ureq, new QItemEdited(item));
 		}
-		item = qpoolService.updateItem(item);
-		fireEvent(ureq, new QItemEdited(item));
 	}
 	
 	protected static void formOKRights(QuestionItemImpl itemImpl, SingleSelection copyrightEl, TextElement descriptionEl,

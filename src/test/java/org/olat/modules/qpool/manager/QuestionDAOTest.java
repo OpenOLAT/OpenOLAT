@@ -238,7 +238,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		questionDao.addAuthors(Collections.singletonList(id2), item3);
 		dbInstance.commitAndCloseSession();
 		
-		List<QuestionItemShort> itemsWithOneAuthor = questionDao.getItemsWithOneAuthor(id);
+		List<QuestionItem> itemsWithOneAuthor = questionDao.getItemsWithOneAuthor(id);
 		
 		Assert.assertNotNull(itemsWithOneAuthor);
 		Assert.assertTrue(itemsWithOneAuthor.size() == 2);

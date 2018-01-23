@@ -53,6 +53,8 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
@@ -551,8 +553,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus, String i18nInfo) {
 		if(!newStatus.equals(item.getQuestionStatus()) && item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.STATUS_CHANGED);
+			builder.withBefore(itemImpl);
+			builder.withMessage("New status: " + newStatus);
 			itemImpl.setQuestionStatus(newStatus);
 			qpoolService.updateItem(itemImpl);
+			builder.withAfter(item);
+			qpoolService.persist(builder.create());
 			fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 			showInfo(i18nInfo);
 		}
@@ -576,6 +584,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doCopy(UserRequest ureq, QuestionItemShort item) {
 		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), Collections.singletonList(item));
 		if(copies.size() == 1) {
+			for (QuestionItem copy: copies) {
+				QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+						Action.CREATE_QUESTION_ITEM_BY_COPY);
+				builder.withAfter(copy);
+				qpoolService.persist(builder.create());
+			}
 			showInfo("item.copied", Integer.toString(copies.size()));
 			fireEvent(ureq, new QItemEvent("copy-item", copies.get(0)));
 		}
@@ -622,7 +636,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 	
 	private void doDelete(UserRequest ureq, QuestionItemShort item) {
+		QuestionItem qitem = qpoolService.loadItemById(item.getKey());
 		qpoolService.deleteItems(Collections.singletonList(item));
+		QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+				Action.DELETE_QUESTION_ITEM);
+		builder.withBefore(qitem);
+		qpoolService.persist(builder.create());
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_DELETED));
 		showInfo("item.deleted");
 	}

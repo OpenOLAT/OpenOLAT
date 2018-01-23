@@ -1807,6 +1807,18 @@ create table o_qp_item (
    primary key (id)
 );
 
+create table o_qp_item_audit_log (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  q_action varchar2(64 char),
+  q_val_before CLOB,
+  q_val_after CLOB,
+  q_message CLOB,
+  fk_author_id number(20),
+  fk_item_id number(20),
+  primary key (id)
+);
+
 create table o_qp_pool_2_item (
    id number(20) not null,
    creationdate date not null,
@@ -3241,6 +3253,7 @@ create index idx_taxon_parent_idx on o_qp_taxonomy_level (fk_parent_field);
 create index idx_taxon_mat_pathon on o_qp_taxonomy_level (q_mat_path_ids);
 
 alter table o_qp_item_type add constraint cst_unique_item_type unique (q_type);
+create index idx_item_audit_item_idx on o_qp_item_audit_log (fk_item_id);
 
 -- lti outcome
 alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);

@@ -37,6 +37,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog.Action;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
@@ -221,6 +223,10 @@ public class GeneralMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.UPDATE_QUESTION_ITEM_METADATA);
+			builder.withBefore(itemImpl);
+			
 			itemImpl.setTopic(topicEl.getValue());
 			
 			String selectedKey = taxonomyLevelEl.getSelectedKey();
@@ -254,9 +260,12 @@ public class GeneralMetadataEditController extends FormBasicController {
 			
 			String assessmentType = assessmentTypeEl.isOneSelected()? assessmentTypeEl.getSelectedKey(): null;
 			itemImpl.setAssessmentType(assessmentType);
+
+			item = qpoolService.updateItem(item);
+			builder.withAfter(itemImpl);
+			qpoolService.persist(builder.create());
+			fireEvent(ureq, new QItemEdited(item));
 		}
-		item = qpoolService.updateItem(item);
-		fireEvent(ureq, new QItemEdited(item));
 	}
 
 	@Override

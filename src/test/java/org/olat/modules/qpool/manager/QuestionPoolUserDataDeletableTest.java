@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,7 +37,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionPoolModule;
 
 /**
@@ -53,13 +55,15 @@ public class QuestionPoolUserDataDeletableTest {
 	private QPoolService qpoolServiceMock;
 	@Mock
 	private QuestionItemDAO questionItemDaoMock;
+	@Mock
+	private QuestionItemAuditLogBuilder auditLogBuilderMock;
 	
 	@Mock
 	private File archivePathDummy;
 	@Mock
 	private Identity identityDummy;
 	@Mock
-	private List<QuestionItemShort> itemsDummy;
+	private List<QuestionItem> itemsDummy;
 	private int numberOfItems = 20;
 	private String newDeletedUserName;
 	
@@ -70,10 +74,12 @@ public class QuestionPoolUserDataDeletableTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		
-		itemsDummy = Stream.generate(() -> mock(QuestionItemShort.class))
+		itemsDummy = Stream.generate(() -> mock(QuestionItem.class))
 				.limit(numberOfItems)
 				.collect(Collectors.toList());
 		when(questionItemDaoMock.getItemsWithOneAuthor(identityDummy)).thenReturn(itemsDummy);
+		
+		when(qpoolServiceMock.createAuditLogBuilder(any(), any())).thenReturn(auditLogBuilderMock);
 	}
 	
 	@Test
