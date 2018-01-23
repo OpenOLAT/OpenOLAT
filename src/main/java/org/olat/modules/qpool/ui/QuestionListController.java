@@ -1273,9 +1273,11 @@ public class QuestionListController extends AbstractItemListController implement
 		QPoolSPI sp = qpoolModule.getQuestionPoolProvider(format);
 		
 		int count = 0;
+		List<QuestionItem> convertedQuestions = new ArrayList<>(items.size());
 		for(QuestionItemShort item:items) {
 			QuestionItem convertedQuestion = sp.convert(getIdentity(), item, getLocale());
 			if(convertedQuestion != null) {
+				convertedQuestions.add(convertedQuestion);
 				count++;
 			}
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
@@ -1292,7 +1294,11 @@ public class QuestionListController extends AbstractItemListController implement
 		}
 		
 		getItemsTable().reset();
+		
+		//commit before sending events and indexing
+		dbInstance.commit();
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
+		qpoolService.index(convertedQuestions);
 	}
 	
 	private void doShareItemsToGroups(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {
