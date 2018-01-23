@@ -193,11 +193,11 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		
 		//Copy resource files or file trees to export file tree 
 		File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
-		ZipUtil.addDirectoryToZip(sasstheme.toPath(), exportFolderName + "/css/offline/qti/", zout);
+		ZipUtil.addDirectoryToZip(sasstheme.toPath(), exportFolderName + "/css/offline/qti", zout);
 		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
-		ZipUtil.addDirectoryToZip(fontawesome.toPath(), exportFolderName + "/css/font-awesome/", zout);
+		ZipUtil.addDirectoryToZip(fontawesome.toPath(), exportFolderName + "/css/font-awesome", zout);
 		File qtiJs = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
-		ZipUtil.addDirectoryToZip(qtiJs.toPath(), exportFolderName + "/js/jquery/", zout);
+		ZipUtil.addDirectoryToZip(qtiJs.toPath(), exportFolderName + "/js/jquery", zout);
 
 		//materials
 		for(RepositoryEntry testEntry:testEntries) {
@@ -259,7 +259,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 				convertToZipEntry(zout, idPath + "assessmentResultSignature.xml", signatureXML);	
 			}			
 			File submissionDir = qtiService.getSubmissionDirectory(session);
-			String baseDir = idPath + "submissions/";
+			String baseDir = idPath + "submissions";
 			ZipUtil.addDirectoryToZip(submissionDir.toPath(), baseDir, zout);
 		}
 		return assessments;
