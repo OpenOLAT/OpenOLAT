@@ -98,9 +98,8 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 	/**
 	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
 	 */
+	@Override
     public String filter(String original) {
-        if (jUnitDebug) System.out.println("************************************************");
-        if (jUnitDebug) System.out.println("              Input: " + original);
         if (original == null) {
             if (log.isDebug()) log.debug("  Filter-Input was null, is this intended?", null);
             return null;
@@ -113,7 +112,7 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 			if (!errMsg.equals("")) {
 				log.warn(" Filter applied! => message from filter, check if this should not be allowed: " + errMsg, null);
 				log.info(" Original Input: \n" + original, null);
-				log.info("  Filter Result: \n" +  output, null);
+				log.info(" Filter Result: \n" +  output, null);
 			} else {
 				log.debug(" Filter result doesn't match input! / no message from filter! maybe only some formatting differences.", null);
 			}
