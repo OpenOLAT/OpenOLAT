@@ -45,7 +45,6 @@ public class MyItemsSource extends DefaultItemsSource {
 
 	@Override
 	public int postImport(List<QuestionItem> items, boolean editable) {
-		qpoolService.index(items);
 		return items == null ? 0 : items.size();
 	}
 

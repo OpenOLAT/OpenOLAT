@@ -224,9 +224,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			copies.add(copy);
 		}
-		if(copies.size()> 0) {// reload of data must be possible in the same transaction
-			dbInstance.getCurrentEntityManager().flush();
-		}
+		
+		dbInstance.commit();
+		index(copies);
 		return copies;
 	}
 
@@ -239,9 +239,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				importedItem = provider.importItems(owner, defaultLocale, filename, file);
 			}	
 		}
-		if(importedItem != null && importedItem.size() > 0) {
-			dbInstance.getCurrentEntityManager().flush();
-		}
+		
+		dbInstance.commit();
+		index(importedItem);
 		return importedItem;
 	}
 	
