@@ -256,6 +256,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public void backupQuestion(QuestionItem item) {
+		String dir = item.getDirectory();
+		qpoolFileStorage.backupDir(dir);
+	}
+
+	@Override
 	public void index(List<? extends QuestionItemShort> items) {
 		if(items == null || items.isEmpty()) return;
 		

@@ -86,6 +86,8 @@ public interface QPoolService {
 	
 	public QuestionItem updateItem(QuestionItem item);
 	
+	public void backupQuestion(QuestionItem item);
+	
 	public void deleteItems(List<? extends QuestionItemShort> items);
 	
 	public int countItems(SearchQuestionItemParams params);

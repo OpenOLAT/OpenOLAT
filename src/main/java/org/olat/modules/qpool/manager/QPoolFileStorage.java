@@ -20,12 +20,16 @@
 package org.olat.modules.qpool.manager;
 
 import java.io.File;
+import java.util.Date;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,9 +74,40 @@ public class QPoolFileStorage {
 	}
 
 	public void deleteDir(String dir) {
+		VFSContainer backupContainer = getBackupContainer(dir);
+		if (backupContainer != null) {
+			backupContainer.delete();
+		}
 		VFSContainer container = fileStorage.getContainer(dir);
 		if (container != null) {
 			container.delete();
 		}
+	}
+
+	public void backupDir(String dir) {
+		VFSContainer backupContainer = createBackupSubContainer(dir);
+		List<VFSItem> origin = getContainer(dir).getItems();
+		for (VFSItem item: origin) {
+			backupContainer.copyFrom(item);
+		}
+	}
+
+	private VFSContainer createBackupSubContainer(String dir) {
+		String backupDir = getBackupSubDir(dir);
+		return fileStorage.getContainer(backupDir);
+	}
+
+	private String getBackupSubDir(String dir) {
+		return getBackupDir(dir) + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+	}
+	
+	public VFSContainer getBackupContainer(String dir) {
+		String backupDir = getBackupDir(dir);
+		return getContainer(backupDir);
+	}
+
+	private String getBackupDir(String dir) {
+		String dirWithoutEndingSlash = dir.substring(0, dir.length() - 1);
+		return dirWithoutEndingSlash + "_backup/";
 	}
 }

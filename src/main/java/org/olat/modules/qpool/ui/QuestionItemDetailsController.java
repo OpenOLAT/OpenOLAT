@@ -123,6 +123,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final int numberOfItems;
 	private Boolean showMetadatas;
 	private LockResult lock;
+	private boolean questionEdited = false;
 	
 	@Autowired
 	private QuestionPoolModule poolModule;
@@ -378,8 +379,21 @@ public class QuestionItemDetailsController extends BasicController implements To
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+		finishQuestionEdition();
 		qpoolService.releaseLock(lock);
 		lock = null;
+	}
+
+	private void finishQuestionEdition() {
+		if (questionEdited) {
+			QuestionItem item = metadatasCtrl.getItem();
+			qpoolService.backupQuestion(item);
+
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(), Action.UPDATE_QUESTION)
+					.withBefore(item)
+					.withAfter(item);
+			qpoolService.persist(builder.create());
+		}
 	}
 
 	@Override
@@ -482,6 +496,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			cleanUp();
 		} else if(source == questionCtrl) {
 			if(event instanceof QItemEdited) {
+				questionEdited = true;
 				fireEvent(ureq, event);
 			}
 		} else if(source == metadatasCtrl) {

@@ -40,8 +40,6 @@ import org.olat.ims.qti.qpool.QTI12ItemEditorPackage;
 import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemAuditLog.Action;
-import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,17 +110,11 @@ public class QTI12EditorController extends BasicController implements QPoolItemE
 		if(qitem instanceof QuestionItemImpl && assessmentItem != null) {
 			String title = assessmentItem.getTitle();
 			QuestionItemImpl itemImpl = (QuestionItemImpl)qitem;
-			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
-					Action.UPDATE_QUESTION);
-			builder.withBefore(itemImpl);
 			itemImpl.setTitle(title);
 			qpoolService.updateItem(itemImpl);
-			builder.withAfter(itemImpl);
-			qpoolService.persist(builder.create());
 			fireEvent(ureq, new QItemEdited(qitem));
 		}
 	}
-
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
