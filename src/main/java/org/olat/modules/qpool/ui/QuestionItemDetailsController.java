@@ -367,7 +367,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		showMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_show_metadata");
 		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
 		hideMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_hide_metadata");
-		if (showMetadatas != null && showMetadatas) {
+		if (showMetadatas == null || showMetadatas) {
 			doShowMetadata();
 		} else {
 			doHideMetadata();
