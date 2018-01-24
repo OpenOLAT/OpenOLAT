@@ -150,7 +150,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canDelete() {
 		return isDeletableQuestionStatus(itemView.getQuestionStatus())
-				&& (admin || itemView.isManager());
+				&& (admin || itemView.isAuthor());
 	}
 
 	@Override

@@ -294,14 +294,14 @@ public class QuestionListController extends AbstractItemListController implement
 				if(!items.isEmpty()) {
 					doCreateTest(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.create.test");
 				}
 			} else if(link == exportItem) {
 				List<QuestionItemShort> items = getSelectedShortItems();
 				if(!items.isEmpty()) {
 					doExport(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.export");
 				}
 			} else if(link == shareItem) {
 				doShare(ureq);
@@ -310,35 +310,35 @@ public class QuestionListController extends AbstractItemListController implement
 				if(!items.isEmpty()) {
 					doConfirmRemove(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.remove");
 				}
 			} else if(link == copyItem) {
 				List<QuestionItemShort> items = getSelectedShortItems();
 				if(!items.isEmpty()) {
 					doConfirmCopy(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.copy");
 				}
 			} else if(link == convertItem) {
 				List<QuestionItemShort> items = getSelectedShortItems();
 				if(!items.isEmpty()) {
 					doConfirmConversion(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.convert");
 				}
 			} else if(link == deleteItem) {
 				List<QuestionItemShort> items = getDeletableItems();
 				if(!items.isEmpty()) {
 					doConfirmDelete(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.delete");
 				}
 			} else if(link == authorItem) {
 				List<QuestionItemShort> items = getAuthorsEditableItems();
 				if(!items.isEmpty()) {
 					doChooseAuthors(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.author");
 				}
 			} else if(link == importItem) {
 				doOpenImport(ureq);
@@ -349,7 +349,7 @@ public class QuestionListController extends AbstractItemListController implement
 				if(!items.isEmpty()) {
 					doBulkChange(ureq, items);
 				} else {
-					showWarning("error.select.one");
+					showWarning("error.select.one.metadata");
 				}
 			} else if (link == statusDraftLink || link == statusReviewLink || link == statusRevisedLink || link == statusFinalLink || link == statusEndOfLifeLink) {
 				doSetSourceStatus(link);
