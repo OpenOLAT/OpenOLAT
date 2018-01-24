@@ -66,7 +66,8 @@ junit and integration tests in OpenOLAT 8
       mvn install:install-file -Dfile=ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.0 -Dpackaging=jar -DcreateChecksum=true
 	then you can run the test suite
 	  mvn clean test -Dwith-oracle -Ptomcat
-	  
+
+- To only run the OpenOLAT test suite and exclude the unit tests of QtiWorks, add the following option: -Dtest=org.olat.test.AllTestsJunit4
 
 - The junit testresults can be found at target/surefire-reports/*
   Double click the xml files in Eclipse to display the results in the standards jUnit console

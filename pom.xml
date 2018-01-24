@@ -73,7 +73,7 @@
 		<version.selenium>3.5.3</version.selenium>
 		<version.drone>2.4.2</version.drone>
 		<activemq.version>5.11.1</activemq.version>
-		<qtiworks.version>1.0.5</qtiworks.version>
+		<qtiworks.version>1.0.6</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
