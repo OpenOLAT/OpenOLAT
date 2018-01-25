@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.mail.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -27,30 +26,27 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Description:<br>
- * Customize the mail template
- * 
- * <P>
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MailTemplateAdminController extends FormBasicController  {
 
+	private static final int MAX_LENGTH = 10 * 1000 * 1000;
+	
 	private TextElement templateEl;
 	
-	private final MailManager mailManager;
+	@Autowired
+	private MailManager mailManager;
 	
 	public MailTemplateAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
-		
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
-		
 		initForm(ureq);
 	}
 
@@ -61,7 +57,7 @@ public class MailTemplateAdminController extends FormBasicController  {
 		setFormContextHelp("E-Mail Settings#_template");
 
 		String def = mailManager.getMailTemplate();
-		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", 10000, 25, 50, true, def, formLayout);
+		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", -1, 25, 50, true, def, formLayout);
 
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
@@ -77,15 +73,18 @@ public class MailTemplateAdminController extends FormBasicController  {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String value = templateEl.getValue();
 		templateEl.clearError();
 		if(value.length() <= 0) {
-			templateEl.setErrorKey("", null);
+			templateEl.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		} else if(value.length() > MAX_LENGTH) {
+			templateEl.setErrorKey("error.too.long", new String[] { Formatter.formatBytes(MAX_LENGTH) } );
 			allOk = false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
