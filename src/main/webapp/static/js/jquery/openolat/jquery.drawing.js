@@ -133,11 +133,11 @@
 	}
 	
 	Drawing.prototype.getCoords = function(spot) {
-        if(spot.hasClass('o_draw_circle')) {
-        	return calculateCircleCoords(spot);
-        } else if(spot.hasClass('o_draw_rectangle')) {
-        	return calculateRectangleCoords(spot);
-        }
+		if(spot.hasClass('o_draw_circle')) {
+			return calculateCircleCoords(spot);
+		} else if(spot.hasClass('o_draw_rectangle')) {
+			return calculateRectangleCoords(spot);
+		}
 	}
 	
 	Drawing.prototype.generateInputsAndId = function(prefix, shape, coords) {
@@ -150,7 +150,7 @@
 		return newId;
 	};
 	
-	calculateCircleCoords = function(spot) {
+	function calculateCircleCoords(spot) {
 		var id = jQuery(spot).attr('id');
         var position = jQuery(spot).position();
         var radius = parseInt(jQuery(spot).width(), 10) / 2;
@@ -160,7 +160,7 @@
         return coords;
 	};
 	
-	calculateRectangleCoords = function(spot) {
+	function calculateRectangleCoords(spot) {
 		var id = jQuery(spot).attr('id');
         var position = jQuery(spot).position();
         var width = parseInt(jQuery(spot).width(), 10);
@@ -170,5 +170,4 @@
         jQuery("#" + id + "_coords").val(coords);
         return coords;
 	};
-	
 }(jQuery));
