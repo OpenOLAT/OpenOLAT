@@ -4,6 +4,7 @@
 #set($respondedVisibleChoices = $orderChoices.getRespondedVisibleChoices())
 #set($unselectedVisibleChoices = $orderChoices.getUnselectedVisibleChoices())
 #set($orientation = $r.getOrientation($interaction.orientation))
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1" />
 <div class="$localName">
@@ -24,8 +25,7 @@
 			#end
 			<ul>
 				#foreach($unselectedChoice in $unselectedVisibleChoices)
-				<li id="qtiworks_response_${unselectedChoice.identifier}" class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-      				$r.renderFlowStatics($unselectedChoice.getFlowStatics())</li>
+				<li id="qtiworks_response_${unselectedChoice.identifier}" class="o_assessmentitem_order_item">$r.renderFlowStatics($unselectedChoice.getFlowStatics())</li>
 				#end
 			</ul>
         </div>  
@@ -35,20 +35,18 @@
 			#end
 			<ul class="clearfix">
 				#foreach($respondedChoice in $respondedVisibleChoices)
-				<li id="qtiworks_response_${respondedChoice.identifier}" class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-				    $r.renderFlowStatics($respondedChoice.getFlowStatics())</li>
+				<li id="qtiworks_response_${respondedChoice.identifier}" class="o_assessmentitem_order_item">$r.renderFlowStatics($respondedChoice.getFlowStatics())</li>
             		#end
 			</ul>
 		</div>
-		<script type="text/javascript">
+		<script>
 		jQuery(function() {
 			jQuery('#qtiworks_response_${responseIdentifier}').orderInteraction({
 				responseIdentifier: '$responseIdentifier',
 				formDispatchFieldId: '$r.formDispatchFieldId',
-          		initialSourceOrder: [$r.toJavascriptArguments($unselectedVisibleChoices)],
-          		initialTargetOrder: [$r.toJavascriptArguments($respondedVisibleChoices)],
           		minChoices: #if($interaction.minChoices) $interaction.minChoices #else null #end,
           		maxChoices: #if($interaction.maxChoices) $interaction.maxChoices #else null #end,
+          		responseValue: '$r.toString($responseValue,",")',
           		opened: $isItemSessionOpen
         	  	});
         });

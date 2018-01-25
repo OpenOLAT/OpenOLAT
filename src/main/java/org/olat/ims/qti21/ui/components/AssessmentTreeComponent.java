@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.components;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.render.ValidationResult;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -123,6 +124,11 @@ public class AssessmentTreeComponent extends AssessmentObjectComponent {
 	public ItemProcessingContext getItemSessionState(TestPlanNode itemRefNode) {
 		ItemProcessingContext itemProcessingContext = getTestSessionController().getItemProcessingContext(itemRefNode);
 		return itemProcessingContext;
+	}
+
+	@Override
+	protected void loadJavascripts(ValidationResult vr) {
+		//don't load them
 	}
 
 	@Override

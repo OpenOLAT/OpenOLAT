@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.components;
 
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderValue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -632,26 +633,30 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String renderKprimSpecialFlowStatics(List<FlowStatic> flowStaticList) {
-		StringOutput sb = new StringOutput();
-		if(flowStaticList != null && flowStaticList.size() > 0) {
-			flowStaticList.forEach((flow)
-					-> avc.getHTMLRendererSingleton().renderFlow(renderer, sb, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
-		}
-		String specialKprim = sb.toString();
-		if("+".equals(specialKprim)) {
-			if(translator != null) {
-				specialKprim = translator.translate("kprim.plus");
-			} else {
-				specialKprim = "True";
+		try(StringOutput sb = new StringOutput()) {
+			if(flowStaticList != null && flowStaticList.size() > 0) {
+				flowStaticList.forEach((flow)
+						-> avc.getHTMLRendererSingleton().renderFlow(renderer, sb, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 			}
-		} else if("-".equals(specialKprim)) {
-			if(translator != null) {
-				specialKprim = translator.translate("kprim.minus");
-			} else {
-				specialKprim = "False";
+			String specialKprim = sb.toString();
+			if("+".equals(specialKprim)) {
+				if(translator != null) {
+					specialKprim = translator.translate("kprim.plus");
+				} else {
+					specialKprim = "True";
+				}
+			} else if("-".equals(specialKprim)) {
+				if(translator != null) {
+					specialKprim = translator.translate("kprim.minus");
+				} else {
+					specialKprim = "False";
+				}
 			}
+			return specialKprim;
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
 		}
-		return specialKprim;
 	}
 	
 	public String renderTextOrVariables(List<TextOrVariable> textOrVariables) {
@@ -706,9 +711,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 
 	public String toString(Value value, String delimiter, String mappingIndicator) {
-		StringOutput out = new StringOutput(32);
-		renderValue(out, value, delimiter, mappingIndicator);
-		return out.toString();
+		try(StringOutput out = new StringOutput(32)) {
+			renderValue(out, value, delimiter, mappingIndicator);
+			return out.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
+		}
 	}
 	
 	public String toJavascriptArguments(List<? extends Choice> choices) {
