@@ -205,16 +205,25 @@ public class Onyx38ToQtiWorksHandler extends DefaultHandler2 {
 	
 	private void writeAssessmentElement(String qName, Attributes attributes)
 	throws XMLStreamException {
+		boolean hasToolName = false;
+		boolean hasVersion = false;
 		xtw.writeStartElement(qName);
 		int numOfAttributes = attributes.getLength();
 		for(int i=0;i<numOfAttributes; i++) {
 			String attrQName = attributes.getQName(i);
 			String attrValue = attributes.getValue(i);
 			xtw.writeAttribute(attrQName, attrValue);
+			if("toolName".equals(attrQName)) {
+				hasToolName = true;
+			} else if("toolVersion".equals(attrQName)) {
+				hasVersion = true;
+			}
 		}
 		
-		xtw.writeAttribute("toolName", "Onyx Editor");
-		if(StringHelper.containsNonWhitespace(version)) {
+		if(!hasToolName) {
+			xtw.writeAttribute("toolName", "Onyx Editor");
+		}
+		if(!hasVersion && StringHelper.containsNonWhitespace(version)) {
 			xtw.writeAttribute("toolVersion", version);
 		}
 	}

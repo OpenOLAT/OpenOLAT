@@ -147,20 +147,20 @@ public class QTI21AdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(certificateEl.getUploadFile() != null) {
 			File uploadedCertificate = certificateEl.getUploadFile();
 			if(uploadedCertificate != null && uploadedCertificate.exists()) {
-				validateCertificatePassword(uploadedCertificate);
+				allOk &= validateCertificatePassword(uploadedCertificate);
 			}
 		} else {
 			String password = certificatePasswordEl.getValue();
 			if(!PASSWORD_PLACEHOLDER.equals(password) && certificateEl.getInitialFile() != null) {
-				validateCertificatePassword(certificateEl.getInitialFile());
+				allOk &= validateCertificatePassword(certificateEl.getInitialFile());
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateCertificatePassword(File file) {
