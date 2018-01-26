@@ -41,14 +41,12 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -281,8 +279,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public LockResult acquireLock(QuestionItemShort item, Identity identity) {
-		OLATResourceable itemResource = OresHelper.createOLATResourceableInstance("qitem-lock", item.getKey());
-		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(itemResource, identity, null);
+		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(item, identity, null);
 	}
 
 	@Override
