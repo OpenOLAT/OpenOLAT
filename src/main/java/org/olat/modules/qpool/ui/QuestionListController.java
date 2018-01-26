@@ -56,7 +56,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
@@ -133,7 +132,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private CloseableModalController cmc;
 	private CloseableModalController cmcShareItemToSource;
 	private DialogBoxController confirmCopyBox;
-	private DialogBoxController confirmDeleteBox;
+	private DeleteConfirmationController deleteConfirmationCtrl;
 	private DialogBoxController confirmRemoveBox;
 	private DialogBoxController confirmDeleteSourceBox;
 	private CreateTestTargetController createTestTargetCtrl;
@@ -575,12 +574,13 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == confirmDeleteBox) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmDeleteBox.getUserObject();
+		} else if(source == deleteConfirmationCtrl) {
+			if (event == Event.DONE_EVENT) {
+				List<QuestionItemShort> items = deleteConfirmationCtrl.getItemsToDelete();
 				doDelete(items);
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == confirmRemoveBox) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
@@ -638,6 +638,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		removeAsListenerAndDispose(conversionConfirmationCtrl);
+		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		cmc = null;
 		addController = null;
 		createTestOverviewCtrl = null;
@@ -647,6 +648,7 @@ public class QuestionListController extends AbstractItemListController implement
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
 		conversionConfirmationCtrl = null;
+		deleteConfirmationCtrl = null;
 	}
 	
 	protected void updateRows(List<QuestionItem> items) {
@@ -1112,21 +1114,12 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, List<QuestionItemShort> items) {
-		StringBuilder sb = new StringBuilder();
-		for(QuestionItemShort item:items) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(StringHelper.escapeHtml(item.getTitle()));
-		}
-		
-		String msg;
-		if(items.size() > 1) {
-			msg = translate("confirm.delete.plural", sb.toString());
-		} else {
-			msg = translate("confirm.delete", sb.toString());
-		}
-		confirmDeleteBox = activateYesNoDialog(ureq, null, msg, confirmDeleteBox);
-		confirmDeleteBox.setCssClass("o_error");
-		confirmDeleteBox.setUserObject(items);
+		deleteConfirmationCtrl = new DeleteConfirmationController(ureq, getWindowControl(), items);
+		listenTo(deleteConfirmationCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				deleteConfirmationCtrl.getInitialComponent(), true, translate("confirm.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doDelete(List<QuestionItemShort> items) {

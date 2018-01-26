@@ -112,7 +112,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private ReviewStartController reviewStartCtrl;	
 	private ReviewController reviewCtrl;
 	private DialogBoxController confirmEndOfLifeCtrl;
-	private DialogBoxController confirmDeleteBox;
+	private DeleteConfirmationController deleteConfirmationCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private PoolsController selectPoolCtrl;
 
@@ -485,12 +485,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 				doEndOfLife(ureq, item);
 			}
 			cleanUp();
-		} else if(source == confirmDeleteBox) {
-			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
-			if(delete) {
-				QuestionItem item = (QuestionItem)confirmDeleteBox.getUserObject();
-				doDelete(ureq, item);
+		} else if(source == deleteConfirmationCtrl) {
+			if (event == Event.DONE_EVENT) {
+				List<QuestionItemShort> items = deleteConfirmationCtrl.getItemsToDelete();
+				doDelete(ureq, items);
 			}
+			cmc.deactivate();
 			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
@@ -514,14 +514,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 		removeAsListenerAndDispose(selectPoolCtrl);
 		removeAsListenerAndDispose(reviewCtrl);
 		removeAsListenerAndDispose(reviewStartCtrl);
-		removeAsListenerAndDispose(confirmDeleteBox);
+		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(confirmEndOfLifeCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
 		selectPoolCtrl = null;
 		reviewCtrl = null;
 		reviewStartCtrl = null;
-		confirmDeleteBox = null;
+		deleteConfirmationCtrl = null;
 		confirmEndOfLifeCtrl = null;
 	}
 	
@@ -670,18 +670,24 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void doConfirmDelete(UserRequest ureq, QuestionItem item) {
-		String msg = translate("confirm.delete", StringHelper.escapeHtml(item.getTitle()));
-		confirmDeleteBox = activateYesNoDialog(ureq, null, msg, confirmDeleteBox);
-		confirmDeleteBox.setUserObject(item);
+		deleteConfirmationCtrl = new DeleteConfirmationController(ureq, getWindowControl(),
+				Collections.singletonList(item));
+		listenTo(deleteConfirmationCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				deleteConfirmationCtrl.getInitialComponent(), true, translate("confirm.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
-	private void doDelete(UserRequest ureq, QuestionItemShort item) {
-		QuestionItem qitem = qpoolService.loadItemById(item.getKey());
-		qpoolService.deleteItems(Collections.singletonList(item));
-		QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
-				Action.DELETE_QUESTION_ITEM);
-		builder.withBefore(qitem);
-		qpoolService.persist(builder.create());
+	private void doDelete(UserRequest ureq, List<QuestionItemShort> items) {
+		for (QuestionItemShort item: items) {
+			QuestionItem qitem = qpoolService.loadItemById(item.getKey());
+			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
+					Action.DELETE_QUESTION_ITEM);
+			builder.withBefore(qitem);
+			qpoolService.persist(builder.create());
+		}
+		qpoolService.deleteItems(items);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_DELETED));
 		showInfo("item.deleted");
 	}
