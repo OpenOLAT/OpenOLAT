@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
@@ -35,6 +36,8 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
  */
 public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<ItemRow> {
 
+	private static final DecimalFormat THREE_DIGITS_FORMAT = new DecimalFormat("#.###");
+	
 	private final Translator translator;
 	
 	public QuestionItemDataModel(FlexiTableColumnModel columnModel, FlexiTableDataSourceDelegate<ItemRow> source, Translator translator) {
@@ -91,7 +94,8 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 				}
 				return type;
 			}
-			case rating: return item.getRating();
+			case rating: return round(item.getRating());
+			case numberOfRatings: return item.getNumberOfRatings();
 			case format: return item.getFormat();
 			case itemVersion: return item.getItemVersion();
 			case status: return item.getQuestionStatus();
@@ -102,6 +106,11 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		}
 	}
 	
+	private String round(Double value) {
+		if (value == null) return null;
+		return THREE_DIGITS_FORMAT.format(value.doubleValue());
+	}
+
 	public enum Cols {
 		key("general.key"),
 		identifier("general.identifier"),
@@ -123,6 +132,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		type("question.type"),
 		format("technical.format"),
 		rating("rating"),
+		numberOfRatings("numberOfRatings"),
 		itemVersion("lifecycle.version"),
 		status("lifecycle.status"),
 		statusLastModified("lifecycle.status.last.modified"),

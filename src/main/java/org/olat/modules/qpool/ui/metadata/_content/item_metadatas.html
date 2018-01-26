@@ -103,6 +103,34 @@
 			/* ]]> */
 		</script>
 	</div>
+		#if($r.available("details_ratings"))
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i id="collapsRatingsToggler" class="o_icon o_icon-fw #if($in-ratings) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<a data-toggle="collapse" data-parent="#accordion" href="#ratings">
+						$r.translate("menu.ratings")
+					</a>
+				</h4>
+			</div>
+			<div id="ratings" class="panel-collapse collapse $!in-ratings">
+				<div class="panel-body">
+					$r.render("details_ratings")
+				</div>
+			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#ratings').on('hide.bs.collapse', function () {
+						jQuery('#collapsRatingsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#ratings').on('show.bs.collapse', function () {
+						jQuery('#collapsRatingsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+						$r.backgroundCommand("show","panel","ratings")
+					})
+				/* ]]> */
+			</script>
+		</div>
+	#end
 	#if($r.available("details_pools"))
 		<div class="panel panel-default">
 			<div class="panel-heading">

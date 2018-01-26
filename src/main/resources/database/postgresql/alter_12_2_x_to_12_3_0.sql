@@ -17,6 +17,7 @@ create table o_qp_item_audit_log (
 
 create index idx_tax_level_path_key_idx on o_tax_taxonomy_level (t_m_path_keys);
 create index idx_item_audit_item_idx on o_qp_item_audit_log (fk_item_id);
+create index userrating_rating_res_idx on o_userrating (resid, resname, creator_id, rating);
 
 
 alter table o_as_entry add column a_current_run_completion float(24);

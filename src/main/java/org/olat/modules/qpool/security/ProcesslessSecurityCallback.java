@@ -104,6 +104,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	}
 
 	@Override
+	public boolean canViewReviews() {
+		return false;
+	}
+
+	@Override
 	public boolean canSetDraft() {
 		return admin
 				|| itemView.isAuthor()

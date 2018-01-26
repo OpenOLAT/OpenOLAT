@@ -78,6 +78,7 @@ public class ItemWrapper implements QuestionItemView {
 	private boolean isEditableInShare;
 	private boolean isMarked;
 	private Double rating;
+	private int numberOfRatings;
 	
 	private ItemWrapper() {
 	}
@@ -140,6 +141,11 @@ public class ItemWrapper implements QuestionItemView {
 	@Override
 	public Double getRating() {
 		return rating;
+	}
+
+	@Override
+	public int getNumberOfRatings() {
+		return numberOfRatings;
 	}
 
 	@Override
@@ -423,6 +429,11 @@ public class ItemWrapper implements QuestionItemView {
 
 		public ItemWrapperBuilder setRating(Double rating) {
 			itemWrapper.rating = rating;
+			return this;
+		}
+		
+		public ItemWrapperBuilder setNumberOfRatings(Number numberOfRatings) {
+			itemWrapper.numberOfRatings = numberOfRatings != null? numberOfRatings.intValue(): 0;
 			return this;
 		}
 		

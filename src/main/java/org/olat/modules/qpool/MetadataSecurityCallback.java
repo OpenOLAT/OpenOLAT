@@ -34,5 +34,7 @@ public interface MetadataSecurityCallback {
 	public boolean canChangeVersion();
 	
 	public boolean canEditAuthors();
+	
+	public boolean canViewReviews();
 
 }

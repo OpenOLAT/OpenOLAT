@@ -104,6 +104,11 @@ public class ItemRow implements QuestionItemView {
 	public Double getRating() {
 		return delegate.getRating();
 	}
+
+	@Override
+	public int getNumberOfRatings() {
+		return delegate.getNumberOfRatings();
+	}
 	
 	@Override
 	public String getResourceableTypeName() {

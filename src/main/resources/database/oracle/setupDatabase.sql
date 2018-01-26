@@ -2632,6 +2632,7 @@ create index userrating_id_idx on o_userrating (resid);
 create index userrating_name_idx on o_userrating (resname);
 create index userrating_subpath_idx on o_userrating (ressubpath);
 create index userrating_rating_idx on o_userrating (rating);
+create index userrating_rating_res_idx on o_userrating (resid, resname, creator_id, rating);
 
 -- comment
 alter table o_usercomment add constraint FK92B6864A18251F0 foreign key (parent_key) references o_usercomment (comment_id);

@@ -655,6 +655,24 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
+	public void shouldGetItemsNumberOfRating() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 2);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 3);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
+		QuestionItem item12 = createRandomItem(owner1);
+		commentAndRatingService.createRating(createRandomIdentity(), item12, null, 4);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).getNumberOfRatings()).isEqualTo(4);
+	}
+	
+	@Test
 	public void shouldGetItemsFilteredByLikeTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);

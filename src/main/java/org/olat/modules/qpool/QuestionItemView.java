@@ -50,6 +50,8 @@ public interface QuestionItemView extends QuestionItemShort {
 	
 	public Double getRating();
 	
+	public int getNumberOfRatings();
+	
 	//general
 	public String getCoverage();
 
@@ -79,6 +81,7 @@ public interface QuestionItemView extends QuestionItemShort {
 		itemType,
 		format,
 		rating,
+		numberOfRatings,
 		itemVersion,
 		status,
 		statusLastModified

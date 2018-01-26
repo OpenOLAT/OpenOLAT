@@ -121,6 +121,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	}
 
 	@Override
+	public boolean canViewReviews() {
+		return admin || itemView.isAuthor() || itemView.isManager();
+	}
+
+	@Override
 	public boolean canSetDraft() {
 		return admin;
 	}

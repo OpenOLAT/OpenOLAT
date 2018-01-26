@@ -106,10 +106,13 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append("     and rating.creator.key=:identityKey")
-		  .append(" ) as ratings,")
+		  .append(" ) as numberOfRatingsIdentity,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-		  .append(" ) as rating")
+		  .append(" ) as rating,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as numberOfRatingsTotal")
 		  .append(" from questionitem item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
@@ -155,6 +158,7 @@ public class QItemQueriesDAO {
 					.setEditableInShare((Number)result[5])
 					.setRater((Number)result[6])
 					.setRating((Double)result[7])
+					.setNumberOfRatings((Number)result[8])
 					.setMarked(true)
 					.create();
 			views.add(itemWrapper);
@@ -193,10 +197,13 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append("     and rating.creator.key=:identityKey")
-		  .append(" ) as ratings,")
+		  .append(" ) as numberOfRatingsIdentity,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-		  .append(" ) as rating")
+		  .append(" ) as rating,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as numberOfRatingsTotal")
 		  .append(" from qcollection2item coll2item")
 		  .append(" inner join coll2item.item item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
@@ -241,6 +248,7 @@ public class QItemQueriesDAO {
 					.setMarked((Number)result[6])
 					.setRater((Number)result[7])
 					.setRating((Double)result[8])
+					.setNumberOfRatings((Number)result[9])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -286,10 +294,13 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append("     and rating.creator.key=:identityKey")
-		  .append(" ) as ratings,")
+		  .append(" ) as numberOfRatingsIdentity,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-		  .append(" ) as rating")
+		  .append(" ) as rating,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as numberOfRatingsTotal")
 		  .append(" from questionitem item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
@@ -333,6 +344,7 @@ public class QItemQueriesDAO {
 					.setMarked((Number)result[3])
 					.setRater((Number)result[4])
 					.setRating((Double)result[5])
+					.setNumberOfRatings((Number)result[6])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -363,10 +375,13 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append("     and rating.creator.key=:identityKey")
-		  .append(" ) as ratings,")
+		  .append(" ) as numberOfRatingsIdentity,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-		  .append(" ) as rating")
+		  .append(" ) as rating,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as numberOfRatingsTotal")
 		  .append(" from qshareitem shareditem")
 		  .append(" inner join shareditem.item item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
@@ -409,6 +424,7 @@ public class QItemQueriesDAO {
 					.setMarked((Number)result[5])
 					.setRater((Number)result[6])
 					.setRating((Double)result[7])
+					.setNumberOfRatings((Number)result[8])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -439,10 +455,13 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append("     and rating.creator.key=:identityKey")
-		  .append(" ) as ratings,")
+		  .append(" ) as numberOfRatingsIdentity,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-		  .append(" ) as rating")
+		  .append(" ) as rating,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as numberOfRatingsTotal")
 		  .append(" from qpool2item pool2item")
 		  .append(" inner join pool2item.item item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
@@ -484,6 +503,7 @@ public class QItemQueriesDAO {
 					.setMarked((Number)result[5])
 					.setRater((Number)result[6])
 					.setRating((Double)result[7])
+					.setNumberOfRatings((Number)result[8])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -538,10 +558,13 @@ public class QItemQueriesDAO {
 			.append(" (select count(rating.key) from userrating as rating")
 			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 			.append("     and rating.creator.key=:identityKey")
-			.append(" ) as ratings,")
+			.append(" ) as numberOfRatingsIdentity,")
 			.append(" (select avg(rating.rating) from userrating as rating")
 			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-			.append(" ) as rating")
+			  .append(" ) as rating,")
+			  .append(" (select count(rating.key) from userrating as rating")
+			  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+			  .append(" ) as numberOfRatingsTotal")
 			.append(" from questionitem item")
 			.append(" left join fetch item.ownerGroup ownerGroup")
 			.append(" left join fetch item.taxonomyLevel taxonomyLevel")
@@ -572,6 +595,7 @@ public class QItemQueriesDAO {
 					.setMarked((Number)result[6])
 					.setRater((Number)result[7])
 					.setRating((Double)result[8])
+					.setNumberOfRatings((Number)result[9])
 					.create();
 		}
 		return itemWrapper;
@@ -608,10 +632,13 @@ public class QItemQueriesDAO {
 		  .append(" (select count(rating.key) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append("     and rating.creator.key=:identityKey")
-		  .append(" ) as ratings,")
+		  .append(" ) as numberOfRatingsIdentity,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-		  .append(" ) as rating")
+		  .append(" ) as rating,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as numberOfRatingsTotal")
 		  .append(" from questionitem item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
@@ -652,6 +679,7 @@ public class QItemQueriesDAO {
 					.setMarked((Number)result[6])
 					.setRater((Number)result[7])
 					.setRating((Double)result[8])
+					.setNumberOfRatings((Number)result[9])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -736,6 +764,11 @@ public class QItemQueriesDAO {
 					break;
 				case "rating":
 					sb.append("rating");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
+				case "numberOfRatings":
+					sb.append("numberOfRatingsTotal");
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
 					break;

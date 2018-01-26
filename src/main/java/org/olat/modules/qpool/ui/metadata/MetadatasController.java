@@ -50,6 +50,7 @@ public class MetadatasController extends BasicController {
 	private QuestionMetadataEditController questionEditCtrl;
 	private RightsMetadataEditController rightsEditCtrl;
 	private TechnicalMetadataEditController technicalEditCtrl;
+	private RatingMetadataController ratingMetadataCtrl;
 	private PoolsMetadataController poolsCtrl;
 	private SharesMetadataController sharesController;
 	
@@ -79,6 +80,11 @@ public class MetadatasController extends BasicController {
 		listenTo(technicalEditCtrl);
 		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
 
+		if (metadataScurityCallback.canViewReviews()) {
+			ratingMetadataCtrl = new RatingMetadataController(ureq, wControl, item);
+			mainVC.put("details_ratings", ratingMetadataCtrl.getInitialComponent());
+		}
+		
 		if (qPoolSecurityCallback.canUsePools()) {
 			poolsCtrl = new PoolsMetadataController(ureq, wControl, item);
 			listenTo(poolsCtrl);
@@ -145,6 +151,9 @@ public class MetadatasController extends BasicController {
 		questionEditCtrl.setItem(item, metadataScurityCallback);
 		rightsEditCtrl.setItem(item, metadataScurityCallback);
 		technicalEditCtrl.setItem(item, metadataScurityCallback);
+		if (ratingMetadataCtrl != null) {
+			ratingMetadataCtrl.setItem(item);
+		}
 		updateShares();
 	}
 	
@@ -167,6 +176,7 @@ public class MetadatasController extends BasicController {
 		mainVC.contextRemove("in-question");
 		mainVC.contextRemove("in-rights");
 		mainVC.contextRemove("in-technical");
+		mainVC.contextRemove("in-ratings");
 		mainVC.contextRemove("in-pools");
 		mainVC.contextRemove("in-shares");
 		mainVC.contextPut("in-" + openPanel, "in");

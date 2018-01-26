@@ -49,4 +49,9 @@ public class ReadOnlyMetadataSecurityCallback implements MetadataSecurityCallbac
 		return false;
 	}
 
+	@Override
+	public boolean canViewReviews() {
+		return false;
+	}
+
 }
