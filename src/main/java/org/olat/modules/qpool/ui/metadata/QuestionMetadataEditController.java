@@ -70,6 +70,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 	private TextElement stdevDifficultyEl;
 	private TextElement differentiationEl;
 	private TextElement numAnswerAltEl;
+	private TextElement usageEl;
 	private FormLayoutContainer buttonsCont;
 	
 	private QuestionItem item;
@@ -149,7 +150,9 @@ public class QuestionMetadataEditController extends FormBasicController {
 		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 24, numAnswerAlt, formLayout);
 		numAnswerAltEl.setDisplaySize(4);
 		
-		uifactory.addStaticTextElement("question.usage", Integer.toString(item.getUsage()), formLayout);
+		String numUsage = item.getUsage() < 0 ? "" : Integer.toString(item.getUsage());
+		usageEl = uifactory.addTextElement("question.usage", "question.usage", 24, numUsage, formLayout);
+		usageEl.setDisplaySize(4);
 
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -169,6 +172,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		stdevDifficultyEl.setEnabled(canEditMetadata);
 		differentiationEl.setEnabled(canEditMetadata);
 		numAnswerAltEl.setEnabled(canEditMetadata);
+		usageEl.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
 	}
 
@@ -225,6 +229,9 @@ public class QuestionMetadataEditController extends FormBasicController {
 			
 			int numOfAnswerAlternatives = toInt(numAnswerAltEl.getValue());
 			itemImpl.setNumOfAnswerAlternatives(numOfAnswerAlternatives);
+			
+			int numUsage = toInt(usageEl.getValue());
+			itemImpl.setUsage(numUsage);
 
 			item = qpoolService.updateItem(itemImpl);
 			builder.withAfter(item);
