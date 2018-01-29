@@ -345,7 +345,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	
 	@Override
 	public boolean hasIndividualAsssessmentDocuments() {
-		return true;
+		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 	}
 
 	/**
@@ -579,13 +579,13 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 					}
 				}
 			}
-
-			String filename = dirName + "/" + StringHelper.transformDisplayNameToFileSystemName(getShortName());
-			new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
 		}
+
+		String filename = dirName + "/" + StringHelper.transformDisplayNameToFileSystemName(getShortName());
+		new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
 		
 		//assessment documents
-		if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
+		if(hasIndividualAsssessmentDocuments()) {
 			List<AssessmentEntry> assessmentEntries = course.getCourseEnvironment()
 					.getAssessmentManager().getAssessmentEntries(this);
 			if(assessmentEntries != null && !assessmentEntries.isEmpty()) {

@@ -642,8 +642,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			List<File> assessmentDocuments = course.getCourseEnvironment()
 					.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
 			if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
+				String assessmentDir = userDirName + "/"  + (++flow) + "_assessment/";
 				for(File document:assessmentDocuments) {
-					String path = userDirName + "/"  + (++flow) + "_assessment/" + document.getName(); 
+					String path = assessmentDir + document.getName(); 
 					ZipUtil.addFileToZip(path, document, exportStream);
 				}
 			}

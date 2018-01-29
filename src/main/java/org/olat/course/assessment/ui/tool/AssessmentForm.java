@@ -189,13 +189,23 @@ public class AssessmentForm extends FormBasicController {
 	}
 
 	public boolean isUserCommentDirty () {
-		return hasComment && !userComment.getValue().equals(userCommentValue);
+		if(!hasComment) {
+			return false;
+		}
+		
+		if(!StringHelper.containsNonWhitespace(userComment.getValue()) && !StringHelper.containsNonWhitespace(userCommentValue)) {
+			return false;
+		}
+		return !userComment.getValue().equals(userCommentValue);
 	}
 	public TextElement getUserComment() {
 		return userComment;
 	}
 	
 	public boolean isCoachCommentDirty () {
+		if(!StringHelper.containsNonWhitespace(coachComment.getValue()) && !StringHelper.containsNonWhitespace(coachCommentValue)) {
+			return false;
+		}
 		return !coachComment.getValue().equals(coachCommentValue);
 	}
 	

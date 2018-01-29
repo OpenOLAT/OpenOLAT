@@ -200,7 +200,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			commentEl.select(onKeys[0], true);
 		}
 		
-		assessmentDocsEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, new String[]{"xx"}, new String[]{null});
+		assessmentDocsEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, onKeys, new String[]{null});
 		boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 		if(docsCf) {
 			assessmentDocsEl.select(onKeys[0], true);
