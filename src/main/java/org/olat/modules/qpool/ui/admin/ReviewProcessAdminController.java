@@ -94,6 +94,8 @@ public class ReviewProcessAdminController extends FormBasicController {
 		}
 		
 		// lower limit provider
+		providerEl.setExampleKey("lower.limit.desc", null);
+		
 		String numberOfRatings = Integer.toString(qpoolModule.getReviewDecisionNumberOfRatings());
 		numberOfRatingsEl = uifactory.addTextElement("number.of.ratings", 5, numberOfRatings, formLayout);
 		numberOfRatingsEl.setMandatory(true);
