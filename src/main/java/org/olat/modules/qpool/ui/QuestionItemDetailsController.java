@@ -571,7 +571,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
 		}
-		doChangeQuestionStatus(ureq, item, QuestionStatus.review, "process.review.started");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.review);
 	}
 	
 	private void openReview(UserRequest ureq) {
@@ -593,19 +593,19 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void doStatusDraft(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.draft, "process.draft.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.draft);
 	}
 	
 	private void doStatusRevised(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.revised, "process.revision.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.revised);
 	}
 	
 	private void doStatusReview(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.review, "process.review.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.review);
 	}
 	
 	private void doStatusFinal(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.finalVersion, "process.final.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.finalVersion);
 	}
 	
 	private void doConfirmEndOfLife(UserRequest ureq, QuestionItem item) {
@@ -615,10 +615,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void doEndOfLife(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.endOfLife, "process.endOfLife.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.endOfLife);
 	}
 	
-	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus, String i18nInfo) {
+	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus) {
 		if(!newStatus.equals(item.getQuestionStatus()) && item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
@@ -630,7 +630,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			builder.withAfter(item);
 			qpoolService.persist(builder.create());
 			fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
-			showInfo(i18nInfo);
 		}
 		reloadData(ureq);
 	}
