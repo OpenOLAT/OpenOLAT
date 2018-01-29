@@ -69,6 +69,13 @@ alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_
 create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
 
 
+-- index o_user
+create index xx_idx_email_low_text on o_user(lower(u_email) text_pattern_ops);
+create index xx_idx_institutionalemail_low_text on o_user(lower(u_institutionalemail) text_pattern_ops);
+create index xx_idx_username_low_text on o_bs_identity(lower(name) text_pattern_ops);
+
+
+
 
 
 

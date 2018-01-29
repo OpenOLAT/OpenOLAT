@@ -2594,6 +2594,10 @@ create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
 create index idx_user_instemail_idx on o_user (u_institutionalemail);
 create index idx_user_creationdate_idx on o_user (creationdate);
 
+create index xx_idx_email_low_text on o_user(lower(u_email) text_pattern_ops);
+create index xx_idx_institutionalemail_low_text on o_user(lower(u_institutionalemail) text_pattern_ops);
+create index xx_idx_username_low_text on o_bs_identity(lower(name) text_pattern_ops);
+
 create index propvalue_idx on o_userproperty (propvalue);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
