@@ -163,7 +163,8 @@ public class AssessmentModeDAO {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mode from courseassessmentmode mode where ")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false)")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
+		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
 		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("')");
 
@@ -182,7 +183,8 @@ public class AssessmentModeDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(mode) from courseassessmentmode mode where ")
 		  .append(" mode.repositoryEntry.key=:repoKey and (")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false)")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now ")
+		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
 		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
 
@@ -203,7 +205,8 @@ public class AssessmentModeDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mode from courseassessmentmode mode where ")
 		  .append(" mode.repositoryEntry.key=:repoKey and (")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false)")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
+		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
 		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
 
