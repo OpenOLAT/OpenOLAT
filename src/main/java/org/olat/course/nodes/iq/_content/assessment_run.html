@@ -163,66 +163,34 @@
 #end
 
 #if (($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
-	<div class="o_statusinfo">
-		$r.translate("attempts.nomoreattempts")
-	</div>		
-	#if ($hasDisc)
-	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-	  		<h4 class="panel-title">
-	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($in-disclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
-	  			$r.translate("disclaimer")
-	  		</h4>
-	  	</div>
-	  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($in-disclaimer)) in #end"><div class="panel-body">
-		$r.render("disc")
-  		</div></div>
-  		<script type="text/javascript">
-			/* <![CDATA[ */
-				jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
-					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					$r.backgroundCommand("hide","panel","disclaimer")
-				})
-				jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
-					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","disclaimer")
-				})
-			/* ]]> */
-		</script>
-	</div>
+	<div class="o_statusinfo">$r.translate("attempts.nomoreattempts")</div>		
+	$r.render("disclaimer")
+#elseif($blockDate)
+	<div class="o_statusinfo">#if($r.isNotNull($endTestDate))
+		$r.translate("block.dates.start.end", $startTestDate, $endTestDate) 
+	#else
+		$r.translate("block.dates.start", $startTestDate)
 	#end
+	#if($r.isNotEmpty($timeLimit))
+		<br>$r.translate("time.limit.test.explain", $timeLimit)
+	#end</div>
+	$r.render("disclaimer")
 #else
-	#if ($hasDisc)
-	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-	  		<h4 class="panel-title">
-	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($in-disclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
-	  			$r.translate("disclaimer")
-	  		</h4>
-	  	</div>
-	  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($in-disclaimer)) in #end"><div class="panel-body">
-		$r.render("disc")
-  		</div></div>
-  		<script type="text/javascript">
-			/* <![CDATA[ */
-				jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
-					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					$r.backgroundCommand("hide","panel","disclaimer")
-				})
-				jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
-					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","disclaimer")
-				})
-			/* ]]> */
-		</script>
-	</div>
-	#end
+	$r.render("disclaimer")
 
 	#if($infobox)	
 		#if($type == "test")
 		<div class="o_statusinfo">
 			<p>$r.translate("Intro.test")</p>
 			<p>$r.translate("info.assessment")</p>
+			#if($r.isNotNull($endTestDate))
+				<p>$r.translate("block.dates.start.end", $startTestDate, $endTestDate)</p>
+			#elseif($r.isNotNull($startTestDate))
+				<p>$r.translate("block.dates.start", $startTestDate)</p>
+			#end
+			#if($r.isNotEmpty($timeLimit))
+				<p>$r.translate("time.limit.test.explain", $timeLimit)</p>
+			#end
 			#if ($hasChatWindowOpen)
 			<p>$r.translate("close.chat.windows.for.test")</p>
 			#end

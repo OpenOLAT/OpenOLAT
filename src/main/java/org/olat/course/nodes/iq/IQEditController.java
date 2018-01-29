@@ -148,6 +148,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_RESULT_ON_FINISH = "showResultsOnFinish";
 	public static final String CONFIG_KEY_RESULT_ON_HOME_PAGE = "showResultsOnHomePage";
 
+	public static final String CONFIG_KEY_DATE_DEPENDENT_TEST = "dateDependentTest";
+	public static final String CONFIG_KEY_RESULTS_START_TEST_DATE = "resultsStartTestDate";
+	public static final String CONFIG_KEY_RESULTS_END_TEST_DATE = "resultsEndTestDate";
+
 	public static final String CONFIG_KEY_TEMPLATE = "templateid";
 	public static final String CONFIG_KEY_TYPE_QTI = "qtitype";
 	public static final String CONFIG_VALUE_QTI2 = "qti2";

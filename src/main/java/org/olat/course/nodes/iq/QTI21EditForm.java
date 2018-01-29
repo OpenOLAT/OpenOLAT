@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,6 +70,8 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement showResultsOnHomePage;
 	private MultipleSelectionElement scoreInfo, showResultsDateDependentButton;
 	private DateChooser startDateElement, endDateElement;
+	private MultipleSelectionElement testDateDependentButton;
+	private DateChooser startTestDateElement, endTestDateElement;
 	private StaticTextElement minScoreEl, maxScoreEl, cutValueEl;
 	private MultipleSelectionElement showResultsOnFinishEl, assessmentResultsOnFinishEl;
 	
@@ -81,7 +84,7 @@ public class QTI21EditForm extends FormBasicController {
 	
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
 			QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		this.modConfig = modConfig;
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
@@ -92,14 +95,42 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_qti_21_configuration");
+		FormLayoutContainer testLayout = FormLayoutContainer.createDefaultFormLayout("testInfos", getTranslator());
+		testLayout.setRootForm(mainForm);
+		formLayout.add(testLayout);
+		initFormInfos(testLayout);
 		
+		FormLayoutContainer reportLayout = FormLayoutContainer.createDefaultFormLayout("report", getTranslator());
+		reportLayout.setElementCssClass("o_qti_21_configuration");
+		reportLayout.setFormTitle(translate("report.config"));
+		reportLayout.setRootForm(mainForm);
+		formLayout.add(reportLayout);
+		initFormReport(reportLayout);
+	}
+	
+	protected void initFormInfos(FormItemContainer formLayout) {
 		minScoreEl = uifactory.addStaticTextElement("score.min", "", formLayout);
 		minScoreEl.setVisible(false);
 		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
 		maxScoreEl.setVisible(false);
 		cutValueEl = uifactory.addStaticTextElement("score.cut", "", formLayout);
 		cutValueEl.setVisible(false);
+	}
+
+	protected void initFormReport(FormItemContainer formLayout) {
+		boolean testDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST);
+		testDateDependentButton = uifactory.addCheckboxesHorizontal("qti_datetest", "qti.form.test.date", formLayout, new String[]{"xx"}, new String[]{null});
+		testDateDependentButton.select("xx", testDateDependent);
+		testDateDependentButton.addActionListener(FormEvent.ONCLICK);
+	
+		Date startTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_TEST_DATE);
+		startTestDateElement = uifactory.addDateChooser("qti_form_start_test_date", "qti.form.date.start", startTestDate, formLayout);
+		startTestDateElement.setDateChooserTimeEnabled(true);
+		startTestDateElement.setMandatory(true);
+		
+		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE);
+		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
+		endTestDateElement.setDateChooserTimeEnabled(true);
 		
 		String [] correctionModeValues = new String[]{
 			translate("correction.auto"),
@@ -200,7 +231,15 @@ public class QTI21EditForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		startTestDateElement.clearError();
+		if(testDateDependentButton.isSelected(0)) {
+			if(startTestDateElement.getDate() == null) {
+				startTestDateElement.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 
 		startDateElement.clearError();
 		if(showResultsDateDependentButton.isSelected(0)) {
@@ -210,14 +249,15 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(showResultsOnFinishEl == source || showResultsOnHomePage == source) {
-			update();
-		} else if(showResultsDateDependentButton == source ) {
+		if(showResultsOnFinishEl == source
+				|| showResultsOnHomePage == source
+				|| showResultsDateDependentButton == source
+				|| testDateDependentButton == source) {
 			update();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -227,18 +267,20 @@ public class QTI21EditForm extends FormBasicController {
 		showResultsDateDependentButton.setVisible(showResultsOnHomePage.isSelected(0));
 
 		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || showResultsOnHomePage.isSelected(0));
+
+		resetDateChooser(startDateElement, showResultsDateDependentButton);
+		resetDateChooser(endDateElement, showResultsDateDependentButton);
 		
-		if (!startDateElement.isVisible()) {
-			startDateElement.setValue("");
+		resetDateChooser(startTestDateElement, testDateDependentButton);
+		resetDateChooser(endTestDateElement, testDateDependentButton);
+	}
+	
+	private void resetDateChooser(DateChooser dateElement, MultipleSelectionElement parentEl) {
+		dateElement.clearError();
+		if (!dateElement.isVisible()){
+			dateElement.setValue("");
 		}
-		startDateElement.clearError();
-		startDateElement.setVisible(showResultsDateDependentButton.isVisible() && showResultsDateDependentButton.isSelected(0));
-		
-		endDateElement.clearError();
-		if (!endDateElement.isVisible()){
-			endDateElement.setValue("");
-		}
-		endDateElement.setVisible(startDateElement.isVisible());
+		dateElement.setVisible(parentEl.isVisible() && parentEl.isSelected(0));
 	}
 	
 	private void updateAssessmentResultsOnFinish(QTI21AssessmentResultsOptions resultsOptions) {
@@ -295,6 +337,11 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, testDateDependentButton.isSelected(0));
+		
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_TEST_DATE, startTestDateElement.getDate());
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE, endTestDateElement.getDate());
+		
 		if(correctionModeEl.isOneSelected()) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
 		}

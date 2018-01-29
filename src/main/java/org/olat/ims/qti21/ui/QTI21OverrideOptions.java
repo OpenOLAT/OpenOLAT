@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.util.Date;
+
 /**
  * 
  * Initial date: 1 mars 2017<br>
@@ -28,16 +30,28 @@ package org.olat.ims.qti21.ui;
 public class QTI21OverrideOptions {
 	
 	private final Long assessmentTestMaxTimeLimit;
-
-	public QTI21OverrideOptions(Long assessmentTestMaxTimeLimit) {
+	private final Date startTestDate;
+	private final Date endTestDate;
+	
+	public QTI21OverrideOptions(Long assessmentTestMaxTimeLimit, Date startTestDate, Date endTestDate) {
 		this.assessmentTestMaxTimeLimit = assessmentTestMaxTimeLimit;
+		this.startTestDate = startTestDate;
+		this.endTestDate = endTestDate;
 	}
 
 	public Long getAssessmentTestMaxTimeLimit() {
 		return assessmentTestMaxTimeLimit;
 	}
+
+	public Date getStartTestDate() {
+		return startTestDate;
+	}
+
+	public Date getEndTestDate() {
+		return endTestDate;
+	}
 	
 	public static QTI21OverrideOptions nothingOverriden() {
-		return new QTI21OverrideOptions(null);
+		return new QTI21OverrideOptions(null, null, null);
 	}
 }

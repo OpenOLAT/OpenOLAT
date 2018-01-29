@@ -627,17 +627,40 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private Long getAssessmentTestMaxTimeLimit() {
 		int extra = extraTime == null ? 0 : extraTime.intValue();
+		long leadingTime = getLeadingTimeEndTestOption();
 		if(overrideOptions != null && overrideOptions.getAssessmentTestMaxTimeLimit() != null) {
-			Long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit();
-			return timeLimits.longValue() > 0 ? timeLimits.longValue() + extra : null;
+			long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit().longValue();
+			return timeLimits > 0 ? Math.min(leadingTime, timeLimits) + extra : null;
 		}
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
-			return assessmentTest.getTimeLimits().getMaximum().longValue() + extra;
+			long timeLimits = assessmentTest.getTimeLimits().getMaximum().longValue();
+			return Math.min(leadingTime, timeLimits) + extra;
 		}
 		return null;
 	}
 	
+	/**
+	 * @return The number of seconds up to the defined end of the test (or a very long time if nothing is configured)
+	 */
+	private long getLeadingTimeEndTestOption() {
+		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
+			Date endTestDate = overrideOptions.getEndTestDate();
+			long diff = endTestDate.getTime() - currentRequestTimestamp.getTime();
+			if(diff < 0l) {
+				diff = 0l;
+			}
+			if(diff > 0l) {
+				diff = diff / 1000l;
+			}
+			return diff;
+		}
+		return 365 * 24 * 60 * 60;// default is a year
+	}
+	
+	/**
+	 * @return the difference in milliseconds
+	 */
 	private long getRequestTimeStampDifferenceToNow() {
 		long diff = 0l;
 		if(currentRequestTimestamp != null) {

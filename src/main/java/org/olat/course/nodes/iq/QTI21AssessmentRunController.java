@@ -99,6 +99,9 @@ import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+
 /**
  * 
  * Initial date: 19.05.2015<br>
@@ -112,6 +115,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private Link startButton, showResultsButton, hideResultsButton, signatureDownloadLink;
 	private final VelocityContainer mainVC;
+	private final VelocityContainer disclaimerVC;
 	
 	private boolean assessmentStopped = true;
 	
@@ -155,6 +159,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
 		mainVC.setDomReplaceable(false); // DOM ID set in velocity
+		
+		disclaimerVC = createVelocityContainer("assessment_disclaimer");
+		disclaimerVC.setDomReplacementWrapperRequired(false);
+		mainVC.put("disclaimer", disclaimerVC);
 						
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
@@ -195,10 +203,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					//screenreader do not like iframes, display inline
 					IFrameDisplayController iFrameCtr = new IFrameDisplayController(ureq, getWindowControl(), baseContainer);
 					listenTo(iFrameCtr);//dispose automatically
-					mainVC.put("disc", iFrameCtr.getInitialComponent());
+					disclaimerVC.put("disc", iFrameCtr.getInitialComponent());
 					iFrameCtr.setCurrentURI(sDisclaimer);
-					mainVC.contextPut("hasDisc", Boolean.TRUE);
-					mainVC.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
+					disclaimerVC.contextPut("hasDisc", Boolean.TRUE);
+					disclaimerVC.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
 				}
 			}
 		}
@@ -221,7 +229,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else {
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
-		
+		// configure date period
+		mainVC.contextPut("blockDate", Boolean.valueOf(blockedBasedOnDate()));
+		// time limit
+		Long timeLimit = getAssessmentTestMaxTimeLimit();
+		if(timeLimit != null) {
+			mainVC.contextPut("timeLimit", Formatter.formatHourAndSeconds(timeLimit.longValue() * 1000l));
+		}
+
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			if (assessableCourseNode.hasScoreConfigured() || userCourseEnv.isCoach()){
@@ -318,10 +333,37 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				exposeResults(ureq, resultsVisible);
 			}
 		}
-		
 	}
 	
-	private void checkChats (UserRequest ureq) {
+	private boolean blockedBasedOnDate() {
+		mainVC.contextRemove("startTestDate");
+		mainVC.contextRemove("endTestDate");
+		
+		boolean dependOnDate = config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
+		if(dependOnDate) {
+			Date startTestDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_TEST_DATE);
+			if(startTestDate != null) {
+				Formatter formatter = Formatter.getInstance(getLocale());
+				mainVC.contextPut("startTestDate", formatter.formatDateAndTime(startTestDate));
+				
+				Date endTestDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE);
+				if(endTestDate != null) {
+					mainVC.contextPut("endTestDate", formatter.formatDateAndTime(endTestDate));
+				}
+				Date now = new Date();
+				if(startTestDate != null && startTestDate.after(now)) {
+					return true;
+				}
+	
+				if(endTestDate != null && endTestDate.before(now)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private void checkChats(UserRequest ureq) {
 		List<?> allChats = null;
 		if (ureq != null) {
 			allChats = ureq.getUserSession().getChats();
@@ -611,6 +653,25 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
+	/**
+	 * @return The maximum time limit in seconds.
+	 */
+	private Long getAssessmentTestMaxTimeLimit() {
+		if(overrideOptions != null && overrideOptions.getAssessmentTestMaxTimeLimit() != null) {
+			Long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit();
+			return timeLimits.longValue() > 0 ? timeLimits.longValue() : null;
+		}
+		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+			return assessmentTest.getTimeLimits().getMaximum().longValue();
+		}
+		return null;
+	}
+	
 	private QTI21DeliveryOptions getDeliveryOptions() {
 		QTI21DeliveryOptions testOptions = qtiService.getDeliveryOptions(testEntry);
 		QTI21DeliveryOptions finalOptions = testOptions.clone();
@@ -645,17 +706,26 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private QTI21OverrideOptions getOverrideOptions() {
-		QTI21OverrideOptions finalOptions = QTI21OverrideOptions.nothingOverriden();
 		boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+		Long maxTimeLimit = null;
 		if(!configRef) {
-			Long maxTimeLimit = null;
 			int timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
 			if(timeLimit > 0) {
 				maxTimeLimit = new Long(timeLimit);
 			}
-			finalOptions = new QTI21OverrideOptions(maxTimeLimit);
 		}
-		return finalOptions;
+		
+		Date startTestDate = null;
+		Date endTestDate = null;
+		boolean dependOnDate = config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
+		if(dependOnDate) {
+			startTestDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_TEST_DATE);
+			if(startTestDate != null) {
+				endTestDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_TEST_DATE);
+			}
+		}
+		
+		return new QTI21OverrideOptions(maxTimeLimit, startTestDate, endTestDate);
 	}
 	
 	private void doCancelAssessment(UserRequest ureq) {

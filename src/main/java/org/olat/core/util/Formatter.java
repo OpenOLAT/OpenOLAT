@@ -373,6 +373,16 @@ public class Formatter {
 		}
 		return result;
 	}
+	
+	/**
+	 * Formats a duration in millis to "XX:YY".
+	 * 
+	 * @param timecode in milliseconds
+	 * @return formatted timecode
+	 */
+	public static String formatHourAndSeconds(long timecode) {
+		return DurationFormatUtils.formatDuration(timecode, "H:mm", true);
+	}
 
 	/**
 	 * Format the given bytes to human readable format
