@@ -93,7 +93,7 @@ public class UsrPropCfgTableController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		rowToggleButtonsMap = new HashMap<String, FormToggle>();
+		rowToggleButtonsMap = new HashMap<>();
 
 		// custom formlayout out of the vc
 		propTableFlc = FormLayoutContainer.createCustomFormLayout("propTable", getTranslator(), velocity_root + "/propTable.html");
@@ -116,7 +116,7 @@ public class UsrPropCfgTableController extends FormBasicController {
 		List<UserPropertyHandler> myHandlerList = usrPropCfgMng.getUserPropertiesConfigObject().getPropertyHandlers();
 
 		// first search for all group-values in the propertyHandlers
-		List<String> allGroupValues = new ArrayList<String>();
+		List<String> allGroupValues = new ArrayList<>();
 		for (UserPropertyHandler handler : myHandlerList) {
 			String group = handler.getGroup();
 			if (!allGroupValues.contains(group)) allGroupValues.add(group);

@@ -21,7 +21,6 @@ package org.olat.modules.qpool.ui.admin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -50,11 +49,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
-import org.olat.core.util.i18n.I18nItem;
-import org.olat.core.util.i18n.ui.I18nItemChangedEvent;
-import org.olat.core.util.i18n.ui.TranslationToolI18nItemEditCrumbController;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
 import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
@@ -75,7 +73,7 @@ public class QItemTypesAdminController extends FormBasicController {
 	private CloseableModalController cmc;
 	private QItemTypeEditController editCtrl;
 	private DialogBoxController confirmDeleteCtrl;
-	private TranslationToolI18nItemEditCrumbController i18nItemEditCtr;
+	private SingleKeyTranslatorController singleKeyTrnsCtrl;
 	
 	private final QPoolService qpoolService;
 	
@@ -149,12 +147,10 @@ public class QItemTypesAdminController extends FormBasicController {
 				QItemType type = (QItemType)confirmDeleteCtrl.getUserObject();
 				doDelete(type);
 			}
-		} else if(source == i18nItemEditCtr) {
-			if(event instanceof I18nItemChangedEvent) {
-				reloadModel();
-				cmc.deactivate();
-				cleanUp();
-			}
+		} else if(source == singleKeyTrnsCtrl) {
+			reloadModel();
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -173,20 +169,16 @@ public class QItemTypesAdminController extends FormBasicController {
 	}
 	
 	private void doOpenTranslationTool(UserRequest ureq, QItemType row) {
-		Locale orgininalLocale = getLocale();
-		Locale varLocale = new Locale(orgininalLocale.getLanguage(), orgininalLocale.getCountry(), "__customizing");
+		String key2Translate = "item.type." + row.getType().toLowerCase();
 
-		I18nItem item = new I18nItem("org.olat.modules.qpool.ui", "item.type." + row.getType().toLowerCase(), varLocale, 1, 1);
-		List<I18nItem> i18nItems = new ArrayList<I18nItem>();
-		i18nItems.add(item);
+		String[] keys2Translate = { key2Translate };
+		singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
+				QuestionPoolMainEditorController.class);
+		listenTo(singleKeyTrnsCtrl);
 
-		i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, null, true);
-		listenTo(i18nItemEditCtr);
-		i18nItemEditCtr.initialzeI18nitemAsCurrentItem(ureq, item);
-
-		// Open in modal window
-		if (cmc != null) removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", i18nItemEditCtr.getInitialComponent());
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), "close", singleKeyTrnsCtrl.getInitialComponent(), true,
+				translate("translation"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -274,7 +266,7 @@ public class QItemTypesAdminController extends FormBasicController {
 
 		@Override
 		public void setObjects(List<QItemType> objects) {
-			types = new ArrayList<QItemType>(objects);
+			types = new ArrayList<>(objects);
 		}
 
 		@Override
@@ -302,7 +294,7 @@ public class QItemTypesAdminController extends FormBasicController {
 					String i18nKey = "item.type." + type.getType().toLowerCase();
 					String translation = getTranslator().translate(i18nKey);
 					if(translation.length() > 256) {
-						return i18nKey;
+						return getTranslator().translate("translation.missing");
 					}
 					return translation;
 				}

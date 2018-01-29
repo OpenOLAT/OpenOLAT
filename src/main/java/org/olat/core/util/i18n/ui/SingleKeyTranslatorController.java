@@ -101,14 +101,14 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
 
 		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
-		bundles = new ArrayList<I18nRowBundle>();
+		bundles = new ArrayList<>();
 		for (String key : enabledKeys) {
 			Locale loc = i18nMng.getLocaleOrNull(key);
 			if (loc != null) bundles.add(new I18nRowBundle(key, allOverlays.get(loc), loc));
 		}
 
 		// build the form
-		textElements = new HashMap<String, TextElement>();
+		textElements = new HashMap<>();
 		for (I18nRowBundle i18nRowBundle : bundles) {
 			uifactory.addStaticTextElement(LBL_NAME_PREFIX + i18nRowBundle.getLanguageKey(), null, i18nRowBundle.getKeyTranslator().getLocale()
 					.getDisplayLanguage(getLocale()), formLayout);
@@ -131,12 +131,8 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		formLayout.add(buttonLayout);
 	}
 
-	/**
-	 * @param ureq
-	 * @return
-	 */
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
