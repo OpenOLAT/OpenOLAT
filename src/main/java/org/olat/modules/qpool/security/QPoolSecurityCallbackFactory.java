@@ -59,8 +59,7 @@ public class QPoolSecurityCallbackFactory {
 
 	public QPoolSecurityCallback createQPoolSecurityCallback(Roles roles) {
 		QPoolSecurityCallback securityCallback = CoreSpringFactory.getImpl(QPoolSecurityCallbackImpl.class);
-		securityCallback.setAdmin(roles.isOLATAdmin());
-		securityCallback.setPoolAdmin(roles.isPoolAdmin());
+		securityCallback.setRoles(roles);
 		return securityCallback;
 	}
 

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.security;
 
+import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,18 +38,16 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 
 	private boolean admin = false;
 	private boolean poolAdmin = false;
+	private boolean olatAuthor = false;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 
 	@Override
-	public void setAdmin(boolean admin) {
-		this.admin = admin;
-	}
-
-	@Override
-	public void setPoolAdmin(boolean poolAdmin) {
-		this.poolAdmin = poolAdmin;
+	public void setRoles(Roles roles) {
+		this.admin = roles.isOLATAdmin();
+		this.poolAdmin = roles.isPoolAdmin();
+		this.olatAuthor = roles.isAuthor();
 	}
 
 	@Override
@@ -70,6 +69,12 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 	public boolean canUseReviewProcess() {
 		return qpoolModule.isReviewProcessEnabled();
 	}
+
+	@Override
+	public boolean canCreateTest() {
+		return admin || olatAuthor;
+	}
+
 
 	@Override
 	public boolean canEditAllQuestions() {
@@ -105,5 +110,4 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 	public boolean canConfigLicences() {
 		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigLicenses());
 	}
-
 }

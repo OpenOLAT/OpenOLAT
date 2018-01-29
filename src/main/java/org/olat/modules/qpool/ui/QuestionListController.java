@@ -224,7 +224,9 @@ public class QuestionListController extends AbstractItemListController implement
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
 		}
-		createTest = uifactory.addFormLink("create.test", formLayout, Link.BUTTON);
+		if (getSecurityCallback().canCreateTest()) {
+			createTest = uifactory.addFormLink("create.test", formLayout, Link.BUTTON);
+		}
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		if (getSecurityCallback().canUsePools() || getSecurityCallback().canUseGroups()) {
 			shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);

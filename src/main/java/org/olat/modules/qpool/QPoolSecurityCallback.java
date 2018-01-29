@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool;
 
+import org.olat.core.id.Roles;
+
 /**
  * 
  * Initial date: 05.12.2017<br>
@@ -27,10 +29,8 @@ package org.olat.modules.qpool;
  */
 public interface QPoolSecurityCallback {
 	
-	public void setAdmin(boolean admin);
+	public void setRoles(Roles roles);
 	
-	public void setPoolAdmin(boolean poolAdmin);
-
 	boolean canUseCollections();
 
 	boolean canUsePools();
@@ -38,6 +38,8 @@ public interface QPoolSecurityCallback {
 	boolean canUseGroups();
 
 	boolean canUseReviewProcess();
+	
+	boolean canCreateTest();
 
 	boolean canEditAllQuestions();
 	
