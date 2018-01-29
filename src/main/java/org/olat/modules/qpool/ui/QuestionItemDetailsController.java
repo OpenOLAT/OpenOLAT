@@ -19,8 +19,11 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -49,6 +52,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -67,6 +71,7 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QItemReviewEvent;
+import org.olat.modules.qpool.ui.events.QItemsProcessedEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.metadata.MetadatasController;
@@ -100,6 +105,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link sharePoolItemLink;
 	private Link exportItemLink;
 	private Link copyItemLink;
+	private Link convertItemLink;
 
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -112,6 +118,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private ReviewStartController reviewStartCtrl;	
 	private ReviewController reviewCtrl;
 	private DialogBoxController confirmEndOfLifeCtrl;
+	private CopyConfirmationController copyConfirmationCtrl;
+	private ConversionConfirmationController conversionConfirmationCtrl;
 	private DeleteConfirmationController deleteConfirmationCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private PoolsController selectPoolCtrl;
@@ -237,6 +245,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 		copyItemLink = LinkFactory.createToolLink("copy", translate("copy"), this);
 		copyItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_copy");
 		commandDropdown.addComponent(copyItemLink);
+		
+		if (QTIConstants.QTI_12_FORMAT.equals(metadatasCtrl.getItem().getFormat())) {
+			convertItemLink = LinkFactory.createToolLink("convert", translate("convert.item"), this);
+			convertItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_convert");
+			commandDropdown.addComponent(convertItemLink);
+		}
 		
 		if (qItemSecurityCallback.canDelete()) {
 			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
@@ -417,7 +431,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if(source == exportItemLink) {
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == copyItemLink) {
-			doCopy(ureq, metadatasCtrl.getItem());
+			doConfirmCopy(ureq, metadatasCtrl.getItem());
+		} else if(source == convertItemLink) {
+			doConfirmConversion(ureq, metadatasCtrl.getItem());
 		} else if(source == exportLogLink) {
 			doExportLog(ureq, metadatasCtrl.getItem());
 		} else if(source == nextItemLink) {
@@ -433,7 +449,15 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == selectGroupCtrl) {
+		if(source == copyConfirmationCtrl) {
+			doPostCopy(ureq, event);
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == conversionConfirmationCtrl) {
+			doPostConvert(ureq, event);
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == selectGroupCtrl) {
 			if(event instanceof BusinessGroupSelectionEvent) {
 				BusinessGroupSelectionEvent bge = (BusinessGroupSelectionEvent)event;
 				List<BusinessGroup> groups = bge.getGroups();
@@ -510,6 +534,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(copyConfirmationCtrl);
+		removeAsListenerAndDispose(conversionConfirmationCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(selectPoolCtrl);
 		removeAsListenerAndDispose(reviewCtrl);
@@ -517,6 +543,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(confirmEndOfLifeCtrl);
 		cmc = null;
+		copyConfirmationCtrl = null;
+		conversionConfirmationCtrl = null;
 		selectGroupCtrl = null;
 		selectPoolCtrl = null;
 		reviewCtrl = null;
@@ -620,18 +648,63 @@ public class QuestionItemDetailsController extends BasicController implements To
 			setQuestionController(ureq, reloadedItem, qItemSecurityCallback);
 		}
 	}
+	
+	private void doConfirmCopy(UserRequest ureq, QuestionItemShort item) {
+		copyConfirmationCtrl = new CopyConfirmationController(ureq, getWindowControl(), Collections.singletonList(item),
+				itemSource);
+		listenTo(copyConfirmationCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				copyConfirmationCtrl.getInitialComponent(), true, translate("confirm.copy.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 
-	private void doCopy(UserRequest ureq, QuestionItemShort item) {
-		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), Collections.singletonList(item));
-		if(copies.size() == 1) {
-			for (QuestionItem copy: copies) {
-				QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
-						Action.CREATE_QUESTION_ITEM_BY_COPY);
-				builder.withAfter(copy);
-				qpoolService.persist(builder.create());
+	private void doPostCopy(UserRequest ureq, Event event) {
+		if (event instanceof QItemsProcessedEvent) {
+			QItemsProcessedEvent ipEvent = (QItemsProcessedEvent) event;
+			int numberOfCopies = ipEvent.getNumberOfItems();
+			showInfo("item.copied", Integer.toString(numberOfCopies));
+			fireEvent(ureq, new QItemEvent("copy-item", ipEvent.getSuccessfullItems().get(0)));
+		}
+	}
+
+	private void doConfirmConversion(UserRequest ureq, QuestionItemShort item) {
+		Map<String,List<QuestionItemShort>> formatToItems = new HashMap<>();
+		List<QPoolSPI> spies = poolModule.getQuestionPoolProviders();
+		for(QPoolSPI sp:spies) {
+			if(sp != null && sp.isConversionPossible(item)) {
+				List<QuestionItemShort> convertItems;
+				if(formatToItems.containsKey(sp.getFormat())) {
+					convertItems = formatToItems.get(sp.getFormat());
+				} else {
+					convertItems = new ArrayList<>(1);
+					formatToItems.put(sp.getFormat(), Collections.singletonList(item));
+				}
+				convertItems.add(item);	
 			}
-			showInfo("item.copied", Integer.toString(copies.size()));
-			fireEvent(ureq, new QItemEvent("copy-item", copies.get(0)));
+		}
+		
+		conversionConfirmationCtrl = new ConversionConfirmationController(ureq, getWindowControl(), formatToItems,
+				itemSource);
+		listenTo(conversionConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				conversionConfirmationCtrl.getInitialComponent(), true, translate("convert.item"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doPostConvert(UserRequest ureq, Event event) {
+		if (event instanceof QItemsProcessedEvent) {
+			QItemsProcessedEvent ipEvent = (QItemsProcessedEvent) event;
+			int numberOfCopies = ipEvent.getNumberOfItems();
+			int numberOfFails = ipEvent.getNumberOfFails();
+			if(numberOfFails == 0) {
+				showInfo("convert.item.successful", new String[]{ Integer.toString(numberOfCopies)} );
+				fireEvent(ureq, new QItemEvent("convert-item", ipEvent.getSuccessfullItems().get(0)));
+			} else {
+				showWarning("convert.item.warning", new String[]{ Integer.toString(numberOfFails), Integer.toString(numberOfCopies) } );
+			}
 		}
 	}
 	

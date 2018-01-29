@@ -92,6 +92,7 @@ import org.olat.modules.qpool.ui.events.ExportFormatSelectionEvent;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
+import org.olat.modules.qpool.ui.events.QItemsProcessedEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.metadata.MetadataBulkChangeController;
@@ -131,8 +132,8 @@ public class QuestionListController extends AbstractItemListController implement
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
 	private CloseableModalController cmcShareItemToSource;
-	private DialogBoxController confirmCopyBox;
 	private DeleteConfirmationController deleteConfirmationCtrl;
+	private CopyConfirmationController copyConfirmationCtrl;
 	private DialogBoxController confirmRemoveBox;
 	private DialogBoxController confirmDeleteSourceBox;
 	private CreateTestTargetController createTestTargetCtrl;
@@ -560,18 +561,12 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == confirmCopyBox) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmCopyBox.getUserObject();
-				doCopy(ureq, items);
-			}
+		} else if(source == copyConfirmationCtrl) {
+			doPostCopy(ureq, event);
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == conversionConfirmationCtrl) {
-			if(event == Event.DONE_EVENT) {
-				List<QuestionItemShort> items = conversionConfirmationCtrl.getSelectedItems();
-				String format = conversionConfirmationCtrl.getSelectedFormat();
-				doConvert(ureq, items, format);
-			}
+			doPostConvert(ureq, event);
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == deleteConfirmationCtrl) {
@@ -590,7 +585,7 @@ public class QuestionListController extends AbstractItemListController implement
 		} else if(source == currentDetailsCtrl) {
 			if(event instanceof QItemEvent) {
 				QItemEvent qce = (QItemEvent)event;
-				if("copy-item".equals(qce.getCommand())) {
+				if("copy-item".equals(qce.getCommand()) || "convert-item".equals(qce.getCommand())) {
 					stackPanel.popUpToRootController(ureq);
 					doOpenDetails(ureq, qce.getItem());
 				} else if("previous".equals(qce.getCommand())) {
@@ -639,6 +634,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(createCollectionCtrl);
 		removeAsListenerAndDispose(conversionConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
+		removeAsListenerAndDispose(copyConfirmationCtrl);
 		cmc = null;
 		addController = null;
 		createTestOverviewCtrl = null;
@@ -649,6 +645,7 @@ public class QuestionListController extends AbstractItemListController implement
 		createCollectionCtrl = null;
 		conversionConfirmationCtrl = null;
 		deleteConfirmationCtrl = null;
+		copyConfirmationCtrl = null;
 	}
 	
 	protected void updateRows(List<QuestionItem> items) {
@@ -835,6 +832,7 @@ public class QuestionListController extends AbstractItemListController implement
 			cmcShareItemToSource.activate();
 			listenTo(cmcShareItemToSource);
 		} else {
+			qpoolService.index(importItems);
 			int postImported = getSource().postImport(importItems, true);
 			if(postImported > 0) {
 				getItemsTable().reset();
@@ -898,6 +896,7 @@ public class QuestionListController extends AbstractItemListController implement
 					Object editableCtx = runContext.get("editable");
 					editable = (editableCtx instanceof Boolean) ? ((Boolean)editableCtx).booleanValue() : false;
 				}
+				qpoolService.index(importItems);
 				int postImported = getSource().postImport(importItems, editable);
 				if(postImported > 0) {
 					getItemsTable().reset();
@@ -949,6 +948,7 @@ public class QuestionListController extends AbstractItemListController implement
 					Object editableCtx = runContext.get("editable");
 					editable = (editableCtx instanceof Boolean) ? ((Boolean)editableCtx).booleanValue() : false;
 				}
+				qpoolService.index(importItems);
 				int postImported = getSource().postImport(importItems, editable);
 				if(postImported > 0) {
 					getItemsTable().reset();
@@ -1212,26 +1212,25 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 
 	protected void doConfirmCopy(UserRequest ureq, List<QuestionItemShort> items) {
-		String title = translate("copy");
-		String text = translate("copy.confirmation");
-		confirmCopyBox = activateYesNoDialog(ureq, title, text, confirmCopyBox);
-		confirmCopyBox.setUserObject(items);
+		copyConfirmationCtrl = new CopyConfirmationController(ureq, getWindowControl(), items, getSource());
+		listenTo(copyConfirmationCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				copyConfirmationCtrl.getInitialComponent(), true, translate("confirm.copy.title"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
-	
-	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {
-		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), items);
-		for (QuestionItem copy: copies) {
-			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
-					Action.CREATE_QUESTION_ITEM_BY_COPY);
-			builder.withAfter(copy);
-			qpoolService.persist(builder.create());
+
+	private void doPostCopy(UserRequest ureq, Event event) {
+		if (event instanceof QItemsProcessedEvent) {
+			QItemsProcessedEvent ipEvent = (QItemsProcessedEvent) event;
+			int numberOfCopies = ipEvent.getNumberOfItems();
+			showInfo("item.copied", Integer.toString(numberOfCopies));
+			getItemsTable().reset();
+			fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 		}
-		getItemsTable().reset();
-		showInfo("item.copied", Integer.toString(copies.size()));
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 	}
 	
-	protected void doConfirmConversion(UserRequest ureq, List<QuestionItemShort> items) {
+	private void doConfirmConversion(UserRequest ureq, List<QuestionItemShort> items) {
 		Map<String,List<QuestionItemShort>> formatToItems = new HashMap<>();
 		List<QPoolSPI> spies = qpoolModule.getQuestionPoolProviders();
 		for(QuestionItemShort item:items) {
@@ -1252,7 +1251,8 @@ public class QuestionListController extends AbstractItemListController implement
 		if(formatToItems.isEmpty()) {
 			showWarning("convert.item.not.possible");
 		} else {
-			conversionConfirmationCtrl = new ConversionConfirmationController(ureq, getWindowControl(), formatToItems);
+			conversionConfirmationCtrl = new ConversionConfirmationController(ureq, getWindowControl(), formatToItems,
+					getSource());
 			listenTo(conversionConfirmationCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -1262,36 +1262,20 @@ public class QuestionListController extends AbstractItemListController implement
 		}
 	}
 	
-	protected void doConvert(UserRequest ureq, List<QuestionItemShort> items, String format) {
-		QPoolSPI sp = qpoolModule.getQuestionPoolProvider(format);
-		
-		int count = 0;
-		List<QuestionItem> convertedQuestions = new ArrayList<>(items.size());
-		for(QuestionItemShort item:items) {
-			QuestionItem convertedQuestion = sp.convert(getIdentity(), item, getLocale());
-			if(convertedQuestion != null) {
-				convertedQuestions.add(convertedQuestion);
-				count++;
+	private void doPostConvert(UserRequest ureq, Event event) {
+		if (event instanceof QItemsProcessedEvent) {
+			QItemsProcessedEvent ipEvent = (QItemsProcessedEvent) event;
+			int numberOfCopies = ipEvent.getNumberOfItems();
+			int numberOfFails = ipEvent.getNumberOfFails();
+			if(numberOfFails == 0) {
+				showInfo("convert.item.successful", new String[]{ Integer.toString(numberOfCopies)} );
+			} else {
+				showWarning("convert.item.warning", new String[]{ Integer.toString(numberOfFails), Integer.toString(numberOfCopies) } );
 			}
-			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
-					Action.CREATE_QUESTION_ITEM_BY_CONVERSION);
-			builder.withAfter(convertedQuestion);
-			qpoolService.persist(builder.create());
+			
+			getItemsTable().reset();
+			fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 		}
-		
-		if(count == items.size()) {
-			showInfo("convert.item.successful", new String[]{ Integer.toString(count)} );
-		} else {
-			int errors = items.size() - count;
-			showWarning("convert.item.warning", new String[]{ Integer.toString(errors), Integer.toString(items.size()) } );
-		}
-		
-		getItemsTable().reset();
-		
-		//commit before sending events and indexing
-		dbInstance.commit();
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
-		qpoolService.index(convertedQuestions);
 	}
 	
 	private void doShareItemsToGroups(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {

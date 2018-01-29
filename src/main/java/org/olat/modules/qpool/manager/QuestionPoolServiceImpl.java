@@ -302,6 +302,23 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public List<QuestionItem> convertItems(Identity cloner, List<QuestionItemShort> itemsToConvert,  String format, Locale locale) {
+		QPoolSPI sp = qpoolModule.getQuestionPoolProvider(format);
+		
+		List<QuestionItem> convertedQuestions = new ArrayList<>(itemsToConvert.size());
+		for(QuestionItemShort item: itemsToConvert) {
+			QuestionItem convertedQuestion = sp.convert(cloner, item, locale);
+			if(convertedQuestion != null) {
+				convertedQuestions.add(convertedQuestion);
+			}
+		}
+		
+		dbInstance.commit();
+		index(convertedQuestions);
+		return convertedQuestions;
+	}
+
+	@Override
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale,  String filename, File file) {
 		List<QuestionItem> importedItem = null;
 		List<QPoolSPI> providers = qpoolModule.getQuestionPoolProviders();

@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui.datasource;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.Pool;
@@ -56,9 +57,29 @@ public class PoolItemsSource extends DefaultItemsSource {
 	}
 
 	@Override
+	public boolean askAddToSource() {
+		return true;
+	}
+
+	@Override
+	public boolean askAddToSourceDefault() {
+		return false;
+	}
+
+	@Override
+	public String getAskToSourceText(Translator translator) {
+		return translator.translate("pool.add.to.source", new String[] {pool.getName()});
+	}
+
+	@Override
+	public void addToSource(List<QuestionItem> items, boolean editable) {
+		qpoolService.addItemsInPools(items, Collections.singletonList(pool), editable);
+	}
+
+	@Override
 	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
-		qpoolService.addItemsInPools(items, Collections.singletonList(pool), editable);
+		addToSource(items, editable);
 		return items.size();
 	}
 

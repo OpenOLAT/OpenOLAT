@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
@@ -42,6 +43,26 @@ public class MyItemsSource extends DefaultItemsSource {
 	@Override
 	public boolean askEditable() {
 		return false;
+	}
+
+	@Override
+	public boolean askAddToSource() {
+		return false;
+	}
+
+	@Override
+	public boolean askAddToSourceDefault() {
+		return false;
+	}
+
+	@Override
+	public String getAskToSourceText(Translator translator) {
+		return "";
+	}
+
+	@Override
+	public void addToSource(List<QuestionItem> items, boolean editable) {
+		//
 	}
 
 	@Override

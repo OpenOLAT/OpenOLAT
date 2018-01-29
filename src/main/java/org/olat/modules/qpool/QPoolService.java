@@ -134,6 +134,9 @@ public interface QPoolService {
 	
 	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 
+	public List<QuestionItem> convertItems(Identity cloner, List<QuestionItemShort> itemsToConvert, String format,
+			Locale locale);
+
 	//pools
 	public List<Pool> getPools(Identity identity, Roles roles);
 	

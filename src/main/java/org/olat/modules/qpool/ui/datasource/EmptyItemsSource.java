@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
@@ -113,6 +114,26 @@ public class EmptyItemsSource implements QuestionItemsSource {
 	@Override
 	public void setStatusFilter(QuestionStatus questionStatus) {
 		// not enabled
+	}
+
+	@Override
+	public boolean askAddToSource() {
+		return false;
+	}
+
+	@Override
+	public boolean askAddToSourceDefault() {
+		return false;
+	}
+
+	@Override
+	public String getAskToSourceText(Translator translator) {
+		return "";
+	}
+
+	@Override
+	public void addToSource(List<QuestionItem> items, boolean editable) {
+		//
 	}
 
 	@Override

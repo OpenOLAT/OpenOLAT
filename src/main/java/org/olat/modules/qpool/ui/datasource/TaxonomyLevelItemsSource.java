@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
@@ -46,6 +47,26 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
+	}
+
+	@Override
+	public boolean askAddToSource() {
+		return false;
+	}
+
+	@Override
+	public boolean askAddToSourceDefault() {
+		return false;
+	}
+
+	@Override
+	public String getAskToSourceText(Translator translator) {
+		return "";
+	}
+
+	@Override
+	public void addToSource(List<QuestionItem> items, boolean editable) {
+		//
 	}
 
 	@Override

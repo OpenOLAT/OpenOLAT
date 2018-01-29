@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
@@ -68,6 +69,14 @@ public interface QuestionItemsSource {
 		
 	public void setStatusFilter(QuestionStatus questionStatus);
 	
+	public boolean askAddToSource();
+
+	public boolean askAddToSourceDefault();
+
+	public String getAskToSourceText(Translator translator);
+	
+	public void addToSource(List<QuestionItem> items, boolean editable);
+
 	public int postImport(List<QuestionItem> items, boolean editable);
 	
 	public void removeFromSource(List<QuestionItemShort> items);

@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -146,9 +147,29 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public boolean askAddToSource() {
+		return true;
+	}
+
+	@Override
+	public boolean askAddToSourceDefault() {
+		return true;
+	}
+
+	@Override
+	public String getAskToSourceText(Translator translator) {
+		return translator.translate("collection.add.to.source", new String[] {collection.getName()});
+	}
+
+	@Override
+	public void addToSource(List<QuestionItem> items, boolean editable) {
+		qpoolService.addItemToCollection(items, Collections.singletonList(collection));
+	}
+
+	@Override
 	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
-		qpoolService.addItemToCollection(items, Collections.singletonList(collection));
+		addToSource(items, editable);
 		return items.size();
 	}
 
