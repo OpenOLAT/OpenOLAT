@@ -39,6 +39,8 @@ import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,12 +51,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -105,6 +109,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
+	private TextComponent summaryComp;
+	private ToggleBoxController summaryCtrl;
 	private UserCommentsController commentsCtrl;
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
@@ -152,8 +158,21 @@ public class TableOfContentController extends BasicController implements TooledC
 		mainVC.contextPut("isTemplate", secCallback.canNewAssignment());
 		mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 		
+		summaryComp = TextFactory.createTextComponentFromString("summaryCmp" + CodeHelper.getRAMUniqueID(), "", null,
+				false, null);
+		summaryCtrl = new ToggleBoxController(ureq, wControl, getGuiPrefsKey(binder), translate("summary.open"),
+				translate("summary.close"), summaryComp);
+		
 		putInitialPanel(mainVC);
 		loadModel();
+	}
+	
+	private String getGuiPrefsKey(OLATResourceable binderOres) {
+		return new StringBuilder()
+				.append(binderOres.getResourceableTypeName())
+				.append("::")
+				.append(binderOres.getResourceableId())
+				.toString();
 	}
 	
 	public int getNumOfSections() {
@@ -226,6 +245,13 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	protected void loadModel() {
 		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
+
+		if (StringHelper.containsNonWhitespace(binder.getSummary())) {
+			summaryComp.setText(binder.getSummary());
+			mainVC.put("summary", summaryCtrl.getInitialComponent());
+		} else {
+			mainVC.remove("summary");
+		}
 		
 		List<SectionRow> sectionRows = new ArrayList<>();
 		Map<Long,SectionRow> sectionMap = new HashMap<>();
@@ -429,7 +455,8 @@ public class TableOfContentController extends BasicController implements TooledC
 
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(summaryCtrl);
+		summaryCtrl = null;
 	}
 	
 	@Override
@@ -482,6 +509,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			if(event == Event.DONE_EVENT) {
 				binder = binderMetadataCtrl.getBinder();
 				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

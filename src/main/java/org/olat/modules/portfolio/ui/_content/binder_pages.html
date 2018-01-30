@@ -10,8 +10,14 @@
 		</div>
 		#end
 	</div>
-	
+
 	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
+		#if($r.available("summary"))
+			<div class="o_block_large_bottom">
+				$r.render("summary")
+			</div>
+		#end	
+	
 		$r.render("table")
 		
 		#if($r.available("create.new.section"))
