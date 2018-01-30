@@ -52,7 +52,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QEducationalContext;
-import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
 import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
@@ -173,7 +172,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 
 		String[] keys2Translate = { key2Translate };
 		singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
-				QuestionPoolMainEditorController.class);
+				QuestionsController.class);
 		listenTo(singleKeyTrnsCtrl);
 
 		removeAsListenerAndDispose(cmc);
