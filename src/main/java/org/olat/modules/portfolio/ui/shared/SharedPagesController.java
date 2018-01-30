@@ -311,9 +311,11 @@ public class SharedPagesController extends FormBasicController implements Activa
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(pageCtrl == source) {
-			if(event instanceof ClosePageEvent || event instanceof DonePageEvent) {
+			if(event instanceof ClosePageEvent) {
 				loadModel(false, false);
 				stackPanel.popController(pageCtrl);
+			} else if(event instanceof DonePageEvent) {
+				loadModel(false, false);
 			}
 		}
 		super.event(ureq, source, event);

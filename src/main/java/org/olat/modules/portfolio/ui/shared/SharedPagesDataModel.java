@@ -68,7 +68,9 @@ public class SharedPagesDataModel extends DefaultFlexiTableDataModel<SharedPageR
 	@Override
 	public void filter(List<FlexiTableFilter> filters) {
 		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
-		if(StringHelper.containsNonWhitespace(key)) {
+		if("all".equals(key)) {
+			super.setObjects(backups);
+		} else if(StringHelper.containsNonWhitespace(key)) {
 			List<String> allowedStatus = filters.stream()
 					.map(f -> f.getFilter()).collect(Collectors.toList());
 			List<SharedPageRow> filteredRows = backups.stream()

@@ -1082,10 +1082,28 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				filter.setSelected(false);
 			}
 		} else if(multiFilterSelection) {
+			boolean showAll = false;
 			for(FlexiTableFilter filter:filters) {
-				if(filter.getFilter().equals(filterKey)) {
-					filter.setSelected(!filter.isSelected());
+				if(filter.getFilter().equals(filterKey) && filter.isShowAll()) {
+					showAll = !filter.isSelected();//Show all is currently not selected, but the event will toggle it
 				}
+			}
+			
+			if(showAll) {
+				for(FlexiTableFilter filter:filters) {
+					filter.setSelected(filter.isShowAll());
+				}
+			} else {
+				for(FlexiTableFilter filter:filters) {
+					if(filter.isShowAll()) {
+						filter.setSelected(false);
+					} else if(filter.getFilter().equals(filterKey)) {
+						filter.setSelected(!filter.isSelected());
+					}
+				}
+			}
+
+			for(FlexiTableFilter filter:filters) {
 				if(filter.isSelected()) {
 					selectedFilters.add(filter);
 				}
