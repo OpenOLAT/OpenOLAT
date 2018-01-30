@@ -98,6 +98,8 @@ public class ProfileFormController extends FormBasicController {
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
+	private boolean portraitDeleted = false;
+	private boolean logoDeleted = false;
 	private boolean emailChanged = false;
 	private String changedEmail;
 	private String currentEmail;
@@ -386,19 +388,12 @@ public class ProfileFormController extends FormBasicController {
 		 if (source == portraitUpload) {
 			if(event instanceof FileElementEvent) {
 				if(FileElementEvent.DELETE.equals(event.getCommand())) {
-					File img = dps.getLargestPortrait(identityToModify.getName());
+					portraitDeleted = true;
+					portraitUpload.setInitialFile(null);
 					if(portraitUpload.getUploadFile() != null) {
 						portraitUpload.reset();
-						if(img != null) {
-							portraitUpload.setInitialFile(img);
-						}
-					} else if(img != null) {
-						dps.deletePortrait(identityToModify);
-						portraitUpload.setInitialFile(null);
-						notifyPortraitChanged();
 					}
 					flc.setDirty(true);
-					
 				}
 			} else if (portraitUpload.isUploadSuccess()) {
 				flc.setDirty(true);
@@ -406,19 +401,12 @@ public class ProfileFormController extends FormBasicController {
 		} else if (source == logoUpload) {
 			if(event instanceof FileElementEvent) {
 				if(FileElementEvent.DELETE.equals(event.getCommand())) {
-					File img = dps.getLargestLogo(identityToModify.getName());
+					logoDeleted = true;
+					logoUpload.setInitialFile(null);
 					if(logoUpload.getUploadFile() != null) {
 						logoUpload.reset();
-						if(img != null) {
-							logoUpload.setInitialFile(img);
-						}
-					} else if(img != null) {
-						dps.deleteLogo(identityToModify);
-						logoUpload.setInitialFile(null);
-						notifyPortraitChanged();
 					}
 					flc.setDirty(true);
-					
 				}
 			} else if (logoUpload.isUploadSuccess()) {
 				flc.setDirty(true);
@@ -445,11 +433,27 @@ public class ProfileFormController extends FormBasicController {
 			}
 		}
 		
+		if (portraitDeleted) {
+			File img = dps.getLargestPortrait(identityToModify.getName());
+			if(img != null) {
+				dps.deletePortrait(identityToModify);
+				notifyPortraitChanged();
+			}
+		}
+		
 		File uploadedImage = portraitUpload.getUploadFile();
 		String uploadedFilename = portraitUpload.getUploadFileName();
 		if(uploadedImage != null) {
 			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify.getName());
 			notifyPortraitChanged();
+		}
+		
+		if (logoDeleted) {
+			File img = dps.getLargestLogo(identityToModify.getName());
+			if(img != null) {
+				dps.deleteLogo(identityToModify);
+				notifyPortraitChanged();
+			}
 		}
 		
 		if(logoUpload != null) {
