@@ -296,9 +296,6 @@ public class UserDeletionManager extends BasicManager {
 		//remove identity from groups
 		groupDao.removeMemberships(identity);
 
-		//remove all advance orders in auto-booking access manager
-		autoAccessManager.deleteAdvanceOrders(identity);
-
 		String key = identity.getUser().getProperty("emchangeKey", null);
 		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
 		if (tempKey != null) {

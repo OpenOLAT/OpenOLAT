@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -43,6 +44,7 @@ import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderInput;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +56,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AutoAccessManagerImpl implements AutoAccessManager {
+public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletable {
 
 	private static final OLog log = Tracing.createLoggerFor(AutoAccessManagerImpl.class);
 
@@ -217,6 +219,11 @@ public class AutoAccessManagerImpl implements AutoAccessManager {
 	private void makeOrder(OfferAccess offerAccess, AdvanceOrder advanceOrder) {
 		Identity identity = advanceOrder.getIdentity();
 		acService.accessResource(identity, offerAccess, null);
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		deleteAdvanceOrders(identity);
 	}
 
 }
