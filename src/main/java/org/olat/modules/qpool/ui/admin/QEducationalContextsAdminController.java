@@ -292,8 +292,8 @@ public class QEducationalContextsAdminController extends FormBasicController {
 				case levelI18n: {
 					String i18nKey = "item.level." + level.getLevel().toLowerCase();
 					String translation = getTranslator().translate(i18nKey);
-					if(translation.length() > 256) {
-						return getTranslator().translate("translation.missing");
+					if(i18nKey.equals(translation) || translation.length() > 256) {
+						return level.getLevel();
 					}
 					return translation;
 				}
