@@ -176,9 +176,9 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 					log.error("Not able to migrate question title: " + item, e);
 				}
 			}
-			log.info(counter + " QPool items processed.");
 			counter += items.size();
 			dbInstance.commitAndCloseSession();
+			log.info(counter + " QPool items processed.");
 		} while(items.size() == BATCH_SIZE);
 	}
 
@@ -197,7 +197,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 			item.setTitle(title);
 			dbInstance.getCurrentEntityManager().merge(item);
 		} else {
-			throw new RuntimeException("No title found for QPool item");
+			log.warn("Not able to migrate question title of QPool item (no title found). dir: " + item.getDirectory() + ", " + item);
 		}
 	}
 
@@ -211,26 +211,36 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 				title = getTitleQTI12(item);
 				break;
 			default:
-				log.error("Not able to migrate question title. QPool item has no valid format: " + item);
+				log.warn("QPool item has no valid format for title migration: " + item.getFormat() + ", " + item);
 		}
 		return title;
 	}
 
 	private String getTitleQTI21(QuestionItemImpl item) {
-		File resourceDirectory = qpoolService.getRootDirectory(item);
-		File resourceFile = qpoolService.getRootFile(item);
-		URI assessmentItemUri = resourceFile.toURI();
-		
-		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
-				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
-		
-		return resolvedAssessmentItem.getRootNodeLookup().getRootNodeHolder().getRootNode().getTitle();
+		try {
+			File resourceDirectory = qpoolService.getRootDirectory(item);
+			File resourceFile = qpoolService.getRootFile(item);
+			URI assessmentItemUri = resourceFile.toURI();
+			
+			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+			
+			return resolvedAssessmentItem.getRootNodeLookup().getRootNodeHolder().getRootNode().getTitle();
+		} catch (NullPointerException e) {
+			log.warn("Cannot read files from dir: " + item.getDirectory());
+		}
+		return null;
 	}
 
 	private String getTitleQTI12(QuestionItemImpl item) {
-		VFSLeaf leaf = qpoolService.getRootLeaf(item);
-		Item xmlItem = QTIEditHelper.readItemXml(leaf);
-		return xmlItem.getTitle();
+		try {
+			VFSLeaf leaf = qpoolService.getRootLeaf(item);
+			Item xmlItem = QTIEditHelper.readItemXml(leaf);
+			return xmlItem.getTitle();
+		} catch (NullPointerException e) {
+			log.warn("Cannot read files from dir: " + item.getDirectory());
+		}
+		return null;
 	}
 	
 	private boolean migrateDialogElements(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
