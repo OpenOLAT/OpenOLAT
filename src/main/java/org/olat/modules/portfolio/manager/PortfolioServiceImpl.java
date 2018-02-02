@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -87,6 +88,7 @@ import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioElement;
 import org.olat.modules.portfolio.PortfolioElementType;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -115,6 +117,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -411,31 +414,26 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Assignment startAssignment(Assignment assignment, Identity author) {
-		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
-		if(reloadedAssignment.getAssignmentType() == AssignmentType.essay) {
-			if(reloadedAssignment.getPage() == null) {
-				Section section = reloadedAssignment.getSection();
+	public Assignment startAssignment(Long assignmentKey, Identity author) {
+		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignmentKey);
+		if (reloadedAssignment.getPage() == null) {
+			Section section = reloadedAssignment.getSection();
+			if (reloadedAssignment.getAssignmentType() == AssignmentType.essay
+					|| reloadedAssignment.getAssignmentType() == AssignmentType.document) {
 				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, null, section);
 				reloadedAssignment = assignmentDao.startEssayAssignment(reloadedAssignment, page, author);
-			}
-		} else if(reloadedAssignment.getAssignmentType() == AssignmentType.document) {
-			if(reloadedAssignment.getPage() == null) {
-				Section section = reloadedAssignment.getSection();
-				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, null, section);
-				reloadedAssignment = assignmentDao.startEssayAssignment(reloadedAssignment, page, author);
-			}
-		} else if(reloadedAssignment.getAssignmentType() == AssignmentType.form) {
-			if(reloadedAssignment.getPage() == null) {
-				Section section = reloadedAssignment.getSection();
+			} else if (reloadedAssignment.getAssignmentType() == AssignmentType.form) {
 				RepositoryEntry formEntry = reloadedAssignment.getFormEntry();
 				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, false, null, section);
 				reloadedAssignment = assignmentDao.startFormAssignment(reloadedAssignment, page, author);
-				//create the session for the assignee
+				// create the session for the assignee
 				evaluationFormSessionDao.createSessionForPortfolio(author, page.getBody(), formEntry);
 			}
 		}
 		dbInstance.commit();
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_ASSIGNMENT_STARTED, getClass(),
+				LoggingResourceable.wrap(reloadedAssignment.getSection()),
+				LoggingResourceable.wrap(reloadedAssignment));
 		return reloadedAssignment;
 	}
 

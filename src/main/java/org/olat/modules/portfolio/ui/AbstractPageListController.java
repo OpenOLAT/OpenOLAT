@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -299,7 +301,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 		if(elRow.getPoster() != null) {
 			components.add(elRow.getPoster());
-			
+		}
+		if(elRow.getStartSelection() != null) {
+			components.add(elRow.getStartSelection().getComponent());
 		}
 		return components;
 	}
@@ -319,7 +323,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected PortfolioElementRow forgeSectionRow(Section section, AssessmentSection assessmentSection,
-			List<Assignment> assignments, Map<OLATResourceable,List<Category>> categorizedElementMap) {
+			List<Assignment> assignments, Map<OLATResourceable, List<Category>> categorizedElementMap) {
 		
 		PortfolioElementRow row = new PortfolioElementRow(section, assessmentSection,
 				config.isAssessable(), (assignments != null && assignments.size() > 0));
@@ -330,6 +334,32 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
+
+		if (assignments != null && secCallback.canViewPendingAssignments(section)
+				&& secCallback.canInstantiateAssignment()) {
+			List<Assignment> startableAssignments = assignments.stream()
+					.filter(ass -> ass.getAssignmentStatus() == AssignmentStatus.notStarted)
+					.filter(ass -> ass.getPage() == null)
+					.collect(Collectors.toList());
+			if (!startableAssignments.isEmpty()) {
+				String[] keys = new String[startableAssignments.size() + 1];
+				String[] values = new String[startableAssignments.size() + 1];
+				keys[0] = "start.assignment.hint";
+				values[0] = translate("start.assignment.hint");
+				int count = 1;
+				for (Assignment assignment: startableAssignments) {
+					keys[count] = Long.toString(assignment.getKey());
+					values[count] = assignment.getTitle();
+					count++;
+				}
+		
+				SingleSelection startEl = uifactory.addDropdownSingleselect("assignments_" + (++counter), "", flc, keys,
+						values, null);
+				startEl.setDomReplacementWrapperRequired(false);
+				startEl.addActionListener(FormEvent.ONCHANGE);
+				row.setStartSelection(startEl);
+			}
+		}
 		return row;
 	}
 	
@@ -342,8 +372,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", title, null, flc, Link.NONTRANSLATED);
 				startLink.setUserObject(row);
 				startLink.setIconLeftCSS("o_icon o_icon_assignment o_icon-fw");
-			
-				startLink.getComponent().setTitle(translate("start.assignment.hint"));
 				row.setInstantiateAssignmentLink(startLink);
 			}
 		} else if(secCallback.canNewAssignment()) {
@@ -629,6 +657,17 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doMoveDownAssignment(ureq, row);
 			}
+		} else if(source instanceof SingleSelection) {
+			SingleSelection startAssignment = (SingleSelection) source;
+			if(startAssignment.isOneSelected()) {
+				String selectedKey = startAssignment.getSelectedKey();
+				try {
+					Long key = Long.parseLong(selectedKey);
+					doStartAssignment(ureq, key);
+				} catch (Exception e) {
+					//
+				}
+			}
 		} else if(source == flc) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String category = ureq.getParameter("tag_select");
@@ -690,11 +729,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected Assignment doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
-		Assignment assignment = row.getAssignment();
-		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
-		row.setAssignment(startedAssigment);
+		return doStartAssignment(ureq, row.getAssignment().getKey());
+	}
+	
+	private Assignment doStartAssignment(UserRequest ureq, Long assignmentKey) {
+		Assignment startedAssigment = portfolioService.startAssignment(assignmentKey, getIdentity());
 		doOpenPage(ureq, startedAssigment.getPage(), true);
-		loadModel(ureq, null);//TODO only update the links
+		loadModel(ureq, null);
 		return startedAssigment;
 	}
 	

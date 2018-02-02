@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -55,10 +56,6 @@ public class PortfolioElementRow {
 	
 	private final boolean assessable;
 	private final boolean assignments;
-	// calculated by the sort
-	private boolean lastAssignmentToInstantiate;
-	// calculated by the sort
-	private boolean sectionWithAssignmentToInstantiate;
 
 	private Collection<String> pageCategories;
 	private Collection<String> sectionCategories;
@@ -71,6 +68,7 @@ public class PortfolioElementRow {
 	// assignment
 	private FormLink newAssignmentLink, editAssignmentLink, deleteAssignmentLink,
 		instantiateAssignmentLink, upAssignmentLink, downAssignmentLink, moveAssignmentLink;
+	private SingleSelection startSelection;
 	
 	private ImageComponent poster;
 	
@@ -401,22 +399,6 @@ public class PortfolioElementRow {
 		this.downAssignmentLink = downAssignmentLink;
 	}
 	
-	public boolean isLastAssignmentToInstantiate() {
-		return lastAssignmentToInstantiate;
-	}
-
-	public void setLastAssignmentToInstantiate(boolean lastAssignmentToInstantiate) {
-		this.lastAssignmentToInstantiate = lastAssignmentToInstantiate;
-	}
-
-	public boolean isSectionWithAssignmentToInstantiate() {
-		return sectionWithAssignmentToInstantiate;
-	}
-	
-	public void setSectionWithAssignmentToInstantiate(boolean instatiate) {
-		sectionWithAssignmentToInstantiate = instatiate;
-	}
-	
 	public boolean isAssignmentToInstantiate() {
 		return instantiateAssignmentLink != null;
 	}
@@ -429,6 +411,14 @@ public class PortfolioElementRow {
 		this.instantiateAssignmentLink = instantiateAssignmentLink;
 	}
 	
+	public SingleSelection getStartSelection() {
+		return startSelection;
+	}
+
+	public void setStartSelection(SingleSelection startSelection) {
+		this.startSelection = startSelection;
+	}
+
 	public boolean isSectionEnded() {
 		return section != null && section.getEndDate() != null && new Date().after(section.getEndDate());
 	}

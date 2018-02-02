@@ -60,7 +60,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -72,7 +71,6 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageUserInformations;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
@@ -82,7 +80,6 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.user.UserManager;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -684,10 +681,7 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	protected Assignment doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
 		if(secCallback.canInstantiateAssignment()) {
-			Assignment startedAssigment = super.doStartAssignment(ureq, row);
-			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_ASSIGNMENT_STARTED, getClass(),
-					LoggingResourceable.wrap(row.getSection()), LoggingResourceable.wrap(startedAssigment));
-			return startedAssigment;
+			return super.doStartAssignment(ureq, row);
 		} else if(secCallback.canNewAssignment()) {
 			doEditAssignment(ureq, row);
 		}
