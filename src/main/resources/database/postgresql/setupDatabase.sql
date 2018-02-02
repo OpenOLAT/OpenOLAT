@@ -837,6 +837,7 @@ create table o_ac_offer (
   resourcetypename varchar(255),
   resourcedisplayname varchar(255),
   autobooking bool not null default false,
+  confirmation_email bool default false,
   token varchar(255),
   price_amount DECIMAL,
   price_currency_code VARCHAR(3),

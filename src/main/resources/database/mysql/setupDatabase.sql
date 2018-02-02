@@ -973,6 +973,7 @@ create table  if not exists o_ac_offer (
   resourcetypename varchar(255),
   resourcedisplayname varchar(255),
   autobooking boolean default 0,
+  confirmation_email bit default 0,
   token varchar(255),
   price_amount DECIMAL(12,4),
   price_currency_code VARCHAR(3),

@@ -24,7 +24,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,7 +37,7 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 /**
  * 
  * Description:<br>
- * Add a check box to the standard access control controller
+ * Wrapper for the resource's access control.
  * 
  * <P>
  * Initial Date:  26 avr. 2011 <br>
@@ -75,21 +74,10 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 		setFormTitle("accesscontrol.title");
 		setFormDescription("accesscontrol_group.desc");
 		setFormContextHelp("Group Administration#gruppensystem_buchung_ag");
+		formLayout.setElementCssClass("o_block_large_bottom");
 
 		if(configController != null) {
 			formLayout.add(configController.getInitialFormItem());
-		}
-		
-		if(configController != null && !managed) {
-			uifactory.addSpacerElement("spacer1", formLayout, false);
-		}
-		
-		if(!managed) {
-			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-			buttonGroupLayout.setRootForm(mainForm);
-			formLayout.add(buttonGroupLayout);
-			
-			uifactory.addFormSubmitButton("save", formLayout);
 		}
 	}
 	
@@ -109,10 +97,7 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(configController != null) {
-			configController.formOK(ureq);
-		}
-		fireEvent(ureq, Event.DONE_EVENT);
+		//
 	}
 
 	@Override

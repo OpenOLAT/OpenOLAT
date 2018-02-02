@@ -80,6 +80,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
@@ -700,7 +701,7 @@ public class PublishProcess {
 		return publishTreeModel;
 	}
 
-	public void changeGeneralAccess(Identity author, int access, boolean membersOnly){
+	public void changeGeneralAccess(Identity author, int access, boolean membersOnly) {
 		RepositoryManager.getInstance().setAccess(repositoryEntry, access, membersOnly);
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
@@ -718,6 +719,16 @@ public class PublishProcess {
 		// 1: add new and update existing offerings
 		ACService acService = CoreSpringFactory.getImpl(ACService.class);
 		for (OfferAccess newLink : offerAccess) {
+			if(accessAndProps.getConfirmationEmail() != null) {
+				Offer offer = newLink.getOffer();
+				boolean confirmation = accessAndProps.getConfirmationEmail().booleanValue();
+				if(offer.isConfirmationEmail() != confirmation) {
+					offer.setConfirmationEmail(confirmation);
+					if(offer.getKey() != null) {
+						offer = acService.save(offer);
+					}
+				}
+			}
 			acService.saveOfferAccess(newLink);
 		}
 		// 2: remove offerings not available anymore
@@ -777,6 +788,7 @@ public class PublishProcess {
 			this.skippableNodes = new ArrayList<CourseEditorTreeNode>();
 		}
 
+		@Override
 		public void visit(INode node) {
 			/*
 			 * DO NOT add or delete nodes via editorTreeModel, .....................
@@ -787,10 +799,10 @@ public class PublishProcess {
         // root node changed and published
         CourseNode clone = (CourseNode)XStreamHelper.xstreamClone(cetn.getCourseNode());
         resultingCourseRun.setRootNode(clone);
-        editorModelModifiedNodes.add(cetn);// TODO:pb: Review	Change to fic OLAT-1644
+        editorModelModifiedNodes.add(cetn);
         return;
 			}
-      if (cetn == root) { // TODO:pb: Review Change to fix OLAT-1644
+      if (cetn == root) {
       	// root node
         CourseNode clone = (CourseNode)XStreamHelper.xstreamClone(cetn.getCourseNode());
         resultingCourseRun.setRootNode(clone);
@@ -818,7 +830,6 @@ public class PublishProcess {
 					// already published, add it as it is. Silent "re-publish"
 					addNodeTo(resultingCourseRun, cetn);
         } else {
-          // TODO:pb:REVIEW Change to fix OLAT-1644
         	// changed in edit but not published => take old from existingRun
         	addNodeTo(resultingCourseRun, existingRun.getNode(cetn.getIdent()), cetn);
         }
@@ -908,7 +919,6 @@ public class PublishProcess {
 			parentClone.addChild(clone);
 		}
 
-    //	 TODO:pb:REVIEW Change to fix OLAT-1644
 		/**
 		 * @param newRunStruct
 		 * @param cetn
@@ -926,19 +936,15 @@ public class PublishProcess {
 		/**
 		 * flat list of all CourseEditorTreeNodes starting from root
 		 * 
-		 * @param root
+		 * @param treeNode
 		 * @param rootNodeWithSubtree
 		 */
-		private void collectSubTreeNodesStartingFrom(CourseEditorTreeNode root, List<CourseEditorTreeNode> rootNodeWithSubtree) {
-			for (int i = 0; i < root.getChildCount(); i++) {
-				CourseEditorTreeNode node = (CourseEditorTreeNode)root.getChildAt(i);
+		private void collectSubTreeNodesStartingFrom(CourseEditorTreeNode treeNode, List<CourseEditorTreeNode> rootNodeWithSubtree) {
+			for (int i = 0; i < treeNode.getChildCount(); i++) {
+				CourseEditorTreeNode node = (CourseEditorTreeNode)treeNode.getChildAt(i);
 				rootNodeWithSubtree.add(node);
 				collectSubTreeNodesStartingFrom(node, rootNodeWithSubtree);
 			}
 		}
 	}// end nested class
-
-
-	
-	
 }

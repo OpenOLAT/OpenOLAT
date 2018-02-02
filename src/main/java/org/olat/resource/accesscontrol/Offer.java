@@ -68,5 +68,9 @@ public interface Offer extends Persistable {
 	public boolean isAutoBooking();
 	
 	public void setAutoBooking(boolean autoBooking);
+	
+	public boolean isConfirmationEmail();
+
+	public void setConfirmationEmail(boolean confirmationEmail);
 
 }

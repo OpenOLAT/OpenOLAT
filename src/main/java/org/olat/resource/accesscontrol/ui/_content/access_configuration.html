@@ -12,6 +12,12 @@
 		#if ($off_info) <div class="o_info">$off_info</div> #end
 	</div></div>
 #end
+	#if($r.visible("confirmation.email"))
+	<div class="form-group">
+		<label class="control-label col-sm-3">$r.translate("confirmation.email")</label>
+		<div class="col-sm-9">$r.render("confirmation.email")</div>
+	</div>
+	#end
 	<div class="form-group">
 		<label class="control-label col-sm-3">$r.translate("ac.methods.label") $r.render("acMethodsLabelHelp")</label>
 		<div class="col-sm-9">$r.render("conf-controllers")</div>

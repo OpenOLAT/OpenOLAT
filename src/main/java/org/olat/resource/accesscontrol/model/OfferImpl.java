@@ -98,6 +98,8 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	private String token;
 	@Column(name="autobooking", nullable=true, insertable=true, updatable=true)
 	private boolean autoBooking;
+	@Column(name="confirmation_email", nullable=true, insertable=true, updatable=true)
+	private boolean confirmationEmail;
 
 	@Column(name="resourceid", nullable=true, insertable=true, updatable=true)
 	private Long resourceId;
@@ -182,6 +184,7 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 		this.validTo = validTo;
 	}
 
+	@Override
 	public Long getResourceId() {
 		return resourceId;
 	}
@@ -190,6 +193,7 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 		this.resourceId = resourceId;
 	}
 
+	@Override
 	public String getResourceTypeName() {
 		return resourceTypeName;
 	}
@@ -198,6 +202,7 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 		this.resourceTypeName = resourceTypeName;
 	}
 
+	@Override
 	public String getResourceDisplayName() {
 		return resourceDisplayName;
 	}
@@ -215,13 +220,23 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
+	@Override
 	public boolean isAutoBooking() {
 		return autoBooking;
 	}
-	
+
+	@Override
 	public void setAutoBooking(boolean autoBooking) {
 		this.autoBooking = autoBooking;
+	}
+
+	public boolean isConfirmationEmail() {
+		return confirmationEmail;
+	}
+
+	public void setConfirmationEmail(boolean confirmationEmail) {
+		this.confirmationEmail = confirmationEmail;
 	}
 
 	public String getToken() {

@@ -75,6 +75,19 @@ public class RepositoryMailing {
 	}
 	
 	/**
+	 * The mail template when adding users to a course.
+	 * 
+	 * @param re
+	 * @param actor
+	 * @return the generated MailTemplate
+	 */
+	public static MailTemplate createAddAutoParticipantMailTemplate(RepositoryEntry re, Identity actor) {
+		String subjectKey = "notification.mail.added.auto.subject";
+		String bodyKey = "notification.mail.added.auto.body";
+		return createMailTemplate(re, actor, subjectKey, bodyKey);
+	}
+	
+	/**
 	 * The mail template when adding tutors to a course.
 	 * 
 	 * @param re
@@ -119,6 +132,8 @@ public class RepositoryMailing {
 		switch(type) {
 			case addParticipant:
 				return createAddParticipantMailTemplate(re, ureqIdentity);
+			case addParticipantItself:
+				return createAddAutoParticipantMailTemplate(re, ureqIdentity);
 			case addTutor:
 				return createAddTutorMailTemplate(re, ureqIdentity);
 			case addOwner:
@@ -131,7 +146,7 @@ public class RepositoryMailing {
 		return null;
 	}
 
-	protected static void sendEmail(Identity ureqIdentity, Identity identity, RepositoryEntry re,
+	public static void sendEmail(Identity ureqIdentity, Identity identity, RepositoryEntry re,
 			Type type, MailPackage mailing) {
 		
 		if(mailing != null && !mailing.isSendEmail()) {
@@ -181,7 +196,8 @@ public class RepositoryMailing {
 		addTutor,
 		removeTutor,
 		addOwner,
-		removeOwner
+		removeOwner,
+		addParticipantItself
 	}
 	
 	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {

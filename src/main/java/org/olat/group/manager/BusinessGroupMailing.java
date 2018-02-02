@@ -126,7 +126,12 @@ public class BusinessGroupMailing {
 
 		MailTemplate template = mailing == null ? null : mailing.getTemplate();
 		if(mailing == null || mailing.getTemplate() == null) {
-			template = getDefaultTemplate(type, group, ureqIdentity);
+			//booking by myself
+			if(type != null && type == MailType.addParticipant && ureqIdentity != null && ureqIdentity.equals(identity)) {
+				template = BGMailHelper.createAddMyselfMailTemplate(group, ureqIdentity);
+			} else {
+				template = getDefaultTemplate(type, group, ureqIdentity);
+			}
 		} else if(group != null && template.getContext() != null && needTemplateEnhancement(template)) {
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);

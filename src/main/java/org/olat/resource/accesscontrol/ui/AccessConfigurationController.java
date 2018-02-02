@@ -24,14 +24,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -64,8 +63,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class AccessConfigurationController extends FormBasicController {
+	
+	private static final String[] onKeys = new String[] { "on" };
 
-	private List<FormLink> addMethods = new ArrayList<FormLink>();
+	private MultipleSelectionElement confirmationEmailEl;
+	private final List<FormLink> addMethods = new ArrayList<>();
+	
 	private final String displayName;
 	private final OLATResource resource;
 
@@ -73,7 +76,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private FormLayoutContainer confControllerContainer;
 	private AbstractConfigurationMethodController newMethodCtrl, editMethodCtrl;
 
-	private final List<AccessInfo> confControllers = new ArrayList<AccessInfo>();
+	private final List<AccessInfo> confControllers = new ArrayList<>();
 
 	private final boolean embbed;
 	private final boolean emptyConfigGrantsFullAccess;
@@ -82,6 +85,8 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private final Formatter formatter;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -144,6 +149,11 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			((FormLayoutContainer)formLayout).contextPut("methods", addMethods);
 		}
+		
+		String[] onValues = new String[] { "" };
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys, onValues);
+		confirmationEmailEl.addActionListener(FormEvent.ONCHANGE);
+		confirmationEmailEl.setVisible(false);
 
 		String confPage = velocity_root + "/configuration_list.html";
 		confControllerContainer = FormLayoutContainer.createCustomFormLayout("conf-controllers", getTranslator(), confPage);
@@ -153,6 +163,15 @@ public class AccessConfigurationController extends FormBasicController {
 		loadConfigurations();
 
 		confControllerContainer.contextPut("confControllers", confControllers);
+
+		boolean confirmationEmail = false;
+		for(AccessInfo info:confControllers) {
+			Offer offer = info.getLink().getOffer();
+			confirmationEmail |= offer.isConfirmationEmail();
+		}
+		if(confirmationEmail) {
+			confirmationEmailEl.select(onKeys[0], true);
+		}
 
 		if(!embbed) {
 			setFormTitle("accesscontrol.title");
@@ -185,16 +204,6 @@ public class AccessConfigurationController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(addMethods.contains(source)) {
-			AccessMethod method = (AccessMethod)((Link)source).getUserObject();
-			addMethod(ureq, method);
-		} else {
-			super.event(ureq, source, event);
-		}
 	}
 
 	@Override
@@ -243,39 +252,21 @@ public class AccessConfigurationController extends FormBasicController {
 			String cmd = button.getCmd();
 			if("delete".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
-				acService.deleteOffer(infos.getLink().getOffer());
-				confControllers.remove(infos);
+				removeMethod(infos);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("edit".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
 				editMethod(ureq, infos);
 			}
+		} else if(confirmationEmailEl == source) {
+			setConfirmationEmail(confirmationEmailEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	public void formOK(UserRequest ureq) {
-		Map<String,FormItem> formItemMap = confControllerContainer.getFormComponents();
-
-		List<OfferAccess> links = new ArrayList<OfferAccess>();
-		for(AccessInfo info:confControllers) {
-			FormItem dateFrom = formItemMap.get("from_" + info.getLink().getKey());
-			if(dateFrom instanceof DateChooser) {
-				Date from = ((DateChooser)dateFrom).getDate();
-				info.getLink().setValidFrom(from);
-				info.getLink().getOffer().setValidFrom(from);
-			}
-
-			FormItem dateTo = formItemMap.get("to_" + info.getLink().getKey());
-			if(dateTo instanceof DateChooser) {
-				Date to = ((DateChooser)dateTo).getDate();
-				info.getLink().setValidTo(to);
-				info.getLink().getOffer().setValidTo(to);
-			}
-
-			links.add(info.getLink());
-		}
+		//
 	}
 
 	protected void loadConfigurations() {
@@ -320,6 +311,15 @@ public class AccessConfigurationController extends FormBasicController {
 			delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			confControllerContainer.add(delLink.getName(), delLink);
 		}
+		
+		updateConfirmationEmail();
+	}
+	
+	private void updateConfirmationEmail() {
+		if(confirmationEmailEl.isVisible() != !confControllers.isEmpty()) {
+			confirmationEmailEl.setVisible(!confControllers.isEmpty());
+			flc.setDirty(true);
+		}
 	}
 
 	private void editMethod(UserRequest ureq, AccessInfo infos) {
@@ -342,7 +342,9 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	protected void addMethod(UserRequest ureq, AccessMethod method) {
+		boolean confirmationEmail = confirmationEmailEl.isVisible() && confirmationEmailEl.isAtLeastSelected(1);
 		Offer offer = acService.createOffer(resource, displayName);
+		offer.setConfirmationEmail(confirmationEmail);
 		OfferAccess link = acService.createOfferAccess(offer, method);
 
 		removeAsListenerAndDispose(newMethodCtrl);
@@ -361,6 +363,23 @@ public class AccessConfigurationController extends FormBasicController {
 			OfferAccess newLink = acService.saveOfferAccess(link);
 			addConfiguration(newLink);
 		}
+	}
+	
+	private void removeMethod(AccessInfo infos) {
+		acService.deleteOffer(infos.getLink().getOffer());
+		confControllers.remove(infos);
+		updateConfirmationEmail();
+	}
+	
+	private void setConfirmationEmail(boolean confirmationEmail) {
+		for(AccessInfo info:confControllers) {
+			Offer offer = info.getLink().getOffer();
+			offer.setConfirmationEmail(confirmationEmail);
+			offer = acService.save(offer);
+		}
+		dbInstance.commit();//make sure all is on the dabatase
+		confControllers.clear();
+		loadConfigurations();
 	}
 
 	public class AccessInfo {

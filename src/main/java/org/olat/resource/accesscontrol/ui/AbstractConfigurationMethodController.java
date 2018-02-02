@@ -33,10 +33,6 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 
 /**
  * 
- * Description:<br>
- * TODO: srosse Class Description for AbstractConfigurationMethodController
- * 
- * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
@@ -73,6 +69,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	public abstract AccessMethod getMethod();
 
+	@Override
 	public FormItem getInitialFormItem() {
 		return flc;
 	}
