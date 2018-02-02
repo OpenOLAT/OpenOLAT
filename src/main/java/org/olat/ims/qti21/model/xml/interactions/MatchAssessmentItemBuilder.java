@@ -23,6 +23,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendAssociati
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultItemBody;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultOutcomeDeclarations;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendMatchInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendMatchInteractionTrueFalse;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendSetOutcomeFeedbackCorrect;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendSetOutcomeFeedbackIncorrect;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendSetOutcomeScoreMapResponse;
@@ -30,6 +31,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendSetOutcom
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createMatchResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +40,8 @@ import java.util.Map;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -80,6 +84,8 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  *
  */
 public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
+	
+	private static final OLog log = Tracing.createLoggerFor(MatchAssessmentItemBuilder.class);
 
 	private String question;
 	private boolean shuffle;
@@ -92,14 +98,19 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	 
 	
 	public MatchAssessmentItemBuilder(String title, String matchCssClass, QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(title, matchCssClass), qtiSerializer);
+		super(createAssessmentItem(title, matchCssClass, null, null, null), qtiSerializer);
+	}
+	
+	public MatchAssessmentItemBuilder(String title, String matchCssClass,
+			String unanswered, String right, String wrong, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title, matchCssClass, unanswered, right, wrong), qtiSerializer);
 	}
 	
 	public MatchAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem(String title, String matchCssClass) {
+	private static AssessmentItem createAssessmentItem(String title, String matchCssClass, String unanswered, String right, String wrong) {
 		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.match, title);
 		
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
@@ -107,20 +118,33 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		double maxScore = 1.0d;
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
 		//define correct answer
-		ResponseDeclaration responseDeclaration = createMatchResponseDeclaration(assessmentItem, responseDeclarationId, new HashMap<>(), maxScore);
+		ResponseDeclaration responseDeclaration = createMatchResponseDeclaration(assessmentItem, responseDeclarationId, new HashMap<>());
 		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
-		
 		appendDefaultOutcomeDeclarations(assessmentItem, maxScore);
 
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		MatchInteraction interaction = appendMatchInteraction(itemBody, responseDeclarationId);
+		Map<Identifier, List<Identifier>> associations = new HashMap<>();
+		MatchInteraction interaction;
+		if(QTI21Constants.CSS_MATCH_TRUE_FALSE.equals(matchCssClass)) {
+			interaction = appendMatchInteractionTrueFalse(itemBody, unanswered, right, wrong, responseDeclarationId);
+			
+			//default correct answers set to "right"
+			SimpleAssociableChoice rightChoice = interaction.getSimpleMatchSets().get(1).getSimpleAssociableChoices().get(1);
+			List<SimpleAssociableChoice> sourceChoices = interaction.getSimpleMatchSets().get(0).getSimpleAssociableChoices();
+			for(SimpleAssociableChoice sourceChoice:sourceChoices) {
+				List<Identifier> targetIdentifiers = new ArrayList<>();
+				targetIdentifiers.add(rightChoice.getIdentifier());
+				associations.put(sourceChoice.getIdentifier(), targetIdentifiers);
+			}
+		} else {
+			interaction = appendMatchInteraction(itemBody, responseDeclarationId);
+		}
 		List<String> cssClasses = new ArrayList<>();
 		cssClasses.add(matchCssClass);
 		interaction.setClassAttr(cssClasses);
 		
-		Map<Identifier, List<Identifier>> associations = new HashMap<>();
-		appendAssociationMatchResponseDeclaration(responseDeclaration, associations, 1.0);
+		appendAssociationMatchResponseDeclaration(responseDeclaration, associations);
 		
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -199,20 +223,22 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	private void extractMatchInteraction() {
-		StringOutput sb = new StringOutput();
-		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
-		for(Block block:blocks) {
-			if(block instanceof MatchInteraction) {
-				matchInteraction = (MatchInteraction)block;
-				responseIdentifier = matchInteraction.getResponseIdentifier();
-				shuffle = matchInteraction.getShuffle();
-				break;
-			} else {
-				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
+		try(StringOutput sb = new StringOutput()) {
+			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+			for(Block block:blocks) {
+				if(block instanceof MatchInteraction) {
+					matchInteraction = (MatchInteraction)block;
+					responseIdentifier = matchInteraction.getResponseIdentifier();
+					shuffle = matchInteraction.getShuffle();
+					break;
+				} else {
+					qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
+				}
 			}
+			question = sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
 		}
-
-		question = sb.toString();
 	}
 	
 	private void extractScoreEvaluationMode() {
@@ -244,8 +270,12 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	public QTI21QuestionType getQuestionType() {
 		if(matchInteraction != null) {
 			List<?> cssClassses = matchInteraction.getClassAttr();
-			if(cssClassses != null && cssClassses.contains(QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
-				return QTI21QuestionType.matchdraganddrop;
+			if(cssClassses != null) {
+				if(cssClassses.contains(QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
+					return QTI21QuestionType.matchdraganddrop;
+				} else if(cssClassses.contains(QTI21Constants.CSS_MATCH_TRUE_FALSE)) {
+					return QTI21QuestionType.matchtruefalse;
+				}
 			}
 		}
 		return QTI21QuestionType.match;
@@ -410,17 +440,13 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {
-		//need min. and max. score
-		double maxScore = getMaxScoreBuilder().getScore();
-		
 		//refresh correct response
 		ResponseDeclaration responseDeclaration;
 		if(assessmentItem.getResponseDeclaration(responseIdentifier) != null) {
 			responseDeclaration = assessmentItem.getResponseDeclaration(responseIdentifier);
-			appendAssociationMatchResponseDeclaration(responseDeclaration, associations, maxScore);
+			appendAssociationMatchResponseDeclaration(responseDeclaration, associations);
 		} else {
-			responseDeclaration =
-					createMatchResponseDeclaration(assessmentItem, responseIdentifier, associations, maxScore);
+			responseDeclaration = createMatchResponseDeclaration(assessmentItem, responseIdentifier, associations);
 			assessmentItem.getResponseDeclarations().add(responseDeclaration);
 		}
 		

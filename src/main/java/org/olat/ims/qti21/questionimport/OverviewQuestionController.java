@@ -127,6 +127,7 @@ public class OverviewQuestionController extends StepFormBasicController {
 				case essay: return translate("item.type.essay");
 				case match: return translate("item.type.match");
 				case matchdraganddrop: return translate("item.type.matchdraganddrop");
+				case matchtruefalse: return translate("item.type.matchtruefalse");
 				default: return "??";
 			}
 		}

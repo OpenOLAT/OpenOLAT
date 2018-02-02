@@ -746,7 +746,9 @@ public class AssessmentResultController extends FormBasicController {
 		}
 		
 		public String getScorePercent() {
-			if(maxScore == null) return null;
+			if(maxScore == null) {
+				return null;
+			}
 			if(score == null) return "0";
 			
 			double percent = (score / maxScore) * 100.0d;

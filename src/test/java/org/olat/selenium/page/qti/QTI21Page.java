@@ -196,8 +196,23 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * The method check text within a &lt;p&gt; element.
+	 * 
+	 * @param source Text in the source
+	 * @param target Text in the target
+	 * @param match Select or deselect
+	 * @return Itself
+	 */
 	public QTI21Page answerMatch(String source, String target, boolean match) {
 		By matchBy = By.xpath("//div[contains(@class,'matchInteraction')]/table//tr[th/p[contains(text(),'" + source + "')]]/td[count(//div[contains(@class,'matchInteraction')]/table//tr/th[p[contains(text(),'" + target + "')]]/preceding-sibling::th)]/input");
+		WebElement matchEl = browser.findElement(matchBy);
+		OOGraphene.check(matchEl, match);
+		return this;
+	}
+	
+	public QTI21Page answerMatch(String source, TrueFalse target, boolean match) {
+		By matchBy = By.xpath("//div[contains(@class,'matchInteraction')]/table//tr[td/p[contains(text(),'" + source + "')]]/td[" + (target.ordinal() + 1) + "]/input");
 		WebElement matchEl = browser.findElement(matchBy);
 		OOGraphene.check(matchEl, match);
 		return this;
@@ -242,6 +257,49 @@ public class QTI21Page {
 	public QTI21Page answerMatchDetarget(String source) {
 		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
 		browser.findElement(sourceDroppedBy).click();
+		return this;
+	}
+	
+	public QTI21Page answerAssociate(String source, int index, boolean left) {
+		By itemBy = By.xpath("//div[contains(@class,'o_associate_items')]/div[contains(@class,'o_associate_item')][contains(text(),'" + source + "')]");
+		WebElement itemEl = browser.findElement(itemBy);
+		By targetBy = By.xpath("//div[@class='association'][" + index + "]/div[contains(@class,'association_box')][contains(@class,'" + (left ? "left" : "right") + "')]");
+		WebElement targetEl = browser.findElement(targetBy);
+		new Actions(browser)
+			.moveToElement(itemEl, 10, 10)
+			.clickAndHold()
+			.moveToElement(targetEl, 10, 10)
+			.release()
+			.build()
+			.perform();
+		return this;
+	}
+	
+	public QTI21Page answerGraphicAssociate(String id) {
+		OOGraphene.waitElement(By.className("graphicAssociateInteraction"), browser);
+		By areaBy = By.xpath("//div[contains(@class,'graphicAssociateInteraction')]//map/area[@data-qti-id='" + id + "']");
+		List<WebElement> elements = browser.findElements(areaBy);
+		Assert.assertEquals("Area by " + id, 1, elements.size()); 
+		elements.get(0).click();
+		return this;
+	}
+	
+	public QTI21Page answerOrderDropItem(String source) {
+		By sourceBy = By.xpath("//li[contains(@class,'o_assessmentitem_order_item')][text()[contains(.,'" + source + "')]]");
+		OOGraphene.waitElement(sourceBy, 5, browser);
+		WebElement sourceEl = browser.findElement(sourceBy);
+		By targetBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul");
+		WebElement targetEl = browser.findElement(targetBy);
+		new Actions(browser)
+			.moveToElement(sourceEl, 30, 30)
+			.clickAndHold()
+			.moveToElement(targetEl, 30, 30)
+			.release()
+			.build()
+			.perform();
+
+		By sourceDroppedBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul/li[text()[contains(.,'" + source + "')]]");
+		OOGraphene.waitElement(sourceDroppedBy, 5, browser);
 		return this;
 	}
 	
@@ -448,6 +506,12 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page assertOnAssessmentItemScore(String title, int score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_qti_item')][div/h4[text()[contains(.,'" + title + "')]]]//tr[contains(@class,'o_sel_assessmentitem_score')]//span[@class='o_sel_assessmentitem_score'][contains(text(),'" + score + "')]");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
 	public QTI21Page assertOnAssessmentTestScore(String score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
@@ -605,5 +669,11 @@ public class QTI21Page {
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		return QTI21Page.getQTI12Page(browser);
+	}
+	
+	public enum TrueFalse {
+		unanswered,
+		right,
+		wrong
 	}
 }

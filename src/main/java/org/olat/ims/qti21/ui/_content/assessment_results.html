@@ -80,16 +80,15 @@
 			<td>
 				<div>
 				#if ($testResults.hasMaxScore())
-		    		#if ($testResults.maxScore == "-1.0")
+					#if ($testResults.maxScore == "-1.0")
 		  				$testResults.score $r.translate("results.points") ($r.translate("question.progress.noMaxScore"))
-		    		#else
+					#else
 		  				<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmenttest_score">$testResults.score</span> 
-		  				$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmenttest_maxscore">$testResults.maxScore</span> $r.translate("results.of.points")
+		  				$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmenttest_maxscore">$testResults.maxScore</span> $r.translate("results.of.points") (${testResults.scorePercent}%)
 		  			#end
 				#else
 					$testResults.score
 				#end
-				(${testResults.scorePercent}%)
 				</div>
 			</td>
 		</tr>
@@ -153,7 +152,7 @@
 	</div>	
 	</div> ## END left column / o_qti_metainfo_listing
 		
-	#if(${testResults.hasScore()})			
+	#if(${testResults.hasScore()} && ${testResults.hasMaxScore()})			
 	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-4 col-lg-3"> ## START right column
 	<div class="o_block_centered_wrapper"><div class="o_block_centered_content">
 		<div class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getPass().booleanValue()}) radial-progress-success #elseif(!${testResults.getPass().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
@@ -398,6 +397,7 @@
 							/ <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore">$itemResult.maxScore</span>
 						#end
 					</div>
+					#if(${itemResult.hasMaxScore()})
 					<div class="col-xs-6 col-md-8">
 						<div class="progress" style="width:100%;">
 							<div class="progress-bar" role="progressbar" aria-valuenow="$itemResult.score" aria-valuemin="0" aria-valuemax="$itemResult.maxScore" style="width:${itemResult.scorePercent}%;">
@@ -406,6 +406,7 @@
 						</div>
 					</div>
 					<div class="col-xs-1">${itemResult.scorePercent}%</div>
+					#end
 				</td> 
 			</tr>
 			#elseif(${itemResult.hasMaxScore()})

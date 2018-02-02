@@ -64,6 +64,7 @@ import org.olat.ims.qti21.ui.editor.interactions.MatchEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MatchScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.TrueFalseEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.UploadEditorController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -258,6 +259,7 @@ public class AssessmentItemEditorController extends BasicController {
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case match: itemBuilder = initMatchChoiceEditors(ureq, item); break;
 			case matchdraganddrop: itemBuilder = initMatchDragAndDropEditors(ureq, item); break;
+			case matchtruefalse: itemBuilder = initMatchTrueFalseEditors(ureq, item); break;
 			case hotspot: itemBuilder = initHotspotEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			case upload: itemBuilder = initUploadEditors(ureq, item); break;
@@ -336,7 +338,7 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile,
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, true,
 				restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
@@ -355,7 +357,26 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile,
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, true,
+				restrictedEdit, readOnly);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
+				restrictedEdit, readOnly);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.match"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		return matchItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initMatchTrueFalseEditors(UserRequest ureq, AssessmentItem item) {
+		MatchAssessmentItemBuilder matchItemBuilder = new MatchAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new TrueFalseEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
+		listenTo(itemEditor);
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, false,
 				restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,

@@ -51,6 +51,7 @@ import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderR
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderSingleCardinalityValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.valueContains;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
@@ -1026,6 +1027,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					interactionName += "_kprim";
 				} else if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
 					interactionName += "_dnd";
+				} else if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_TRUE_FALSE)) {
+					interactionName += "_truefalse";
 				} else if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_KPRIM)) {
 					interactionName += "_kprim";
 				}
@@ -1375,14 +1378,17 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Math math) {
 		
 		renderer.setMathXsltDisabled(true);
-		StringOutput mathOutput = StringOutputPool.allocStringBuilder(2048);
-		mathOutput.append("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">");
-		math.getContent().forEach((foreignElement)
-				-> renderMath(renderer, mathOutput, component, resolvedAssessmentItem, itemSessionState, foreignElement));
-		mathOutput.append("</math>");
-		String enrichedMathML = StringOutputPool.freePop(mathOutput);
-		renderer.setMathXsltDisabled(false);
-		transformMathmlAsString(sb, enrichedMathML);
+		try(StringOutput mathOutput = StringOutputPool.allocStringBuilder(2048)) {
+			mathOutput.append("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">");
+			math.getContent().forEach((foreignElement)
+					-> renderMath(renderer, mathOutput, component, resolvedAssessmentItem, itemSessionState, foreignElement));
+			mathOutput.append("</math>");
+			String enrichedMathML = StringOutputPool.freePop(mathOutput);
+			renderer.setMathXsltDisabled(false);
+			transformMathmlAsString(sb, enrichedMathML);
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	protected void renderMath(AssessmentRenderer renderer, StringOutput out, AssessmentObjectComponent component,

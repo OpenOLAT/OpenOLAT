@@ -866,6 +866,53 @@ tr.choiceinteraction {
 	}
 }
 
+/* Match true/false */
+.table.o_match_true_false_edit {
+	th.o_sel_match_target_0, th.o_sel_match_target_1, th.o_sel_match_target_2 {
+		width: 12%;
+	}
+}
+
+.match_true_false {
+
+	input[type="checkbox"] {
+		-webkit-appearance: radio;
+		-moz-appearance: radio;
+		-ms-appearance: radio;
+		appearance: radio;
+	}
+
+	.table>tbody>tr>td.o_match_true_false_unanswered,
+	.table>tbody>tr>td.o_match_true_false_right,
+	.table>tbody>tr>td.o_match_true_false_wrong {
+		vertical-align: middle;
+		width: 11%;
+	}
+	
+	th.o_match_true_false_unanswered,
+	th.o_match_true_false_right,
+	th.o_match_true_false_wrong {
+		width: 11%;
+	}
+	
+	td.o_match_true_false_answer,
+	th.o_match_true_false_answer {
+		width: 67%;
+	}
+	
+	td.o_match_true_false_unanswered {
+		background-color: $o-qti-match-true-false-unanswered-bg;
+	}
+	
+	td.o_match_true_false_right {
+		background-color: $o-qti-match-true-false-right-bg;
+	}
+	
+	td.o_match_true_false_wrong {
+		background-color: $o-qti-match-true-false-wrong-bg;
+	}
+}
+
 /* MathEntryInteraction styling for MathAssess */
 .o_assessmentitem .mathEntryInteraction {
 	border: 1px solid #ddedfc;

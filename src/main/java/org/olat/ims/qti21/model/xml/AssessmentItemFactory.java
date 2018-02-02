@@ -591,13 +591,13 @@ public class AssessmentItemFactory {
 		SimpleMatchSet sourceMatchSet = new SimpleMatchSet(matchInteraction);
 		matchInteraction.getSimpleMatchSets().add(sourceMatchSet);
 		
-		String[] classic = new String[]{ "A", "B" };
-		for(int i=0; i<2; i++) {
+		String[] sources = new String[]{ "A", "B" };
+		for(int i=0; i<sources.length; i++) {
 			SimpleAssociableChoice sourceChoice = new SimpleAssociableChoice(sourceMatchSet);
 			sourceChoice.setMatchMax(0);
 			sourceChoice.setMatchMin(0);
-			sourceChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
-			P question = getParagraph(sourceChoice, classic[i]);
+			sourceChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(sources[i]));
+			P question = getParagraph(sourceChoice, sources[i]);
 			sourceChoice.getFlowStatics().add(question);
 			sourceMatchSet.getSimpleAssociableChoices().add(sourceChoice);
 		}
@@ -605,18 +605,57 @@ public class AssessmentItemFactory {
 		SimpleMatchSet targetMatchSet = new SimpleMatchSet(matchInteraction);
 		matchInteraction.getSimpleMatchSets().add(targetMatchSet);
 		
-		String[] target = new String[]{ "M", "N" };
-		for(int i=0; i<2; i++) {
+		String[] targets = new String[]{ "M", "N" };
+		for(int i=0; i<targets.length; i++) {
 			SimpleAssociableChoice targetChoice = new SimpleAssociableChoice(sourceMatchSet);
 			targetChoice.setMatchMax(0);
 			targetChoice.setMatchMin(0);
-			targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(target[i]));
-			P question = getParagraph(targetChoice, target[i]);
+			targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(targets[i]));
+			P question = getParagraph(targetChoice, targets[i]);
 			targetChoice.getFlowStatics().add(question);
 			targetMatchSet.getSimpleAssociableChoices().add(targetChoice);
 		}
 		
 		return matchInteraction;
+	}
+	
+	public static MatchInteraction appendMatchInteractionTrueFalse(ItemBody itemBody,
+			String unanswered, String right, String wrong, Identifier responseDeclarationId) {
+		MatchInteraction matchInteraction = new MatchInteraction(itemBody);
+		matchInteraction.setResponseIdentifier(responseDeclarationId);
+		matchInteraction.setMaxAssociations(4);
+		matchInteraction.setShuffle(false);
+		itemBody.getBlocks().add(matchInteraction);
+		
+		PromptGroup prompts = new PromptGroup(matchInteraction);
+		matchInteraction.getNodeGroups().add(prompts);
+		
+		SimpleMatchSet sourceMatchSet = new SimpleMatchSet(matchInteraction);
+		matchInteraction.getSimpleMatchSets().add(sourceMatchSet);
+		
+		String[] sources = new String[]{ "A", "B" };
+		for(int i=0; i<sources.length; i++) {
+			appendSimpleAssociableChoice(sourceMatchSet, sources[i], 1, 1); 
+		}
+		
+		SimpleMatchSet targetMatchSet = new SimpleMatchSet(matchInteraction);
+		matchInteraction.getSimpleMatchSets().add(targetMatchSet);
+		String[] targets = new String[]{ unanswered, right, wrong };
+		for(int i=0; i<targets.length; i++) {
+			appendSimpleAssociableChoice(targetMatchSet, targets[i], 0, 0); 
+		}
+		
+		return matchInteraction;
+	}
+	
+	public static void appendSimpleAssociableChoice(SimpleMatchSet matchSet, String value, int matchMax, int matchMin) {
+		SimpleAssociableChoice choice = new SimpleAssociableChoice(matchSet);
+		choice.setMatchMax(matchMax);
+		choice.setMatchMin(matchMin);
+		choice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(value));
+		P question = getParagraph(choice, value);
+		choice.getFlowStatics().add(question);
+		matchSet.getSimpleAssociableChoices().add(choice);
 	}
 	
 	public static SimpleAssociableChoice createSimpleAssociableChoice(String text, SimpleMatchSet matchSet) {
@@ -629,22 +668,29 @@ public class AssessmentItemFactory {
 		return targetChoice;
 	}
 	
+	/**
+	 * Add the response declaration with correct answers (but without score mapping)
+	 * 
+	 * @param assessmentItem
+	 * @param declarationId
+	 * @param associations
+	 * @return
+	 */
 	public static ResponseDeclaration createMatchResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId,
-			Map<Identifier, List<Identifier>> associations, double maxScore) {
+			Map<Identifier, List<Identifier>> associations) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
 		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
 		responseDeclaration.setBaseType(BaseType.DIRECTED_PAIR);
-		return appendAssociationMatchResponseDeclaration(responseDeclaration, associations, maxScore);
+		return appendAssociationMatchResponseDeclaration(responseDeclaration, associations);
 	}
 	
 	public static ResponseDeclaration appendAssociationMatchResponseDeclaration(ResponseDeclaration responseDeclaration,
-			Map<Identifier, List<Identifier>> associations, double maxScore) {
+			Map<Identifier, List<Identifier>> associations) {
 		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
 		responseDeclaration.setBaseType(BaseType.DIRECTED_PAIR);
 
 		//correct response
-		int numOfassociations = 0;
 		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
 		responseDeclaration.setCorrectResponse(correctResponse);
 		for(Map.Entry<Identifier,List<Identifier>> association:associations.entrySet()) {
@@ -655,27 +701,6 @@ public class AssessmentItemFactory {
 				DirectedPairValue dpValue = new DirectedPairValue(sourceChoiceId, targetChoiceId);
 				FieldValue fValue = new FieldValue(correctResponse, dpValue);
 				correctResponse.getFieldValues().add(fValue);
-				numOfassociations++;
-			}
-		}
-		
-		double mappedValue = maxScore;
-		if(numOfassociations > 0) {
-			mappedValue = maxScore / numOfassociations;
-		}
-		
-		// mapping
-		Mapping mapping = new Mapping(responseDeclaration);
-		mapping.setDefaultValue(-mappedValue);
-		responseDeclaration.setMapping(mapping);
-		for(Map.Entry<Identifier,List<Identifier>> association:associations.entrySet()) {
-			Identifier sourceChoiceId = association.getKey();
-			List<Identifier> targetChoiceIds = association.getValue();
-			for(Identifier targetChoiceId:targetChoiceIds) {
-				MapEntry mapEntry = new MapEntry(mapping);
-				mapEntry.setMapKey(new DirectedPairValue(sourceChoiceId, targetChoiceId));
-				mapEntry.setMappedValue(mappedValue);
-				mapping.getMapEntries().add(mapEntry);
 			}
 		}
 		

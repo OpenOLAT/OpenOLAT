@@ -50,6 +50,7 @@ import org.olat.selenium.page.qti.QTI21MatchEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
+import org.olat.selenium.page.qti.QTI21Page.TrueFalse;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -143,6 +144,85 @@ public class ImsQTI21EditorTest extends Deployments {
 			.saveAnswer()
 			.answerCorrectKPrim("Deutschland", "Uruguay")
 			.answerIncorrectKPrim("Frankreich", "Spanien")
+			.saveAnswer()
+			.endTest();
+		
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(9)
+			.assertOnAssessmentTestMaxScore(9);
+	}
+	
+	/**
+	 * Create a test, import a CSV with some match variants,
+	 * remove the first single choice which come if someone
+	 * create a test. Change the delivery settings of the test
+	 * to show the detailled results.<br>
+	 * Run the test and check the results. 
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void importQuestionsCSVMatchVariants(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "ExcelMatch QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+
+		QTI21Page qtiPage = QTI21Page
+			.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+			.edit();
+		
+		// import a single choice, a multiple and 2 gap texts
+		qtiEditor
+			.importTable()
+			.importFile("qti21/import_qti21_excel_match.txt")
+			.next()
+			.assertOnNumberOfQuestions(3)
+			.finish();
+		
+		//remove the single choice which come from the creation
+		// of the test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		// go to options and show the results
+		qtiPage
+			.clickToolbarBack()
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//go to the test
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerMatch("Berlin", "Deutschland", true)
+			.answerMatch("Bern", "Schweiz", true)
+			.answerMatch("Paris", "Frankreich", true)
+			.saveAnswer()
+			.nextAnswer()
+			.assertOnAssessmentItem("Afrika")
+			.answerMatchDropSourceToTarget("Nairobi", "Kenia")
+			.answerMatchDropSourceToTarget("Windhoek", "Namibia")
+			.answerMatchDropSourceToTarget("Algier", "Algerien")
+			.saveAnswer()
+			.assertOnAssessmentItem("Europa")
+			.answerMatch("Paris", TrueFalse.right, true)
+			.answerMatch("Bern", TrueFalse.right, true)
+			.answerMatch("Stockholm", TrueFalse.wrong, true)
 			.saveAnswer()
 			.endTest();
 		
@@ -2524,6 +2604,184 @@ public class ImsQTI21EditorTest extends Deployments {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(12);// 4 points from the first question, 8 from the second	
+	}
+	
+
+	/**
+	 * An author make a test with 2 matches of the True/false variant. A match
+	 * with score "all answers", a second with score "per answers".<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMatchTrueFalse(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "True false QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a match, score "all answers"
+		QTI21MatchEditorPage matchEditor = qtiEditor
+			.addMatchTrueFalse();
+		matchEditor
+			.setSource(0, "Eclipse is a Java IDE")
+			.setSource(1, "vim is Database viewer")
+			.setMatch(0, 1, true)
+			.setMatch(1, 2, true)
+			.save();
+		// change max score
+		matchEditor
+			.selectScores()
+			.setMaxScore("4")
+			.save();
+		// set some feedbacks
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		// second match
+		matchEditor = qtiEditor
+			.addMatchTrueFalse()
+			.setSource(0, "Java has several IDE like Eclipse")
+			.setSource(1, "C is object oriented")
+			.addRow()
+			.setSource(2, "What do you think of PHP?")
+			.setMatch(0, 1, true)
+			.setMatch(1, 2, true)
+			.setMatch(2, 0, true)
+			.save();
+		// select score "per answer" and set the scores
+		matchEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("3")
+			.setScore(0, 0, "0.0")
+			.setScore(0, 1, "1.0")
+			.setScore(0, 2, "0.0")
+			.setScore(1, 0, "0.0")
+			.setScore(1, 1, "0.0")
+			.setScore(1, 2, "1.0")
+			.setScore(2, 0, "1.0")
+			.setScore(2, 1, "0.0")
+			.setScore(2, 2, "0.0")
+			.save();
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.answerMatch("Eclipse", TrueFalse.right, true)
+			.answerMatch("vim", TrueFalse.right, true)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerMatch("vim", TrueFalse.wrong, true)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatch("Java", TrueFalse.right, true)
+			.answerMatch("oriented", TrueFalse.wrong, true)
+			.answerMatch("PHP", TrueFalse.wrong, true)
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 4 points from the first question, 2 from the second
+		
+
+		//a second user search the content package
+		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		asukaLoginPage
+			.loginAs(asuka.getLogin(), asuka.getPassword())
+			.resume();
+		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		asukaNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerMatch("Eclipse", TrueFalse.right, true)
+			.answerMatch("vim", TrueFalse.wrong, true)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatch("Java", TrueFalse.right, true)
+			.answerMatch("oriented", TrueFalse.wrong, true)
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(7);// 4 points from the first question, 6 from the second
 	}
 
 	/**

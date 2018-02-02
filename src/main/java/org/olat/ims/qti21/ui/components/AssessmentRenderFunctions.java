@@ -46,7 +46,9 @@ import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
@@ -540,9 +542,21 @@ public class AssessmentRenderFunctions {
 	public static boolean valueContains(Value value, String string) {
 		if(value == null || value.isNull() || value instanceof NullValue) {
 			return false;
-		} else {
-			return value.toQtiString().contains(string);//TODO qti perhaps must match closer for MultipleValue
 		}
+		return value.toQtiString().contains(string);//TODO qti perhaps must match closer for MultipleValue
+	}
+	
+	/**
+	 * Return true if the answer is not answered
+	 * @param response
+	 * @param string
+	 * @return
+	 */
+	public static boolean trueFalseDefault(Value response, String targetIdentifier, MatchInteraction interaction) {
+		//first target is "unanswered"
+		SimpleAssociableChoice unansweredChoice = interaction.getSimpleMatchSets().get(1).getSimpleAssociableChoices().get(0);
+		return (targetIdentifier.equals(unansweredChoice.getIdentifier().toString())
+				&& (response == null || response.isNull() || response instanceof NullValue));
 	}
 	
 	/**
