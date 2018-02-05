@@ -303,6 +303,24 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Use the click and drop.
+	 * 
+	 * @param item The identifier of the item
+	 * @param gap The identifier of the gap
+	 * @return Itself
+	 */
+	public QTI21Page answerGraphicGapClick(String item, String gap) {
+		By sourceBy = By.xpath("//div[contains(@class,'gap_container')]/div[contains(@class,'o_gap_item')][@data-qti-id='" + item + "']");
+		OOGraphene.waitElement(sourceBy, 5, browser);
+		WebElement sourceEl = browser.findElement(sourceBy);
+		sourceEl.click();
+		By targetBy = By.xpath("//div[@class='graphicGapMatchInteraction']//map/area[@data-qti-id='" + gap + "']");
+		WebElement targetEl = browser.findElement(targetBy);
+		targetEl.click();
+		return this;
+	}
+	
 	public QTI21Page answerUpload(File file) {
 		By inputBy = By.cssSelector(".uploadInteraction input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
@@ -371,8 +389,57 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Check if the feedback with the specified content is visible.
+	 * 
+	 * @param text Text of the feedback.
+	 * @return Itself
+	 */
+	public QTI21Page assertFeedbackText(String text) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')][text()[contains(normalize-space(.),'" + text + "')]]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check if an inline feedback with the specified text
+	 * is visible.
+	 * 
+	 * @param text The text of the inline feedback
+	 * @return Itself
+	 */
+	public QTI21Page assertFeedbackInline(String text) {
+		By feedbackBy = By.xpath("//span[contains(@class,'feedbackInline')][text()[contains(normalize-space(.),'" + text + "')]]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check that no inline feedback with the specified text
+	 * is visible.
+	 * 
+	 * @param text The text of the inline feedback
+	 * @return Itself
+	 */
+	public QTI21Page assertNoFeedbackInline(String text) {
+		By feedbackBy = By.xpath("//span[contains(@class,'feedbackInline')][text()[contains(normalize-space(.),'" + text + "')]]");
+		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
+		return this;
+	}
+	
 	public QTI21Page assertNoFeedback(String title) {
 		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
+		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param text The text of the feedback
+	 * @return Itself
+	 */
+	public QTI21Page assertNoFeedbackText(String text) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')][text()[contains(normalize-space(.),'\" + text + \"')]]");
 		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
 		return this;
 	}

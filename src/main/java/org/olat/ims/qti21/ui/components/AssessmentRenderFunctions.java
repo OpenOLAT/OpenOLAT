@@ -527,14 +527,20 @@ public class AssessmentRenderFunctions {
 	//value-contains
 	public static final boolean valueContains(Value value, Identifier identifier) {
 		if(value != null && !value.isNull()) {
-			//TODO mimic the XSLT
-			return value.toQtiString().contains(identifier.toString());
-			/*
 			if(value.hasBaseType(BaseType.IDENTIFIER)) {
-				IdentifierValue identifierValue = (IdentifierValue)value;
-				return identifierValue.identifierValue().equals(identifier);
+				if(value.getCardinality().isSingle()) {
+					IdentifierValue identifierValue = (IdentifierValue)value;
+					return identifierValue.identifierValue().equals(identifier);
+				} else if(value.getCardinality().isList()) {
+					boolean contains = false;
+					for(IdentifierValue identifierValue : ((ListValue) value).values(IdentifierValue.class)) {
+						if(identifierValue.identifierValue().equals(identifier)) {
+							contains = true;
+						}
+					}
+					return contains;
+				}
 			}
-			*/
 		}
 		return false;
 	}

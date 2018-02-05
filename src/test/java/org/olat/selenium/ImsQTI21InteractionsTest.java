@@ -50,6 +50,8 @@ import org.openqa.selenium.WebDriver;
  *   <li>Associate
  *   <li>Graphic associate
  *   <li>Match
+ *   <li>Graphic Gap Match (with click and drop)
+ *   <li>End interaction with inline and modal feedbacks (classic hint)
  * </ul>
  * 
  * Initial date: 26 janv. 2018<br>
@@ -295,6 +297,113 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.assertOnAssessmentResults()
 			.assertOnAssessmentItemScore("Grand Prix of Bahrain", 1);
+	}
+	
+	/**
+	 * Check if hint with modal and inline feedbacks used
+	 * with choice interaction.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EndInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_end_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.hint()
+			.assertFeedbackText("Tony lives in the United Kingdom")
+			.answerSingleChoice("Tony")
+			.saveAnswer()
+			.assertFeedbackText("No, the correct answer is Vicente Fox")
+			.assertFeedbackInline("No, he is the Prime Minister of England.")
+			.assertNoFeedbackText("Tony lives in the United Kingdom")
+			.answerSingleChoice("George")
+			.saveAnswer()
+			.assertFeedbackText("No, the correct answer is Vicente Fox")
+			.assertFeedbackInline("No, he is the President of the USA.")
+			.assertNoFeedbackText("Tony lives in the United Kingdom")
+			.assertNoFeedbackInline("No, he is the Prime Minister of England.")
+			.answerSingleChoice("Vicente")
+			.saveAnswer()
+			.assertFeedbackText("Yes, that is correct")
+			.assertNoFeedbackText("Tony lives in the United Kingdom")
+			.assertNoFeedbackInline("No, he is the Prime Minister of England.")
+			.assertNoFeedbackInline("No, he is the President of the USA.")
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Mexican President", 1);
+	}
+	
+	/**
+	 * Check if hint with modal and inline feedbacks used
+	 * with choice interaction.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21GraphicGapInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Graphic Gap Match QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_gap_match_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerGraphicGapClick("GLA", "A")
+			.answerGraphicGapClick("EDI", "B")
+			.answerGraphicGapClick("MAN", "C")
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Airport Tags", 3);
 	}
 
 }
