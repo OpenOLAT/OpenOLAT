@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -80,7 +82,8 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 			DigitalSignatureOptions options, Date timestamp, Locale locale) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(candidateSession.getIdentity());
-		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
+		Identity assessedIdentity = candidateSession.getIdentity();
+		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(assessedIdentity);
 		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
 
 		
@@ -93,7 +96,12 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 				testEntry.getDisplayname(),	// {4}
 				fullname,					// {5}
 				Formatter.getInstance(locale)
-					.formatDateAndTime(assessedDate) // {6}
+					.formatDateAndTime(assessedDate), 								// {6}
+				assessedIdentity.getName(),											// {7}
+				assessedIdentity.getUser()
+					.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale),	// {8}
+				assessedIdentity.getUser()
+					.getProperty(UserConstants.INSTITUTIONALNAME, locale),			// {9}
 		};
 
 		String subject = translator.translate("digital.signature.mail.subject", args);
