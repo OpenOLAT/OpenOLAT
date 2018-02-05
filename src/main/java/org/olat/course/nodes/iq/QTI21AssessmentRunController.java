@@ -42,7 +42,9 @@ import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -785,7 +787,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			CourseEnvironment courseEnv, CourseNode courseNode, RepositoryEntry testEntry, Date timestamp, Locale locale)  {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(candidateSession.getIdentity());
-		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
+		Identity assessedIdentity = candidateSession.getIdentity();
+		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(assessedIdentity);
 		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
 
 		String[] args = new String[] {
@@ -796,7 +799,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				testEntry.getDisplayname(),						// {4}
 				fullname,										// {5}
 				Formatter.getInstance(locale)
-					.formatDateAndTime(assessedDate) 			// {6}
+					.formatDateAndTime(assessedDate), 			// {6}
+				assessedIdentity.getName(),											// {7}
+				assessedIdentity.getUser()
+					.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale),	// {8}
+				assessedIdentity.getUser()
+					.getProperty(UserConstants.INSTITUTIONALNAME, locale),			// {9}
 		};
 
 		Translator translator = Util.createPackageTranslator(QTI21AssessmentRunController.class, locale);
