@@ -801,6 +801,7 @@ public class BusinessGroupTest extends Deployments {
 		Assert.assertEquals(1, participants);
 		Assert.assertEquals(2, waitingList);
 	}
+	
 	/**
 	 * An author create a course, with an enrollment course element. It
 	 * configure it and create 3 groups and set the maximum enrollment counter to 2<br>
@@ -813,7 +814,6 @@ public class BusinessGroupTest extends Deployments {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-
 	@Test
 	@RunAsClient
 	public void enrollmentWithMultiEnrollment(@InitialPage LoginPage authorLoginPage,
