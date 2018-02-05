@@ -40,13 +40,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.Roles;
-import org.olat.portfolio.manager.EPFrontendManager;
-import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructureToStructureLink;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.EPTargetResource;
+import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
@@ -102,29 +101,55 @@ public class EPStructureManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetStructureElementsForUser(){
+	public void testGetStructureElementsForUser() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-1-");
 		
 		PortfolioStructure el = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "users-test-map", "a-map-to-test-get-afterwards");
-		assertNotNull(el);
+		Assert.assertNotNull(el);
 		dbInstance.commitAndCloseSession();
 		
 		List<SecurityGroup> secGroups = securityManager.getSecurityGroupsForIdentity(user);
-		assertNotNull(secGroups);
-		assertTrue(secGroups.size() >= 1);
+		Assert.assertNotNull(secGroups);
+		Assert.assertTrue(secGroups.size() >= 1);
 		
-		List<PortfolioStructure> elRes = epFrontendManager.getStructureElementsForUser(user);
-		assertNotNull(elRes);
-		assertTrue(elRes.size() == 1);
-		assertEquals( ((EPStructureElement)elRes.get(0)).getTitle(), "users-test-map");
+		List<PortfolioStructure> elRes = epStructureManager.getStructureElementsForUser(user, ElementType.DEFAULT_MAP);
+		Assert.assertNotNull(elRes);
+		Assert.assertEquals(1, elRes.size());
+		Assert.assertEquals("users-test-map", elRes.get(0).getTitle());
 
 		// get another map
 		PortfolioStructure el2 = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "users-test-map-2", "2-a-map-to-test-get-afterwards");
-		assertNotNull(el2);
+		Assert.assertNotNull(el2);
 		dbInstance.commitAndCloseSession();
-		List<PortfolioStructure> elRes2 = epFrontendManager.getStructureElementsForUser(user);
-		assertNotNull(elRes2);
-		assertTrue(elRes2.size() == 2);
+		List<PortfolioStructure> elRes2 = epStructureManager.getStructureElementsForUser(user);
+		Assert.assertNotNull(elRes2);
+		Assert.assertEquals(2, elRes2.size());
+	}
+	
+	@Test
+	public void testGetStructureElementsForUser_byElementTypes() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-1-");
+		
+		PortfolioStructure el = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "users-def-map", "");
+		Assert.assertNotNull(el);
+		dbInstance.commitAndCloseSession();
+		
+		//by default map
+		List<PortfolioStructure> defaultRes = epStructureManager.getStructureElementsForUser(user, ElementType.DEFAULT_MAP);
+		Assert.assertNotNull(defaultRes);
+		Assert.assertEquals(1, defaultRes.size());
+		Assert.assertEquals("users-def-map", defaultRes.get(0).getTitle());
+		
+		//by default map and structured
+		List<PortfolioStructure> multipleRes = epStructureManager.getStructureElementsForUser(user, ElementType.DEFAULT_MAP, ElementType.STRUCTURED_MAP);
+		Assert.assertNotNull(multipleRes);
+		Assert.assertEquals(1, multipleRes.size());
+		Assert.assertEquals("users-def-map", multipleRes.get(0).getTitle());
+		
+		//by structured
+		List<PortfolioStructure> structuredRes = epStructureManager.getStructureElementsForUser(user, ElementType.STRUCTURED_MAP);
+		Assert.assertNotNull(structuredRes);
+		Assert.assertTrue(structuredRes.isEmpty());
 	}
 	
 	@Test

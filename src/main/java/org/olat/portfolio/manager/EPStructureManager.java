@@ -175,7 +175,7 @@ public class EPStructureManager {
 	protected List<PortfolioStructure> getStructureElements(int firstResult, int maxResults, ElementType... types){
 		StringBuilder sb = new StringBuilder();
 		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl");
-		sb.append(" where stEl.class in (");
+		sb.append(" where type(stEl) in (");
 		boolean first = true;
 		for(ElementType type:types) {
 			if(first) first = false;
@@ -205,7 +205,7 @@ public class EPStructureManager {
 		  .append("    where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
 		  .append(" )");
 		if(types != null && types.length > 0) {
-			sb.append(" and stEl.class in (");
+			sb.append(" and type(stEl) in (");
 			boolean first = true;
 			for(ElementType type:types) {
 				if(first) first = false;
@@ -336,7 +336,7 @@ public class EPStructureManager {
 			  .append(" )");
 		}
 		if (types != null && types.length > 0) {
-			sb.append(" and stEl.class in (");
+			sb.append(" and type(stEl) in (");
 			boolean first = true;
 			for (final ElementType type : types) {
 				if (first) {
@@ -397,7 +397,7 @@ public class EPStructureManager {
 			  .append(" )");
 		}
 		if(types != null && types.length > 0) {
-			sb.append(" and stEl.class in (");
+			sb.append(" and type(stEl) in (");
 			boolean first = true;
 			for(ElementType type:types) {
 				if(first) first = false;
