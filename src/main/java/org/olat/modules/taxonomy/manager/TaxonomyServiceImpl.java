@@ -178,11 +178,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 				}
 				
 				VFSManager.copyContent(library, lastStorage);
-				//delete the competences
-				taxonomyCompetenceDao.deleteCompetences(taxonomyLevel);
-				//questions
-				taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
 			}
+			//delete the competences
+			taxonomyCompetenceDao.deleteCompetences(taxonomyLevel);
+			//questions
+			taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
 		}
 
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
