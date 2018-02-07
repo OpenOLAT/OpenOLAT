@@ -103,8 +103,13 @@ public class EntryPage {
 	
 	public EntryPage assertOnImage(File image) {
 		String filename = image.getName();
-		By titleBy = By.xpath("//figure[contains(@class,'o_image')]//img[contains(@src,'" + filename + "')]");
-		OOGraphene.waitElement(titleBy, 5, browser);
+		int typePos = filename.lastIndexOf('.');
+		if (typePos > 0) {
+			String ending = filename.substring(typePos + 1).toLowerCase();
+			filename = filename.substring(0, typePos + 1).concat(ending);
+		}
+		By titleBy = By.xpath("//figure[@class='o_image']/img[contains(@src,'" + filename + "')]");
+		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}
 	
@@ -127,8 +132,8 @@ public class EntryPage {
 		return this;
 	}
 	
-	public EntryPage assertOnDocument(File image) {
-		String filename = image.getName();
+	public EntryPage assertOnDocument(File file) {
+		String filename = file.getName();
 		By downloadLinkBy = By.xpath("//div[contains(@class,'o_download')]//a[contains(text(),'" + filename + "')]");
 		OOGraphene.waitElement(downloadLinkBy, 5, browser);
 		return this;
