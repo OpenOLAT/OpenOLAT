@@ -19,16 +19,12 @@
  */
 package org.olat.modules.portfolio.ui.media;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -36,7 +32,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSLeafMapper;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
@@ -77,7 +73,7 @@ public class FileMediaController extends BasicController {
 		VFSItem item = container.resolve(media.getRootFilename());
 		if(item instanceof VFSLeaf) {
 			VFSLeaf leaf = (VFSLeaf)item;
-			String mapperUri = registerCacheableMapper(ureq, "File-Media-" + media.getKey() + "-" + leaf.getLastModified(), new FileMapper(leaf));
+			String mapperUri = registerCacheableMapper(ureq, "File-Media-" + media.getKey() + "-" + leaf.getLastModified(), new VFSLeafMapper(leaf));
 			mainVC.contextPut("mapperUri", mapperUri);
 			String iconCss = CSSHelper.createFiletypeIconCssClassFor(leaf.getName());
 			mainVC.contextPut("fileIconCss", iconCss);
@@ -111,17 +107,4 @@ public class FileMediaController extends BasicController {
 		//
 	}
 	
-	private static class FileMapper implements Mapper {
-		
-		private final VFSLeaf file;
-		
-		public FileMapper(VFSLeaf file) {
-			this.file = file;
-		}
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			return new VFSMediaResource(file);
-		}
-	}
 }

@@ -353,7 +353,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 		Assert.assertEquals(4, assignments.size());
 		for(Assignment assignment:assignments) {
-			portfolioService.startAssignment(assignment, id);
+			portfolioService.startAssignment(assignment.getKey(), id);
 			dbInstance.commit();
 		}
 		dbInstance.commit();
@@ -444,7 +444,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 		Assert.assertEquals(4, assignments.size());
 		for(Assignment assignment:assignments) {
-			portfolioService.startAssignment(assignment, id);
+			portfolioService.startAssignment(assignment.getKey(), id);
 			dbInstance.commit();
 		}
 		dbInstance.commit();
@@ -560,7 +560,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 		Assert.assertEquals(5, assignments.size());
 		for(Assignment assignment:assignments) {
-			portfolioService.startAssignment(assignment, id);
+			portfolioService.startAssignment(assignment.getKey(), id);
 			dbInstance.commit();
 		}
 		dbInstance.commit();
@@ -746,7 +746,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 		Assert.assertEquals(6, assignments.size());
 		for(Assignment assignment:assignments) {
-			portfolioService.startAssignment(assignment, id);
+			portfolioService.startAssignment(assignment.getKey(), id);
 			dbInstance.commit();
 		}
 		dbInstance.commit();
@@ -860,10 +860,10 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
-		portfolioService.startAssignment(assignments.get(0), id);
-		portfolioService.startAssignment(assignments.get(1), id);
-		portfolioService.startAssignment(assignments.get(2), id);
-		portfolioService.startAssignment(assignments.get(3), id);
+		portfolioService.startAssignment(assignments.get(0).getKey(), id);
+		portfolioService.startAssignment(assignments.get(1).getKey(), id);
+		portfolioService.startAssignment(assignments.get(2).getKey(), id);
+		portfolioService.startAssignment(assignments.get(3).getKey(), id);
 		dbInstance.commit();
 		
 		List<Section> sections = portfolioService.getSections(binder);
@@ -955,7 +955,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 			
 			List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 			for(Assignment assignment:assignments) {
-				Assignment startedAssignment = portfolioService.startAssignment(assignment, id);
+				Assignment startedAssignment = portfolioService.startAssignment(assignment.getKey(), id);
 				Assert.assertNotNull(startedAssignment);
 				
 				Page page = startedAssignment.getPage();
@@ -1008,8 +1008,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
-		Assignment startedAssignment_1 = portfolioService.startAssignment(assignments.get(0), id);
-		Assignment startedAssignment_2 = portfolioService.startAssignment(assignments.get(1), id);
+		Assignment startedAssignment_1 = portfolioService.startAssignment(assignments.get(0).getKey(), id);
+		Assignment startedAssignment_2 = portfolioService.startAssignment(assignments.get(1).getKey(), id);
 		Long startedPageKey_1 = startedAssignment_1.getPage().getKey();
 		Long startedPageKey_2 = startedAssignment_2.getPage().getKey();
 		dbInstance.commitAndCloseSession();

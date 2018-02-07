@@ -48,6 +48,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderStatus;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
@@ -82,6 +83,8 @@ public class BinderController extends BasicController implements TooledControlle
 	
 	@Autowired
 	private PortfolioV2Module portfolioModule;
+	@Autowired
+	private PortfolioService portfolioService;
 
 	public BinderController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
@@ -208,6 +211,7 @@ public class BinderController extends BasicController implements TooledControlle
 			if(event == Event.CHANGED_EVENT) {
 				removeAsListenerAndDispose(entriesCtrl);
 				entriesCtrl = null;
+				binder = portfolioService.getBinderByKey(binder.getKey());
 			} else if(event instanceof SectionSelectionEvent) {
 				SectionSelectionEvent sse = (SectionSelectionEvent)event;
 				List<ContextEntry> entries = new ArrayList<>();

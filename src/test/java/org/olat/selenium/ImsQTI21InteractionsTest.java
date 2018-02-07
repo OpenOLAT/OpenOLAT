@@ -44,12 +44,22 @@ import org.openqa.selenium.WebDriver;
 
 
 /**
- * This suite tests the interactions in runtime and only in runtime:
+ * This suite tests the interactions in runtime and only in runtime. The source used
+ * come from the IMS examples.
+ * 
  * <ul>
  *   <li>Hotspot
  *   <li>Associate
  *   <li>Graphic associate
  *   <li>Match
+ *   <li>Graphic Gap Match (with click and drop)
+ *   <li>End interaction with inline and modal feedbacks (classic hint)
+ *   <li>Select point interaction
+ *   <li>Position object interaction
+ *   <li>Order interaction
+ *   <li>Graphic order interaction
+ *   <li>Inline choice
+ *   <li>Slider
  * </ul>
  * 
  * Initial date: 26 janv. 2018<br>
@@ -81,7 +91,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
-		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
+		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_hotspot.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
 		navBar
@@ -173,7 +183,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
-		String qtiTestTitle = "Associate QTI 2.1 " + UUID.randomUUID();
+		String qtiTestTitle = "Graphic associate QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_associate_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
 		navBar
@@ -295,6 +305,383 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.assertOnAssessmentResults()
 			.assertOnAssessmentItemScore("Grand Prix of Bahrain", 1);
+	}
+	
+	/**
+	 * Check if hint with modal and inline feedbacks used
+	 * with choice interaction.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EndInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "End QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_end_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.hint()
+			.assertFeedbackText("Tony lives in the United Kingdom")
+			.answerSingleChoice("Tony")
+			.saveAnswer()
+			.assertFeedbackText("No, the correct answer is Vicente Fox")
+			.assertFeedbackInline("No, he is the Prime Minister of England.")
+			.assertNoFeedbackText("Tony lives in the United Kingdom")
+			.answerSingleChoice("George")
+			.saveAnswer()
+			.assertFeedbackText("No, the correct answer is Vicente Fox")
+			.assertFeedbackInline("No, he is the President of the USA.")
+			.assertNoFeedbackText("Tony lives in the United Kingdom")
+			.assertNoFeedbackInline("No, he is the Prime Minister of England.")
+			.answerSingleChoice("Vicente")
+			.saveAnswer()
+			.assertFeedbackText("Yes, that is correct")
+			.assertNoFeedbackText("Tony lives in the United Kingdom")
+			.assertNoFeedbackInline("No, he is the Prime Minister of England.")
+			.assertNoFeedbackInline("No, he is the President of the USA.")
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Mexican President", 1);
+	}
+	
+	/**
+	 * Check if hint with modal and inline feedbacks used
+	 * with choice interaction.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21GraphicGapInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Graphic Gap Match QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_gap_match_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerGraphicGapClick("GLA", "A")
+			.answerGraphicGapClick("EDI", "B")
+			.answerGraphicGapClick("MAN", "C")
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Airport Tags", 3);
+	}
+	
+	/**
+	 * Check if the select point interaction returns 1 point
+	 * if answered correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21SelectPointInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Select point QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_select_point_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerSelectPoint(100, 110)
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Where is Edinburgh", 1);
+	}
+	
+	/**
+	 * Check if the graphic order interaction returns 1 point
+	 * if answered correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21GraphicOrderInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Graphic order QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_order_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerGraphicOrderById("A")
+			.answerGraphicOrderById("D")
+			.answerGraphicOrderById("C")
+			.answerGraphicOrderById("B")
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Flying Home", 1);
+	}
+	
+	/**
+	 * Check if the position object interaction returns 3 points
+	 * if answered correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21PositionObjectInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Position object QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_position_object_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerPositionObject(0, 118, 184)
+			.answerPositionObject(1, 150, 235)
+			.answerPositionObject(2, 96, 114)
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Airport Locations", 3);
+	}
+	
+	/**
+	 * Check if the position object interaction returns 3 points
+	 * if answered correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21InlineChoiceInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Inline choice QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_inline_choice_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerInlineChoice("Y")
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Richard III", 1);
+	}
+	
+	/**
+	 * Check if the slider interaction returns 1 point
+	 * if answered correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21SliderInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Slider QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_slider_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerVerticalSlider(16)
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Jedi Knights", 1);
+	}
+	
+	/**
+	 * Check if the gap match returns 3 points
+	 * if answered correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21GapMatchInteraction(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Gap match QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_gap_match_ims.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerGapMatch(1, "winter", true)
+			.answerGapMatch(2, "summer", true)
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Richard III", 3);
 	}
 
 }

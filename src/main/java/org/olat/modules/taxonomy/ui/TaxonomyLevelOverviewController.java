@@ -213,13 +213,15 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 			showWarning("warning.atleastone.level");
 			return;
 		}
-		
+
+		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
 		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), null, taxonomy);
+		List<TaxonomyLevel> levelToDelete = Collections.singletonList(taxonomyLevel);
+		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelToDelete, taxonomy);
 		listenTo(confirmDeleteCtrl);
 
 		String title = translate("confirmation.delete.level.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

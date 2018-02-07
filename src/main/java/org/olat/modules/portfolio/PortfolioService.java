@@ -157,11 +157,11 @@ public interface PortfolioService {
 	
 	/**
 	 * 
-	 * @param assignment
+	 * @param assignmentKey
 	 * @param author
 	 * @return
 	 */
-	public Assignment startAssignment(Assignment assignment, Identity author);
+	public Assignment startAssignment(Long assignmentKey, Identity author);
 	
 	/**
 	 * Add a new section at the end of the sections list of the specified binder.

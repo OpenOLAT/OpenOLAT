@@ -88,9 +88,18 @@ public interface FileElement extends FormMultipartItem {
 	/**
 	 * Preview is possible only for images.
 	 * 
+	 * @param usess
 	 * @param enable
 	 */
 	public void setPreview(UserSession usess, boolean enable);
+	
+	/**
+	 * Enable or disable whether the upload and delete buttons are active. Disabled
+	 * buttons are an alternative to the disabling of the whole element.
+	 * 
+	 * @param enable
+	 */
+	public void setButtonsEnabled(boolean enable);
 	
 	public void setCropSelectionEnabled(boolean enable);
 

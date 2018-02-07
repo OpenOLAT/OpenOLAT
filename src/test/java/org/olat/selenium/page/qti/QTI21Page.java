@@ -27,9 +27,11 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -125,11 +127,39 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Select the key of the inline choice interaction.
+	 * 
+	 * @param key The key to select
+	 * @return Itself
+	 */
+	public QTI21Page answerInlineChoice(String key) {
+		By inlineBy = By.xpath("//span[@class='inlineChoiceInteraction']/select");
+		OOGraphene.waitElement(inlineBy, browser);
+		WebElement inlineEl = browser.findElement(inlineBy);
+		new Select(inlineEl).selectByValue(key);
+		return this;
+	}
+	
 	public QTI21Page answerHotspot(String shape) {
 		OOGraphene.waitElement(By.className("hotspotInteraction"), browser);
 		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
 		List<WebElement> elements = browser.findElements(areaBy);
 		Assert.assertEquals("Hotspot of shape " + shape, 1, elements.size()); 
+		elements.get(0).click();
+		return this;
+	}
+	
+	/**
+	 * Select the area with the specified data-qti-id.
+	 * @param id The id save in data-qti-id
+	 * @return Itself
+	 */
+	public QTI21Page answerGraphicOrderById(String id) {
+		OOGraphene.waitElement(By.className("graphicOrderInteraction"), browser);
+		By areaBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]//map/area[@data-qti-id='" + id + "']");
+		List<WebElement> elements = browser.findElements(areaBy);
+		Assert.assertEquals("Hotspot with data-qti-id " + id, 1, elements.size()); 
 		elements.get(0).click();
 		return this;
 	}
@@ -303,6 +333,108 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Select the gap match
+	 * 
+	 * @param source The row to check
+	 * @param target Text in the target
+	 * @param match Select or deselect
+	 * @return Itself
+	 */
+	public QTI21Page answerGapMatch(int row, String target, boolean match) {
+		By matchBy = By.xpath("//div[contains(@class,'gapMatchInteraction')]/table//tr[th[contains(text(),'" + row + "')]]/td[count(//div[contains(@class,'gapMatchInteraction')]/table//tr/th[text()[contains(.,'" + target + "')]]/preceding-sibling::th)]/input");
+		WebElement matchEl = browser.findElement(matchBy);
+		OOGraphene.check(matchEl, match);
+		return this;
+	}
+	
+	/**
+	 * Use the click and drop.
+	 * 
+	 * @param item The identifier of the item
+	 * @param gap The identifier of the gap
+	 * @return Itself
+	 */
+	public QTI21Page answerGraphicGapClick(String item, String gap) {
+		By sourceBy = By.xpath("//div[contains(@class,'gap_container')]/div[contains(@class,'o_gap_item')][@data-qti-id='" + item + "']");
+		OOGraphene.waitElement(sourceBy, 5, browser);
+		WebElement sourceEl = browser.findElement(sourceBy);
+		sourceEl.click();
+		By targetBy = By.xpath("//div[@class='graphicGapMatchInteraction']//map/area[@data-qti-id='" + gap + "']");
+		WebElement targetEl = browser.findElement(targetBy);
+		targetEl.click();
+		return this;
+	}
+	
+	/**
+	 * Select the point based on coordinates.
+	 * 
+	 * @param x The x coordinate
+	 * @param y The y coordinate
+	 * @return Itself
+	 */
+	public QTI21Page answerSelectPoint(int x, int y) {
+		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
+		WebElement canvasEl = browser.findElement(canvasBy);
+		new Actions(browser)
+			.moveToElement(canvasEl, x, y)
+			.click()
+			.build()
+			.perform();
+		return this;
+	}
+	
+	/**
+	 * Select the object by its index (start with 0) and
+	 * move it on the image and the specified coodinates.
+	 * 
+	 * @param index The index of the object
+	 * @param x The x target coordinate
+	 * @param y The y target coordinate
+	 * @return Itself
+	 */
+	public QTI21Page answerPositionObject(int index, int x, int y) {
+		By itemBy = By.xpath("//div[contains(@class,'positionObjectStage')]//div[@id='object-item-" + index + "']");
+		OOGraphene.waitElement(itemBy, browser);
+		WebElement itemEl = browser.findElement(itemBy);
+		By targetBy = By.xpath("//div[@class='positionObjectStage']//img[contains(@id,'qtiworks_id_container_')]");
+		WebElement targetEl = browser.findElement(targetBy);
+		new Actions(browser)
+			.moveToElement(itemEl, 5, 5)
+			.clickAndHold()
+			.moveToElement(targetEl, x, y)
+			.release()
+			.build()
+			.perform();
+		return this;
+	}
+	
+	/**
+	 * Select the point based on coordinates.
+	 * 
+	 * @param x The x coordinate
+	 * @return Itself
+	 */
+	public QTI21Page answerVerticalSlider(int val) {
+		By sliderBy = By.xpath("//div[contains(@class,'sliderInteraction')]/div[contains(@class,'sliderVertical')]/div[contains(@class,'sliderWidget')]");
+		OOGraphene.waitElement(sliderBy, browser);
+		WebElement sliderEl = browser.findElement(sliderBy);
+		Dimension size = sliderEl.getSize();
+		float height = (size.getHeight() / 100f) * val;
+		float scaledY = size.getHeight() - height;
+		
+		new Actions(browser)
+			.moveToElement(sliderEl, 5, Math.round(scaledY))
+			.click()
+			.build()
+			.perform();
+		
+		
+		By valueBy = By.xpath("//div[contains(@class,'sliderInteraction')]/div[contains(@class,'sliderVertical')]/div[contains(@class,'sliderValue')]/span[text()='" + val + "']");
+		OOGraphene.waitElement(valueBy, browser);
+		return this;
+	}
+	
 	public QTI21Page answerUpload(File file) {
 		By inputBy = By.cssSelector(".uploadInteraction input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
@@ -371,8 +503,57 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Check if the feedback with the specified content is visible.
+	 * 
+	 * @param text Text of the feedback.
+	 * @return Itself
+	 */
+	public QTI21Page assertFeedbackText(String text) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')][text()[contains(normalize-space(.),'" + text + "')]]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check if an inline feedback with the specified text
+	 * is visible.
+	 * 
+	 * @param text The text of the inline feedback
+	 * @return Itself
+	 */
+	public QTI21Page assertFeedbackInline(String text) {
+		By feedbackBy = By.xpath("//span[contains(@class,'feedbackInline')][text()[contains(normalize-space(.),'" + text + "')]]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check that no inline feedback with the specified text
+	 * is visible.
+	 * 
+	 * @param text The text of the inline feedback
+	 * @return Itself
+	 */
+	public QTI21Page assertNoFeedbackInline(String text) {
+		By feedbackBy = By.xpath("//span[contains(@class,'feedbackInline')][text()[contains(normalize-space(.),'" + text + "')]]");
+		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
+		return this;
+	}
+	
 	public QTI21Page assertNoFeedback(String title) {
 		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
+		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param text The text of the feedback
+	 * @return Itself
+	 */
+	public QTI21Page assertNoFeedbackText(String text) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')][text()[contains(normalize-space(.),'\" + text + \"')]]");
 		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
 		return this;
 	}

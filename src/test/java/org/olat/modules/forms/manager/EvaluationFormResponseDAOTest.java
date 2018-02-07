@@ -20,6 +20,8 @@
 package org.olat.modules.forms.manager;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -27,7 +29,6 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.EvaluationFormResponseDataTypes;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.portfolio.Page;
@@ -86,8 +87,9 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		String responseIdentifier = UUID.randomUUID().toString();
 		BigDecimal numericalValue = new BigDecimal("2.2");
 		String stringuifiedResponse = numericalValue.toPlainString();
+		Path fileResponse = Paths.get("this", "is", "a", "path");
 		EvaluationFormResponse response = evaluationFormResponseDao.createResponse(responseIdentifier,
-				numericalValue, stringuifiedResponse, EvaluationFormResponseDataTypes.numerical, session);
+				numericalValue, stringuifiedResponse, fileResponse, session);
 		dbInstance.commit();
 
 		Assert.assertNotNull(response);
@@ -97,6 +99,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		Assert.assertEquals(session, response.getSession());
 		Assert.assertEquals(numericalValue, response.getNumericalResponse());
 		Assert.assertEquals(stringuifiedResponse, response.getStringuifiedResponse());
+		Assert.assertEquals(fileResponse, response.getFileResponse());
 		Assert.assertEquals(responseIdentifier, response.getResponseIdentifier());
 	}
 	

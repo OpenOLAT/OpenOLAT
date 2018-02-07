@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.forms.handler.FileUploadHandler;
 import org.olat.modules.forms.handler.HTMLRawHandler;
 import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.handler.SpacerHandler;
@@ -131,6 +132,9 @@ public class EvaluationFormEditorController extends BasicController {
 			// handler for text input
 			TextInputHandler textInputHandler = new TextInputHandler();
 			handlers.add(textInputHandler);
+			// handler for file upload
+			FileUploadHandler fileUploadhandler = new FileUploadHandler();
+			handlers.add(fileUploadhandler);
 			
 			if(!restrictedEdit) {
 				creationHandlers.add(titleRawHandler);
@@ -138,6 +142,7 @@ public class EvaluationFormEditorController extends BasicController {
 				creationHandlers.add(htmlHandler);
 				creationHandlers.add(rubricHandler);
 				creationHandlers.add(textInputHandler);
+				creationHandlers.add(fileUploadhandler);
 			}
 		}
 

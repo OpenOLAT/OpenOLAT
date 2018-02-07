@@ -311,8 +311,7 @@ public class BusinessGroupTest extends Deployments {
 			.openAddDropMenu()
 			.addTokenMethod()
 			.configureTokenMethod(token, description)
-			.assertOnToken(token)
-			.save();
+			.assertOnToken(token);
 		
 		//members see members
 		group = GroupPage.getGroup(browser)

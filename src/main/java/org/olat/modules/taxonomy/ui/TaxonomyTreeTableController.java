@@ -161,7 +161,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			resources.add(new FlexiTableFilter(type.getDisplayName(), type.getKey().toString()));
 		}
 		resources.add(new FlexiTableFilter(translate("filter.no.level.type"), "-"));
-		resources.add(new FlexiTableFilter(translate("show.all"), "-", true));
+		resources.add(FlexiTableFilter.SPACER);
+		resources.add(new FlexiTableFilter(translate("show.all"), "all", true));
 		return resources;
 	}
 	

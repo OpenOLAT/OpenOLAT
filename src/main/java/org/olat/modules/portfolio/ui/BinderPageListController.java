@@ -47,17 +47,20 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -68,7 +71,6 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageUserInformations;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
@@ -78,7 +80,6 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.user.UserManager;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,6 +95,8 @@ public class BinderPageListController extends AbstractPageListController {
 	private FormLink newSectionButton, previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
+	private TextComponent summaryComp;
+	private ToggleBoxController summaryCtrl;
 	private SectionEditController newSectionCtrl;
 	private PageMetadataEditController newPageCtrl;
 	private AssignmentEditController newAssignmentCtrl;
@@ -111,6 +114,10 @@ public class BinderPageListController extends AbstractPageListController {
 		this.binder = binder;
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		
+		summaryComp = TextFactory.createTextComponentFromString("summaryCmp" + CodeHelper.getRAMUniqueID(), "", "o_block_large_bottom", false, null);
+		summaryCtrl = new ToggleBoxController(ureq, wControl, getGuiPrefsKey(binder), translate("summary.open"),
+				translate("summary.close"), summaryComp);
+		
 		initForm(ureq);
 		loadModel(ureq, null);
 		
@@ -118,6 +125,14 @@ public class BinderPageListController extends AbstractPageListController {
 			// in template mode, add editor class to toolbar
 			initialPanel.setCssClass("o_edit_mode");
 		}
+	}
+	
+	private String getGuiPrefsKey(OLATResourceable binderOres) {
+		return new StringBuilder()
+				.append(binderOres.getResourceableTypeName())
+				.append("::")
+				.append(binderOres.getResourceableId())
+				.toString();
 	}
 
 	@Override
@@ -214,6 +229,13 @@ public class BinderPageListController extends AbstractPageListController {
 
 	@Override
 	protected void loadModel(UserRequest ureq, String searchString) {
+		if (StringHelper.containsNonWhitespace(binder.getSummary())) {
+			summaryComp.setText(binder.getSummary());
+			flc.getFormItemComponent().put("summary", summaryCtrl.getInitialComponent());
+		} else {
+			flc.getFormItemComponent().remove("summary");
+		}
+		
 		List<Section> sections = portfolioService.getSections(binder);
 
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedSectionsAndPages(binder);
@@ -388,6 +410,13 @@ public class BinderPageListController extends AbstractPageListController {
 			}
 		}
 		timelineEl.setPoints(points);
+	}
+	
+	@Override
+	protected void doDispose() {
+		removeAsListenerAndDispose(summaryCtrl);
+		summaryCtrl = null;
+		super.doDispose();
 	}
 
 	@Override
@@ -652,10 +681,7 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	protected Assignment doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
 		if(secCallback.canInstantiateAssignment()) {
-			Assignment startedAssigment = super.doStartAssignment(ureq, row);
-			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_ASSIGNMENT_STARTED, getClass(),
-					LoggingResourceable.wrap(row.getSection()), LoggingResourceable.wrap(startedAssigment));
-			return startedAssigment;
+			return super.doStartAssignment(ureq, row);
 		} else if(secCallback.canNewAssignment()) {
 			doEditAssignment(ureq, row);
 		}

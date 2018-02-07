@@ -877,6 +877,23 @@ public class FileUtils {
 		return nameSanitized;
 	}
 	
+	public static String normalizeFilenameWithSuffix(String filename) {
+		boolean hasExtension = false;
+		String name = filename;
+		String extension = getFileSuffix(filename);
+		if (extension != null && extension.length() > 0) {
+			hasExtension = true;
+			name = filename.substring(0, filename.length() - extension.length() - 1);
+		}
+		StringBuilder normalizedFilename = new StringBuilder();
+		normalizedFilename.append(normalizeFilename(name));
+		if (hasExtension) {
+			normalizedFilename.append(".");
+			normalizedFilename.append(normalizeFilename(extension));
+		}
+		return normalizedFilename.toString();
+	}
+	
 	/**
 	 * Creates a new directory in the specified directory, using the given prefix and suffix strings to generate its name.
 	 * It uses File.createTempFile() and should provide a unique name.

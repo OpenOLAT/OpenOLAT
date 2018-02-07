@@ -22,22 +22,26 @@ package org.olat.modules.forms.ui;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -46,15 +50,19 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.EvaluationFormResponseDataTypes;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.manager.EvaluationFormStorage;
 import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -62,6 +70,7 @@ import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
+import org.olat.modules.forms.ui.model.FileUploadWrapper;
 import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.TextInputWrapper;
 import org.olat.modules.portfolio.PageBody;
@@ -78,6 +87,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EvaluationFormController extends FormBasicController implements ValidatingController {
+	
+	private static final OLog log = Tracing.createLoggerFor(EvaluationFormStorage.class);
 
 	private int count = 0;
 	private final Form form;
@@ -168,17 +179,17 @@ public class EvaluationFormController extends FormBasicController implements Val
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		updateElements();
+		updateElements(ureq);
 		
 		if(doneButton && !readOnly) {
 			saveAsDoneButton = uifactory.addFormSubmitButton("save.as.done", formLayout);
 		}
 	}
 	
-	private void updateElements() {
+	private void updateElements(UserRequest ureq) {
 		List<EvaluationFormElementWrapper> elementWrappers = new ArrayList<>();
 		for(AbstractElement element:form.getElements()) {
-			EvaluationFormElementWrapper wrapper = forgeElement(element);
+			EvaluationFormElementWrapper wrapper = forgeElement(ureq, element);
 			if(wrapper != null) {
 				elementWrappers.add(wrapper);
 			}
@@ -207,7 +218,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 		}
 	}
 	
-	private EvaluationFormElementWrapper forgeElement(AbstractElement element) {
+	private EvaluationFormElementWrapper forgeElement(UserRequest ureq, AbstractElement element) {
 		EvaluationFormElementWrapper wrapper = null;
 		
 		String type = element.getType();
@@ -223,7 +234,33 @@ public class EvaluationFormController extends FormBasicController implements Val
 			case "formtextinput":
 				wrapper = forgeTextInput((TextInput)element);
 				break;
+			case "formfileupload":
+				wrapper = forgeFileUpload(ureq, (FileUpload)element);
+				break;
 		}
+		return wrapper;
+	}
+
+	private EvaluationFormElementWrapper forgeFileUpload(UserRequest ureq, FileUpload element) {
+		FileElement fileEl = uifactory.addFileElement(getWindowControl(), "file_upload_" + CodeHelper.getRAMUniqueID(), "", flc);
+		fileEl.setPreview(ureq.getUserSession(), true);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.setDeleteEnabled(true);
+		fileEl.setMaxUploadSizeKB(element.getMaxUploadSizeKB(), "file.upload.error.limit.exeeded", null);
+		Set<String> mimeTypes = MimeTypeSetFactory.getMimeTypes(element.getMimeTypeSetKey());
+		fileEl.limitToMimeType(mimeTypes, "file.upload.error.mime.type.wrong", null);
+		EvaluationFormResponse response = identifierToResponses.get(element.getId());
+		File responseFile = evaluationFormManager.loadResponseFile(response);
+		if (responseFile != null) {
+			fileEl.setInitialFile(responseFile);
+		}
+		fileEl.setEnabled(!readOnly);
+		
+		FileUploadWrapper fileUploadWrapper = new FileUploadWrapper(fileEl, element);
+		fileEl.setUserObject(fileUploadWrapper);
+		
+		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
+		wrapper.setFileUploadWrapper(fileUploadWrapper);
 		return wrapper;
 	}
 
@@ -364,6 +401,11 @@ public class EvaluationFormController extends FormBasicController implements Val
 				if(wrapper != null && !hasResponse(wrapper.getId())) {
 					allFiled &= false;
 				}
+			} else if(elementWrapper.isFileUpload()) {
+				FileUploadWrapper wrapper = elementWrapper.getFileUploadWrapper();
+				if(wrapper != null && !hasResponse(wrapper.getId())) {
+					allFiled &= false;
+				}
 			} else if(elementWrapper.getSliders() != null && elementWrapper.getSliders().size() > 0) {
 				for(SliderWrapper slider:elementWrapper.getSliders()) {
 					if(slider != null && !hasResponse(slider.getId())) {
@@ -388,7 +430,9 @@ public class EvaluationFormController extends FormBasicController implements Val
 		}
 		EvaluationFormResponse response = identifierToResponses.get(id);
 		if(response == null ||
-				(response.getNumericalResponse() == null && !StringHelper.containsNonWhitespace(response.getStringuifiedResponse()))) {
+				(response.getNumericalResponse() == null
+					&& !StringHelper.containsNonWhitespace(response.getStringuifiedResponse())
+					&& response.getFileResponse() == null)) {
 			return false;
 		}
 		return true;
@@ -426,7 +470,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 			if(uobject instanceof SliderWrapper) {
 				String selectedKey = radioEl.getSelectedKey();
 				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
-				saveResponse(new BigDecimal(selectedKey), selectedKey, sliderWrapper.getId());
+				saveNumericalResponse(new BigDecimal(selectedKey), selectedKey, sliderWrapper.getId());
 			}
 		} else if(source instanceof SliderElement) {
 			SliderElement slider = (SliderElement)source;
@@ -434,7 +478,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 			if(uobject instanceof SliderWrapper) {
 				double value = slider.getValue();
 				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
-				saveResponse(new BigDecimal(value), Double.toString(value), sliderWrapper.getId());
+				saveNumericalResponse(BigDecimal.valueOf(value), Double.toString(value), sliderWrapper.getId());
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -442,23 +486,65 @@ public class EvaluationFormController extends FormBasicController implements Val
 			if(uobject instanceof TextInputWrapper) {
 				TextInputWrapper wrapper = (TextInputWrapper)uobject;
 				String value = wrapper.getTextEl().getValue();
-				saveResponse(null, value, wrapper.getId());
+				saveNumericalResponse(null, value, wrapper.getId());
+			}
+		} else if (source instanceof FileElement) {
+			FileElement fileElement = (FileElement)source;
+			Object uobject = fileElement.getUserObject();
+			if (uobject instanceof FileUploadWrapper) {
+				FileUploadWrapper wrapper = (FileUploadWrapper)uobject;
+				if(event instanceof FileElementEvent) {
+					if(FileElementEvent.DELETE.equals(event.getCommand())) {
+						saveFileResponse(null, null, wrapper.getId());
+						fileElement.setInitialFile(null);
+						if(fileElement.getUploadFile() != null) {
+							fileElement.reset();
+						}
+						flc.setDirty(true);
+					}
+				} else if (fileElement.isUploadSuccess()) {
+					File file = fileElement.getUploadFile();
+					String filename = fileElement.getUploadFileName();
+					saveFileResponse(file, filename, wrapper.getId());
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void saveResponse(BigDecimal numericalValue, String stringuifiedReponse, String responseIdentifier) {
+	private void saveNumericalResponse(BigDecimal numericalValue, String stringuifiedReponse, String responseIdentifier) {
 		if(evaluator == null || readOnly) return;
 		
 		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
 		if(response == null) {
 			response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier,
-					numericalValue, stringuifiedReponse, EvaluationFormResponseDataTypes.numerical, session);
+					numericalValue, stringuifiedReponse, session);
 		} else {
 			response = evaluationFormManager.updateResponseForPortfolioEvaluation(numericalValue, stringuifiedReponse, response);
 		}
-		//update cache
+		updateCache(responseIdentifier, response);
+	}
+	
+	private void saveFileResponse(File file, String filename, String responseIdentifier) {
+		if(evaluator == null || readOnly) return;
+		
+		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
+		try {
+			if (response == null) {
+				response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier, file, filename,
+						session);
+			} else {
+				response = evaluationFormManager.updateResponseForPortfolioEvaluation(file, filename, response);
+			}
+		} catch (IOException e) {
+			showError("error.cannot.save.file");
+			log.warn("Cannot save file for an evaluation form response!", e);
+		}
+
+		updateCache(responseIdentifier, response);
+	}
+	
+	private void updateCache(String responseIdentifier, EvaluationFormResponse response) {
 		if(response != null) {
 			identifierToResponses.put(responseIdentifier, response);
 		}
@@ -469,7 +555,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 			if(elementWrapper.isTextInput()) {
 				TextInputWrapper wrapper = elementWrapper.getTextInputWrapper();
 				String value = wrapper.getTextEl().getValue();
-				saveResponse(null, value, wrapper.getId());
+				saveNumericalResponse(null, value, wrapper.getId());
 			}	
 		}
 		
@@ -492,7 +578,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 		readOnly = true;
 		dbInstance.commit();
 		loadResponses();
-		updateElements();
+		updateElements(ureq);
 		if (saveAsDoneButton != null) {
 			saveAsDoneButton.setVisible(false);			
 		}

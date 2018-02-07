@@ -20,6 +20,7 @@
 package org.olat.modules.forms.manager;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +31,6 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.EvaluationFormResponseDataTypes;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
@@ -51,13 +51,13 @@ public class EvaluationFormResponseDAO {
 	private DB dbInstance;
 	
 	public EvaluationFormResponse createResponse(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
-			EvaluationFormResponseDataTypes dataType, EvaluationFormSession session) {
+			Path fileResponse, EvaluationFormSession session) {
 		EvaluationFormResponseImpl response = new EvaluationFormResponseImpl();
 		response.setCreationDate(new Date());
 		response.setLastModified(response.getCreationDate());
 		response.setSession(session);
-		response.setResponseDataType(dataType.name());
 		response.setResponseIdentifier(responseIdentifier);
+		response.setFileResponse(fileResponse);
 		response.setNumericalResponse(numericalValue);
 		response.setStringuifiedResponse(stringuifiedResponse);
 		dbInstance.getCurrentEntityManager().persist(response);
@@ -97,11 +97,13 @@ public class EvaluationFormResponseDAO {
 		return rQuery.getResultList();
 	}
 	
-	public EvaluationFormResponse updateResponse(BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormResponse response) {
+	public EvaluationFormResponse updateResponse(BigDecimal numericalValue, String stringuifiedResponse,
+			Path fileResponse, EvaluationFormResponse response) {
 		EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
 		evalResponse.setLastModified(new Date());
 		evalResponse.setNumericalResponse(numericalValue);
 		evalResponse.setStringuifiedResponse(stringuifiedResponse);
+		evalResponse.setFileResponse(fileResponse);
 		return dbInstance.getCurrentEntityManager().merge(response);
 	}
 }

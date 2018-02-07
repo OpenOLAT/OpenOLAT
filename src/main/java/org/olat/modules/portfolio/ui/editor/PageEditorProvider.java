@@ -29,12 +29,7 @@ import java.util.List;
  */
 public interface PageEditorProvider extends PageProvider {
 	
-	public List<? extends PageElement> getElements();
-	
-
 	public List<PageElementHandler> getCreateHandlers();
-	
-	public List<PageElementHandler> getAvailableHandlers();
 	
 	public PageElement appendPageElement(PageElement element);
 	

@@ -19,11 +19,14 @@
  */
 package org.olat.modules.forms;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -54,11 +57,22 @@ public interface EvaluationFormManager {
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status);
 	
 	
-	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
-			EvaluationFormResponseDataTypes dataType, EvaluationFormSession session); 
-	
-	public EvaluationFormResponse updateResponseForPortfolioEvaluation(BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormResponse response); 
+	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier,
+			BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormSession session);
 
+	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
+			String filename, EvaluationFormSession session) throws IOException;
+	
+	public EvaluationFormResponse updateResponseForPortfolioEvaluation(BigDecimal numericalValue,
+			String stringuifiedResponse, EvaluationFormResponse response); 
+
+	public EvaluationFormResponse updateResponseForPortfolioEvaluation(File file, String filename,
+			EvaluationFormResponse response) throws IOException;
+	
+	public File loadResponseFile(EvaluationFormResponse response);
+	
+	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
+	
 	/**
 	 * Is there some sessions using this repository entry.
 	 * 
@@ -66,4 +80,5 @@ public interface EvaluationFormManager {
 	 * @return
 	 */
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry);
+
 }

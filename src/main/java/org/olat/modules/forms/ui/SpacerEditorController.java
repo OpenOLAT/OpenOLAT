@@ -54,7 +54,7 @@ public class SpacerEditorController extends FormBasicController implements PageE
 	@Override
 	public void setEditMode(boolean editMode) {
 		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", new Boolean(editMode));
+		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override

@@ -19,14 +19,17 @@
  */
 package org.olat.modules.forms.manager;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.EvaluationFormResponseDataTypes;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.portfolio.PageBody;
@@ -48,7 +51,10 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	@Autowired
 	private EvaluationFormResponseDAO evaluationFormResponseDao;
+	@Autowired
+	private EvaluationFormStorage evaluationFormStorage;
 	
+	@Override
 	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry) {
 		return evaluationFormSessionDao.createSessionForPortfolio(identity, body, formEntry);
 	}
@@ -75,13 +81,50 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
-			EvaluationFormResponseDataTypes dataType, EvaluationFormSession session) {
-		return evaluationFormResponseDao.createResponse(responseIdentifier, numericalValue, stringuifiedResponse, dataType, session);
+			EvaluationFormSession session) {
+		return evaluationFormResponseDao.createResponse(responseIdentifier, numericalValue, stringuifiedResponse, null, session);
+	}
+
+	@Override
+	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
+			String filename, EvaluationFormSession session) throws IOException {
+		Path relativePath = evaluationFormStorage.save(file, filename, responseIdentifier);
+		return evaluationFormResponseDao.createResponse(responseIdentifier, null, filename, relativePath,
+				session);
 	}
 
 	@Override
 	public EvaluationFormResponse updateResponseForPortfolioEvaluation(BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormResponse response) {
-		return evaluationFormResponseDao.updateResponse(numericalValue, stringuifiedResponse, response);
+		return evaluationFormResponseDao.updateResponse(numericalValue, stringuifiedResponse, null, response);
+	}
+
+	@Override
+	public EvaluationFormResponse updateResponseForPortfolioEvaluation(File file, String filename,
+			EvaluationFormResponse response) throws IOException {
+		if (response.getFileResponse() != null) {
+			evaluationFormStorage.delete(response.getFileResponse());
+		}
+		Path relativePath = null;
+		String filenameToSave = null;
+		if (file != null) {
+			relativePath = evaluationFormStorage.save(file, filename, response.getResponseIdentifier());
+			filenameToSave = filename;
+		}
+		return evaluationFormResponseDao.updateResponse(null, filenameToSave, relativePath, response);
+	}
+
+	@Override
+	public File loadResponseFile(EvaluationFormResponse response) {
+		if (response == null || response.getFileResponse() == null) return null;
+		
+		return evaluationFormStorage.load(response.getFileResponse());
+	}
+
+	@Override
+	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response) {
+		if (response == null || response.getFileResponse() == null) return null;
+		
+		return evaluationFormStorage.resolve(response.getFileResponse());
 	}
 
 	@Override

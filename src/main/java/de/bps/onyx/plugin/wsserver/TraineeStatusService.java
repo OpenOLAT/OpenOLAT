@@ -27,10 +27,12 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
+import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.util.ExamPoolManager;
 
 @WebService(name = "TraineeStatusService", serviceName = "TraineeStatusService", targetNamespace = "http://test.plugin.bps.de/")
@@ -46,6 +48,11 @@ public class TraineeStatusService {
 	@WebMethod(operationName = "updateStatus")
 	public void updateStatus(@WebParam(name = "testSessionId") Long testSessionId, @WebParam(name = "studentIds") StudentIdsWrapper studentIds,
 			@WebParam(name = "status") Integer status) {
+		if(!CoreSpringFactory.getImpl(OnyxModule.class).isEnabled()) {
+			log.warn("TraineeStatusService unauthorized attempt, service disabled");
+			throw new RuntimeException("Onyx plugin disabled");
+		}
+		
 		TestState testState = TestState.getState(status);
 		log.info("updateStatus: " + testSessionId + " # " + studentIds + " # " + testState);
 

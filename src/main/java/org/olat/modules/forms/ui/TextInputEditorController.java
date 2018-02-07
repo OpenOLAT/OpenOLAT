@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -59,12 +58,6 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		initForm(ureq);
 	}
 	
-	public TextInputEditorController(UserRequest ureq, WindowControl wControl, TextInput textInput, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "textinput_editor", rootForm);
-		this.textInput = textInput;
-		initForm(ureq);
-	}
-	
 	@Override
 	public boolean isEditMode() {
 		return editMode;
@@ -73,7 +66,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 	@Override
 	public void setEditMode(boolean editMode) {
 		this.editMode = editMode;
-		flc.getFormItemComponent().contextPut("editMode", new Boolean(editMode));
+		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override

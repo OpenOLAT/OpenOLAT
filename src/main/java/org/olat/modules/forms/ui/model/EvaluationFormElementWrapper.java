@@ -47,6 +47,8 @@ public class EvaluationFormElementWrapper {
 	
 	private RadarChartElement radarEl;
 	private TextInputWrapper textInput;
+	private FileUploadWrapper fileUploadWrapper;
+	private FileUploadCompareWrapper fileUploadCompareWrapper;
 	private List<SliderWrapper> sliders;
 	
 	public EvaluationFormElementWrapper(AbstractElement element) {
@@ -110,6 +112,30 @@ public class EvaluationFormElementWrapper {
 		this.textInput = textInput;
 	}
 	
+	public boolean isFileUpload() {
+		return fileUploadWrapper != null;
+	}
+	
+	public FileUploadWrapper getFileUploadWrapper() {
+		return fileUploadWrapper;
+	}
+
+	public void setFileUploadWrapper(FileUploadWrapper fileUploadWrapper) {
+		this.fileUploadWrapper = fileUploadWrapper;
+	}
+	
+	public boolean isFileUploadCompare() {
+		return fileUploadCompareWrapper != null;
+	}
+
+	public FileUploadCompareWrapper getFileUploadCompareWrapper() {
+		return fileUploadCompareWrapper;
+	}
+
+	public void setFileUploadCompareWrapper(FileUploadCompareWrapper fileUploadCompareWrapper) {
+		this.fileUploadCompareWrapper = fileUploadCompareWrapper;
+	}
+
 	public static int getWidthInPercent(Rubric rubric) {
 		if(rubric.getSliderType() == SliderType.discrete) {
 			int steps = rubric.getSteps();
