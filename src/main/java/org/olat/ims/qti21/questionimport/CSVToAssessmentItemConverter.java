@@ -22,10 +22,13 @@ package org.olat.ims.qti21.questionimport;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -39,6 +42,7 @@ import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBui
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
@@ -61,11 +65,13 @@ public class CSVToAssessmentItemConverter {
 	private int currentLine;
 	private int kprimPosition = 0;
 	private ImportOptions options;
+	private final Locale locale;
 	private final QtiSerializer qtiSerializer;
 	private AssessmentItemAndMetadata currentItem;
 	private final List<AssessmentItemAndMetadata> items = new ArrayList<>();
 	
-	public CSVToAssessmentItemConverter(ImportOptions options, QtiSerializer qtiSerializer) {
+	public CSVToAssessmentItemConverter(ImportOptions options, Locale locale, QtiSerializer qtiSerializer) {
+		this.locale = locale;
 		this.options = options;
 		this.qtiSerializer = qtiSerializer;
 	}
@@ -376,6 +382,13 @@ public class CSVToAssessmentItemConverter {
 					itemBuilder = initMatchAssessmentItemBuilder(matchBuilder);
 					break;
 				}
+				case "truefalse": {
+					Translator trans = Util.createPackageTranslator(AssessmentItemEditorController.class, locale);
+					MatchAssessmentItemBuilder matchBuilder = new MatchAssessmentItemBuilder("Matrix", QTI21Constants.CSS_MATCH_TRUE_FALSE,
+							trans.translate("match.unanswered"), trans.translate("match.true"), trans.translate("match.false"), qtiSerializer);
+					itemBuilder = initMatchAssessmentItemBuilderForTrueFalse(matchBuilder);
+					break;
+				}
 				default: {
 					itemBuilder = null;
 				}
@@ -424,6 +437,19 @@ public class CSVToAssessmentItemConverter {
 		matchBuilder.setShuffle(options.isShuffle());
 		matchBuilder.setMultipleChoice(true);
 		matchBuilder.addMatchInteractionClass(QTI21Constants.CSS_MATCH_SOURCE_LEFT);
+		matchBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+		return matchBuilder;
+	}
+	
+	private MatchAssessmentItemBuilder initMatchAssessmentItemBuilderForTrueFalse(MatchAssessmentItemBuilder matchBuilder) {
+		//reset
+		matchBuilder.setQuestion("");
+		matchBuilder.clearAssociations();
+		matchBuilder.clearMapping();
+		matchBuilder.getSourceChoices().clear();
+		//set default options
+		matchBuilder.setShuffle(false);
+		matchBuilder.setMultipleChoice(false);
 		matchBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
 		return matchBuilder;
 	}
@@ -513,6 +539,9 @@ public class CSVToAssessmentItemConverter {
 		} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
+		} else if(itemBuilder instanceof MatchAssessmentItemBuilder) {
+			itemBuilder.setMinScore(0.0d);
+			itemBuilder.setMaxScore(points);
 		}
 	}
 	
@@ -567,18 +596,20 @@ public class CSVToAssessmentItemConverter {
 			}
 		} else {
 			String answer = parts[0];
-			SimpleAssociableChoice sourceChoice = AssessmentItemFactory
-					.createSimpleAssociableChoice(answer, matchBuilder.getSourceMatchSet());
-			matchBuilder.getSourceChoices().add(sourceChoice);
-			
-			//correct answer and points
-			for(int i=1; i<parts.length && i<(targetChoices.size() + 1); i++) {
-				double point = parseFloat(parts[i], 0.0f);
-				SimpleAssociableChoice targetChoice = targetChoices.get(i - 1);
-				DirectedPairValue directedPair = new DirectedPairValue(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
-				matchBuilder.addScore(directedPair, Double.valueOf(point));
-				if(point > 0.0) {
-					matchBuilder.addAssociation(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
+			if(StringHelper.containsNonWhitespace(answer)) {
+				SimpleAssociableChoice sourceChoice = AssessmentItemFactory
+						.createSimpleAssociableChoice(answer, matchBuilder.getSourceMatchSet());
+				matchBuilder.getSourceChoices().add(sourceChoice);
+				
+				//correct answer and points
+				for(int i=1; i<parts.length && i<(targetChoices.size() + 1); i++) {
+					double point = parseFloat(parts[i], 0.0f);
+					SimpleAssociableChoice targetChoice = targetChoices.get(i - 1);
+					DirectedPairValue directedPair = new DirectedPairValue(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
+					matchBuilder.addScore(directedPair, Double.valueOf(point));
+					if(point > 0.0) {
+						matchBuilder.addAssociation(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
+					}
 				}
 			}
 		}

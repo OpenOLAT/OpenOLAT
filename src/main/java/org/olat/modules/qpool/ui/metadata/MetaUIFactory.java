@@ -78,8 +78,9 @@ public class MetaUIFactory {
 		int count = 0;
 		for(QEducationalContext level:levels) {
 			contextKeys[count] = level.getLevel();
-			String translation = translator.translate("item.level." + level.getLevel().toLowerCase());
-			if(translation.length() > 128) {
+			String i18nKey = "item.level." + level.getLevel().toLowerCase();
+			String translation = translator.translate(i18nKey);
+			if(i18nKey.equals(translation) || translation.length() > 256) {
 				translation = level.getLevel();
 			}
 			contextValues[count++] = translation;

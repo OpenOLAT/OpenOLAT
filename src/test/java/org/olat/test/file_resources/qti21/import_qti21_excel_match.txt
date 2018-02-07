@@ -1,0 +1,29 @@
+Typ	MATRIX		
+Title	Hauptstädte Europas		
+Question	Hauptstädte Europas	
+Feedback correct answer	Bravo! Die Antwort ich absolut korrekt weil ban wirklich verbannen heisst.		
+Points	3		
+	Deutschland	Frankreich	Schweiz
+Berlin	1	0	0
+Bern	0	0	1
+Paris	0	1	0
+			
+			
+Typ	Drag&drop		
+Title	Hauptstädte Afrika		
+Question	Hauptstädte Afrika		
+Points	3		
+	Algerien	Kenia	Namibia
+Nairobi	0	1	0
+Windhoek	0	0	1
+Algier	1	0	0
+			
+			
+Typ	Truefalse		
+Title	Hauptstädte Europa		
+Question	Hauptstädte Europa		
+Points	3		
+	Unanswered	Right	Wrong
+Paris ist in Frankreich	0	1	0
+Bern ist in Schweiz	0	1	0
+Stockholm ist in Danemark	0	0	1

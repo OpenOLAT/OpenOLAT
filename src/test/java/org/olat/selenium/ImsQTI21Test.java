@@ -674,50 +674,6 @@ public class ImsQTI21Test extends Deployments {
 			.assertOnCourseAssessmentTestScore(1)
 			.assertOnAssessmentResults();
 	}
-	
-	/**
-	 * Check if the hotspot interaction send a "correct" feedback.
-	 * 
-	 * @param authorLoginPage
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Test
-	@RunAsClient
-	public void qti21GraphicInteraction(@InitialPage LoginPage authorLoginPage)
-	throws IOException, URISyntaxException {
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
-		
-		//upload a test
-		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
-		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_hotspot.zip");
-		File qtiTestFile = new File(qtiTestUrl.toURI());
-		navBar
-			.openAuthoringEnvironment()
-			.uploadResource(qtiTestTitle, qtiTestFile)
-			.clickToolbarRootCrumb();
-		
-		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
-		qtiPage
-			.options()
-			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
-			.save();
-		// to the test and spot it
-		qtiPage
-			.clickToolbarBack()
-			.assertOnAssessmentItem()
-			.answerHotspot("circle")
-			.saveAnswer()
-			.assertFeedback("Correct!")
-			.endTest();
-		//check the results
-		qtiPage
-			.assertOnAssessmentResults()
-			.assertOnAssessmentTestScore(1)
-			.assertOnAssessmentTestMaxScore(1);
-	}
 
 	/**
 	 * Upload a test in QTI 2.1 format, create a course, bind

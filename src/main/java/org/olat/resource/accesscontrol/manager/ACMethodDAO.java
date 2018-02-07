@@ -188,7 +188,7 @@ public class ACMethodDAO implements InitializingBean {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
 			.append(" where method.valid=true")
-			.append(" and method.class=").append(type.getName());
+			.append(" and type(method) =").append(type.getName());
 
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		List<AccessMethod> methods = query.getResultList();
@@ -378,7 +378,7 @@ public class ACMethodDAO implements InitializingBean {
 	protected void activateFreeMethod(boolean enable) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
-			.append(" method where method.class=").append(FreeAccessMethod.class.getName());
+			.append(" method where type(method) =").append(FreeAccessMethod.class.getName());
 
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		List<AccessMethod> methods = query.getResultList();

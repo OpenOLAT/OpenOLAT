@@ -51,6 +51,7 @@ public enum QTI21QuestionType {
 	kprim(true, "kprim", "o_mi_qtikprim", QuestionType.KPRIM),
 	match(true, "match", "o_mi_qtimatch", QuestionType.MATCH),
 	matchdraganddrop(true, "matchdraganddrop", "o_mi_qtimatch_draganddrop", QuestionType.MATCHDRAGANDDROP),
+	matchtruefalse(true, "matchtruefalse", "o_mi_qtimatch_truefalse", QuestionType.MATCHTRUEFALSE),
 	fib(true, "fib", "o_mi_qtifib", QuestionType.FIB),
 	numerical(true, "numerical", "o_mi_qtinumerical", QuestionType.NUMERICAL),
 	hotspot(true, "hotspot", "o_mi_qtihotspot", QuestionType.HOTSPOT),
@@ -212,6 +213,8 @@ public enum QTI21QuestionType {
 			Cardinality cardinalty = responseDeclaration.getCardinality();
 			if(hasClass(interaction, QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
 				return QTI21QuestionType.matchdraganddrop;
+			} else if(hasClass(interaction, QTI21Constants.CSS_MATCH_TRUE_FALSE)) {
+				return QTI21QuestionType.matchtruefalse;
 			} else if(cardinalty.isMultiple()) {
 				if(hasClass(interaction, QTI21Constants.CSS_MATCH_KPRIM)) {
 					return QTI21QuestionType.kprim;

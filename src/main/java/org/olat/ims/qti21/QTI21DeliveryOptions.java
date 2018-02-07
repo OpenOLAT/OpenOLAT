@@ -227,7 +227,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.displayScoreProgress = false;
 		defaultSettings.displayQuestionProgress = false;
 		defaultSettings.hideFeedbacks = false;
-		defaultSettings.hideLms = false;
+		defaultSettings.hideLms = true;
 		defaultSettings.showMenu = true;
 		defaultSettings.showTitles = true;
 		defaultSettings.personalNotes = false;

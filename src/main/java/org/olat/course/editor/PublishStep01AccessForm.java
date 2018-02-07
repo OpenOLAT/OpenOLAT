@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -82,6 +83,8 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 			RepositoryEntryAllowToLeaveOptions.never.name()
 		};
 	
+	private static final String[] onKeys = new String[] { "on" };
+	
 	private SingleSelection leaveEl;
 	
 	private RepositoryEntry entry;
@@ -104,7 +107,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	private static final String MEMBERSONLY_KEY = "m";
 	private String[] publishedKeys;
 	
-	
+	private MultipleSelectionElement confirmationEmailEl;
 	private List<FormLink> addMethods = new ArrayList<>();
 	private List<OfferAccess> offerAccess = new ArrayList<>();
 	private List<OfferAccess> deletedOfferAccess = new ArrayList<>();
@@ -171,6 +174,11 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		
 		accessProperties.setOfferAccess(offerAccess);
 		accessProperties.setDeletedOfferAccess(deletedOfferAccess);
+		if(confirmationEmailEl.isVisible()) {
+			accessProperties.setConfirmationEmail(confirmationEmailEl.isAtLeastSelected(1));
+		} else {
+			accessProperties.setConfirmationEmail(null);
+		}
 					
 		addToRunContext("accessAndProperties", accessProperties);	
 		
@@ -310,11 +318,24 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 			accessLayout.contextPut("methods", addMethods);
 		}
 		
+		String[] onValues = new String[] { "" };
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", accessLayout, onKeys, onValues);
+		confirmationEmailEl.addActionListener(FormEvent.ONCHANGE);
+		confirmationEmailEl.setVisible(false);
+
 		String confPage = velocity_root + "/configuration_list.html";
 		confControllerContainer = FormLayoutContainer.createCustomFormLayout("conf-controllers", getTranslator(), confPage);
 		accessLayout.add(confControllerContainer);
 		
 		loadConfigurations();
+		
+		boolean confirmationEmail = false;
+		for(AccessInfo info:confControllers) {
+			confirmationEmail |= info.getLink().getOffer().isConfirmationEmail();
+		}
+		if(confirmationEmail) {
+			confirmationEmailEl.select(onKeys[0], true);
+		}
 		
 		confControllerContainer.contextPut("confControllers", confControllers);
 		
@@ -350,6 +371,14 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 			delLink.setUserObject(infos);
 			delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			confControllerContainer.add(delLink.getName(), delLink);
+		}
+		updateConfirmationEmail();
+	}
+	
+	private void updateConfirmationEmail() {
+		if(confirmationEmailEl.isVisible() != !confControllers.isEmpty()) {
+			confirmationEmailEl.setVisible(!confControllers.isEmpty());
+			accessLayout.setDirty(true);
 		}
 	}
 	
@@ -504,6 +533,12 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		} else if(addMethods.contains(source)) {
 			AccessMethod method = (AccessMethod)source.getUserObject();
 			addMethod(ureq, method);
+		} else if(confirmationEmailEl == source) {
+			for(AccessInfo info:confControllers) {
+				if(!offerAccess.contains(info.getLink())) {
+					offerAccess.add(info.getLink());
+				}
+			}
 		} else if (source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
@@ -515,6 +550,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 					deletedOfferAccess.add(deleteOffer);			
 				}
 				confControllers.remove(infos);
+				updateConfirmationEmail();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("edit".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();

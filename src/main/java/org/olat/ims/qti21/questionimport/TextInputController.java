@@ -91,7 +91,7 @@ public class TextInputController extends StepFormBasicController {
 		
 		String inp = inputElement.getValue();
 		if(validatedInp == null || !validatedInp.equals(inp)) {
-			CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, qtiService.qtiSerializer());
+			CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, getLocale(), qtiService.qtiSerializer());
 			try {
 				converter.parse(inputElement.getValue());
 				List<AssessmentItemAndMetadata> items = converter.getItems();
@@ -110,7 +110,7 @@ public class TextInputController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, qtiService.qtiSerializer());
+		CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, getLocale(), qtiService.qtiSerializer());
 		converter.parse(inputElement.getValue());
 		importedItems.setItems(converter.getItems());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

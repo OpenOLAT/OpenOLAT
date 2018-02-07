@@ -122,6 +122,11 @@ public class QTI21EditorPage {
 		return new QTI21MatchEditorPage(browser);
 	}
 	
+	public QTI21MatchEditorPage addMatchTrueFalse() {
+		addQuestion(QTI21QuestionType.matchtruefalse);
+		return new QTI21MatchEditorPage(browser);
+	}
+	
 	public QTI21LobEditorPage addUpload() {
 		addQuestion(QTI21QuestionType.upload);
 		return new QTI21LobEditorPage(browser);

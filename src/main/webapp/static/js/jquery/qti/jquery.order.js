@@ -10,7 +10,6 @@
 		}, options );
 
 		try {
-			console.log(settings.responseValue);
 			if(typeof settings.responseValue != "undefined" && settings.responseValue.length > 0) {
 				recalculate(settings);
 			}

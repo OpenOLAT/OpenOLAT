@@ -41,6 +41,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -49,6 +50,7 @@ import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -113,11 +115,11 @@ public class ACFrontendManager implements ACService {
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	/**
 	 * The rule to access the repository entry:<br/>
@@ -479,14 +481,19 @@ public class ACFrontendManager implements ACService {
 		if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				EnrollState result = businessGroupService.enroll(identity, null, identity, group, null);
-				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
+				MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
+				EnrollState result = businessGroupService.enroll(identity, null, identity, group, mailing);
+				return !result.isFailed();
 			}
 		} else {
-			RepositoryEntryRef entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
 			if(entry != null) {
 				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+					if(offer.isConfirmationEmail()) {
+						MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
+						RepositoryMailing.sendEmail(identity, identity, entry, RepositoryMailing.Type.addParticipantItself, mailing);
+					}
 				}
 				return true;
 			}

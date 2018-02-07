@@ -136,8 +136,7 @@ public class TaxonomyDAO implements InitializingBean{
 		File directory = new File(storage, type);
 		directory.mkdirs();
 		Path relativePath = rootDirectory.toPath().relativize(directory.toPath());
-		String relativePathString = relativePath.toString();
-		return relativePathString;
+		return relativePath.toString();
 	}
 	
 	public VFSContainer getDocumentsLibrary(Taxonomy taxonomy) {

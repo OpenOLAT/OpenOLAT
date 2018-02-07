@@ -554,6 +554,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return AssessmentRenderFunctions.valueContains(value, string);
 	}
 	
+	public boolean trueFalseDefault(Value response, String targetIdentifier, MatchInteraction interaction) {
+		return AssessmentRenderFunctions.trueFalseDefault(response, targetIdentifier, interaction);
+	}
+	
 	public ResponseData getResponseInput(Identifier identifier) {
 		return AssessmentRenderFunctions.getResponseInput(itemSessionState, identifier);
 	}

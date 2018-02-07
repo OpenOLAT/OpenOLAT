@@ -37,6 +37,7 @@ public class CourseAccessAndProperties {
 	private boolean canCopy;
 	private boolean canReference;
 	private boolean canDownload;	
+	private Boolean confirmationEmail;
 	
 	private List<OfferAccess> offerAccess;
 	private List<OfferAccess> deletedOfferAccess;
@@ -126,5 +127,13 @@ public class CourseAccessAndProperties {
 
 	public void setCanDownload(boolean canDownload) {
 		this.canDownload = canDownload;
+	}
+
+	public Boolean getConfirmationEmail() {
+		return confirmationEmail;
+	}
+
+	public void setConfirmationEmail(Boolean confirmationEmail) {
+		this.confirmationEmail = confirmationEmail;
 	}
 }

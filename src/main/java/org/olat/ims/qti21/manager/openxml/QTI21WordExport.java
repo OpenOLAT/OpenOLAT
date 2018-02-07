@@ -680,6 +680,8 @@ public class QTI21WordExport implements MediaResource {
 				} else {
 					startMatchDragAndDropVertical(matchInteraction);
 				}
+			} else if(cssClasses != null && cssClasses.contains(QTI21Constants.CSS_MATCH_TRUE_FALSE)) {
+				startMatchTrueFalse(matchInteraction);
 			} else {
 				startMatchMatrix(matchInteraction);
 			}
@@ -795,6 +797,58 @@ public class QTI21WordExport implements MediaResource {
 				contentCell.appendChild(factory.createParagraphEl());
 				currentTable.closeRow();
 			}
+			endTable();
+		}
+		
+		private void startMatchTrueFalse(MatchInteraction matchInteraction) {
+			SimpleMatchSet questionMatchSetVertical = matchInteraction.getSimpleMatchSets().get(0);
+			SimpleMatchSet questionMatchSetHorizontal = matchInteraction.getSimpleMatchSets().get(1);
+			List<SimpleAssociableChoice> horizontalAssociableChoices = questionMatchSetHorizontal.getSimpleAssociableChoices();
+			List<SimpleAssociableChoice> verticalAssociableChoices = questionMatchSetVertical.getSimpleAssociableChoices();
+			
+			// calculate the width of the table () and of its columns
+			int tableWidthDxa = OpenXMLConstants.TABLE_FULL_WIDTH_DXA;
+			int tableWidthPct = OpenXMLConstants.TABLE_FULL_WIDTH_PCT;
+			int halfTableWidthDxa = tableWidthDxa / 2;
+			int halfTableWidthPct = tableWidthPct / 2;
+
+			int numOfColumns = horizontalAssociableChoices.size();
+			int columnWidthDxa = halfTableWidthDxa / numOfColumns;
+			int columnWidthPct = halfTableWidthPct / numOfColumns;
+			
+			Integer[] columnsWidth = new Integer[numOfColumns + 1];
+			for(int i=numOfColumns; i-->0; ) {
+				columnsWidth[i] = columnWidthDxa;
+			}
+			columnsWidth[numOfColumns] = halfTableWidthDxa;
+			startTable(columnsWidth);
+
+			currentTable.addRowEl();
+			
+			// horizontal headers
+			for(SimpleAssociableChoice choice:horizontalAssociableChoices) {
+				Element answerCell = currentTable.addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
+				appendSimpleAssociableChoice(choice, answerCell);
+			}
+			// white corner
+			Node emptyCell = currentTable.addCellEl(factory.createTableCell(null, halfTableWidthDxa, Unit.dxa), 1);
+			emptyCell.appendChild(factory.createParagraphEl(""));		
+			currentTable.closeRow();
+
+			for(SimpleAssociableChoice choice:verticalAssociableChoices) {
+				currentTable.addRowEl();
+				//checkbox
+				for(SimpleAssociableChoice horizontalChoice:horizontalAssociableChoices) {
+					boolean correct = isCorrectMatchResponse(choice.getIdentifier(), horizontalChoice.getIdentifier(), matchInteraction);
+					appendMatchCheckBox(correct, columnWidthPct, factory);
+				}
+				//answer
+				Element answerCell = currentTable.addCellEl(factory.createTableCell("E9EAF2", halfTableWidthPct, Unit.pct), 1);
+				appendSimpleAssociableChoice(choice, answerCell) ;
+				
+				currentTable.closeRow();
+			}
+			
 			endTable();
 		}
 		

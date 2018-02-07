@@ -889,6 +889,7 @@ create table o_ac_offer (
   resourcedisplayname varchar(255 char),
   token varchar(255 char),
   autobooking number default 0 not null,
+  confirmation_email number default 0,
   price_amount number(20,2),
   price_currency_code VARCHAR(3 char),
   offer_desc VARCHAR(2000 char),

@@ -13,7 +13,7 @@
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 	<div id="${containerId}">
-		<div id="${containerId}_items" class="clearfix" style="padding:15px;">
+		<div id="${containerId}_items" class="o_associate_items clearfix" style="padding:15px;">
         	#foreach($choice in $choices)
             	<div data-qti-id="${choice.identifier}" data-qti-match-max="${choice.matchMax}" class="o_associate_item" style="width: 100px; float:left;">
               		$r.renderFlowStatics($choice.getFlowStatics())

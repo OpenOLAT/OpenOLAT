@@ -40,6 +40,19 @@ import org.w3c.dom.NodeList;
  */
 public class XMLDigitalSignatureUtilTest {
 	
+	/**
+	 * Preliminary test which read the certificate. The method is used in
+	 * every other test of the class.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void readCertificatePrivateKeyPair() throws Exception {
+		X509CertificatePrivateKeyPair keyPair = getCertificatePrivateKeyPair();
+		Assert.assertNotNull(keyPair);
+		Assert.assertNotNull(keyPair.getPrivateKey());
+		Assert.assertNotNull(keyPair.getX509Cert());
+	}
 	
 	/**
 	 * Check if the cycle sign -> validation works

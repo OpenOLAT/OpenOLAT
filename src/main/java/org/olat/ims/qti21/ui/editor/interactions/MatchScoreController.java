@@ -80,16 +80,18 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	private int count = 0;
 	private final String mapperUri;
 	private final File itemFileRef;
+	private final boolean sourceLeft;
 	private List<MatchWrapper> sourceWrappers = new ArrayList<>();
 	private List<MatchWrapper> targetWrappers = new ArrayList<>();
 	private Map<DirectedPairValue, MatchScoreWrapper> scoreWrappers = new HashMap<>();
 	
 	public MatchScoreController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
-			AssessmentItemRef itemRef, File itemFileRef, boolean restrictedEdit, boolean readOnly) {
+			AssessmentItemRef itemRef, File itemFileRef, boolean sourceLeft, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFileRef = itemFileRef;
+		this.sourceLeft = sourceLeft;
 		
 		URI assessmentObjectUri = itemFileRef.toURI();
 		mapperUri = registerCacheableMapper(null, "MatchScoreController::" + CodeHelper.getRAMUniqueID(),
@@ -133,6 +135,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
 		scoreCont.setVisible(assessmentModeEl.isSelected(1));
+		scoreCont.contextPut("sourceLeft", Boolean.valueOf(sourceLeft));
 		
 		for(SimpleAssociableChoice choice:itemBuilder.getSourceMatchSet().getSimpleAssociableChoices()) {
 			sourceWrappers.add(createMatchWrapper(choice));

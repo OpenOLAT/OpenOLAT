@@ -1,0 +1,49 @@
+<fieldset class="o_form form-horizontal">
+
+<table id="qti_container_${responseIdentifier}" class="table match_true_false o_match_true_false_edit">
+	<thead>
+		<tr>
+			#foreach($targetChoice in $targetChoices)
+				<th class="o_sel_match_target_${foreach.index}" style="border-top: none;">${targetChoice.getChoiceText()}</th>
+			#end
+			<th style="border-top: none;"> </th>
+		</tr>
+	</thead>
+	<tbody>
+	#foreach($sourceChoice in $sourceChoices)
+		#set($set1Identifier = $sourceChoice.getIdentifierString())
+		<tr>
+			#set($sourceIndex = ${foreach.index})
+			#foreach($targetChoice in $targetChoices)
+				#set($set2Identifier = $targetChoice.getIdentifierString())
+				#set($responseValue = $set1Identifier + " " + $set2Identifier)
+				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
+					<input id="oo_${set1Identifier}_${set2Identifier}" type="radio" name="${set1Identifier}" value="${set2Identifier}" #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end #if($restrictedEdit) disabled #end/>
+					$f.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
+					#if(${sourceChoice.isErrorSingleChoice()})
+						<div class="o_error">$r.translate("error.singlechoice")</div>
+					#end
+				</td>
+			#end
+			<th class="o_sel_match_source_${foreach.index}">$r.render(${sourceChoice.getText()})
+				#if($f.hasError($item))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+				#end
+				#if(!$restrictedEdit) <div class="pull-right">$r.render(${sourceChoice.getDeleteButton()})</div> #end
+			</th>
+		</tr>
+	#end
+	</tbody>
+</table>
+
+#if($r.available("add.match.row") || $r.available("submit"))
+<div class="o_button_group o_sel_match_save">
+	#if($r.available("submit"))
+		$r.render("submit")
+	#end
+	#if($r.available("add.match.row"))
+		$r.render("add.match.row")
+	#end
+</div>
+#end
+</fieldset>

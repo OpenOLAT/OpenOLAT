@@ -1,0 +1,54 @@
+#set($responseIdentifier = $r.responseUniqueId($interaction))
+#set($orderedSet1 = $r.getVisibleOrderedChoices($interaction,0))
+#set($orderedSet2 = $r.getVisibleOrderedChoices($interaction,1))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName match_true_false">
+	#if($interaction.getPrompt())
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
+	#end
+	
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
+	#end
+	<table id="qti_container_${responseIdentifier}" class="table">
+		<thead>
+			<tr>
+            	#foreach($choice2 in $orderedSet2)
+				<th class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">$r.renderFlowStatics($choice2.getFlowStatics())</th>
+			#end
+				<th class="o_match_true_false_answer"> </th>
+			</tr>
+        </thead>
+		<tbody>
+		#foreach($choice1 in $orderedSet1)
+			#set($set1Identifier = $r.toString($choice1.identifier))
+            <tr>
+				#foreach($choice2 in $orderedSet2)
+					#set($set2Identifier = $r.toString($choice2.identifier))
+					#set($responseValue = $set1Identifier + " " + $set2Identifier)
+					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
+                	<td class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
+                  	<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction)) checked #end #if($r.isItemSessionEnded()) disabled #end/>
+                		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
+                	</td>
+				#end
+				<td class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
+            </tr>
+		#end
+		</tbody>
+	</table>
+	#if($r.isItemSessionOpen())
+        <script type='text/javascript'>
+		jQuery(function() {
+			jQuery('#qti_container_${responseIdentifier}').matchInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				maxAssociations: $interaction.maxAssociations,
+				leftData: {#foreach($choice1 in $orderedSet1) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},
+				rightData: {#foreach($choice2 in $orderedSet2) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end}
+			});
+		});
+        </script>
+	#end
+</div>

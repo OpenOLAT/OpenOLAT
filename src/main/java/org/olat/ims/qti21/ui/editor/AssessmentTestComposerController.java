@@ -154,7 +154,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
-			newKPrimLink, newMatchLink, newMatchDragAndDropLink,
+			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
 			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink,
 			newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
@@ -278,7 +278,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newMatchDragAndDropLink = LinkFactory.createToolLink("new.matchdraganddrop", translate("new.matchdraganddrop"), this, "o_mi_qtimatch_draganddrop");
 		newMatchDragAndDropLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newMatchDragAndDropLink);
-		
+		newMatchTrueFalseLink = LinkFactory.createToolLink("new.matchtruefalse", translate("new.matchtruefalse"), this, "o_mi_qtimatch_truefalse");
+		newMatchTrueFalseLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newMatchTrueFalseLink);
+
 		newFIBLink = LinkFactory.createToolLink("new.fib", translate("new.fib"), this, "o_mi_qtifib");
 		newFIBLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newFIBLink);
@@ -514,6 +517,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.match"), QTI21Constants.CSS_MATCH_MATRIX, qtiService.qtiSerializer()));
 		} else if(newMatchDragAndDropLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.matchdraganddrop"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()));
+		} else if(newMatchTrueFalseLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.matchtruefalse"), QTI21Constants.CSS_MATCH_TRUE_FALSE,
+					translate("match.unanswered"), translate("match.true"), translate("match.false"), qtiService.qtiSerializer()));
 		} else if(newFIBLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib"), EntryType.text, qtiService.qtiSerializer()));
 		} else if(newNumericalLink == source) {
