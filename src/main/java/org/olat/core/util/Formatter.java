@@ -59,6 +59,7 @@ import org.olat.core.helpers.Settings;
  */
 public class Formatter {
 
+	private static final int BYTE_UNIT = 1000;
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
 	private static final DateFormat formatterDatetimeWithMinutes = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -384,18 +385,23 @@ public class Formatter {
 		return DurationFormatUtils.formatDuration(timecode, "H:mm", true);
 	}
 
+	public static String formatKBytes(long kBytes) {
+		return formatBytes(BYTE_UNIT * kBytes);
+	}
+	
 	/**
 	 * Format the given bytes to human readable format
 	 * @param bytes the byte count
 	 * @return human readable formatted bytes
 	 */
 	public static String formatBytes(long bytes) {
-	    int unit = 1000;
+	    int unit = BYTE_UNIT;
 	    if (bytes < unit) return bytes + " B";
 	    int exp = (int) (Math.log(bytes) / Math.log(unit));
 	    String pre = "kMGTPE".charAt(exp-1) + "";
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
-	}	
+	}
+	
 	/**
 	 * Escape " with &quot; in strings
 	 * @param source

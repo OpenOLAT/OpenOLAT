@@ -71,7 +71,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		this.editMode = editMode;
 		titleItem.setVisible(editMode);
 		staticItem.setVisible(!editMode);
-		flc.getFormItemComponent().contextPut("editMode", new Boolean(editMode));
+		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override

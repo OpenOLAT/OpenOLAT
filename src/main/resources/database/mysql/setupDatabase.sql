@@ -1848,9 +1848,9 @@ create table o_eva_form_response (
    creationdate datetime not null,
    lastmodified datetime not null,
    e_responseidentifier varchar(64) not null,
-   e_responsedatatype varchar(16) not null,
    e_numericalresponse decimal default null,
    e_stringuifiedresponse mediumtext,
+   e_file_response_path varchar(4000);
    fk_session bigint not null,
    primary key (id)
 );

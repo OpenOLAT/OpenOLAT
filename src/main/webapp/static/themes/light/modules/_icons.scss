@@ -118,6 +118,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_extra_time:before { content: $fa-var-clock-o;}
 .o_icon_failed:before { content: $fa-var-times-circle;}
 .o_icon_files:before { content: $fa-var-files-o;}
+.o_icon_fileupload:before { content: $fa-var-file-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
 .o_icon_graduate:before { content: $fa-var-graduation-cap; }
 .o_icon_group:before, .o_BusinessGroup_icon:before { content: $fa-var-users; }

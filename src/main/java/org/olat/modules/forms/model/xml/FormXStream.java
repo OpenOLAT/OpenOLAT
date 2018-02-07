@@ -39,6 +39,7 @@ public class FormXStream {
 		xstream.alias("title", Title.class);
 		xstream.alias("rubric", Rubric.class);
 		xstream.alias("slider", Slider.class);
+		xstream.alias("fileupload", FileUpload.class);
 	}
 	
 	public static XStream getXStream() {

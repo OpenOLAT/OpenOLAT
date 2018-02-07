@@ -17,17 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
+package org.olat.core.util.vfs;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.media.MediaResource;
 
 /**
  * 
- * Initial date: 12 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 06.02.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum EvaluationFormResponseDataTypes {
+public class VFSLeafMapper implements Mapper {
 	
-	numerical,
-	text
+	private final VFSLeaf file;
+	
+	public VFSLeafMapper(VFSLeaf file) {
+		this.file = file;
+	}
 
+	@Override
+	public MediaResource handle(String relPath, HttpServletRequest request) {
+		return new VFSMediaResource(file);
+	}
 }

@@ -17,28 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.forms.ui.model;
 
-import java.util.List;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.modules.forms.model.xml.FileUpload;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 02.02.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorProvider extends PageProvider {
+public class FileUploadWrapper {
 	
-	public List<PageElementHandler> getCreateHandlers();
+	private final FileElement fileEl;
+	private final FileUpload fileUpload;
 	
-	public PageElement appendPageElement(PageElement element);
+	public FileUploadWrapper(FileElement fileEl, FileUpload fileUpload) {
+		this.fileEl = fileEl;
+		this.fileUpload = fileUpload;
+	}
 	
-	public PageElement appendPageElementAt(PageElement element, int index);
+	public String getId() {
+		return fileUpload.getId();
+	}
 	
-	public void removePageElement(PageElement element);
-
-	public void moveUpPageElement(PageElement element);
+	public FileElement getFileEl() {
+		return fileEl;
+	}
 	
-	public void moveDownPageElement(PageElement element);
+	public FileUpload getFileUpload() {
+		return fileUpload;
+	}
 	
 }

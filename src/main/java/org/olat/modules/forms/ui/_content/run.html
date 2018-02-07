@@ -126,6 +126,30 @@
 			<div class="o_evaluation_text">$r.xssScan($element.textInputWrapper.content)</div>
 		#end
 		</div>
+	#elseif($element.isFileUpload())
+		<div class="o_evaluation_block o_evaluation_fileupload clearfix o_block_large #if($f.hasError($element.fileUploadWrapper.fileEl.getName())) has-feedback has-error #end">
+			$r.render($element.fileUploadWrapper.fileEl.getName())
+			#if($f.hasError($element.fileUploadWrapper.fileEl.getName()))
+				$r.render("$element.fileUploadWrapper.fileEl.getName()_ERROR")
+			#end
+		</div>
+	#elseif($element.isFileUploadCompare())
+		<div class="o_evaluation_block o_evaluation_fileupload clearfix o_block_large">
+			<div class="o_evaluation_legend" style="border-left: 3px solid $element.fileUploadCompareWrapper.color">
+				<h6>$r.escapeHtml($element.fileUploadCompareWrapper.evaluator)</h6>
+			</div>
+			#if($r.isNotNull($element.fileUploadCompareWrapper.thumbUri))
+				<div class="o_evaluation_thumb">
+					<img src="$element.fileUploadCompareWrapper.thumbUri/$element.fileUploadCompareWrapper.filename"/>
+				</div>
+			#end
+			<div class="o_evaluation_filename">
+				<a href="$element.fileUploadCompareWrapper.mapperUri/$element.fileUploadCompareWrapper.filename" target="_blank">
+					<i class="o_icon $element.fileUploadCompareWrapper.iconCss"></i> $element.fileUploadCompareWrapper.filename
+				</a>
+				<span class="o_size">($element.fileUploadCompareWrapper.filesize)</span>
+			</div>
+		</div>
 	#end
 #end
 </div>

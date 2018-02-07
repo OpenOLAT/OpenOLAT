@@ -20,6 +20,7 @@
 package org.olat.modules.forms;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -39,6 +40,8 @@ public interface EvaluationFormResponse extends CreateInfo, ModifiedInfo {
 	public BigDecimal getNumericalResponse();
 	
 	public String getStringuifiedResponse();
+	
+	public Path getFileResponse();
 	
 	/**
 	 * The evaluation form session of this response.

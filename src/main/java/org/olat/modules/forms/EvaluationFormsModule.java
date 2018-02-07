@@ -19,8 +19,15 @@
  */
 package org.olat.modules.forms;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.forms.handler.EvaluationFormHandler;
@@ -38,6 +45,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class EvaluationFormsModule extends AbstractSpringModule implements ConfigOnOff {
 
+	private static final OLog log = Tracing.createLoggerFor(EvaluationFormsModule.class);
+
 	public static final String FORMS_ENABLED = "forms.enabled";
 	
 	@Autowired
@@ -45,6 +54,11 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 	
 	@Value("${forms.enabled:true}")
 	private boolean enabled;
+	
+	@Value("${forms.file.upload.limit.mb:5,10,20,50}")
+	private String fileUploadLimitsMB;
+	private List<Long> orderedFileUploadLimitsKB = new ArrayList<>(4);
+	private long maxFileUploadLimitsKB = FileElement.UPLOAD_UNLIMITED;
 	
 	@Autowired
 	public EvaluationFormsModule(CoordinatorManager coordinatorManager) {
@@ -57,8 +71,26 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
+		
+		initFileUploadLimit();
 
 		RepositoryHandlerFactory.registerHandler(formHandler, 40);
+	}
+
+	private void initFileUploadLimit() {
+		String[] limits = fileUploadLimitsMB.split(",");
+		for (String limit: limits) {
+			if (StringHelper.containsNonWhitespace(limit)) {
+				try {
+					long limitKB = Long.parseLong(limit) * 1000;
+					orderedFileUploadLimitsKB.add(limitKB);
+				} catch (Exception e) {
+					log.warn("The value '" + limit + "' for the property 'forms.file.upload.limit.mb' is no valid numver.");
+				}
+			}
+		}
+		Collections.sort(orderedFileUploadLimitsKB);
+		maxFileUploadLimitsKB = orderedFileUploadLimitsKB.get(orderedFileUploadLimitsKB.size() - 1);
 	}
 
 	@Override
@@ -75,7 +107,13 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 		this.enabled = enabled;
 		setStringProperty(FORMS_ENABLED, Boolean.toString(enabled), true);
 	}
-	
-	
 
+	public List<Long> getOrderedFileUploadLimitsKB() {
+		return orderedFileUploadLimitsKB;
+	}
+	
+	public long getMaxFileUploadLimitKB() {
+		return maxFileUploadLimitsKB;
+	}
+	
 }

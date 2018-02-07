@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.chart.RadarChartComponent.Format;
 import org.olat.core.gui.components.chart.RadarChartElement;
@@ -38,9 +40,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLeafMapper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -48,6 +53,7 @@ import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -58,6 +64,7 @@ import org.olat.modules.forms.ui.component.SliderOverviewElement;
 import org.olat.modules.forms.ui.component.SliderPoint;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
 import org.olat.modules.forms.ui.model.Evaluator;
+import org.olat.modules.forms.ui.model.FileUploadCompareWrapper;
 import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.TextInputWrapper;
 import org.olat.modules.portfolio.PageBody;
@@ -125,13 +132,13 @@ public class CompareEvaluationsFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		updateElements();
+		updateElements(ureq);
 	}
 	
-	private void updateElements() {
+	private void updateElements(UserRequest ureq) {
 		List<EvaluationFormElementWrapper> elementWrappers = new ArrayList<>();
 		for(AbstractElement element:form.getElements()) {
-			appendsElement(element, elementWrappers);
+			appendsElement(ureq, element, elementWrappers);
 		}
 
 		flc.contextPut("elements", elementWrappers);
@@ -152,7 +159,7 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		}
 	}
 	
-	private void appendsElement(AbstractElement element, List<EvaluationFormElementWrapper> wrappers) {
+	private void appendsElement(UserRequest ureq, AbstractElement element, List<EvaluationFormElementWrapper> wrappers) {
 		String type = element.getType();
 		switch(type) {
 			case "formhtitle":
@@ -174,18 +181,71 @@ public class CompareEvaluationsFormController extends FormBasicController {
 				break;
 			case "formtextinput":
 				List<EvaluationFormElementWrapper> inputWrappers = forgeTextInput((TextInput)element);
-				if(inputWrappers != null && inputWrappers.size() > 0) {
+				if(inputWrappers != null && !inputWrappers.isEmpty()) {
 					wrappers.addAll(inputWrappers);
 				}
 				break;
+			case "formfileupload":
+				List<EvaluationFormElementWrapper> fileUploadWrappers = forgeFileUpload(ureq, (FileUpload)element);
+				if(fileUploadWrappers != null && !fileUploadWrappers.isEmpty()) {
+					wrappers.addAll(fileUploadWrappers);
+				}
+				break;
 		}
+	}
+
+	private List<EvaluationFormElementWrapper> forgeFileUpload(UserRequest ureq, FileUpload element) {
+		List<EvaluationFormResponse> responses = identifierToResponses.get(element.getId());
+		if (responses == null) {
+			return new ArrayList<>();
+		}
+		List<EvaluationFormElementWrapper> fileUploadWrappers = new ArrayList<>(responses.size());
+		for (EvaluationFormResponse response:responses) {
+			if (response.getFileResponse() != null) {
+				FileUploadCompareWrapper fileUploadWrapper = createFileUploadCompareWrapper(ureq, element, response);
+				EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
+				wrapper.setFileUploadCompareWrapper(fileUploadWrapper);
+				fileUploadWrappers.add(wrapper);
+			}
+		}
+		return fileUploadWrappers;
+	}
+
+	private FileUploadCompareWrapper createFileUploadCompareWrapper(UserRequest ureq, FileUpload element,
+			EvaluationFormResponse response) {
+		Identity evaluator = response.getSession().getIdentity();
+		String color = evaluatorToColors.get(evaluator);
+		String evaluatorName = getLegend(evaluator);
+		String filename = response.getStringuifiedResponse();
+		String filesize = null;
+		String mapperUri = null;
+		String iconCss = null;
+		String thumbUri = null;
+		VFSLeaf leaf = evaluationFormManager.loadResponseLeaf(response);
+		if (leaf != null) {
+			filename = leaf.getName();
+			filesize = Formatter.formatBytes((leaf).getSize());
+			mapperUri = registerCacheableMapper(ureq, "file-upload-" + element.getId() + "-" + leaf.getLastModified(), new VFSLeafMapper(leaf));
+			iconCss = CSSHelper.createFiletypeIconCssClassFor(leaf.getName());
+			if (leaf instanceof MetaTagged) {
+				MetaTagged metaTaggedLeaf = (MetaTagged) leaf;
+				MetaInfo meta = metaTaggedLeaf.getMetaInfo();
+				if (meta != null && meta.isThumbnailAvailable()) {
+					VFSLeaf thumb = meta.getThumbnail(200, 200, false);
+					if (thumb != null) {
+						thumbUri = registerCacheableMapper(ureq, "file-upload-thumb" + element.getId() + "-" + leaf.getLastModified(), new VFSLeafMapper(thumb));;
+					}
+				}
+			}
+		}
+		return new FileUploadCompareWrapper(color, evaluatorName, filename, filesize, mapperUri, iconCss, thumbUri);
 	}
 
 	private List<EvaluationFormElementWrapper> forgeTextInput(TextInput element) {
 		List<EvaluationFormResponse> responses = identifierToResponses.get(element.getId());
 		if (responses == null) {
 			// in review - selbstreview ??
-			return new ArrayList<EvaluationFormElementWrapper>();
+			return new ArrayList<>();
 		}
 		List<EvaluationFormElementWrapper> inputWrappers = new ArrayList<>(responses.size());
 		for(EvaluationFormResponse response:responses) {
@@ -325,4 +385,5 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
 }
