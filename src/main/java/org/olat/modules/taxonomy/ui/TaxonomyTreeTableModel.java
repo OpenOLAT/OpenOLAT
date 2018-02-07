@@ -61,21 +61,28 @@ implements FilterableFlexiTableModel  {
 		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
 			Set<Long> typeKeys = new HashSet<>();
 			boolean noType = false;
+			boolean showAll = false;
 			for(FlexiTableFilter filter:filters) {
 				if("-".equals(filter.getFilter())) {
 					noType = true;
 				} else if(StringHelper.isLong(filter.getFilter())) {
 					typeKeys.add(new Long(filter.getFilter()));
+				} else if(filter.isShowAll()) {
+					showAll = true;
 				}
 			}
 			
-			List<TaxonomyLevelRow> filteredRows = new ArrayList<>(backupRows.size());
-			for(TaxonomyLevelRow row:backupRows) {
-				if(accept(row, typeKeys, noType)) {
-					filteredRows.add(row);
+			if(showAll) {
+				setUnfilteredObjects();
+			} else {
+				List<TaxonomyLevelRow> filteredRows = new ArrayList<>(backupRows.size());
+				for(TaxonomyLevelRow row:backupRows) {
+					if(accept(row, typeKeys, noType)) {
+						filteredRows.add(row);
+					}
 				}
+				setFilteredObjects(filteredRows);
 			}
-			setFilteredObjects(filteredRows);
 		} else {
 			setUnfilteredObjects();
 		}

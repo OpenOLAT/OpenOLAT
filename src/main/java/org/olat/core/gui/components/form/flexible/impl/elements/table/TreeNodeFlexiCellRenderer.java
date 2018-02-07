@@ -19,6 +19,9 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -70,9 +73,20 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	
 	private boolean isFlat(FlexiTableElementImpl ftE) {
 		return flatBySearchAndFilter
-				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || !ftE.getSelectedFilters().isEmpty());
+				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getSelectedFilters()));
 	}
-
+	
+	private boolean isFiltered(List<FlexiTableFilter> filters) {
+		if(filters == null || filters.isEmpty()) return false;
+		
+		boolean filtered = true;
+		for(FlexiTableFilter filter:filters) {
+			if(filter.isShowAll()) {
+				filtered &= false;
+			}
+		}
+		return filtered;
+	}
 	
 	private void renderIndented(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
