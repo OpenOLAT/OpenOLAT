@@ -93,7 +93,6 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
@@ -276,35 +275,31 @@ public class CourseWebService {
 	@Path("file")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getRepoFileById(@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if (re == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-
+		
 		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 		if (typeToDownload == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Identity identity = getIdentity(request);
+		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
+		if (isAdmin(request) || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re)) {
+			canDownload = true;
+		} else if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		if(!canDownload) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
 		if (ores == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-
-		Identity identity = getIdentity(request);
-		boolean isAuthor = RestSecurityHelper.isAuthor(request);
-		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re);
-		if (!(isAuthor | isOwner)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
-		if (!canDownload) {
-			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 
 		boolean isAlreadyLocked = typeToDownload.isLocked(ores);

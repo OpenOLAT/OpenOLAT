@@ -62,12 +62,12 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>4.3.12.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.2.12.Final</org.hibernate.version>
+		<org.springframework.version>4.3.14.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.2.13.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.44</org.mysql.version>
-		<org.postgresql.version>42.1.4</org.postgresql.version>
+		<org.mysql.version>5.1.45</org.mysql.version>
+		<org.postgresql.version>42.2.1</org.postgresql.version>
 		<org.infinispan.version>8.2.5.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>3.5.3</version.selenium>
@@ -1783,7 +1783,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.9</version>
+			<version>1.11</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least velocity engine -->
@@ -1815,7 +1815,7 @@
 			<!-- Used by at least commons-fileupload, webdriver -->
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.5</version>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jcodec</groupId>
@@ -1872,7 +1872,7 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.16</version>
+			<version>3.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>

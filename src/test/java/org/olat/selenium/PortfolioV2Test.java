@@ -811,7 +811,7 @@ public class PortfolioV2Test extends Deployments {
 			.assertOnTitle(title, 4);
 		
 		// add an image
-		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File imageFile = new File(imageUrl.toURI());
 		entry
 			.addImage("Blue is the new black", imageFile)

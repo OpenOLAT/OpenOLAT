@@ -104,14 +104,14 @@ public class CourseElementTest extends Deployments {
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
-		String courseTitle = "Course-With-CP-" + UUID.randomUUID().toString();
+		String courseTitle = "Course-With-CP-" + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 		
 		//go the authoring environment to create a CP
-		String cpTitle = "CP for a course - " + UUID.randomUUID().toString();
+		String cpTitle = "CP for a course - " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCP(cpTitle)
@@ -739,7 +739,7 @@ public class CourseElementTest extends Deployments {
 			.nodeTitle(dialogNodeTitle);
 		
 		//upload a file in the configuration
-		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File imageFile = new File(imageUrl.toURI());
 		DialogConfigurationPage dialogConfig = new DialogConfigurationPage(browser);
 		dialogConfig
@@ -1024,7 +1024,7 @@ public class CourseElementTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(participantFolderTitle);
 		// open the return box of the participant and upload a file
-		URL coachImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		URL coachImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File coachImageFile = new File(coachImageUrl.toURI());
 		ParticipantFolderPage folder = new ParticipantFolderPage(browser);
 		folder
@@ -1059,7 +1059,7 @@ public class CourseElementTest extends Deployments {
 			.assertOnFile(coachImageFile.getName())
 			.selectRootDirectory();
 		// Participant upload a file in its drop box
-		URL participantImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		URL participantImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File participantImageFile = new File(participantImageUrl.toURI());
 		participantFolder
 			.openDropBox()

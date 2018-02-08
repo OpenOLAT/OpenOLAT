@@ -614,6 +614,62 @@ public class CourseTest extends OlatJerseyTestCase {
 		Assert.assertEquals(0, repositoryEntry.getAccess());
 	}
 	
+	@Test
+	public void exportCourse()
+	throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
+		dbInstance.closeSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();
+		HttpGet method = conn.createGet(request, "application/zip", true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		byte[] exportedFile = EntityUtils.toByteArray(response.getEntity());
+		Assert.assertTrue(exportedFile.length > 1000);	
+	}
+	
+	@Test
+	public void exportCourse_owner()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
+		dbInstance.closeSession();
+		
+		Assert.assertTrue(conn.login(author.getName(), "A6B7C8"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();
+		HttpGet method = conn.createGet(request, "application/zip", true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		byte[] exportedFile = EntityUtils.toByteArray(response.getEntity());
+		Assert.assertTrue(exportedFile.length > 1000);	
+	}
+	
+	@Test
+	public void exportCourse_notOwner()
+	throws IOException, URISyntaxException {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner-3");
+		Identity otherUser = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner-4");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		dbInstance.closeSession();
+		
+		Assert.assertTrue(conn.login(otherUser.getName(), "A6B7C8"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();
+		HttpGet method = conn.createGet(request, "application/zip", true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+	}
+	
 	protected List<UserVO> parseUserArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
