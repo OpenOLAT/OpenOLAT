@@ -55,6 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class InfoEditFormController extends FormBasicController {
+	
+	private static final int MESSAGE_MAX_LENGTH = 32000;
 
 	private TextElement titleEl;
 	private FileElement attachmentEl;
@@ -96,7 +98,7 @@ public class InfoEditFormController extends FormBasicController {
 		messageEl.getEditorConfiguration().enableCharCount();
 		messageEl.getEditorConfiguration().setPathInStatusBar(true);
 		messageEl.setMandatory(true);
-		messageEl.setMaxLength(2000);
+		messageEl.setMaxLength(MESSAGE_MAX_LENGTH);
 		
 		attachmentEl = uifactory.addFileElement(getWindowControl(), "attachment", formLayout);
 		attachmentEl.setDeleteEnabled(true);
@@ -140,24 +142,24 @@ public class InfoEditFormController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		titleEl.clearError();
 		messageEl.clearError();
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String t = titleEl.getValue();
 		if(!StringHelper.containsNonWhitespace(t)) {
 			titleEl.setErrorKey("form.legende.mandatory", new String[] {});
-			allOk = false;
+			allOk &= false;
 		} else if (t.length() > 500) {
 			titleEl.setErrorKey("input.toolong", new String[] {"500", Integer.toString(t.length())});
-			allOk = false;
+			allOk &= false;
 		}
 		
 		String m = messageEl.getValue();
 		if(!StringHelper.containsNonWhitespace(m)) {
 			messageEl.setErrorKey("form.legende.mandatory", new String[] {});
-			allOk = false;
-		} else if (m.length() > 2000) {
-			messageEl.setErrorKey("input.toolong", new String[] {"2000", Integer.toString(m.length())});
-			allOk = false;
+			allOk &= false;
+		} else if (m.length() > MESSAGE_MAX_LENGTH) {
+			messageEl.setErrorKey("input.toolong", new String[] { Integer.toString(MESSAGE_MAX_LENGTH), Integer.toString(m.length()) });
+			allOk &= false;
 		}
 		
 		List<ValidationStatus> validation = new ArrayList<>();
@@ -165,7 +167,7 @@ public class InfoEditFormController extends FormBasicController {
 		if(validation.size() > 0) {
 			allOk &= false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	public InfoMessage getInfoMessage() {
