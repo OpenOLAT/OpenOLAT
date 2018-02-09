@@ -304,6 +304,14 @@ public class TaxonomyCompetenceDAO {
 				.setParameter("levelKey", level.getKey())
 				.executeUpdate();
 	}
+
+	public int deleteCompetences(Identity identity) {
+		String q = "delete from ctaxonomycompetence as competence where competence.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
 	
 	public void deleteCompetence(TaxonomyCompetence competence) {
 		TaxonomyCompetence reloadedCompetence = dbInstance.getCurrentEntityManager()
@@ -322,4 +330,5 @@ public class TaxonomyCompetenceDAO {
 		}
 		return typeList;
 	}
+
 }
