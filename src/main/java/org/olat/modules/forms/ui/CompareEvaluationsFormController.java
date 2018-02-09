@@ -45,7 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSLeafMapper;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -225,7 +225,7 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		if (leaf != null) {
 			filename = leaf.getName();
 			filesize = Formatter.formatBytes((leaf).getSize());
-			mapperUri = registerCacheableMapper(ureq, "file-upload-" + element.getId() + "-" + leaf.getLastModified(), new VFSLeafMapper(leaf));
+			mapperUri = registerCacheableMapper(ureq, "file-upload-" + element.getId() + "-" + leaf.getLastModified(), new VFSMediaMapper(leaf));
 			iconCss = CSSHelper.createFiletypeIconCssClassFor(leaf.getName());
 			if (leaf instanceof MetaTagged) {
 				MetaTagged metaTaggedLeaf = (MetaTagged) leaf;
@@ -233,7 +233,7 @@ public class CompareEvaluationsFormController extends FormBasicController {
 				if (meta != null && meta.isThumbnailAvailable()) {
 					VFSLeaf thumb = meta.getThumbnail(200, 200, false);
 					if (thumb != null) {
-						thumbUri = registerCacheableMapper(ureq, "file-upload-thumb" + element.getId() + "-" + leaf.getLastModified(), new VFSLeafMapper(thumb));;
+						thumbUri = registerCacheableMapper(ureq, "file-upload-thumb" + element.getId() + "-" + leaf.getLastModified(), new VFSMediaMapper(thumb));;
 					}
 				}
 			}

@@ -62,14 +62,14 @@ public class EvaluationFormStorageTest extends OlatTestCase {
 	public void shouldSaveNewFile() throws Exception {
 		File file = getExistingFile();
 		
-		Path relativePath = sut.save(file, getRandomFilename(), getRandomIdentifier());
+		Path relativePath = sut.save(file, getRandomFilename());
 		
 		assertThat(relativePath).isNotNull();
 	}
 
 	@Test
 	public void shouldLoadFile() throws Exception {
-		Path relativePath = sut.save(getExistingFile(), getRandomFilename(), getRandomIdentifier());
+		Path relativePath = sut.save(getExistingFile(), getRandomFilename());
 		
 		File loadedFile = sut.load(relativePath);
 		
@@ -79,7 +79,7 @@ public class EvaluationFormStorageTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteFile() throws Exception {
 		assertThat(getExistingFile()).exists();
-		Path relativePath = sut.save(getExistingFile(), getRandomFilename(), getRandomIdentifier());
+		Path relativePath = sut.save(getExistingFile(), getRandomFilename());
 		File loadedFile = sut.load(relativePath);
 		assertThat(loadedFile).exists();
 		
@@ -94,10 +94,6 @@ public class EvaluationFormStorageTest extends OlatTestCase {
 	}
 	
 	private String getRandomFilename() {
-		return UUID.randomUUID().toString();
-	}
-
-	private String getRandomIdentifier() {
 		return UUID.randomUUID().toString();
 	}
 

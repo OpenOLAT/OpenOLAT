@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,13 +27,14 @@ import java.util.Set;
 
 import org.olat.core.gui.translator.Translator;
 
+
 /**
  * 
  * Initial date: 07.02.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class MimeTypeSetFactory {
+final class MimeTypeSetFactory {
 	
 	private static final String TYPE_ALL_KEY = "file.upload.mime.type.all";
 	
@@ -41,13 +43,13 @@ class MimeTypeSetFactory {
 		mimeTypeSets.put(TYPE_ALL_KEY, null);
 		Set<String> pdf = new HashSet<>();
 		pdf.add("application/pdf");
-		mimeTypeSets.put("file.upload.mime.type.pdf", pdf);
+		mimeTypeSets.put("file.upload.mime.type.pdf", Collections.unmodifiableSet(pdf));
 		Set<String> images = new HashSet<>();
 		images.add("image/gif");
 		images.add("image/jpg");
 		images.add("image/jpeg");
 		images.add("image/png");
-		mimeTypeSets.put("file.upload.mime.type.image", images);
+		mimeTypeSets.put("file.upload.mime.type.image", Collections.unmodifiableSet(images));
 		Set<String> audios = new HashSet<>();
 		audios.add("audio/aac");
 		audios.add("audio/mp4");
@@ -55,10 +57,14 @@ class MimeTypeSetFactory {
 		audios.add("audio/ogg");
 		audios.add("audio/wav");
 		audios.add("audio/webm");
-		mimeTypeSets.put("file.upload.mime.type.audio", audios);
+		mimeTypeSets.put("file.upload.mime.type.audio", Collections.unmodifiableSet(audios));
 		Set<String> videos = new HashSet<>();
 		videos.add("video/mp4");
-		mimeTypeSets.put("file.upload.mime.type.video", videos);
+		mimeTypeSets.put("file.upload.mime.type.video", Collections.unmodifiableSet(videos));
+	}
+	
+	private MimeTypeSetFactory() {
+		// noninstantiable
 	}
 	
 	static String[] getKeys() {

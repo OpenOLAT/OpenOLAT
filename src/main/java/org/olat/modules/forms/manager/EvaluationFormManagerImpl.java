@@ -88,7 +88,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Override
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
 			String filename, EvaluationFormSession session) throws IOException {
-		Path relativePath = evaluationFormStorage.save(file, filename, responseIdentifier);
+		Path relativePath = evaluationFormStorage.save(file, filename);
 		return evaluationFormResponseDao.createResponse(responseIdentifier, null, filename, relativePath,
 				session);
 	}
@@ -107,7 +107,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		Path relativePath = null;
 		String filenameToSave = null;
 		if (file != null) {
-			relativePath = evaluationFormStorage.save(file, filename, response.getResponseIdentifier());
+			relativePath = evaluationFormStorage.save(file, filename);
 			filenameToSave = filename;
 		}
 		return evaluationFormResponseDao.updateResponse(null, filenameToSave, relativePath, response);

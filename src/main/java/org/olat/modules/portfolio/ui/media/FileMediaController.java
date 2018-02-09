@@ -32,7 +32,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSLeafMapper;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
@@ -73,7 +73,7 @@ public class FileMediaController extends BasicController {
 		VFSItem item = container.resolve(media.getRootFilename());
 		if(item instanceof VFSLeaf) {
 			VFSLeaf leaf = (VFSLeaf)item;
-			String mapperUri = registerCacheableMapper(ureq, "File-Media-" + media.getKey() + "-" + leaf.getLastModified(), new VFSLeafMapper(leaf));
+			String mapperUri = registerCacheableMapper(ureq, "File-Media-" + media.getKey() + "-" + leaf.getLastModified(), new VFSMediaMapper(leaf));
 			mainVC.contextPut("mapperUri", mapperUri);
 			String iconCss = CSSHelper.createFiletypeIconCssClassFor(leaf.getName());
 			mainVC.contextPut("fileIconCss", iconCss);
