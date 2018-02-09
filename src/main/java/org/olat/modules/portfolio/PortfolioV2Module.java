@@ -42,11 +42,22 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	public static final String ENTRY_POINT_TOC = "toc";
 	public static final String ENTRY_POINT_ENTRIES = "entries";
 
-	public static final String PORTFOLIO_ENABLED = "portfoliov2.enabled";
-	public static final String PORTFOLIO_LEARNER_CAN_CREATE_BINDERS = "portfoliov2.learner.can.create.binders";
-	public static final String PORTFOLIO_CAN_CREATE_BINDERS_FROM_TEMPLATE = "portfoliov2.can.create.binders.from.template";
-	public static final String PORTFOLIO_CAN_CREATE_BINDERS_FROM_COURSE = "portfoliov2.can.create.binders.from.course";
-	public static final String PORTFOLIO_BINDER_ENTRY_POINT = "portfoliov2.binder.entry.point";
+	private static final String PORTFOLIO_ENABLED = "portfoliov2.enabled";
+	private static final String PORTFOLIO_LEARNER_CAN_CREATE_BINDERS = "portfoliov2.learner.can.create.binders";
+	private static final String PORTFOLIO_CAN_CREATE_BINDERS_FROM_TEMPLATE = "portfoliov2.can.create.binders.from.template";
+	private static final String PORTFOLIO_CAN_CREATE_BINDERS_FROM_COURSE = "portfoliov2.can.create.binders.from.course";
+	private static final String PORTFOLIO_BINDER_ENTRY_POINT = "portfoliov2.binder.entry.point";
+	
+	private static final String PORTFOLIO_OVERVIEW_ENABLED = "portfoliov2.overview.enabled";
+	private static final String PORTFOLIO_OVERVIEW_COMMENTS_ENABLED = "portfoliov2.overview.comments.enabled";
+	private static final String PORTFOLIO_ENTRIES_ENABLED = "portfoliov2.entries.enabled";
+	private static final String PORTFOLIO_ENTRIES_LIST_ENABLED = "portfoliov2.entries.list.enabled";
+	private static final String PORTFOLIO_ENTRIES_TABLE_ENABLED = "portfoliov2.entries.table.enabled";
+	private static final String PORTFOLIO_ENTRIES_COMMENTS_ENABLED = "portfoliov2.entries.comments.enabled";
+	private static final String PORTFOLIO_ENTRIES_SEARCH_ENABLED = "portfoliov2.entries.search.enabled";
+	private static final String PORTFOLIO_ENTRIES_TIMELINE_ENABLED = "portfoliov2.entries.timeline.enabled";
+	private static final String PORTFOLIO_HISTORY_ENABLED = "portfoliov2.history.enabled";
+	
 	
 	@Value("${portfoliov2.enabled:true}")
 	private boolean enabled;
@@ -58,6 +69,26 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	private boolean canCreateBindersFromCourse;
 	@Value("${portfoliov2.binder.entry.point:toc}")
 	private String binderEntryPoint;
+	
+	@Value("${portfoliov2.overview.enabled:true}")
+	private boolean overviewEnabled;
+	@Value("${portfoliov2.overview.comments.enabled:true}")
+	private boolean overviewCommentsEnabled;
+	@Value("${portfoliov2.entries.enabled:true}")
+	private boolean entriesEnabled;
+	@Value("${portfoliov2.entries.list.enabled:true}")
+	private boolean entriesListEnabled;
+	@Value("${portfoliov2.entries.table.enabled:true}")
+	private boolean entriesTableEnabled;
+	@Value("${portfoliov2.entries.comments.enabled:true}")
+	private boolean entriesCommentsEnabled;
+	@Value("${portfoliov2.entries.search.enabled:true}")
+	private boolean entriesSearchEnabled;
+	@Value("${portfoliov2.entries.timeline.enabled:true}")
+	private boolean entriesTimelineEnabled;
+	@Value("${portfoliov2.history.enabled:true}")
+	private boolean historyEnabled;
+	
 	
 	@Autowired
 	public PortfolioV2Module(CoordinatorManager coordinatorManager) {
@@ -74,6 +105,51 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		String learnerCanCreateBindersObj = getStringPropertyValue(PORTFOLIO_LEARNER_CAN_CREATE_BINDERS, true);
 		if(StringHelper.containsNonWhitespace(learnerCanCreateBindersObj)) {
 			learnerCanCreateBinders = "true".equals(learnerCanCreateBindersObj);
+		}
+		
+		String overviewEnabledObj = getStringPropertyValue(PORTFOLIO_OVERVIEW_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(overviewEnabledObj)) {
+			overviewEnabled = "true".equals(overviewEnabledObj);
+		}
+		
+		String overviewCommentsEnabledObj = getStringPropertyValue(PORTFOLIO_OVERVIEW_COMMENTS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(overviewCommentsEnabledObj)) {
+			overviewCommentsEnabled = "true".equals(overviewCommentsEnabledObj);
+		}
+		
+		String entriesEnabledObj = getStringPropertyValue(PORTFOLIO_ENTRIES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(entriesEnabledObj)) {
+			entriesEnabled = "true".equals(entriesEnabledObj);
+		}
+		
+		String entriesListEnabledObj = getStringPropertyValue(PORTFOLIO_ENTRIES_LIST_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(entriesListEnabledObj)) {
+			entriesListEnabled = "true".equals(entriesListEnabledObj);
+		}
+		
+		String entriesTableEnabledObj = getStringPropertyValue(PORTFOLIO_ENTRIES_TABLE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(entriesTableEnabledObj)) {
+			entriesTableEnabled = "true".equals(entriesTableEnabledObj);
+		}
+		
+		String entriesCommentsEnabledObj = getStringPropertyValue(PORTFOLIO_ENTRIES_COMMENTS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(entriesCommentsEnabledObj)) {
+			entriesCommentsEnabled = "true".equals(entriesCommentsEnabledObj);
+		}
+		
+		String entriesSearchEnabledObj = getStringPropertyValue(PORTFOLIO_ENTRIES_SEARCH_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(entriesSearchEnabledObj)) {
+			entriesSearchEnabled = "true".equals(entriesSearchEnabledObj);
+		}
+		
+		String entriesTimelineEnabledObj = getStringPropertyValue(PORTFOLIO_ENTRIES_TIMELINE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(entriesTimelineEnabledObj)) {
+			entriesTimelineEnabled = "true".equals(entriesTimelineEnabledObj);
+		}
+		
+		String historyEnabledObj = getStringPropertyValue(PORTFOLIO_HISTORY_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(historyEnabledObj)) {
+			historyEnabled = "true".equals(historyEnabledObj);
 		}
 		
 		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
@@ -134,5 +210,86 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	public void setBinderEntryPoint(String binderEntryPoint) {
 		this.binderEntryPoint = binderEntryPoint;
 		setStringProperty(PORTFOLIO_BINDER_ENTRY_POINT, binderEntryPoint, true);
+	}
+
+	public boolean isOverviewEnabled() {
+		return overviewEnabled;
+	}
+
+	public void setOverviewEnabled(boolean overviewEnabled) {
+		this.overviewEnabled = overviewEnabled;
+		setStringProperty(PORTFOLIO_OVERVIEW_ENABLED, Boolean.toString(overviewEnabled), true);
+	}
+
+	public boolean isOverviewCommentsEnabled() {
+		return overviewCommentsEnabled;
+	}
+
+	public void setOverviewCommentsEnabled(boolean overviewCommentsEnabled) {
+		this.overviewCommentsEnabled = overviewCommentsEnabled;
+		setStringProperty(PORTFOLIO_OVERVIEW_COMMENTS_ENABLED, Boolean.toString(overviewCommentsEnabled), true);
+	}
+
+	public boolean isEntriesEnabled() {
+		return entriesEnabled;
+	}
+
+	public void setEntriesEnabled(boolean entriesEnabled) {
+		this.entriesEnabled = entriesEnabled;
+		setStringProperty(PORTFOLIO_ENTRIES_ENABLED, Boolean.toString(entriesEnabled), true);
+	}
+
+	public boolean isEntriesListEnabled() {
+		return entriesListEnabled;
+	}
+
+	public void setEntriesListEnabled(boolean entriesListEnabled) {
+		this.entriesListEnabled = entriesListEnabled;
+		setStringProperty(PORTFOLIO_ENTRIES_LIST_ENABLED, Boolean.toString(entriesListEnabled), true);
+	}
+
+	public boolean isEntriesTableEnabled() {
+		return entriesTableEnabled;
+	}
+
+	public void setEntriesTableEnabled(boolean entriesTableEnabled) {
+		this.entriesTableEnabled = entriesTableEnabled;
+		setStringProperty(PORTFOLIO_ENTRIES_TABLE_ENABLED, Boolean.toString(entriesTableEnabled), true);
+	}
+
+	public boolean isEntriesCommentsEnabled() {
+		return entriesCommentsEnabled;
+	}
+
+	public void setEntriesCommentsEnabled(boolean entriesCommentsEnabled) {
+		this.entriesCommentsEnabled = entriesCommentsEnabled;
+		setStringProperty(PORTFOLIO_ENTRIES_COMMENTS_ENABLED, Boolean.toString(entriesCommentsEnabled), true);
+	}
+
+	public boolean isEntriesSearchEnabled() {
+		return entriesSearchEnabled;
+	}
+
+	public void setEntriesSearchEnabled(boolean entiresSearchEnabled) {
+		this.entriesSearchEnabled = entiresSearchEnabled;
+		setStringProperty(PORTFOLIO_ENTRIES_SEARCH_ENABLED, Boolean.toString(entiresSearchEnabled), true);
+	}
+
+	public boolean isEntriesTimelineEnabled() {
+		return entriesTimelineEnabled;
+	}
+
+	public void setEntriesTimelineEnabled(boolean entriesTimelineEnabled) {
+		this.entriesTimelineEnabled = entriesTimelineEnabled;
+		setStringProperty(PORTFOLIO_ENTRIES_TIMELINE_ENABLED, Boolean.toString(entriesTimelineEnabled), true);
+	}
+
+	public boolean isHistoryEnabled() {
+		return historyEnabled;
+	}
+
+	public void setHistoryEnabled(boolean historyEnabled) {
+		this.historyEnabled = historyEnabled;
+		setStringProperty(PORTFOLIO_HISTORY_ENABLED, Boolean.toString(historyEnabled), true);
 	}
 }

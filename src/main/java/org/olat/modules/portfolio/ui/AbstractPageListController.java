@@ -85,6 +85,7 @@ import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
@@ -134,6 +135,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	@Autowired
 	protected PortfolioService portfolioService;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
 	
 	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate,
@@ -183,7 +186,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		formLayout.add("timeline", timelineEl);
 		initTimeline();
 		
-		if(config.isTimeline()) {
+		if(portfolioV2Module.isEntriesTimelineEnabled() && config.isTimeline()) {
 			timelineSwitchOnButton = uifactory.addFormLink("timeline.switch.on", formLayout, Link.BUTTON_SMALL);
 			timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
 			timelineSwitchOnButton.setElementCssClass("o_sel_timeline_on");
@@ -225,9 +228,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setRendererType(FlexiTableRendererType.custom);
-		tableEl.setSearchEnabled(true);
+		if (portfolioV2Module.isEntriesListEnabled() && portfolioV2Module.isEntriesTableEnabled()) {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		} else if (portfolioV2Module.isEntriesTableEnabled()) {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
+		} else {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
+		}
+		tableEl.setSearchEnabled(portfolioV2Module.isEntriesSearchEnabled());
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_binder_page_listing");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
@@ -237,6 +245,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		tableEl.setRowRenderer(rowVC, this);
 		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "page-list");
+		FlexiTableRendererType renderType = portfolioV2Module.isEntriesListEnabled()? FlexiTableRendererType.custom: FlexiTableRendererType.classic;
+		tableEl.setRendererType(renderType);
 	}
 	
 	@Override
@@ -450,7 +460,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			}
 		}
 		
-		if(secCallback.canComment(page)) {
+		if(portfolioV2Module.isEntriesCommentsEnabled() && secCallback.canComment(page)) {
 			String title;
 			String cssClass = "o_icon o_icon-fw o_icon_comments";
 			if(row.getNumOfComments() == 1) {
