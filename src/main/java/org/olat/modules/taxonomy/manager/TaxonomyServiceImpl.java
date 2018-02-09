@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +45,7 @@ import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +56,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class TaxonomyServiceImpl implements TaxonomyService {
+public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	
 	@Autowired
 	private TaxonomyDAO taxonomyDao;
@@ -350,5 +352,10 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	@Override
 	public String toAuditXml(TaxonomyCompetence competence) {
 		return taxonomyCompetenceAuditLogDao.toXml(competence);
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		taxonomyCompetenceDao.deleteCompetences(identity);
 	}
 }
