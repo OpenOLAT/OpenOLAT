@@ -30,20 +30,16 @@ import java.io.File;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Disposable;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -52,7 +48,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSMediaMapper;
 
 /**
  * Description: <br>
@@ -68,12 +64,12 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 
 	private String alt;
 	private final MapperKey mapperUrl;
-	private final MediaMapper mapper;
+	private final VFSMediaMapper mapper;
 
 	// optional in case of video: poster image
 	private VFSLeaf poster;
 	private MapperKey posterMapperUrl;
-	private MediaMapper posterMapper;
+	private VFSMediaMapper posterMapper;
 
 	private Size realSize;
 	private Size scaledSize;
@@ -86,11 +82,11 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	 */
 	public ImageComponent(UserSession usess, String name) {
 		super(name);
-		mapper = new MediaMapper();
+		mapper = new VFSMediaMapper();
 		String mapperId = UUID.randomUUID().toString();
 		mapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, mapper);
 		// optional poster frame for videos
-		posterMapper = new MediaMapper();
+		posterMapper = new VFSMediaMapper();
 		mapperId = UUID.randomUUID().toString();
 		posterMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, posterMapper);		
 		// renderer provides own DOM ID
@@ -313,16 +309,4 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		return null;
 	}
 	
-	private static class MediaMapper implements Mapper {
-		private VFSLeaf mediaFile;
-
-		public void setMediaFile(VFSLeaf mediaFile) {
-			this.mediaFile = mediaFile;
-		}
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			return new VFSMediaResource(mediaFile);
-		}
-	}
 }

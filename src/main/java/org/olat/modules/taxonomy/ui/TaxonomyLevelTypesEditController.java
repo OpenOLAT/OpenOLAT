@@ -212,7 +212,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(row);
 		if(type == null) {
 			tableEl.reloadData();
-			showWarning("repositoryentry.not.existing");
+			showWarning("warning.taxonomy.level.type.deleted");
 		} else {
 			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, type);
 			listenTo(toolsCtrl);

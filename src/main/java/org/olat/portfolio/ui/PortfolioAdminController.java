@@ -20,7 +20,9 @@
 package org.olat.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
@@ -49,6 +51,43 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author: srosse
  */
 public class PortfolioAdminController extends FormBasicController  {
+	
+	private static final String BINDER_CREATE_LEARNER = "portfolio.user.can.create.binder";
+	private static final String BINDER_CREATE_TEMPLATE = "portfolio.user.can.create.binder.template";
+	private static final String BINDER_CREATE_COURSE = "portfolio.user.can.create.binder.course";
+	private static final String[] BINDER_CREATE_KEYS = new String[] {
+			BINDER_CREATE_LEARNER,
+			BINDER_CREATE_TEMPLATE,
+			BINDER_CREATE_COURSE
+	};
+	private static final String SECTION_OVERVIEW_ENABLED = "section.overview.enabled";
+	private static final String SECTION_ENTRIES_ENABLED = "section.entries.enabled";
+	private static final String SECTION_HISTORY_ENABLED = "section.history.enabled";
+	private static final String[] SECTION_VISIBILITY_KEYS = new String[] {
+			SECTION_OVERVIEW_ENABLED,
+			SECTION_ENTRIES_ENABLED,
+			SECTION_HISTORY_ENABLED
+	};
+	private static final String ENTRIES_SEARCH_ENABLED = "entries.search.enabled";
+	private static final String ENTRIES_TIMELINE_ENABLED = "entries.timeline.enabled";
+	private static final String[] ENTRIES_ELEMENTS_KEYS = new String[] {
+			ENTRIES_SEARCH_ENABLED,
+			ENTRIES_TIMELINE_ENABLED
+	};
+	private static final String COMMENTS_OVERVIEW_ENABLED = "comments.overview.enabled";
+	private static final String COMMENTS_ENTRIES_ENABLED = "comments.entries.enabled";
+	private static final String[] COMMENTS_KEYS = new String[] {
+			COMMENTS_OVERVIEW_ENABLED,
+			COMMENTS_ENTRIES_ENABLED
+	};
+	private static final String ENTRIES_BOTH_ENABLED = "entries.both.enabled";
+	private static final String ENTRIES_LIST_ENABLED = "entries.list.enabled";
+	private static final String ENTRIES_TABLE_ENABLED = "entries.table.enabled";
+	private static final String[] ENTRIES_VIEW_KEYS = new String[] {
+			ENTRIES_TABLE_ENABLED,
+			ENTRIES_LIST_ENABLED,
+			ENTRIES_BOTH_ENABLED
+	};
 
 	private static String[] enabledKeys = new String[]{ "on" };
 	private static String[] enabledPortfolioKeys = new String[]{ "on", "legacy"};
@@ -56,9 +95,14 @@ public class PortfolioAdminController extends FormBasicController  {
 	private SingleSelection entryPointEl;
 	private FormLayoutContainer wizardFlc;
 	private MultipleSelectionElement portfoliosEnabled;
-	private MultipleSelectionElement canCreatePortfolioEnabled;
+	private MultipleSelectionElement createBinderEl;
 	private final List<MultipleSelectionElement> handlersEnabled = new ArrayList<>();
-	private MultipleSelectionElement copyrightStepCB, reflexionStepCB;
+	private MultipleSelectionElement copyrightStepCB;
+	private MultipleSelectionElement reflexionStepCB;
+	private MultipleSelectionElement sectionVisibilityEl;
+	private MultipleSelectionElement entryElementsVisibilityEl;
+	private MultipleSelectionElement commentsVisibilityEl;
+	private SingleSelection entriesViewEl;
 
 	@Autowired
 	private PortfolioModule portfolioModule;
@@ -88,30 +132,14 @@ public class PortfolioAdminController extends FormBasicController  {
 		}
 		portfoliosEnabled.addActionListener(FormEvent.ONCHANGE);
 
-		String[] createBinderKeys = new String[]{ "learner", "template", "course" };
-		String[] createBinderValues = new String[] {
-				translate("portfolio.user.can.create.binder"),
-				translate("portfolio.user.can.create.binder.template"),
-				translate("portfolio.user.can.create.binder.course")
-		};
-		canCreatePortfolioEnabled = uifactory.addCheckboxesVertical("portfolio.user.create.binder", moduleFlc, createBinderKeys, createBinderValues, 1);
-		if(portfolioV2Module.isLearnerCanCreateBinders()) {
-			canCreatePortfolioEnabled.select(createBinderKeys[0], portfolioV2Module.isLearnerCanCreateBinders());
-		}
-		if(portfolioV2Module.isCanCreateBindersFromTemplate()) {
-			canCreatePortfolioEnabled.select(createBinderKeys[1], portfolioV2Module.isCanCreateBindersFromTemplate());
-		}
-		if(portfolioV2Module.isCanCreateBindersFromCourse()) {
-			canCreatePortfolioEnabled.select(createBinderKeys[2], portfolioV2Module.isCanCreateBindersFromCourse());
-		}
-		canCreatePortfolioEnabled.addActionListener(FormEvent.ONCHANGE);
-		canCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
+		createBinderEl = uifactory.addCheckboxesVertical("portfolio.user.create.binder", moduleFlc, BINDER_CREATE_KEYS,
+				translateKeys(BINDER_CREATE_KEYS), 1);
+		createBinderEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] entryPointKeys = new String[] { PortfolioV2Module.ENTRY_POINT_TOC, PortfolioV2Module.ENTRY_POINT_ENTRIES };
 		String[] entryPointValues = new String[]{ translate("binder.entry.point.toc"), translate("binder.entry.point.entries") };
 		entryPointEl = uifactory.addDropdownSingleselect("binder.entry.point", "binder.entry.point", moduleFlc, entryPointKeys, entryPointValues, null);
 		entryPointEl.addActionListener(FormEvent.ONCHANGE);
-		entryPointEl.setVisible(portfolioV2Module.isEnabled());
 		String entryPoint = portfolioV2Module.getBinderEntryPoint();
 		for(String entryPointKey:entryPointKeys) {
 			if(entryPointKey.equals(entryPoint)) {
@@ -121,6 +149,29 @@ public class PortfolioAdminController extends FormBasicController  {
 		if(!entryPointEl.isOneSelected()) {
 			entryPointEl.select(entryPointKeys[0], true);
 		}
+		
+		sectionVisibilityEl = uifactory.addCheckboxesVertical("section.enabled", moduleFlc, SECTION_VISIBILITY_KEYS,
+				translateKeys(SECTION_VISIBILITY_KEYS), 1);
+		sectionVisibilityEl.addActionListener(FormEvent.ONCHANGE);
+		
+		entryElementsVisibilityEl = uifactory.addCheckboxesVertical("entries.elements.enabled", moduleFlc,
+				ENTRIES_ELEMENTS_KEYS, translateKeys(ENTRIES_ELEMENTS_KEYS), 1);
+		entryElementsVisibilityEl.addActionListener(FormEvent.ONCHANGE);
+		
+		commentsVisibilityEl = uifactory.addCheckboxesVertical("comments.enabled", moduleFlc, COMMENTS_KEYS,
+				translateKeys(COMMENTS_KEYS), 1);
+		commentsVisibilityEl.addActionListener(FormEvent.ONCHANGE);
+		
+		entriesViewEl = uifactory.addDropdownSingleselect("entries.view", moduleFlc, ENTRIES_VIEW_KEYS,
+				translateKeys(ENTRIES_VIEW_KEYS));
+		String selectedKey = ENTRIES_BOTH_ENABLED;
+		if (portfolioV2Module.isEntriesTableEnabled() && !portfolioV2Module.isEntriesListEnabled()) {
+			selectedKey = ENTRIES_TABLE_ENABLED;
+		} else if (!portfolioV2Module.isEntriesTableEnabled() && portfolioV2Module.isEntriesListEnabled()) {
+			selectedKey = ENTRIES_LIST_ENABLED;
+		}
+		entriesViewEl.select(selectedKey, true);
+		entriesViewEl.addActionListener(FormEvent.ONCHANGE);
 		
 		//handlers configuration
 		FormLayoutContainer handlersFlc = FormLayoutContainer.createDefaultFormLayout("flc_handlers", getTranslator());
@@ -149,6 +200,36 @@ public class PortfolioAdminController extends FormBasicController  {
 		reflexionStepCB.select(enabledKeys[0], portfolioModule.isReflexionStepEnabled());
 		reflexionStepCB.addActionListener(FormEvent.ONCHANGE);
 		wizardFlc.setVisible(portfoliosEnabled.isSelected(1));
+		
+		updateV2UI();
+	}
+
+	private void updateV2UI() {
+		boolean enabled = portfolioV2Module.isEnabled();
+		entryPointEl.setVisible(enabled);
+		createBinderEl.setVisible(enabled);
+		sectionVisibilityEl.setVisible(enabled);
+		entryElementsVisibilityEl.setVisible(enabled);
+		commentsVisibilityEl.setVisible(enabled);
+		entriesViewEl.setVisible(enabled);
+		if (enabled) {
+			createBinderEl.select(BINDER_CREATE_LEARNER, portfolioV2Module.isLearnerCanCreateBinders());
+			createBinderEl.select(BINDER_CREATE_TEMPLATE, portfolioV2Module.isCanCreateBindersFromTemplate());
+			createBinderEl.select(BINDER_CREATE_COURSE, portfolioV2Module.isCanCreateBindersFromCourse());
+			sectionVisibilityEl.select(SECTION_OVERVIEW_ENABLED, portfolioV2Module.isOverviewEnabled());
+			sectionVisibilityEl.select(SECTION_ENTRIES_ENABLED, portfolioV2Module.isEntriesEnabled());
+			sectionVisibilityEl.select(SECTION_HISTORY_ENABLED, portfolioV2Module.isHistoryEnabled());
+			entryElementsVisibilityEl.select(ENTRIES_SEARCH_ENABLED, portfolioV2Module.isEntriesSearchEnabled());
+			entryElementsVisibilityEl.select(ENTRIES_TIMELINE_ENABLED, portfolioV2Module.isEntriesTimelineEnabled());
+			commentsVisibilityEl.select(COMMENTS_OVERVIEW_ENABLED, portfolioV2Module.isOverviewCommentsEnabled());
+			commentsVisibilityEl.select(COMMENTS_ENTRIES_ENABLED, portfolioV2Module.isEntriesCommentsEnabled());
+		}
+	}
+	
+	private String[] translateKeys(String[] keys) {
+		return Stream.of(keys)
+				.map(key -> getTranslator().translate(key))
+				.toArray(String[]::new);
 	}
 	
 	@Override
@@ -176,36 +257,92 @@ public class PortfolioAdminController extends FormBasicController  {
 			// update collaboration tools list
 
 			wizardFlc.setVisible(portfoliosEnabled.isSelected(1));
-			entryPointEl.setVisible(portfolioV2Module.isEnabled());
-			canCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
+			updateV2UI();
 			CollaborationToolsFactory.getInstance().initAvailableTools();
-			showInfo("save.admin.settings");
 		} else if(handlersEnabled.contains(source)) {
 			EPArtefactHandler<?> handler = (EPArtefactHandler<?>)source.getUserObject();
 			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
 			portfolioModule.setEnableArtefactHandler(handler, enabled);
-			showInfo("save.admin.settings");
 		} else if(source == reflexionStepCB){
 			boolean enabled = reflexionStepCB.isSelected(0);
 			portfolioModule.setReflexionStepEnabled(enabled);
-			showInfo("save.admin.settings");
 		} else if(source == copyrightStepCB){
 			boolean enabled = copyrightStepCB.isSelected(0);
 			portfolioModule.setCopyrightStepEnabled(enabled);
-			showInfo("save.admin.settings");
-		} else if(canCreatePortfolioEnabled == source) {
-			boolean enabled = canCreatePortfolioEnabled.isSelected(0);
-			portfolioV2Module.setLearnerCanCreateBinders(enabled);
-			boolean enabledTemplate = canCreatePortfolioEnabled.isSelected(1);
-			portfolioV2Module.setCanCreateBindersFromTemplate(enabledTemplate);
-			boolean enabledCourse = canCreatePortfolioEnabled.isSelected(2);
-			portfolioV2Module.setCanCreateBindersFromCourse(enabledCourse);
-			showInfo("save.admin.settings");
+		} else if(createBinderEl == source) {
+			Collection<String>  selectedCreateBinder = createBinderEl.getSelectedKeys();
+			boolean learnerCanCreateBinders = selectedCreateBinder.contains(BINDER_CREATE_LEARNER);
+			portfolioV2Module.setLearnerCanCreateBinders(learnerCanCreateBinders);
+			boolean canCreateBindersFromTemplate = selectedCreateBinder.contains(BINDER_CREATE_TEMPLATE);
+			portfolioV2Module.setCanCreateBindersFromTemplate(canCreateBindersFromTemplate);
+			boolean canCreateBindersFromCourse = selectedCreateBinder.contains(BINDER_CREATE_COURSE);
+			portfolioV2Module.setCanCreateBindersFromCourse(canCreateBindersFromCourse);
 		} else if(entryPointEl == source) {
 			if(entryPointEl.isOneSelected()) {
-				portfolioV2Module.setBinderEntryPoint(entryPointEl.getSelectedKey());
-				showInfo("save.admin.settings");
+				String selectedKey = entryPointEl.getSelectedKey();
+				if (validateEntryPoint(selectedKey)) {
+					portfolioV2Module.setBinderEntryPoint(selectedKey);
+				}
 			}
+		} else if (sectionVisibilityEl == source) {
+			Collection<String> selectedSectionVisibility = sectionVisibilityEl.getSelectedKeys();
+			boolean historyEnabled = selectedSectionVisibility.contains(SECTION_HISTORY_ENABLED);
+			portfolioV2Module.setHistoryEnabled(historyEnabled);
+			boolean overviewEnabled = selectedSectionVisibility.contains(SECTION_OVERVIEW_ENABLED);
+			boolean entriesEnabled = selectedSectionVisibility.contains(SECTION_ENTRIES_ENABLED);
+			if (validateSectionVisibility(overviewEnabled, entriesEnabled) ) {
+				portfolioV2Module.setOverviewEnabled(overviewEnabled);
+				portfolioV2Module.setEntriesEnabled(entriesEnabled);
+			}
+		} else if (entryElementsVisibilityEl == source) {
+			Collection<String> selectedElementsVisibility = entryElementsVisibilityEl.getSelectedKeys();
+			boolean entiresSearchEnabled = selectedElementsVisibility.contains(ENTRIES_SEARCH_ENABLED);
+			portfolioV2Module.setEntriesSearchEnabled(entiresSearchEnabled);
+			boolean entriesTimelineEnabled = selectedElementsVisibility.contains(ENTRIES_TIMELINE_ENABLED);
+			portfolioV2Module.setEntriesTimelineEnabled(entriesTimelineEnabled);
+		} else if (commentsVisibilityEl == source) {
+			Collection<String> selectedCommentsVisibilty = commentsVisibilityEl.getSelectedKeys();
+			boolean overviewCommentsEnabled = selectedCommentsVisibilty.contains(COMMENTS_OVERVIEW_ENABLED);
+			portfolioV2Module.setOverviewCommentsEnabled(overviewCommentsEnabled);
+			boolean entriesCommentsEnabled = selectedCommentsVisibilty.contains(COMMENTS_ENTRIES_ENABLED);
+			portfolioV2Module.setEntriesCommentsEnabled(entriesCommentsEnabled);
+		} else if(entriesViewEl == source && entriesViewEl.isOneSelected()) {
+			String selectedKey = entriesViewEl.getSelectedKey();
+			boolean entriesTableEnabled = true;
+			boolean entriesListEnabled = true;
+			if (ENTRIES_TABLE_ENABLED.equals(selectedKey)) {
+				entriesListEnabled = false;
+			} else if (ENTRIES_LIST_ENABLED.equals(selectedKey)) {
+				entriesTableEnabled = false;
+			}
+			portfolioV2Module.setEntriesTableEnabled(entriesTableEnabled);
+			portfolioV2Module.setEntriesListEnabled(entriesListEnabled);
 		}
+	}
+
+	private boolean validateEntryPoint(String selectedKey) {
+		if (PortfolioV2Module.ENTRY_POINT_TOC.equals(selectedKey) && !portfolioV2Module.isOverviewEnabled()) {
+			entryPointEl.select(PortfolioV2Module.ENTRY_POINT_ENTRIES, true);
+			showWarning("binder.entry.point.not.available");
+			return false;
+		} else if (PortfolioV2Module.ENTRY_POINT_ENTRIES.equals(selectedKey) && !portfolioV2Module.isEntriesEnabled()) {
+			entryPointEl.select(PortfolioV2Module.ENTRY_POINT_TOC, true);
+			showWarning("binder.entry.point.not.available");
+			return false;
+		} 
+		return true;
+	}
+
+	private boolean validateSectionVisibility(boolean overviewEnabled, boolean entriesEnabled) {
+		if (!overviewEnabled && entryPointEl.isOneSelected() && PortfolioV2Module.ENTRY_POINT_TOC.equals(entryPointEl.getSelectedKey())) {
+			sectionVisibilityEl.select(SECTION_OVERVIEW_ENABLED, true);
+			showWarning("section.disable.not.allowed");
+			return false;
+		} else if (!entriesEnabled && entryPointEl.isOneSelected() && PortfolioV2Module.ENTRY_POINT_ENTRIES.equals(entryPointEl.getSelectedKey())) {
+			sectionVisibilityEl.select(SECTION_ENTRIES_ENABLED, true);
+			showWarning("section.disable.not.allowed");
+			return false;
+		}
+		return true;
 	}
 }

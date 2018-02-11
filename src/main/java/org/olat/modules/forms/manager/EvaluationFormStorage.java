@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -42,7 +44,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class EvaluationFormStorage {
+class EvaluationFormStorage {
 	
 	private static final OLog log = Tracing.createLoggerFor(EvaluationFormStorage.class);
 	
@@ -74,44 +76,48 @@ public class EvaluationFormStorage {
 	 * 
 	 * @param file the file to save
 	 * @param filename the filename of the new file
-	 * @param responseIdentifier the identifier of the evaluation form response
 	 * @return the relative path of the saved file
 	 */
-	public Path save(File file, String filename, String responseIdentifier) throws IOException {
-		Path responsePath = getResponsePath(responseIdentifier, filename);
+	Path save(File file, String filename) throws IOException {
+		Path responsePath = getResponsePath(filename);
 		Path sourcePath = file.toPath();
 		Files.createDirectories(responsePath.getParent());
 		Files.copy(sourcePath, responsePath, StandardCopyOption.REPLACE_EXISTING);
 		return getRelativePath(responsePath);
 	}
 
-	public File load(Path relativePath) {
+	File load(Path relativePath) {
 		return getAbsolutePath(relativePath).toFile();
 	}
 	
-	public VFSLeaf resolve(Path relativePath) {
+	VFSLeaf resolve(Path relativePath) {
 		return new OlatRootFileImpl("/" + relativePath.toString(), null);
 	}
 
-	public void delete(Path relativePath) {
-		Path absolutePath = getAbsolutePath(relativePath);
+	void delete(Path relativePath) {
+		Path parentDir = relativePath.getParent();
+		Path absolutePath = getAbsolutePath(parentDir);
 		try {
-			Files.deleteIfExists(absolutePath);
+		    Files.walk(absolutePath)
+		      .sorted(Comparator.reverseOrder())
+		      .map(Path::toFile)
+		      .forEach(File::delete);
 		} catch (IOException e) {
 			log.warn("Cannot properly delete evaluation form response file. Path: " + absolutePath, e);
 		}
 	}
 	
-	private Path getResponsePath(String responseIdentifier, String filename) {
+	private Path getResponsePath(String filename) {
+		String responseDirectory = UUID.randomUUID().toString().replace("-", "").toLowerCase();
 		return Paths.get(
 				responsesDirectory.toString(),
-				getIndexTooken(responseIdentifier),
-				responseIdentifier,
+				getIndexTooken(responseDirectory),
+				responseDirectory,
 				filename);
 	}
 	
-	private String getIndexTooken(String responseIdentifier) {
-		return responseIdentifier.replace("-", "").substring(0, 2).toLowerCase();
+	private String getIndexTooken(String responseDirectory) {
+		return responseDirectory.substring(0, 3);
 	}
 	
 	private Path getRelativePath(Path path) {

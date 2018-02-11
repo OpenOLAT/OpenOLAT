@@ -35,6 +35,12 @@ public interface EvaluationFormResponse extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
+	/**
+	 * The identifier of the evaluation form part / element. Several responses may
+	 * have the same identifier.
+	 * 
+	 * @return
+	 */
 	public String getResponseIdentifier();
 	
 	public BigDecimal getNumericalResponse();

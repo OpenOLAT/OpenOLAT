@@ -129,8 +129,6 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	protected void doDispose() {
 		//
 	}
-	
-	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -159,7 +157,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		} else if(confirmDeleteCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof DeleteTaxonomyLevelEvent) {
 				fireEvent(ureq, new DeleteTaxonomyLevelEvent());
 			}
 			cmc.deactivate();

@@ -74,6 +74,7 @@ import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
@@ -136,6 +137,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private UserManager userManager;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
 
 	public TableOfContentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
@@ -442,7 +445,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		pageRow.setOpenLink(openLink);
 
 		Long numOfComments = numberOfCommentsMap.get(page.getKey());
-		if(numOfComments != null && numOfComments.longValue() > 0) {
+		if(portfolioV2Module.isOverviewCommentsEnabled() && numOfComments != null && numOfComments.longValue() > 0) {
 			Link commentLink = LinkFactory.createCustomLink("com_" + (++counter), "comments", "(" + numOfComments + ")", Link.LINK | Link.NONTRANSLATED, mainVC, this);
 			commentLink.setDomReplacementWrapperRequired(false);
 			commentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_comments");

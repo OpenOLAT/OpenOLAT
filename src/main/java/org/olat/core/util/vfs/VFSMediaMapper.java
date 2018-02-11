@@ -30,11 +30,18 @@ import org.olat.core.gui.media.MediaResource;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class VFSLeafMapper implements Mapper {
+public class VFSMediaMapper implements Mapper {
 	
-	private final VFSLeaf file;
+	private VFSLeaf file;
 	
-	public VFSLeafMapper(VFSLeaf file) {
+	public VFSMediaMapper() {
+	}
+
+	public VFSMediaMapper(VFSLeaf file) {
+		this.file = file;
+	}
+
+	public void setMediaFile(VFSLeaf file) {
 		this.file = file;
 	}
 

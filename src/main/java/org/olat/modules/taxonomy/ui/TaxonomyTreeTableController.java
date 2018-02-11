@@ -221,7 +221,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			for(TaxonomyLevelRow row:rows) {
 				if(levelKey.equals(row.getKey())) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					doSelectTaxonomyLevel(ureq, row).activate(ureq, subEntries, entries.get(0).getTransientState());
+					TaxonomyLevelOverviewController ctrl = doSelectTaxonomyLevel(ureq, row);
+					if(ctrl != null) {
+						ctrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+					}
 					break;
 				}
 			}
@@ -380,12 +383,18 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 
 	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", taxonomyLevel.getKey());
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, taxonomyLevel);
-		listenTo(detailsLevelCtrl);
-		stackPanel.pushController(taxonomyLevel.getDisplayName(), detailsLevelCtrl);
-		return detailsLevelCtrl;
+		if(taxonomyLevel == null) {
+			showWarning("warning.taxonomy.level.deleted");
+			loadModel(false, false);
+			return null;
+		} else {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", taxonomyLevel.getKey());
+			WindowControl bwControl = addToHistory(ureq, ores, null);
+			TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, taxonomyLevel);
+			listenTo(detailsLevelCtrl);
+			stackPanel.pushController(taxonomyLevel.getDisplayName(), detailsLevelCtrl);
+			return detailsLevelCtrl;
+		}
 	}
 	
 	private void doNewLevel(UserRequest ureq) {
@@ -410,7 +419,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(row);
 		if(level == null) {
 			tableEl.reloadData();
-			showWarning("repositoryentry.not.existing");
+			showWarning("warning.taxonomy.level.deleted");
 		} else {
 			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, level);
 			listenTo(toolsCtrl);

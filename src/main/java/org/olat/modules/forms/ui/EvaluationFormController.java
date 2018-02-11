@@ -60,7 +60,6 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
-import org.olat.modules.forms.manager.EvaluationFormStorage;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
@@ -88,7 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EvaluationFormController extends FormBasicController implements ValidatingController {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormStorage.class);
+	private static final OLog log = Tracing.createLoggerFor(EvaluationFormController.class);
 
 	private int count = 0;
 	private final Form form;
