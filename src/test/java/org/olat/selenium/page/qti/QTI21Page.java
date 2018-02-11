@@ -105,7 +105,23 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Check the answer of a single choice.
+	 * @param answer The answer
+	 * @return Itself
+	 */
 	public QTI21Page answerSingleChoice(String answer) {
+		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][label[text()[contains(normalize-space(.),'" + answer + "')]]]]/td[contains(@class,'control')]/input[@type='radio']");
+		browser.findElement(choiceBy).click();
+		return this;
+	}
+	
+	/**
+	 * Check the answer of a single choice. The answer is wrapped in a P tag.
+	 * @param answer The answer
+	 * @return Itself
+	 */
+	public QTI21Page answerSingleChoiceWithParagraph(String answer) {
 		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][label/p[contains(normalize-space(text()),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='radio']");
 		browser.findElement(choiceBy).click();
 		return this;

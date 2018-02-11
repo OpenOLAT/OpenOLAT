@@ -343,18 +343,18 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.assertOnAssessmentItem()
 			.hint()
 			.assertFeedbackText("Tony lives in the United Kingdom")
-			.answerSingleChoice("Tony")
+			.answerSingleChoiceWithParagraph("Tony")
 			.saveAnswer()
 			.assertFeedbackText("No, the correct answer is Vicente Fox")
 			.assertFeedbackInline("No, he is the Prime Minister of England.")
 			.assertNoFeedbackText("Tony lives in the United Kingdom")
-			.answerSingleChoice("George")
+			.answerSingleChoiceWithParagraph("George")
 			.saveAnswer()
 			.assertFeedbackText("No, the correct answer is Vicente Fox")
 			.assertFeedbackInline("No, he is the President of the USA.")
 			.assertNoFeedbackText("Tony lives in the United Kingdom")
 			.assertNoFeedbackInline("No, he is the Prime Minister of England.")
-			.answerSingleChoice("Vicente")
+			.answerSingleChoiceWithParagraph("Vicente")
 			.saveAnswer()
 			.assertFeedbackText("Yes, that is correct")
 			.assertNoFeedbackText("Tony lives in the United Kingdom")
@@ -682,6 +682,59 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.assertOnAssessmentResults()
 			.assertOnAssessmentItemScore("Richard III", 3);
+	}
+	
+	/**
+	 * This is an assessment item with severals
+	 * different interactions.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21MultipleInput(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Gap match QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_multi-input.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			// the single choice
+			.answerSingleChoice("Some people are afraid of a woman")
+			// the inline choice
+			.answerInlineChoice("A2")
+			// the text entry
+			.answerGapText("wicked king", "RESPONSE3")
+			// the gap match
+			.answerGapMatch(1, "family", true)
+			.answerGapMatch(2, "castle", true)
+			.answerGapMatch(3, "horse", true)
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		//check the results
+		qtiPage
+			.assertOnAssessmentResults()
+			.assertOnAssessmentItemScore("Legend", 4);
 	}
 
 }
