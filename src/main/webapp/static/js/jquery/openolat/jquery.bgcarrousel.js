@@ -76,7 +76,7 @@
 	
 	BgCarrousel.prototype._hideCurrent = function() {
 		var el = $(this.settings.query);
-		if (el && el.size() > 0) {	
+		if (el && el.length > 0) {	
 			el.transition({
 					opacity:0, 
 					duration: this.settings.durationout, 
@@ -90,7 +90,7 @@
 		if ( !el) {
 			el = $(this.settings.query);			
 		}
-		if (el && el.size() > 0) {
+		if (el && el.length > 0) {
 			this.newImg = "";
 			this.oldImg = "";
 			if (this.pos == null) {

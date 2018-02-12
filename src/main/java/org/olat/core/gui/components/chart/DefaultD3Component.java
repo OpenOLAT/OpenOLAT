@@ -53,34 +53,7 @@ public class DefaultD3Component extends AbstractComponent {
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
-		
-		if(isUseR2D3(ureq)) {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/r2d3.min.js");
-		} else {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.min.js");
-		}
-	}
-	
-	private boolean isUseR2D3(UserRequest ureq) {
-		String userAgent = ureq.getHttpReq().getHeader("user-agent");
-		
-		int msiePos = userAgent.indexOf("MSIE ");
-        if (msiePos == -1 || userAgent.contains("Opera")) {
-            return false;
-        } else {
-        	String next = userAgent.substring(msiePos + 5);
-        	if(next.length() > 0) {
-        		String val = next.substring(0, 1);
-        		try {
-					int ieVersion = Integer.valueOf(val);
-					if(ieVersion <= 8 && ieVersion > 5) {
-						return true;
-					}
-				} catch (NumberFormatException e) {
-					//
-				}
-        	}
-        }
-		return false;
+
+		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.min.js");
 	}
 }

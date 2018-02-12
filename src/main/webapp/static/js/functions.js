@@ -120,13 +120,12 @@ var BLoader = {
 					pos = sheets.length;
 				}
 				// H: stylesheet not yet inserted -> insert				
-				var mystyle = doc.createStyleSheet(cssURL, pos);
+				doc.createStyleSheet(cssURL, pos);
 			} else { // mozilla
 				// double check: first try to remove the <link rel="stylesheet"...> tag, using the id.
 				var el = jQuery('#' +linkid);
-				if (el && el.size() > 0) {
+				if (el && el.length > 0) {
 					if (o_info.debug) o_logwarn("BLoader::loadCSS: stylesheet already found in doc when trying to add:"+cssURL+", with id "+linkid);
-					return;
 				} else {
 					// create the new stylesheet and convince the browser to load the url using @import with protocol 'data'
 					//var styles = '@import url("'+cssURL+'");';

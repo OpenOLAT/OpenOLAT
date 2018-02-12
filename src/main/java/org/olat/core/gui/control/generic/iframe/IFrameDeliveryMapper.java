@@ -585,12 +585,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendJQuery2Cond() {
-			append("<!--[if lt IE 9]>\n");
-			appendStaticJs("js/jquery/jquery-1.9.1.min.js");
-			append("<![endif]-->\n");
-			append("<!--[if gte IE 9]><!-->\n");
-			appendStaticJs("js/jquery/jquery-2.1.3.min.js");
-			append("<!--<![endif]-->\n");
+			appendStaticJs("js/jquery/jquery-3.3.1.min.js");
 		}
 
 		public void appendPrototype() {

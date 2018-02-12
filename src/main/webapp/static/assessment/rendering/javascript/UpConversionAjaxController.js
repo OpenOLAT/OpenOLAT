@@ -161,7 +161,7 @@ var UpConversionAjaxController = (function() {
             var bracketedRenderingContainer = jQuery("#" + this.bracketedRenderingContainerId);
             var messageContainer = jQuery("#" + this.messageContainerId);
             /* Set up if not done already */
-            if (messageContainer.children().size()==0) {
+            if (messageContainer.children().length==0) {
                 messageContainer.html("<div class='upConversionAjaxControlMessage'></div>"
                     + "<div class='upConversionAjaxControlError'></div>");
                 bracketedRenderingContainer.attr('class', 'upConversionAjaxControlPreview');

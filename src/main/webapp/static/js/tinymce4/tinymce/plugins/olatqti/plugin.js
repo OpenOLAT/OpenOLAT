@@ -202,11 +202,11 @@
 				
 				if (ed.dom.is(e.element, 'span[data-qti=textentryinteraction]')) {
 					lastSelectedGap = e.element;
-				} else if (jQuery(e.element).parent("span[data-qti='textentryinteraction']").size() > 0) {
+				} else if (jQuery(e.element).parent("span[data-qti='textentryinteraction']").length > 0) {
 					lastSelectedGap = e.element;
 				}
 				
-				if (jQuery(e.element).parent('span.hottext').size() > 0) {
+				if (jQuery(e.element).parent('span.hottext').length > 0) {
 					lastSelectedHottext = e.element;
 				}
 				
@@ -222,7 +222,7 @@
 				});
 				
 				jQuery("span.hottext[data-copy='needlistener']", e.element).each(function(index, el) {
-					if(jQuery("a.o_check", el).size() == 0) {
+					if(jQuery("a.o_check", el).length == 0) {
 						var checked = jQuery(el).attr('data-qti-checked');
 						jQuery(el).prepend("<a class='o_check " + ("true" == checked ? "checked" : "") + "' contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
@@ -251,7 +251,7 @@
 				});
 				
 				jQuery("span.textentryinteraction[data-copy='needlistener']", e.element).each(function(index, el) {
-					if(jQuery("a.o_ops", el).size() == 0) {
+					if(jQuery("a.o_ops", el).length == 0) {
 						jQuery(el).append("<a class='o_ops' contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
 					
@@ -499,7 +499,7 @@
 			ed.on('PastePreProcess', function (e) {
 				var selectedNode = ed.selection.getNode();
 				if(selectedNode != null &&
-						(jQuery(selectedNode).parent("span.hottext").size() > 0 || jQuery(selectedNode).parent("span.textentryinteraction").size() > 0)) {
+						(jQuery(selectedNode).parent("span.hottext").length > 0 || jQuery(selectedNode).parent("span.textentryinteraction").length > 0)) {
 					
 					// paste in an hottext or a textEntryInteraction -> only text
 					var wrappedContent = '<div id="' + guid() + '">' + e.content + '</div>';

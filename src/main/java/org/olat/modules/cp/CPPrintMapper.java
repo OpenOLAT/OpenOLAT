@@ -50,7 +50,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * 
@@ -83,7 +82,7 @@ public class CPPrintMapper implements Mapper {
 	private static final String TAG_FRAMESET_UPPERC = "<FRAMESET";
 	private static final String FILE_SUFFIX_JS = ".js";
 	
-	private String g_encoding;
+	private String gEncoding;
 	
 	private List<String> selectedNodeIds;
 	
@@ -151,25 +150,19 @@ public class CPPrintMapper implements Mapper {
 		}
 		sb.append("</body></html>");
 
-		MediaResource	mr = prepareMediaResource(request, sb.toString(), g_encoding, "text/html");
-		return mr;
+		return prepareMediaResource(request, sb.toString(), gEncoding, "text/html");
 	}
 	
 	private void injectJavascriptAndCss(StringBuilder output) {	
-		StringOutput sb = new StringOutput();
-		sb.append("<!--[if lt IE 9]>");
-		sb.append("<script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-1.9.1.min.js");
-		sb.append("\")'></script>");
-		sb.append("<![endif]-->");
-		sb.append("<!--[if gte IE 9]><!-->");
-		sb.append("<script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-2.1.3.min.js");
-		sb.append("\")'></script>");
-		sb.append("<!--<![endif]-->");
-		output.append(sb.toString());
-		
-		output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
+		try(StringOutput sb = new StringOutput(128)) {
+			sb.append("<script src=\"");
+			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-3.3.1.min.js");
+			sb.append("\")'></script>");
+			output.append(sb.toString());
+			output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	protected void bodyDecorator(NekoHtmlPageHandler page, StringBuilder sb) {
@@ -180,7 +173,7 @@ public class CPPrintMapper implements Mapper {
 	}
 	
 	private List<NekoHtmlPageHandler> composePrintPage(List<String> nodeIds) {
-		List<NekoHtmlPageHandler> pages = new ArrayList<NekoHtmlPageHandler>();
+		List<NekoHtmlPageHandler> pages = new ArrayList<>();
 		
 		for(String nodeId:nodeIds) {
 			NekoHtmlPageHandler parsedPage = null;
@@ -214,8 +207,8 @@ public class CPPrintMapper implements Mapper {
 
 		try {
 			Page content = loadPageWithGuess(document);
-			if(g_encoding == null) {
-				g_encoding = content.getEncoding();
+			if(gEncoding == null) {
+				gEncoding = content.getEncoding();
 			}
 
 			String rawContent;
@@ -230,12 +223,6 @@ public class CPPrintMapper implements Mapper {
 			parser.setContentHandler(page);
 			parser.parse(new InputSource(new StringReader(rawContent)));
 			return page;
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -285,13 +272,13 @@ public class CPPrintMapper implements Mapper {
 		if (path.toLowerCase().lastIndexOf(FILE_SUFFIX_HTM) >= (path.length()-4)) {
 			// set the http content-type and the encoding
 			Page page = loadPageWithGuess(vfsLeaf);
-			g_encoding = page.getEncoding();
+			gEncoding = page.getEncoding();
 			if (page.isUseLoadedPageString()) {
-				mr = prepareMediaResource(httpRequest, page.getPage(), g_encoding, page.getContentType());
+				mr = prepareMediaResource(httpRequest, page.getPage(), gEncoding, page.getContentType());
 			} else {
 				// found a new charset other than iso-8859-1, load string with proper encoding
-				String content = FileUtils.load(vfsLeaf.getInputStream(), g_encoding);
-				mr = prepareMediaResource(httpRequest, content, g_encoding, page.getContentType());
+				String content = FileUtils.load(vfsLeaf.getInputStream(), gEncoding);
+				mr = prepareMediaResource(httpRequest, content, gEncoding, page.getContentType());
 			}
 		}	else	if (path.toLowerCase().lastIndexOf(FILE_SUFFIX_CSS) >= (path.length()-4)) {
 			// set the http content-type and the encoding
@@ -305,7 +292,7 @@ public class CPPrintMapper implements Mapper {
 			// so we assume the .js file has the same encoding as the html file
 			// that loads the .js file
 			if (jsEncoding != null) vmr.setEncoding(jsEncoding);
-			else if (g_encoding != null) vmr.setEncoding(g_encoding);
+			else if (gEncoding != null) vmr.setEncoding(gEncoding);
 			mr = vmr;
 		} else {
 			// binary data: not .html, not .htm, not .js -> treated as is

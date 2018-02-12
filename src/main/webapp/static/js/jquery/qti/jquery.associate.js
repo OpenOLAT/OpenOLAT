@@ -28,7 +28,7 @@
 		for (var i = 0; i < associationPairs.length; i++) {
 			var associationPair = associationPairs[i].split(' ');
 			var associationEl = jQuery(associationEls.get(i));
-			if (associationEl.size() == 0) {
+			if (associationEl.length == 0) {
 				var boxId = newAssociationBox(containerId, settings);
 				associationEl = jQuery('#' + boxId);
 			}
@@ -78,7 +78,7 @@
 			},
 			helper: function() {
 				var choiceEl = jQuery(this);
-				var boxed = choiceEl.parent('.association_box').size() > 0;
+				var boxed = choiceEl.parent('.association_box').length > 0;
 				if(!boxed && needToBeAvailable(this, containerId)) {
 					choiceEl.removeClass('oo-selected');
 					var cloned =  choiceEl.clone();// need some click / drag listeners
@@ -100,7 +100,7 @@
 		var gapId = choiceEl.data("qti-id");
 		var currentUsedGap = jQuery(
 				"#" + containerId + "_panel div[data-qti-id='" + gapId + "']")
-				.size();
+				.length;
 		return (matchMax == 0 || currentUsedGap + 1 < matchMax);
 	}
 
@@ -108,7 +108,7 @@
 		jElements.on('click', function(e, el) {
 			var box = jQuery(this);
     		
-			var hasItems = jQuery(".o_associate_item", this).size();
+			var hasItems = jQuery(".o_associate_item", this).length;
 			if(hasItems == 1) {
 				jQuery(".o_associate_item", this).each(function(index, selectedEl) {
 					removeGap(selectedEl, box, containerId);
@@ -129,7 +129,7 @@
 		}).droppable({
 			drop: function(event, ui) {
 				var box = jQuery(this);
-				var hasItems = jQuery(".o_associate_item", this).size();
+				var hasItems = jQuery(".o_associate_item", this).length;
 				if(hasItems  > 0) {
 					jQuery(".o_associate_item", this).each(function(index, selectedEl) {
 						removeGap(selectedEl, box, containerId);
@@ -174,7 +174,7 @@
 		jSelectedEl.removeClass('oo-choosed');
     	
 		var gapId = jSelectedEl.data('qti-id');
-		var availableGaps = jQuery("#" + containerId + "_items div[data-qti-id='" + gapId + "']").size();
+		var availableGaps = jQuery("#" + containerId + "_items div[data-qti-id='" + gapId + "']").length;
 		if(availableGaps == 0) {
 			jSelectedEl.appendTo(jQuery('#' + containerId +'_items'));
 		} else {
@@ -207,7 +207,7 @@
 					associationEl.remove();// remove empty slots
 				} else {
 					jQuery(associationEl).find('.association_box').each(function(index, associationBoxEl) {
-						var numOfItems = jQuery(associationBoxEl).find('.o_associate_item').size();
+						var numOfItems = jQuery(associationBoxEl).find('.o_associate_item').length;
 						if (numOfItems == 0 && jQuery(associationBoxEl).hasClass('oo-filled')) {
 							jQuery(associationBoxEl).removeClass('oo-filled');
 						}

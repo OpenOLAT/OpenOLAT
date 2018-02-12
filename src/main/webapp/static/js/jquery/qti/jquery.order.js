@@ -62,7 +62,7 @@
 		var targetBox = jQuery(containerId + ' div.target');
 		var hiddenInputContainer = jQuery(containerId + ' div.hiddenInputContainer');
 
-		var selectedCount = targetList.children('li').size();
+		var selectedCount = targetList.children('li').length;
 		if (settings.minChoices != null && settings.maxChoices != null) {
 			if (selectedCount < settings.minChoices || selectedCount > settings.maxChoices) {
 				if (settings.minChoices != settings.maxChoices) {
