@@ -57,37 +57,31 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("/* <![CDATA[ */ ")
 		  .append("jQuery(function () {\n")
 		  .append("var placeholderheight = jQuery('#d").append(cmpId).append("d3holder').height();\n")
-		  .append("var placeholderwidth = jQuery('#d").append(cmpId).append("d3holder').width();\n");
+		  .append("var placeholderwidth = jQuery('#d").append(cmpId).append("d3holder').width();\n")
+		  .append("var data = [").append(infos.getData()).append("];\n");
 
 		sb.append("var margin = {top: 20, right: 20, bottom: 30, left: 50},\n")
 		  .append("    width = placeholderwidth - margin.left - margin.right,\n")
 		  .append("    height = placeholderheight - margin.top - margin.bottom;\n")
 		  .append("\n")
-		  .append("var x = d3.scale.ordinal()\n")
-		  .append("    .rangeRoundBands([0, width], .1);\n")
+		  .append("var x = d3.scaleBand()\n")
+		  .append("    .domain(data.map(function(d) { return d[0]; }))\n")
+		  .append("    .rangeRound([0, width]).padding(.1);\n")
 		  .append("\n")
-		  .append("var y = d3.scale.linear()\n")
+		  .append("var y = d3.scaleLinear()\n")
+		  .append("    .domain([0, d3.max(data, function(d) { return ").append(sum).append("; })])\n")
 		  .append("    .range([height, 0]);\n")
 		  .append("\n")
-		  .append("var xAxis = d3.svg.axis()\n")
-		  .append("    .scale(x)\n")
-		  .append("    .orient('bottom');\n")
+		  .append("var xAxis = d3.axisBottom(x);\n")
 		  .append("\n")
-		  .append("var yAxis = d3.svg.axis()\n")
-		  .append("    .scale(y)\n")
-		  .append("    .orient('left')\n");
+		  .append("var yAxis = d3.axisLeft(y);\n");
 
 		sb.append("\n")
 		  .append("var svg = d3.select('#d").append(cmpId).append("d3holder').append('svg')\n")
 		  .append("    .attr('width', width + margin.left + margin.right)\n")
 		  .append("    .attr('height', height + margin.top + margin.bottom)\n")
 		  .append("    .append('g')\n")
-		  .append("    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');\n")
-		  .append("\n")
-		  .append("var data = [").append(infos.getData()).append("]\n")
-		  .append("x.domain(data.map(function(d) { return d[0]; }));\n")
-		  .append("y.domain([0, d3.max(data, function(d) { return ").append(sum).append("; })]);\n")
-		  .append("\n");
+		  .append("    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');\n");
 
 		//append x axis and legend
 		sb.append("svg.append('g')\n")
@@ -99,6 +93,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 			  .append("    .attr('y', 0)\n")
 			  .append("    .attr('x', 0 - (width / 2))\n")
 			  .append("    .attr('dy', '1em')\n")
+			  .append("    .attr('fill', '#000')\n")
 			  .append("    .style('text-anchor', 'middle')\n")
 			  .append("    .text('").append(xLegend).append("');\n");
 		}
@@ -113,6 +108,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 			  .append("    .attr('y', 0 - margin.left)\n")
 			  .append("    .attr('x', 0 - (height / 2))\n")
 			  .append("    .attr('dy', '1em')\n")
+			  .append("    .attr('fill', '#000')\n")
 			  .append("    .style('text-anchor', 'middle')\n")
 			  .append("    .text('").append(yLegend).append("');\n")
 			  .append("\n");
@@ -152,7 +148,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 			sb.append("    .attr('fill', '").append(color).append("')\n")
 			  .append("    .attr('x', function(d) { return x(d[0]); })\n")
 			  .append("    .attr('y', function(d) { return y(d[").append((i+1)).append("]) ").append(correction).append(" ; })\n")
-			  .append("    .attr('width', x.rangeBand())\n")
+			  .append("    .attr('width', x.bandwidth())\n")
 			  .append("    .attr('height', function(d) { return height - y(d[").append((i+1)).append("]); });\n");
 		}
 	}

@@ -53,7 +53,6 @@ public class DefaultD3Component extends AbstractComponent {
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
-
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.min.js");
 	}
 }

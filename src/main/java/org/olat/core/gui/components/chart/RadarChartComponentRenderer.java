@@ -67,7 +67,7 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("    wrapWidth: 100,\n")
 		  .append("    format: '").append(soc.getFormat().format()).append("',")
 		  .append("    color: color,\n");
-		if(soc.getAxis() != null && soc.getAxis().size() > 0) {
+		if(soc.getAxis() != null && !soc.getAxis().isEmpty()) {
 			sb.append("    axis: ");
 			renderAxis(sb, soc.getAxis());
 			sb.append(",\n");
@@ -98,7 +98,7 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		
 		int numOfSeries = series.size();
 		if(hasColor == numOfSeries) {
-			sb.append("  var color = d3.scale.ordinal().range([");
+			sb.append("  var color = d3.scaleOrdinal().range([");
 			for(int i=0;i<numOfSeries; i++) {
 				if(i > 0) {
 					sb.append(",");
@@ -107,9 +107,9 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("]);\n");
 		} else if(numOfSeries < 4) {
-			sb.append("  var color = d3.scale.ordinal().range([\"#EDC951\",\"#CC333F\",\"#00A0B0\"]);\n");
+			sb.append("  var color = d3.scaleOrdinal().range([\"#EDC951\",\"#CC333F\",\"#00A0B0\"]);\n");
 		} else {
-			sb.append("  var color = d3.scale.category10();\n");
+			sb.append("  var color = d3.scaleOrdinal(d3.schemeCategory10);\n");
 		}
 	}
 	

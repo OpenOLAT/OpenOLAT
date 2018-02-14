@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EfficiencyStatementManagerTest extends OlatTestCase {
+public class EfficiencyStatementManagerGatling extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;

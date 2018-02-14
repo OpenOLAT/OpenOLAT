@@ -62,10 +62,10 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BigAssessmentTestPackageBuilder {
+public class BigAssessmentGatlingPackageBuilder {
 	
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss");
-	private static final OLog log = Tracing.createLoggerFor(BigAssessmentTestPackageBuilder.class);
+	private static final OLog log = Tracing.createLoggerFor(BigAssessmentGatlingPackageBuilder.class);
 	private static final QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 	
 	private int numOfSections = 15;

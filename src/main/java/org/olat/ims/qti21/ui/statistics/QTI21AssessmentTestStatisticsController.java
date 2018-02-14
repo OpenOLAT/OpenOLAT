@@ -96,7 +96,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
-		mainVC.contextPut("printMode", new Boolean(printMode));
+		mainVC.contextPut("printMode", Boolean.valueOf(printMode));
 		if(resourceResult.getCourseEntry() != null) {
 			mainVC.contextPut("courseId", resourceResult.getCourseEntry().getKey());
 		}
@@ -160,15 +160,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 			Object maxScoreObj = testNode == null ? null : testNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_MAXSCORE);
 			if (maxScoreObj instanceof Float) {
 				maxScoreSetting = (Float)maxScoreObj;
-			} else {
-				// try to calculate max
-				float max = 0;
-				/*for (Item item: items) {
-					if(item.getQuestion() != null) {
-						max += item.getQuestion().getMaxValue();
-					}
-				}*/
-				maxScoreSetting = max > 0 ? max : null;
 			}
 		}
 		return maxScoreSetting;
@@ -291,11 +282,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	}
 	
 	private void printPages(UserRequest ureq) {
-		ControllerCreator printControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				return new QTI21PrintController(lureq, lwControl, resourceResult);
-			}					
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			return new QTI21PrintController(lureq, lwControl, resourceResult);				
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);

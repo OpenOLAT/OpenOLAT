@@ -12,9 +12,9 @@ jQuery(function () {
 	var vis = svg.selectAll('circle')
 	    .data(d);
 	
-	var r = d3.scale.ordinal()
+	var r = d3.scaleBand()
 	  .domain(d.map(function(d) { return d[3]; }))
-	  .rangeRoundBands([50, 0]);
+	  .rangeRound([50, 0]);
 
 	var node = vis.enter()
 	   .append('g')

@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AccessTransactionTest extends OlatTestCase {
+public class AccessTransactionGatling extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;

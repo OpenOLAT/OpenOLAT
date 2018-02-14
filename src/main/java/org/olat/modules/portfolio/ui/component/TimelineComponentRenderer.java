@@ -65,7 +65,7 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 		sb.append("  dateFormat: '").append(dateFormat).append("',\n");
 		//values
 		sb.append("   values: [");
-		if(cmp.getPoints() != null && cmp.getPoints().size() > 0) {
+		if(cmp.getPoints() != null && !cmp.getPoints().isEmpty()) {
 			int numOfPoints = cmp.getPoints().size();
 			for(int i=0; i<numOfPoints; i++) {
 				TimelinePoint point = cmp.getPoints().get(i);
