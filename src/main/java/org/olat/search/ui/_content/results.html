@@ -32,7 +32,7 @@
 			<div id="o_search_results_toomany">$r.translate("too.many.results",$searchResults.getMaxHits())</div>
 			#end
 		#foreach ($result in $results)
-			$r.render("result_$velocityCount")
+			$r.render("result_$foreach.count")
 		#end
 		
 		#if ($numOfPages != 1)

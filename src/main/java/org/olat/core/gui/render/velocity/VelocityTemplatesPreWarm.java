@@ -59,20 +59,17 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 		final File root = new File(WebappHelper.getContextRoot(), "WEB-INF/classes");
 		final Path fPath = root.toPath();
 		try {
-			if(Files.exists(fPath)) {
+			if(fPath.toFile().exists()) {
 				Files.walkFileTree(fPath, new SimpleFileVisitor<Path>() {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-						try {
+						try(StringOutput writer = new StringOutput()) {
 							String path = fPath.relativize(file).toString();
 							if(path.endsWith(".html") && path.contains("/_content/")) {
-								StringOutput writer = new StringOutput();
 								VelocityHelper.getInstance().mergeContent(path, context, writer, null);
 								numOfTemplates.incrementAndGet();
 							}
-						} catch (ResourceNotFoundException e) {
-							log.error("", e);
-						} catch (ParseErrorException e) {
+						} catch (IOException | ResourceNotFoundException | ParseErrorException e) {
 							log.error("", e);
 						}
 						return FileVisitResult.CONTINUE;

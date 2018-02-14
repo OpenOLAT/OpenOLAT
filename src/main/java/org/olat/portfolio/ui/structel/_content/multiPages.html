@@ -2,8 +2,8 @@
 	<li class="#if($toc_enabled) active #end">$r.render("toc")</li>
 	#if($pageLinkList)
 		#foreach($pageLink in $pageLinkList)
-			#set($viewLink = "pageLink$velocityCount")
-			<li class="#if ($velocityCount == $actualPage) active #end">$r.render($viewLink)</li>
+			#set($viewLink = "pageLink$foreach.count")
+			<li class="#if ($foreach.count == $actualPage) active #end">$r.render($viewLink)</li>
 		#end
 	#end
 	<li class="#if($changelog_enabled) active #end">$r.render("changelog")</li>

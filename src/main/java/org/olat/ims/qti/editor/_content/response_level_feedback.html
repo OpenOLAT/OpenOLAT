@@ -6,9 +6,9 @@
 		<label class="control-label col-sm-6">$r.formatLatexFormulas($response.renderAsHtml($mediaBaseUrl))</label>
 		<div class="col-sm-6">
 			<div class="qti_edit_layout">
-				$r.render("feedback_$velocityCount")
+				$r.render("feedback_$foreach.count")
 				<div class="edit_link">				
-					$r.render("link_$velocityCount")
+					$r.render("link_$foreach.count")
 				</div>
 			</div>
 		</div>

@@ -27,11 +27,11 @@
 			#if ($editModeEnabled)
 				<div class="pull-right">
 					<div class="btn-group">
-						#if($r.available("cmd.edit.$velocityCount"))
-							$r.render("cmd.edit.$velocityCount")
+						#if($r.available("cmd.edit.$foreach.count"))
+							$r.render("cmd.edit.$foreach.count")
 						#end
-						#if($r.available("cmd.delete.$velocityCount"))
-							$r.render("cmd.delete.$velocityCount")
+						#if($r.available("cmd.delete.$foreach.count"))
+							$r.render("cmd.delete.$foreach.count")
 						#end
 					</div>
 				</div>

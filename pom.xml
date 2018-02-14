@@ -1786,7 +1786,7 @@
 			<version>1.11</version>
 		</dependency>
 		<dependency>
-			<!-- Used by at least velocity engine -->
+			<!-- Used by at least commons-validator -->
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.2</version>
@@ -1843,11 +1843,6 @@
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency><!-- Velocity dependency -->
-			<groupId>oro</groupId>
-			<artifactId>oro</artifactId>
-			<version>2.0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat.jamwiki</groupId>
@@ -2188,7 +2183,7 @@
 			<version>4.3.3</version>
 		</dependency>
 		<dependency>
-			<!-- Used by at least ical4j, velocity, basiclti -->
+			<!-- Used by at least ical4j, basiclti -->
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
@@ -2257,8 +2252,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
-			<version>1.7</version>
+			<artifactId>velocity-engine-core</artifactId>
+			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>

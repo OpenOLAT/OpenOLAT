@@ -172,13 +172,13 @@ public class MetadatasController extends BasicController {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		String guiPref = (String) guiPrefs.get(MetadatasController.class, GUIPREF_KEY_OPEN_PANEL);
 		String openPanel = guiPref != null? guiPrefToPanel(guiPref): "general";
-		mainVC.contextRemove("in-general");
-		mainVC.contextRemove("in-question");
-		mainVC.contextRemove("in-rights");
-		mainVC.contextRemove("in-technical");
-		mainVC.contextRemove("in-ratings");
-		mainVC.contextRemove("in-pools");
-		mainVC.contextRemove("in-shares");
+		mainVC.contextRemove("inGeneral");
+		mainVC.contextRemove("inQuestion");
+		mainVC.contextRemove("inRights");
+		mainVC.contextRemove("inTechnical");
+		mainVC.contextRemove("inRatings");
+		mainVC.contextRemove("inPools");
+		mainVC.contextRemove("inShares");
 		mainVC.contextPut("in-" + openPanel, "in");
 	}
 	

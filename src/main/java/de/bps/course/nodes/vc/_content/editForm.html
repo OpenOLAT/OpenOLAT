@@ -20,7 +20,7 @@ $r.render("vc.options")
 		</tr>
 		
 		#foreach($date in $dateList)
-			#set( $iter = $velocityCount - 1)
+			#set( $iter = $foreach.count - 1)
 			#set( $title = $vcTitleInputList.get($iter).getName() )
 			#set( $titleErr = $title + "_ERROR" )
 			#set( $descr =	$vcDescriptionInputList.get($iter).getName() )

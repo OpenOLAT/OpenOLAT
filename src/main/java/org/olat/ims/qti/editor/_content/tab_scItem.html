@@ -35,12 +35,12 @@
 			</tr></thead>
 			<tbody>
 			#foreach($content in $question.getResponses())
-				#if ($velocityCount % 2 == 0)
+				#if ($foreach.count % 2 == 0)
 					#set ($rowclass="")
 				#else
 					#set ($rowclass="b_table_odd")				
 				#end
-				#set ($count = ($velocityCount - 1))
+				#set ($count = ($foreach.count - 1))
 				<tr><td>
 				#if(!$isRestrictedEdit)
 					<a $r.hrefAndOnclick("up",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_up")"><i class="o_icon o_icon-lg o_icon_move_up"> </i></a>

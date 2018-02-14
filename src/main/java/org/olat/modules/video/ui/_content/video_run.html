@@ -5,7 +5,7 @@
 		    	<source type="video/mp4" src="$masterUrl/video.mp4" title="$masterTitle"/>
 		    #end
 	    	#foreach($video in $videos)
-	    		#set($position = $velocityCount - 1)
+	    		#set($position = $foreach.count - 1)
 	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) ($r.formatBytes(${video.getSize()}))" />
 	    	#end	    	
 	    	## Use master video file if not optimized video is found

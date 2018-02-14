@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.ValidationError;
@@ -82,15 +81,12 @@ class UserBulkChangeStep00 extends BasicStep {
 
 	static {
 		// init velocity engine
-		Properties p = null;
+		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			velocityEngine.init(p);
 		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
+			throw new RuntimeException("config error " + p);
 		}
 	}
 

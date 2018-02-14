@@ -451,7 +451,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// -- sites -- by definition the first site is activated at the beginning
 		userTools = new HomeSite(null);
 		sites = baseFullWebappControllerParts.getSiteInstances(ureq, getWindowControl());
-		if (sites != null && sites.size() == 0) {
+		if (sites != null && sites.isEmpty()) {
 			sites = null;
 		}
 		

@@ -32,7 +32,7 @@
 					#end
 					#foreach ($filter in $filters)
 						<li>
-							#set ($filterPosition = $velocityCount - 1)
+							#set ($filterPosition = $foreach.count - 1)
 							<a href="$r.commandURI("cmd.filter.${filterPosition}")">
 							#if ($filter == $selectedFilterValue)
 								

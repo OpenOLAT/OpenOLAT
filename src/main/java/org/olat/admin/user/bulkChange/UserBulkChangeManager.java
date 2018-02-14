@@ -32,7 +32,6 @@ import org.apache.velocity.context.Context;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
@@ -98,15 +97,12 @@ public class UserBulkChangeManager implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		// init velocity engine
-		Properties p = null;
+		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			velocityEngine.init(p);
 		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
+			throw new RuntimeException("config error " + p);
 		}
 	}
 

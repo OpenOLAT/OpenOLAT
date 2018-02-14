@@ -288,7 +288,7 @@
 							<th>$r.translate("details.referenceinfo")</th>
 							<td>$r.translate("details.referenceinfo.txt")
 								#foreach($referenceLink in $referenceLinks)
-									#if($velocityCount != 1), #end$r.render($referenceLink)
+									#if($foreach.count != 1), #end$r.render($referenceLink)
 								#end
 							</td>
 						</tr>

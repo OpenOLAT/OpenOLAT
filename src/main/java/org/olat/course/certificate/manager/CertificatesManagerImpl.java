@@ -50,7 +50,6 @@ import javax.jms.Session;
 import javax.persistence.TypedQuery;
 
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
@@ -186,15 +185,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		getCertificateRoot();
 		usersStorage = new FileStorage(getCertificateRootContainer());
 		
-		Properties p = null;
+		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			velocityEngine.init(p);
 		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
+			throw new RuntimeException("config error " + p);
 		}
 		
 		//deploy script

@@ -222,7 +222,7 @@
 	
 		#if(${itemResult.hasScore()})			
 		<div class="o_qti_section_visual">	
-			<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$velocityCount" data-progress="0">
+			<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
 				<div class="circle">
 					<div class="mask full">
 						<div class="fill"></div>
@@ -268,7 +268,7 @@
 			<script type="text/javascript">
 			/* <![CDATA[ */
 			setTimeout(function() {
-				jQuery("#${velocityCount}").attr("data-progress","${itemResult.scorePercent}");
+				jQuery("#${foreach.count}").attr("data-progress","${itemResult.scorePercent}");
 			},100);
 			/* ]]> */
 			</script>			
@@ -277,7 +277,7 @@
 		
 		#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 		<div class="o_qti_section_goto o_block_bottom o_small">
-			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
+			<a href="#o_result_${foreach.count}"  onclick="o_scrollToElement('#o_result_${foreach.count}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
 		</div>
 		#end		
 
@@ -334,7 +334,7 @@
 		#set($inSection = true)
 		## Hide section title / metadata if there is only one section, redundant with test overview
 		#if ($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1)
-			<a id="o_result_${velocityCount}" title="$r.escapeHtml($itemResult.title)"></a>
+			<a id="o_result_${foreach.count}" title="$r.escapeHtml($itemResult.title)"></a>
 			<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
 				#if($itemResult.metadataVisible)
 				<small>

@@ -2,13 +2,13 @@
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseGeneralToggler" class="o_icon o_icon-fw #if($in-general) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseGeneralToggler" class="o_icon o_icon-fw #if($inGeneral) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#general">
 					$r.translate("general")
 				</a>
 			</h4>
 		</div>
-		<div id="general" class="panel-collapse collapse $!in-general">
+		<div id="general" class="panel-collapse collapse $!inGeneral">
 			<div class="panel-body">
 				$r.render("details_general")
 			</div>
@@ -28,13 +28,13 @@
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseQuestionToggler" class="o_icon o_icon-fw #if($in-question) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseQuestionToggler" class="o_icon o_icon-fw #if($inQuestion) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#question">
 					$r.translate("question")
 				</a>
 			</h4>
 		</div>
-		<div id="question" class="panel-collapse collapse $!in-question">
+		<div id="question" class="panel-collapse collapse $!inQuestion">
 			<div class="panel-body">
 				$r.render("details_question")
 			</div>
@@ -54,13 +54,13 @@
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseRightsToggler" class="o_icon o_icon-fw #if($in-rights) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseRightsToggler" class="o_icon o_icon-fw #if($inRights) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#rights">
 					$r.translate("rights")
 				</a>
 			</h4>
 		</div>
-		<div id="rights" class="panel-collapse collapse $!in-rights">
+		<div id="rights" class="panel-collapse collapse $!inRights">
 			<div class="panel-body">
 				$r.render("details_rights")
 			</div>
@@ -80,13 +80,13 @@
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<i id="collapseTechnicalToggler" class="o_icon o_icon-fw #if($in-technical) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+				<i id="collapseTechnicalToggler" class="o_icon o_icon-fw #if($inTechnical) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 				<a data-toggle="collapse" data-parent="#accordion" href="#technical">
 					$r.translate("technical")
 				</a>
 			</h4>
 		</div>
-		<div id="technical" class="panel-collapse collapse $!in-technical">
+		<div id="technical" class="panel-collapse collapse $!inTechnical">
 			<div class="panel-body">
 				$r.render("details_technical")
 			</div>
@@ -107,13 +107,13 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<i id="collapsRatingsToggler" class="o_icon o_icon-fw #if($in-ratings) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<i id="collapsRatingsToggler" class="o_icon o_icon-fw #if($inRatings) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 					<a data-toggle="collapse" data-parent="#accordion" href="#ratings">
 						$r.translate("menu.ratings")
 					</a>
 				</h4>
 			</div>
-			<div id="ratings" class="panel-collapse collapse $!in-ratings">
+			<div id="ratings" class="panel-collapse collapse $!inRatings">
 				<div class="panel-body">
 					$r.render("details_ratings")
 				</div>
@@ -135,13 +135,13 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<i id="collapsePoolsToggler" class="o_icon o_icon-fw #if($in-pools) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<i id="collapsePoolsToggler" class="o_icon o_icon-fw #if($inPools) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 					<a data-toggle="collapse" data-parent="#accordion" href="#pools">
 						$r.translate("menu.pools")
 					</a>
 				</h4>
 			</div>
-			<div id="pools" class="panel-collapse collapse $!in-pools">
+			<div id="pools" class="panel-collapse collapse $!inPools">
 				<div class="panel-body">
 					$r.render("details_pools")
 				</div>
@@ -163,13 +163,13 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<i id="collapseSharesToggler" class="o_icon o_icon-fw #if($in-shares) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+					<i id="collapseSharesToggler" class="o_icon o_icon-fw #if($inShares) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 					<a data-toggle="collapse" data-parent="#accordion" href="#shares">
 						$r.translate("sharing.shares")
 					</a>
 				</h4>
 			</div>
-			<div id="shares" class="panel-collapse collapse $!in-shares">
+			<div id="shares" class="panel-collapse collapse $!inShares">
 				<div class="panel-body">
 					$r.render("details_shares")
 				</div>

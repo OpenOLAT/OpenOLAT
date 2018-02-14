@@ -74,12 +74,7 @@ public class VelocityHelper extends LogDelegator {
 		try {
 			ve = new VelocityEngine();
 			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
-
-
-			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
-			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());			
+			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());	
 			p.setProperty(RuntimeConstants.PARSER_POOL_SIZE, VelocityModule.getParserPoolSize());
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
 
@@ -105,7 +100,7 @@ public class VelocityHelper extends LogDelegator {
 			p.setProperty(RuntimeConstants.VM_LIBRARY_AUTORELOAD, "false");
 			ve.init(p);
 		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
+			throw new RuntimeException("config error " + p);
 		}
 	}
 
@@ -125,7 +120,6 @@ public class VelocityHelper extends LogDelegator {
 				// e.g. try /_accessibility/index.html first, if not found, try /index.html.
 				// this allows for themes to only provide the delta to the default templates
 				
-				// todo we could avoid those string operations, if the performance gain is measureable
 				int latestSlash = template.lastIndexOf('/');
 				StringBuilder sb = new StringBuilder(template.substring(0,latestSlash));
 				sb.append("/_").append(theme).append("/").append(template.substring(latestSlash+1));
@@ -159,7 +153,7 @@ public class VelocityHelper extends LogDelegator {
 			vtemplate.merge(c, wOut);			
 		} catch (MethodInvocationException me) {
 			throw new OLATRuntimeException(VelocityHelper.class, "MethodInvocationException occured while merging template: methName:"
-					+ me.getMethodName() + ", refName:" + me.getReferenceName(), me.getWrappedThrowable());
+					+ me.getMethodName() + ", refName:" + me.getReferenceName(), me.getCause());
 		} catch (Exception e) {
 			throw new OLATRuntimeException(VelocityHelper.class, "exception occured while merging template: " + e.getMessage(), e);
 		}

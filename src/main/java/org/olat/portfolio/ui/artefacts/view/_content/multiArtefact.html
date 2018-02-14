@@ -14,7 +14,7 @@
 	<div class="container-fluid">
 		#foreach($artefactComp in $artefactCtrlComps)
 			<div class="col-sm-6">
-				#set($artCtrl = "artCtrl$velocityCount")
+				#set($artCtrl = "artCtrl$foreach.count")
 				$r.render($artCtrl)
 			</div>
 		#end
@@ -22,7 +22,7 @@
 	#if ($pageLinkList)
 	<ul class="pagination">
 		#foreach($pageLink in $pageLinkList)
-			#set($viewLink = "pageLink$velocityCount")
+			#set($viewLink = "pageLink$foreach.count")
 			<li>$r.render($viewLink)</li>
 		#end
 	</ul>

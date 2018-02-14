@@ -204,7 +204,7 @@ public class AllCachesController extends BasicController {
 			binary = cache.getCacheConfiguration().storeAsBinary().enabled();
 			hits = stats.getHits();
 			misses = stats.getMisses();
-			size = cache.getAdvancedCache().size();//stats.getCurrentNumberOfEntries());
+			size = cache.getAdvancedCache().size();
 			maxIdle = cache.getCacheConfiguration().expiration().maxIdle();
 			lifespan = cache.getCacheConfiguration().expiration().lifespan();
 			maxEntries = cache.getCacheConfiguration().eviction().maxEntries();

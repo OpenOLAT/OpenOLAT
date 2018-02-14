@@ -165,16 +165,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		SubscriptionContext scontext = getSubscriptionContext();
 		notificationsManager.getOrCreatePublisher(scontext, pdata);
 		
-		Properties p = null;
+		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			velocityEngine.init(p);
 		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
+			throw new RuntimeException("config error " + p);
 		}
 	}
 	

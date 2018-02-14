@@ -10,7 +10,7 @@
 		<div class="wizard clearfix">
 			<ul class="steps">
 			#foreach($item in $stepLinks)
-				<li class="	#if($currentStepPos == $velocityCount) active #end	#if(!${item.isEnabled()}) o_enabled #end ">
+				<li class="	#if($currentStepPos == $foreach.count) active #end	#if(!${item.isEnabled()}) o_enabled #end ">
 					$r.render(${item})<span class="chevron"></span>
 				</li>
 			#end

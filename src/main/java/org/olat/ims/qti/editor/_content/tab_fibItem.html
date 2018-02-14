@@ -24,7 +24,7 @@
 		</thead>
 		<tbody>			
 			#foreach($content in $question.getResponses())
-				#set ($count = ($velocityCount - 1))
+				#set ($count = ($foreach.count - 1))
 			<tr>
 				<td>
 				#if(!$isRestrictedEdit)

@@ -230,7 +230,7 @@ https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
 
 /* Markup example
 
-<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$velocityCount" data-progress="0">
+<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
 	<div class="circle">
 		<div class="mask full">
 			<div class="fill"></div>

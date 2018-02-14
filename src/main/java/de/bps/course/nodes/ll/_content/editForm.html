@@ -1,6 +1,6 @@
 <div class="o_form form">
 #foreach($link in $linkList)
-	#set( $iter = $velocityCount - 1)
+	#set( $iter = $foreach.count - 1)
 	#set( $target = $lTargetInputList.get($iter).getName() )
 	#set( $targetErr =	$target + "_ERROR" )
 	#set( $descr =	$lDescriptionInputList.get($iter).getName() )

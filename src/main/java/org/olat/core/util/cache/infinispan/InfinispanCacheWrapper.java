@@ -60,7 +60,7 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 
 	@Override
 	public List<U> getKeys() {
-		return new ArrayList<U>(cache.keySet());
+		return new ArrayList<>(cache.keySet());
 	}
 
 	@Override
@@ -100,8 +100,7 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 
 	@Override
 	public V put(U key, V value) {
-		V oldOne = cache.put(key, value);
-		return oldOne;
+		return cache.put(key, value);
 	}
 
 	@Override
@@ -122,6 +121,11 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	@Override
 	public Iterator<U> iterateKeys() {
 		return cache.keySet().iterator();
+	}
+
+	@Override
+	public void clear() {
+		cache.clear();
 	}
 
 	@Override

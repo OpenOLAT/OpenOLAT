@@ -13,7 +13,7 @@
 	<tbody>		
      	#foreach ($c1entry in $columnAttribute)
 		<tr>
-	      	#set ($i = $velocityCount - 1)
+	      	#set ($i = $foreach.count - 1)
 	      	<td>
 		      	## attribute
 		      	$r.render(${c1entry}) 

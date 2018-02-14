@@ -32,7 +32,7 @@
 		<li class="list-group-item">
 			#foreach($group in $participantGroups)
 				$r.escapeHtml($group.getName())
-				#if ($velocityCount < $participantGroups.size())
+				#if ($foreach.count < $participantGroups.size())
 			,
 				#end
 			#end

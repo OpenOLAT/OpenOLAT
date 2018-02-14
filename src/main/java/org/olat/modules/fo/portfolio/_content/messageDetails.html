@@ -13,7 +13,7 @@
 		<ul>
 		#foreach( $attachment in $attachments )
 			#set( $fsize = $attachment.getSize() / 1024 )
-			#set( $downlCompName = "download${velocityCount}")
+			#set( $downlCompName = "download${foreach.count}")
 			<li>$r.render($downlCompName)</li>
 		#end 
 		</ul>

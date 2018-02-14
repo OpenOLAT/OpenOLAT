@@ -2,8 +2,8 @@
 	<tbody>		
 		#foreach ($synonym in $glossItemSynonyms)
 			<tr>
-				<td>$r.render("synonym.$velocityCount")</td>
-				<td>$r.render("delete.synonym.$velocityCount")</td>
+				<td>$r.render("synonym.$foreach.count")</td>
+				<td>$r.render("delete.synonym.$foreach.count")</td>
 			</tr>
 		#end
 			<tr>

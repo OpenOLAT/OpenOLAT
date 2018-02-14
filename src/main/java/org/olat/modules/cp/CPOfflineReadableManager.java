@@ -85,20 +85,15 @@ public class CPOfflineReadableManager {
 		// private since singleton
 
 		// init velocity engine
-		Properties p = null;
+		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
-			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());
 			p.setProperty("classpath.resource.loader.cache", Settings.isDebuging() ? "false" : "true");
-			
 			velocityEngine.init(p);
 		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
+			throw new RuntimeException("config error " + p);
 		}
 	}
 
@@ -135,7 +130,7 @@ public class CPOfflineReadableManager {
 			//start page
 			String startPage = getOfflineCPStartHTMLFile(manifest, indexSrc);
 			exportStream.putNextEntry(new ZipEntry("_START_.html"));
-			IOUtils.write(startPage, exportStream);
+			IOUtils.write(startPage, exportStream, "UTF-8");
 			exportStream.closeEntry();
 			
 			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/"), DIRNAME_CPOFFLINEMENUMAT);

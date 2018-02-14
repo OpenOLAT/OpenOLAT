@@ -1244,6 +1244,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 
 		@Override
+		public void clear() {
+			//
+		}
+
+		@Override
 		public void addListener(Object obj) {
 			//
 		}

@@ -9,7 +9,7 @@
 	#set($currentBundle="")
 	#foreach ($item in $i18nItems)
 		#if ($currentBundle != $item.getBundleName())
-			#if ($velocityCount != 1)
+			#if ($foreach.count != 1)
 	</div></div></div>
 			#end
 	<div class="o_translation_list_package">
@@ -18,12 +18,12 @@
 			<div class="clearfix">
 				<div class="pull-right">$r.render("translateBundle_$currentBundle")</div>
 				<div class="o_tooglebox_wrapper">
-					<a href="#" data-toggle="collapse" data-target="#$o_translation_item_$velocityCount"  class="o_opener" onclick="jQuery(this).toggleClass('o_in')">
+					<a href="#" data-toggle="collapse" data-target="#$o_translation_item_$foreach.count"  class="o_opener" onclick="jQuery(this).toggleClass('o_in')">
 						<i class="o_icon o_icon_translation_package"> </i> $r.translate("generic.bundle"): $currentBundle
 					</a>
 				</div>
 			</div>
-			<div id="$o_translation_item_$velocityCount" class="collapse"><div class="o_togglebox_content">
+			<div id="$o_translation_item_$foreach.count" class="collapse"><div class="o_togglebox_content">
 		#end
 		<div><i class="o_icon o_icon_translation_item"> </i> $item.getKey()</div>
 	#end

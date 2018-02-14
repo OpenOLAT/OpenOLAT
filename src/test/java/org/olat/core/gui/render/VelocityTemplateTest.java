@@ -55,7 +55,7 @@ public class VelocityTemplateTest {
 	public void testTemplates() {
 		engine = getEngine();
 		File javaSources = new File(MAIN_JAVA);
-		List<Exception> exs = new ArrayList<Exception>();
+		List<Exception> exs = new ArrayList<>();
 		testTemplates("", javaSources, exs);
 		
 		for(Exception ex:exs) {
@@ -72,9 +72,8 @@ public class VelocityTemplateTest {
 			for(File template:templates) {
 				String templateName = template.getName();
 				if(templateName.endsWith(".html")) {
-					try {
+					try(StringWriter writer = new StringWriter()) {
 						String path = dir + templateName;
-						StringWriter writer = new StringWriter();
 						Context context = new VelocityContext();
 						Template veloTemplate = engine.getTemplate(path);
 						veloTemplate.merge(context, writer);
@@ -95,10 +94,7 @@ public class VelocityTemplateTest {
 	
 	private VelocityEngine getEngine() {
 		Properties p = new Properties();
-		p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-		p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 		p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
-		p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());
 
 		p.setProperty(RuntimeConstants.RESOURCE_LOADER, "file, classpath");					
 		p.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");

@@ -123,6 +123,8 @@ public interface CacheWrapper<U, V> {
 	 */
 	public Iterator<U> iterateKeys();
 	
+	public void clear();
+	
 	/**
 	 * Annotated listener
 	 * 

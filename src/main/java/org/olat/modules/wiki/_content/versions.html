@@ -42,7 +42,7 @@ $r.render("versions")
 						$r.translate("old.version")<br />
 						<div class="o_wikimod_old">
 						#foreach($line in $lines)
-							#if($velocityCount <= $diff.getSize() / 2)
+							#if($foreach.count <= $diff.getSize() / 2)
 								$line<br>
 							#end
 						#end
@@ -52,7 +52,7 @@ $r.render("versions")
 						$r.translate("new.version")<br />
 						<div class="o_wikimod_new">
 						#foreach($line in $lines)
-							#if($velocityCount > $diff.getSize() / 2)
+							#if($foreach.count > $diff.getSize() / 2)
 								$line<br />
 							#end
 						#end

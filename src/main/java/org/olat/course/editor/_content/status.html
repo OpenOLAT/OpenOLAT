@@ -8,7 +8,7 @@
 		<ul class="o_error list-unstyled">
 		#foreach($elem in $errorIsForNode)
 			<li>
-			#set ($counter = $velocityCount - 1)
+			#set ($counter = $foreach.count - 1)
 			#if($errorHelpWizardLink.get($counter)!="NONE")
 				<h5><a href="$r.commandURI($errorHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></h5>
 			#else
@@ -30,7 +30,7 @@
 		<ul class="o_warning list-unstyled">
 		#foreach($elem in $warningIsForNode)
 			<li>
-			#set ($counter = $velocityCount - 1)
+			#set ($counter = $foreach.count - 1)
 			#if($warningHelpWizardLink.get($counter)!="NONE")
 				<h5><a href="$r.commandURI($warningHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></h5>
 			#else

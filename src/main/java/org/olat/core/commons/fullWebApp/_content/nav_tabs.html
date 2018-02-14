@@ -2,7 +2,7 @@
 <ul id="$r.getCId()"  class="o_navbar_tabs nav o_navbar-nav">
 #foreach ($dtab in $dtabs)
 	#set ($navel = $dtab.getNavElement())
-	#set ($pos=${velocityCount} - 1)
+	#set ($pos=${foreach.count} - 1)
 	#set ($postfix=$dtabsLinkNames.get(${pos}))
 	
 	<li class="#if($tabhelper.isDTabActive($dtab)) active #end">

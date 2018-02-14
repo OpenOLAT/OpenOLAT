@@ -6,7 +6,7 @@
 	</tr>
 </thead><tbody>
 	#foreach($checkpoint in $checkpoints)
-		#set( $iter = $velocityCount - 1)
+		#set( $iter = $foreach.count - 1)
 		#set( $title = $titleInputList.get($iter).getName() )
 		#set( $titleErr =	$title + "_ERROR" )
 		#set( $descr =	$descriptionInputList.get($iter).getName() )

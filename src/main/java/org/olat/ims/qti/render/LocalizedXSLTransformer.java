@@ -46,7 +46,6 @@ import org.apache.velocity.context.Context;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMDocument;
@@ -72,22 +71,19 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * Initial Date: 04.06.2003
  */
 public class LocalizedXSLTransformer {
-	private static ConcurrentHashMap<String, LocalizedXSLTransformer> instanceHash = new ConcurrentHashMap<String, LocalizedXSLTransformer>(5);
+	private static ConcurrentHashMap<String, LocalizedXSLTransformer> instanceHash = new ConcurrentHashMap<>(5);
 	private static OLog log = Tracing.createLoggerFor(LocalizedXSLTransformer.class);
 	private static EntityResolver er = new IMSEntityResolver();
 	private static VelocityEngine velocityEngine;
 	
 	static {
 		// init velocity engine
-		Properties p = null;
+		Properties p = new Properties();
 		try {
 			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			velocityEngine.init(p);
 		} catch (Exception e) {
-			throw new OLATRuntimeException("config error with velocity properties::" + p.toString(), e);
+			throw new OLATRuntimeException("config error with velocity properties::" + p, e);
 		}		
 	}
 	
@@ -231,7 +227,7 @@ public class LocalizedXSLTransformer {
 	 * @throws IOException
 	 */
 	private static String slurp(InputStream in) throws IOException {
-	   StringBuffer out = new StringBuffer();
+	   StringBuilder out = new StringBuilder();
 	   byte[] b = new byte[4096];
 	   for (int n; (n = in.read(b)) != -1;) {
 	       out.append(new String(b, 0, n));

@@ -111,7 +111,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 			}
 		}
 		
-		flc.contextPut("template-help", new Boolean(rootStructure instanceof EPStructuredMapTemplate));
+		flc.contextPut("templateHelp", Boolean.valueOf(rootStructure instanceof EPStructuredMapTemplate));
 		
 		initOrUpdateToc(ureq);
 		initOrUpdateDetailsEditor(ureq);

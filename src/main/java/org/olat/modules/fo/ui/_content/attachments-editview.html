@@ -7,7 +7,7 @@ $r.translate("attachments")
 			<td style="width:1%"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"> </i></td>
 			<td>$r.escapeHtml($fname)</td>
 			<td>$r.formatBytes($attachment.getSize())</td>
-			<td style="width:1%">$r.render("delete.attachment.$velocityCount")</td>
+			<td style="width:1%">$r.render("delete.attachment.$foreach.count")</td>
 		</tr>
 	#end
 </tbody></table>

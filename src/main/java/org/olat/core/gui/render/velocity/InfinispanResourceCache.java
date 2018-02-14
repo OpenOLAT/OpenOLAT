@@ -61,4 +61,9 @@ public class InfinispanResourceCache implements ResourceCache {
 	public Iterator<Object> enumerateKeys() {
 		return cache.iterateKeys();
 	}
+
+	@Override
+	public void clear() {
+		cache.clear();
+	}
 }

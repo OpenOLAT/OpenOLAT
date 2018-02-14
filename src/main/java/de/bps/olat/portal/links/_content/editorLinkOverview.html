@@ -5,13 +5,13 @@
 
 #if ($!allInst)
 	#foreach( $instTrans in $allInstTranslated )
-		#set ($id = ($velocityCount - 1) )
+		#set ($id = ($foreach.count - 1) )
 		#set ( $inst = $allInst.get($id) )
 		<div class="clearfix">
 			<h5>$r.translate("link.institution"): <i>$instTrans</i> </h5> 
 			<div class="pull-right"> $r.render("linkadd$inst") </div>
 			<ul>
-			#foreach( $linkID in $allInstWithLinkIds.get($velocityCount) )
+			#foreach( $linkID in $allInstWithLinkIds.get($foreach.count) )
 				#set($linkEditorLink = "linkid$linkID")
 				#set($linkDelLink = "linkdel$linkID")
 			  <li>$r.render("$linkEditorLink") $r.render("$linkDelLink")</li>

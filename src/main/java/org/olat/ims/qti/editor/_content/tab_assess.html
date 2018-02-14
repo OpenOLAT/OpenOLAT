@@ -38,7 +38,7 @@
 				<p class="form-control-static">$r.translate("form.section.selection_all")</p>
 			#else 
 				#foreach($section in $assessment.sections)
-					<p class="form-control-static">$velocityCount</p>
+					<p class="form-control-static">$foreach.count</p>
 				#end
 			#end
 		</div>
@@ -70,11 +70,11 @@
 				#end
 				>$r.translate("form.section.selection_all")</option>
 			#foreach($section in $assessment.sections)
-				<option value="$velocityCount"
-				#if ($selection_number == "$velocityCount") 
+				<option value="$foreach.count"
+				#if ($selection_number == "$foreach.count") 
 				selected="selected" 
 				#end
-				>$velocityCount</option>
+				>$foreach.count</option>
 			#end
 			</select>
 		</div>

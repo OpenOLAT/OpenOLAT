@@ -188,7 +188,7 @@
 	</div>
 	<hr class="hidden-xs" />
 	#foreach($checkbox in $checkboxList)
-		<div class="o_cl_line row clearfix #if($velocityCount %2 == 0) o_even #else o_odd #end">
+		<div class="o_cl_line row clearfix #if($foreach.count %2 == 0) o_even #else o_odd #end">
 			<div class="col-xs-12 col-sm-3">
 				$r.render($checkbox.checkboxElName)
 			</div>
