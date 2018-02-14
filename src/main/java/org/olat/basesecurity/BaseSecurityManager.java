@@ -315,14 +315,13 @@ public class BaseSecurityManager implements BaseSecurity {
 	public List<Policy> getPoliciesOfSecurityGroup(SecurityGroup secGroup) {
 		if(secGroup == null ) return Collections.emptyList();
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi where poi.securityGroup.key=:secGroupKey");
 
-		List<Policy> policies = DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Policy.class)
 				.setParameter("secGroupKey", secGroup.getKey())
 				.getResultList();
-		return policies;
 	}
 
 	/**
@@ -330,14 +329,14 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup secGroup) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" poi where ")
 			.append(" poi.olatResource.key=:resourceKey ");
 		if(secGroup != null) {
 			sb.append(" and poi.securityGroup.key=:secGroupKey");
 		}
 		
-		TypedQuery<Policy> query = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<Policy> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Policy.class)
 				.setParameter("resourceKey", resource.getKey());
 		if(secGroup != null) {
@@ -436,36 +435,38 @@ public class BaseSecurityManager implements BaseSecurity {
 
 		SecurityGroup groupManagerGroup = findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
 		boolean hasBeenGroupManager = isIdentityInSecurityGroup(updatedIdentity, groupManagerGroup);
-		boolean groupManager = roles.isGroupManager()
-				&& !roles.isGuestOnly() && !roles.isInvitee();
+		boolean groupManager = roles.isGroupManager() && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, groupManagerGroup, hasBeenGroupManager, groupManager, Constants.GROUP_GROUPMANAGERS);
 
 		// author
 		SecurityGroup authorGroup = findSecurityGroupByName(Constants.GROUP_AUTHORS);
 		boolean hasBeenAuthor = isIdentityInSecurityGroup(updatedIdentity, authorGroup);
-		boolean isAuthor = (roles.isAuthor() || roles.isInstitutionalResourceManager())
-				&& !roles.isGuestOnly() && !roles.isInvitee();
+		boolean isAuthor = (roles.isAuthor() || roles.isInstitutionalResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, authorGroup, hasBeenAuthor, isAuthor, Constants.GROUP_AUTHORS);
 
 		// user manager, only allowed by admin
 		SecurityGroup userManagerGroup = findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
 		boolean hasBeenUserManager = isIdentityInSecurityGroup(updatedIdentity, userManagerGroup);
-		boolean userManager = roles.isUserManager()
-				&& !roles.isGuestOnly() && !roles.isInvitee();
+		boolean userManager = roles.isUserManager() && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(actingIdentity, updatedIdentity,  userManagerGroup, hasBeenUserManager, userManager, Constants.GROUP_USERMANAGERS);
 
  		// institutional resource manager
 		SecurityGroup institutionalResourceManagerGroup = findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
 		boolean hasBeenInstitutionalResourceManager = isIdentityInSecurityGroup(updatedIdentity, institutionalResourceManagerGroup);
-		boolean institutionalResourceManager = roles.isInstitutionalResourceManager()
-				&& !roles.isGuestOnly() && !roles.isInvitee();
+		boolean institutionalResourceManager = roles.isInstitutionalResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, institutionalResourceManagerGroup, hasBeenInstitutionalResourceManager, institutionalResourceManager, Constants.GROUP_INST_ORES_MANAGER);
 
 		// institutional resource manager
 		SecurityGroup poolManagerGroup = findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
 		boolean hasBeenPoolManager = isIdentityInSecurityGroup(updatedIdentity, poolManagerGroup);
-		boolean poolManager = roles.isPoolAdmin()	&& !roles.isGuestOnly() && !roles.isInvitee();
+		boolean poolManager = roles.isPoolAdmin() && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, poolManagerGroup, hasBeenPoolManager, poolManager, Constants.GROUP_POOL_MANAGER);
+		
+		// institutional resource manager
+		SecurityGroup curriculumManagerGroup = findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER);
+		boolean hasBeenCurriculumManager = isIdentityInSecurityGroup(updatedIdentity, curriculumManagerGroup);
+		boolean curriculumManager = roles.isCurriculumManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(actingIdentity, updatedIdentity, curriculumManagerGroup, hasBeenCurriculumManager, curriculumManager, Constants.GROUP_CURRICULUM_MANAGER);
 
 		// system administrator
 		SecurityGroup adminGroup = findSecurityGroupByName(Constants.GROUP_ADMIN);
@@ -521,7 +522,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return membership != null && membership.size() > 0 && membership.get(0) != null;
+		return membership != null && !membership.isEmpty() && membership.get(0) != null;
 	}
 
 	@Override
@@ -825,17 +826,12 @@ public class BaseSecurityManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getIdentitiesOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
+	@Override
 	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup) {
 		if (secGroup == null) {
 			throw new AssertException("getIdentitiesOfSecurityGroup: ERROR secGroup was null !!");
 		} 
-		DB db = DBFactory.getInstance();
-		if (db == null) {
-			throw new AssertException("getIdentitiesOfSecurityGroup: ERROR db was null !!");
-		} 
-
-		List<Identity> idents = getIdentitiesOfSecurityGroup(secGroup, 0, -1);
-		return idents;
+		return getIdentitiesOfSecurityGroup(secGroup, 0, -1);
 	}
 	
 	@Override
@@ -931,7 +927,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public SecurityGroup findSecurityGroupByName(String securityGroupName) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
 		  .append(" inner join ngroup.securityGroup sgi")
 		  .append(" where ngroup.groupName=:groupName");
@@ -945,8 +941,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		int size = group.size();
 		if (size == 0) return null;
 		if (size != 1) throw new AssertException("non unique name in namedgroup: " + securityGroupName);
-		SecurityGroup sg = group.get(0);
-		return sg;
+		return group.get(0);
 	}
 
 	/**
@@ -956,7 +951,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	public Identity findIdentityByName(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.name=:username");
@@ -1027,16 +1022,15 @@ public class BaseSecurityManager implements BaseSecurity {
 	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
 		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.name in (:username)");
 		
-		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("username", identityNames)
 				.getResultList();
-		return identities;
 	}
 	
 	
@@ -1119,7 +1113,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		int count = 0;
 		int batch = 500;
 		List<Long> names = new ArrayList<Long>(identityKeys);
-		List<IdentityShort> shortIdentities = new ArrayList<IdentityShort>(names.size());
+		List<IdentityShort> shortIdentities = new ArrayList<>(names.size());
 		do {
 			int toIndex = Math.min(count + batch, names.size());
 			List<Long> toLoad = names.subList(count, toIndex);
@@ -1397,7 +1391,7 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("provider", provider)
 				.getResultList();
-		if (results == null || results.size() == 0) return null;
+		if (results == null || results.isEmpty()) return null;
 		if (results.size() > 1) {
 			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
 		}
@@ -1431,7 +1425,7 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("provider", provider)
 				.getResultList();
-		if (results == null || results.size() == 0) return null;
+		if (results == null || results.isEmpty()) return null;
 		if (results.size() > 1) {
 			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
 		}
@@ -1451,12 +1445,11 @@ public class BaseSecurityManager implements BaseSecurity {
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
 		  .append(" as auth where auth.credential=:credential and auth.provider=:provider");
 		
-		List<Authentication> results = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setParameter("credential", securityToken)
 				.setParameter("provider", provider)
 				.getResultList();
-		return results;
 	}
 	
 	@Override
@@ -1469,12 +1462,11 @@ public class BaseSecurityManager implements BaseSecurity {
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
 		  .append(" as auth where auth.provider=:provider and auth.creationDate<:creationDate");
 		
-		List<Authentication> results = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setParameter("creationDate", creationDate, TemporalType.TIMESTAMP)
 				.setParameter("provider", provider)
 				.getResultList();
-		return results;
 	}
 
 	@Override
@@ -1570,7 +1562,7 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("provider", provider)
 				.setParameter("authusername", authusername)
 				.getResultList();
-		if (results.size() == 0) return null;
+		if (results.isEmpty()) return null;
 		if (results.size() != 1) {
 			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
 		}
@@ -2093,12 +2085,10 @@ public class BaseSecurityManager implements BaseSecurity {
 		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
 		  .append(" where sgmsi.securityGroup=sgi and sgmsi.identity.key=:identityKey");
 
-	  List<SecurityGroup> secGroups = DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 	  		.createQuery(sb.toString(), SecurityGroup.class)
 	  		.setParameter("identityKey", identity.getKey())
 	  		.getResultList();
-
-  	return secGroups;
 	}
 	
 
