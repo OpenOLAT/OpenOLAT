@@ -42,6 +42,7 @@ public class RolesVO {
 	private boolean guestOnly = false;
 	private boolean institutionalResourceManager = false;
 	private boolean poolAdmin = false;
+	private boolean curriculumManager = false;
 	private boolean invitee = false;
 
 	public RolesVO() {
@@ -49,18 +50,19 @@ public class RolesVO {
 	}
 
 	public RolesVO(Roles roles) {
-		this.olatAdmin = roles.isOLATAdmin();
-		this.groupManager = roles.isGroupManager();
-		this.userManager = roles.isUserManager();
-		this.author = roles.isAuthor();
-		this.guestOnly = roles.isGuestOnly();
-		this.institutionalResourceManager = roles.isInstitutionalResourceManager();
-		this.poolAdmin = roles.isPoolAdmin();
-		this.invitee = roles.isInvitee();
+		olatAdmin = roles.isOLATAdmin();
+		groupManager = roles.isGroupManager();
+		userManager = roles.isUserManager();
+		author = roles.isAuthor();
+		guestOnly = roles.isGuestOnly();
+		institutionalResourceManager = roles.isInstitutionalResourceManager();
+		poolAdmin = roles.isPoolAdmin();
+		curriculumManager = roles.isCurriculumManager();
+		invitee = roles.isInvitee();
 	}
 	
 	public Roles toRoles() {
-		return new Roles(olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, invitee);
+		return new Roles(olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, curriculumManager, invitee);
 	}
 
 	public boolean isOlatAdmin() {
@@ -117,6 +119,14 @@ public class RolesVO {
 
 	public void setPoolAdmin(boolean poolAdmin) {
 		this.poolAdmin = poolAdmin;
+	}
+
+	public boolean isCurriculumManager() {
+		return curriculumManager;
+	}
+
+	public void setCurriculumManager(boolean curriculumManager) {
+		this.curriculumManager = curriculumManager;
 	}
 
 	public boolean isInvitee() {

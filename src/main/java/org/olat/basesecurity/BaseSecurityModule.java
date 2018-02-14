@@ -78,23 +78,24 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	/**
 	 * default values
 	 */
-	public static Boolean USERMANAGER_CAN_CREATE_USER = true;
-	public static Boolean USERMANAGER_CAN_DELETE_USER = false;
-	public static Boolean USERMANAGER_CAN_CREATE_PWD = true;
-	public static Boolean USERMANAGER_CAN_MODIFY_PWD = true;
-	public static Boolean USERMANAGER_CAN_START_GROUPS = true;
-	public static Boolean USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = true;
-	public static Boolean USERMANAGER_ACCESS_TO_QUOTA = true;
-	public static Boolean USERMANAGER_ACCESS_TO_PROP = false;
-	public static Boolean USERMANAGER_ACCESS_TO_AUTH = false;
-	public static Boolean USERMANAGER_CAN_MANAGE_POOLMANAGERS = true;
-	public static Boolean USERMANAGER_CAN_MANAGE_GROUPMANAGERS = true;
-	public static Boolean USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = true;
-	public static Boolean USERMANAGER_CAN_MANAGE_AUTHORS = true;
-	public static Boolean USERMANAGER_CAN_MANAGE_GUESTS = false;
-	public static Boolean USERMANAGER_CAN_MANAGE_STATUS = true;
-	public static Boolean USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = true;
-	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
+	public static final Boolean USERMANAGER_CAN_CREATE_USER = true;
+	public static final Boolean USERMANAGER_CAN_DELETE_USER = false;
+	public static final Boolean USERMANAGER_CAN_CREATE_PWD = true;
+	public static final Boolean USERMANAGER_CAN_MODIFY_PWD = true;
+	public static final Boolean USERMANAGER_CAN_START_GROUPS = true;
+	public static final Boolean USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = true;
+	public static final Boolean USERMANAGER_ACCESS_TO_QUOTA = true;
+	public static final Boolean USERMANAGER_ACCESS_TO_PROP = false;
+	public static final Boolean USERMANAGER_ACCESS_TO_AUTH = false;
+	public static final Boolean USERMANAGER_CAN_MANAGE_POOLMANAGERS = true;
+	public static final Boolean USERMANAGER_CAN_MANAGE_GROUPMANAGERS = true;
+	public static final Boolean USERMANAGER_CAN_MANAGE_CURRICULUMMANAGERS = true;
+	public static final Boolean USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = true;
+	public static final Boolean USERMANAGER_CAN_MANAGE_AUTHORS = true;
+	public static final Boolean USERMANAGER_CAN_MANAGE_GUESTS = false;
+	public static final Boolean USERMANAGER_CAN_MANAGE_STATUS = true;
+	public static final Boolean USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = true;
+	public static final Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	
 	private static String defaultAuthProviderIdentifier;
 

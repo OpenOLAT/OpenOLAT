@@ -126,7 +126,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private UsermanagerUserSearchForm searchform;
 	private TableController tableCtr;
 	private List<Identity> identitiesList, selectedIdentities;
-	private List<String> notUpdatedIdentities = new ArrayList<String>();
+	private List<String> notUpdatedIdentities = new ArrayList<>();
 	private ExtendedIdentitiesTableDataModel tdm;
 	private ContactFormController contactCtr;
 	private Link backFromMail;
@@ -213,7 +213,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 
 		initUserListCtr(ureq, identitiesList, status);
 		userListVC.put("userlist", tableCtr.getInitialComponent());
-		userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
+		userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
 
 		panel = putInitialPanel(userListVC);
 	}
@@ -245,7 +245,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.identitiesList = identitiesList;
 		initUserListCtr(ureq, identitiesList, status);
 		userListVC.put("userlist", tableCtr.getInitialComponent());
-		userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
+		userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
 
 		panel = putInitialPanel(userListVC);
 	}
@@ -275,11 +275,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		this.showEmailButton = showEmailButton;
 
 		userListVC.contextPut("showBackButton", Boolean.FALSE);
-		userListVC.contextPut("showTitle", new Boolean(showTitle));
+		userListVC.contextPut("showTitle", Boolean.valueOf(showTitle));
 
 		initUserListCtr(ureq, identitiesList, status);
 		userListVC.put("userlist", tableCtr.getInitialComponent());
-		userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
+		userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
 
 		panel = putInitialPanel(userListVC);
 	}
@@ -436,7 +436,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 
 		// get user fields from form
 		// build user fields search map
-		Map<String, String> userPropertiesSearch = new HashMap<String, String>();
+		Map<String, String> userPropertiesSearch = new HashMap<>();
 		for (UserPropertyHandler userPropertyHandler : searchform.getPropertyHandlers()) {
 			if (userPropertyHandler == null) continue;
 			
@@ -457,30 +457,27 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		if (userPropertiesSearch.isEmpty()) userPropertiesSearch = null;
 
 		// get group memberships from form
-		List<SecurityGroup> groupsList = new ArrayList<SecurityGroup>();
+		List<SecurityGroup> groupsList = new ArrayList<>();
 		if (searchform.getRole("admin")) {
-			SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
-			groupsList.add(group);
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN));
 		}
 		if (searchform.getRole("author")) {
-			SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-			groupsList.add(group);
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS));
 		}
 		if (searchform.getRole("groupmanager")) {
-			SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
-			groupsList.add(group);
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS));
 		}
 		if (searchform.getRole("usermanager")) {
-			SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
-			groupsList.add(group);
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS));
 		}
 		if (searchform.getRole("oresmanager")) {
-			SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
-			groupsList.add(group);
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER));
 		}
 		if (searchform.getRole("poolmanager")) {
-			SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
-			groupsList.add(group);
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER));
+		}
+		if (searchform.getRole("curriculummanager")) {
+			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER));
 		}
 		
 		status = searchform.getStatus();
@@ -501,10 +498,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		Date userLoginAfter = searchform.getUserLoginAfter();
 
 		// now perform power search
-		List<Identity> myIdentities = securityManager.getIdentitiesByPowerSearch((login.equals("") ? null : login), userPropertiesSearch, true, groups,
+		return securityManager.getIdentitiesByPowerSearch((login.equals("") ? null : login), userPropertiesSearch, true, groups,
 				permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status);
-
-		return myIdentities;
 	}
 
 	/**
@@ -748,10 +743,10 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		
 		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
 		
-		items = new HashMap<String,FormItem>(); 
+		items = new HashMap<>(); 
 		
 		roleKeys = new String[] {
-				"admin", "author", "groupmanager", "usermanager", "oresmanager", "poolmanager"
+				"admin", "author", "groupmanager", "usermanager", "oresmanager", "poolmanager", "curriculummanager"
 		};
 		
 		roleValues = new String[]{
@@ -760,7 +755,8 @@ class UsermanagerUserSearchForm extends FormBasicController {
 				translate("search.form.constraint.groupmanager"),
 				translate("search.form.constraint.usermanager"),
 				translate("search.form.constraint.oresmanager"),
-				translate("search.form.constraint.poolmanager")
+				translate("search.form.constraint.poolmanager"),
+				translate("search.form.constraint.curriculummanager")
 		};
 		
 		statusKeys = new String[] { 
@@ -782,8 +778,8 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		// convention is that a translation key "search.form.constraint.auth." +
 		// providerName
 		// must exist. the element is stored using the name "auth." + providerName
-		List <String>authKeyList = new ArrayList<String>();
-		List <String>authValueList = new ArrayList<String>();
+		List <String>authKeyList = new ArrayList<>();
+		List <String>authValueList = new ArrayList<>();
 		
 		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
 		for (AuthenticationProvider provider:providers) {
@@ -859,7 +855,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 	}
 	
 	protected String[] getAuthProviders () {
-		List<String> apl = new ArrayList<String>();
+		List<String> apl = new ArrayList<>();
 		for (int i=0; i<authKeys.length; i++) {
 			if (auth.isSelected(i)) {
 				String authKey = authKeys[i];

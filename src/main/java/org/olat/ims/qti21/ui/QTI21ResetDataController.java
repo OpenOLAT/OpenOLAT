@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21ResetDataController extends FormBasicController {
 	
-	private final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false);
+	private final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false, false);
 
 	private final String[] onKeys = new String[]{ "on" };
 

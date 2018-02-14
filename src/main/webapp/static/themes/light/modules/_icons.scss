@@ -185,6 +185,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
 .o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; font-size: 10px; }
 .o_icon_options:before { content: $fa-var-toggle-on; }
+.o_icon_organisation_levels:before { content: $fa-var-sitemap; }
 .o_icon_others:before { content: $fa-var-star; }
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_paragraph:before { content: $fa-var-paragraph; }

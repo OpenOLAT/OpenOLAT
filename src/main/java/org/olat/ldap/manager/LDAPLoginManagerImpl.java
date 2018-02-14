@@ -188,14 +188,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	
 	private void doHandleBatchSync() {
 		//fxdiff: also run on nodes != 1 as nodeid = tomcat-id in fx-environment
-//		if(WebappHelper.getNodeId() != 1) return;
+		//if(WebappHelper.getNodeId() != 1) return;
 		
-		Runnable batchSyncTask = new Runnable() {
-			@Override
-			public void run() {
-				LDAPError errors = new LDAPError();
-				doBatchSync(errors);
-			}				
+		Runnable batchSyncTask = () -> {
+			LDAPError errors = new LDAPError();
+			doBatchSync(errors);
 		};
 		taskExecutorManager.execute(batchSyncTask);		
 	}
@@ -211,9 +208,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 * 
 	 * @throws NamingException
 	 */
+	@Override
 	public LdapContext bindSystem() {
 		// set LDAP connection attributes
-		Hashtable<String, String> env = new Hashtable<String, String>();
+		Hashtable<String, String> env = new Hashtable<>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, ldapLoginModule.getLdapUrl());
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
@@ -287,7 +285,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		
 		// Ok, so far so good, user exists. Now try to fetch attributes using the
 		// users credentials
-		Hashtable<String, String> env = new Hashtable<String, String>();
+		Hashtable<String, String> env = new Hashtable<>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.PROVIDER_URL, ldapUrl);
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
@@ -597,7 +595,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, String> prepareUserPropertyForSync(Attributes attributes, Identity identity) {
-		Map<String, String> olatPropertyMap = new HashMap<String, String>();
+		Map<String, String> olatPropertyMap = new HashMap<>();
 		User user = identity.getUser();
 		NamingEnumeration<Attribute> neAttrs = (NamingEnumeration<Attribute>) attributes.getAll();
 		try {
@@ -642,8 +640,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 */
 	private String mapLdapAttributeToOlatProperty(String attrID) {
 		Map<String, String> userAttrMapper = syncConfiguration.getUserAttributeMap();
-		String olatProperty = userAttrMapper.get(attrID);
-		return olatProperty;
+		return userAttrMapper.get(attrID);
 	}
 	
 	/**
@@ -657,8 +654,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 */
 	private String getAttributeValue(Attribute attribute) {
 		try {
-			String attrValue = (String)attribute.get();
-			return attrValue;
+			return (String)attribute.get();
 		} catch (NamingException e) {
 			log.error("NamingException when trying to get attribute value for attribute::" + attribute, e);
 			return null;
@@ -788,7 +784,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
 				} else if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
 					ldapAuth.setAuthusername(token);
-					ldapAuth = securityManager.updateAuthentication(ldapAuth);
+					securityManager.updateAuthentication(ldapAuth);
 				}
 				return identity;
 			} else if (ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
@@ -823,12 +819,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 * 
 	 * @throws NamingException
 	 */
+	@Override
 	public List<Identity> getIdentitysDeletedInLdap(LdapContext ctx) {
 		if (ctx == null) return null;
 		// Find all LDAP Users
 		String userID = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		String userFilter = syncConfiguration.getLdapUserFilter();
-		final List<String> ldapList = new ArrayList<String>();
+		final List<String> ldapList = new ArrayList<>();
 		
 		ldapDao.searchInLdap(new LDAPVisitor() {
 			@Override
@@ -972,32 +969,36 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		ctx = bindSystem();
 		
 		//authors
-		if(syncConfiguration.getAuthorsGroupBase() != null && syncConfiguration.getAuthorsGroupBase().size() > 0) {
+		if(syncConfiguration.getAuthorsGroupBase() != null && !syncConfiguration.getAuthorsGroupBase().isEmpty()) {
 			List<LDAPGroup> authorGroups = ldapDao.searchGroups(ctx, syncConfiguration.getAuthorsGroupBase());
 			syncRole(ctx, authorGroups, Constants.GROUP_AUTHORS, dnToIdentityKeyMap, errors);
 		}
 		//user managers
-		if(syncConfiguration.getUserManagersGroupBase() != null && syncConfiguration.getUserManagersGroupBase().size() > 0) {
+		if(syncConfiguration.getUserManagersGroupBase() != null && !syncConfiguration.getUserManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> userManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getUserManagersGroupBase());
 			syncRole(ctx, userManagerGroups, Constants.GROUP_USERMANAGERS, dnToIdentityKeyMap, errors);
 		}
 		//group managers
-		if(syncConfiguration.getGroupManagersGroupBase() != null && syncConfiguration.getGroupManagersGroupBase().size() > 0) {
+		if(syncConfiguration.getGroupManagersGroupBase() != null && !syncConfiguration.getGroupManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> groupManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getGroupManagersGroupBase());
 			syncRole(ctx, groupManagerGroups, Constants.GROUP_GROUPMANAGERS, dnToIdentityKeyMap, errors);
 		}
 		//question pool managers
-		if(syncConfiguration.getQpoolManagersGroupBase() != null && syncConfiguration.getQpoolManagersGroupBase().size() > 0) {
+		if(syncConfiguration.getQpoolManagersGroupBase() != null && !syncConfiguration.getQpoolManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> qpoolManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getQpoolManagersGroupBase());
 			syncRole(ctx, qpoolManagerGroups, Constants.GROUP_POOL_MANAGER, dnToIdentityKeyMap, errors);
 		}
+		//curriculum managers
+		if(syncConfiguration.getCurriculumManagersGroupBase() != null && !syncConfiguration.getCurriculumManagersGroupBase().isEmpty()) {
+			List<LDAPGroup> curriculumManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getCurriculumManagersGroupBase());
+			syncRole(ctx, curriculumManagerGroups, Constants.GROUP_CURRICULUM_MANAGER, dnToIdentityKeyMap, errors);
+		}
 		//learning resource manager
-		if(syncConfiguration.getLearningResourceManagersGroupBase() != null && syncConfiguration.getLearningResourceManagersGroupBase().size() > 0) {
+		if(syncConfiguration.getLearningResourceManagersGroupBase() != null && !syncConfiguration.getLearningResourceManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> resourceManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getLearningResourceManagersGroupBase());
 			syncRole(ctx, resourceManagerGroups, Constants.GROUP_INST_ORES_MANAGER, dnToIdentityKeyMap, errors);
 		}
-		
-		
+
 		int count = 0;
 		boolean syncAuthor = StringHelper.containsNonWhitespace(syncConfiguration.getAuthorRoleAttribute())
 				&& StringHelper.containsNonWhitespace(syncConfiguration.getAuthorRoleValue());
@@ -1007,9 +1008,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				&& StringHelper.containsNonWhitespace(syncConfiguration.getGroupManagerRoleValue());
 		boolean syncQpoolManager = StringHelper.containsNonWhitespace(syncConfiguration.getQpoolManagerRoleAttribute())
 				&& StringHelper.containsNonWhitespace(syncConfiguration.getQpoolManagerRoleValue());
+		boolean syncCurriculumManager = StringHelper.containsNonWhitespace(syncConfiguration.getCurriculumManagerRoleAttribute())
+				&& StringHelper.containsNonWhitespace(syncConfiguration.getCurriculumManagerRoleValue());
 		boolean syncLearningResourceManager = StringHelper.containsNonWhitespace(syncConfiguration.getLearningResourceManagerRoleAttribute())
 				&& StringHelper.containsNonWhitespace(syncConfiguration.getLearningResourceManagerRoleValue());
-		
+
 		for(LDAPUser ldapUser:ldapUsers) {
 			if(syncAuthor && ldapUser.isAuthor()) {
 				syncRole(ldapUser, Constants.GROUP_AUTHORS);
@@ -1027,10 +1030,15 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				syncRole(ldapUser, Constants.GROUP_POOL_MANAGER);
 				count++;
 			}
+			if(syncCurriculumManager && ldapUser.isCurriculumManager()) {
+				syncRole(ldapUser, Constants.GROUP_CURRICULUM_MANAGER);
+				count++;
+			}
 			if(syncLearningResourceManager && ldapUser.isLearningResourceManager()) {
 				syncRole(ldapUser, Constants.GROUP_INST_ORES_MANAGER);
 				count++;
 			}
+
 			if(count > 20) {
 				dbInstance.commitAndCloseSession();
 				count = 0;
@@ -1067,27 +1075,32 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			switch(role) {
 				case Constants.GROUP_AUTHORS:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), true,
-									false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), false);
+									false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
 					securityManager.updateRoles(null, identity, roles);
 					break;
 				case Constants.GROUP_USERMANAGERS:
 					roles = new Roles(roles.isOLATAdmin(), true, roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), false);
+							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
 					securityManager.updateRoles(null, identity, roles);
 					break;
 				case Constants.GROUP_GROUPMANAGERS:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), true, roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), false);
+							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
 					securityManager.updateRoles(null, identity, roles);
 					break;
 				case Constants.GROUP_POOL_MANAGER:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), true, false);
+							false, roles.isInstitutionalResourceManager(), true, roles.isCurriculumManager(), false);
 					securityManager.updateRoles(null, identity, roles);
 					break;
+				case Constants.GROUP_CURRICULUM_MANAGER:
+					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
+							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), true, false);
+					securityManager.updateRoles(null, identity, roles);
+					break;	
 				case Constants.GROUP_INST_ORES_MANAGER:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, true, roles.isPoolAdmin(), false);
+							false, true, roles.isPoolAdmin(), roles.isCurriculumManager(), false);
 					securityManager.updateRoles(null, identity, roles);
 					break;
 			}

@@ -153,6 +153,7 @@
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestSessionExtraTime</class>
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestMarksImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.fo.model.ForumImpl</class>
 		<class>org.olat.modules.fo.model.MessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageRefImpl</class>
@@ -175,6 +176,9 @@
 		<class>org.olat.modules.lecture.model.LectureParticipantCalendarSummary</class>
 		<class>org.olat.modules.lecture.model.LectureBlockReminderImpl</class>
 		<class>org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl</class>
+		<class>org.olat.modules.organisation.model.OrganisationTypeImpl</class>
+		<class>org.olat.modules.organisation.model.OrganisationTypeToTypeImpl</class>
+		<class>org.olat.modules.organisation.model.OrganisationImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>

@@ -101,12 +101,13 @@ public class SystemRolesAndRightsController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-	
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		
 		if (source == sysRightsForm) {
 			if (event == Event.DONE_EVENT) {
 				saveFormData(ureq, identity, sysRightsForm);
@@ -152,13 +153,22 @@ public class SystemRolesAndRightsController extends BasicController {
 			updateSecurityGroup(myIdentity, securityManager, groupManagerGroup, hasBeenGroupManager, isGroupManager, Constants.GROUP_GROUPMANAGERS);
 		}
 		// pool manager
-		Boolean canPoolmanagerByConfig =BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;	
+		Boolean canPoolmanagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;	
 		if (canPoolmanagerByConfig.booleanValue() || iAmOlatAdmin) {
 			SecurityGroup poolManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
 			boolean hasBeenPoolManager = securityManager.isIdentityInSecurityGroup(myIdentity, poolManagerGroup);
 			boolean isPoolManager = form.isPoolmanager();
 			updateSecurityGroup(myIdentity, securityManager, poolManagerGroup, hasBeenPoolManager, isPoolManager, Constants.GROUP_AUTHORS);
 		}
+		// curriculum manager
+		Boolean canCurriculummanagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;	
+		if (canCurriculummanagerByConfig.booleanValue() || iAmOlatAdmin) {
+			SecurityGroup curriculumManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER);
+			boolean hasBeenCurriculumManager = securityManager.isIdentityInSecurityGroup(myIdentity, curriculumManagerGroup);
+			boolean isCurriculumManager = form.isCurriculumManager();
+			updateSecurityGroup(myIdentity, securityManager, curriculumManagerGroup, hasBeenCurriculumManager, isCurriculumManager, Constants.GROUP_CURRICULUM_MANAGER);
+		}
+		
 		// author
 		Boolean canAuthorByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;	
 		if (canAuthorByConfig.booleanValue() || iAmOlatAdmin) {

@@ -146,6 +146,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#init()
 	 */
+	@Override
 	public void init() { // called only once at startup and only from one thread
 		// init the system level groups and its policies
 		initSysGroupAdmin();
@@ -155,6 +156,8 @@ public class BaseSecurityManager implements BaseSecurity {
 		initSysGroupGroupmanagers();
 		dbInstance.commit();
 		initSysGroupPoolsmanagers();
+		dbInstance.commit();
+		initSysGroupCurriculummanagers();
 		dbInstance.commit();
 		initSysGroupUsermanagers();
 		dbInstance.commit();
@@ -196,8 +199,11 @@ public class BaseSecurityManager implements BaseSecurity {
 		// and to all courses
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ADMIN, Constants.ORESOURCE_COURSES);
 
-		// and to pool admiistration
+		// and to pool administration
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ADMIN, Constants.ORESOURCE_POOLS);
+		
+		// and to pool administration
+		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ADMIN, Constants.ORESOURCE_CURRICULUMS);
 
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(SysinfoController.class));
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(UserAdminController.class));
@@ -240,6 +246,17 @@ public class BaseSecurityManager implements BaseSecurity {
 			secGroup = createAndPersistNamedSecurityGroup(Constants.GROUP_POOL_MANAGER);
 		//pools managers have a goupmanager policy and access permissions to groupmanaging tools
 		createAndPersistPolicyIfNotExists(secGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_POOLS);
+	}
+	
+	/**
+	 * Users with access to group context management (groupmanagement that can be used in multiple courses
+	 */
+	private void initSysGroupCurriculummanagers() {
+		SecurityGroup secGroup = findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER);
+		if (secGroup == null) 
+			secGroup = createAndPersistNamedSecurityGroup(Constants.GROUP_CURRICULUM_MANAGER);
+		//curriculum managers have a goupmanager policy and access permissions to groupmanaging tools
+		createAndPersistPolicyIfNotExists(secGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_CURRICULUMS);
 	}
 
 	/**
@@ -381,13 +398,14 @@ public class BaseSecurityManager implements BaseSecurity {
 		boolean userManager = admin || rolesStr.contains(Constants.GROUP_USERMANAGERS);
 		boolean resourceManager = rolesStr.contains(Constants.GROUP_INST_ORES_MANAGER);
 		boolean poolManager = admin || rolesStr.contains(Constants.GROUP_POOL_MANAGER);
+		boolean curriculumnManager = admin || rolesStr.contains(Constants.GROUP_CURRICULUM_MANAGER);
 		
 		if(!rolesStr.contains(Constants.GROUP_OLATUSERS)) {
 			isInvitee = invitationDao.isInvitee(identity);
 			isGuestOnly = isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
 		}
 		
-		return new Roles(admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, isInvitee);
+		return new Roles(admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, curriculumnManager, isInvitee);
 	}
 
 	@Override

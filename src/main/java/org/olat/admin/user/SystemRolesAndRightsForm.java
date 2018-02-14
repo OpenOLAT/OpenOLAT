@@ -61,27 +61,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class SystemRolesAndRightsForm extends FormBasicController {
 	
-	private SingleSelection AnonymousRE;
-	private SelectionElement RolesSE;
+	private SingleSelection anonymousRE;
+	private SelectionElement rolesSE;
 	private SpacerElement rolesSep;
-	private SpacerElement sysSep;
 	private SingleSelection statusRE;
 	private MultipleSelectionElement sendLoginDeniedEmailCB;
 	
 	private Identity identity;
 	private final boolean iAmOlatAdmin;
-	private final boolean isAdmin, isUserManager, isAuthor, isGroupManager, isPoolManager, isGuestOnly, isInstitutionalResourceManager;
-	private final boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig, canPoolmanagersByConfig, canInstitutionalResourceManagerByConfig, canStatus;
+	private final boolean isAdmin, isUserManager, isAuthor, isGroupManager,
+		isPoolManager, isCurriculumManager,
+		isGuestOnly, isInstitutionalResourceManager;
+	private final boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig,
+		canPoolmanagersByConfig, canCurriculummanagersByConfig,
+		canInstitutionalResourceManagerByConfig, canStatus;
 
 	private List<String> statusKeys, statusValues;
 	private List<String> roleKeys, roleValues;
 	
-	private static final String KUSER   = "isUserManager";
-	private static final String KGROUP  = "isGroupManager";
-	private static final String KPOOL   = "isPoolManager";
-	private static final String KAUTHOR = "isAuthor";
-	private static final String KADMIN  = "isAdmin";
-	private static final String KRESMAN = "isInstitutionalResourcemanager";
+	private static final String KUSER		= "isUserManager";
+	private static final String KGROUP		= "isGroupManager";
+	private static final String KPOOL		= "isPoolManager";
+	private static final String KCURRICULUM	= "isCurriculumManager";
+	private static final String KAUTHOR		= "isAuthor";
+	private static final String KADMIN		= "isAdmin";
+	private static final String KRESMAN		= "isInstitutionalResourcemanager";
 	
 	@Autowired
 	private BaseSecurity secMgr;
@@ -107,6 +111,9 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		
 		SecurityGroup poolmanagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
 		isPoolManager = secMgr.isIdentityInSecurityGroup(identity, poolmanagerGroup);
+		
+		SecurityGroup curriculumManagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER);
+		isCurriculumManager = secMgr.isIdentityInSecurityGroup(identity, curriculumManagerGroup);
 
 		SecurityGroup isAnonymous = secMgr.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		isGuestOnly = secMgr.isIdentityInSecurityGroup(identity, isAnonymous);
@@ -136,7 +143,8 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		canGuestsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS;	
 		canAuthorsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;
 
-		canPoolmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;		
+		canPoolmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;
+		canCurriculummanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_CURRICULUMMANAGERS;
 		canGroupmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
 		canInstitutionalResourceManagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER;
 		canStatus = BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER;
@@ -154,6 +162,11 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		if (iAmOlatAdmin || canPoolmanagersByConfig) {
 			roleKeys.add(KPOOL);
 			roleValues.add(translate("rightsForm.isPoolmanager"));
+		}
+		
+		if (iAmOlatAdmin || canCurriculummanagersByConfig) {
+			roleKeys.add(KCURRICULUM);
+			roleValues.add(translate("rightsForm.isCurriculummanager"));
 		}
 
 		if (iAmOlatAdmin || canAuthorsByConfig) {
@@ -188,10 +201,11 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		setAdmin(isAdmin);
 		setInstitutionalResourceManager(isInstitutionalResourceManager);
 		setPoolmanager(isPoolManager);
+		setCurriculumManager(isCurriculumManager);
 		
 		setStatus(identity.getStatus());
 		
-		RolesSE.setVisible(!isAnonymous());
+		rolesSE.setVisible(!isAnonymous());
 		rolesSep.setVisible(!isAnonymous());
 	}
 	
@@ -204,11 +218,11 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	}
 
 	public boolean isAnonymous() {
-		return AnonymousRE.getSelectedKey().equals("true");
+		return anonymousRE.getSelectedKey().equals("true");
 	}
 
 	private void setAnonymous(boolean isAnonymous) {
-			AnonymousRE.select(isAnonymous ? "true":"false", true);
+			anonymousRE.select(isAnonymous ? "true":"false", true);
 	}
 
 	protected boolean isAuthor() {
@@ -233,6 +247,14 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 
 	private void setPoolmanager(boolean isPoolmanager) {
 		setRole(KPOOL, isPoolmanager);
+	}
+	
+	protected boolean isCurriculumManager() {
+		return getRole(KCURRICULUM);
+	}
+	
+	private void setCurriculumManager(boolean isCurriculumManager) {
+		setRole(KCURRICULUM, isCurriculumManager);
 	}
 
 	protected boolean isUsermanager() {
@@ -270,11 +292,11 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	}
 	
 	private void setRole (String k, boolean tf) {
-		if (roleKeys.contains(k)) RolesSE.select(k, tf); 
+		if (roleKeys.contains(k)) rolesSE.select(k, tf); 
 	}
 	
 	private boolean getRole (String k) {
-		return roleKeys.contains(k) ? RolesSE.isSelected(roleKeys.indexOf(k)) : false;
+		return roleKeys.contains(k) ? rolesSE.isSelected(roleKeys.indexOf(k)) : false;
 	}
 	
 	@Override
@@ -289,8 +311,8 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == AnonymousRE) {
-			RolesSE.setVisible(!isAnonymous());
+		if (source == anonymousRE) {
+			rolesSE.setVisible(!isAnonymous());
 			rolesSep.setVisible(!isAnonymous());
 		} else if (source == statusRE && (iAmOlatAdmin || canStatus)) {
 			sendLoginDeniedEmailCB.setVisible(statusRE.isSelected(2));
@@ -301,20 +323,20 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		AnonymousRE = uifactory.addRadiosVertical(
+		anonymousRE = uifactory.addRadiosVertical(
 				"anonymous", "rightsForm.isAnonymous", formLayout, 
 				new String[]{"true", "false"},
 				new String[]{translate("rightsForm.isAnonymous.true"), translate("rightsForm.isAnonymous.false")}
 		);
-		sysSep = uifactory.addSpacerElement("syssep", formLayout, false);
+		SpacerElement sysSep = uifactory.addSpacerElement("syssep", formLayout, false);
 		if (iAmOlatAdmin || canGuestsByConfig) {
-			AnonymousRE.addActionListener(FormEvent.ONCLICK);
+			anonymousRE.addActionListener(FormEvent.ONCLICK);
 		} else {
-			AnonymousRE.setVisible(false);
+			anonymousRE.setVisible(false);
 			sysSep.setVisible(false);
 		}
 		
-		RolesSE = uifactory.addCheckboxesVertical(
+		rolesSE = uifactory.addCheckboxesVertical(
 				"roles", "rightsForm.roles", formLayout,
 				roleKeys.toArray(new String[roleKeys.size()]),
 				roleValues.toArray(new String[roleValues.size()]), 1);

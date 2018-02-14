@@ -91,6 +91,10 @@ public class LDAPSyncConfiguration {
 	private String qpoolManagerRoleAttribute;
 	private String qpoolManagerRoleValue;
 	
+	private List<String> curriculumManagersGroupBase;
+	private String curriculumManagerRoleAttribute;
+	private String curriculumManagerRoleValue;
+	
 	private List<String> learningResourceManagersGroupBase;
 	private String learningResourceManagerRoleAttribute;
 	private String learningResourceManagerRoleValue;
@@ -131,7 +135,7 @@ public class LDAPSyncConfiguration {
 	}
 	
 	private List<String> toList(List<String> list) {
-		List<String> listToUse = new ArrayList<String>();
+		List<String> listToUse = new ArrayList<>();
 		if (list != null) {
 			for (String entry : list) {
 				if (StringHelper.containsNonWhitespace(entry) && entry.contains("!#")) {
@@ -178,7 +182,7 @@ public class LDAPSyncConfiguration {
 	}
 	
 	public boolean syncGroupWithLDAPGroup() {
-		return ldapGroupBases != null && ldapGroupBases.size() > 0;
+		return ldapGroupBases != null && !ldapGroupBases.isEmpty();
 	}
 	
 	public boolean syncGroupWithAttribute() {
@@ -328,6 +332,30 @@ public class LDAPSyncConfiguration {
 	public void setQpoolManagerRoleValue(String value) {
 		this.qpoolManagerRoleValue = value;
 	}
+	
+	public List<String> getCurriculumManagersGroupBase() {
+		return curriculumManagersGroupBase;
+	}
+
+	public void setCurriculumManagersGroupBase(List<String> bases) {
+		this.curriculumManagersGroupBase = toList(bases);
+	}
+
+	public String getCurriculumManagerRoleAttribute() {
+		return curriculumManagerRoleAttribute;
+	}
+
+	public void setCurriculumManagerRoleAttribute(String attribute) {
+		this.curriculumManagerRoleAttribute = attribute;
+	}
+
+	public String getCurriculumManagerRoleValue() {
+		return curriculumManagerRoleValue;
+	}
+
+	public void setCurriculumManagerRoleValue(String value) {
+		this.curriculumManagerRoleValue = value;
+	}
 
 	public List<String> getLearningResourceManagersGroupBase() {
 		return learningResourceManagersGroupBase;
@@ -386,7 +414,7 @@ public class LDAPSyncConfiguration {
 	}
 
 	public void setRequestAttributes(Map<String, String> mapping) {
-		requestAttributes = new HashMap<String, String>();
+		requestAttributes = new HashMap<>();
 		for (Map.Entry<String, String>  entry : mapping.entrySet()) {
 			requestAttributes.put(entry.getKey().trim(), entry.getValue().trim());
 		}	
@@ -401,7 +429,7 @@ public class LDAPSyncConfiguration {
 	}
 
 	public void setUserAttributeMap(Map<String, String> mapping) {
-		userAttributeMap = new HashMap<String, String>();
+		userAttributeMap = new HashMap<>();
 		for (Entry<String, String>  entry : mapping.entrySet()) {
 			String ldapAttrib = entry.getKey();
 			String olatProp = entry.getValue();
@@ -418,7 +446,7 @@ public class LDAPSyncConfiguration {
 	}
 
 	public void setStaticUserProperties(Map<String, String> mapping) {
-		staticUserProperties = new HashMap<String, String>();
+		staticUserProperties = new HashMap<>();
 		for (Map.Entry<String, String>  entry : mapping.entrySet()) {
 			String olatPropKey = entry.getKey();
 			String staticValue = entry.getValue();
@@ -433,7 +461,7 @@ public class LDAPSyncConfiguration {
 	}
 
 	public void setSyncOnlyOnCreateProperties(Set<String> properties) {
-		syncOnlyOnCreateProperties = new HashSet<String>();
+		syncOnlyOnCreateProperties = new HashSet<>();
 		for (String property : properties) {
 			if (StringHelper.containsNonWhitespace(property)){
 				syncOnlyOnCreateProperties.add(property.trim());
@@ -452,13 +480,15 @@ public class LDAPSyncConfiguration {
 	 */
 	protected boolean checkIfOlatPropertiesExists(Map<String, String> attrs) {
 		List<UserPropertyHandler> upHandler = userManager.getAllUserPropertyHandlers();
-		for (String ldapAttribute : attrs.keySet()) {
-			boolean propertyExists = false;
-			String olatProperty = attrs.get(ldapAttribute);
+		for (Map.Entry<String, String> attributes : attrs.entrySet()) {
+			String ldapAttribute = attributes.getKey();
+			String olatProperty = attributes.getValue();
 			if (olatProperty.equals(LDAPConstants.LDAP_USER_IDENTIFYER)) {
 				// LDAP user identifyer is not a user propery, it's the username
 				continue;
 			}
+			
+			boolean propertyExists = false;
 			for (UserPropertyHandler userPropItr : upHandler) {
 				if (olatProperty.equals(userPropItr.getName())) {
 					// ok, this property exist, continue with next one
@@ -466,7 +496,7 @@ public class LDAPSyncConfiguration {
 					break;
 				}
 			}
-			if ( ! propertyExists ) {
+			if (!propertyExists) {
 				log.error("Error in checkIfOlatPropertiesExists(): configured LDAP attribute::"
 								+ ldapAttribute
 								+ " configured to map to OLAT user property::"

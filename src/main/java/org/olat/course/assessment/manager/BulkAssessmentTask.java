@@ -312,7 +312,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final AssessableCourseNode courseNode = getCourseNode();
-		final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false);
+		final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false, false);
 		
 		final boolean hasUserComment = courseNode.hasCommentConfigured();
 		final boolean hasScore = courseNode.hasScoreConfigured();

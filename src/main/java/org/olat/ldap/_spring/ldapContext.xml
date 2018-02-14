@@ -75,6 +75,15 @@
 		</property>
 		<property name="qpoolManagerRoleAttribute" value="${ldap.qpoolManagerRoleAttribute}"/>
 		<property name="qpoolManagerRoleValue" value="${ldap.qpoolManagerRoleValue}"/>
+				
+		<!-- curriculum managers -->
+		<property name="curriculumManagersGroupBase" >
+    		<list>
+    			<value>${ldap.curriculumManagersGroupBases}</value> 
+    		</list>
+		</property>
+		<property name="curriculumManagerRoleAttribute" value="${ldap.curriculumManagerRoleAttribute}"/>
+		<property name="curriculumManagerRoleValue" value="${ldap.curriculumManagerRoleValue}"/>
 		
 		<!-- learning resource managers -->
 		<property name="learningResourceManagersGroupBase" >

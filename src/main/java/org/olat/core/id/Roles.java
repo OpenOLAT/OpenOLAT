@@ -41,6 +41,7 @@ public class Roles implements Serializable {
 	private boolean isGuestOnly;
 	private boolean isInstitutionalResourceManager;
 	private boolean isPoolAdmin;
+	private boolean isCurriculumManager;
 	private boolean isInvitee;
 
 	/**
@@ -53,11 +54,11 @@ public class Roles implements Serializable {
 	 */
 	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
 			boolean isInstitutionalResourceManager, boolean isInvitee) {
-		this(isOLATAdmin, isGroupManager, isUserManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, false, isInvitee);
+		this(isOLATAdmin, isGroupManager, isUserManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, false,  false, isInvitee);
 	}
 	
 	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
-			boolean isInstitutionalResourceManager, boolean isPoolAdmin, boolean isInvitee) {
+			boolean isInstitutionalResourceManager, boolean isPoolAdmin, boolean isCurriculumManager, boolean isInvitee) {
 		this.isOLATAdmin = isOLATAdmin;
 		this.isGroupManager = isGroupManager;
 		this.isUserManager = isUserManager;
@@ -65,6 +66,7 @@ public class Roles implements Serializable {
 		this.isGuestOnly = isGuestOnly;
 		this.isInstitutionalResourceManager = isInstitutionalResourceManager;
 		this.isPoolAdmin = isPoolAdmin;
+		this.isCurriculumManager = isCurriculumManager;
 		this.isInvitee = isInvitee;
 	}
 
@@ -117,6 +119,10 @@ public class Roles implements Serializable {
 		return isPoolAdmin;
 	}
 	
+	public boolean isCurriculumManager() {
+		return isCurriculumManager;
+	}
+	
 	/**
 	 * @return boolean
 	 */
@@ -143,6 +149,8 @@ public class Roles implements Serializable {
 		result = prime * result + (isInvitee ? 1231 : 1237);
 		result = prime * result + (isOLATAdmin ? 1231 : 1237);
 		result = prime * result + (isUserManager ? 1231 : 1237);
+		result = prime * result + (isPoolAdmin ? 1231 : 1237);
+		result = prime * result + (isCurriculumManager ? 1231 : 1237);
 		return result;
 	}
 
@@ -159,13 +167,14 @@ public class Roles implements Serializable {
 		}
 		
 		Roles other = (Roles) obj;
-		if (isAuthor != other.isAuthor) return false;
-		if (isGroupManager != other.isGroupManager) return false;
-		if (isGuestOnly != other.isGuestOnly) return false;
-		if (isInstitutionalResourceManager != other.isInstitutionalResourceManager) return false;
-		if (isInvitee != other.isInvitee) return false;
-		if (isOLATAdmin != other.isOLATAdmin) return false;
-		if (isUserManager != other.isUserManager) return false;
-		return true;
+		return isOLATAdmin == other.isOLATAdmin
+				&& isUserManager == other.isUserManager
+				&& isGroupManager == other.isGroupManager
+				&& isAuthor == other.isAuthor
+				&& isGuestOnly == other.isGuestOnly
+				&& isInstitutionalResourceManager == other.isInstitutionalResourceManager
+				&& isPoolAdmin == other.isPoolAdmin
+				&& isCurriculumManager == other.isCurriculumManager
+				&& isInvitee == other.isInvitee;
 	}
 }

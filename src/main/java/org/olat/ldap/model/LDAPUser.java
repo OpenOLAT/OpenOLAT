@@ -39,6 +39,7 @@ public class LDAPUser {
 	private boolean userManager;
 	private boolean groupManager;
 	private boolean qpoolManager;
+	private boolean curriculumManager;
 	private boolean learningResourceManager;
 	private List<String> groupIds;
 	private List<String> coachedGroupIds;
@@ -99,6 +100,14 @@ public class LDAPUser {
 
 	public void setQpoolManager(boolean qpoolManager) {
 		this.qpoolManager = qpoolManager;
+	}
+
+	public boolean isCurriculumManager() {
+		return curriculumManager;
+	}
+
+	public void setCurriculumManager(boolean curriculumManager) {
+		this.curriculumManager = curriculumManager;
 	}
 
 	public boolean isLearningResourceManager() {
