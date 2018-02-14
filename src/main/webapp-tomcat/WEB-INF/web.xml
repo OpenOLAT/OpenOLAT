@@ -98,15 +98,6 @@
             </listener-class>
     </listener>
     
-	
-	
-	<!-- this only works in an expanded war file: Comment on spring website:  
-	If you want to keep your WAR unexpanded or don't need application-specific log files within the WAR directory, 
-	don't use log4j setup within the application (thus, don't use Log4jConfigListener or Log4jConfigServlet). 
-	Instead, use a global, VM-wide log4j setup (for example, in JBoss) or JDK 1.4's java.util.logging (which is global too). -->
-	<listener>
-		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-	</listener>
 	<listener>
 		<listener-class>org.olat.restapi.security.RestApiSessionListener</listener-class>
 	</listener>
