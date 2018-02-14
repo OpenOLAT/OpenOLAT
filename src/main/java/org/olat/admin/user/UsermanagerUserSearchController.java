@@ -506,6 +506,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == searchform) {
 			if (event == Event.DONE_EVENT) {
@@ -576,7 +577,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 									HashMap<String, String> roleChangeMap = (HashMap<String, String>) runContext.get("roleChangeMap");
 									List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
 									List<Long> partGroups = (List<Long>) runContext.get("partGroups");
-									//List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
 									if (attributeChangeMap.size() != 0 || roleChangeMap.size() != 0 || ownGroups.size() != 0 || partGroups.size() != 0){
 										Identity addingIdentity = ureq1.getIdentity();
 										ubcMan.changeSelectedIdentities(selectedIdentities, attributeChangeMap, roleChangeMap, notUpdatedIdentities,
