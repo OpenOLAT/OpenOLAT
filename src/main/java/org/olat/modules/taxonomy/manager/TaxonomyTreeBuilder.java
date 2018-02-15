@@ -39,6 +39,7 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
@@ -63,10 +64,12 @@ public class TaxonomyTreeBuilder {
 	private final boolean enableTemplates;
 	
 	private final TaxonomyService taxonomyService;
+	private final List<String> lostAndFoundIdentifiers;
 	
 	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, String rootTitle,
 			boolean isTaxonomyAdmin, boolean enableTemplates, String templateDirectory, Locale locale) {
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
+		lostAndFoundIdentifiers = CoreSpringFactory.getImpl(TaxonomyModule.class).getLostAndFoundsIdentifiers();
 		this.locale = locale;
 		this.taxonomy = taxonomy;
 		this.identity = identity;
@@ -113,7 +116,7 @@ public class TaxonomyTreeBuilder {
 				Long key = taxonomyLevel.getKey();
 				TaxonomyTreeNode node = fieldKeyToNode.get(key);
 				if(node == null) {
-					node = new TaxonomyTreeNode(taxonomy, taxonomyLevel);
+					node = new TaxonomyTreeNode(taxonomy, taxonomyLevel, getType(taxonomyLevel));
 					TaxonomyLevelType type = taxonomyLevel.getType();
 					if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 						node.setIconCssClass(type.getCssClass());
@@ -130,7 +133,7 @@ public class TaxonomyTreeBuilder {
 					TaxonomyTreeNode parentNode = fieldKeyToNode.get(parentKey);
 					if(parentNode == null) {
 						parentLevel = keytoLevels.get(parentKey);//to use the fetched type
-						parentNode = new TaxonomyTreeNode(taxonomy, parentLevel);
+						parentNode = new TaxonomyTreeNode(taxonomy, parentLevel, getType(parentLevel));
 						TaxonomyLevelType type = parentLevel.getType();
 						if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 							parentNode.setIconCssClass(type.getCssClass());
@@ -148,6 +151,21 @@ public class TaxonomyTreeBuilder {
 		return gtm;
 	}
 	
+	private TaxonomyTreeNodeType getType(TaxonomyLevel taxonomyLevel) {
+		TaxonomyTreeNodeType type;
+		String identifier = taxonomyLevel.getIdentifier();
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			if(lostAndFoundIdentifiers.contains(identifier)) {
+				type = TaxonomyTreeNodeType.lostAndFound;
+			} else {
+				type = TaxonomyTreeNodeType.taxonomyLevel;
+			}
+		} else {
+			type = TaxonomyTreeNodeType.taxonomyLevel;
+		}
+		return type;		
+	}
+	
 	private void sort(TaxonomyTreeNode parent) {
 		parent.sort(new TaxonomyTreeNodeComparator());
 		for(int i=parent.getChildCount(); i-->0; ) {
@@ -160,9 +178,9 @@ public class TaxonomyTreeBuilder {
 		do {
 			someInvisible = false;
 			List<TaxonomyTreeNode> children = listChildren(parent);
-			
 			for(TaxonomyTreeNode child:children) {
-				if(!child.isVisible())  {
+				//remove invisible nodes and lost+found
+				if(!child.isVisible() || child.getType() == TaxonomyTreeNodeType.lostAndFound)  {
 					List<TaxonomyTreeNode> childrenOfChild = listChildren(child);
 					parent.remove(child);
 					for(TaxonomyTreeNode childOfChild : childrenOfChild) {
@@ -206,7 +224,13 @@ public class TaxonomyTreeBuilder {
 	private void computePermissionsRecursive(TaxonomyTreeNode node, Map<TaxonomyLevel, List<TaxonomyCompetenceTypes>> levelToCompetences) {
 		boolean hasRead = node.isCanRead();
 		boolean hasWrite = node.isCanWrite();
-		if(node.getTaxonomyLevel() != null) {
+		
+		if(node.getType() == TaxonomyTreeNodeType.lostAndFound) {
+			hasRead = isTaxonomyAdmin;
+			hasWrite = isTaxonomyAdmin;
+			node.setCanRead(hasRead);
+			node.setCanWrite(hasWrite);
+		} else if(node.getTaxonomyLevel() != null) {
 			TaxonomyLevel level = node.getTaxonomyLevel();
 			TaxonomyLevelType type = level.getType();
 			if(type != null) {
@@ -236,11 +260,6 @@ public class TaxonomyTreeBuilder {
 		} else if(node.getType() == TaxonomyTreeNodeType.templates) {
 			hasRead = true;
 			hasWrite = isTaxonomyAdmin;
-			node.setCanRead(hasRead);
-			node.setCanWrite(hasWrite);
-		} else if(node.getType() == TaxonomyTreeNodeType.lostAndFound) {
-			hasRead = isTaxonomyAdmin;
-			hasWrite = false;
 			node.setCanRead(hasRead);
 			node.setCanWrite(hasWrite);
 		}

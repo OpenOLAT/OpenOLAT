@@ -19,6 +19,9 @@
  */
 package org.olat.modules.taxonomy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -71,5 +74,12 @@ public class TaxonomyModule extends AbstractSpringModule implements ConfigOnOff 
 	
 	public boolean isManagedTaxonomyLevels() {
 		return true;
+	}
+	
+	public List<String> getLostAndFoundsIdentifiers() {
+		List<String> identifiers = new ArrayList<>(2);
+		identifiers.add("orphan-fach");
+		identifiers.add("lost+found");
+		return identifiers;
 	}
 }

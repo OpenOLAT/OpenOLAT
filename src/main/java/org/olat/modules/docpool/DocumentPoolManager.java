@@ -30,7 +30,9 @@ import org.olat.basesecurity.IdentityRef;
 public interface DocumentPoolManager {
 	
 	/**
-	 * Has a valid competence to see the document pool.
+	 * Has a valid competence to see the document pool. The presence of a
+	 * taxonomy level with the identifier "lost+found" or "orphan-fach" in the
+	 * parent line of level exclude the competence.
 	 * 
 	 * @param identity The identity which want to access the document pool
 	 * @return true/false
