@@ -86,17 +86,9 @@
  		</listener-class>
 	</listener> 
     <!-- triggers the above spring files to be processed by the spring framework  -->
-    <listener>
-            <listener-class>
-                    org.springframework.web.context.ContextLoaderListener
-            </listener-class>
-    </listener>
-
-    <listener>
-            <listener-class>
-                    org.springframework.web.context.request.RequestContextListener
-            </listener-class>
-    </listener>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
     
 	<listener>
 		<listener-class>org.olat.restapi.security.RestApiSessionListener</listener-class>
