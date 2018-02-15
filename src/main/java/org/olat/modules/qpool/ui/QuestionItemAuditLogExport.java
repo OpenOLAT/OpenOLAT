@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -45,8 +46,6 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.user.UserManager;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
