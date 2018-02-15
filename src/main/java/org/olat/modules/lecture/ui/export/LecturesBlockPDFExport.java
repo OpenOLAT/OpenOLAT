@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.export;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +46,6 @@ import org.olat.core.util.pdf.PdfDocument;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.repository.RepositoryEntry;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

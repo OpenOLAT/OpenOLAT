@@ -20,6 +20,7 @@
 package org.olat.modules.docpool.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -35,8 +36,6 @@ import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

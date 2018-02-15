@@ -70,13 +70,11 @@ public class DocumentPoolSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(DocumentPoolSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		DocumentPoolMainController mainController = new DocumentPoolMainController(ureq, bwControl);
-		return mainController;
+		return new DocumentPoolMainController(ureq, bwControl);
 	}
 
 	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
-
 }

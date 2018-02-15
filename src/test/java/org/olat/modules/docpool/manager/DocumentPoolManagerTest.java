@@ -84,7 +84,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_manage() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.manage);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.manage);
 		// set read for teach competence
 		type.setDocumentsLibraryManageCompetenceEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -98,7 +98,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_teachRead() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.teach);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.teach);
 		// set read for teach competence
 		type.setDocumentsLibraryTeachCompetenceReadEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -112,7 +112,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_teachWrite() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.teach);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.teach);
 		// set read for teach competence
 		type.setDocumentsLibraryTeachCompetenceWriteEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -126,7 +126,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_teach_negative() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.teach);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.teach);
 		// set read for teach competence
 		type.setDocumentsLibraryManageCompetenceEnabled(true);
 		type.setDocumentsLibraryHaveCompetenceReadEnabled(true);
@@ -142,7 +142,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_have() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.have);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.have);
 		// set read for teach competence
 		type.setDocumentsLibraryHaveCompetenceReadEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -156,7 +156,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_have_negative() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.have);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.have);
 		// set read for teach competence
 		type.setDocumentsLibraryTeachCompetenceReadEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -170,7 +170,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	public void hasCompetenceByTaxonomy_target() {
 		// create a level and competence with a type teach
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
-		TaxonomyLevelType type = createTypeLevelCompetence(id, TaxonomyCompetenceTypes.target);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, null, TaxonomyCompetenceTypes.target);
 		// set read for teach competence
 		type.setDocumentsLibraryTargetCompetenceReadEnabled(true);
 		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
@@ -193,11 +193,55 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 		Assert.assertFalse(hasCompetence);
 	}
 	
-	private TaxonomyLevelType createTypeLevelCompetence(Identity id, TaxonomyCompetenceTypes competenceType) {
+	/**
+	 * The test check if the presence of a level with the identifier lost+found
+	 * in the parent line stop the competence.
+	 */
+	@Test
+	public void lostAndFoundSpecialCase() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
+		Taxonomy taxonomy = getDocumentPoolTaxonomy();
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("DP-Lev. " + UUID.randomUUID(), "Competence level", "A competence", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("DP-Lev. " + UUID.randomUUID(), "Competence level", "A competence", null, null, level1, null, taxonomy);
+		TaxonomyLevelType type = createTypeLevelCompetence(id, level2, TaxonomyCompetenceTypes.have);
+		type.setDocumentsLibraryHaveCompetenceReadEnabled(true);
+		type = taxonomyLevelTypeDao.updateTaxonomyLevelType(type);
+		dbInstance.commitAndCloseSession();
+		
+		//check first without lost+found
+		boolean hasCompetence = documentPoolManager.hasValidCompetence(id);
+		Assert.assertTrue(hasCompetence);
+		
+		//change the identifier level 2
+		level2.setIdentifier("lost+found");
+		level2 = taxonomyLevelDao.updateTaxonomyLevel(level2);
+		dbInstance.commitAndCloseSession();
+		
+		//access refused
+		boolean hasLostCompetence = documentPoolManager.hasValidCompetence(id);
+		Assert.assertFalse(hasLostCompetence);
+		
+		// remove lost + found
+		level2.setIdentifier("DP-Lev. " + UUID.randomUUID());
+		level2 = taxonomyLevelDao.updateTaxonomyLevel(level2);
+		dbInstance.commitAndCloseSession();
+		// access allowed
+		boolean hasAgainCompetence = documentPoolManager.hasValidCompetence(id);
+		Assert.assertTrue(hasAgainCompetence);
+		
+		//root will be lost
+		level1.setIdentifier("lost+found");
+		level1 = taxonomyLevelDao.updateTaxonomyLevel(level1);
+		dbInstance.commitAndCloseSession();
+		boolean hasLostAgainCompetence = documentPoolManager.hasValidCompetence(id);
+		Assert.assertFalse(hasLostAgainCompetence);
+	}
+	
+	private TaxonomyLevelType createTypeLevelCompetence(Identity id, TaxonomyLevel parent, TaxonomyCompetenceTypes competenceType) {
 		String levelId = "DP-Lev. " + UUID.randomUUID();
 		Taxonomy taxonomy = getDocumentPoolTaxonomy();
 		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-docpool", "A type for document pool", "Typed", "TYP-0", taxonomy);
-		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, "Competence level", "A competence", null, null, null, type, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, "Competence level", "A competence", null, null, parent, type, taxonomy);
 		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(competenceType, level, id, null);
 		dbInstance.commit();
 		type.setDocumentsLibraryManageCompetenceEnabled(false);

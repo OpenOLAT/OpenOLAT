@@ -57,13 +57,13 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 		nodeType = type;
 	}
 	
-	public TaxonomyTreeNode(Taxonomy taxonomy, TaxonomyLevel taxonomyLevel) {
+	public TaxonomyTreeNode(Taxonomy taxonomy, TaxonomyLevel taxonomyLevel, TaxonomyTreeNodeType type) {
 		super(taxonomyLevel.getKey().toString());
 		setTitle(taxonomyLevel.getDisplayName());
 		this.taxonomy = taxonomy;
 		this.taxonomyLevel = taxonomyLevel;
 		setUserObject(taxonomyLevel);
-		nodeType = TaxonomyTreeNodeType.taxonomyLevel;
+		nodeType = type;
 	}
 	
 	public TaxonomyTreeNodeType getType() {
@@ -72,7 +72,7 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 	
 	public boolean isVisible() {
 		return nodeType == TaxonomyTreeNodeType.taxonomy 
-				|| nodeType == TaxonomyTreeNodeType.templates 
+				|| nodeType == TaxonomyTreeNodeType.templates
 				|| (taxonomyLevel != null && (taxonomyLevel.getType() == null ? true : taxonomyLevel.getType().isVisible()));
 	}
 	
