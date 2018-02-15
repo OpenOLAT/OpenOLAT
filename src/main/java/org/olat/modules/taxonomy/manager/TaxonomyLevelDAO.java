@@ -21,6 +21,7 @@ package org.olat.modules.taxonomy.manager;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -47,8 +48,6 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

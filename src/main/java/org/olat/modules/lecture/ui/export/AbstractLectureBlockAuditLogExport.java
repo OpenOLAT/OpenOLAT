@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.export;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +44,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

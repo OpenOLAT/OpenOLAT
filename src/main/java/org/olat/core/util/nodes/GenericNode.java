@@ -28,13 +28,12 @@ package org.olat.core.util.nodes;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Description: <br>

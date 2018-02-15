@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -36,8 +37,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  *

@@ -29,6 +29,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.docpool.DocumentPoolManager;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,8 @@ public class DocumentPoolManagerImpl implements DocumentPoolManager {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
 	private DocumentPoolModule documentPoolModule;
 
 	@Override
@@ -56,9 +59,9 @@ public class DocumentPoolManagerImpl implements DocumentPoolManager {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence.key from ctaxonomycompetence competence")
 		  .append(" inner join competence.identity ident")
-		  .append(" inner join competence.taxonomyLevel taxonomyLevel")
-		  .append(" inner join taxonomyLevel.type type")
-		  .append(" where taxonomyLevel.taxonomy.key=:taxonomyKey and ident.key=:identityKey")
+		  .append(" inner join competence.taxonomyLevel level")
+		  .append(" inner join level.type type")
+		  .append(" where level.taxonomy.key=:taxonomyKey and ident.key=:identityKey")
 		  .append(" and (")
 		  .append("  (competence.type='").append(TaxonomyCompetenceTypes.manage.name()).append("' and type.documentsLibraryManagerCompetenceEnabled=true)")
 		  .append("  or")
@@ -67,13 +70,18 @@ public class DocumentPoolManagerImpl implements DocumentPoolManager {
 		  .append("  (competence.type='").append(TaxonomyCompetenceTypes.have.name()).append("' and type.documentsLibraryHaveCompetenceReadEnabled=true)")
 		  .append("  or")
 		  .append("  (competence.type='").append(TaxonomyCompetenceTypes.target.name()).append("' and type.documentsLibraryTargetCompetenceReadEnabled=true)")
-		  .append(")");
+		  .append(" ) and not(level.identifier in (:lostFoundIds))")
+		  .append(" and not exists (select parent.key from ctaxonomylevel parent")
+		  .append("   where locate(parent.materializedPathKeys, level.materializedPathKeys) = 1")
+		  .append("   and parent.identifier in (:lostFoundIds)")
+		  .append(" )");
 		
 		List<Long> competenceKeys = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)
 			.setFlushMode(FlushModeType.COMMIT)//don't flush for this query
 			.setParameter("taxonomyKey", new Long(taxonomyKey))
 			.setParameter("identityKey", identity.getKey())
+			.setParameter("lostFoundIds", taxonomyModule.getLostAndFoundsIdentifiers())
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();

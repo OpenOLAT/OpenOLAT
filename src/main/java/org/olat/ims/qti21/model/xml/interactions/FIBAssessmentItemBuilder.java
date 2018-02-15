@@ -562,8 +562,10 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				TextEntryInteraction textEntryInteraction = (TextEntryInteraction)interaction;
 				String responseIdentifier = interaction.getResponseIdentifier().toString();
 				AbstractEntry entry = responseIdentifierToTextEntry.get(responseIdentifier);
-				textEntryInteraction.setPlaceholderText(entry.getPlaceholder());
-				textEntryInteraction.setExpectedLength(entry.getExpectedLength());
+				if(entry != null) {
+					textEntryInteraction.setPlaceholderText(entry.getPlaceholder());
+					textEntryInteraction.setExpectedLength(entry.getExpectedLength());
+				}
 				usedResponseIdentifiers.add(responseIdentifier);
 			}
 		}
