@@ -98,12 +98,12 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(browser);
 		qtiPage
 			.assertOnAssessmentItem()
-			.answerSingleChoice("Incorrect response")
+			.answerSingleChoiceWithParagraph("Incorrect response")
 			.saveAnswer()
 			.assertOnAssessmentItem("Second question")
 			.selectItem("First question")
 			.assertOnAssessmentItem("First question")
-			.answerSingleChoice("Correct response")
+			.answerSingleChoiceWithParagraph("Correct response")
 			.saveAnswer()
 			.answerMultipleChoice("Correct response")
 			.saveAnswer()
@@ -140,10 +140,10 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(browser);
 		qtiPage
 			.assertOnAssessmentItem()
-			.answerSingleChoice("Wrong answer")
+			.answerSingleChoiceWithParagraph("Wrong answer")
 			.saveAnswer()
 			.assertFeedback("Oooops")
-			.answerSingleChoice("Correct answer")
+			.answerSingleChoiceWithParagraph("Correct answer")
 			.saveAnswer()
 			.assertFeedback("Well done")
 			.nextAnswer()
@@ -196,7 +196,7 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
-			.answerSingleChoice("Wrong answer")
+			.answerSingleChoiceWithParagraph("Wrong answer")
 			.saveAnswer()
 			.assertFeedback("Oooops")
 			.nextAnswer()
@@ -250,7 +250,7 @@ public class ImsQTI21Test extends Deployments {
 			.startTestPart()
 			.selectItem("First question")
 			.assertOnAssessmentItem("First question")
-			.answerSingleChoice("Correct")
+			.answerSingleChoiceWithParagraph("Correct")
 			.saveAnswer()
 			.assertOnAssessmentItem("Second question")
 			.answerMultipleChoice("True")
@@ -300,7 +300,7 @@ public class ImsQTI21Test extends Deployments {
 			.startTestPart()
 			.selectItem("First question")
 			.assertOnAssessmentItem("First question")
-			.answerSingleChoice("Correct answer")
+			.answerSingleChoiceWithParagraph("Correct answer")
 			.saveAnswer()
 			.assertOnAssessmentItem("Second question")
 			.answerMultipleChoice("Valid answer")
@@ -308,9 +308,9 @@ public class ImsQTI21Test extends Deployments {
 			.endTestPart()
 			.selectItem("Third question")
 			.assertOnAssessmentItem("Third question")
-			.answerSingleChoice("Right")
+			.answerSingleChoiceWithParagraph("Right")
 			.saveAnswer()
-			.answerSingleChoice("Good")
+			.answerSingleChoiceWithParagraph("Good")
 			.saveAnswer()
 			.endTestPart()
 			.assertOnAssessmentTestFeedback("Well done")
@@ -347,10 +347,10 @@ public class ImsQTI21Test extends Deployments {
 		//check simple time limit
 		qtiPage
 			.assertOnAssessmentItem("Single choice")
-			.answerSingleChoice("Correct answer")
+			.answerSingleChoiceWithParagraph("Correct answer")
 			.saveAnswer()
 			.assertOnAssessmentItem("Last choice")
-			.answerSingleChoice("True")
+			.answerSingleChoiceWithParagraph("True")
 			.saveAnswer()
 			.assertOnAssessmentTestTerminated(15);
 	}
@@ -390,10 +390,10 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem("Single choice")
-			.answerSingleChoice("Correct answer")
+			.answerSingleChoiceWithParagraph("Correct answer")
 			.saveAnswer()
 			.assertOnAssessmentItem("Last choice")
-			.answerSingleChoice("True")
+			.answerSingleChoiceWithParagraph("True")
 			.saveAnswer()
 			.assertOnAssessmentResults(15)
 			.assertOnAssessmentTestPassed()
@@ -478,7 +478,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(ryomouBrowser);
 		userQtiPage
 			.assertOnAssessmentItem("Single choice")
-			.answerSingleChoice("Correct")
+			.answerSingleChoiceWithParagraph("Correct")
 			.saveAnswer()
 			.answerMultipleChoice("Correct")
 			.saveAnswer()
@@ -579,7 +579,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(browser);
 		qtiPage
 			.start()
-			.answerSingleChoice("Right")
+			.answerSingleChoiceWithParagraph("Right")
 			.saveAnswer()
 			.endTest()
 			.assertOnCourseAttempts(1)
@@ -665,7 +665,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(browser);
 		qtiPage
 			.start()
-			.answerSingleChoice("Right")
+			.answerSingleChoiceWithParagraph("Right")
 			.saveAnswer()
 			.endTest()
 			.assertOnAssessmentResults()
@@ -760,7 +760,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(browser);
 		qtiPage
 			.start()
-			.answerSingleChoice("Correct")
+			.answerSingleChoiceWithParagraph("Correct")
 			.saveAnswer()
 			.answerMultipleChoice("Correct")
 			.saveAnswer()

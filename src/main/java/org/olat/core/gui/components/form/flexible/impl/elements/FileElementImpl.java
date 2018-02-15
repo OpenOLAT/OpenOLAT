@@ -182,7 +182,7 @@ public class FileElementImpl extends FormItemImpl
 				previewEl.setCropSelectionEnabled(cropSelectionEnabled);
 				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 				previewEl.setVisible(true);
-			} else {
+			} else if(previewEl != null) {
 				previewEl.setVisible(false);
 			}
 			// Mark associated component dirty, that it gets rerendered
