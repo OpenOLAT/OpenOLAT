@@ -7,7 +7,7 @@
 		#if($interaction.minChoices == 1)
 			$r.translate("error.input.choice.minax.one")
 		#else
-			$r.translate("error.input.choice.minax")
+			$r.translate("error.input.choice.minax", $interaction.minChoices)
 		#end
 	#elseif($interaction.minChoices > 0 && $interaction.maxChoices > 0)
 		$r.translate("error.input.choice.min.max", $interaction.minChoices, $interaction.maxChoices)
