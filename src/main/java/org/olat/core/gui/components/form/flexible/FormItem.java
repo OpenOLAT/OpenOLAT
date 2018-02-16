@@ -302,7 +302,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param errorFormItem
 	 * @param container the container containing the form item which has the error
 	 */
-	public void setErrorComponent(FormItem errorFormItem, FormLayouter container);
+	public void setErrorComponent(FormItem errorFormItem, FormItemContainer container);
 
 	/**
 	 * a complex "error" message, or a helper wizard to fix the error may be
