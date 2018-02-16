@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -103,10 +104,16 @@ public class InfoEditFormController extends FormBasicController {
 		attachmentEl = uifactory.addFileElement(getWindowControl(), "attachment", formLayout);
 		attachmentEl.setDeleteEnabled(true);
 		attachmentEl.setMaxUploadSizeKB(5000, "attachment.max.size", new String[] { "5000" });
+		
 		attachmentEl.addActionListener(FormEvent.ONCHANGE);
 		if(infoMessage.getAttachmentPath() != null) {
 			attachmentPath = infoMessage.getAttachmentPath();
-			attachmentPathToDelete.add(infoMessage.getAttachmentPath());
+			String filename = attachmentPath;
+			int lastIndex = filename.lastIndexOf('/');
+			if(lastIndex > 0) {
+				filename = filename.substring(lastIndex + 1);
+			}
+			attachmentEl.setInitialFile(new File(filename));
 		}
 	}
 	
@@ -123,17 +130,21 @@ public class InfoEditFormController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(attachmentEl == source) {
-			if (attachmentEl.isUploadSuccess()) {
+			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				attachmentPathToDelete.add(attachmentPath);
+				attachmentEl.reset();
+				attachmentEl.setInitialFile(null);
+				attachmentEl.clearError();
+				attachmentPath = null;
+			} else if(attachmentEl.isUploadSuccess()) {
 				File uploadedFile = attachmentEl.getUploadFile();
 				String uploadedFilename = attachmentEl.getUploadFileName();
 				if(attachmentPath != null) {
 					attachmentPathToDelete.add(attachmentPath);
 				}
 				attachmentPath = infoMessageFrontendManager.storeAttachment(uploadedFile, uploadedFilename, infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
-			} else {
-				attachmentPathToDelete.add(attachmentPath);
 			}
-			this.fireEvent(ureq, Event.CHANGED_EVENT);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

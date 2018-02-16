@@ -67,8 +67,8 @@ public class InfoEditController extends FormBasicController {
 
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		editCont.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("submit", buttonLayout);
 	}
 	
 	@Override
