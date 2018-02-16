@@ -66,8 +66,8 @@ function asSendSyncSingle(apiCall, param1, param2) {
 		this.httpReq.open('POST', this.remoteOLATurl, false );
 	  }
 
-	this.httpReq.setRequestHeader('Content-Type','application/x-www-form-urlencoded'); 
-	this.httpReq.send('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ param2);
+	this.httpReq.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8'); 
+	this.httpReq.send('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ encodeURIComponent(param2));
 	if(this.isMozilla)
 	{
 		if (debug) dump("func:asSencSingle: post successfull, calling showReq\n");
@@ -129,9 +129,9 @@ function loadHTMLDoc(url,apiCall, param1, param2) {
 		req.onreadystatechange = processReqChange;
         //req.open("GET", url+'?apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ param2, false);
         req.open("POST", url, false)
-        req.setRequestHeader('Content-Type','application/x-www-form-urlencoded'); 
-        req.send('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ param2);
-        if (debug) dump('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ param2);
+        req.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8'); 
+        req.send('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ encodeURIComponent(param2));
+        if (debug) dump('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ encodeURIComponent(param2));
     // branch for IE/Windows ActiveX version
     } else if (window.ActiveXObject) {
         isIE = true;
@@ -141,8 +141,8 @@ function loadHTMLDoc(url,apiCall, param1, param2) {
             //req.open("GET", url+'?apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ param2 + '&rnd='+increment(), false);
             //req.send();
             req.open("POST", url, false);
-        	req.setRequestHeader('Content-Type','application/x-www-form-urlencoded'); 
-        	req.send('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ param2);
+        	req.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8'); 
+        	req.send('apiCall='+ apiCall + '&apiCallParamOne='+ param1 + '&apiCallParamTwo='+ encodeURIComponent(param2));
         }
     }
     // Help GC
