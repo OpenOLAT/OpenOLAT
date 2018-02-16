@@ -34,7 +34,7 @@ public class UpgradePreferences implements Serializable {
 	private static final long serialVersionUID = 3828851618949061953L;
 
 	// keys: prefs-keys; values: any Prefs-Objects
-	private Map<String,Object> prefstore = new HashMap<String,Object>();
+	private Map<String,Object> prefstore = new HashMap<>();
 	
 	public Map<String,Object> getPreferences() {
 		return prefstore;

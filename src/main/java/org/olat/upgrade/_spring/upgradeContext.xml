@@ -24,22 +24,6 @@
 			<list>
 				<!-- add upgrade bean here, if you need to run DB upgrades add the property "alterDbStatements" with the 
 				filename from the /database/[dialect]/ directory -->
-				<bean id="upgrade_7_0_1" class="org.olat.upgrade.OLATUpgrade_7_0_1"/>			
-				<bean id="upgrade_7_1_0" class="org.olat.upgrade.OLATUpgrade_7_1_0">
-					<property name="portletRepositoryStudentEnabled" value="${portlet.repository.student.enabled}"/>
-					<property name="portletRepositoryTeacherEnabled" value="${portlet.repository.teacher.enabled}"/>
-				</bean>
-				<bean id="upgrade_7_1_1" class="org.olat.upgrade.OLATUpgrade_7_1_1">
-					<constructor-arg index="0" ref="portfolioModule" />
-					<property name="portfolioCourseNodeEnabled" value="${course.node.portfolio.enabled}"/>
-				</bean>
-				<bean id="upgrade_8_1_0" class="org.olat.upgrade.OLATUpgrade_8_1_0"/>
-				<bean id="upgrade_8_2_0" class="org.olat.upgrade.OLATUpgrade_8_2_0"/>
-				<bean id="upgrade_8_3_0" class="org.olat.upgrade.OLATUpgrade_8_3_0"/>
-				<bean id="upgrade_8_4_0" class="org.olat.upgrade.OLATUpgrade_8_4_0"/>
-				<bean id="upgrade_8_4_5" class="org.olat.upgrade.OLATUpgrade_8_4_5"/>
-				<bean id="upgrade_9_0_0" class="org.olat.upgrade.OLATUpgrade_9_0_0"/>
-				<bean id="upgrade_9_4_0" class="org.olat.upgrade.OLATUpgrade_9_4_0"/>
 				<bean id="upgrade_10_0_0" class="org.olat.upgrade.OLATUpgrade_10_0_0"/>
 				<bean id="upgrade_10_0_3" class="org.olat.upgrade.OLATUpgrade_10_0_3"/>
 				<bean id="upgrade_10_1_0" class="org.olat.upgrade.OLATUpgrade_10_1_0"/>

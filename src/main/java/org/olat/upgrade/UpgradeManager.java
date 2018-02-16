@@ -93,6 +93,7 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 	 * Initialize the upgrade manager: get all upgrades from the configuration file and load
 	 * the upgrade history from the olatdata directory
 	 */
+	@Override
 	public void init() {
 		//register for framework starup event
 		FrameworkStartupEventChannel.registerForStartupEvent(this);
@@ -101,14 +102,14 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 		// load history of previous upgrades using xstream
 		initUpgradesHistories();
 		if (needsUpgrade) {
-			boolean sevenOrNewer = false;
+			boolean tenOrNewer = false;
 			for(OLATUpgrade upgrade:upgradesDefinitions.getUpgrades()) {
-				if(upgrade.getVersion().startsWith("OLAT_7") || upgrade.getVersion().startsWith("OLAT_8")) {
-					sevenOrNewer = true;
+				if(upgrade.getVersion().startsWith("OLAT_1")) {
+					tenOrNewer = true;
 				}
 			}
-			if(!sevenOrNewer) {
-				throw new AssertException("Upgrade first your installtion to OLAT 7.0 and after go with OpenOLAT");
+			if(!tenOrNewer) {
+				throw new AssertException("Upgrade first your installation to OpenOLAT 10.0 and after go with this OpenOLAT release");
 			}
 			
 			doPreSystemInitUpgrades();
