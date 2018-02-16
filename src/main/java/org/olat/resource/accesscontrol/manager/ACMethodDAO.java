@@ -35,28 +35,21 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.OfferAccessImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
-import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.shibboleth.manager.ShibbolethAutoAccessMethod;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,24 +65,12 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ACMethodDAO implements InitializingBean {
+public class ACMethodDAO {
 
 	private static final OLog log = Tracing.createLoggerFor(ACMethodDAO.class);
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private AccessControlModule acModule;
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		enableMethod(TokenAccessMethod.class, acModule.isTokenEnabled());
-		enableMethod(FreeAccessMethod.class, acModule.isFreeEnabled());
-		enableMethod(PaypalAccessMethod.class, acModule.isPaypalEnabled());
-		enableAutoMethods(acModule.isAutoEnabled());
-		dbInstance.commitAndCloseSession();
-	}
-
 
 	public void enableAutoMethods(boolean autoEnabled) {
 		enableMethod(ShibbolethAutoAccessMethod.class, autoEnabled);
@@ -108,7 +89,7 @@ public class ACMethodDAO implements InitializingBean {
 				Date now = new Date();
 				((AbstractAccessMethod)method).setCreationDate(now);
 				((AbstractAccessMethod)method).setLastModified(now);
-				dbInstance.saveObject(method);
+				dbInstance.getCurrentEntityManager().persist(method);
 			} catch (InstantiationException e) {
 				log.error("Failed to instantiate an access method", e);
 			} catch (IllegalAccessException e) {
@@ -119,7 +100,7 @@ public class ACMethodDAO implements InitializingBean {
 				if(method.isEnabled() != enable) {
 					((AbstractAccessMethod)method).setEnabled(enable);
 					((AbstractAccessMethod)method).setLastModified(new Date());
-					dbInstance.updateObject(method);
+					dbInstance.getCurrentEntityManager().merge(method);
 				}
 			}
 		}
@@ -162,26 +143,14 @@ public class ACMethodDAO implements InitializingBean {
 				.getResultList();
 	}
 
-	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
+	public List<AccessMethod> getAvailableMethods() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
 			.append(" where method.valid=true and method.enabled=true");
 
-		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
-		if(identity != null) {
-			//query.setLong("identityKey", identity.getKey());
-		}
-
-		List<AccessMethod> methods = query.getResultList();
-		List<AccessMethod> allowedMethods = new ArrayList<AccessMethod>();
-		for(AccessMethod method:methods) {
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-			AccessMethodSecurityCallback secCallback = handler.getSecurityCallback(identity, roles);
-			if(secCallback.canUse()) {
-				allowedMethods.add(method);
-			}
-		}
-		return allowedMethods;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessMethod.class)
+				.getResultList();
 	}
 
 	public List<AccessMethod> getAvailableMethodsByType(Class<? extends AccessMethod> type) {
@@ -346,7 +315,7 @@ public class ACMethodDAO implements InitializingBean {
 		access.setValid(false);
 
 		if(link.getKey() == null) return;
-		dbInstance.updateObject(access);
+		dbInstance.getCurrentEntityManager().merge(access);
 	}
 
 	/**
@@ -363,13 +332,13 @@ public class ACMethodDAO implements InitializingBean {
 			TokenAccessMethod method = new TokenAccessMethod();
 			method.setCreationDate(new Date());
 			method.setLastModified(method.getCreationDate());
-			dbInstance.saveObject(method);
+			dbInstance.getCurrentEntityManager().persist(method);
 		} else {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {
 					((AbstractAccessMethod)method).setEnabled(enable);
 					((AbstractAccessMethod)method).setLastModified(new Date());
-					dbInstance.updateObject(method);
+					dbInstance.getCurrentEntityManager().merge(method);
 				}
 			}
 		}
@@ -386,13 +355,13 @@ public class ACMethodDAO implements InitializingBean {
 			FreeAccessMethod method = new FreeAccessMethod();
 			method.setCreationDate(new Date());
 			method.setLastModified(method.getCreationDate());
-			dbInstance.saveObject(method);
+			dbInstance.getCurrentEntityManager().persist(method);
 		} else {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {
 					((AbstractAccessMethod)method).setEnabled(enable);
 					((AbstractAccessMethod)method).setLastModified(new Date());
-					dbInstance.updateObject(method);
+					dbInstance.getCurrentEntityManager().merge(method);
 				}
 			}
 		}

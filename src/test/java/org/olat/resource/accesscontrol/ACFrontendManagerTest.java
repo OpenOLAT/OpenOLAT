@@ -24,7 +24,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -34,6 +36,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -360,6 +363,34 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertTrue(acResult.isAccessible());
 		dbInstance.commit();
 		CodeHelper.printNanoTime(start, "One click");
+	}
+	
+	@Test
+	public void testStandardMethods() {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
+		
+		Roles roles = new Roles(false, false, false, true, false, false, false);
+		List<AccessMethod> methods = acService.getAvailableMethods(ident, roles);
+		assertNotNull(methods);
+		assertTrue(methods.size() >= 2);
+
+		Set<String> duplicateTypes = new HashSet<>();
+
+		boolean foundFree = false;
+		boolean foundToken = false;
+		for(AccessMethod method:methods) {
+			Assert.assertFalse(duplicateTypes.contains(method.getType()));
+			if(method instanceof FreeAccessMethod) {
+				foundFree = true;
+			} else if(method instanceof TokenAccessMethod) {
+				foundToken = true;
+			}
+			assertTrue(method.isEnabled());
+			assertTrue(method.isValid());
+			duplicateTypes.add(method.getType());
+		}
+		assertTrue(foundFree);
+		assertTrue(foundToken);
 	}
 
 	private RepositoryEntry createRepositoryEntry() {
