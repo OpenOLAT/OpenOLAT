@@ -37,7 +37,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -104,7 +103,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	}
 
 	private void initDefaultQuotas() {
-		defaultQuotas = new HashMap<String,Quota>();
+		defaultQuotas = new HashMap<>();
 		Quota defaultQuotaUsers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_USERS, defaultQuotaUsers);
 		Quota defaultQuotaPowerusers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
@@ -186,11 +185,11 @@ public class QuotaManagerImpl extends QuotaManager {
 		     .append(" and prop.name=:name")
 		     .append(" and prop.identity is null and prop.grp is null");
 		
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
-		dbquery.setString("name", path);
-		dbquery.setCacheable(true);
-		@SuppressWarnings("unchecked")
-		List<Object[]> props = dbquery.list();
+		List<Object[]> props = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query.toString(), Object[].class)
+				.setParameter("name", path)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
 		if(props.isEmpty()) {
 			return null;
 		}

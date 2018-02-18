@@ -577,9 +577,9 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	 */
 	public Map<String, String> getUsersMostUsedTags(Identity ident, Integer amount) {
 		amount = (amount == 0) ? 5 : amount;
-		List<String> outp = new ArrayList<String>();
+		List<String> outp = new ArrayList<>();
 		
-		Map<String, String> res = new HashMap<String, String>();
+		Map<String, String> res = new HashMap<>();
 		List<Map<String, Integer>> bla = taggingManager.getUserTagsWithFrequency(ident);
 		for (Map<String, Integer> map : bla) {
 			String caption = map.get("tag") + " (" + map.get("nr") + ")";

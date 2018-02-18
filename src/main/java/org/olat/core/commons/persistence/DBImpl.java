@@ -40,7 +40,6 @@ import javax.persistence.Persistence;
 import javax.persistence.RollbackException;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.stat.Statistics;
@@ -323,24 +322,6 @@ public class DBImpl implements DB, Destroyable {
 	private boolean contains(Object object) {
 		EntityManager em = getCurrentEntityManager();
 		return em.contains(object);
-	}
-
-	/**
-	 * Create a DBQuery
-	 * 
-	 * @param query
-	 * @return DBQuery
-	 */
-	@Override
-	public DBQuery createQuery(String query) {
-		try {
-			EntityManager em = getCurrentEntityManager();
-			Query q = getSession(em).createQuery(query);
-			return new DBQueryImpl(q);
-		} catch (HibernateException he) {
-			getData().setError(he);
-			throw new DBRuntimeException("Error while creating DBQueryImpl: ", he);
-		}
 	}
 
 	/**

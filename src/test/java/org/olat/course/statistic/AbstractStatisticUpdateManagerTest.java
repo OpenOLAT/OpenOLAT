@@ -26,16 +26,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hibernate.FlushMode;
 import org.junit.Assert;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.CodeHelper;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.statistic.daily.DailyStat;
-import org.olat.course.statistic.dayofweek.DayOfWeekStat;
-import org.olat.course.statistic.hourofday.HourOfDayStat;
-import org.olat.course.statistic.weekly.WeeklyStat;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -60,24 +55,24 @@ abstract class AbstractStatisticUpdateManagerTest extends OlatTestCase {
 	
 	protected void cleanUpLog() {
 		String deleteLogQuery = "delete from " + LoggingObject.class.getName() + " log";
-		dbInstance.createQuery(deleteLogQuery)
-			.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager().createQuery(deleteLogQuery)
+			.executeUpdate();
 		
-		String deleteDailyQuery = "delete from " + DailyStat.class.getName() + " log";
-		dbInstance.createQuery(deleteDailyQuery)
-			.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from dailystat log")
+			.executeUpdate();
 		
-		String deleteWeeklyQuery = "delete from " + WeeklyStat.class.getName() + " log";
-		dbInstance.createQuery(deleteWeeklyQuery)
-			.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from weeklystat log")
+			.executeUpdate();
 		
-		String deleteDayOfWeekQuery = "delete from " + DayOfWeekStat.class.getName() + " log";
-		dbInstance.createQuery(deleteDayOfWeekQuery)
-			.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from dayofweekstat log")
+			.executeUpdate();
 		
-		String deleteHourOfDayQuery = "delete from " + HourOfDayStat.class.getName() + " log";
-		dbInstance.createQuery(deleteHourOfDayQuery)
-			.executeUpdate(FlushMode.AUTO);
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from hourofdaystat log")
+			.executeUpdate();
 
 		dbInstance.commitAndCloseSession();
 	}

@@ -34,12 +34,9 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.properties.Property;
@@ -49,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CollaborationManagerImpl extends BasicManager implements CollaborationManager {
+public class CollaborationManagerImpl implements CollaborationManager {
 	
 	@Autowired
 	private DB dbInstance;
@@ -73,25 +70,23 @@ public class CollaborationManagerImpl extends BasicManager implements Collaborat
 		     .append(" and prop.name='").append(KEY_FOLDER_ACCESS).append("'")
 		     .append(" and prop.identity is null and prop.grp is null");
 		
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
-		dbquery.setCacheable(true);
-
-		@SuppressWarnings("unchecked")
-		List<Long> props = dbquery.list();
+		List<Long> props = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Long.class)
+				.setHint("", Boolean.TRUE)
+				.getResultList();
 		if(props.isEmpty()) {
 			return null;
-		} else {
-			return props.get(0);
 		}
+		return props.get(0);
 	}
 	
 	@Override
 	public Map<Long,Long> lookupCalendarAccess(List<BusinessGroup> groups) {
 		if(groups == null || groups.isEmpty()) {
-			return new HashMap<Long,Long>();
+			return new HashMap<>();
 		}
 		
-		StringBuilder query = new StringBuilder();
+		StringBuilder query = new StringBuilder(256);
 		query.append("select prop from ").append(Property.class.getName()).append(" as prop where ")
 		     .append(" prop.category='").append(PROP_CAT_BG_COLLABTOOLS).append("'")
 		     .append(" and prop.resourceTypeName='BusinessGroup'")
@@ -100,7 +95,7 @@ public class CollaborationManagerImpl extends BasicManager implements Collaborat
 		     .append(" and prop.identity is null and prop.grp is null");
 		
 		TypedQuery<Property> dbquery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Property.class);
-		Map<Long,Long> groupKeyToAccess = new HashMap<Long,Long>();
+		Map<Long,Long> groupKeyToAccess = new HashMap<>();
 
 		int count = 0;
 		int batch = 200;

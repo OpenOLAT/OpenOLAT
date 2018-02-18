@@ -20,19 +20,16 @@
 
 package org.olat.core.commons.services.tagging.manager;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.commons.services.tagging.model.Tag;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for TaggingManager
- * 
+
  * <P>
  * Initial Date:  19 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -125,7 +122,7 @@ public interface TaggingManager {
 	 * @param tagList
 	 * @return
 	 */
-	public HashSet<OLATResourceable> getResourcesByTags(List<Tag> tagList);
+	public Set<OLATResourceable> getResourcesByTags(List<Tag> tagList);
 
 	
 	

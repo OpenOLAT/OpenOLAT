@@ -41,15 +41,14 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.FlushMode;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
@@ -761,22 +760,23 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param ores
 	 */
 	@Override
-	public void deletePublishersOf(OLATResourceable ores) {
+	public int deletePublishersOf(OLATResourceable ores) {
 		String type = ores.getResourceableTypeName();
 		Long id = ores.getResourceableId();
 		if (type == null || id == null) throw new AssertException("type/id cannot be null! type:" + type + " / id:" + id);
 		List<Publisher> pubs = getPublishers(type, id);
-		if(pubs.isEmpty()) return;
+		if(pubs.isEmpty()) return 0;
 
 		String q1 = "delete from notisub sub where sub.publisher in (:publishers)";
-		DBQuery query1 = dbInstance.createQuery(q1);
-		query1.setParameterList("publishers", pubs);
-		query1.executeUpdate(FlushMode.AUTO);
+		Query query1 = dbInstance.getCurrentEntityManager().createQuery(q1);
+		query1.setParameter("publishers", pubs);
+		int rows = query1.executeUpdate();
 		
 		String q2 = "delete from notipublisher pub where pub in (:publishers)";
-		DBQuery query2 = dbInstance.createQuery(q2);
-		query2.setParameterList("publishers", pubs);
-		query2.executeUpdate(FlushMode.AUTO);
+		Query query2 = dbInstance.getCurrentEntityManager().createQuery(q2);
+		query2.setParameter("publishers", pubs);
+		rows += query2.executeUpdate();
+		return rows;
 	}
 
 	/**

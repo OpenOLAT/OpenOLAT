@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
@@ -49,7 +50,7 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 	
 	private final WeeklyStatisticManager weeklyStatisticManager = new WeeklyStatisticManager();
 
-	@Test
+	@Test @Ignore
 	public void statistics_weekly() {
 		statisticUpdateManager.setEnabled(true);
 		
@@ -148,6 +149,7 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 		Calendar cal = addLog(repositoryEntry.getKey(), courseNode.getIdent(), start, dayInPast, hour, minute, second);
 		String week = getWeekString(cal);
 		incrementInMemoryStatistics(repositoryEntry.getKey(), courseNode.getIdent(), week);
+		cal.getTime();
 		return week;
 	}
 }

@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.SimpleTagProposalManager;
@@ -50,27 +49,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SimpleTagProposalManagerTest extends OlatTestCase {
 	
-	private static boolean isInitialized = false;
-	private static Identity ident;
-	
 	@Autowired
 	private DB dbInstance;
-	
 	@Autowired
 	private TaggingManager taggingManager;
-	
 	@Autowired
 	private SimpleTagProposalManager simpleTagProposalManager;
-	
-	
-	@Before
-	public void setUp()throws Exception {
-		if (isInitialized == false) {
-			ident = JunitTestHelper.createAndPersistIdentityAsUser("s-t-p-user");
-			dbInstance.commitAndCloseSession();
-			isInitialized = true;
-		}
-	}
 	
 	@Test
 	public void testManager() {
@@ -81,6 +65,7 @@ public class SimpleTagProposalManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testSimpleProposalManager() {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("s-t-p-user");
 		//create some tags to populate the DB
 		TestOLATResource ores = new TestOLATResource();
 		Tag tag1 = taggingManager.createAndPersistTag(ident, "Hello", ores, null, null);

@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.ObjectNotFoundException;
@@ -41,7 +42,6 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -165,11 +165,10 @@ public class EPStructureManager {
 		sb.append(" where (map.status is null or not(map.status = 'closed'))")
 			.append(" and map.deadLine<:currentDate");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setDate("currentDate", new Date());
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructureMap> maps = query.list();
-		return maps;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructureMap.class)
+				.setParameter("currentDate", new Date(), TemporalType.TIMESTAMP)
+				.getResultList();
 	}
 	
 	protected List<PortfolioStructure> getStructureElements(int firstResult, int maxResults, ElementType... types){
@@ -184,16 +183,15 @@ public class EPStructureManager {
 		}
 		sb.append(")");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
+		TypedQuery<PortfolioStructure> query =	dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class);
 		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> pStructs = query.list();
-		return pStructs;
+		return query.getResultList();
 	}
 	
 	protected List<PortfolioStructure> getStructureElementsForUser(IdentityRef ident, ElementType... types){
@@ -449,7 +447,7 @@ public class EPStructureManager {
 
 	protected List<PortfolioStructure> getReferencedMapsForArtefact(AbstractArtefact artefact){
 		List<PortfolioStructure> pfList = getAllReferencesForArtefact(artefact);
-		List<PortfolioStructure> mapList = new ArrayList<PortfolioStructure>();
+		List<PortfolioStructure> mapList = new ArrayList<>();
 		for (Iterator<?> iterator = pfList.iterator(); iterator.hasNext();) {
 			EPStructureElement portfolioStructure = (EPStructureElement) iterator.next();
 			EPStructureElement actStruct = portfolioStructure;
@@ -467,12 +465,11 @@ public class EPStructureManager {
 	protected List<PortfolioStructure> getAllReferencesForArtefact(AbstractArtefact artefact){
 		StringBuilder sb = new StringBuilder();
 		sb.append("select link.structureElement from ").append(EPStructureToArtefactLink.class.getName()).append(" link")
-		.append(" where link.artefact=:artefactEl ");
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("artefactEl", artefact);
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> pfList = query.list();		
-		return pfList;		
+		  .append(" where link.artefact=:artefactEl ");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("artefactEl", artefact)
+				.getResultList();		
 	}
 	
 /**
@@ -487,18 +484,16 @@ public class EPStructureManager {
 		sb.append("select link.artefact from ").append(EPStructureToArtefactLink.class.getName()).append(" link")
 			.append(" where link.structureElement.key=:structureElKey order by link.order");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("structureElKey", structure.getKey());
+		TypedQuery<AbstractArtefact> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbstractArtefact.class)
+				.setParameter("structureElKey", structure.getKey());
 		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		
-		@SuppressWarnings("unchecked")
-		List<AbstractArtefact> artefacts = query.list();
-		return artefacts;
+		return query.getResultList();
 	}
 	
 	/**
@@ -511,9 +506,10 @@ public class EPStructureManager {
 		sb.append("select count(link) from ").append(EPStructureToArtefactLink.class.getName()).append(" link")
 			.append(" where link.structureElement=:structureEl");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("structureEl", structure);
-		Number count = (Number)query.uniqueResult();
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("structureEl", structure)
+				.getSingleResult();
 		return count.intValue();
 	}
 	
@@ -521,17 +517,16 @@ public class EPStructureManager {
 	 * Count all artefacts (links) in a map
 	 */
 	protected int countArtefactsRecursively(PortfolioStructure structure) {
-		//return countArtefactsRecursively(structure, 0);
-		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(link) from ").append(EPStructureToArtefactLink.class.getName()).append(" link")
 			.append(" inner join link.structureElement structure ")
 			.append(" inner join structure.rootMap root")
 			.append(" where root=:structureEl");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("structureEl", structure);
-		Number count = (Number)query.uniqueResult();
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("structureEl", structure)
+				.getSingleResult();
 		return count.intValue();
 	}
 	
@@ -549,12 +544,11 @@ public class EPStructureManager {
 		sb.append("select link.key from ").append(EPStructureToArtefactLink.class.getName()).append(" link")
 			.append(" where link.structureElement=:structureEl and link.artefact=:artefact");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("structureEl", structure);
-		query.setEntity("artefact", artefact);
-		
-		@SuppressWarnings("unchecked")
-		List<Long> key = query.list();
+		List<Long> key = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("structureEl", structure)
+				.setParameter("artefact", artefact)
+				.getResultList();
 		return key.size() == 1 ? true : false;
 	}
 	
@@ -568,10 +562,10 @@ public class EPStructureManager {
 		sb.append("select count(link) from ").append(EPStructureToStructureLink.class.getName()).append(" link")
 			.append(" where link.parent=:structureEl");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("structureEl", structure);
-
-		Number count = (Number)query.uniqueResult();
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("structureEl", structure)
+				.getSingleResult();
 		return count.intValue();
 	}
 	
@@ -598,18 +592,16 @@ public class EPStructureManager {
 		sb.append("select link.child from ").append(EPStructureToStructureLink.class.getName()).append(" link")
 			.append(" where link.parent=:structureEl order by link.order");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<PortfolioStructure> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("structureEl", structure);
 		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		query.setEntity("structureEl", structure);
-		
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> resources = query.list();
-		return resources;
+		return query.getResultList();
 	}
 	
 	/**
@@ -1403,20 +1395,21 @@ public class EPStructureManager {
 			sb.append(" and map.targetResource.businessPath=:businessPath");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("template", template);
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("template", template);
 		if (targetOres != null) {
-			query.setLong("resourceId", targetOres.getResourceableId());
-			query.setString("resourceType", targetOres.getResourceableTypeName());
+			query.setParameter("resourceId", targetOres.getResourceableId());
+			query.setParameter("resourceType", targetOres.getResourceableTypeName());
 		}
 		if (targetSubPath != null) {
-			query.setString("subPath", targetSubPath);
+			query.setParameter("subPath", targetSubPath);
 		}
 		if (targetBusinessPath != null) {
-			query.setString("businessPath", targetBusinessPath);
+			query.setParameter("businessPath", targetBusinessPath);
 		}
 		
-		Number count = (Number)query.uniqueResult();
+		Number count = query.getSingleResult();
 		return count.intValue() > 0;
 	}
 	
@@ -1523,11 +1516,10 @@ public class EPStructureManager {
 			.append(" map where map.key=:key")
 			.append(")");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("key", key);
-		
-		@SuppressWarnings("unchecked")
-		List<RepositoryEntry> entries = query.list();
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("key", key)
+				.getResultList();
 		// if not found, it is an empty list
 		if (entries.isEmpty()) return null;
 		return entries.get(0);
@@ -1565,11 +1557,10 @@ public class EPStructureManager {
 		  .append(" inner join fetch element.olatResource resource")
 			.append(" where resource.resId=:resourceId and resource.resName in ('EPDefaultMap','EPStructuredMap','EPStructuredMapTemplate')");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("resourceId", resourceableId);
-		
-		@SuppressWarnings("unchecked")
-		List<EPMapShort> resources = query.list();
+		List<EPMapShort> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EPMapShort.class)
+				.setParameter("resourceId", resourceableId)
+				.getResultList();
 		// if not found, it is an empty list
 		if (resources.isEmpty()) return null;
 		return resources.get(0);
@@ -1619,11 +1610,10 @@ public class EPStructureManager {
 		sb.append("select element.olatResource from ").append(EPStructureElement.class.getName()).append(" element")
 			.append(" where element.key=:key or element.olatResource.resId=:key ");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("key", key);
-		
-		@SuppressWarnings("unchecked")
-		List<OLATResource> resources = query.list();
+		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OLATResource.class)
+				.setParameter("key", key)
+				.getResultList();
 		// if not found, it is an empty list
 		if (resources.isEmpty()) return null;
 		return resources.get(0);

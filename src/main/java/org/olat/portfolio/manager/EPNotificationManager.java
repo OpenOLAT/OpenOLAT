@@ -24,8 +24,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
+
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -154,13 +155,11 @@ public class EPNotificationManager {
 		sb.append("select notification from ").append(EPStructureElementNotification.class.getName()).append(" as notification");
 		sb.append(" where notification.creationDate>=:currentDate and (notification.key=:mapKey or notification.rootMapKey=:mapKey)");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setDate("currentDate", compareDate);
-		query.setLong("mapKey", mapKey);
-		
-		@SuppressWarnings("unchecked")
-		List<EPStructureElementNotification> notifications = query.list();
-		return notifications;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EPStructureElementNotification.class)
+				.setParameter("currentDate", compareDate, TemporalType.TIMESTAMP)
+				.setParameter("mapKey", mapKey)
+				.getResultList();
 	}
 
 	private List<EPArtefactNotification> getArtefactNotifications(List<Long> mapKey, Date compareDate) {
@@ -173,13 +172,11 @@ public class EPNotificationManager {
 	    .append(" inner join fetch notification.author")
 		  .append(" where notification.creationDate>=:currentDate and (notification.key in (:mapKey) or notification.rootMapKey in (:mapKey))");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setDate("currentDate", compareDate);
-		query.setParameterList("mapKey", mapKey);
-		
-		@SuppressWarnings("unchecked")
-		List<EPArtefactNotification> notifications = query.list();
-		return notifications;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EPArtefactNotification.class)
+				.setParameter("currentDate", compareDate, TemporalType.TIMESTAMP)
+				.setParameter("mapKey", mapKey)
+				.getResultList();
 	}
 	
 	private List<EPRatingNotification> getRatingNotifications(List<Long> mapKey, Date compareDate) {
@@ -192,13 +189,11 @@ public class EPNotificationManager {
 		  .append(" inner join fetch notification.author")
 		  .append(" where notification.creationDate>=:currentDate and notification.mapKey in (:mapKey)");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setDate("currentDate", compareDate);
-		query.setParameterList("mapKey", mapKey);
-		
-		@SuppressWarnings("unchecked")
-		List<EPRatingNotification> notifications = query.list();
-		return notifications;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EPRatingNotification.class)
+				.setParameter("currentDate", compareDate, TemporalType.TIMESTAMP)
+				.setParameter("mapKey", mapKey)
+				.getResultList();
 	}
 
 	private List<EPCommentNotification> getCommentNotifications(List<Long> mapKey, Date compareDate) {
@@ -211,13 +206,11 @@ public class EPNotificationManager {
 	    .append(" inner join fetch notification.author")
 		  .append(" where notification.creationDate>=:currentDate and notification.mapKey in (:mapKey)");
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setDate("currentDate", compareDate);
-		query.setParameterList("mapKey", mapKey);
-		
-		@SuppressWarnings("unchecked")
-		List<EPCommentNotification> notifications = query.list();
-		return notifications;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EPCommentNotification.class)
+				.setParameter("currentDate", compareDate, TemporalType.TIMESTAMP)
+				.setParameter("mapKey", mapKey)
+				.getResultList();
 	}
 
 }

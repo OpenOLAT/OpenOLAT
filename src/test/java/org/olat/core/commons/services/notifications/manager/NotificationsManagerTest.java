@@ -48,11 +48,13 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
-import org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -468,6 +470,33 @@ public class NotificationsManagerTest extends OlatTestCase {
 			dbInstance.rollback();
 			throw e;
 		}
+	}
+	
+	@Test
+	public void deletePublishersOf() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID().toString());
+		//create a publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("DeletePublishers", CodeHelper.getForeverUniqueID(), identifier);
+		PublisherData publisherData = new PublisherData("testAllPublishers", "e.g. forumdata=keyofforum", null);
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher);
+		
+		//subscribe
+		notificationManager.subscribe(id, context, publisherData);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there is something
+		boolean subscribed = notificationManager.isSubscribed(id, context);
+		Assert.assertTrue(subscribed);
+		dbInstance.commitAndCloseSession();
+		
+		//delete
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(publisher.getResName(), publisher.getResId());
+		int rows = notificationManager.deletePublishersOf(ores);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(2, rows);
 	}
 	
 	/**

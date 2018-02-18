@@ -17,7 +17,6 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.core.commons.services.tagging.manager;
 
 import java.util.ArrayList;
@@ -25,10 +24,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.tagging.model.TagImpl;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -39,26 +38,15 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  19 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SimpleTagProposalManager extends BasicManager implements TagProposalManager {
+@Service("simpleTagProposalManager")
+public class SimpleTagProposalManager implements TagProposalManager {
 
+	@Autowired
 	private DB dbInstance;
-	
-	public SimpleTagProposalManager() {
-		//
-	}
-	
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
 
 	@Override
 	public List<String> proposeTagsForInputText(String referenceText, boolean onlyExisting) {
-		List<String> tokens = new ArrayList<String>();
+		List<String> tokens = new ArrayList<>();
 		StringTokenizer tokenizer = new StringTokenizer(referenceText, " \t\n\r\f.,;:-!?");
 		for (; tokenizer.hasMoreTokens();) {
 			String next = tokenizer.nextToken().trim();
@@ -70,16 +58,13 @@ public class SimpleTagProposalManager extends BasicManager implements TagProposa
 		}
 
 		if (onlyExisting) {
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder(64);
 			sb.append("select tag.tag from ").append(TagImpl.class.getName()).append(" tag where tag.tag in (:tokens) group by tag.tag");
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setParameterList("tokens", tokens);
-
-			@SuppressWarnings("unchecked")
-			List<String> currentTags = query.list();
-			return currentTags;
-		} else {
-			return tokens;
+			return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), String.class)
+					.setParameter("tokens", tokens)
+					.getResultList();
 		}
+		return tokens;
 	}
 }

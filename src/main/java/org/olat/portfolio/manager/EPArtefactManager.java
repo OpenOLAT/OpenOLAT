@@ -32,10 +32,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
 import org.olat.core.commons.services.tagging.model.Tag;
 import org.olat.core.id.Identity;
@@ -97,7 +98,6 @@ public class EPArtefactManager extends BasicManager {
 	 * @param maxResults Max number of returned artefacts (0 or below for all)
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	protected List<AbstractArtefact> getArtefacts(Identity author, List<Long> artefactIds, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select artefact from ").append(AbstractArtefact.class.getName()).append(" artefact");
@@ -111,7 +111,8 @@ public class EPArtefactManager extends BasicManager {
 			else sb.append(" where ");
 			sb.append(" artefact.id in (:artefactIds)");
 		}
-		DBQuery query = dbInstance.createQuery(sb.toString());
+		TypedQuery<AbstractArtefact> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbstractArtefact.class);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
@@ -119,14 +120,13 @@ public class EPArtefactManager extends BasicManager {
 			query.setFirstResult(firstResult);
 		}
 		if(author != null) {
-			query.setEntity("author", author);
+			query.setParameter("author", author);
 		}
 		if(artefactIds != null && !artefactIds.isEmpty()) {
-			query.setParameterList("artefactIds", artefactIds);
+			query.setParameter("artefactIds", artefactIds);
 		}
 		
-		List<AbstractArtefact> artefacts = query.list();
-		return artefacts;
+		return query.getResultList();
 	}
 	
 	protected boolean isArtefactClosed(AbstractArtefact artefact) {
@@ -136,9 +136,10 @@ public class EPArtefactManager extends BasicManager {
 			.append(" inner join structure.root rootStructure")
 			.append(" where link.artefact=:artefact and rootStructure.status='closed'");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("artefact", artefact);
-		Number count = (Number)query.uniqueResult();
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("artefact", artefact)
+				.getSingleResult();
 		return count.intValue() > 0;
 	}
 	
@@ -155,16 +156,14 @@ public class EPArtefactManager extends BasicManager {
 	}
 
 	protected List<AbstractArtefact> getArtefactPoolForUser(Identity ident) {
-		long start = System.currentTimeMillis();
 		StringBuilder sb = new StringBuilder();
 		sb.append("select artefact from ").append(AbstractArtefact.class.getName()).append(" artefact").append(" where author=:author");
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("author", ident);
-		@SuppressWarnings("unchecked")
-		List<AbstractArtefact> artefacts = query.list();
+		List<AbstractArtefact> artefacts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbstractArtefact.class)
+				.setParameter("author", ident)
+				.getResultList();
+
 		if (artefacts.isEmpty()) return null;
-		long duration = System.currentTimeMillis() - start;
-		if (isLogDebugEnabled()) logDebug("loading the full artefact pool took " + duration + "ms");
 		return artefacts;
 	}
 
@@ -465,13 +464,12 @@ public class EPArtefactManager extends BasicManager {
 		if (key == null) throw new NullPointerException();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select artefact from ").append(AbstractArtefact.class.getName()).append(" artefact").append(" where artefact=:key");
+		sb.append("select artefact from ").append(AbstractArtefact.class.getName()).append(" artefact").append(" where artefact.key=:key");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("key", key);
-
-		@SuppressWarnings("unchecked")
-		List<AbstractArtefact> artefacts = query.list();
+		List<AbstractArtefact> artefacts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbstractArtefact.class)
+				.setParameter("key", key)
+				.getResultList();
 		// if not found, it is an empty list
 		if (artefacts.isEmpty()) return null;
 		return artefacts.get(0);
@@ -487,14 +485,14 @@ public class EPArtefactManager extends BasicManager {
 			 sb.append(" and artefact.author=:ident");
 		}
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setString("bpath", businessPath);
+		TypedQuery<AbstractArtefact> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AbstractArtefact.class)
+				.setParameter("bpath", businessPath);
 		if (author != null) {
-			query.setEntity("ident", author);
+			query.setParameter("ident", author);
 		}
 
-		@SuppressWarnings("unchecked")
-		List<AbstractArtefact> artefacts = query.list();
+		List<AbstractArtefact> artefacts = query.getResultList();
 		// if not found, it is an empty list
 		if (artefacts.isEmpty()) return null;
 		return artefacts;		

@@ -104,11 +104,6 @@ public class EPPerformanceTest extends OlatTestCase {
 	public void testRealisticArtefactAmount(){
 		internalTestManyArtefactCreation(200);
 	}
-	
-	@Test
-	public void testHugeArtefactAmount(){
-		internalTestManyArtefactCreation(2000);
-	}
 		
 	private void internalTestManyArtefactCreation(int artefactAmount){
 		long start = System.currentTimeMillis();

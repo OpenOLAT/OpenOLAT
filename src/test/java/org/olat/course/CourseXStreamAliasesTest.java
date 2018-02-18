@@ -19,6 +19,7 @@
  */
 package org.olat.course;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Assert;
@@ -35,19 +36,21 @@ import com.thoughtworks.xstream.XStream;
 public class CourseXStreamAliasesTest {
 	
 	@Test
-	public void testRunStructure_bpsChecklist() {
+	public void testRunStructure_bpsChecklist() throws IOException {
 		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
 		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("runstructure_checklist.xml");
 		Object runStructure = xStream.fromXML(in);
 		Assert.assertNotNull(runStructure);
+		in.close();
 	}
 	
 	@Test
-	public void testmapping_allInOne() {
+	public void testmapping_allInOne() throws IOException {
 		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
 		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("runstructure_allinone.xml");
 		Object runStructure = xStream.fromXML(in);
 		Assert.assertNotNull(runStructure);
+		in.close();
 	}
 
 }

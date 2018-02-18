@@ -46,14 +46,6 @@ public interface DB {
 	public void closeSession();
 
 	/**
-	 * Create a DBQuery
-	 * 
-	 * @param query
-	 * @return DBQuery
-	 */
-	public DBQuery createQuery(String query);
-
-	/**
 	 * Delete an object.
 	 * 
 	 * @param object

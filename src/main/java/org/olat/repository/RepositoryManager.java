@@ -46,7 +46,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -861,15 +860,15 @@ public class RepositoryManager {
 	 */
 	public int countByTypeLimitAccess(String restrictedType, int restrictedAccess) {
 		StringBuilder query = new StringBuilder(400);
-		query.append("select count(*) from" +
-			" org.olat.repository.RepositoryEntry v, " +
-			" org.olat.resource.OLATResourceImpl res " +
-		  " where v.olatResource = res and res.resName= :restrictedType and v.access >= :restrictedAccess ");
-		DBQuery dbquery = dbInstance.createQuery(query.toString());
-		dbquery.setString("restrictedType", restrictedType);
-		dbquery.setInteger("restrictedAccess", restrictedAccess);
-		dbquery.setCacheable(true);
-		return ((Long)dbquery.list().get(0)).intValue();
+		query.append("select count(*) from org.olat.repository.RepositoryEntry v")
+			 .append(" inner join v.olatResource res")
+		     .append(" where res.resName=:restrictedType and v.access>=:restrictedAccess");
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Number.class)
+				.setParameter("restrictedType", restrictedType)
+				.setParameter("restrictedAccess", restrictedAccess)
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? null : count.get(0).intValue();
 	}
 
 	public long countPublished(String restrictedType) {

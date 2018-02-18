@@ -49,8 +49,6 @@ import org.olat.admin.user.UserChangePasswordController;
 import org.olat.admin.user.UserCreateController;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
@@ -368,9 +366,9 @@ public class BaseSecurityManager implements BaseSecurity {
 
 		TypedQuery<Number> query;
 		if(checkTypeRight) {
-			query = DBFactory.getInstance().getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceableCheckType", Number.class);
+			query = dbInstance.getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceableCheckType", Number.class);
 		} else {
-			query = DBFactory.getInstance().getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceable", Number.class);
+			query = dbInstance.getCurrentEntityManager().createNamedQuery("isIdentityPermittedOnResourceable", Number.class);
 		}
 		
 		Number count = query.setParameter("identitykey", identity.getKey())
@@ -500,7 +498,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		  .append("inner join fetch poi.olatResource as resource ")
 		  .append("where secGroup in (select sgmi.securityGroup from ")
 		  .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi where sgmi.identity.key=:identityKey)");
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Policy.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
@@ -533,7 +531,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		sb.append("select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
 		  .append("where sgmsi.identity.key=:identityKey and sgmsi.securityGroup in (:securityGroups)");
 		
-		List<ModifiedInfo> infos = DBFactory.getInstance().getCurrentEntityManager()
+		List<ModifiedInfo> infos = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ModifiedInfo.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("securityGroups", secGroups)
@@ -541,7 +539,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		
 		for(ModifiedInfo info:infos) {
 			info.setLastModified(new Date());
-			DBFactory.getInstance().getCurrentEntityManager().merge(info);
+			dbInstance.getCurrentEntityManager().merge(info);
 		}
 	}
 
@@ -550,7 +548,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	public SecurityGroup createAndPersistSecurityGroup() {
 		SecurityGroupImpl sgi = new SecurityGroupImpl();
-		DBFactory.getInstance().saveObject(sgi);
+		dbInstance.saveObject(sgi);
 		return sgi;
 	}
 
@@ -621,7 +619,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		for(SecurityGroup secGroup:secGroups) {
 			secGroupKeys.add(secGroup.getKey());
 		}
-		int rowsAffected = DBFactory.getInstance().getCurrentEntityManager()
+		int rowsAffected = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("identityKeys", identityKeys)
 				.setParameter("secGroupKeys", secGroupKeys)
@@ -649,7 +647,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		pi.setPermission(permission);
 		pi.setFrom(from);
 		pi.setTo(to);
-		DBFactory.getInstance().saveObject(pi);
+		dbInstance.saveObject(pi);
 		return pi;
 	}	
 	
@@ -674,7 +672,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi ")
 		  .append(" where poi.permission=:permission and poi.olatResource.key=:resourceKey and poi.securityGroup.key=:secGroupKey");
 
-		List<Policy> policies = DBFactory.getInstance().getCurrentEntityManager()
+		List<Policy> policies = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Policy.class)
 				.setParameter("permission", permission)
 				.setParameter("resourceKey", olatResource.getKey())
@@ -694,7 +692,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		sb.append("delete from ").append(PolicyImpl.class.getName()).append(" as poi ")
 		  .append(" where poi.olatResource.key=:resourceKey");
 
-		int rowDeleted = DBFactory.getInstance().getCurrentEntityManager()
+		int rowDeleted = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("resourceKey", resource.getKey())
 				.executeUpdate();
@@ -819,7 +817,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	private void notifyNewIdentityCreated(Identity newIdentity) {
 		//Save the identity on the DB. So can the listeners of the event retrieve it
 		//in cluster mode
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new NewIdentityCreatedEvent(newIdentity), IDENTITY_EVENT_CHANNEL);
 	}
 
@@ -846,7 +844,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	   .append(" inner join fetch  identity.user user ")
 			.append(" where sgmsi.securityGroup=:secGroup");
 
-		TypedQuery<Identity> query = DBFactory.getInstance().getCurrentEntityManager()
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("secGroup", secGroup);
 		if(firstResult >= 0) {
@@ -902,13 +900,14 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public int countIdentitiesOfSecurityGroup(SecurityGroup secGroup) {
-		DB db = DBFactory.getInstance();
+		DB db = dbInstance;
 		String q = "select count(sgm) from org.olat.basesecurity.SecurityGroupMembershipImpl sgm where sgm.securityGroup = :group";
-		DBQuery query = db.createQuery(q);
-		query.setEntity("group", secGroup);
-		query.setCacheable(true);
-		int result = ((Long) query.list().get(0)).intValue();
-		return result;
+		List<Long> counts = db.getCurrentEntityManager()
+				.createQuery(q, Long.class)
+				.setParameter("group", secGroup)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return counts.get(0).intValue();
 	}
 
 	/**
@@ -918,7 +917,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	public SecurityGroup createAndPersistNamedSecurityGroup(String groupName) {
 		SecurityGroup secG = createAndPersistSecurityGroup();
 		NamedGroupImpl ngi = new NamedGroupImpl(groupName, secG);
-		DBFactory.getInstance().saveObject(ngi);
+		dbInstance.saveObject(ngi);
 		return secG;
 	}
 
@@ -956,7 +955,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		  .append(" inner join fetch ident.user user")
 		  .append(" where ident.name=:username");
 		
-		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("username", identityName)
 				.getResultList();
@@ -974,7 +973,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where lower(ident.name)=:username");
 		
-		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("username", identityName.toLowerCase())
 				.getResultList();
@@ -1062,7 +1061,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		  .append(" inner join fetch ident.user user")
 		  .append(" where user.key=:userKey");
 		
-		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("userKey", user.getKey())
 				.getResultList();
@@ -1307,11 +1306,11 @@ public class BaseSecurityManager implements BaseSecurity {
 	public Long countUniqueUserLoginsSince (Date lastLoginLimit){
 		String queryStr ="Select count(ident) from org.olat.core.id.Identity as ident where " 
 			+ "ident.lastLogin > :lastLoginLimit and ident.lastLogin != ident.creationDate";	
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
-		dbq.setDate("lastLoginLimit", lastLoginLimit);
-		List res = dbq.list();
-		Long cntL = (Long) res.get(0);
-		return cntL;
+		List<Long> res = dbInstance.getCurrentEntityManager()
+				.createQuery(queryStr, Long.class)
+				.setParameter("lastLoginLimit", lastLoginLimit, TemporalType.TIMESTAMP)
+				.getResultList();
+		return res.get(0);
 	}	
 	
 	/**
@@ -1603,8 +1602,7 @@ public class BaseSecurityManager implements BaseSecurity {
   @Override
 	public long countIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
 			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
-		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), true);
-		Number count = (Number)dbq.uniqueResult();
+	  	Number count = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), Number.class).getSingleResult();
 		return count.longValue();
 	}
 
@@ -1614,36 +1612,36 @@ public class BaseSecurityManager implements BaseSecurity {
   @Override
 	public List<Identity> getIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
 			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
-		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), false);
-		return dbq.list();
+		return createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch,
+				groups, permissionOnResources, authProviders, createdAfter, createdBefore,
+				userLoginAfter, userLoginBefore, status), Identity.class)
+				.getResultList();
 	}
   
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
-		DBQuery dbq = createIdentitiesByPowerQuery(params, true);
-		Number count = (Number)dbq.uniqueResult();
+		Number count = createIdentitiesByPowerQuery(params, Number.class).getSingleResult();
 		return count.intValue();
 	}
 	
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {
-		DBQuery dbq = createIdentitiesByPowerQuery(params, false);
+		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, Identity.class);
 		if(firstResult >= 0) {
 			dbq.setFirstResult(firstResult);
 		}
 		if(maxResults > 0) {
 			dbq.setMaxResults(maxResults);
 		}
-		@SuppressWarnings("unchecked")
-		List<Identity> identities = dbq.list();
-		return identities;
+		return dbq.getResultList();
 	}
 
-	private DBQuery createIdentitiesByPowerQuery(SearchIdentityParams params, boolean count) {
+	private <U> TypedQuery<U> createIdentitiesByPowerQuery(SearchIdentityParams params, Class<U> resultClass) {
 		boolean hasGroups = (params.getGroups() != null && params.getGroups().length > 0);
 		boolean hasPermissionOnResources = (params.getPermissionOnResources() != null && params.getPermissionOnResources().length > 0);
 		boolean hasAuthProviders = (params.getAuthProviders() != null && params.getAuthProviders().length > 0);
 
+		boolean count = Number.class.equals(resultClass);
 		// select identity and inner join with user to optimize query
 		StringBuilder sb = new StringBuilder(5000);
 		if (hasAuthProviders) {
@@ -1726,8 +1724,8 @@ public class BaseSecurityManager implements BaseSecurity {
 
 			// append queries for user fields
 			if (userproperties != null && !userproperties.isEmpty()) {
-				Map<String, String> emailProperties = new HashMap<String, String>();
-				Map<String, String> otherProperties = new HashMap<String, String>();
+				Map<String, String> emailProperties = new HashMap<>();
+				Map<String, String> otherProperties = new HashMap<>();
 	
 				// split the user fields into two groups
 				for (String key : userproperties.keySet()) {
@@ -1883,15 +1881,15 @@ public class BaseSecurityManager implements BaseSecurity {
 			
 		// create query object now from string
 		String query = sb.toString();
-		DBQuery dbq = dbInstance.createQuery(query);
+		TypedQuery<U> dbq = dbInstance.getCurrentEntityManager().createQuery(query, resultClass);
 		
 		// add user attributes
 		if (login != null) {
-			dbq.setString("login", login.toLowerCase());
+			dbq.setParameter("login", login.toLowerCase());
 		}
 		
 		if(identityKeys != null && !identityKeys.isEmpty()) {
-			dbq.setParameterList("identityKeys", identityKeys);
+			dbq.setParameter("identityKeys", identityKeys);
 		}
 
 		//	 add user properties attributes
@@ -1899,7 +1897,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			for (String key : userproperties.keySet()) {
 				String value = userproperties.get(key);
 				value = makeFuzzyQueryString(value);
-				dbq.setString(key + "_value", value.toLowerCase());
+				dbq.setParameter(key + "_value", value.toLowerCase());
 			}
 		}
 
@@ -1908,7 +1906,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			SecurityGroup[] groups = params.getGroups();
 			for (int i = 0; i < groups.length; i++) {
 				SecurityGroupImpl group = (SecurityGroupImpl) groups[i]; // need to work with impls
-				dbq.setEntity("group_" + i, group);
+				dbq.setParameter("group_" + i, group);
 			}
 		}
 		
@@ -1917,10 +1915,10 @@ public class BaseSecurityManager implements BaseSecurity {
 			PermissionOnResourceable[] permissionOnResources = params.getPermissionOnResources();
 			for (int i = 0; i < permissionOnResources.length; i++) {
 				PermissionOnResourceable permissionOnResource = permissionOnResources[i];
-				dbq.setString("permission_" + i, permissionOnResource.getPermission());
+				dbq.setParameter("permission_" + i, permissionOnResource.getPermission());
 				Long id = permissionOnResource.getOlatResourceable().getResourceableId();
-				dbq.setLong("resourceId_" + i, (id == null ? 0 : id.longValue()));
-				dbq.setString("resourceName_" + i, permissionOnResource.getOlatResourceable().getResourceableTypeName());
+				dbq.setParameter("resourceId_" + i, (id == null ? 0 : id.longValue()));
+				dbq.setParameter("resourceName_" + i, permissionOnResource.getOlatResourceable().getResourceableTypeName());
 			}
 		}
 
@@ -1930,7 +1928,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			for (int i = 0; i < authProviders.length; i++) {
 				String authProvider = authProviders[i];
 				if (authProvider != null) {
-					dbq.setString("authProvider_" + i, authProvider);
+					dbq.setParameter("authProvider_" + i, authProvider);
 				}
 				// ignore null auth provider, already set to null in query
 			}
@@ -1938,20 +1936,20 @@ public class BaseSecurityManager implements BaseSecurity {
 		
 		// add date restrictions
 		if (createdAfter != null) {
-			dbq.setDate("createdAfter", createdAfter);
+			dbq.setParameter("createdAfter", createdAfter, TemporalType.TIMESTAMP);
 		}
 		if (createdBefore != null) {
-			dbq.setDate("createdBefore", createdBefore);
+			dbq.setParameter("createdBefore", createdBefore, TemporalType.TIMESTAMP);
 		}
 		if(params.getUserLoginAfter() != null){
-			dbq.setDate("lastloginAfter", params.getUserLoginAfter());
+			dbq.setParameter("lastloginAfter", params.getUserLoginAfter(), TemporalType.TIMESTAMP);
 		}
 		if(params.getUserLoginBefore() != null){
-			dbq.setDate("lastloginBefore", params.getUserLoginBefore());
+			dbq.setParameter("lastloginBefore", params.getUserLoginBefore(), TemporalType.TIMESTAMP);
 		}
 		
 		if (status != null) {
-			dbq.setInteger("status", status);
+			dbq.setParameter("status", status);
 		}
 		// execute query
 		return dbq;

@@ -21,63 +21,48 @@ package org.olat.core.commons.services.tagging.manager;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.tagging.model.Tag;
 import org.olat.core.commons.services.tagging.model.TagImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for TaggingManagerImpl
  * 
  * <P>
  * Initial Date:  19 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class TaggingManagerImpl extends BasicManager implements TaggingManager {
+@Service("taggingManager")
+public class TaggingManagerImpl implements TaggingManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(TaggingManagerImpl.class);
 
+	@Autowired
 	private DB dbInstance;
+	@Autowired
 	private TagProposalManager proposalManager;
-	
-	public TaggingManagerImpl() {
-		//
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param proposalManager
-	 */
-	public void setProposalManager(TagProposalManager proposalManager) {
-		this.proposalManager = proposalManager;
-	}
 
 	@Override
 	public List<String> getTagsAsString(Identity identity, OLATResourceable ores, String subPath, String businessPath) {
 		if (ores.getResourceableId() == null || ores.getResourceableTypeName() == null){
 			// this ores seems not yet to be persisted, therefore has no key and as a result no tags!
-			return null;
+			return Collections.emptyList();
 		}
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select tag.tag from ").append(TagImpl.class.getName())
 			.append(" tag where tag.resId=:resId and tag.resName=:resName");
 		if(subPath != null) {
@@ -91,39 +76,35 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 		}
 		sb.append(" group by tag.tag");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("resId", ores.getResourceableId());
-		query.setString("resName", ores.getResourceableTypeName());
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("resName", ores.getResourceableTypeName());
 		if(subPath != null) {
-			query.setString("subPath", subPath);
+			query.setParameter("subPath", subPath);
 		}
 		if (identity != null){
-			query.setEntity("author", identity);
+			query.setParameter("author", identity);
 		}
 		if(businessPath != null) {
-			query.setString("businessPath", businessPath);
+			query.setParameter("businessPath", businessPath);
 		}
-		
-		@SuppressWarnings("unchecked")
-		List<String> tags = query.list();
-		return tags;
+		return query.getResultList();
 	}
 
 	@Override
 	public List<String> getUserTagsAsString(Identity identity){
 		if (identity == null) return Collections.emptyList();
-		StringBuilder sb = new StringBuilder();
+		
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select tag.tag from ").append(TagImpl.class.getName())
 			.append(" tag where tag.author=:author")
 			.append(" group by tag.tag")
 			.append(" order by count(tag.key) DESC");
-
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("author", identity);
-		
-		@SuppressWarnings("unchecked")
-		List<String> tags = query.list();
-		return tags;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("author", identity)
+				.getResultList();
 	}
 	
 	/**
@@ -132,61 +113,57 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 	@Override
 	public List<String> getUserTagsOfTypeAsString(Identity identity, String type) {
 		if (identity == null || !StringHelper.containsNonWhitespace(type)) return Collections.emptyList();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select tag.tag from ").append(TagImpl.class.getName())
 			.append(" tag where tag.author=:author and tag.resName=:resName")
 			.append(" group by tag.tag")
 			.append(" order by count(tag.key) DESC");
 
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("author", identity);
-		query.setString("resName", type);
-		@SuppressWarnings("unchecked")
-		List<String> tags = query.list();
-		return tags;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("author", identity)
+				.setParameter("resName", type)
+				.getResultList();
 	}
 
 	@Override
 	public List<Map<String, Integer>> getUserTagsWithFrequency(Identity identity){
-		if (identity == null) return null;
+		if (identity == null) return Collections.emptyList();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new map ( tag.tag as tag, count(*) as nr ) from ").append(TagImpl.class.getName())
 		.append(" tag where tag.author=:author and tag.tag=tag.tag ")
 		.append("Group by tag.tag order by count(*) DESC, tag.tag ASC");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("author", identity);
-		
-		@SuppressWarnings("unchecked")
-		List<Map<String, Integer>> tags = query.list();
-		return tags;				
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("author", identity).getResultList();		
 	}
 	
 	@Override
-	public HashSet<OLATResourceable> getResourcesByTags(List<Tag> tagList){
-		if (tagList == null || tagList.size() == 0) return null;
+	public Set<OLATResourceable> getResourcesByTags(List<Tag> tagList){
+		if (tagList == null || tagList.isEmpty()) return Collections.emptySet();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select tag from ").append(TagImpl.class.getName())
-		.append(" tag where tag in ( :tagList )");
+		  .append(" tag where tag in ( :tagList )");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setParameterList("tagList", tagList);
-		
-		@SuppressWarnings("unchecked")
-		List<Tag> resList = query.list();
-		HashSet<OLATResourceable> oresList = new HashSet<OLATResourceable>();
-		for (Iterator<Tag> iterator = resList.iterator(); iterator.hasNext();) {
-			Tag tag = iterator.next();
-			OLATResourceable ores = tag.getOLATResourceable();
-			oresList.add(ores);			
+		List<Tag> resList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tag.class)
+				.setParameter("tagList", tagList)
+				.getResultList();
+		Set<OLATResourceable> oresList = new HashSet<>();
+		for (Tag tag : resList) {
+			oresList.add(tag.getOLATResourceable());			
 		}		
 		return oresList;
 	}
 	
-	
 	@Override
 	public List<Tag> loadTagsForResource(OLATResourceable ores, String subPath, String businessPath) {
-		if (ores.getResourceableId() == null) return null;
+		if (ores.getResourceableId() == null) return Collections.emptyList();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select tag from ").append(TagImpl.class.getName())
 			.append(" tag where tag.resId=:resId and tag.resName=:resName");
@@ -197,19 +174,17 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 			sb.append(" and tag.businessPath=:businessPath");
 		}
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("resId", ores.getResourceableId());
-		query.setString("resName", ores.getResourceableTypeName());
+		TypedQuery<Tag> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Tag.class)
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("resName", ores.getResourceableTypeName());
 		if(subPath != null) {
-			query.setString("subPath", subPath);
+			query.setParameter("subPath", subPath);
 		}
 		if(businessPath != null) {
-			query.setString("businessPath", businessPath);
+			query.setParameter("businessPath", businessPath);
 		}
-		
-		@SuppressWarnings("unchecked")
-		List<Tag> tags = query.list();
-		return tags;
+		return query.getResultList();
 	}
 
 	@Override
@@ -219,7 +194,7 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 		}
 		if (tag.length() > 128){
 			// truncate
-			logWarn("tag was too long, truncated to 128 chars. Original: " + tag, null);
+			log.warn("tag was too long, truncated to 128 chars. Original: " + tag, null);
 			tag = tag.substring(0, 125) + "...";
 		}
 		TagImpl t = new TagImpl();
@@ -229,7 +204,7 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 		t.setResName(ores.getResourceableTypeName());
 		t.setBusinessPath(businessPath);
 		t.setResSubPath(subPath);
-		dbInstance.saveObject(t);
+		dbInstance.getCurrentEntityManager().persist(t);
 		return t;
 	}
 
@@ -266,14 +241,13 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 		}
 		
 		int tagsDeleted = query.executeUpdate();
-		logAudit("Deleted " + tagsDeleted + " tags of resource: " + ores.getResourceableTypeName() + " :: " + ores.getResourceableId());
+		log.audit("Deleted " + tagsDeleted + " tags of resource: " + ores.getResourceableTypeName() + " :: " + ores.getResourceableId());
 	}
 
 	@Override
 	public List<String> proposeTagsForInputText(String referenceText, boolean onlyExisting) {
 		if(proposalManager != null) {
-			List<String> proposedTags = proposalManager.proposeTagsForInputText(referenceText, onlyExisting);
-			return proposedTags;
+			return proposalManager.proposeTagsForInputText(referenceText, onlyExisting);
 		}
 		return Collections.emptyList();
 	}
