@@ -78,7 +78,11 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if (questionsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(REVIEW + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
+			String resName = REVIEW + "_" + taxonomyLevel.getIdentifier();
+			if(resName.length() > 50) {
+				resName = resName.substring(0, 50);
+			}
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					REVIEW + taxonomyLevel.getKey(), false);
