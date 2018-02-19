@@ -227,7 +227,8 @@ public class ICalServlet extends HttpServlet {
 			if(StringHelper.isLong(userName)) {
 				CalendarUserConfiguration config = calendarManager.getCalendarUserConfiguration(Long.parseLong(userName));
 				savedToken = config == null ? null : config.getToken();
-			} else {
+			} 
+			if(savedToken == null) {
 				savedToken = calendarManager.getCalendarToken(calendarType, calendarID, userName);
 			}
 			if (authToken == null || savedToken == null || !savedToken.equals(authToken)) {
