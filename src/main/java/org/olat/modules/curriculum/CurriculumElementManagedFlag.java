@@ -28,47 +28,49 @@ import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 16 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum CurriculumManagedFlag {
+public enum CurriculumElementManagedFlag {
 	
 	all,
 	 identifier(all),
 	 displayName(all),
 	 description(all),
 	 externalId(all),
+	 move(all),
+	 addChildren(all),
 	 delete(all);
 	
-	private CurriculumManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(CurriculumManagedFlag.class);
-	public static final CurriculumManagedFlag[] EMPTY_ARRAY = new CurriculumManagedFlag[0];
+	private CurriculumElementManagedFlag[] parents;
+	private static final OLog log = Tracing.createLoggerFor(CurriculumElementManagedFlag.class);
+	public static final CurriculumElementManagedFlag[] EMPTY_ARRAY = new CurriculumElementManagedFlag[0];
 	
 	private static CurriculumModule curriculumModule;
 
-	private CurriculumManagedFlag() {
+	private CurriculumElementManagedFlag() {
 		//
 	}
 	
-	private CurriculumManagedFlag(CurriculumManagedFlag... parents) {
+	private CurriculumElementManagedFlag(CurriculumElementManagedFlag... parents) {
 		if(parents == null) {
-			this.parents = new CurriculumManagedFlag[0];
+			this.parents = new CurriculumElementManagedFlag[0];
 		} else {
 			this.parents = parents;
 		}
 	}
 	
-	public static CurriculumManagedFlag[] toEnum(String flags) {
+	public static CurriculumElementManagedFlag[] toEnum(String flags) {
 		if(StringHelper.containsNonWhitespace(flags)) {
 			String[] flagArr = flags.split(",");
-			CurriculumManagedFlag[] flagEnums = new CurriculumManagedFlag[flagArr.length];
+			CurriculumElementManagedFlag[] flagEnums = new CurriculumElementManagedFlag[flagArr.length];
 	
 			int count = 0;
 			for(String flag:flagArr) {
 				if(StringHelper.containsNonWhitespace(flag)) {
 					try {
-						CurriculumManagedFlag flagEnum = valueOf(flag);
+						CurriculumElementManagedFlag flagEnum = valueOf(flag);
 						flagEnums[count++] = flagEnum;
 					} catch (Exception e) {
 						log.warn("Cannot parse this managed flag: " + flag, e);
@@ -84,10 +86,10 @@ public enum CurriculumManagedFlag {
 		return EMPTY_ARRAY;
 	}
 	
-	public static String toString(CurriculumManagedFlag... flags) {
+	public static String toString(CurriculumElementManagedFlag... flags) {
 		StringBuilder sb = new StringBuilder();
 		if(flags != null && flags.length > 0 && flags[0] != null) {
-			for(CurriculumManagedFlag flag:flags) {
+			for(CurriculumElementManagedFlag flag:flags) {
 				if(flag != null) {
 					if(sb.length() > 0) sb.append(",");
 					sb.append(flag.name());
@@ -97,17 +99,17 @@ public enum CurriculumManagedFlag {
 		return sb.length() == 0 ? null : sb.toString();
 	}
 	
-	public static boolean isManaged(Curriculum curriculum, CurriculumManagedFlag marker) {
+	public static boolean isManaged(CurriculumElement element, CurriculumElementManagedFlag marker) {
 		if(curriculumModule == null) {
 			curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		}
 		if(!curriculumModule.isCurriculumManaged()) {
 			return false;
 		}
-		return (curriculum != null && (contains(curriculum, marker) || contains(curriculum, marker.parents)));
+		return (element != null && (contains(element, marker) || contains(element, marker.parents)));
 	}
 	
-	public static boolean isManaged(CurriculumManagedFlag[] flags, CurriculumManagedFlag marker) {
+	public static boolean isManaged(CurriculumElementManagedFlag[] flags, CurriculumElementManagedFlag marker) {
 		if(curriculumModule == null) {
 			curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		}
@@ -118,17 +120,17 @@ public enum CurriculumManagedFlag {
 		return (flags != null && (contains(flags, marker) || contains(flags, marker.parents)));
 	}
 	
-	private static boolean contains(Curriculum curriculum, CurriculumManagedFlag... markers) {
-		if(curriculum == null) return false;
-		CurriculumManagedFlag[] flags = curriculum.getManagedFlags();
+	private static boolean contains(CurriculumElement element, CurriculumElementManagedFlag... markers) {
+		if(element == null) return false;
+		CurriculumElementManagedFlag[] flags = element.getManagedFlags();
 		return contains(flags, markers);
 	}
 
-	private static boolean contains(CurriculumManagedFlag[] flags, CurriculumManagedFlag... markers) {
+	private static boolean contains(CurriculumElementManagedFlag[] flags, CurriculumElementManagedFlag... markers) {
 		if(flags == null || flags.length == 0) return false;
 
-		for(CurriculumManagedFlag flag:flags) {
-			for(CurriculumManagedFlag marker:markers) {
+		for(CurriculumElementManagedFlag flag:flags) {
+			for(CurriculumElementManagedFlag marker:markers) {
 				if(flag.equals(marker)) {
 					return true;
 				}

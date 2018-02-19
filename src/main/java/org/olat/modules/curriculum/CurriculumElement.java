@@ -19,12 +19,39 @@
  */
 package org.olat.modules.curriculum;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
+
 /**
  * 
  * Initial date: 9 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElement {
+public interface CurriculumElement extends CurriculumElementRef, CreateInfo, ModifiedInfo {
+	
+	public String getIdentifier();
+	
+	public void setIdentifier(String identifier);
+	
+	public String getDisplayName();
+	
+	public void setDisplayName(String displayName);
+	
+	public String getDescription();
+	
+	public void setDescription(String description);
+	
+	public String getExternalId();
+	
+	public void setExternalId(String externalId);
+	
+	public CurriculumElementManagedFlag[] getManagedFlags();
+	
+	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
+	
+	public Curriculum getCurriculum();
+	
+	public CurriculumElement getParent();
 
 }

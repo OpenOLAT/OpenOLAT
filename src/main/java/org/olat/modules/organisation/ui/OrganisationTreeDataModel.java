@@ -40,16 +40,8 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<OrganisationRow> createCopyWithEmptyList() {
-		return new OrganisationTreeDataModel(getTableColumnModel());
-	}
-	
-	
-
-	@Override
 	public void filter(List<FlexiTableFilter> filters) {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
@@ -64,6 +56,10 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 		}
 	}
 	
+	@Override
+	public DefaultFlexiTableDataModel<OrganisationRow> createCopyWithEmptyList() {
+		return new OrganisationTreeDataModel(getTableColumnModel());
+	}
 	
 	public enum OrganisationCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

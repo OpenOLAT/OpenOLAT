@@ -47,5 +47,22 @@ public interface CurriculumService {
 	public Curriculum updateCurriculum(Curriculum curriculum);
 	
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
+	
+	
+	
+	public CurriculumElement createCurriculumElement(String identifier, String displayName,
+			CurriculumElementRef parent, Curriculum curriculum);
+	
+	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
+	
+	/**
+	 * Return all the elements of a curriculum, but flat.
+	 * 
+	 * @param curriculum The curriculum
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef element);
+	
+	public CurriculumElement updateCurriculumElement(CurriculumElement element);
 
 }

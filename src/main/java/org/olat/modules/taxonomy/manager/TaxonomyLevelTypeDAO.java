@@ -121,11 +121,11 @@ public class TaxonomyLevelTypeDAO {
 	public boolean hasLevels(TaxonomyLevelTypeRef type) {
 		String sb = "select level.key from ctaxonomylevel as level where level.type.key=:typeKey";
 		List<Long> levels = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class)
+			.createQuery(sb, Long.class)
 			.setParameter("typeKey", type.getKey())
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return levels != null && levels.size() > 0 && levels.get(0) != null && levels.get(0).intValue() > 0;
+		return levels != null && !levels.isEmpty() && levels.get(0) != null && levels.get(0).intValue() > 0;
 	}
 }

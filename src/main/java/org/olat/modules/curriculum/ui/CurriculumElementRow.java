@@ -20,39 +20,63 @@
 package org.olat.modules.curriculum.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 14 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumRow implements CurriculumRef {
+public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTableNode {
 	
-	private final Curriculum curriculum;
+	private CurriculumElementRow parent;
+	private final Long parentKey;
+	private final CurriculumElement element;
+	
 	private final FormLink toolsLink;
 	
-	public CurriculumRow(Curriculum curriculum, FormLink toolsLink) {
-		this.curriculum = curriculum;
+	public CurriculumElementRow(CurriculumElement element, FormLink toolsLink) {
+		this.element = element;
 		this.toolsLink = toolsLink;
+		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 	}
 	
 	@Override
 	public Long getKey() {
-		return curriculum.getKey();
-	}
-	
-	public String getDisplayName() {
-		return curriculum.getDisplayName();
+		return element.getKey();
 	}
 	
 	public String getIdentifier() {
-		return curriculum.getIdentifier();
+		return element.getIdentifier();
 	}
 	
+	public String getDisplayName() {
+		return element.getDisplayName();
+	}
+
+	@Override
+	public CurriculumElementRow getParent() {
+		return parent;
+	}
+	
+	public void setParent(CurriculumElementRow parent) {
+		this.parent = parent;
+	}
+	
+	public Long getParentKey() {
+		return parentKey;
+	}
+
+	@Override
+	public String getCrump() {
+		return element.getDisplayName();
+	}
+
 	public FormLink getTools() {
 		return toolsLink;
 	}
+
 }

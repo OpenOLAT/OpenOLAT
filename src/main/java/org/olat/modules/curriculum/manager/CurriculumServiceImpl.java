@@ -22,6 +22,8 @@ package org.olat.modules.curriculum.manager;
 import java.util.List;
 
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -40,6 +42,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 
 	@Override
 	public Curriculum createCurriculum(String identifier, String displayName, String description, Organisation organisation) {
@@ -60,4 +64,28 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params) {
 		return curriculumDao.search(params);
 	}
+
+	@Override
+	public CurriculumElement createCurriculumElement(String identifier, String displayName,
+			CurriculumElementRef parentRef, Curriculum curriculum) {
+		return curriculumElementDao.createCurriculumElement(identifier, displayName, parentRef, curriculum);
+	}
+
+	@Override
+	public CurriculumElement getCurriculumElement(CurriculumElementRef element) {
+		return curriculumElementDao.loadByKey(element.getKey());
+	}
+
+	@Override
+	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
+		return curriculumElementDao.update(element);
+	}
+
+	@Override
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum) {
+		return curriculumElementDao.loadElements(curriculum);
+	}
+	
+	
+	
 }

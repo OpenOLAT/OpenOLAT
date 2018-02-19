@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.organisation.ui;
+package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +40,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeN
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -47,70 +50,81 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.modules.organisation.Organisation;
-import org.olat.modules.organisation.OrganisationManagedFlag;
-import org.olat.modules.organisation.OrganisationService;
-import org.olat.modules.organisation.ui.OrganisationTreeDataModel.OrganisationCols;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 13 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrganisationTreeAdminController extends FormBasicController {
+public class CurriculumComposerController extends FormBasicController implements TooledController {
 	
+	private Link newElementButton;
 	private FlexiTableElement tableEl;
-	private OrganisationTreeDataModel model;
-	private FormLink createOrganisationButton;
+	private CurriculumComposerTableModel tableModel;
+	private TooledStackedPanel toolbarPanel;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private EditOrganisationController newOrganisationCtrl;
+	private EditCurriculumElementController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private EditCurriculumElementController newSubElementCtrl;
 	
-	private int counter = 0;
+	private int counter;
+	private final Curriculum curriculum;
 	
 	@Autowired
-	private OrganisationService organisationService;
+	private CurriculumService curriculumService;
 	
-	public OrganisationTreeAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "organisation_list");
-		
+	public CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			Curriculum curriculum) {
+		super(ureq, wControl, "manage_curriculum_structure");
+		this.toolbarPanel = toolbarPanel;
+		this.curriculum = curriculum;
 		initForm(ureq);
 		loadModel();
 	}
 
 	@Override
+	public void initTools() {
+		newElementButton = LinkFactory.createToolLink("add.curriculum.element", translate("add.curriculum.element"), this, "o_icon_add");
+		newElementButton.setElementCssClass("o_sel_add_curriculum_element");
+		toolbarPanel.addTool(newElementButton, Align.left);
+	}
+
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		createOrganisationButton = uifactory.addFormLink("create.organisation", formLayout, Link.BUTTON);
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.key, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key, "select"));
 
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer();
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.displayName, treeNodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier));
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(selectColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(OrganisationCols.tools);
+		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
 		toolsColumn.setExportable(false);
 		toolsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsColumn);
-
-		model = new OrganisationTreeDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		//tableEl.setSearchEnabled(true);
+		
+		tableModel = new CurriculumComposerTableModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setElementCssClass("o_organisations_listing");
-		tableEl.setEmtpyTableMessageKey("table.organisation.empty");
+		tableEl.setElementCssClass("o_curriculum_el_listing");
+		tableEl.setEmtpyTableMessageKey("table.curriculum.element.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
-		tableEl.setPageSize(24);
+		tableEl.setPageSize(40);
 	}
 
 	@Override
@@ -119,39 +133,37 @@ public class OrganisationTreeAdminController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<Organisation> organisations = organisationService.getOrganisations();
-		List<OrganisationRow> rows = new ArrayList<>(organisations.size());
-		Map<Long,OrganisationRow> organisationKeyToRows = new HashMap<>();
-		for(Organisation organisation:organisations) {
-			OrganisationRow row = forgeRow(organisation);
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(curriculum);
+		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
+		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
+		for(CurriculumElement element:elements) {
+			CurriculumElementRow row = forgeRow(element);
 			rows.add(row);
-			organisationKeyToRows.put(organisation.getKey(), row);
+			keyToRows.put(element.getKey(), row);
 		}
-		
 		//parent line
-		for(OrganisationRow row:rows) {
-			if(row.getParentOrganisationKey() != null) {
-				row.setParent(organisationKeyToRows.get(row.getParentOrganisationKey()));
+		for(CurriculumElementRow row:rows) {
+			if(row.getParentKey() != null) {
+				row.setParent(keyToRows.get(row.getParentKey()));
 			}
 		}
-		
 		Collections.sort(rows, new FlexiTreeNodeComparator());
-		model.setObjects(rows);
-		tableEl.reset(true, true, true);
+		
+		tableModel.setObjects(rows);
+		tableEl.reset(false, true, true);
 	}
 	
-	private OrganisationRow forgeRow(Organisation organisation) {
-		//tools
+	private CurriculumElementRow forgeRow(CurriculumElement element) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		OrganisationRow row = new OrganisationRow(organisation, toolsLink);
+		CurriculumElementRow row = new CurriculumElementRow(element, toolsLink);
 		toolsLink.setUserObject(row);
 		return row;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newOrganisationCtrl == source) {
+		if(newElementCtrl == source || newSubElementCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -164,9 +176,9 @@ public class OrganisationTreeAdminController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(newOrganisationCtrl);
+		removeAsListenerAndDispose(newElementCtrl);
 		removeAsListenerAndDispose(cmc);
-		newOrganisationCtrl = null;
+		newElementCtrl = null;
 		cmc = null;
 	}
 
@@ -176,52 +188,75 @@ public class OrganisationTreeAdminController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(newElementButton == source) {
+			doNewCurriculumElement(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(createOrganisationButton == source) {
-			doCreateOrganisation(ureq);
-		} else if (source instanceof FormLink) {
+		if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
-				OrganisationRow row = (OrganisationRow)link.getUserObject();
-				doOpenTools(ureq, row, link);
+				doOpenTools(ureq, (CurriculumElementRow)link.getUserObject(), link);
 			} 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doCreateOrganisation(UserRequest ureq) {
-		if(newOrganisationCtrl != null) return;
+	private void doNewCurriculumElement(UserRequest ureq) {
+		if(newElementCtrl != null) return;
 
-		newOrganisationCtrl = new EditOrganisationController(ureq, getWindowControl(), null);
-		listenTo(newOrganisationCtrl);
+		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), curriculum);
+		listenTo(newElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", newOrganisationCtrl.getInitialComponent(), true, translate("create.organisation"));
+		cmc = new CloseableModalController(getWindowControl(), "close", newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
-	private void doCreateOrganisation(UserRequest ureq, Organisation parentOrganisation) {
-		if(newOrganisationCtrl != null) return;
-
-		newOrganisationCtrl = new EditOrganisationController(ureq, getWindowControl(), null, parentOrganisation);
-		listenTo(newOrganisationCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", newOrganisationCtrl.getInitialComponent(), true, translate("create.organisation"));
-		listenTo(cmc);
-		cmc.activate();
+	private void doNewSubCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement parentElement = curriculumService.getCurriculumElement(row);
+		if(parentElement == null) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), curriculum);
+			newSubElementCtrl.setParentElement(parentElement);
+			listenTo(newSubElementCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", newSubElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
-	private void doOpenTools(UserRequest ureq, OrganisationRow row, FormLink link) {
+	private void doEditCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
+			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum);
+			listenTo(editCtrl);
+			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
+		}
+	}
+	
+	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
-		Organisation organisation = organisationService.getOrganisation(row);
-		if(organisation == null) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null) {
 			tableEl.reloadData();
-			showWarning("warning.organisation.deleted");
+			showWarning("warning.curriculum.element.deleted");
 		} else {
-			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, organisation);
+			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, element);
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -231,19 +266,6 @@ public class OrganisationTreeAdminController extends FormBasicController {
 		}
 	}
 	
-	private void doMove(UserRequest ureq, Organisation organisation) {
-		//TODO
-	}
-	
-	private void doSelectOrganisation(UserRequest ureq, Organisation organisation) {
-		//TODO
-	}
-	
-	private void doConfirmDelete(UserRequest ureq, OrganisationRow row) {
-		//TODO 
-	}
-	
-
 	private class ToolsController extends BasicController {
 		
 		private final VelocityContainer mainVC;
@@ -252,25 +274,26 @@ public class OrganisationTreeAdminController extends FormBasicController {
 		private Link newLink;
 		private Link deleteLink;
 		
-		private OrganisationRow row;
-		private Organisation organisation;
+		private CurriculumElementRow row;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, OrganisationRow row, Organisation organisation) {
+		public ToolsController(UserRequest ureq, WindowControl wControl,
+				CurriculumElementRow row, CurriculumElement element) {
 			super(ureq, wControl);
 			this.row = row;
-			this.organisation = organisation;
 			
 			mainVC = createVelocityContainer("tools");
 			
-			List<String> links = new ArrayList<>(6);
+			List<String> links = new ArrayList<>(4);
 			
 			//edit
 			editLink = addLink("edit", "o_icon_edit", links);
-			if(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.move)) {
-				moveLink = addLink("move.organisation.level", "o_icon_move", links);
+			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
+				moveLink = addLink("move.element", "o_icon_move", links);
 			}
-			newLink = addLink("add.organisation.under", "o_icon_levels", links);
-			if(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.delete)) {
+			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
+				newLink = addLink("add.element.under", "o_icon_levels", links);
+			}
+			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
 				links.add("-");
 				deleteLink = addLink("delete", "o_icon_delete_item", links);
 			}
@@ -296,16 +319,13 @@ public class OrganisationTreeAdminController extends FormBasicController {
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(editLink == source) {
 				close();
-				doSelectOrganisation(ureq, organisation);
-			} else if(moveLink == source) {
+				doEditCurriculumElement(ureq, row);
+			} else if(deleteLink == source || moveLink == source) {
 				close();
-				doMove(ureq, organisation);
+				showWarning("Not implemented");
 			} else if(newLink == source) {
 				close();
-				doCreateOrganisation(ureq, organisation);
-			} else if(deleteLink == source) {
-				close();
-				doConfirmDelete(ureq, row);
+				doNewSubCurriculumElement(ureq, row);
 			}
 		}
 		

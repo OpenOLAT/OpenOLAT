@@ -19,31 +19,52 @@
  */
 package org.olat.modules.curriculum;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Roles;
 
 /**
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 16 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementType extends CurriculumElementTypeRef, CreateInfo, ModifiedInfo {
+public class CurriculumSecurityCallbackFactory {
 	
-	public String getIdentifier();
+	private CurriculumSecurityCallbackFactory() {
+		//
+	}
 	
-	public void setIdentifier(String identifier);
+	public static final CurriculumSecurityCallback createCallback(Roles roles) {
+		boolean admin = roles.isCurriculumManager() || roles.isOLATAdmin();
+		return new DefaultCurriculumSecurityCallback(admin);
+	}
 	
-	public String getDisplayName();
-	
-	public void setDisplayName(String displayName);
-	
-	public String getDescription();
-	
-	public void setDescription(String description);
-	
-	public String getExternalId();
-	
-	public void setExternalId(String externalId);
+	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {
+		
+		private final boolean admin;
+		
+		public DefaultCurriculumSecurityCallback(boolean admin) {
+			this.admin = admin;
+		}
 
+		@Override
+		public boolean canNewCurriculum() {
+			return admin;
+		}
+
+		@Override
+		public boolean canEditCurriculum() {
+			return admin;
+		}
+
+		@Override
+		public boolean canNewCurriculumElement() {
+			return admin;
+		}
+
+		@Override
+		public boolean canEditCurriculumElement() {
+			return admin;
+		}
+		
+	}
 }

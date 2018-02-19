@@ -17,42 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
-
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumRef;
+package org.olat.modules.curriculum;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 14 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumRow implements CurriculumRef {
+public interface CurriculumElementTypeRef {
 	
-	private final Curriculum curriculum;
-	private final FormLink toolsLink;
-	
-	public CurriculumRow(Curriculum curriculum, FormLink toolsLink) {
-		this.curriculum = curriculum;
-		this.toolsLink = toolsLink;
-	}
-	
-	@Override
-	public Long getKey() {
-		return curriculum.getKey();
-	}
-	
-	public String getDisplayName() {
-		return curriculum.getDisplayName();
-	}
-	
-	public String getIdentifier() {
-		return curriculum.getIdentifier();
-	}
-	
-	public FormLink getTools() {
-		return toolsLink;
-	}
+	public Long getKey();
+
 }

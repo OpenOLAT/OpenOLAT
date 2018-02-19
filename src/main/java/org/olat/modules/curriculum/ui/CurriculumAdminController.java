@@ -59,13 +59,13 @@ public class CurriculumAdminController extends FormBasicController {
 		setFormDescription("admin.description");
 		
 		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("curriculumn.admin.enabled", formLayout, onKeys, onValues);
+		enableEl = uifactory.addCheckboxesHorizontal("curriculum.admin.enabled", formLayout, onKeys, onValues);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumModule.isEnabled()) {
 			enableEl.select(onKeys[0], true);
 		}
 		
-		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculumn.in.my.courses.enabled", formLayout, onKeys, onValues);
+		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculum.in.my.courses.enabled", formLayout, onKeys, onValues);
 		curriculumMyCoursesEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumModule.isEnabled()) {
 			curriculumMyCoursesEl.select(onKeys[0], true);

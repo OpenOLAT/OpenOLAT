@@ -19,62 +19,62 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 14 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumManagerDataModel extends DefaultFlexiTableDataModel<CurriculumRow>
-implements SortableFlexiTableDataModel<CurriculumRow> {
+public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow> {
 	
-	public CurriculumManagerDataModel(FlexiTableColumnModel columnsModel) {
-		super(columnsModel);
+	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel) {
+		super(columnModel);
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
+	public void filter(List<FlexiTableFilter> filters) {
 		//
 	}
-	
-	@Override
-	public Object getValueAt(int row, int col) {
-		CurriculumRow curriculum = getObject(row);
-		return getValueAt(curriculum, col);
-	}
 
 	@Override
-	public Object getValueAt(CurriculumRow row, int col) {
-		switch(CurriculumCols.values()[col]) {
-			case key: return row.getKey();
-			case displayName: return row.getDisplayName();
-			case identifier: return row.getIdentifier();
-			case tools: return row.getTools();
+	public Object getValueAt(int row, int col) {
+		CurriculumElementRow element = getObject(row);
+		switch(ElementCols.values()[col]) {
+			case key: return element.getKey();
+			case displayName: return element.getDisplayName();
+			case identifier: return element.getIdentifier();
+			case tools: return element.getTools();
 			default: return "ERROR";
 		}
 	}
-
+	
 	@Override
-	public CurriculumManagerDataModel createCopyWithEmptyList() {
-		return new CurriculumManagerDataModel(getTableColumnModel());
+	public CurriculumComposerTableModel createCopyWithEmptyList() {
+		return new CurriculumComposerTableModel(getTableColumnModel());
 	}
 	
-	public enum CurriculumCols implements FlexiSortableColumnDef {
+	public enum ElementCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.header.displayName"),
 		identifier("table.header.identifier"),
 		tools("table.header.tools");
 		
-		private final String i18nHeaderKey;
+		private final String i18nKey;
 		
-		private CurriculumCols(String i18nHeaderKey) {
-			this.i18nHeaderKey = i18nHeaderKey;
+		private ElementCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
 		}
 
 		@Override
@@ -85,11 +85,6 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 		@Override
 		public String sortKey() {
 			return name();
-		}
-
-		@Override
-		public String i18nHeaderKey() {
-			return i18nHeaderKey;
 		}
 	}
 }

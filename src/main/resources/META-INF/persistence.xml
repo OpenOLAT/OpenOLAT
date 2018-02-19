@@ -149,6 +149,9 @@
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestMarksImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumElementTypeToTypeImpl</class>
 		<class>org.olat.modules.fo.model.ForumImpl</class>
 		<class>org.olat.modules.fo.model.MessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageRefImpl</class>
