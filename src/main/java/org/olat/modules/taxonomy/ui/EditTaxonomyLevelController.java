@@ -211,20 +211,11 @@ public class EditTaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
-		displayNameEl.clearError();
-		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		identifierEl.clearError();
-		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
-			identifierEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
+		allOk &= validateTextfield(displayNameEl, 255);
+		allOk &= validateTextfield(identifierEl, 64);
+
 		sortOrderEl.clearError();
 		if(StringHelper.containsNonWhitespace(sortOrderEl.getValue())) {
 			try {
@@ -235,7 +226,22 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
+	}
+	
+	private boolean validateTextfield(TextElement textEl, int maxSize) {
+		boolean allOk = true;
+		
+		textEl.clearError();
+		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
+			identifierEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(identifierEl.getValue().length() >= maxSize) {
+			identifierEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override
