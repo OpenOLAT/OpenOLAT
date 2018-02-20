@@ -59,17 +59,9 @@ public class QuickViewMetadataController extends BasicController {
 			metadataCtrl = null;
 			metadataPanel.setContent(null);
 		} else {
-			initControllers(ureq, item);
-			metadataCtrl.setItem(item, metadataSecurityCallback);
-			metadataPanel.setContent(metadataCtrl.getInitialComponent());
-		}
-	}
-	
-	private void initControllers(UserRequest ureq, QuestionItem item) {
-		if (item == null) return;
-		
-		if (metadataCtrl == null) {
+			removeAsListenerAndDispose(metadataCtrl);
 			metadataCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, metadataSecurityCallback, false);
+			metadataPanel.setContent(metadataCtrl.getInitialComponent());
 		}
 	}
 
