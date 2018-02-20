@@ -718,7 +718,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void doDetails(UserRequest ureq) {
 		WindowControl bwControl = getSubWindowControl("Infos");
-		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), re, true);
+		
+		RepositoryEntry entry = loadRepositoryEntry();
+		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), entry, true);
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;
