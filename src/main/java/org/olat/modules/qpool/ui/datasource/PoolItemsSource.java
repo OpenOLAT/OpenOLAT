@@ -46,6 +46,10 @@ public class PoolItemsSource extends DefaultItemsSource {
 		getDefaultParams().setPoolKey(pool.getKey());
 	}
 	
+	public Pool getPool() {
+		return pool;
+	}
+
 	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {
 		qpoolService.removeItemsInPool(items, pool);
