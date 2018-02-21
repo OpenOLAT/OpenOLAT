@@ -26,7 +26,7 @@ import org.olat.core.logging.Tracing;
  * 
  * Thanks: https://gist.github.com/madan712/6651967
  * 
- * It's based of the InetAddresses clas from guava too and
+ * It's based of the InetAddresses class from guava too and
  * prevent a DNS lookup of java.net.InetAddress
  * 
  * Initial date: 18.12.2014<br>
@@ -48,6 +48,7 @@ public class IPUtils {
 	
 	public static boolean isValidRange(String ipWithMask, String address) {
 		boolean allOk = false;
+		ipWithMask = ipWithMask.trim();
 		int maskIndex = ipWithMask.indexOf('/');
 		if(maskIndex > 0) {
 			long bits = Long.parseLong(ipWithMask.substring(maskIndex + 1));
@@ -71,6 +72,9 @@ public class IPUtils {
 	 */
 	public static boolean isValidRange(String ipStart, String ipEnd, String ipToCheck) {
 		try {
+			ipStart = ipStart.trim();
+			ipEnd = ipEnd.trim();
+			ipToCheck = ipToCheck.trim();
 			long ipLo = ipToLong(textToNumericFormatV4(ipStart));
 			long ipHi = ipToLong(textToNumericFormatV4(ipEnd));
 			long ipToTest = ipToLong(textToNumericFormatV4(ipToCheck));
