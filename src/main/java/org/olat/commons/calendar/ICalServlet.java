@@ -90,7 +90,7 @@ public class ICalServlet extends HttpServlet {
 	private static final long serialVersionUID = -155266285395912535L;
 	private static final OLog log = Tracing.createLoggerFor(ICalServlet.class);
 	
-	private static final int TTL_HOURS = 6;
+	private static final int TTL_HOURS = 1;
 	private static final int cacheAge = 60 * 60 * TTL_HOURS;//6 Hours
 	private static final ConcurrentMap<String,VTimeZone> outlookVTimeZones = new ConcurrentHashMap<>();
 	
