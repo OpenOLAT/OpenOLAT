@@ -668,7 +668,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+		if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 			return assessmentTest.getTimeLimits().getMaximum().longValue();
 		}
 		return null;
