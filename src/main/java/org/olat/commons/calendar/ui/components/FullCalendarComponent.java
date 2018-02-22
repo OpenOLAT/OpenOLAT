@@ -55,6 +55,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	public static final String RECURRENCE_ID_SEP = "_xRecOOceRx_";
 	public static final String OCCURRENCE_ID_SEP = "_xOccOOccOx_";
 
+	private KalendarRenderWrapper alwaysVisibleCalendar;
 	private List<KalendarRenderWrapper> calendars = new ArrayList<>();
 	private Date currentDate;
 	private String viewName = "month";
@@ -130,6 +131,21 @@ public class FullCalendarComponent extends AbstractComponent {
 
 	public void setDifferentiateManagedEvents(boolean differentiateManagedEvents) {
 		this.differentiateManagedEvents = differentiateManagedEvents;
+	}
+
+	public KalendarRenderWrapper getAlwaysVisibleCalendar() {
+		return alwaysVisibleCalendar;
+	}
+
+	public void setAlwaysVisibleCalendar(KalendarRenderWrapper alwaysVisibleCalendar) {
+		this.alwaysVisibleCalendar = alwaysVisibleCalendar;
+	}
+	
+	public boolean isCalendarVisible(KalendarRenderWrapper calendar) {
+		return calendar.isVisible() ||
+				(alwaysVisibleCalendar != null
+					&& alwaysVisibleCalendar.getKalendar().getType().equals(calendar.getKalendar().getType())
+					&& alwaysVisibleCalendar.getKalendar().getCalendarID().equals(calendar.getKalendar().getCalendarID()));
 	}
 
 	/**

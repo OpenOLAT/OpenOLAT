@@ -84,6 +84,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private int counter;
 	private final boolean allowImport;
 	private List<KalendarRenderWrapper> calendars;
+	private final KalendarRenderWrapper alwaysVisibleKalendar;
 	
 	@Autowired
 	private CalendarManager calendarManager;
@@ -91,10 +92,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private ImportCalendarManager importCalendarManager;
 
 	public CalendarPersonalConfigurationController(UserRequest ureq, WindowControl wControl,
-			List<KalendarRenderWrapper> calendars, boolean allowImport) {
+			List<KalendarRenderWrapper> calendars, KalendarRenderWrapper alwaysVisibleKalendar, boolean allowImport) {
 		super(ureq, wControl, "configuration");
 		this.calendars = calendars;
 		this.allowImport = allowImport;
+		this.alwaysVisibleKalendar = alwaysVisibleKalendar;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
@@ -147,7 +149,12 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		row.setColorLink(colorLink);
 		
 		FormLink visibleLink = uifactory.addFormLink("vis_" + (++counter), "visible", "", null, null, Link.NONTRANSLATED);
-		enableDisableIcons(visibleLink, row.isVisible());
+		if(isAlwaysVisible(row)) {
+			enableDisableIcons(visibleLink, true);
+			visibleLink.setEnabled(false);
+		} else {
+			enableDisableIcons(visibleLink, row.isVisible());
+		}
 		visibleLink.setUserObject(row);
 		row.setVisibleLink(visibleLink);
 
@@ -165,6 +172,12 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
+	}
+	
+	private boolean isAlwaysVisible(CalendarPersonalConfigurationRow row) {
+		if(alwaysVisibleKalendar == null) return false;
+		return alwaysVisibleKalendar.getKalendar().getCalendarID().equals(row.getCalendarId())
+				&& alwaysVisibleKalendar.getKalendar().getType().equals(row.getCalendarType());
 	}
 	
 	private void enableDisableIcons(FormLink link, boolean enabled) {

@@ -117,7 +117,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("	  eventSources:[");
 		int count = 0;
 		for(KalendarRenderWrapper calWrapper: fcC.getCalendars()) {
-			if(calWrapper.isVisible()) {
+			if(fcC.isCalendarVisible(calWrapper)) {
 				String calId = calWrapper.getKalendar().getCalendarID();
 				String color = calWrapper.getCssClass();
 				if(StringHelper.containsNonWhitespace(color) && color.startsWith("o_cal_")) {

@@ -179,7 +179,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		formLayout.add("calendar", calendarEl);
 		calendarEl.setConfigurationEnabled(true);
 		calendarEl.setAggregatedFeedEnabled(true);
-		
+		calendarEl.setAlwaysVisibleCalendar(getCallerKalendarRenderWrapper());
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			if (!isGuest && !calendarWrappers.isEmpty()) {
@@ -239,7 +240,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		}
 	}
-	
+
+	@Override
 	public void setDifferentiateManagedEvent(boolean differentiate) {
 		calendarEl.setDifferentiateManagedEvents(differentiate);
 	}
@@ -501,6 +503,26 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		eventCalloutCtr.activate();
 	}
 	
+	private KalendarRenderWrapper getCallerKalendarRenderWrapper() {
+		if(callerOres == null || calendarWrappers == null) return null;
+		
+		String callerResId = callerOres.getResourceableId().toString();
+		for(KalendarRenderWrapper calendarWrapper:calendarWrappers) {
+			String calendarType = calendarWrapper.getKalendar().getType();
+			String calendarId = calendarWrapper.getKalendar().getCalendarID();
+			if(callerResId.equals(calendarId)) {
+				if((WeeklyCalendarController.CALLER_COLLAB.equals(caller) && CalendarManager.TYPE_GROUP.equals(calendarType))
+						|| (WeeklyCalendarController.CALLER_COURSE.equals(caller) && CalendarManager.TYPE_COURSE.equals(calendarType))) {
+					return calendarWrapper;
+				}
+			} else if((WeeklyCalendarController.CALLER_PROFILE.equals(caller) || WeeklyCalendarController.CALLER_HOME.equals(caller))
+				&& CalendarManager.TYPE_USER.equals(calendarType) && calendarId.equals(callerOres.getResourceableTypeName())) {
+					return calendarWrapper;
+			}
+		}
+		return null;
+	}
+	
 	private String getCallerCalendarUrl() {
 		if(callerOres == null) return null;
 		
@@ -558,8 +580,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(configurationCtrl);
 		
+		KalendarRenderWrapper alwaysVisibleKalendar = getCallerKalendarRenderWrapper();
 		List<KalendarRenderWrapper> allCalendars = new ArrayList<>(calendarWrappers);
-		configurationCtrl = new CalendarPersonalConfigurationController(ureq, getWindowControl(), allCalendars, allowImport);
+		configurationCtrl = new CalendarPersonalConfigurationController(ureq, getWindowControl(),
+				allCalendars, alwaysVisibleKalendar, allowImport);
 		listenTo(configurationCtrl);
 		
 		String title = translate("cal.configuration.list");
