@@ -465,26 +465,29 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		BusinessGroup group1 = businessGroupDao.createAndPersist(null, marker.toUpperCase(), "fingbg-1-desc", 0, 5, true, false, true, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(null, marker + "xxx", "fingbg-2-desc", 0, 5, true, false, true, false, false);
 		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "yyy" + marker.toUpperCase(), "fingbg-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group4 = businessGroupDao.createAndPersist(null, "yyyyZZZxxx", "fingbg-3-desc", 0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setName(marker);
 		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
-		Assert.assertEquals(2, groups.size() );
+		Assert.assertEquals(3, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
 		Assert.assertTrue(groups.contains(group2));
-		Assert.assertFalse(groups.contains(group3));
+		Assert.assertTrue(groups.contains(group3));
+		Assert.assertFalse(groups.contains(group4));
 
 		//check the same with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setName(marker);
 		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
-		Assert.assertEquals(2, groupViews.size() );
+		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
 		Assert.assertTrue(contains(groupViews, group2));
-		Assert.assertFalse(contains(groupViews, group3));
+		Assert.assertTrue(contains(groupViews, group3));
+		Assert.assertFalse(contains(groupViews, group4));
 	}
 
 	@Test
@@ -522,7 +525,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-4");
 		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "fingbg-1", marker.toUpperCase() + "-desc", 0, 5, true, false, true, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "fingbg-2", "desc-" + marker, 0, 5, true, false, true, false, false);
-		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-" + marker + "-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "fingbg-3", "desc-other-one", 0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check find business group
@@ -530,20 +533,19 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		params.setDescription(marker);
 		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
-		Assert.assertEquals(1, groups.size() );
+		Assert.assertEquals(2, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
-		Assert.assertFalse(groups.contains(group2));
+		Assert.assertTrue(groups.contains(group2));
 		Assert.assertFalse(groups.contains(group3));
 
 		//check find business group
-
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setDescription(marker);
 		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
-		Assert.assertEquals(1, groupViews.size() );
+		Assert.assertEquals(2, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
-		Assert.assertFalse(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group2));
 		Assert.assertFalse(contains(groupViews, group3));
 	}
 
@@ -642,10 +644,12 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser(marker);
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("ddao-2-" + marker);
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser(marker + "-ddao-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("something-else-ddao-4");
 
 		BusinessGroup group1 = businessGroupDao.createAndPersist(id1, "fingbgown-1", "fingbgown-1-desc", 0, 5, true, false, true, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(id2, "fingbgown-2", "fingbgown-2-desc", 0, 5, true, false, true, false, false);
 		BusinessGroup group3 = businessGroupDao.createAndPersist(id3, "fingbgown-3", "fingbgown-3-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group4 = businessGroupDao.createAndPersist(id4, "fingbgown-4", "fingbgown-4-desc", 0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
 
 		//check the same with the views
@@ -653,10 +657,11 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		searchParams.setOwnerName(marker);
 		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, id1);
 		Assert.assertNotNull(groupViews);
-		Assert.assertEquals(2, groupViews.size() );
+		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
-		Assert.assertFalse(contains(groupViews, group2));
+		Assert.assertTrue(contains(groupViews, group2));
 		Assert.assertTrue(contains(groupViews, group3));
+		Assert.assertFalse(contains(groupViews, group4));
 	}
 
 	@Test
