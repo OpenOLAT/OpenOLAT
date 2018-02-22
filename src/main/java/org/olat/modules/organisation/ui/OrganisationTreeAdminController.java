@@ -232,15 +232,15 @@ public class OrganisationTreeAdminController extends FormBasicController {
 	}
 	
 	private void doMove(UserRequest ureq, Organisation organisation) {
-		//TODO
+		getWindowControl().setWarning("Not implement"); //TODO
 	}
 	
 	private void doSelectOrganisation(UserRequest ureq, Organisation organisation) {
-		//TODO
+		getWindowControl().setWarning("Not implement"); //TODO
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, OrganisationRow row) {
-		//TODO 
+		getWindowControl().setWarning("Not implement"); //TODO
 	}
 	
 

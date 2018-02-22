@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
  */
 public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTableNode {
 	
+	private boolean hasChildren;
 	private CurriculumElementRow parent;
 	private final Long parentKey;
 	private final CurriculumElement element;
@@ -64,8 +65,15 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	public void setParent(CurriculumElementRow parent) {
 		this.parent = parent;
+		if(parent != null) {
+			parent.hasChildren = true;
+		}
 	}
 	
+	public boolean hasChildren() {
+		return hasChildren;
+	}
+
 	public Long getParentKey() {
 		return parentKey;
 	}

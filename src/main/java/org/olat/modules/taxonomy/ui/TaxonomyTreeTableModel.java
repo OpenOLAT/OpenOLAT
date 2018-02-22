@@ -106,7 +106,7 @@ implements FilterableFlexiTableModel  {
 		if(level.getNumberOfChildren() == 0) {
 			return false;
 		}
-		return super.hasChildren(row);//filter
+		return true;
 	}
 
 	@Override

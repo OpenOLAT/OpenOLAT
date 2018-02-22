@@ -43,6 +43,12 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 	public void filter(List<FlexiTableFilter> filters) {
 		//
 	}
+	
+	@Override
+	public boolean hasChildren(int row) {
+		OrganisationRow level = getObject(row);
+		return level.hasChildren();
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

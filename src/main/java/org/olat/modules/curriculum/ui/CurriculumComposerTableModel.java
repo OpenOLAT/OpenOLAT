@@ -44,6 +44,12 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 	}
 
 	@Override
+	public boolean hasChildren(int row) {
+		CurriculumElementRow element = getObject(row);
+		return element.hasChildren();
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		CurriculumElementRow element = getObject(row);
 		switch(ElementCols.values()[col]) {

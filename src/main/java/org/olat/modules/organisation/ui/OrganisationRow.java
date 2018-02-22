@@ -34,7 +34,8 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 	
 	private final Organisation organisation;
 	private final Long parentOrganisationKey;
-	
+
+	private boolean hasChildren;
 	private OrganisationRow parent;
 	private final FormLink toolsLink;
 	
@@ -56,6 +57,9 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 	
 	public void setParent(OrganisationRow parent) {
 		this.parent = parent;
+		if(parent != null) {
+			parent.hasChildren = true;
+		}
 	}
 
 	@Override
@@ -78,5 +82,8 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 	public FormLink getTools() {
 		return toolsLink;
 	}
-	
+
+	public boolean hasChildren() {
+		return hasChildren;
+	}	
 }
