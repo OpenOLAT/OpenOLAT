@@ -426,14 +426,14 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		String token = RandomStringUtils.randomAlphanumeric(6);
 		Kalendar calendar = new Kalendar(identity.getKey().toString(), CalendarManager.TYPE_USER_AGGREGATED);
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
-				token, false, false);
+				token, true, true);
 	}
 
 	@Override
 	public CalendarUserConfiguration createCalendarConfig(Identity identity, Kalendar calendar) {
 		String token = RandomStringUtils.randomAlphanumeric(6);
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
-				token, false, false);
+				token, true, true);
 	}
 
 	@Override

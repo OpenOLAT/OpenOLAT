@@ -35,9 +35,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
@@ -46,7 +44,6 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.shibboleth.manager.ShibbolethAutoAccessMethod;
-import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,9 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ACMethodManagerTest extends OlatTestCase {
-
-	private static Identity ident1;
-	private static boolean isInitialized = false;
 
 	@Autowired
 	private DB dbInstance;
@@ -81,9 +75,6 @@ public class ACMethodManagerTest extends OlatTestCase {
 
 	@Before
 	public void setUp() {
-		if(!isInitialized) {
-			ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
-		}
 		acMethodManager.enableMethod(ShibbolethAutoAccessMethod.class, true);
 	}
 
@@ -118,8 +109,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 
 	@Test
 	public void testStandardMethods() {
-		Roles roles = new Roles(false, false, false, true, false, false, false);
-		List<AccessMethod> methods = acMethodManager.getAvailableMethods(ident1, roles);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethods();
 		assertNotNull(methods);
 		assertTrue(methods.size() >= 2);
 

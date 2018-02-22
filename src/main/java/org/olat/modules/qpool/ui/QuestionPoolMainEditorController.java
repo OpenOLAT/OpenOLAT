@@ -156,7 +156,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	}
 	
 	private TreeNode getDelegate(TreeNode node) {
-		if (node.getDelegate() != null) {
+		if (node != null && node.getDelegate() != null) {
 			getDelegate(node.getDelegate());
 		}
 		return node;

@@ -70,6 +70,7 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.ACResourceInfoImpl;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
@@ -606,7 +607,18 @@ public class ACFrontendManager implements ACService {
 
 	@Override
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
-		return methodManager.getAvailableMethods(identity, roles);
+		List<AccessMethod> methods = methodManager.getAvailableMethods();
+		
+		List<AccessMethod> allowedMethods = new ArrayList<>();
+		for(AccessMethod method:methods) {
+			AccessMethodHandler handler = accessModule.getAccessMethodHandler(method.getType());
+			AccessMethodSecurityCallback secCallback = handler.getSecurityCallback(identity, roles);
+			if(secCallback.canUse()) {
+				allowedMethods.add(method);
+			}
+		}
+		
+		return methods;
 	}
 
 	@Override

@@ -145,12 +145,12 @@ public class MetadatasController extends BasicController {
 		}
 	}
 	
-	public void setItem(QuestionItem item, MetadataSecurityCallback metadataScurityCallback) {
+	public void setItem(QuestionItem item, MetadataSecurityCallback metadataSecurityCallback) {
 		this.item = item;
-		generalEditCtrl.setItem(item, metadataScurityCallback);
-		questionEditCtrl.setItem(item, metadataScurityCallback);
-		rightsEditCtrl.setItem(item, metadataScurityCallback);
-		technicalEditCtrl.setItem(item, metadataScurityCallback);
+		generalEditCtrl.setItem(item, metadataSecurityCallback);
+		questionEditCtrl.setItem(item, metadataSecurityCallback);
+		rightsEditCtrl.setItem(item, metadataSecurityCallback);
+		technicalEditCtrl.setItem(item, metadataSecurityCallback);
 		if (ratingMetadataCtrl != null) {
 			ratingMetadataCtrl.setItem(item);
 		}

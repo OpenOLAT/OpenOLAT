@@ -26,7 +26,6 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -79,7 +78,7 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 					ureq.getIdentity(),
 					ureq.getUserSession().getRoles(),
 					pool);
-			source.setRemoveEnabled(isPoolAdmin(ureq, pool));
+			source.setRemoveEnabled(isRemoveEnabled(ureq, pool));
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
@@ -90,15 +89,9 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 		return questionsCtrl;
 	}
 	
-	private boolean isPoolAdmin(UserRequest ureq, Pool pool) {
+	private boolean isRemoveEnabled(UserRequest ureq, Pool pool) {
 		Identity identity = ureq.getIdentity();
-		Roles roles = ureq.getUserSession().getRoles();
-		return roles != null &&
-				(  roles.isOLATAdmin()
-				|| roles.isPoolAdmin()
-				|| pool.isPublicPool()
-				|| qpoolService.isOwner(identity, pool)
-				);
+		return pool.isPublicPool() || qpoolService.isOwner(identity, pool);
 	}
 
 }
