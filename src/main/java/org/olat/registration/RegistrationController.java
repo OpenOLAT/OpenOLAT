@@ -303,7 +303,7 @@ public class RegistrationController extends BasicController implements Activatea
 				};
 
 				boolean isMailSent = false;
-				if (UserManager.getInstance().isEmailAllowed(email)) {
+				if (registrationManager.isRegistrationPending(email) || UserManager.getInstance().isEmailAllowed(email)) {
 					TemporaryKey tk = null;
 					if (userModule.isEmailUnique()) {
 						tk = registrationManager.loadTemporaryKeyByEmail(email);
