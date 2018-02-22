@@ -38,6 +38,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
@@ -58,12 +60,14 @@ public class HomeCalendarController extends BasicController implements Activatea
 		super(ureq, windowControl);
 		this.userSession = ureq.getUserSession();
 		
-		userSession.getSingleUserEventCenter().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
+		Identity identity = ureq.getIdentity();
+		userSession.getSingleUserEventCenter().registerFor(this, identity, OresHelper.lookupType(CalendarManager.class));
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, OresHelper.lookupType(CalendarManager.class));
 		
+		OLATResourceable callerOres = OresHelper.createOLATResourceableInstanceWithoutCheck(identity.getName(), identity.getKey());
 		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, windowControl);
 		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars,
-				WeeklyCalendarController.CALLER_HOME, null, true);
+				WeeklyCalendarController.CALLER_HOME, callerOres, true);
 		listenTo(calendarController);
 
 		putInitialPanel(calendarController.getInitialComponent());
