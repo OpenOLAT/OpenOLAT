@@ -370,18 +370,21 @@ public class RegistrationManager {
 				}
 			}
 		}
-		tk = loadTemporaryKeyByAction(RegistrationManager.REGISTRATION);
-		if (tk != null) {
-			for (TemporaryKey temporaryKey : tk) {
+		return isRegistrationPending(emailAddress);
+	}
+
+	public boolean isRegistrationPending(String emailAddress) {
+		List<TemporaryKey> temporaryKeys = loadTemporaryKeyByAction(RegistrationManager.REGISTRATION);
+		if (temporaryKeys != null) {
+			for (TemporaryKey temporaryKey : temporaryKeys) {
 				if (emailAddress.equalsIgnoreCase(temporaryKey.getEmailAddress())) {
 					return true;
 				}
 			}
 		}
-		
 		return false;
 	}
-
+	
 	/**
 	 * Evaluates whether the given identity needs to accept a disclaimer before
 	 * logging in or not.
