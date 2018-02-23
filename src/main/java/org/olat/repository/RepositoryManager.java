@@ -693,7 +693,7 @@ public class RepositoryManager {
 		//fetch the values
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
-			updatedRe.getLifecycle().getKey();
+			updatedRe.getLifecycle().getCreationDate();
 		}
 
 		dbInstance.commit();
@@ -710,7 +710,7 @@ public class RepositoryManager {
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
-			updatedRe.getLifecycle().getKey();
+			updatedRe.getLifecycle().getCreationDate();
 		}
 		dbInstance.commit();
 		return updatedRe;
@@ -840,7 +840,7 @@ public class RepositoryManager {
 		//fetch the values
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
-			updatedRe.getLifecycle().getKey();
+			updatedRe.getLifecycle().getCreationDate();
 		}
 
 		dbInstance.commit();
