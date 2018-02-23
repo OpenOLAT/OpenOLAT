@@ -443,7 +443,8 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	
 	public void removeProperty(String propertyName, boolean saveConfiguration) {
 		synchronized (configuredProperties) { // make read/write save in VM
-			configuredProperties.remove(propertyName);
+			Object removedProperty = configuredProperties.remove(propertyName);
+			propertiesDirty |= removedProperty != null;
 			if (saveConfiguration) {
 				savePropertiesAndFireChangedEvent();
 			}
