@@ -48,7 +48,7 @@ public class OpenXMLWorkbookStyles {
 	private List<CellStyle> cellXfs = new ArrayList<>();
 	
 	private final Font standardFont, boldFont;
-	private final Fill noneFile, gray125Fill, correctFill;
+	private final Fill noneFile, gray125Fill, lightGrayFill, correctFill;
 	private final Border noBorder, borderRight;
 	
 	/**
@@ -62,6 +62,7 @@ public class OpenXMLWorkbookStyles {
 	private final CellStyle headerStyle;
 	private final CellStyle correctStyle;
 	private final CellStyle percentStyle;
+	private final CellStyle lightGrayStyle;
 
 	public OpenXMLWorkbookStyles() {
 		standardFont = new Font(fonts.size(), "12", "1", "Calibri", "2", "minor", FontStyle.none);
@@ -73,6 +74,8 @@ public class OpenXMLWorkbookStyles {
 		fills.add(noneFile);
 		gray125Fill = new Fill(fills.size(), "gray125");
 		fills.add(gray125Fill);
+		lightGrayFill = new Fill(fills.size(), "solid", "EFEFEFEF", "64");
+		fills.add(lightGrayFill);
 		correctFill = new Fill(fills.size(), "solid", "FFC3FFC0", "64");
 		fills.add(correctFill);
 		
@@ -97,6 +100,8 @@ public class OpenXMLWorkbookStyles {
 		cellXfs.add(correctStyle);
 		percentStyle = new CellStyle(cellXfs.size(), PERCENT_FORMAT, standardFont, noneFile, borderRight, null, "1");
 		cellXfs.add(percentStyle);
+		lightGrayStyle = new CellStyle(cellXfs.size(), "0", standardFont, lightGrayFill, borderRight, null, null);
+		cellXfs.add(lightGrayStyle);
 	}
 	
 	public CellStyle getBorderRightStyle() {
@@ -133,6 +138,10 @@ public class OpenXMLWorkbookStyles {
 	
 	public CellStyle getPercentStyle() {
 		return percentStyle;
+	}
+	
+	public CellStyle getLightGrayStyle() {
+		return lightGrayStyle;
 	}
 	
 	public List<Font> getFonts() {

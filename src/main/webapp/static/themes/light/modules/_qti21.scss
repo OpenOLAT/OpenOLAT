@@ -103,7 +103,7 @@ ul.sessionControl {
 	}
 }
 
-.o_gap_container_help, .o_items_container_help {
+.o_item_container_help, .o_items_container_help {
 	font-size: 90%;
 	font-style: italic;
 	color: $gray-light;
@@ -212,6 +212,7 @@ img.o_hotspot_responsive[usemap] {
 	textarea {
 		/* fix missing resize handle in Safe Exam Browser */
 		resize: vertical !important;
+		font-family: $font-family-monospace;
 	}
 	
 	.o_qti_essay_last_save {
@@ -221,6 +222,11 @@ img.o_hotspot_responsive[usemap] {
 		text-align:right;
 	}
 }
+
+.o_qti_items .extendedTextInteraction {
+	font-family: $font-family-monospace;
+}
+
 
 #o_qti_run_title {
 	 margin: 0 15px 0.5em 15px;
@@ -1044,8 +1050,13 @@ tr.choiceinteraction {
 		font-size: 110%;
 		font-weight: bold;
 		color: $text-muted;
-		margin-bottom: $padding-small-horizontal;
+		margin-bottom: 0;
 		border-bottom: 0;
+	}
+	
+	div.o_item_container_help {
+		margin: 0;
+		padding: 0;
 	}
 	
 	textarea {

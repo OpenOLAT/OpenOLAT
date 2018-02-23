@@ -105,6 +105,14 @@ public class FullCalendarElement extends FormItemImpl {
 		component.addCalendar(calendarWrapper);
 	}
 	
+	public KalendarRenderWrapper getAlwaysVisibleCalendar() {
+		return component.getAlwaysVisibleCalendar();
+	}
+
+	public void setAlwaysVisibleCalendar(KalendarRenderWrapper alwaysVisibleCalendar) {
+		component.setAlwaysVisibleCalendar(alwaysVisibleCalendar);
+	}
+	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
 	 */

@@ -240,8 +240,10 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		convertToZipEntry(zout, exportFolderName + "/index.html", usersHTML);
 		
 		//Copy resource files or file trees to export file tree 
-		File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
-		fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
+		File theme = new File(WebappHelper.getContextRealPath("/static/themes/light/theme.css"));
+		ZipUtil.addFileToZip(exportFolderName + "/css/offline/qti/theme.css", theme, zout);
+		File themeMap = new File(WebappHelper.getContextRealPath("/static/themes/light/theme.css.map"));
+		ZipUtil.addFileToZip(exportFolderName + "/css/offline/qti/theme.css.map", themeMap, zout);
 		
 		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
 		fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");

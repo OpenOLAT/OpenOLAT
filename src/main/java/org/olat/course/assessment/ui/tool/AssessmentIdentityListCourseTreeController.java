@@ -158,8 +158,8 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
-			if(courseNode instanceof GTACourseNode) {
+		if(courseNode instanceof AssessableCourseNode) {
+			if(((AssessableCourseNode)courseNode).isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 				
 				List<BusinessGroup> coachedGroups;
@@ -170,8 +170,11 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 				} else {
 					coachedGroups = assessmentCallback.getCoachedGroups();
 				}
-				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, getWindowControl(), stackPanel,
+				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bwControl, stackPanel,
 						coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
+			} else {
+				currentCtrl = ((AssessableCourseNode)courseNode).getIdentityListController(ureq, bwControl, stackPanel,
+						courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 			}
 		} else {
 			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel,
