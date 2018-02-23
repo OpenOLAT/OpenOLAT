@@ -892,6 +892,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	private void renderComment(StringOutput sb, String comment, boolean disabled, Translator translator) {
 		sb.append("<fieldset class='o_candidatecomment'>")
 		  .append("<legend>").append(translator.translate("assessment.comment.legend")).append("</legend>")
+		  .append("<div class='o_item_container_help'><p><i class='o_icon o_icon_help'> </i> ").append(translator.translate("assessment.comment.legend.help")).append("</p></div>")
 		  .append("<input name='qtiworks_comment_presented' type='hidden' value='true' />")
 		  .append("<textarea name='qtiworks_comment'").append(" disabled=\"disabled\"", disabled).append(" rows='4' class='form-control'>");
 		if(StringHelper.containsNonWhitespace(comment)) {

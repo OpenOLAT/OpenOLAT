@@ -103,7 +103,7 @@ ul.sessionControl {
 	}
 }
 
-.o_gap_container_help, .o_items_container_help {
+.o_item_container_help, .o_items_container_help {
 	font-size: 90%;
 	font-style: italic;
 	color: $gray-light;
@@ -1050,8 +1050,13 @@ tr.choiceinteraction {
 		font-size: 110%;
 		font-weight: bold;
 		color: $text-muted;
-		margin-bottom: $padding-small-horizontal;
+		margin-bottom: 0;
 		border-bottom: 0;
+	}
+	
+	div.o_item_container_help {
+		margin: 0;
+		padding: 0;
 	}
 	
 	textarea {
