@@ -212,6 +212,7 @@ img.o_hotspot_responsive[usemap] {
 	textarea {
 		/* fix missing resize handle in Safe Exam Browser */
 		resize: vertical !important;
+		font-family: $font-family-monospace;
 	}
 	
 	.o_qti_essay_last_save {
@@ -221,6 +222,11 @@ img.o_hotspot_responsive[usemap] {
 		text-align:right;
 	}
 }
+
+.o_qti_items .extendedTextInteraction {
+	font-family: $font-family-monospace;
+}
+
 
 #o_qti_run_title {
 	 margin: 0 15px 0.5em 15px;

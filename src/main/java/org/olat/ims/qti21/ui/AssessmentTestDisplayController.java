@@ -1869,7 +1869,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				String[] jss = new String[] {
 						"js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js",
 						"js/jquery/qti/jquery.qtiTimer.js",
-						"js/jquery/qti/jquery.qtiAutosave.js",
+						"js/jquery/qti/jquery.qtiAutosave.js"
 				};
 				JSAndCSSComponent js = new JSAndCSSComponent("js", jss, null);
 				layoutCont.put("js", js);
