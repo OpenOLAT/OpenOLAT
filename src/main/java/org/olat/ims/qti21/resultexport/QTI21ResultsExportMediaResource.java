@@ -167,14 +167,12 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 
-		try { 			
-			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			exportTestResults(zout);
 			for(RepositoryEntry testEntry:testEntries) {
 				exportExcelResults(testEntry, zout);
 			}
-			zout.close();
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
 		}
