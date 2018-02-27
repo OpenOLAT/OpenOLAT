@@ -127,12 +127,11 @@ public class AdminModule extends AbstractSpringModule {
 		PropertyManager pm = PropertyManager.getInstance();
 		Property p = pm.findProperty(null, null, null, AdminModule.SYSTEM_PROPERTY_CATEGORY, tokenPropertyName);
 		String token = (p == null ? "" : p.getStringValue());
-		if (token.matches(submittedToken)) { // limit access to token
+		if (token.equals(submittedToken)) { // limit access to token
 			return true;
-		} else {
-			log.audit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
-			return false;
 		}
+		log.audit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
+		return false;
 	}
 	
 	/**
