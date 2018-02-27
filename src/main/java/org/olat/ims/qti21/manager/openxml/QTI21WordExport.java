@@ -39,7 +39,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -183,19 +182,16 @@ public class QTI21WordExport implements MediaResource {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+		
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		String label = assessmentTest.getTitle();
+		String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
 
-		ZipOutputStream zout = null;
-		try {
-			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-			
-			String label = assessmentTest.getTitle();
-			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
+		String file = secureLabel + ".zip";
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
+		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 
-			String file = secureLabel + ".zip";
-			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
-			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
-			
-			zout = new ZipOutputStream(hres.getOutputStream());
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 
 			ZipEntry test = new ZipEntry(secureLabel + ".docx");
@@ -212,7 +208,6 @@ public class QTI21WordExport implements MediaResource {
 			log.error("", e);
 		} finally {
 			latch.countDown();
-			IOUtils.closeQuietly(zout);
 		}
 	}
 	
