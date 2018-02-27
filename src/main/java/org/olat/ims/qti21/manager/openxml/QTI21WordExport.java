@@ -502,7 +502,10 @@ public class QTI21WordExport implements MediaResource {
 					endSimpleChoice();
 					break;
 				case "textentryinteraction":
-					//auto closing tag
+					flushText();
+					Style[] currentStyles = popStyle(tag);
+					unsetTextPreferences(currentStyles);
+					break;
 				case "extendedtextinteraction":
 					//auto closing tag
 				case "hotspotinteraction":
