@@ -696,9 +696,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		Boolean passed = null;
 		if(cutValue != null) {
 			boolean aboveCutValue = score >= cutValue.floatValue();
-			passed = new Boolean(aboveCutValue);
+			passed = Boolean.valueOf(aboveCutValue);
 		}
-		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), passed);
+		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), passed);
 		
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
 		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
