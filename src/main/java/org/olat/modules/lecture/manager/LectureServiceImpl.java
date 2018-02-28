@@ -174,8 +174,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public RepositoryEntryLectureConfiguration updateRepositoryEntryLectureConfiguration(RepositoryEntryLectureConfiguration config) {
-		RepositoryEntryLectureConfiguration updatedConfig = lectureConfigurationDao.update(config);
-		return updatedConfig;
+		return lectureConfigurationDao.update(config);
 	}
 
 	@Override
@@ -422,6 +421,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		return new ArrayList<>(participants);
 	}
 	
+	@Override
 	public List<Identity> syncParticipantSummaries(LectureBlock lectureBlock) {
 		RepositoryEntry entry = lectureBlock.getEntry();
 		Date now = new Date();
@@ -841,8 +841,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<LectureBlockAndRollCall> getParticipantLectureBlocks(RepositoryEntryRef entry, IdentityRef participant) {
-		return lectureBlockRollCallDao.getParticipantLectureBlockAndRollCalls(entry, participant);
+	public List<LectureBlockAndRollCall> getParticipantLectureBlocks(RepositoryEntryRef entry, IdentityRef participant,
+			String teacherSeaparator) {
+		return lectureBlockRollCallDao.getParticipantLectureBlockAndRollCalls(entry, participant, teacherSeaparator);
 	}
 
 	@Override

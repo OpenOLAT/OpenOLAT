@@ -202,8 +202,9 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private void loadModel() {
 		Date now = new Date();
 		Formatter formatter = Formatter.getInstance(getLocale());
-		
-		List<LectureBlockAndRollCall> rollCalls = lectureService.getParticipantLectureBlocks(entry, assessedIdentity);
+
+		String separator = translate("user.fullname.separator");
+		List<LectureBlockAndRollCall> rollCalls = lectureService.getParticipantLectureBlocks(entry, assessedIdentity, separator);
 		List<LectureBlockAuditLog> sendAppealLogs = lectureService.getAuditLog(entry, assessedIdentity, LectureBlockAuditLog.Action.sendAppeal);
 		Map<Long, Date> appealDates = new HashMap<>();
 		for(LectureBlockAuditLog sendAppealLog:sendAppealLogs) {
@@ -385,15 +386,12 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator printControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-				Controller printCtrl = new ParticipantLectureBlocksController(lureq, lwControl, entry, assessedIdentity, false, false);
-				listenTo(printCtrl);
-				return printCtrl;
-			}					
-		};
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
+			Controller printCtrl = new ParticipantLectureBlocksController(lureq, lwControl, entry, assessedIdentity, false, false);
+			listenTo(printCtrl);
+			return printCtrl;
+		};				
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
