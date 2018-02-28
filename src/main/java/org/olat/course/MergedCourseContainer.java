@@ -35,11 +35,9 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -308,7 +306,7 @@ public class MergedCourseContainer extends MergeSource {
 				// , then do recursion for all children ...
 				addFoldersForAdmin(course, courseNodeContainer, child);
 				// ... but only add this container if it contains any children with at least one BC course node
-				if (courseNodeContainer.getItems().size() > 0) {
+				if (!courseNodeContainer.getItems().isEmpty()) {
 					nodesContainer.addContainer(courseNodeContainer);
 				}
 			}
@@ -325,12 +323,7 @@ public class MergedCourseContainer extends MergeSource {
 	 */
 	private String getFolderName(MergeSource nodesContainer, CourseNode bcNode, String folderName) {
 		// add node ident if multiple files have same name
-		if (nodesContainer.getItems(new VFSItemFilter() {
-			@Override
-			public boolean accept(VFSItem vfsItem) {
-				return (bcNode.getShortTitle().equals(RequestUtil.normalizeFilename(bcNode.getShortTitle())));
-			}
-		}).size() > 0) {
+		if (!nodesContainer.getItems(vfsItem -> vfsItem.getName().equals(RequestUtil.normalizeFilename(bcNode.getShortTitle()))).isEmpty()) {
 			folderName = folderName + " (" + bcNode.getIdent() + ")";
 		}
 		return folderName;
