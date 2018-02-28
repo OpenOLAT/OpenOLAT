@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
@@ -138,7 +139,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		boolean readOnly = isReadOnly();
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("readOnly", new Boolean(readOnly));
+			layoutCont.contextPut("readOnly", Boolean.valueOf(readOnly));
 			if(dueDate != null) {
 				layoutCont.contextPut("dueDate", dueDate);
 				layoutCont.contextPut("in-due-date", isPanelOpen(ureq, "due-date", true));
@@ -290,7 +291,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
 			if(wrapper != null) {
 				boolean checked = boxEl.isAtLeastSelected(1);
-				doCheck(ureq, wrapper, checked);
+				if(doCheck(ureq, wrapper, checked)) {
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			}
 		} else if("ONCLICK".equals(event.getCommand())) {
 			String cmd = ureq.getParameter("fcid");
@@ -302,7 +305,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doCheck(UserRequest ureq, CheckboxWrapper wrapper, boolean checked) {
+	private boolean doCheck(UserRequest ureq, CheckboxWrapper wrapper, boolean checked) {
 		DBCheckbox theOne;
 		if(wrapper.getDbCheckbox() == null) {
 			String uuid = wrapper.getCheckbox().getCheckboxId();
@@ -311,6 +314,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			theOne = wrapper.getDbCheckbox();
 		}
 		
+		boolean grantPoints = false;
 		if(theOne == null) {
 			//only warning because this happen in course preview
 			logWarn("A checkbox is missing: " + courseOres + " / " + courseNode.getIdent(), null);
@@ -321,17 +325,23 @@ public class CheckListRunController extends FormBasicController implements Contr
 			} else {
 				score = 0f;
 			}
-			checkboxManager.check(theOne, getIdentity(), score, new Boolean(checked));
+			if(wrapper.getCheckbox().getPoints() != null) {
+				grantPoints = true;
+			}
+			
+			checkboxManager.check(theOne, getIdentity(), score, Boolean.valueOf(checked));
 			//make sure all results is on the database before calculating some scores
-			//manager commit already DBFactory.getInstance().commit();
+			//manager commit already 
 			
 			courseNode.updateScoreEvaluation(getIdentity(), userCourseEnv, getIdentity(), Role.user);
 			
 			Checkbox checkbox = wrapper.getCheckbox();
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
+			
 		}
 		
 		exposeUserDataToVC(ureq, flc);
+		return grantPoints;
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {
@@ -353,9 +363,9 @@ public class CheckListRunController extends FormBasicController implements Contr
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(CheckListRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+			guiPrefs.putAndSave(CheckListRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
-		flc.getFormItemComponent().contextPut("in-" + panelId, new Boolean(newValue));
+		flc.getFormItemComponent().contextPut("in-" + panelId, Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {
