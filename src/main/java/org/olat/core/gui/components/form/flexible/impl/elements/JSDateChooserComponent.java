@@ -35,9 +35,6 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for JSDateChooserComponent
- * 
  * <P>
  * Initial Date: 19.01.2007 <br>
  * 
@@ -45,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
  */
 class JSDateChooserComponent extends FormBaseComponentImpl {
 	
-	private final static ComponentRenderer RENDERER = new JSDateChooserRenderer();
+	private static final ComponentRenderer RENDERER = new JSDateChooserRenderer();
 	private JSDateChooser element;
 
 	public JSDateChooserComponent(JSDateChooser element) {
@@ -103,5 +100,9 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 
 	public String getExampleDateString() {
 		return element.getExampleDateString();
+	}
+	
+	public JSDateChooser getFormItem() {
+		return element;
 	}
 }

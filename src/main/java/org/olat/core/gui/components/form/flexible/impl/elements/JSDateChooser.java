@@ -42,8 +42,6 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for JSDateChooser
  * <P>
  * Initial Date: 19.01.2007 <br>
  * 
@@ -65,7 +63,9 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private boolean dateChooserTimeEnabled;
 	private String forValidDateErrorKey;
 	private boolean checkForValidDate;
-	private int minute, hour;
+	private int minute;
+	private int hour;
+	private DateChooser defaultDateValue;
 	
 	public JSDateChooser(String name, Locale locale) {
 		this(null, name, null, locale);
@@ -109,6 +109,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 
 	TextElementComponent getTextElementComponent() {
 		return dateComponent;
+	}
+
+	@Override
+	public DateChooser getDefaultValue() {
+		return defaultDateValue;
+	}
+
+	@Override
+	public void setDefaultValue(DateChooser dateChooser) {
+		defaultDateValue = dateChooser;
 	}
 
 	/**
