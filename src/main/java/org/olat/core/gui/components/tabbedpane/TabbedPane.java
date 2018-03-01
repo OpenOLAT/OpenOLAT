@@ -126,7 +126,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 	
 	public OLATResourceable getTabResource() {
-		return OresHelper.createOLATResourceableInstance("tab", new Long(selectedPane));
+		return OresHelper.createOLATResourceableInstance("tab", Long.valueOf(selectedPane));
 	}
 	
 	public void addToHistory(UserRequest ureq, WindowControl wControl) {
@@ -199,7 +199,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	
 	public int indexOfTab(String displayName) {
 		for(int i=tabPanes.size(); i-->0; ) {
-			if(displayName.equals(tabPanes.get(i).getComponent())) {
+			if(displayName.equals(tabPanes.get(i).getDisplayName())) {
 				return i;
 			}
 		}
@@ -304,6 +304,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @deprecated
 	 * @param displayName
 	 */
+	@Deprecated
 	public void setSelectedPane(UserRequest ureq, String displayName) {
 		if (displayName == null) return;
 		int pos = indexOfTab(displayName);
@@ -417,7 +418,6 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		public void setController(Controller controller) {
 			if(controller == null) {
-				controller = null;
 				component = null;
 			} else {
 				this.controller = controller;
