@@ -614,7 +614,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 */
 	//for StatusDescription.WARNING
 	protected List<StatusDescription> isConfigValidWithTranslator(CourseEditorEnv cev, String translatorStr, List<ConditionExpression> condExprs) {
-		List<StatusDescription> condExprsStatusDescs = new ArrayList<StatusDescription>();
+		List<StatusDescription> condExprsStatusDescs = new ArrayList<>();
 		// check valid configuration without course environment
 		StatusDescription first = isConfigValid();
 		// check valid configuration within the course environment

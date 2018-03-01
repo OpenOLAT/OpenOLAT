@@ -96,7 +96,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class CheckListCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	
-	private static final String translatorStr = Util.getPackageName(CheckListEditController.class);
+	private static final String PACKAGE_CL = Util.getPackageName(CheckListEditController.class);
 	private static final long serialVersionUID = -7460670977531082040L;
 	
 	private static final String TYPE = "checklist";
@@ -206,11 +206,16 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) {
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
 			return oneClickStatusCache[0];
 		}
-		StatusDescription sd = StatusDescription.NOERROR;
-		return sd;
+		
+		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
+		}
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
 	}
 
 	/**
@@ -221,18 +226,56 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_CL, getConditionExpressions());
+		if(oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			//isConfigValidWithTranslator add first
+			sds.remove(oneClickStatusCache[0]);
+		}
+		sds.addAll(validateInternalConfiguration());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
+	}
+	
+	private List<StatusDescription> validateInternalConfiguration() {
+		List<StatusDescription> sdList = new ArrayList<>(5);
+
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		if ((hasScore == null || hasScore.booleanValue()) &&
+				(config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN) == null || config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX) == null)) {
+			addStatusErrorDescription("error.missing.score.config", CheckListEditController.PANE_TAB_CLCONFIG, sdList);
+		}
+		
+		Boolean hasPassed = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
+		if (hasPassed == null || hasPassed.booleanValue()) {
+			
+			Boolean passedSum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
+			Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
+			if((manualCorr == null || !manualCorr.booleanValue()) && (passedSum == null || !passedSum.booleanValue())
+					&& config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE) == null) {
+				addStatusErrorDescription("error.missing.cutvalue.config", CheckListEditController.PANE_TAB_CLCONFIG, sdList);	
+			}
+		}
+		
+		return sdList;
+	}
+	
+	private void addStatusErrorDescription(String key, String pane, List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, key, key, params, PACKAGE_CL);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override
 	public List<StatusDescription> publishUpdatesExplanations(CourseEditorEnv cev) {
 		List<StatusDescription> statusDescs = new ArrayList<>();
-		StatusDescription statusDesc1 = new StatusDescription(Level.INFO, "checklist.update.assessment", null, null, translatorStr);
+		StatusDescription statusDesc1 = new StatusDescription(Level.INFO, "checklist.update.assessment", null, null, PACKAGE_CL);
 		statusDesc1.setDescriptionForUnit(getIdent());
 		statusDescs.add(statusDesc1);
-		StatusDescription statusDesc2 = new StatusDescription(Level.INFO, "checklist.update.efficiencystatements", null, null, translatorStr);
+		StatusDescription statusDesc2 = new StatusDescription(Level.INFO, "checklist.update.efficiencystatements", null, null, PACKAGE_CL);
 		statusDesc2.setDescriptionForUnit(getIdent());
 		statusDescs.add(statusDesc2);
 		return statusDescs;
@@ -268,8 +311,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null);
 		}
 		ModuleConfiguration config = getModuleConfiguration();
-		Float cut = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		return cut;
+		return (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 	}
 
 	/**
@@ -281,8 +323,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
 		}
 		ModuleConfiguration config = getModuleConfiguration();
-		Float max = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		return max;
+		return (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 	}
 
 	/**
@@ -294,8 +335,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			throw new OLATRuntimeException(MSCourseNode.class, "getMinScore not defined when hasScore set to false", null);
 		}
 		ModuleConfiguration config = getModuleConfiguration();
-		Float min = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-		return min;
+		return (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 	}
 
 	/**
@@ -304,8 +344,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String coachCommentValue = am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return coachCommentValue;
+		return am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
 	/**
@@ -314,8 +353,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		String logValue = am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return logValue;
+		return am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
 	/**
@@ -324,8 +362,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String userCommentValue = am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return userCommentValue;
+		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 	
 	@Override
