@@ -106,8 +106,8 @@ import org.olat.user.UserManager;
  */
 public class GTACourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	
-	private final static OLog log = Tracing.createLoggerFor(GTACourseNode.class);
-	private final static String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
+	private static final OLog log = Tracing.createLoggerFor(GTACourseNode.class);
+	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
 
 	private static final long serialVersionUID = 1L;
 	

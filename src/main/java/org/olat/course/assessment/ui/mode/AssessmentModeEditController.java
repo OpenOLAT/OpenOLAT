@@ -196,6 +196,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		endEl = uifactory.addDateChooser("mode.end", assessmentMode.getEnd(), formLayout);
 		endEl.setElementCssClass("o_sel_assessment_mode_end");
 		endEl.setDateChooserTimeEnabled(true);
+		endEl.setDefaultValue(beginEl);
 		endEl.setMandatory(true);
 		endEl.setEnabled(status != Status.end);
 		
@@ -606,7 +607,7 @@ public class AssessmentModeEditController extends FormBasicController {
 
 		//update groups
 		if(groupKeys.isEmpty()) {
-			if(assessmentMode.getGroups().size() > 0) {
+			if(!assessmentMode.getGroups().isEmpty()) {
 				assessmentMode.getGroups().clear();
 			}
 		} else {
@@ -631,7 +632,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		
 		//update areas
 		if(areaKeys.isEmpty()) {
-			if(assessmentMode.getAreas().size() > 0) {
+			if(!assessmentMode.getAreas().isEmpty()) {
 				assessmentMode.getAreas().clear();
 			}
 		} else {

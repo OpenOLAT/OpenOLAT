@@ -322,7 +322,8 @@ public class LectureBlockRollCallDAO {
 		return query.getResultList();
 	}
 	
-	public List<LectureBlockAndRollCall> getParticipantLectureBlockAndRollCalls(RepositoryEntryRef entry, IdentityRef identity) {
+	public List<LectureBlockAndRollCall> getParticipantLectureBlockAndRollCalls(RepositoryEntryRef entry, IdentityRef identity,
+			String teacherSeaparator) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block, call, re.displayname")
 		  .append(" from lectureblock block")
@@ -349,11 +350,11 @@ public class LectureBlockRollCallDAO {
 			blockToRollCallMap.put(block.getKey(), new LectureBlockAndRollCall(displayname, block, rollCall));
 		}
 		
-		appendCoaches(entry, blockToRollCallMap);
+		appendCoaches(entry, blockToRollCallMap, teacherSeaparator);
 		return new ArrayList<>(blockToRollCallMap.values());
 	}
 	
-	private void appendCoaches(RepositoryEntryRef entry, Map<Long,LectureBlockAndRollCall> blockToRollCallMap) {
+	private void appendCoaches(RepositoryEntryRef entry, Map<Long,LectureBlockAndRollCall> blockToRollCallMap, String teacherSeaparator) {
 		// append the coaches
 		StringBuilder sc = new StringBuilder();
 		sc.append("select block.key, coach")
@@ -378,7 +379,7 @@ public class LectureBlockRollCallDAO {
 				if(rollCall.getCoach() == null) {
 					rollCall.setCoach(fullname);
 				} else {
-					rollCall.setCoach(rollCall.getCoach() + ", " + fullname);
+					rollCall.setCoach(rollCall.getCoach() + " " + teacherSeaparator + " " + fullname);
 				}
 			}
 		}

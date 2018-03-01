@@ -27,6 +27,7 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -94,6 +95,16 @@ public class CheckListRunForCoachController extends BasicController {
 				}
 			}
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(runController == source) {
+			if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, event);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	private void doOpenRun(UserRequest ureq) {

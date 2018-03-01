@@ -157,9 +157,9 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		ArrayList<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<ConditionExpression>(parentsConditions);
+			retVal = new ArrayList<>(parentsConditions);
 		} else {
-			retVal = new ArrayList<ConditionExpression>();
+			retVal = new ArrayList<>();
 		}
 		//
 		String coS = getPreConditionAccess().getConditionExpression();

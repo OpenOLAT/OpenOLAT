@@ -51,9 +51,8 @@ import org.olat.core.util.Util;
  */
 public class NewUsersNotificationHandler implements NotificationsHandler {
 	private static final OLog log = Tracing.createLoggerFor(NewUsersNotificationHandler.class);
-	
-	private List<Identity> identities;
 
+	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		Publisher p = subscriber.getPublisher();
 		Date latestNews = p.getLatestNewsDate();
@@ -63,12 +62,12 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 		// there could be news for me, investigate deeper
 		try {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
-				identities = UsersSubscriptionManager.getInstance().getNewIdentityCreated(compareDate);
+				List<Identity> identities = UsersSubscriptionManager.getInstance().getNewIdentityCreated(compareDate);
 				if (identities.isEmpty()) {
 					si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 				} else {
 					translator = Util.createPackageTranslator(this.getClass(), locale);
-					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(getItemTitle(translator), CSSHelper.CSS_CLASS_GROUP), null);
+					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(getItemTitle(identities, translator), CSSHelper.CSS_CLASS_GROUP), null);
 					SubscriptionListItem subListItem;
 					for (Identity newUser : identities) {
 						String desc = translator.translate("notifications.entry", new String[] { NotificationHelper.getFormatedName(newUser) });
@@ -89,7 +88,7 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 		return si;
 	}
 
-	private String getItemTitle(Translator translator) {
+	private String getItemTitle(List<Identity> identities, Translator translator) {
 		String numOfNewUsers = Integer.toString(identities.size());
 		if (identities.size() > 1) { return translator.translate("notifications.title", new String[] { numOfNewUsers }); }
 		return translator.translate("notifications.titleOne");

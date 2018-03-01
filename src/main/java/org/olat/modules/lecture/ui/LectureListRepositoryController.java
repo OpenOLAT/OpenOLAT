@@ -164,8 +164,9 @@ public class LectureListRepositoryController extends FormBasicController {
 		for(LectureBlockWithTeachers block:blocks) {
 			LectureBlock b = block.getLectureBlock();
 			StringBuilder teachers = new StringBuilder();
+			String separator = translate("user.fullname.separator");
 			for(Identity teacher:block.getTeachers()) {
-				if(teachers.length() > 0) teachers.append(", ");
+				if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
 				teachers.append(userManager.getUserDisplayName(teacher));
 			}
 
@@ -182,7 +183,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
-		deleteLecturesButton.setVisible(rows.size() > 0);
+		deleteLecturesButton.setVisible(!rows.isEmpty());
 	}
 	
 	@Override
@@ -314,7 +315,7 @@ public class LectureListRepositoryController extends FormBasicController {
 			}
 		}
 		
-		if(blocks.size() == 0) {
+		if(blocks.isEmpty()) {
 			showWarning("error.atleastone.lecture");
 		} else {
 			StringBuilder titles = new StringBuilder();
@@ -379,7 +380,9 @@ public class LectureListRepositoryController extends FormBasicController {
 
 	private class ToolsController extends BasicController {
 		
-		private Link deleteLink, copyLink, logLink;
+		private Link deleteLink;
+		private Link copyLink;
+		private Link logLink;
 		
 		private final LectureBlockRow row;
 		

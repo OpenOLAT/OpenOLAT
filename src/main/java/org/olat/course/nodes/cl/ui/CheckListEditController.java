@@ -61,7 +61,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 
 	private TabbedPane myTabbedPane;
 
-	private final static String[] paneKeys = { PANE_TAB_CLCONFIG, PANE_TAB_CHECKBOX };
+	private static final String[] paneKeys = { PANE_TAB_CLCONFIG, PANE_TAB_CHECKBOX };
 
 	/**
 	 * @param cpNode
