@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormItemDependencyRule;
 import org.olat.core.gui.components.form.flexible.FormMultipartItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Disposable;
@@ -85,7 +83,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private List<String> formComponentsNames;
 	private Map<String,FormItem> listeningOnlyFormComponents;
 	private boolean hasRootForm=false;
-	private Map<String, Map<String, FormItemDependencyRule>> dependencyRules;
 
 
 	/**
@@ -125,11 +122,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.contextPut("f", new FormDecorator(this));
 		// this container manages the form items, the GUI form item componentes are
 		// managed in the associated velocitycontainer
-		formComponentsNames = new ArrayList<String>(5);
+		formComponentsNames = new ArrayList<>(5);
 		formLayoutContainer.contextPut("formitemnames", formComponentsNames);
-		formComponents = new HashMap<String, FormItem>();
-		listeningOnlyFormComponents = new HashMap<String, FormItem>();
-		dependencyRules = new HashMap<String, Map<String, FormItemDependencyRule>>();
+		formComponents = new HashMap<>();
+		listeningOnlyFormComponents = new HashMap<>();
 	}
 
 	
@@ -340,14 +336,14 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	
 	@Override
 	public Iterable<FormItem> getFormItems() {
-		List<FormItem> merged = new ArrayList<FormItem>(formComponents.values());
+		List<FormItem> merged = new ArrayList<>(formComponents.values());
 		merged.addAll(listeningOnlyFormComponents.values());
 		return merged;
 	}
 
 	@Override
 	public Map<String, FormItem> getFormComponents() {
-		Map<String,FormItem> merged = new HashMap<String, FormItem>(formComponents);
+		Map<String,FormItem> merged = new HashMap<>(formComponents);
 		merged.putAll(listeningOnlyFormComponents);
 		return Collections.unmodifiableMap(merged);
 	}
@@ -454,43 +450,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 */
 	public void setDirty(boolean dirty){
 		formLayoutContainer.setDirty(dirty);
-	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.api.FormItemContainer#addDependencyRule(org.olat.core.gui.components.form.flexible.api.FormItemDependencyRule)
-	 */
-	public void addDependencyRule(FormItemDependencyRule depRule) {
-		String key = depRule.getTriggerElement().getName();
-		Map<String, FormItemDependencyRule> rules;
-		if(dependencyRules.containsKey(key)){
-			//already rules for this element
-			rules = dependencyRules.get(key);
-		}else{
-			//no rules yet, create
-			rules = new HashMap<String, FormItemDependencyRule>();
-			dependencyRules.put(key, rules);
-		}
-		rules.put(depRule.getIdentifier(), depRule);	
-	}
-	
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.api.FormItemContainer#evalDependencyRuleSetFor(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.api.FormItem)
-	 */
-	@Override
-	public void evalDependencyRuleSetFor(UserRequest ureq, FormItem dispatchFormItem) {
-		String key = dispatchFormItem.getName();
-		if(dependencyRules.containsKey(key)){
-			Map<String, FormItemDependencyRule> ruleSet = dependencyRules.get(key);
-			Collection<FormItemDependencyRule> rules = ruleSet.values();
-			for (Iterator<FormItemDependencyRule> iter = rules.iterator(); iter.hasNext();) {
-				FormItemDependencyRule tmp = iter.next();
-				if (tmp.applyRule(this)) {
-					setDirty(true);
-				}
-			}
-		}
-		
 	}
 
 	/**

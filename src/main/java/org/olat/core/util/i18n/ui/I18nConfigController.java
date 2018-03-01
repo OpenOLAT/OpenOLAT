@@ -203,13 +203,7 @@ class I18nConfigController extends FormBasicController {
 			i18nModule.setEnabledLanguageKeys(enabledLangKeys);
 
 		} else if (source == createLanguageLink) {
-			// Show new language sub form in an overlay window
-			subCtr = new I18nConfigSubNewLangController(ureq, getWindowControl());
-			listenTo(subCtr);
-			cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent());
-			cmc.activate();
-			listenTo(cmc);
-
+			doNewLanguage(ureq);
 		} else if (source == deleteLanguageLink) {
 			// Show delete language sub form in an overlay window
 			subCtr = new I18nConfigSubDeleteLangController(ureq, getWindowControl());
@@ -249,6 +243,7 @@ class I18nConfigController extends FormBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			// must be close event
@@ -270,5 +265,20 @@ class I18nConfigController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 	// nothing to dispose, sub controller autodisposed by basic controller
+	}
+	
+	/**
+	 * Show new language sub form in an overlay window
+	 * 
+	 * @param ureq The user request
+	 */
+	private void doNewLanguage(UserRequest ureq) {
+		subCtr = new I18nConfigSubNewLangController(ureq, getWindowControl());
+		listenTo(subCtr);
+		
+		String title = translate("configuration.management.create.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", subCtr.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
 	}
 }

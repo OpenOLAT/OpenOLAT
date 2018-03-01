@@ -2,37 +2,36 @@
 ## block this node from learner
 	$r.render("coachExclusive")
 ## date switch, from and to date
-	  <!-- dateswitch -->
-      <!-- generates -->
-      <!-- Date dependent?:| | [.] | | from | |[.....][chooser] |
-                           | |     | | to   | |[.....][chooser] |-->	
+## dateswitch -->
+## Date dependent?:| | [.] | | from | |[.....][chooser] |
+##                 | |     | | to   | |[.....][chooser] |
 	$r.render("dateSwitch")
 	#if ($f.isVisible("dateSubContainer"))
 		$r.render("dateSubContainer")
 		<div class="col-sm-9 col-sm-offset-3">$r.render("dateSubContainer_ERROR")</div>
 	#end
+	
 ## group switch, group and group area listing	
-      <!-- groupswitch -->
-      <!-- generates -->
-      <!-- Group dependent?:| | [.] | | Groups | |[.....][chooser] |
-        	                | |     | | Areas  | |[.....][chooser] | -->
+## groupswitch -->
+## Group dependent?:| | [.] | | Groups | |[.....][chooser] |
+##     	            | |     | | Areas  | |[.....][chooser] |
 	$r.render("groupSwitch")
 	#if ($f.isVisible("groupSubContainer"))
 		$r.render("groupSubContainer")
 		<div class="col-sm-9 col-sm-offset-3">$r.render("groupSubContainer_ERROR")</div>
 	#end
+	
 ## assessment switch, cutvalue or score switch and score value	
-      <!-- assessswitch -->
-      <!-- generates -->
-      <!-- Assess dependent?:| |[.]  | |               | O PASSED | |
-                             | |     | |               | X SCORE  | |
-        	                 | |     | | Kursbaustein  | [.....V] | |
-        	                 | |     | | Cut value     | [...]    | |-->
+## assessswitch
+## Assess dependent?:| |[.]  | |               | O PASSED | |
+##                   | |     | |               | X SCORE  | |
+##     	             | |     | | Kursbaustein  | [.....V] | |
+##     	             | |     | | Cut value     | [...]    | |
 	$r.render("assessmentSwitch")
 	#if ($f.isVisible("assessSubContainer"))
 		$r.render("assessSubContainer")
-	#end    
-
+	#end
+	
 ## attribute switch, shibboleth attribute choosers
 #if ($shibbolethEnabled)
 	$r.render("attributeSwitch")
@@ -41,13 +40,11 @@
 		$r.render("attributeBconnector")
 		$r.render("attribteRowAdderSubform")
 	</div>
-	#end  
+	#end
 #end
 
-## apply rules also for coach
-	$r.render("applyRulesForCoach")
 	$r.render("assessmentMode")
-## submit button
+	$r.render("applyRulesForCoach")
 	<div class="o_button_group">
 		$r.render("subm")
 	</div>

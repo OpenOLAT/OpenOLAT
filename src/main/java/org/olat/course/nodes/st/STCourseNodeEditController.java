@@ -202,7 +202,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		}
 
-		if (assessableChildren.size() == 0 && scoreCalc == null) {
+		if (assessableChildren.isEmpty() && scoreCalc == null) {
 			// show only the no assessable children message, if no previous score
 			// config exists.
 			score.contextPut("noAssessableChildren", Boolean.TRUE);
@@ -280,7 +280,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
-	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source instanceof NodeEditController) {
 			if(combiLinkCtr != null && combiLinkCtr.isDoProposal()){
@@ -308,10 +308,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		} else if(source == securitySettingForm){
 			if(event == Event.DONE_EVENT){
-				boolean allowRelativeLinks = securitySettingForm.getAllowRelativeLinksConfig();
-				stNode.getModuleConfiguration().set(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks);
+				boolean relativeLinks = securitySettingForm.getAllowRelativeLinksConfig();
+				stNode.getModuleConfiguration().set(CONFIG_KEY_ALLOW_RELATIVE_LINKS, relativeLinks);
 				stNode.getModuleConfiguration().set(CONFIG_KEY_ALLOW_COACH_EDIT, securitySettingForm.getAllowCoachEditConfig());
-				combiLinkCtr.setAllowEditorRelativeLinks(allowRelativeLinks);
+				combiLinkCtr.setAllowEditorRelativeLinks(relativeLinks);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == nodeDisplayConfigFormController) {

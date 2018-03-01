@@ -29,6 +29,7 @@ import java.io.File;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -36,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -99,8 +99,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_CUTVALUE = "cutvalue";
 	
 	public static final String CONFIG_DELIVERY_OPTIONS = "deliveryOptions";
-	public final static String CONFIG_FULLWINDOW = "fullwindow";
-	public final static String CONFIG_CLOSE_ON_FINISH = "CLOSEONFINISH";
+	public static final String CONFIG_FULLWINDOW = "fullwindow";
+	public static final String CONFIG_CLOSE_ON_FINISH = "CLOSEONFINISH";
 	
 	// <OLATCE-289>
 	public static final String CONFIG_MAXATTEMPTS = "attempts";
@@ -371,9 +371,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		String repoSoftkey = (String) config.get(ScormEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repoSoftkey == null) throw new AssertException("invalid config when being asked for references");
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
-		// entry can be null only if !strict
-		return entry;
+		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
 	}
 
 	/**
@@ -424,9 +422,12 @@ class VarForm extends FormBasicController {
 	private SelectionElement showNavButtonsEl;
 	private SelectionElement fullWindowEl;
 	private SelectionElement closeOnFinishEl;
-	private SelectionElement isAssessableEl;
+	private SingleSelection isAssessableEl;
 	private SelectionElement skipLaunchPageEl;
 	private IntegerElement cutValueEl;
+	private SingleSelection attemptsEl;
+	private MultipleSelectionElement advanceScoreEl;
+	private MultipleSelectionElement scoreAttemptsEl;
 	
 	private boolean showMenu, showNavButtons, skipLaunchPage;
 	private String assessableType;
@@ -434,16 +435,10 @@ class VarForm extends FormBasicController {
 	private boolean fullWindow;
 	private boolean closeOnFinish;
 	private String[] assessableKeys, assessableValues;
-
-	// <OLATCE-289>
-	private SingleSelection attemptsEl;
-	private MultipleSelectionElement advanceScoreEl;
-	private MultipleSelectionElement scoreAttemptsEl;
 	
 	private boolean advanceScore;
 	private boolean scoreAttempts;
 	private int maxattempts;
-	// </OLATCE-289>
 	
 	/**
 	 * 
@@ -451,10 +446,7 @@ class VarForm extends FormBasicController {
 	 */
 	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage, boolean showNavButtons, 
 			String assessableType, int cutValue, boolean fullWindow, boolean closeOnFinish,
-			// <OLATCE-289>
-			int maxattempts, boolean advanceScore, boolean attemptsDependOnScore
-			// </OLATCE-289>
-			) {
+			int maxattempts, boolean advanceScore, boolean attemptsDependOnScore) {
 		super(ureq, wControl);
 		this.showMenu = showMenu;
 		this.skipLaunchPage = skipLaunchPage;
@@ -463,21 +455,20 @@ class VarForm extends FormBasicController {
 		this.cutValue = cutValue;
 		this.fullWindow = fullWindow;
 		this.closeOnFinish = closeOnFinish;
-		
-		// <OLATCE-289>
+
 		this.advanceScore = advanceScore;
 		this.scoreAttempts = attemptsDependOnScore;
 		this.maxattempts = maxattempts;
-		// </OLATCE-289>
 		
-		assessableKeys = new String[]{ "off", ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE,
-				ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED };
-		assessableValues = new String[]{
+		assessableKeys = new String[]{
+				"off", ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE, ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED
+			};
+		assessableValues = new String[] {
 				translate("assessable.type.none"), translate("assessable.type.score"), translate("assessable.type.passed")
-		};
+			};
 		initForm (ureq);
+		updateUI();
 	}
-	
 
 	/**
 	 * @return
@@ -527,6 +518,14 @@ class VarForm extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(isAssessableEl == source || advanceScoreEl == source) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
@@ -562,6 +561,7 @@ class VarForm extends FormBasicController {
 		closeOnFinishEl.select("closeonfinish", closeOnFinish);
 
 		isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
+		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
 		if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
 			isAssessableEl.select(assessableKeys[1], true);
 		} else if(ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED.equals(assessableType)) {
@@ -573,31 +573,14 @@ class VarForm extends FormBasicController {
 		cutValueEl = uifactory.addIntegerElement("cutvalue", "cutvalue.label", 0, formLayout);
 		cutValueEl.setIntValue(cutValue);
 		cutValueEl.setDisplaySize(3);
-		
-		// <OLATCE-289>
-		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
-		advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{"ison"}, new String[]{null});
+
+		advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{ "ison" }, new String[]{ "" });
 		advanceScoreEl.select("ison", advanceScore);
 		advanceScoreEl.addActionListener(FormEvent.ONCHANGE);
 
-		//assessable type score/passed -> show "Prevent subsequent attempts from decreasing score"
-		RulesFactory.createHideRule(isAssessableEl, assessableKeys[0], advanceScoreEl, formLayout);
-		RulesFactory.createShowRule(isAssessableEl, assessableKeys[1], advanceScoreEl, formLayout);
-		RulesFactory.createShowRule(isAssessableEl, assessableKeys[2], advanceScoreEl, formLayout);
-
-		//assessable type score or none -> show "Score needed to pass"
-		RulesFactory.createShowRule(isAssessableEl, assessableKeys[0], cutValueEl, formLayout);
-		RulesFactory.createShowRule(isAssessableEl, assessableKeys[1], cutValueEl, formLayout);
-		RulesFactory.createHideRule(isAssessableEl, assessableKeys[2], cutValueEl, formLayout);
-
 		scoreAttemptsEl = uifactory.addCheckboxesHorizontal("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null});
 		scoreAttemptsEl.select("ison", scoreAttempts);
-		scoreAttemptsEl.addActionListener(FormEvent.ONCHANGE);
-		
-		RulesFactory.createShowRule(advanceScoreEl, "ison", scoreAttemptsEl, formLayout);
-		RulesFactory.createHideRule(advanceScoreEl, null, scoreAttemptsEl, formLayout);
-		
-		// <BPS-252> BPS-252_1
+
 		int maxNumber = 21;
 		String[] attemptsKeys = new String[maxNumber];
 		attemptsKeys[0] = "0"; // position 0 means no restriction
@@ -615,15 +598,23 @@ class VarForm extends FormBasicController {
 
 		attemptsEl = uifactory.addDropdownSingleselect("attempts.label", formLayout, attemptsKeys, attemptsValues, null);
 		attemptsEl.select("" + maxattempts, true);
-		// </OLATCE-289>
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
 	
-	// <OLATCE-289>
+	private void updateUI() {
+		String isAssessable = isAssessableEl.isOneSelected() ? isAssessableEl.getSelectedKey() : null;
+		//assessable type score/passed -> show "Prevent subsequent attempts from decreasing score"
+		advanceScoreEl.setVisible(assessableKeys[1].equals(isAssessable) || assessableKeys[2].equals(isAssessable));
+		advanceScoreEl.getComponent().setDirty(true);
+		//assessable type score or none -> show "Score needed to pass"
+		cutValueEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
+	}
+	
 	public int getAttemptsValue() {
 		return Integer.valueOf(attemptsEl.getSelectedKey()); 
 	}
+	
 	public boolean isAdvanceScore() {
 		return advanceScoreEl.isSelected(0);
 	}

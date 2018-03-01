@@ -21,7 +21,6 @@ package org.olat.admin.user.bulkChange;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -72,8 +70,8 @@ public /**
  */
 class UserBulkChangeStep00 extends BasicStep {
 	
-	static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
-	static final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
+	private final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
+	private final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
 	private List<Identity> identitiesToEdit;
 	private static VelocityEngine velocityEngine;
 	private boolean isAdministrativeUser;
@@ -116,25 +114,24 @@ class UserBulkChangeStep00 extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new UserBulkChangeStepForm00(ureq, windowControl, form, stepsRunContext);
-		return stepI;
+		return new UserBulkChangeStepForm00(ureq, windowControl, form, stepsRunContext);
 	}
 
 	private final class UserBulkChangeStepForm00 extends StepFormBasicController {
-		private FormLayoutContainer textContainer;
 		private List<UserPropertyHandler> userPropertyHandlers;
-		private FormItem formitem;
-		private List<MultipleSelectionElement> checkBoxes;
-		private List<FormItem> formItems;
+		private final List<MultipleSelectionElement> checkBoxes = new ArrayList<>();
 		
+		@Autowired
+		private I18nManager i18nManager;
+		@Autowired
+		private UserManager userManager;
 		@Autowired
 		private UserBulkChangeManager ubcMan;
 
 		public UserBulkChangeStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			// use custom translator with fallback to user properties translator
-			UserManager um = UserManager.getInstance();
-			setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
+			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 			flc.setTranslator(getTranslator());
 			initForm(ureq);
 		}
@@ -147,12 +144,10 @@ class UserBulkChangeStep00 extends BasicStep {
 		@Override
 		protected void formOK(UserRequest ureq) {
 			// process changed attributes
-			int i = 0;
-			HashMap<String, String> attributeChangeMap = new HashMap<String, String>();
-			for (Iterator<MultipleSelectionElement> iterator = checkBoxes.iterator(); iterator.hasNext();) {
-				MultipleSelectionElement checkbox = iterator.next();
+			HashMap<String, String> attributeChangeMap = new HashMap<>();
+			for (MultipleSelectionElement checkbox:checkBoxes) {
 				if (checkbox.isSelected(0)) {
-					FormItem formItem = formItems.get(i);
+					FormItem formItem = (FormItem)checkbox.getUserObject();
 					// first get the values from the hardcoded items
 					if (formItem.getName().equals(UserBulkChangeManager.LANG_IDENTIFYER)) {
 						SingleSelection selectField = (SingleSelection) formItem;
@@ -182,7 +177,6 @@ class UserBulkChangeStep00 extends BasicStep {
 						}
 					}
 				}
-				i++;
 			}
 			addToRunContext("attributeChangeMap", attributeChangeMap);
 			addToRunContext("identitiesToEdit", identitiesToEdit);
@@ -192,17 +186,13 @@ class UserBulkChangeStep00 extends BasicStep {
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean validChange = true;
-			UserManager um = UserManager.getInstance();
 
 			// loop through and check if any checkbox has been selected
-			int i = 0;
-			
-			for (Iterator<MultipleSelectionElement> iterator = checkBoxes.iterator(); iterator.hasNext();) {
-				MultipleSelectionElement checkbox = iterator.next();
+			for (MultipleSelectionElement checkbox:checkBoxes) {
 				if (checkbox.isSelected(0)) {
 					Context vcContext = ubcMan.getDemoContext(getTranslator());
 					validChange = true;
-					FormItem formItem = formItems.get(i);
+					FormItem formItem = (FormItem)checkbox.getUserObject();
 					if (formItem instanceof TextElement) {
 						TextElement propertyField = (TextElement) formItem;
 						String inputFieldValue = propertyField.getValue();
@@ -217,7 +207,7 @@ class UserBulkChangeStep00 extends BasicStep {
 						for (UserPropertyHandler handler : userPropertyHandlers) {
 							if (handler.getName().equals(formItem.getName())) {
 								// first check on mandatoryness
-								if (um.isMandatoryUserProperty(usageIdentifyer, handler) && ! StringHelper.containsNonWhitespace(evaluatedInputFieldValue)) {
+								if (userManager.isMandatoryUserProperty(usageIdentifyer, handler) && !StringHelper.containsNonWhitespace(evaluatedInputFieldValue)) {
 									formItem.setErrorKey("form.name." + handler.getName() + ".error.empty", null);				
 									return false;									
 								}
@@ -233,11 +223,9 @@ class UserBulkChangeStep00 extends BasicStep {
 						}
 
 						// special case: check password-syntax:
-						if (propertyField.getName().equals("password")) {
-							if (!um.syntaxCheckOlatPassword(evaluatedInputFieldValue)) {
-								propertyField.setErrorKey("error.password", new String[] { evaluatedInputFieldValue });
-								return false;
-							}
+						if (propertyField.getName().equals("password")&& !userManager.syntaxCheckOlatPassword(evaluatedInputFieldValue)) {
+							propertyField.setErrorKey("error.password", new String[] { evaluatedInputFieldValue });
+							return false;
 						}
 
 						// already done by form.visitAll -> validate():
@@ -249,27 +237,31 @@ class UserBulkChangeStep00 extends BasicStep {
 						// propertyField.setValue(origInputFieldValue);
 					}
 				}
-				i++;
 			} // for
 
-			addToRunContext("validChange", new Boolean(validChange));
+			addToRunContext("validChange", Boolean.valueOf(validChange));
 			return true;
 		}
 
 		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			MultipleSelectionElement checkbox;
-			checkBoxes = new ArrayList<MultipleSelectionElement>();
-			formItems = new ArrayList<FormItem>();
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(source instanceof MultipleSelectionElement && source.getUserObject() instanceof FormItem) {
+				MultipleSelectionElement checkbox = (MultipleSelectionElement)source;
+				FormItem item = (FormItem)checkbox.getUserObject();
+				item.setVisible(checkbox.isAtLeastSelected(1));
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
 
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("title");
 			// text description of this Step
-			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
 			formLayout.add(textContainer);
-			textContainer.contextPut("userPropertyHandlers", UserManager.getInstance().getUserPropertyHandlersFor(
+			textContainer.contextPut("userPropertyHandlers", userManager.getUserPropertyHandlersFor(
 					usageIdentifyerForAllProperties, isAdministrativeUser));
 
-			Set<FormItem> targets;
 			// Main layout is a vertical layout without left side padding. To format
 			// the checkboxes properly we need a default layout for the remaining form
 			// elements
@@ -279,23 +271,19 @@ class UserBulkChangeStep00 extends BasicStep {
 			// add input field for password
 			Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
 			if (canChangePwd.booleanValue() || isOLATAdmin) {
-				checkbox = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
-				checkbox.select("changePWD", false);
-				checkbox.addActionListener(FormEvent.ONCLICK);
-				formitem = uifactory.addTextElement(UserBulkChangeManager.PWD_IDENTIFYER, "password", 127, null, innerFormLayout);
-				TextElement formEl = (TextElement) formitem;
-				formEl.setDisplaySize(35);
-				formitem.setLabel(null, null);
-				targets = new HashSet<FormItem>();
-				targets.add(formitem);
-				RulesFactory.createHideRule(checkbox, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(checkbox, "changePWD", targets, innerFormLayout);
-				checkBoxes.add(checkbox);
-				formItems.add(formitem);
+				MultipleSelectionElement passwordCheckEl = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
+				passwordCheckEl.select("changePWD", false);
+				passwordCheckEl.addActionListener(FormEvent.ONCLICK);
+				TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.PWD_IDENTIFYER, "password", 127, null, innerFormLayout);
+				passwordTextEl.setDisplaySize(35);
+				passwordTextEl.setLabel(null, null);
+				passwordTextEl.setVisible(false);
+				checkBoxes.add(passwordCheckEl);
+				passwordCheckEl.setUserObject(passwordTextEl);
 			}
 
 			// add SingleSelect for language
-			Map<String, String> locdescs = I18nManager.getInstance().getEnabledLanguagesTranslated();
+			Map<String, String> locdescs = i18nManager.getEnabledLanguagesTranslated();
 			Set<String> lkeys = locdescs.keySet();
 			String[] languageKeys = new String[lkeys.size()];
 			String[] languageValues = new String[lkeys.size()];
@@ -307,45 +295,37 @@ class UserBulkChangeStep00 extends BasicStep {
 				languageValues[p] = locdescs.get(key);
 				p++;
 			}
-			checkbox = uifactory.addCheckboxesHorizontal("checkboxLang", "form.name.language", innerFormLayout, new String[] { "changeLang" }, new String[] { "" });
-			checkbox.select("changeLang", false);
-			checkbox.addActionListener(FormEvent.ONCLICK);
-			formitem = uifactory.addDropdownSingleselect(UserBulkChangeManager.LANG_IDENTIFYER, innerFormLayout, languageKeys, languageValues, null);
-			formitem.setLabel(null, null);
-			targets = new HashSet<FormItem>();
-			targets.add(formitem);
-			RulesFactory.createHideRule(checkbox, null, targets, innerFormLayout);
-			RulesFactory.createShowRule(checkbox, "changeLang", targets, innerFormLayout);
-			checkBoxes.add(checkbox);
-			formItems.add(formitem);
+			MultipleSelectionElement languageCheckEl = uifactory.addCheckboxesHorizontal("checkboxLang", "form.name.language", innerFormLayout, new String[] { "changeLang" }, new String[] { "" });
+			languageCheckEl.select("changeLang", false);
+			languageCheckEl.addActionListener(FormEvent.ONCLICK);
+			SingleSelection languageSelectionEl = uifactory.addDropdownSingleselect(UserBulkChangeManager.LANG_IDENTIFYER, innerFormLayout, languageKeys, languageValues, null);
+			languageSelectionEl.setLabel(null, null);
+			languageSelectionEl.setVisible(false);
+			checkBoxes.add(languageCheckEl);
+			languageCheckEl.setUserObject(languageSelectionEl);
 
 			// add checkboxes/formitems for userProperties defined in
 			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
 			// org.olat.admin.user.bulkChange.UserBulkChangeStep00
-			List<UserPropertyHandler> userPropHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-			userPropertyHandlers = new ArrayList<UserPropertyHandler>();
+			List<UserPropertyHandler> userPropHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+			userPropertyHandlers = new ArrayList<>();
 			for (int i = 0; i < userPropHandlers.size(); i++) {
 				UserPropertyHandler userPropertyHandler = userPropHandlers.get(i);
 				//accept only no-unique properties
 				if(!(userPropertyHandler instanceof GenericUnique127CharTextPropertyHandler)) {
 					userPropertyHandlers.add(userPropertyHandler);
-
-					checkbox = uifactory.addCheckboxesHorizontal("checkbox" + i, "form.name." + userPropertyHandler.getName(), innerFormLayout,
-							new String[] { "change" + userPropertyHandler.getName() }, new String[] { "" });
-					checkbox.select("change" + userPropertyHandler.getName(), false);
-					checkbox.addActionListener(FormEvent.ONCLICK);
-	
-					formitem = userPropertyHandler.addFormItem(getLocale(), null, usageIdentifyer, isAdministrativeUser, innerFormLayout);
-					formitem.setLabel(null, null);
-	
-					targets = new HashSet<FormItem>();
-					targets.add(formitem);
 					
-					RulesFactory.createHideRule(checkbox, null, targets, innerFormLayout);
-					RulesFactory.createShowRule(checkbox, "change" + userPropertyHandler.getName(), targets, innerFormLayout);
-	
-					checkBoxes.add(checkbox);
-					formItems.add(formitem);
+					MultipleSelectionElement checkboxEl = uifactory.addCheckboxesHorizontal("checkbox" + i,
+							"form.name." + userPropertyHandler.getName(), innerFormLayout,
+							new String[] { "change" + userPropertyHandler.getName() }, new String[] { "" });
+					checkboxEl.select("change" + userPropertyHandler.getName(), false);
+					checkboxEl.addActionListener(FormEvent.ONCLICK);
+					
+					FormItem formItem = userPropertyHandler.addFormItem(getLocale(), null, usageIdentifyer, isAdministrativeUser, innerFormLayout);
+					formItem.setLabel(null, null);
+					formItem.setVisible(false);
+					checkboxEl.setUserObject(formItem);
+					checkBoxes.add(checkboxEl);
 				}
 			}
 		}

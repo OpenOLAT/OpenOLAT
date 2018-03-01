@@ -144,14 +144,14 @@ public class Form {
 	
 	private static final OLog log = Tracing.createLoggerFor(Form.class);
 	//
-	public final static String FORMCMD = "fid";
-	public final static String FORMID = "ofo_";
-	public final static String FORM_UNDEFINED="undefined";
+	public static final String FORMCMD = "fid";
+	public static final String FORMID = "ofo_";
+	public static final String FORM_UNDEFINED="undefined";
 	
-	public final static int REQUEST_ERROR_NO_ERROR = -1;
-	public final static int REQUEST_ERROR_GENERAL = 1;
-	public final static int REQUEST_ERROR_FILE_EMPTY = 2;
-	public final static int REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED = 3;
+	public static final int REQUEST_ERROR_NO_ERROR = -1;
+	public static final int REQUEST_ERROR_GENERAL = 1;
+	public static final int REQUEST_ERROR_FILE_EMPTY = 2;
+	public static final int REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED = 3;
 	
 	private String formName;
 	private String dispatchFieldId;
@@ -168,10 +168,10 @@ public class Form {
 	private boolean isHideDirtyMarkingMessage = false;
 	private boolean multipartEnabled = false;
 	// temporary form data, only valid within execution of evalFormRequest()
-	private Map<String,String[]> requestParams = new HashMap<String,String[]>();
-	private Map<String, File> requestMultipartFiles = new HashMap<String,File>();
-	private Map<String, String> requestMultipartFileNames = new HashMap<String,String>();
-	private Map<String, String> requestMultipartFileMimeTypes = new HashMap<String,String>();
+	private Map<String,String[]> requestParams = new HashMap<>();
+	private Map<String, File> requestMultipartFiles = new HashMap<>();
+	private Map<String, String> requestMultipartFileNames = new HashMap<>();
+	private Map<String, String> requestMultipartFileMimeTypes = new HashMap<>();
 	private int requestError = REQUEST_ERROR_NO_ERROR;
 	
 	private Form() {
@@ -194,7 +194,7 @@ public class Form {
 		// this is where the formitems go to
 		form.formLayout = formLayout;
 		form.formLayout.setRootForm(form);
-		form.formListeners = new ArrayList<FormBasicController>(1);
+		form.formListeners = new ArrayList<>(1);
 		if(listener instanceof FormBasicController){
 			form.formListeners.add((FormBasicController)listener);
 		}
@@ -204,7 +204,6 @@ public class Form {
 		// renders header + <formLayout> + footer of html form
 		form.formWrapperComponent = new FormWrapperContainer(id, name, translator, form);
 		form.formWrapperComponent.addListener(listener);
-		//form.formWrapperComponent.put(formLayout.getComponent().getComponentName(), formLayout.getComponent());
 		// generate name for form and dispatch uri hidden field
 
 		form.formName = Form.FORMID + form.formWrapperComponent.getDispatchID();
@@ -243,9 +242,7 @@ public class Form {
 				//assume a click on this item
 				dispatchUri = FormBaseComponentIdProvider.DISPPREFIX + submitFormItem.getComponent().getDispatchID();
 				action = FormEvent.ONCLICK;
-			}else{
-				// instead of 
-				// throw new AssertException("You have an input field but no submit item defined! this is no good if enter is pressed.");
+			} else {
 				// assume a desired implicit form submit
 				// see also OLAT-3141
 				implicitFormSubmit = true;
@@ -279,37 +276,24 @@ public class Form {
 		//.......... the code goes further with step 3.........................
 		if (implicitFormSubmit) {
 			//implicit Submit (Press Enter without on a Field without submit item.)
-			// see also OLAT-3141
 			submit(ureq);
 		}else{
 			if (dispatchFormItem == null) {
 				// source not found. This "never happens". Try to produce some hints.
-				String fbc = new String();
+				StringBuilder fbc = new StringBuilder(128);
 				for (FormBasicController i: formListeners) {
 					if (fbc.length()>0) {
-						fbc += ",";
+						fbc.append(",");
 					}
-					fbc+=(i.getClass().getName());
+					fbc.append(i.getClass().getName());
 				}
 				log.warn("OLAT-5061: Could not determine request source in FlexiForm >"+formName+"<. Check >"+fbc+"<", null);
-				
-				// TODO: what now? 
 				// Assuming the same as "implicitFormSubmit" for now.
 				submit(ureq);
 				
 			} else {
-				// ****************************************
-				// explicit Submit or valid form dispatch *
-				// ****************************************
+				// explicit Submit or valid form dispatch 
 				dispatchFormItem.doDispatchFormRequest(ureq);
-				// step 3: find parent container of dispatched component
-				// .......... check dependency rules
-				// .......... apply dependency rules
-				FindParentFormComponentVisitor fpfcv = new FindParentFormComponentVisitor(
-						dispatchFormItem);
-				ct = new FormComponentTraverser(fpfcv, formLayout, false);
-				ct.visitAll(ureq);
-				fpfcv.getParent().evalDependencyRuleSetFor(ureq, dispatchFormItem);
 			}
 		}
 		//
@@ -331,9 +315,9 @@ public class Form {
 					part.write(tmpFile.getAbsolutePath());
 					
 					// Cleanup IE filenames that are absolute
-					int slashpos = fileName.lastIndexOf("/");
+					int slashpos = fileName.lastIndexOf('/');
 					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
-					slashpos = fileName.lastIndexOf("\\");
+					slashpos = fileName.lastIndexOf('\\');
 					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 					
 					requestMultipartFiles.put(name, tmpFile);
@@ -372,10 +356,7 @@ public class Form {
 		if (contentType == null) {
             return false;
         }
-        if (contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/")) {
-            return true;
-        }
-		return false;
+        return contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
 	}
 	
 	/**
@@ -406,14 +387,10 @@ public class Form {
 		if (values == null) {
 			// First element for this key
 			values = new String[]{value};
-			//use log.debug instead of System.out.println("PARAMS:"+key+" :: "+value);
-		}
-		else {
+		} else {
 			// A multi-key element (e.g. radio button)
 			values = ArrayHelper.addToArray(values, value, true);
-		//use log.debug instead of System.out.println("PARAMS:"+key+" ::[array of values]");
 		}
-		
 		requestParams.put(key, values);		
 	}
 	
@@ -489,9 +466,7 @@ public class Form {
 		ResettingFormComponentVisitor rfcv = new ResettingFormComponentVisitor();
 		FormComponentTraverser ct = new FormComponentTraverser(rfcv, formLayout, false);
 		ct.visitAll(ureq);//calls reset on all elements!
-		//
-		evalAllFormDependencyRules(ureq);
-		//
+		
 		formWrapperComponent.fireFormEvent(ureq, FormEvent.RESET);
 		hasAlreadyFired = true;
 	}
@@ -609,11 +584,7 @@ public class Form {
 		return requestMultipartFiles.keySet();
 	}
 	
-	
 	/**
-	 * Description:<br>
-	 * TODO: patrickb Class Description for EvaluatingFormComponentVisitor
-	 * <P>
 	 * Initial Date: 04.12.2006 <br>
 	 * 
 	 * @author patrickb
@@ -670,55 +641,9 @@ public class Form {
 			return true;
 		}
 	}
-
-	private class FindParentFormComponentVisitor implements FormComponentVisitor {
-
-		private FormItem child;
-		private FormItemContainer parentContainer = formLayout;
-
-		public FindParentFormComponentVisitor(FormItem child){
-			this.child = child;
-		}
-		
-		public FormItemContainer getParent(){
-			return parentContainer;
-		}
-		
-		public boolean visit(FormItem comp, UserRequest ureq) {
-			if (comp instanceof FormItemContainer) {
-				FormItemContainer new_name = (FormItemContainer) comp;
-				if(new_name.hasFormComponent(child)){
-					parentContainer = (FormItemContainer)comp;
-					return false;
-				}
-			}
-			return true;
-		}
-		
-	}
-	
-
-	private static class FormDependencyRulesInitComponentVisitor implements FormComponentVisitor {
-
-		public boolean visit(FormItem comp, UserRequest ureq) {
-			if (comp instanceof FormItemContainer) {
-				FormItemContainer fic = (FormItemContainer)comp;
-				Iterable<FormItem> pairs = fic.getFormItems();
-				//go to next container if no elements inside
-				if(pairs != null) {
-					//otherwise iterate overall elements and evaluate dependency rules
-					for (FormItem item : pairs) {
-						fic.evalDependencyRuleSetFor(ureq, item);
-					}
-				}
-			}
-			return true;
-		}
-		
-	}
 	
 	private static class ValidatingFormComponentVisitor implements FormComponentVisitor {
-		final List<ValidationStatus> tmp = new ArrayList<ValidationStatus>();
+		final List<ValidationStatus> tmp = new ArrayList<>();
 
 		public ValidationStatus[] getStatus() {
 			return sort(tmp);
@@ -803,18 +728,10 @@ public class Form {
 		return action;
 	}
 
-	/**
-	 * @param ureq
-	 */
-	void evalAllFormDependencyRules(UserRequest ureq) {
-		FormDependencyRulesInitComponentVisitor fdrocv = new FormDependencyRulesInitComponentVisitor();
-		FormComponentTraverser ct = new FormComponentTraverser(fdrocv, formLayout, false);
-		ct.visitAll(ureq);//visit all container and eval container with its elements!
-	}
-
 	public boolean isSubmittedAndValid(){
 		return isValidAndSubmitted;
 	}
+	
 	public void forceSubmittedAndValid() {
 		isValidAndSubmitted = true;
 	}

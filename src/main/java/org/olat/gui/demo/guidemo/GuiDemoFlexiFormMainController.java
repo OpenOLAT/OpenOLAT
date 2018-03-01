@@ -56,61 +56,18 @@ import org.olat.core.gui.dev.controller.SourceViewController;
  */
 public class GuiDemoFlexiFormMainController extends BasicController {
 
-	private VelocityContainer mainVC;
-	private Map<String, ControllerCreator> demos = new HashMap<String, ControllerCreator>();
-	List<String> demolinknames;
+	private final VelocityContainer mainVC;
+	private final Map<String, ControllerCreator> demos = new HashMap<>();
+	private final List<String> demolinknames = new ArrayList<>();
 	private Controller demoController;
 	private StackedPanel contentP;
-	private VelocityContainer content_sourceVC;
+	private VelocityContainer contentSourceVC;
 	private Panel sourceP;
-	{
-		// create the demos
-		// could also be injected with spring
-		//
-		// for the order
-		demolinknames = new ArrayList<String>();
-		//
-		demolinknames.add("guidemo_flexi_form_simpleform");
-		demos.put("guidemo_flexi_form_simpleform", new ControllerCreator() {
-			public Controller createController(UserRequest ureq, WindowControl wControl) {
-				return new GuiDemoFlexiForm(ureq, wControl, null);
-			}
-		});
-		demolinknames.add("guidemo_flexi_form_withchooser");
-		demos.put("guidemo_flexi_form_withchooser", new ControllerCreator() {
-			public Controller createController(UserRequest ureq, WindowControl wControl) {
-				return new GuiDemoFlexiFormSubworkflow(ureq, wControl, null);
-			}
-		});
-		demolinknames.add("guidemo_flexi_form_customlayout");
-		demos.put("guidemo_flexi_form_customlayout", new ControllerCreator() {
-			public Controller createController(UserRequest ureq, WindowControl wControl) {
-				return new GuiDemoFlexiFormCustomlayout(ureq, wControl, null);
-			}
-		});
-		demolinknames.add("guidemo_flexi_form_hideunhide");
-		demos.put("guidemo_flexi_form_hideunhide", new ControllerCreator() {
-			public Controller createController(UserRequest ureq, WindowControl wControl) {
-				return new GuiDemoFlexiFormHideUnhide(ureq, wControl, null);
-			}
-		});
-		demolinknames.add("guidemo_flexi_form_inline");
-		demos.put("guidemo_flexi_form_inline", new ControllerCreator() {
-			public Controller createController(UserRequest ureq, WindowControl wControl) {
-				return new GuiDemoInlineEditingBasedOnFlexiForm(ureq, wControl);
-			}
-		});
-		demolinknames.add("guidemo_flexi_form_advanced");
-		demos.put("guidemo_flexi_form_advanced", new ControllerCreator() {
-			public Controller createController(UserRequest ureq, WindowControl wControl) {
-				return new GuiDemoFlexiFormAdvancedController(ureq, wControl);
-			}
-		});
-	}
 
 	public GuiDemoFlexiFormMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("flexiformdemos");
+		initControllers();
 
 		for (String linkName : demolinknames) {
 			Link tmpLink = LinkFactory.createLink(linkName, mainVC, this);
@@ -119,9 +76,9 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 
 		mainVC.contextPut("demolinknames", demolinknames);
 
-		// all democontroller content goes in this panel
+		// all demo controllers content goes in this panel
 		contentP = new SimpleStackedPanel("content");
-		content_sourceVC = createVelocityContainer("content_source");
+		contentSourceVC = createVelocityContainer("content_source");
 		mainVC.put("democontent", contentP);
 		//
 		String firstDemo = demolinknames.iterator().next();
@@ -134,13 +91,33 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		ShrinkController sc = new ShrinkController(false, sourceVC, "toggle source");
 		sourceP.setContent(sc.getInitialComponent());
 
-		content_sourceVC.put("content", mainVC);
-		content_sourceVC.put("source", sourceP);
+		contentSourceVC.put("content", mainVC);
+		contentSourceVC.put("source", sourceP);
 		//add source view control
-    Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), content_sourceVC);
-    mainVC.put("sourceview", sourceview.getInitialComponent());
+		Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), contentSourceVC);
+		mainVC.put("sourceview", sourceview.getInitialComponent());
 		
-		putInitialPanel(content_sourceVC);
+		putInitialPanel(contentSourceVC);
+	}
+	
+	private void initControllers() {
+		demolinknames.add("guidemo_flexi_form_simpleform");
+		demos.put("guidemo_flexi_form_simpleform", (ureq, wControl) -> new GuiDemoFlexiForm(ureq, wControl, null));
+		
+		demolinknames.add("guidemo_flexi_form_withchooser");
+		demos.put("guidemo_flexi_form_withchooser", (ureq, wControl) ->  new GuiDemoFlexiFormSubworkflow(ureq, wControl, null));
+		
+		demolinknames.add("guidemo_flexi_form_customlayout");
+		demos.put("guidemo_flexi_form_customlayout", (ureq, wControl) -> new GuiDemoFlexiFormCustomlayout(ureq, wControl, null));
+		
+		demolinknames.add("guidemo_flexi_form_hideunhide");
+		demos.put("guidemo_flexi_form_hideunhide", (ureq, wControl) ->  new GuiDemoFlexiFormHideUnhide(ureq, wControl, null));
+		
+		demolinknames.add("guidemo_flexi_form_inline");
+		demos.put("guidemo_flexi_form_inline", (ureq, wControl) -> new GuiDemoInlineEditingBasedOnFlexiForm(ureq, wControl));
+		
+		demolinknames.add("guidemo_flexi_form_advanced");
+		demos.put("guidemo_flexi_form_advanced", (ureq, wControl) -> new GuiDemoFlexiFormAdvancedController(ureq, wControl));
 	}
 
 	/**
@@ -178,7 +155,5 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 				contentP.pushContent(demoController.getInitialComponent());
 			}
 		}
-
 	}
-	
 }

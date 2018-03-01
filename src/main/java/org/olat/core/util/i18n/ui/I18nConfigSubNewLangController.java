@@ -24,22 +24,17 @@
 */
 package org.olat.core.util.i18n.ui;
 
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormItemDependencyRule;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.rules.FormItemDependencyRuleImpl;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -84,9 +79,10 @@ class I18nConfigSubNewLangController extends FormBasicController {
 	 * @param control
 	 */
 	protected I18nConfigSubNewLangController(UserRequest ureq, WindowControl control) {
-		super(ureq, control, LAYOUT_DEFAULT);
-		if (!i18nModule.isTransToolEnabled()) { throw new AssertException(
-				"New languages can only be created when the translation tool is enabled and the translation tool source pathes are configured in the olat.properties"); }
+		super(ureq, control);
+		if (!i18nModule.isTransToolEnabled()) {
+			throw new AssertException("New languages can only be created when the translation tool is enabled and the translation tool source pathes are configured in the olat.properties");
+		}
 		initForm(ureq);
 	}
 
@@ -98,7 +94,6 @@ class I18nConfigSubNewLangController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// New language elements:
 		// A title, displayed in fieldset
-		setFormTitle("configuration.management.create.title");
 		String[] args = new String[] { "<a href='http://www.ics.uci.edu/pub/ietf/http/related/iso639.txt' target='_blank'><i class='o_icon o_icon_link_extern'> </i> ISO639</a>",
 				"<a href='http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html' target='_blank'><i class='o_icon o_icon_link_extern'> </i> ISO3166</a>" };
 		setFormDescription("configuration.management.create.description", args);
@@ -124,33 +119,7 @@ class I18nConfigSubNewLangController extends FormBasicController {
 		newVariant.setExampleKey("configuration.management.create.variant.example", null);
 		newVariant.setRegexMatchCheck("[A-Za-z0-9_]*", "configuration.management.create.variant.error");
 		newVariant.setDisplaySize(10);
-		// Rule1: hide variant when country is empty
-		Set<FormItem> hideItems = new HashSet<FormItem>();
-		RulesFactory.createHideRule(newCountry, "", hideItems, formLayout);
-		hideItems.add(newVariant);
-		// Rule 2: show variant when country is not empty
-		FormItemDependencyRule showRule = new FormItemDependencyRuleImpl(newCountry, ".{2}", hideItems, FormItemDependencyRuleImpl.MAKE_VISIBLE) {
-			@Override
-			protected boolean doesTrigger() {
-				TextElement te = (TextElement) this.triggerElement;
-				String val = te.getValue();
-				//
-				if (val == null && triggerVal == null) {
-					// triggerVal and val are NULL -> true
-					return true;
-				} else if (val != null) {
-					// val can be compared
-					String stringTriggerValString = (String) triggerVal;
-					boolean matches = val.matches(stringTriggerValString);
-					return matches;
-				} else {
-					// triggerVal is null but val is not null -> false
-					return false;
-				}
-			}
-		};
-		formLayout.addDependencyRule(showRule);
-		//
+		newVariant.setVisible(false);
 		// Language name and translator data
 		newTranslatedInEnglish = uifactory.addTextElement("configuration.management.create.inEnglish", "configuration.management.create.inEnglish", 255,
 				"", formLayout);
@@ -246,17 +215,17 @@ class I18nConfigSubNewLangController extends FormBasicController {
 				newCountry.setValue("");
 				newVariant.setValue("");
 			}
+		
+			boolean visible = val != null && val.matches(".{2}");
+			newVariant.setVisible(visible);
 		}
 		if (!newVariant.isEmpty() && newCountry.isEmpty()) {
 			newCountry.setErrorKey("configuration.management.create.variant.error.noCountry", null);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-	// nothing to dispose
+		//
 	}
 }

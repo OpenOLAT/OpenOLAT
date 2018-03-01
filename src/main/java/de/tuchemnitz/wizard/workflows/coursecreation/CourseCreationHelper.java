@@ -175,7 +175,7 @@ public class CourseCreationHelper {
 					.translate("cce.contactform.descr"));
 			if (contactNode instanceof COCourseNode) {
 
-				final List<String> emails = new ArrayList<String>();
+				final List<String> emails = new ArrayList<>();
 				String subject = translator.translate("cce.contactform.subject") + " " + courseConfig.getCourseTitle();
 
 				String email = ureq.getIdentity().getUser().getProperty(UserConstants.EMAIL, ureq.getLocale());
@@ -201,9 +201,8 @@ public class CourseCreationHelper {
 			// get default context for learning groups
 			
 			// create n learning groups with m allowed members
-			String comma = "";
-			String tmpGroupList = "";
-			String groupNamesList = "";
+	
+			List<Long> groupIdsList = new ArrayList<>();
 			for (int i = 0; i < courseConfig.getGroupCount(); i++) {
 				// create group
 				String name = groupBaseName + " " + (i + 1);
@@ -214,62 +213,49 @@ public class CourseCreationHelper {
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(learningGroup);
 				ct.setToolEnabled(CollaborationTools.TOOL_CONTACT, true);
 				// append to current learning group list
-				groupNamesList = tmpGroupList + comma + learningGroup.getName();
-				enCourseNode.getModuleConfiguration().set(ENCourseNode.CONFIG_GROUPNAME, groupNamesList);
-				if (i == 0) {
-					comma = ",";
-				}
-				tmpGroupList = (String) enCourseNode.getModuleConfiguration().get(ENCourseNode.CONFIG_GROUPNAME);
+				groupIdsList.add(learningGroup.getKey());
 			}
+			enCourseNode.getModuleConfiguration().set(ENCourseNode.CONFIG_GROUP_IDS, groupIdsList);
 
 			// set signout property
 			enCourseNode.getModuleConfiguration().set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, courseConfig.getEnableSignout());
 
 			// access limits on chosen course elements
 			if (courseConfig.getEnableAccessLimit()) {
-				if (courseConfig.isEnableAclContactForm()) {
-					if (contactNode instanceof COCourseNode) {
-						Condition c = ((COCourseNode) contactNode).getPreConditionVisibility();
-						c.setEasyModeGroupAccess(groupNamesList);
-						((COCourseNode) contactNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
-						// calculate expression from easy mode form
-						String condString = c.getConditionFromEasyModeConfiguration();
-						c.setConditionExpression(condString);
-						c.setExpertMode(false);
-					}
+				if (courseConfig.isEnableAclContactForm() && contactNode instanceof COCourseNode) {
+					Condition c = ((COCourseNode) contactNode).getPreConditionVisibility();
+					c.setEasyModeGroupAccessIdList(groupIdsList);
+					((COCourseNode) contactNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
+					// calculate expression from easy mode form
+					String condString = c.getConditionFromEasyModeConfiguration();
+					c.setConditionExpression(condString);
 				}
-				if (courseConfig.isEnableAclSinglePage()) {
-					if (singlePageNode instanceof SPCourseNode) {
-						Condition c = ((SPCourseNode) singlePageNode).getPreConditionVisibility();
-						c.setEasyModeGroupAccess(groupNamesList);
-						((SPCourseNode) singlePageNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
-						// calculate expression from easy mode form
-						String condString = c.getConditionFromEasyModeConfiguration();
-						c.setConditionExpression(condString);
-						c.setExpertMode(false);
-					}
+				if (courseConfig.isEnableAclSinglePage() && singlePageNode instanceof SPCourseNode) {
+					Condition c = ((SPCourseNode) singlePageNode).getPreConditionVisibility();
+					c.setEasyModeGroupAccessIdList(groupIdsList);
+					((SPCourseNode) singlePageNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
+					// calculate expression from easy mode form
+					String condString = c.getConditionFromEasyModeConfiguration();
+					c.setConditionExpression(condString);
+					c.setExpertMode(false);
 				}
-				if (courseConfig.isEnableAclForum()) {
-					if (forumNode instanceof FOCourseNode) {
-						Condition c = ((FOCourseNode) forumNode).getPreConditionVisibility();
-						c.setEasyModeGroupAccess(groupNamesList);
-						((FOCourseNode) forumNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
-						// calculate expression from easy mode form
-						String condString = c.getConditionFromEasyModeConfiguration();
-						c.setConditionExpression(condString);
-						c.setExpertMode(false);
-					}
+				if (courseConfig.isEnableAclForum() && forumNode instanceof FOCourseNode) {
+					Condition c = ((FOCourseNode) forumNode).getPreConditionVisibility();
+					c.setEasyModeGroupAccessIdList(groupIdsList);
+					((FOCourseNode) forumNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
+					// calculate expression from easy mode form
+					String condString = c.getConditionFromEasyModeConfiguration();
+					c.setConditionExpression(condString);
+					c.setExpertMode(false);
 				}
-				if (courseConfig.isEnableAclDownloadFolder()) {
-					if (downloadFolderNode instanceof BCCourseNode) {
-						Condition c = ((BCCourseNode) downloadFolderNode).getPreConditionVisibility();
-						c.setEasyModeGroupAccess(groupNamesList);
-						((BCCourseNode) downloadFolderNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
-						// calculate expression from easy mode form
-						String condString = c.getConditionFromEasyModeConfiguration();
-						c.setConditionExpression(condString);
-						c.setExpertMode(false);
-					}
+				if (courseConfig.isEnableAclDownloadFolder() && downloadFolderNode instanceof BCCourseNode) {
+					Condition c = ((BCCourseNode) downloadFolderNode).getPreConditionVisibility();
+					c.setEasyModeGroupAccessIdList(groupIdsList);
+					((BCCourseNode) downloadFolderNode).setNoAccessExplanation(translator.translate("noaccessexplain"));
+					// calculate expression from easy mode form
+					String condString = c.getConditionFromEasyModeConfiguration();
+					c.setConditionExpression(condString);
+					c.setExpertMode(false);
 				}
 			}
 		}
@@ -316,7 +302,7 @@ public class CourseCreationHelper {
 		final PublishProcess pp = PublishProcess.getInstance(course, cetm, ureq.getLocale());
 		final StatusDescription[] sds;
 		// create publish node list
-		List<String> nodeIds = new ArrayList<String>();
+		List<String> nodeIds = new ArrayList<>();
 		nodeIds.add(cetm.getRootNode().getIdent());
 		for (int i = 0; i < cetm.getRootNode().getChildCount(); i++) {
 			nodeIds.add(cetm.getRootNode().getChildAt(i).getIdent());

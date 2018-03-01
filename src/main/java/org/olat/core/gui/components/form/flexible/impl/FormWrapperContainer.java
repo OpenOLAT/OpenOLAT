@@ -33,16 +33,14 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
 class FormWrapperContainer extends AbstractComponent implements ComponentCollection {
 
 	// Renderer
-	private static ComponentRenderer RENDERER = new FormWrapperContainerRenderer();
+	private static final ComponentRenderer RENDERER = new FormWrapperContainerRenderer();
 	// associated form knows the choosen layout
 	private Form form;
-	private boolean firstInit;
 
 	/**
 	 * @param id A fix identifier for the container
@@ -53,7 +51,6 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 	public FormWrapperContainer(String id, String name, Translator translator, Form form) {
 		super(id, name, translator);
 		this.form = form;
-		firstInit = false;
 	}
 
 	public String getDispatchFieldId() {
@@ -122,20 +119,6 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 			fireEvent(ureq, okEvent);
 		} else {
 			fireEvent(ureq, org.olat.core.gui.components.form.Form.EVNT_VALIDATION_NOK);
-		}
-	}
-	
-	/**
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest, org.olat.core.gui.render.ValidationResult)
-	 */
-	@Override
-	public void validate(UserRequest ureq, ValidationResult vr) {
-		super.validate(ureq, vr);
-		if(!firstInit){
-			//initialise dependency rules
-			form.evalAllFormDependencyRules(ureq);
-			//
-			firstInit = true;
 		}
 	}
 

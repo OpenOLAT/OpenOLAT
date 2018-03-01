@@ -33,9 +33,8 @@
 package de.tuchemnitz.wizard.workflows.coursecreation.steps;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,12 +75,10 @@ public class EnrollmentEditForm extends FormBasicController {
 	// number of members per group
 	private TextElement subscriberCount;
 	// list of course elements used for access limitations
-	private final List<String> elements = new ArrayList<String>();
-	private String[] keys;
-	private String[] values;
+	private final List<String> elements = new ArrayList<>();
+	private String[] keys = new String[] { "ison" };
+	private String[] values = new String[] { "" };
 	private final CourseCreationConfiguration courseConfig;
-
-	private String SUBSCRIBER_COUNT = "25";
 
 	/**
 	 * Standard constructor
@@ -110,7 +106,6 @@ public class EnrollmentEditForm extends FormBasicController {
 		if (courseConfig.isCreateDownloadFolder()) elements.add(translate("cce.downloadfolder"));
 		if (courseConfig.isCreateForum()) elements.add(translate("cce.forum"));
 		if (courseConfig.isCreateContactForm()) elements.add(translate("cce.contactform"));
-
 	}
 
 	@Override
@@ -131,17 +126,11 @@ public class EnrollmentEditForm extends FormBasicController {
 		groupCount.setRegexMatchCheck("\\d*", "cce.enrollment.error.groupcount");
 		groupCount.showError(false);
 		
-
-		if (courseConfig.getSubscriberCount() != null) subscriberCount = uifactory.addTextElement("subscriberCount",
-				"en.subscribercount", 3, courseConfig.getSubscriberCount().toString(), formLayout);
-		else subscriberCount = uifactory.addTextElement("subscriberCount", "en.subscribercount", 3, SUBSCRIBER_COUNT, formLayout);
-
+		String subCount = courseConfig.getSubscriberCount() == null ? "25" : courseConfig.getSubscriberCount().toString();
+		subscriberCount = uifactory.addTextElement("subscriberCount", "en.subscribercount",
+					3, subCount, formLayout);
 		subscriberCount.setErrorKey("cce.enrollment.error.subscribercount", null);
 		subscriberCount.showError(false);
-
-		
-		keys = new String[] { "ison" };
-		values = new String[] { "" };
 
 		accessLimit = uifactory.addCheckboxesVertical("accessLimit", formLayout, keys, values, 1);
 		accessLimit.setLabel("en.accesscheckbox", null);
@@ -159,8 +148,7 @@ public class EnrollmentEditForm extends FormBasicController {
 
 		courseElements = uifactory.addCheckboxesVertical("courseElements", formLayout, keys, values, 1);
 		courseElements.setLabel("en.selectelements", null);
-
-		if (!accessLimit.isSelected(0)) courseElements.setVisible(false);
+		courseElements.setVisible(accessLimit.isSelected(0));
 
 		// copy elements list into an array
 		for (int i = 0; i < elements.size(); i++) {
@@ -176,23 +164,15 @@ public class EnrollmentEditForm extends FormBasicController {
 			}
 		}
 
-		// rules to hide / unhide
-		Set<FormItem> targets = new HashSet<FormItem>();
-		targets.add(courseElements);
-		RulesFactory.createHideRule(accessLimit, null, targets, formLayout);
-		RulesFactory.createShowRule(accessLimit, "ison", targets, formLayout);
-
 		// Buttons
 		formLayout.add(formButtons);
-		uifactory.addFormSubmitButton("okButton", formButtons);
 		uifactory.addFormCancelButton("cancelButton", formButtons, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("okButton", formButtons);
 	}
-	
-	
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String groupCountStr = groupCount.getValue();
 		if(StringHelper.containsNonWhitespace(groupCountStr)) {
@@ -207,7 +187,7 @@ public class EnrollmentEditForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -222,18 +202,26 @@ public class EnrollmentEditForm extends FormBasicController {
 		if (s.length() > 0) {
 			courseConfig.setSubscriberCount(new Integer(s));
 		}
-		courseConfig.setEnableAccessLimit(accessLimit.getSelectedKeys().size() == 1);
-		courseConfig.setEnableAclSinglePage(courseElements.getSelectedKeys().contains(translate("cce.informationpage")));
-		courseConfig.setEnableAclContactForm(courseElements.getSelectedKeys().contains(translate("cce.contactform")));
-		courseConfig.setEnableAclDownloadFolder(courseElements.getSelectedKeys().contains(translate("cce.downloadfolder")));
-		courseConfig.setEnableAclForum(courseElements.getSelectedKeys().contains(translate("cce.forum")));
+		courseConfig.setEnableAccessLimit(accessLimit.isAtLeastSelected(1));
+		Collection<String> selectedCourseElements = courseElements.getSelectedKeys();
+		courseConfig.setEnableAclSinglePage(selectedCourseElements.contains(translate("cce.informationpage")));
+		courseConfig.setEnableAclContactForm(selectedCourseElements.contains(translate("cce.contactform")));
+		courseConfig.setEnableAclDownloadFolder(selectedCourseElements.contains(translate("cce.downloadfolder")));
+		courseConfig.setEnableAclForum(selectedCourseElements.contains(translate("cce.forum")));
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(accessLimit == source) {
+			courseElements.setVisible(accessLimit.isAtLeastSelected(1));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-
 }

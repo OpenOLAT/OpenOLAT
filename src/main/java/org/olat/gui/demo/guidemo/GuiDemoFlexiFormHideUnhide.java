@@ -24,9 +24,6 @@
 */
 package org.olat.gui.demo.guidemo;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,21 +33,16 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuiDemoFlexiFormHideUnhide
- * 
  * <P>
  * Initial Date:  10.09.2007 <br>
  * @author patrickb
  */
-public class GuiDemoFlexiFormHideUnhide extends FormBasicController{
-
+public class GuiDemoFlexiFormHideUnhide extends FormBasicController {
 
 	private TextElement firstName;
 	private TextElement lastName;
@@ -68,9 +60,9 @@ public class GuiDemoFlexiFormHideUnhide extends FormBasicController{
 		// if all preprocessing is done, create the form items
 		//
 		// example for simple preprocessing - check for NULL
-		if(data != null){
+		if(data != null) {
 			personData = data;
-		}else{
+		} else {
 			personData = new GuiDemoFlexiFormPersonData();
 		}
 		//
@@ -79,15 +71,12 @@ public class GuiDemoFlexiFormHideUnhide extends FormBasicController{
 		//
 		// after initialisation you may need to do some stuff
 		// but typically initForm(..) is the last call in the constructor.
+		updateVisibility();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	/**
@@ -113,6 +102,14 @@ public class GuiDemoFlexiFormHideUnhide extends FormBasicController{
 		initialPanel.pushContent(confirm);
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(checkbox == source) {
+			updateVisibility();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
@@ -143,24 +140,18 @@ public class GuiDemoFlexiFormHideUnhide extends FormBasicController{
 		institution = uifactory.addTextElement("institution", "guidemo.flexi.form.institution", 256, personData.getInstitution(), formLayout);
 		institution.setEnabled(inputMode);
 		
-		if(inputMode){
+		if(inputMode) {
 			//submit only if in input mode
 			submit = new FormSubmit("submit","submit");
 			formLayout.add(submit);
 		}
-		
-		/*
-		 * now the rules to hide unhide 
-		 */
-		Set<FormItem> targets = new HashSet<FormItem>();
-		targets.add(firstName);
-		targets.add(lastName);
-		targets.add(institution);
-		targets.add(submit);
-			
-		RulesFactory.createHideRule(checkbox, null, targets, formLayout);
-		RulesFactory.createShowRule(checkbox, "ison", targets, formLayout);
 	}
-
-
+	
+	private void updateVisibility() {
+		boolean visible = checkbox.isAtLeastSelected(1);
+		firstName.setVisible(visible);
+		lastName.setVisible(visible);
+		institution.setVisible(visible);
+		submit.setVisible(visible);
+	}
 }

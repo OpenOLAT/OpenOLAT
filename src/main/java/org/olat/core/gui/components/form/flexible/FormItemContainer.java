@@ -28,12 +28,7 @@ package org.olat.core.gui.components.form.flexible;
 import java.util.Collection;
 import java.util.Map;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-
-
-
-
 
 /**
  * Description:<br>
@@ -105,21 +100,6 @@ public interface FormItemContainer extends FormItem, FormItemCollection {
 	 * @param rootForm
 	 */
 	public void setRootForm(Form rootForm);
-	
-	/**
-	 * add a dependency rule between a form item source and typically one or more
-	 * form item targets. See {@link FormItemDependencyRule} for more information.
-	 * @see FormItemDependencyRule
-	 * @param depRule
-	 */
-	public void addDependencyRule(FormItemDependencyRule depRule);
-
-	/**
-	 * 
-	 * @param ureq
-	 * @param dispatchFormItem
-	 */
-	public void evalDependencyRuleSetFor(UserRequest ureq, FormItem formItem);
 
 	/**
 	 * @param string
