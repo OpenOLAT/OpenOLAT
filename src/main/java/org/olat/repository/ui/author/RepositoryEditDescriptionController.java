@@ -36,6 +36,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -70,6 +77,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
@@ -85,7 +93,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEditDescriptionController extends FormBasicController {
 	
-	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	private static final Set<String> imageMimeTypes = new HashSet<>();
 	static {
 		imageMimeTypes.add("image/gif");
 		imageMimeTypes.add("image/jpg");
@@ -96,14 +104,16 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
 	private final String repoEntryType;
+	private License license;
 
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
 
 	private FileElement fileUpload, movieUpload;
-	private TextElement externalRef, displayName, authors, expenditureOfWork, language, location;
+	private TextElement externalRef, displayName, authors, expenditureOfWork, language, location, licensorEl;
+	private TextAreaElement licenseFreetextEl;
 	private RichTextElement description, objectives, requirements, credits;
-	private SingleSelection dateTypesEl, publicDatesEl;
+	private SingleSelection dateTypesEl, publicDatesEl, licenseEl;
 	private DateChooser startDateEl, endDateEl;
 	private FormSubmit submit;
 	private FormLayoutContainer privateDatesCont;
@@ -120,6 +130,12 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -195,6 +211,27 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), formLayout);
 		authors.setDisplaySize(60);
+		
+		if (licenseModule.isEnabled(licenseHandler)) {
+			license = licenseService.loadOrCreateLicense(res);
+
+			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
+					.createLicenseSelectionConfig(licenseHandler, license);
+			licenseEl = uifactory.addDropdownSingleselect("cif.license", formLayout,
+					licenseSelectionConfig.getLicenseTypeKeys(),
+					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
+			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
+				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+			}
+			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			
+			licensorEl = uifactory.addTextElement("cif.licensor", 1000, license.getLicensor(), formLayout);
+
+			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
+			licenseFreetextEl = uifactory.addTextAreaElement("cif.freetext", 4, 72, freetext, formLayout);
+			updateLicenseUI();
+		}
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
 		
@@ -358,6 +395,19 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
+	private void updateLicenseUI() {
+		boolean licenseSelected = false;
+		boolean freetextSelected = false;
+		if (licenseEl != null && licenseEl.isOneSelected()) {
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType licenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			licenseSelected = !licenseService.isNoLicense(licenseType);
+			freetextSelected = licenseService.isFreetext(licenseType);
+		}
+		licensorEl.setVisible(licenseSelected);
+		licenseFreetextEl.setVisible(freetextSelected);
+	}
+
 	private void updateDatesVisibility() {
 		if(dateTypesEl.isOneSelected()) {
 			String type = dateTypesEl.getSelectedKey();
@@ -410,8 +460,24 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				}	
 			}
 		}
+		
+		licenseEl.clearError();
+		if (licenseEl != null && licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
+			licenseEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
+	}
+
+	private boolean isLicenseTypeNotSelected() {
+		boolean isNoLicenseSelected = false;
+		if (licenseEl != null && licenseEl.isOneSelected()) {
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType selectedLicenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			isNoLicenseSelected = licenseService.isNoLicense(selectedLicenseType);
+		}
+		return !isNoLicenseSelected;
 	}
 	
 	private boolean validateTextElement(TextElement el, int maxLength) {
@@ -435,6 +501,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
+		} else if (source == licenseEl) {
+			updateLicenseUI();
 		} else if (source == fileUpload) {
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
 				fileUpload.clearError();
@@ -471,6 +539,27 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (licenseModule.isEnabled(licenseHandler)) {
+			if (licenseEl != null && licenseEl.isOneSelected()) {
+				String licenseTypeKey = licenseEl.getSelectedKey();
+				LicenseType licneseType = licenseService.loadLicenseTypeByKey(licenseTypeKey);
+				license.setLicenseType(licneseType);
+			}
+			String licensor = null;
+			String freetext = null;
+			if (licensorEl != null && licensorEl.isVisible()) {
+				licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+			}
+			if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
+				freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+			}
+			license.setLicensor(licensor);
+			license.setFreetext(freetext);
+			license = licenseService.update(license);
+			licensorEl.setValue(license.getLicensor());
+			licenseFreetextEl.setValue(license.getFreetext());
+		}
+		
 		File uploadedImage = fileUpload.getUploadFile();
 		if(uploadedImage != null && uploadedImage.exists()) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));

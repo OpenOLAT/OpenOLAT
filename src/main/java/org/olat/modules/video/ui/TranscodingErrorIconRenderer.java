@@ -64,6 +64,5 @@ public class TranscodingErrorIconRenderer extends IconCssCellRenderer implements
 		return getCellValue(val);
 	}
 
-	
 }
 

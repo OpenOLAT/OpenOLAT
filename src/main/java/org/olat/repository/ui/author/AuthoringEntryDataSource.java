@@ -20,18 +20,23 @@
 package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryService;
@@ -61,6 +66,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	private final AccessControlModule acModule;
 	private final UserManager userManager;
 	private final RepositoryService repositoryService;
+	private final LicenseService licenseService;
 	private final AuthoringEntryDataSourceUIFactory uifactory;
 	private Integer count;
 	private final boolean useFilters;
@@ -75,6 +81,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 	}
 	
 	public void resetCount() {
@@ -123,7 +130,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		
 		List<RepositoryEntryAuthorView> views = repositoryService.searchAuthorView(searchParams, firstResult, maxResults);
 		List<AuthoringEntryRow> rows = processViewModel(views);
-		ResultInfos<AuthoringEntryRow> results = new DefaultResultInfos<AuthoringEntryRow>(firstResult + rows.size(), -1, rows);
+		ResultInfos<AuthoringEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
 			count = new Integer(views.size() );
 		}
@@ -131,7 +138,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	}
 
 	private List<AuthoringEntryRow> processViewModel(List<RepositoryEntryAuthorView> repoEntries) {
-		Set<String> newNames = new HashSet<String>();
+		Set<String> newNames = new HashSet<>();
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryAuthorView entry:repoEntries) {
 			if(entry.isOfferAvailable()) {
@@ -145,18 +152,22 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		
 		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+		
+		Collection<OLATResourceable> resources = repoEntries.stream().map(RepositoryEntryAuthorView::getOlatResource).collect(Collectors.toList());
+		List<License> licenses = licenseService.loadLicenses(resources);
 
-		List<AuthoringEntryRow> items = new ArrayList<AuthoringEntryRow>();
+		List<AuthoringEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryAuthorView entry:repoEntries) {
 			String fullname = fullNames.get(entry.getAuthor());
 			if(fullname == null) {
 				fullname = entry.getAuthor();
 			}
 			AuthoringEntryRow row = new AuthoringEntryRow(entry, fullname);
-			//bookmark
+			// bookmark
 			row.setMarked(entry.isMarked());
 
-			List<PriceMethod> types = new ArrayList<PriceMethod>();
+			// access control
+			List<PriceMethod> types = new ArrayList<>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
@@ -178,6 +189,14 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
+			}
+			
+			// license
+			for (License license: licenses) {
+				OLATResource resource = entry.getOlatResource();
+				if (license.getResId().equals(resource.getResourceableId()) && license.getResName().equals(resource.getResourceableTypeName())) {
+					row.setLicense(license);
+				}
 			}
 			
 			uifactory.forgeLinks(row);

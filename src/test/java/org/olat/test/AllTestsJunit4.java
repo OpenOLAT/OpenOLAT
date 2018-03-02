@@ -93,6 +93,9 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.CoordinatorTest.class,
 	org.olat.core.commons.services.help.ConfluenceHelperTest.class,
 	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,
+	org.olat.core.commons.services.license.manager.LicenseTypeActivationDAOTest.class,
+	org.olat.core.commons.services.license.manager.LicenseTypeDAOTest.class,
+	org.olat.core.commons.services.license.manager.LicenseDAOTest.class,
 	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,
 	org.olat.core.commons.services.webdav.manager.DigestAuthenticationTest.class,
 	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,
@@ -343,6 +346,7 @@ import org.junit.runners.Suite;
 	 * Pure JUnit test without need of framework
 	 */
 	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceImplTest.class,
+	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,

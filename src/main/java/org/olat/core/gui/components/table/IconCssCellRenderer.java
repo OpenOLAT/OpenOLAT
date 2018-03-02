@@ -54,13 +54,15 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			target.append(value);
 		} else {
-			target.append("<div style='white-space: nowrap;'><i class='").append(getCssClass(cellValue)).append("'> </i> <span");
+			target.append("<div style='white-space: nowrap;'");
 			String hoverText = getHoverText(cellValue);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				target.append(" title=\"");
 				target.append(StringEscapeUtils.escapeHtml(hoverText));
 			}
 			target.append("\">");
+			target.append("<i class='").append(getCssClass(cellValue)).append("'> </i> <span>");
+	
 			target.append(getCellValue(cellValue));
 			target.append("</span></div>");			
 		}

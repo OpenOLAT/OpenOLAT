@@ -1,0 +1,8 @@
+$r.render("general")
+<div class="o_button_group o_button_group_right">
+	$r.render("add.license.type")
+</div>
+$r.render("license.types")
+#foreach( $handlerConfig in $handlerConfigs )
+	$r.render("$handlerConfig.getName()")
+#end

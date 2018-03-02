@@ -652,6 +652,19 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_link:before { content: $fa-var-link;}
 .o_icon_yahoo:before { content: $fa-var-yahoo;}
 
+/* Licenses */
+.o_icon_lic_add:before { content: $fa-var-plus-circle;}
+.o_icon_lic_public_domain:before, %o_icon_lic_public_domain { content:"\E810"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_cc0:before, %o_icon_lic_cc0 { content:"\E811"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_by:before, %o_icon_lic_by { content:"\E812"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_by_sa:before, %o_icon_lic_by_sa { content:"\E813"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_by_nd:before, %o_icon_lic_by_nd { content:"\E814"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_by_nc:before, %o_icon_lic_by_nc { content:"\E815"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_by_nc_sa:before, %o_icon_lic_by_nc_sa { content:"\E817"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_by_nc_nd:before, %o_icon_lic_by_nc_nd { content:"\E819"; font-family: openolat; font-size: 120%; }
+.o_icon_lic_all_rights_reserved:before { content: $fa-var-copyright;}
+.o_icon_lic_general:before { content: $fa-var-legal;}
+
 
 /* do not move link icons */
 a.o_icon {

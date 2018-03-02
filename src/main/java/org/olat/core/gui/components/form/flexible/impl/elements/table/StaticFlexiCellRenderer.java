@@ -50,6 +50,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 		this(label, action, null, null, null);
 	}
 	
+	public StaticFlexiCellRenderer(String label, String action, String linkCSS) {
+		this(label, action, linkCSS, null, null);
+	}
+	
 	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS) {
 		this(label, action, linkCSS, iconLeftCSS, null);
 	}
