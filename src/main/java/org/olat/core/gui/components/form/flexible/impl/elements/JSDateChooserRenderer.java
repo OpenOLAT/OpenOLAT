@@ -40,8 +40,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for JSDateChooserRenderer
  * <P>
  * Initial Date: 19.01.2007 <br>
  * 
@@ -87,7 +85,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("></i></span>")
 			  .append("</div></div>");//input-group
 			// date chooser javascript
-			sb.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
+			sb.append("<script>\n /* <![CDATA[ */ \n")
 				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
 				.append("  dateFormat:'").append(format).append("',\n")
 				.append("  firstDay:1,\n")
@@ -114,11 +112,18 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				  .append("'").append(dateTranslator.translate("day.short.fr")).append("',")
 				  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
 				.append("],\n")
-				.append("  showOtherMonths:true,\n")
-				.append("  onSelect:function(){\n")
-				.append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
-				.append("    jQuery(this).change();\n")
-				.append("  }\n")
+				.append("  showOtherMonths:true,\n");
+			if(jsdcc.getFormItem().getDefaultValue() != null) {
+				String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
+				sb.append("  beforeShow:function(el, inst) {\n")
+				  .append("    var defDate = jQuery('#").append(id).append("').datepicker('getDate');\n")
+				  .append("    jQuery('#").append(receiverId).append("').datepicker('option', 'defaultDate', defDate);")
+				  .append("  },\n");
+			}
+			sb.append("  onSelect:function(){\n")
+			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
+			  .append("    jQuery(this).change();\n")
+			  .append("  }\n")
 			  .append("})});")
 			  .append("\n/* ]]> */ \n</script>");
 			

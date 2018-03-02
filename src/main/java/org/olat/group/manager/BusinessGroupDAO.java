@@ -678,20 +678,20 @@ public class BusinessGroupDAO {
 			dbq.setParameter("roles", roles);
 		}
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
-			dbq.setParameter("search", makeFuzzyQueryString(params.getNameOrDesc()));
+			dbq.setParameter("search", PersistenceHelper.makeFuzzyQueryString(params.getNameOrDesc()));
 		} else {
 			if(StringHelper.containsNonWhitespace(params.getExactName())) {
 				dbq.setParameter("exactName", params.getExactName());
 			}
 			if(StringHelper.containsNonWhitespace(params.getName())) {
-				dbq.setParameter("name", makeFuzzyQueryString(params.getName()));
+				dbq.setParameter("name", PersistenceHelper.makeFuzzyQueryString(params.getName()));
 			}
 			if(StringHelper.containsNonWhitespace(params.getDescription())) {
-				dbq.setParameter("description", makeFuzzyQueryString(params.getDescription()));
+				dbq.setParameter("description", PersistenceHelper.makeFuzzyQueryString(params.getDescription()));
 			}
 		}
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
-			dbq.setParameter("displayName", makeFuzzyQueryString(params.getCourseTitle()));
+			dbq.setParameter("displayName", PersistenceHelper.makeFuzzyQueryString(params.getCourseTitle()));
 		}
 		return dbq;
 	}
@@ -967,7 +967,7 @@ public class BusinessGroupDAO {
 		
 		//owner
 		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
-			query.setParameter("owner", PersistenceHelper.makeEndFuzzyQueryString(params.getOwnerName()));
+			query.setParameter("owner", PersistenceHelper.makeFuzzyQueryString(params.getOwnerName()));
 		}
 		
 		//id
@@ -985,19 +985,19 @@ public class BusinessGroupDAO {
 		
 		//name
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
-			query.setParameter("search", PersistenceHelper.makeEndFuzzyQueryString(params.getNameOrDesc()));
+			query.setParameter("search", PersistenceHelper.makeFuzzyQueryString(params.getNameOrDesc()));
 		} else {
 			if(StringHelper.containsNonWhitespace(params.getName())) {
-				query.setParameter("name", PersistenceHelper.makeEndFuzzyQueryString(params.getName()));
+				query.setParameter("name", PersistenceHelper.makeFuzzyQueryString(params.getName()));
 			}
 			if(StringHelper.containsNonWhitespace(params.getDescription())) {
-				query.setParameter("description", PersistenceHelper.makeEndFuzzyQueryString(params.getDescription()));
+				query.setParameter("description", PersistenceHelper.makeFuzzyQueryString(params.getDescription()));
 			}
 		}
 		
 		//course title
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
-			query.setParameter("displayName", PersistenceHelper.makeEndFuzzyQueryString(params.getCourseTitle()));
+			query.setParameter("displayName", PersistenceHelper.makeFuzzyQueryString(params.getCourseTitle()));
 		}
 		
 		//public group
@@ -1322,19 +1322,6 @@ public class BusinessGroupDAO {
 	 	 	}
 		}
 		return sb;
-	}
-	
-	private String makeFuzzyQueryString(String string) {
-		// By default only fuzzyfy at the end. Usually it makes no sense to do a
-		// fuzzy search with % at the beginning, but it makes the query very very
-		// slow since it can not use any index and must perform a fulltext search.
-		// User can always use * to make it a really fuzzy search query
-		string = string.replace('*', '%');
-		string = string + "%";
-		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
-		// To test for literal instances of '_', we have to escape it.
-		string = string.replace("_", "\\_");
-		return string.toLowerCase();
 	}
 	
 	private final boolean where(StringBuilder sb, boolean where) {

@@ -22,6 +22,7 @@ package org.olat.course.archiver;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.ArchiveOptions;
@@ -50,8 +51,11 @@ public class FormatConfigHelper {
 			try {
 				Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 				String formatConfigString = (String) guiPrefs.get(ExportOptionsController.class, QTI_EXPORT_ITEM_FORMAT_CONFIG);
-				Object formatObject = configXstream.fromXML(formatConfigString);
-				formatConfig = (ExportFormat) formatObject;
+				if(StringHelper.containsNonWhitespace(formatConfigString)) {
+					formatConfig = (ExportFormat)configXstream.fromXML(formatConfigString);
+				} else {
+					formatConfig = new ExportFormat(true, true, true, true, true);
+				}
 			} catch (Exception e) {
 				log.error("could not establish object from xml", e);
 				formatConfig = new ExportFormat(true, true, true, true, true);

@@ -460,11 +460,7 @@ public class PageDAO {
 				.setParameter("pageKey", page.getKey())
 				.executeUpdate();
 		
-		int evaluations = 0;
-		if(assignments > 0) {
-			// delete sessions and responses	
-			evaluations = evaluationFormSessionDao.deleteSessionForPortfolioEvaluation(body);
-		}
+		int evaluations = evaluationFormSessionDao.deleteSessionForPortfolioEvaluation(body);
 		
 		dbInstance.getCurrentEntityManager().remove(page);
 		dbInstance.getCurrentEntityManager().remove(body);

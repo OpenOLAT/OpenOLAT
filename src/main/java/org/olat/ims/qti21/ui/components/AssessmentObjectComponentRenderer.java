@@ -61,7 +61,6 @@ import java.util.List;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
@@ -893,6 +892,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	private void renderComment(StringOutput sb, String comment, boolean disabled, Translator translator) {
 		sb.append("<fieldset class='o_candidatecomment'>")
 		  .append("<legend>").append(translator.translate("assessment.comment.legend")).append("</legend>")
+		  .append("<div class='o_item_container_help'><p><i class='o_icon o_icon_help'> </i> ").append(translator.translate("assessment.comment.legend.help")).append("</p></div>")
 		  .append("<input name='qtiworks_comment_presented' type='hidden' value='true' />")
 		  .append("<textarea name='qtiworks_comment'").append(" disabled=\"disabled\"", disabled).append(" rows='4' class='form-control'>");
 		if(StringHelper.containsNonWhitespace(comment)) {
@@ -1008,13 +1008,15 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 
 		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
 		AssessmentRenderer fHints = renderer.newHints(fr);
-		AssessmentObjectVelocityRenderDecorator vrdec
-			= new AssessmentObjectVelocityRenderDecorator(fHints, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);			
-		ctx.put("r", vrdec);
-		VelocityHelper vh = VelocityHelper.getInstance();
-		vh.mergeContent(page, ctx, sb, null);
-		ctx.remove("r");
-		IOUtils.closeQuietly(vrdec);
+		try(AssessmentObjectVelocityRenderDecorator vrdec
+			= new AssessmentObjectVelocityRenderDecorator(fHints, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator)) {
+			ctx.put("r", vrdec);
+			VelocityHelper vh = VelocityHelper.getInstance();
+			vh.mergeContent(page, ctx, sb, null);
+			ctx.remove("r");
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	private String getInteractionTemplate(QtiNode interaction) {
@@ -1290,7 +1292,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  dispIdField:'").append(form.getDispatchFieldId()).append("',\n")
 			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
 			  .append("  eventIdField:'").append(form.getEventFieldId()).append("'\n")
-			  .append(" });\n")
+			  .append(" }).tabOverride();\n")
 			  .append("})\n")
 			  .append(FormJSHelper.getJSEnd());
 		}

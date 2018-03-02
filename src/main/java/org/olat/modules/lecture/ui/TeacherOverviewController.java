@@ -89,11 +89,12 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 			for(LectureBlockWithTeachers blockWithTeachers:blocksWithTeachers) {
 				LectureBlock block = blockWithTeachers.getLectureBlock();
 				
-				StringBuilder teachers = new StringBuilder();
+				StringBuilder teachers = new StringBuilder(32);
 				List<Identity> teacherList = blockWithTeachers.getTeachers();
-				
+
+				String separator = translate("user.fullname.separator");
 				for(Identity teacher:blockWithTeachers.getTeachers()) {
-					if(teachers.length() > 0) teachers.append(", ");
+					if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
 					teachers.append(userManager.getUserDisplayName(teacher));
 				}
 				

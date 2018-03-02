@@ -160,8 +160,10 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canRemove() {
-		return questionItemSource.isRemoveEnabled()
-				&& (admin || itemView.isAuthor() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus()));
+		return  questionItemSource.isRemoveEnabled()
+				|| admin
+				|| poolAdmin
+				|| itemView.isAuthor();
 	}
 
 	@Override

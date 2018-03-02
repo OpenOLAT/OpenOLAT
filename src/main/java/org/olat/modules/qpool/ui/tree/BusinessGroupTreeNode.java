@@ -26,7 +26,6 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -93,11 +92,6 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 	
 	private boolean isShareAdmin(UserRequest ureq, BusinessGroup group) {
 		Identity identity = ureq.getIdentity();
-		Roles roles = ureq.getUserSession().getRoles();
-		return roles != null &&
-				(  roles.isOLATAdmin()
-				|| roles.isPoolAdmin()
-				|| businessGroupService.isIdentityInBusinessGroup(identity, group.getKey(), true, false, null)
-				);
+		return businessGroupService.isIdentityInBusinessGroup(identity, group.getKey(), true, false, null);
 	}
 }

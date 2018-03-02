@@ -138,6 +138,7 @@ This produce uses software based on the MIT License
 * maphilight (MIT License) [https://github.com/kemayo/maphilight]
 * iFrame Resizer (MIT License) [https://github.com/davidjbradshaw/iframe-resizer]
 * Dragula (MIT License) [https://github.com/bevacqua/dragula]
+* tabOverride (MIT License) [https://github.com/wjbryant/taboverride]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License

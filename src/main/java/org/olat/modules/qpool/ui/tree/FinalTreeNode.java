@@ -80,7 +80,8 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 					ureq.getIdentity(),
 					ureq.getUserSession().getRoles(),
 					taxonomyLevel);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(FINAL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
+			String resName = FINAL + "_" + taxonomyLevel.getIdentifier();
+			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resName, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					FINAL + taxonomyLevel.getKey(), false);

@@ -208,10 +208,13 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
 		// drawing
 		jsa.addRequiredStaticJsFile("js/jquery/openolat/jquery.paint.js");
+		//tab
+		jsa.addRequiredStaticJsFile("js/jquery/taboverride/taboverride-4.0.0.min.js");
 		
 		if(Settings.isDebuging()) {
 			// order needs dragula
 			jsa.addRequiredStaticJsFile("js/dragula/dragula.js");
+			jsa.addRequiredStaticJsFile("js/jquery/taboverride/jquery.taboverride.js");
 			// qtiAutosave and qtiTimer are loaded by the controller
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.associate.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.choice.js");
@@ -229,6 +232,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.slider.js");
 		} else {
 			jsa.addRequiredStaticJsFile("js/dragula/dragula.min.js");
+			jsa.addRequiredStaticJsFile("js/jquery/taboverride/jquery.taboverride.min.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.qti.min.js");
 		}
 	}
