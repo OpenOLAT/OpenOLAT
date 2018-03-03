@@ -19,7 +19,7 @@
 					var ww = window.open("$r.commandURI("print")", "$winid", "height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
 					ww.focus();
 				} catch(e) {
-					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Error when trying to dock div id::$r.getId("undck")', "org.olat.core.gui.control.generic.docking._content.docked.html");
+					if(window.console) console.log('Error when trying to dock div id::$r.getId("undck")');
 				}
 			}
 		/* ]]> */

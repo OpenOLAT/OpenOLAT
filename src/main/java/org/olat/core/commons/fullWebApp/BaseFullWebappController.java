@@ -97,7 +97,6 @@ import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -135,7 +134,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private Controller debugC;
 	private Controller inlineTranslationC;
 	private Controller developmentC;
-	private Controller jsLoggerC;
 	private List<String> bodyCssClasses = new ArrayList<>(3);
 
 	private Boolean reload;
@@ -384,11 +382,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			mainVc.put("development", developmentC.getInitialComponent());
 		}
 
-		// attach AJAX javascript console
-		jsLoggerC = new JavaScriptTracingController(ureq, getWindowControl());
-		// the js logger provides only a header element, nevertheless we need to
-		// put it into the main velocity container.
-		mainVc.put("jsLoggerC", jsLoggerC.getInitialComponent());
 		// put the global js translator mapper path into the main window
 		mainVc.contextPut("jsTranslationMapperPath", BaseChiefController.jsTranslationMapperPath);
 
@@ -769,10 +762,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		if (developmentC != null) {
 			developmentC.dispose();
 			developmentC = null;
-		}
-		if (jsLoggerC != null) {
-			jsLoggerC.dispose();
-			jsLoggerC = null;
 		}
 
 		//deregister for assessment mode
@@ -1662,7 +1651,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		}
 	}
 	
-	private static class TabState {
+	public static class TabState {
 		private final DTab dtab;
 		private final SiteInstance site;
 		

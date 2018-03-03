@@ -80,7 +80,6 @@ var BLoader = {
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString));
 			}
-			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString), "functions.js::BLoader::executeGlobalJS::" + contextDesc);
 			// Parsing of JS script can fail in IE for unknown reasons (e.g. tinymce gets 8002010 error)
 			// Try to do a 'full page refresh' and load everything via page header, this normally works
 			if (window.location.href.indexOf('o_winrndo') != -1) window.location.reload();
@@ -144,7 +143,6 @@ var BLoader = {
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::loadCSS: Error when loading CSS from URL::' + cssURL);
 			}
-			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BLoader::loadCSS: Error when loading CSS from URL::' + cssURL, "functions.js::BLoader::loadCSS");
 		}				
 	},
 
@@ -192,7 +190,6 @@ var BLoader = {
 			if (o_info.debug) { // add webbrowser console log
 				o_logerr('BLoader::unLoadCSS: Error when unloading CSS from URL::' + cssURL);
 			}
-			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','BLoader::unLoadCSS: Error when unloading CSS from URL::' + cssURL, "functions.js::BLoader::loadCSS");
 		}				
 	}
 };
@@ -282,7 +279,6 @@ function o_initEmPxFactor() {
 	o_info.emPxFactor = jQuery('#o_width_1em').width();
 	if (o_info.emPxFactor == 0 || o_info.emPxFactor == 'undefined') {
 		o_info.emPxFactor = 12; // default value for all strange settings
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Could not read with of element b_width_1em, set o_info.emPxFactor to 12', "functions.js");
 	}
 }
 
@@ -479,17 +475,9 @@ if(!Array.prototype.indexOf) {
 //DEPRECATED: listen to event "oo.dom.replacement.after"
 var b_onDomReplacementFinished_callbacks=new Array();//array holding js callback methods that should be executed after the next ajax call
 function b_AddOnDomReplacementFinishedCallback(funct) {
-	var debug = jQuery(document).ooLog().isDebugEnabled();
-	
-	if(debug) jQuery(document).ooLog('debug',"callback stack size: " + b_onDomReplacementFinished_callbacks.length, "functions.js ADD"); 
-	if (debug && b_onDomReplacementFinished_callbacks.toSource) {
-		jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js ADD")
-	};
-
 	b_onDomReplacementFinished_callbacks.push(funct);
-	if(debug) jQuery(document).ooLog('debug',"push to callback stack, func: " + funct, "functions.js ADD");
 }
-//fxdiff FXOLAT-310 
+
 var b_changedDomEl=new Array();
 
 //same as above, but with a filter to prevent adding a funct. more than once
@@ -497,10 +485,8 @@ var b_changedDomEl=new Array();
 // DEPRECATED: listen to event "oo.dom.replacement.after"
 function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
 	if (funct.constructor == Array){
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"add: its an ARRAY! ", "functions.js ADD"); 
 		//check if it has been added before
 		if (b_onDomReplacementFinished_callbacks.search(funct[0])){
-			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"push to callback stack, already there!!: " + funct[0], "functions.js ADD");		
 			return;
 		} 
 	}
@@ -522,7 +508,6 @@ function o_ainvoke(r) {
 		// let everybody know dom replacement has finished
 		jQuery(document).trigger("oo.dom.replacement.before");
 
-		//fxdiff FXOLAT-310 
 		b_changedDomEl = new Array();
 		
 		if (o_info.debug) { o_debug_trid++; }
@@ -674,51 +659,37 @@ function o_ainvoke(r) {
 						break;	
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
-						if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), ?: unknown command "+co, "functions.js");
 						break;
 				}		
 			} else {
-				if (o_info.debug) o_log ("could not find window??");
-				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), could not find window??", "functions.js");
+				if (o_info.debug) o_log("could not find window??");
 			}		
 		}
 
 		// BEGIN DEPRECATED DOM REPLACEMENT CALLBACK: new style below
 		// execute onDomReplacementFinished callback functions
 		var stacklength = b_onDomReplacementFinished_callbacks.length;
-		if (b_onDomReplacementFinished_callbacks.toSource && jQuery(document).ooLog().isDebugEnabled()) { 
-			jQuery(document).ooLog('debug',"stack content"+b_onDomReplacementFinished_callbacks.toSource(), "functions.js");
+		console.log(b_onDomReplacementFinished_callbacks.toSource);//TODO
+		if (b_onDomReplacementFinished_callbacks.toSource) { 
+			//
 		}
 		
 		for (mycounter = 0; stacklength > mycounter; mycounter++) {
 			
 			if (mycounter > 50) {
-				if(jQuery(document).ooLog().isDebugEnabled()) {
-					jQuery(document).ooLog('debug',"Stopped executing DOM replacement callback functions - to many functions::" + b_onDomReplacementFinished_callbacks.length, "functions.js");
-				}
 				break; // emergency break
-			}
-			if(jQuery(document).ooLog().isDebugEnabled()) {
-				jQuery(document).ooLog('debug',"Stacksize before shift: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
 			}
 			var func = b_onDomReplacementFinished_callbacks.shift();
 			if (typeof func.length === 'number'){
 				if (func[0] == "glosshighlighter") {
 					var tmpArr = func[1];
-					if(jQuery(document).ooLog().isDebugEnabled())
-						jQuery(document).ooLog('debug',"arr fct: "+ tmpArr, "functions.js");
 					func = tmpArr;
 				 }				
 			}
-			if(jQuery(document).ooLog().isDebugEnabled())
-				jQuery(document).ooLog('debug',"Executing DOM replacement callback function #" + mycounter + " with timeout funct::" + func, "functions.js");
 			// don't use execScript here - must be executed outside this function scope so that dom replacement elements are available
 			
 			//func.delay(0.01);
 			func();//TODO jquery
-			
-			if(jQuery(document).ooLog().isDebugEnabled())
-				jQuery(document).ooLog('debug',"Stacksize after timeout: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
 		}
 		// END DEPRECATED DOM REPLACEMENT CALLBACK: new style on next line
 		
@@ -797,8 +768,6 @@ function setFormDirty(formId) {
 		}
 		// set dirty css class
 		if(mySubmit) mySubmit.className ="btn o_button_dirty";
-	} else if(jQuery(document).ooLog().isDebugEnabled()) {
-		jQuery(document).ooLog('debug',"Error in setFormDirty, myForm was null for formId=" + formId, "functions.js");
 	}
 }
 
@@ -872,13 +841,10 @@ function gotonode(nodeid) {
 			// must be content opened using the clone controller - search in opener window
 			if (opener && typeof opener.o_activateCourseNode != 'undefined') {
 			  opener.o_activateCourseNode(nodeid);
-			} else if(jQuery(document).ooLog().isDebugEnabled()) {
-				jQuery(document).ooLog('debug',"Error in gotonode(), could not find main window", "functions.js");
-			}			
+			}		
 		}
 	} catch (e) {
 		alert('Goto node error:' + e);
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in gotonode()::" + e.message, "functions.js");
 	}
 }
 
@@ -1940,10 +1906,8 @@ function b_attach_i18n_inline_editing() {
 	// Add hover handler to display inline edit links
 	jQuery('span.o_translation_i18nitem').hover(function() {
 		jQuery(this.firstChild).show();
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Entered i18nitem::" + this.firstChild, "functions.js:b_attach_i18n_inline_editing()");
 	},function(){
 		jQuery('a.o_translation_i18nitem_launcher').hide();
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Leaving i18nitem::" + this, "functions.js:b_attach_i18n_inline_editing()");
 	});
 	// Add highlight effect on link to show which element is affected by this link
 	jQuery('a.o_translation_i18nitem_launcher').hover(function() {	
