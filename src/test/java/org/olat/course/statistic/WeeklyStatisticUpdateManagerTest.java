@@ -119,6 +119,7 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 	
 	private String getWeekString(Calendar start) {
 		Calendar cal = Calendar.getInstance();
+		cal.setFirstDayOfWeek(Calendar.MONDAY);
 		cal.set(Calendar.YEAR, start.get(Calendar.YEAR));
 		cal.set(Calendar.MONTH, start.get(Calendar.MONTH));
 		cal.set(Calendar.DATE, start.get(Calendar.DATE));
@@ -128,8 +129,10 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 		cal.set(Calendar.MILLISECOND, 0);
 		
 		if(dbInstance.isMySQL()) {
+			weeklyMySQLFormat.setCalendar(cal);
 			return weeklyMySQLFormat.format(cal.getTime());
 		}
+		weeklyFormat.setCalendar(cal);
 		return weeklyFormat.format(cal.getTime());
 	}
 	
@@ -146,7 +149,9 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 	protected String addLogEntry(RepositoryEntry repositoryEntry, CourseNode courseNode, Calendar start,
 			int dayInPast, int hour, int minute, int second) {
 		Calendar cal = addLog(repositoryEntry.getKey(), courseNode.getIdent(), start, dayInPast, hour, minute, second);
+		
 		String week = getWeekString(cal);
+		System.out.println(cal.getTime() + " " + week);
 		incrementInMemoryStatistics(repositoryEntry.getKey(), courseNode.getIdent(), week);
 		return week;
 	}
