@@ -228,7 +228,7 @@ public class VideoListingController extends FormBasicController implements Activ
 					return new VFSMediaResource(imageFile);
 				}
 			}
-			return new NotFoundMediaResource("Image for resource ID::" + relPath + " not found");
+			return new NotFoundMediaResource();
 		}
 	}
 	

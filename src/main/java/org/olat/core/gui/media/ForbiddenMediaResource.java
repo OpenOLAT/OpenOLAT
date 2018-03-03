@@ -34,25 +34,13 @@ import javax.servlet.http.HttpServletResponse;
  * @author Felix Jost
  */
 public class ForbiddenMediaResource extends DefaultMediaResource {
-	private String forbiddenFoundURI;
 
-	/**
-	 * @param forbiddenFoundURI
-	 */
-	public ForbiddenMediaResource(String forbiddenFoundURI) {
-		this.forbiddenFoundURI = forbiddenFoundURI;
-	}
-
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
-			hres.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: " + forbiddenFoundURI);
+			hres.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (IOException e) {
 			// we can do nothing better
 		}
-
 	}
 }

@@ -870,7 +870,7 @@ public class AssessmentResultController extends FormBasicController {
 			if(signature.exists()) {
 				resource = new DownloadeableMediaResource(signature);
 			} else {
-				resource = new NotFoundMediaResource(relPath);
+				resource = new NotFoundMediaResource();
 			}
 			return resource;
 		}

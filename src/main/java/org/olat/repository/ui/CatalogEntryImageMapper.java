@@ -74,7 +74,7 @@ public class CatalogEntryImageMapper implements Mapper {
 			}
 
 		} else {
-			resource = new NotFoundMediaResource(relPath);
+			resource = new NotFoundMediaResource();
 		}
 		return resource;
 	}

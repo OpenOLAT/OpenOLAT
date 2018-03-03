@@ -64,7 +64,7 @@ public class CertificateDispatcher implements Dispatcher {
 		MediaResource resource;
 		Certificate certificate = certificatesManager.getCertificateByUuid(uuid);
 		if(certificate == null) {
-			resource = new NotFoundMediaResource(origUri);
+			resource = new NotFoundMediaResource();
 		} else {
 			VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(certificate);
 			resource = new VFSMediaResource(certificateFile);

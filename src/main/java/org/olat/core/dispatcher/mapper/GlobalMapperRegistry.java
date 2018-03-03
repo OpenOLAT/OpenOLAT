@@ -53,7 +53,7 @@ import org.olat.core.util.WebappHelper;
  * @author Felix Jost
  */
 public class GlobalMapperRegistry implements Dispatcher {
-	private static final MediaResource NOTFOUND = new NotFoundMediaResource("not found");
+	private static final MediaResource NOTFOUND = new NotFoundMediaResource();
 	private static final GlobalMapperRegistry INSTANCE = new GlobalMapperRegistry();
 	
 	// The global mapper hash map contains mappers:

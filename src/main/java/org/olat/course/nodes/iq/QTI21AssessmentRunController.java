@@ -604,7 +604,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		}
 		if(resource == null) {
-			resource = new NotFoundMediaResource("");
+			resource = new NotFoundMediaResource();
 		}
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}

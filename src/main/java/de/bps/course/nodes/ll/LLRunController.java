@@ -120,9 +120,9 @@ public class LLRunController extends BasicController {
 				} else if(customMediaMapper != null) {
 					return customMediaMapper.handle(relPath, request);
 				}
-				return new NotFoundMediaResource(relPath);
+				return new NotFoundMediaResource();
 			} else {
-				return new ForbiddenMediaResource(relPath);
+				return new ForbiddenMediaResource();
 			}
 		}
 	}

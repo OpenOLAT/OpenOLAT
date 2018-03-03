@@ -908,7 +908,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			}
 			
 			if(mr == null) {
-				mr = new NotFoundMediaResource(relPath);
+				mr = new NotFoundMediaResource();
 			}
 			return mr;
 		}

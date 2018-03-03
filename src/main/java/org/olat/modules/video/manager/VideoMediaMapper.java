@@ -41,7 +41,7 @@ public class VideoMediaMapper implements Mapper  {
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		if(relPath != null && relPath.contains("..")) { 
-			return new ForbiddenMediaResource(relPath);
+			return new ForbiddenMediaResource();
 		}
 		VFSItem mediaFile = mediaBase.resolve(relPath);
 		if (mediaFile instanceof VFSLeaf && !relPath.endsWith("xml")){
@@ -53,7 +53,7 @@ public class VideoMediaMapper implements Mapper  {
 			}
 			return res;
 		} else {
- 			return new NotFoundMediaResource(relPath);
+ 			return new NotFoundMediaResource();
 		}
 	}
 }

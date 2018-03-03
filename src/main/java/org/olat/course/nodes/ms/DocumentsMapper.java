@@ -59,6 +59,6 @@ public class DocumentsMapper implements Mapper {
 				}
 			}
 		}
-		return new NotFoundMediaResource(relPath);
+		return new NotFoundMediaResource();
 	}
 }

@@ -669,7 +669,7 @@ public class AssessmentForm extends FormBasicController {
 					}
 				}
 			}
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 		
 	}

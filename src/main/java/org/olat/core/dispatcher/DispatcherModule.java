@@ -163,7 +163,7 @@ public class DispatcherModule {
 	 */
 	public static final void sendNotFound(String url, HttpServletResponse response) {
 		try {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, url);
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		} catch (IOException e) {
 			log.error("Send 404 failed: url=" + url, e);
 		}
@@ -177,7 +177,7 @@ public class DispatcherModule {
 	 */
 	public static final void sendForbidden(String url, HttpServletResponse response) {
 		try {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, url);
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (IOException e) {
 			log.error("Send 403 failed: url=" + url, e);
 		}
@@ -191,7 +191,7 @@ public class DispatcherModule {
 	 */
 	public static final void sendBadRequest(String url, HttpServletResponse response) {
 		try {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, (url == null ? "n/a" : url));
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		} catch (IOException e) {
 			log.error("Send 400 failed: url=" + url, e);
 		}

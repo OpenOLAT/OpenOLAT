@@ -171,14 +171,14 @@ public class StaticsLegacyDispatcher implements Dispatcher {
 
         if (handler == null || relPath == null) {
             // no handler found or relPath incomplete
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getRequestURI());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return false;
         }
 
         ResourceDescriptor rd = handler.getResourceDescriptor(request, relPath);
         if (rd == null) {
             // no handler found or relPath incomplete
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getRequestURI());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return false;
         }
 
@@ -195,7 +195,7 @@ public class StaticsLegacyDispatcher implements Dispatcher {
             InputStream is = handler.getInputStream(request, rd);
             if (is == null) {
                 // resource not found or access denied
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getRequestURI());
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return false;
             }
             StaticMediaResource smr = new StaticMediaResource(is, rd);

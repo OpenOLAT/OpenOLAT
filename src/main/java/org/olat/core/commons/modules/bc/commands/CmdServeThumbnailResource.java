@@ -69,7 +69,7 @@ public class CmdServeThumbnailResource implements FolderCommand {
 			}
 		}
 		if(mr == null) {
-			mr = new NotFoundMediaResource(path);
+			mr = new NotFoundMediaResource();
 		}
 		
 		ureq.getDispatchResult().setResultingMediaResource(mr);
