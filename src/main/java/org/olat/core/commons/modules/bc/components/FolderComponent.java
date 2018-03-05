@@ -140,9 +140,7 @@ public class FolderComponent extends AbstractComponent {
 		dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		if (ureq.getParameter(ListRenderer.PARAM_EDTID) != null) {
 			fireEvent(ureq, new Event(FolderCommandFactory.COMMAND_EDIT));
@@ -212,6 +210,7 @@ public class FolderComponent extends AbstractComponent {
 		currentSortOrder = col;
 		if (col.equals(SORT_NAME)) {																										// sort after file name?
 			comparator = new Comparator<VFSItem>() {
+				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					if (sortAsc) {
 						if ((o1 instanceof VFSLeaf && o2 instanceof VFSLeaf) || (!(o1 instanceof VFSLeaf) && !(o2 instanceof VFSLeaf))) {
@@ -240,6 +239,7 @@ public class FolderComponent extends AbstractComponent {
 			};
 		} else if (col.equals(SORT_DATE)) {																							// sort after modification date (if same, then name)
 			comparator = new Comparator<VFSItem>() {
+				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					if      (o1.getLastModified() < o2.getLastModified()) return ((sortAsc) ? -1 :  1);			
 					else if (o1.getLastModified() > o2.getLastModified()) return ((sortAsc) ?  1 : -1);
@@ -251,6 +251,7 @@ public class FolderComponent extends AbstractComponent {
 			};
 		} else	if (col.equals(SORT_SIZE)) {																						// sort after file size, folders always on top
 			comparator = new Comparator<VFSItem>() {
+				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					VFSLeaf leaf1 = null;
 					if (o1 instanceof VFSLeaf) {
@@ -272,6 +273,7 @@ public class FolderComponent extends AbstractComponent {
 			};
 		} else if (col.equals(SORT_REV)) {																							// sort after revision number, folders always on top
 			comparator = new Comparator<VFSItem>() {
+				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					Versionable v1 = null;
 					Versionable v2 = null;
@@ -303,16 +305,10 @@ public class FolderComponent extends AbstractComponent {
 		if (currentContainerChildren != null) updateChildren();													// if not empty the update list
 	}
 
-	/**
-	 * @return VFSContainer
-	 */
 	public VFSContainer getRootContainer() {
 		return rootContainer;
 	}
 
-	/**
-	 * @return VFSContainer
-	 */
 	public VFSContainer getCurrentContainer() {
 		return currentContainer;
 	}
@@ -374,9 +370,6 @@ public class FolderComponent extends AbstractComponent {
 		currentContainerChildren = children;
 	}
 	
-	/**
-	 * @param relPath
-	 */
 	public boolean setCurrentContainerPath(String relPath) {
 		// get the container
 		setDirty(true);
@@ -421,6 +414,7 @@ public class FolderComponent extends AbstractComponent {
 		return externContainerForCopy;
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}

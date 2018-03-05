@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -109,6 +110,18 @@ class LicenseTypeDAO {
 		return licenseTypes == null || licenseTypes.isEmpty() ? null : licenseTypes.get(0);
 	}
 
+	LicenseType loadLicenseTypeByName(String name) {
+		if (!StringHelper.containsNonWhitespace(name)) return null;
+
+		String query = "select licensetype from licensetype licensetype where licensetype.name=:name";
+		List<LicenseType> licenseTypes = dbInstance.getCurrentEntityManager()
+				.createQuery(query, LicenseType.class)
+				.setParameter("name", name)
+				.getResultList();
+		return licenseTypes == null || licenseTypes.isEmpty() ? null : licenseTypes.get(0);
+	}
+	
+
 	List<LicenseType> loadLicenseTypes() {
 		String query = "select licensetype from licensetype licensetype";
 		return dbInstance.getCurrentEntityManager()
@@ -144,5 +157,5 @@ class LicenseTypeDAO {
 		
 		return number != null && number > 0;
 	}
-	
+
 }

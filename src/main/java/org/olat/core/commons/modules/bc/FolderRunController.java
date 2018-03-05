@@ -439,12 +439,6 @@ public class FolderRunController extends BasicController implements Activateable
 		}
 	}
 
-	/**
-	 * @seec org.olat removeAsListenerAndDispose(folderCommandController);
-	 *      folderCommandController = null; removeAsListenerAndDispose(cmc); cmc =
-	 *      null; .UserRequest, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == folderComponent || source == folderContainer || source == editQuotaButton) {
@@ -545,10 +539,6 @@ public class FolderRunController extends BasicController implements Activateable
 		return null;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {		
 		//

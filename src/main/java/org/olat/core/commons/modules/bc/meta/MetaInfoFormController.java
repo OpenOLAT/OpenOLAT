@@ -29,11 +29,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderLicenseHandler;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -72,6 +80,9 @@ public class MetaInfoFormController extends FormBasicController {
 	private FormLink moreMetaDataLink;
 	private String initialFilename;
 	private TextElement filename, title, publisher, creator, sourceEl, city, pages, language, url, comment, publicationMonth, publicationYear;
+	private SingleSelection licenseEl;
+	private TextElement licensorEl;
+	private TextAreaElement licenseFreetextEl;
 	private SingleSelection locked;
 	// Fields needed for upload dialog
 	private boolean isSubform;
@@ -86,6 +97,12 @@ public class MetaInfoFormController extends FormBasicController {
 	private VFSLockManager vfsLockManager;
 	@Autowired
 	private MetaInfoFactory metaInfoFactory;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private FolderLicenseHandler licenseHandler;
 
 	/**
 	 * Use this controller for editing meta data of an existing file.
@@ -134,36 +151,22 @@ public class MetaInfoFormController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing so far
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// done, parent controller takes care of saving metadata...
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == moreMetaDataLink && event.wasTriggerdBy(FormEvent.ONCLICK)) {
@@ -172,13 +175,11 @@ public class MetaInfoFormController extends FormBasicController {
 			setMetaFieldsVisible(true);
 			flc.setDirty(true);
 			moreMetaDataLink.setVisible(false);
+		} else if (source == licenseEl) {
+			updateLicenseUI();
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(isSubform) {
@@ -247,6 +248,28 @@ public class MetaInfoFormController extends FormBasicController {
 		// url/link
 		String urlVal = (meta != null ? meta.getUrl() : null);
 		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);
+		
+		if (licenseModule.isEnabled(licenseHandler)) {
+			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
+			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
+
+			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
+					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
+			licenseEl = uifactory.addDropdownSingleselect("mf.license", formLayout,
+					licenseSelectionConfig.getLicenseTypeKeys(),
+					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
+			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
+				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+			}
+			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			
+			licensorEl = uifactory.addTextElement("mf.licensor", 1000, license.getLicensor(), formLayout);
+
+			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
+			licenseFreetextEl = uifactory.addTextAreaElement("mf.freetext", 4, 72, freetext, formLayout);
+			updateLicenseUI();
+		}
 
 		/* static fields */
 		String sizeText, typeText;
@@ -259,7 +282,7 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 
 		// Targets to hide
-		metaFields = new HashSet<FormItem>();
+		metaFields = new HashSet<>();
 		metaFields.add(creator);
 		metaFields.add(publisher);
 		metaFields.add(sourceEl);
@@ -268,6 +291,15 @@ public class MetaInfoFormController extends FormBasicController {
 		metaFields.add(pages);
 		metaFields.add(language);
 		metaFields.add(url);
+		if (licenseEl != null) {
+			metaFields.add(licenseEl);
+		}
+		if (licensorEl != null) {
+			metaFields.add(licensorEl);
+		}
+		if (licenseFreetextEl != null) {
+			metaFields.add(licenseFreetextEl);
+		}
 
 		if (!hasMetadata(meta)) {
 			moreMetaDataLink = uifactory.addFormLink("mf.more.meta.link", formLayout, Link.LINK_CUSTOM_CSS);
@@ -358,6 +390,23 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 	}
 
+	private void updateLicenseUI() {
+		boolean licenseSelected = false;
+		boolean freetextSelected = false;
+		if (licenseEl != null && licenseEl.isOneSelected()) {
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType licenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			licenseSelected = !licenseService.isNoLicense(licenseType);
+			freetextSelected = licenseService.isFreetext(licenseType);
+		}
+		if (licensorEl != null) {
+			licensorEl.setVisible(licenseSelected);
+		}
+		if (licenseFreetextEl != null) {
+			licenseFreetextEl.setVisible(freetextSelected);
+		}
+	}
+	
 	/**
 	 * @return True if one or more metadata fields are non-emtpy.
 	 */
@@ -366,7 +415,9 @@ public class MetaInfoFormController extends FormBasicController {
 				|| StringHelper.containsNonWhitespace(meta.getPublisher()) || StringHelper.containsNonWhitespace(meta.getSource())
 				|| StringHelper.containsNonWhitespace(meta.getCity()) || StringHelper.containsNonWhitespace(meta.getPublicationDate()[0])
 				|| StringHelper.containsNonWhitespace(meta.getPublicationDate()[1]) || StringHelper.containsNonWhitespace(meta.getPages())
-				|| StringHelper.containsNonWhitespace(meta.getLanguage()) || StringHelper.containsNonWhitespace(meta.getUrl());
+				|| StringHelper.containsNonWhitespace(meta.getLanguage()) || StringHelper.containsNonWhitespace(meta.getUrl())
+				|| StringHelper.containsNonWhitespace(meta.getLicenseTypeKey()) || StringHelper.containsNonWhitespace(meta.getLicenseTypeName())
+				|| StringHelper.containsNonWhitespace(meta.getLicenseText()) || StringHelper.containsNonWhitespace(meta.getLicensor());
 				}
 		return false;
 	}
@@ -379,6 +430,9 @@ public class MetaInfoFormController extends FormBasicController {
 	private void setMetaFieldsVisible(boolean visible) {
 		for (FormItem formItem : metaFields) {
 			formItem.setVisible(visible);
+		}
+		if (visible) {
+			updateLicenseUI();
 		}
 	}
 
@@ -418,7 +472,36 @@ public class MetaInfoFormController extends FormBasicController {
 		meta.setSource(sourceEl.getValue());
 		meta.setUrl(url.getValue());
 		meta.setPages(pages.getValue());
+		License license = getLicenseFromFormItems();
+		meta.setLicenseTypeKey(license.getLicenseType() != null? String.valueOf(license.getLicenseType().getKey()): "");
+		meta.setLicenseTypeName(license.getLicenseType() != null? license.getLicenseType().getName(): "");
+		meta.setLicensor(license.getLicensor());
+		meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
 		return meta;
+	}
+	
+	private License getLicenseFromFormItems() {
+		License license = licenseService.createLicense(null);
+		String licensor = "";
+		String freetext = "";
+		if (licenseModule.isEnabled(licenseHandler)) {
+			if (licenseEl != null && licenseEl.isOneSelected()) {
+				String licenseTypeKey = licenseEl.getSelectedKey();
+				LicenseType licneseType = licenseService.loadLicenseTypeByKey(licenseTypeKey);
+				license.setLicenseType(licneseType);
+			}
+			if (licensorEl != null && licensorEl.isVisible() && StringHelper.containsNonWhitespace(licensorEl.getValue())) {
+				licensor = licensorEl.getValue();
+			}
+			if (licenseFreetextEl != null && licenseFreetextEl.isVisible() && StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())) {
+				freetext = licenseFreetextEl.getValue();
+			}
+			licensorEl.setValue(license.getLicensor());
+			licenseFreetextEl.setValue(license.getFreetext());
+		}
+		license.setLicensor(licensor);
+		license.setFreetext(freetext);
+		return license;
 	}
 
 	/**
@@ -446,9 +529,6 @@ public class MetaInfoFormController extends FormBasicController {
 		return getMetaInfo(meta);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean valid = true;
@@ -493,7 +573,23 @@ public class MetaInfoFormController extends FormBasicController {
 			}			
 		}
 		
+		licenseEl.clearError();
+		if (licenseEl != null && licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
+			licenseEl.setErrorKey("form.legende.mandatory", null);
+			valid &= false;
+		}
+		
 		return valid;
+	}
+	
+	private boolean isLicenseTypeNotSelected() {
+		boolean isNoLicenseSelected = false;
+		if (licenseEl != null && licenseEl.isOneSelected()) {
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType selectedLicenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			isNoLicenseSelected = licenseService.isNoLicense(selectedLicenseType);
+		}
+		return isNoLicenseSelected;
 	}
 
 	/**

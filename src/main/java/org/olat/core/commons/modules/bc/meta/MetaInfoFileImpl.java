@@ -103,6 +103,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	private Long lockedByIdentKey = null;
 	private String comment = "";
 	private String title, publisher, creator, source, city, pages, language, url, pubMonth, pubYear;
+	private String licenseTypeKey;
+	private String licenseTypeName;
+	private String licenseText;
+	private String licensor;
 	private Date lockedDate;
 	private int downloadCount;
 	private boolean locked;
@@ -112,7 +116,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	private File metaFile = null;
 	
 	private boolean cannotGenerateThumbnail = false;
-	private List<Thumbnail> thumbnails = new ArrayList<Thumbnail>();
+	private List<Thumbnail> thumbnails = new ArrayList<>();
 	private ThumbnailService thumbnailService;
 	
 
@@ -150,6 +154,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * @param meta
 	 * @param newName
 	 */
+	@Override
 	public void rename(String newName) {
 		// rename meta info file name
 		if (isDirectory()) { // rename the directory, which is the parent of the actual ".xml" file
@@ -165,6 +170,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * @param targetDir
 	 * @param move
 	 */
+	@Override
 	public void moveCopyToDir(OlatRelPathImpl target, boolean move) {
 		File fSource = metaFile;
 		File fTarget = new File(MetaInfoFactory.getCanonicalMetaPath(target));
@@ -181,7 +187,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if (move) FileUtils.moveFileToDir(fSource, fTarget);
 		else {
 			//copy
-			 Map<String,String> pathToUuid = new HashMap<String,String>();
+			 Map<String,String> pathToUuid = new HashMap<>();
 			File mTarget = new File(fTarget, fSource.getName());
 			collectUUIDRec(mTarget, pathToUuid);
 			
@@ -242,6 +248,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * Delete all associated meta info including sub files/directories
 	 * @param meta
 	 */
+	@Override
 	public void deleteAll() {
 		if (isDirectory()) { // delete whole meta directory (where the ".xml" resides within)
 			FileUtils.deleteDirsAndFiles(metaFile.getParentFile(), true, true);
@@ -254,6 +261,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * Copy values from froMeta into this object except name.
 	 * @param fromMeta
 	 */
+	@Override
 	public void copyValues(MetaInfo fromMeta) {
 		this.setAuthor(fromMeta.getAuthor());
 		this.setComment(fromMeta.getComment());
@@ -309,6 +317,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * does not write anything.
 	 * @return True upon success.
 	 */
+	@Override
 	public boolean write() {
 		BufferedOutputStream bos = null;
 		if (metaFile == null) return false;
@@ -332,6 +341,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			sw.write("<pages><![CDATA[" + filterForCData(pages) + "]]></pages>");
 			sw.write("<language><![CDATA[" + filterForCData(language) + "]]></language>");
 			sw.write("<url><![CDATA[" + filterForCData(url) + "]]></url>");
+			sw.write("<licenseTypeKey><![CDATA[" + filterForCData(licenseTypeKey) + "]]></licenseTypeKey>");
+			sw.write("<licenseTypeName><![CDATA[" + filterForCData(licenseTypeName) + "]]></licenseTypeName>");
+			sw.write("<licenseText><![CDATA[" + filterForCData(licenseText) + "]]></licenseText>");
+			sw.write("<licensor><![CDATA[" + filterForCData(licensor) + "]]></licensor>");
 			sw.write("<publicationDate><month><![CDATA[" + (pubMonth != null ? pubMonth.trim() : "") + "]]></month><year><![CDATA[" + (pubYear != null ? pubYear.trim() : "") + "]]></year></publicationDate>");
 			sw.write("<downloadCount><![CDATA[" + downloadCount + "]]></downloadCount>");
 			sw.write("<thumbnails cannotGenerateThumbnail=\"" + cannotGenerateThumbnail + "\">");
@@ -377,6 +390,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * 
 	 * @return True upon success.
 	 */
+	@Override
 	public boolean delete() {
 		if (metaFile == null) return false;
 		for(Thumbnail thumbnail:thumbnails) {
@@ -391,7 +405,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	/**
 	 * The parser is synchronized. Normally for such small files, this is
 	 * the quicker way. Creation of a SAXParser is really time consuming.
-	 * An other possibilty would be to use a pool of parser.
+	 * An other possibility would be to use a pool of parser.
 	 * @param fMeta
 	 * @return
 	 */
@@ -511,6 +525,14 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			language = (n != null) ? n.getText() : "";
 			n = root.element("url");
 			url = (n != null) ? n.getText() : "";
+			n = root.element("licenseTypeKey");
+			licenseTypeKey = (n != null) ? n.getText() : "";
+			n = root.element("licenseName");
+			licenseTypeName = (n != null) ? n.getText() : "";
+			n = root.element("licenseText");
+			licenseText = (n != null) ? n.getText() : "";
+			n = root.element("licensor");
+			licensor = (n != null) ? n.getText() : "";
 			n = root.element("downloadCount");
 			downloadCount = (n != null) ? Integer.valueOf(n.getText()) : 0;
 			n = root.element("publicationDate");
@@ -532,6 +554,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	/**
 	 * @return name of the initial author
 	 */
+	@Override
 	public String getAuthor() { 
 		if (authorIdentKey == null) {
 			return "-";
@@ -563,9 +586,6 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return authorIdentKey;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getAuthorIdentity()
-	 */
 	@Override
 	public Identity getAuthorIdentity() {
 		if (authorIdentKey == null) {
@@ -580,9 +600,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return (authorIdentKey != null);
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getHTMLFormattedAuthor()
-	 */
+	@Override
 	public String getHTMLFormattedAuthor() {
 		if (authorIdentKey == null) {
 			return "-";
@@ -596,28 +614,20 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		}	
 	}
 	
-	/**
-	 * @return comment
-	 */
+	@Override
 	public String getComment() { return comment; }
 
+	@Override
 	public String getName() { return originFile.getName(); }
-	/**
-	 * @return True if this is a directory
-	 */
+
+	@Override
 	public boolean isDirectory() { return originFile.isDirectory(); }
 
-	/**
-	 * @return Last modified timestamp
-	 */
 	@Override
 	public long getLastModified() {
 		return originFile.lastModified();
 	}
 	
-	/**
-	 * @return The last modification date of the metadata
-	 */
 	@Override
 	public Date getMetaLastModified() {
 		if(metaFile == null) return null;
@@ -625,21 +635,13 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return lastModified > 0 ? new Date(lastModified) : null;
 	}
 
-	/**
-	 * @return size of file
-	 */
+	@Override
 	public long getSize() {	return originFile.length(); }
 	
-	/**
-	 * @return formatted representation of size of file
-	 */
+	@Override
 	public String getFormattedSize() { return Formatter.formatBytes(getSize()); }
 
-	/* ------------------------- Setters ------------------------------ */
-	
-	/**
-	 * @param string
-	 */
+	@Override
 	public void setAuthor(String username) { 
 		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(username);
 		if (identity == null) {
@@ -660,14 +662,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		authorIdentKey = identity.getKey(); 
 	}
 
-	/**
-	 * @param string
-	 */
+	@Override
 	public void setComment(String string) { comment = string; }
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -680,140 +677,142 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return sb.toString();
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getCity()
-	 */
+	@Override
 	public String getCity() {
 		return city;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getLanguage()
-	 */
+	@Override
 	public String getLanguage() {
 		return language;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getPages()
-	 */
+	@Override
 	public String getPages() {
 		return pages;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getPublishDate()
-	 */
+	@Override
 	public String[] getPublicationDate() {
 		return new String[] { pubYear, pubMonth };
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getPublisher()
-	 */
+	@Override
 	public String getPublisher() {
 		return publisher;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getCreator()
-	 */
+	@Override
 	public String getCreator() {
 		return creator;
 	}
 	
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getSource()
-	 */
+	@Override
 	public String getSource() {
 		return source;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getUrl()
-	 */
+	@Override
 	public String getUrl() {
 		return url;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setCity(java.lang.String)
-	 */
+	@Override
 	public void setCity(String city) {
 		this.city = city;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setLanguage(java.lang.String)
-	 */
+	@Override
 	public void setLanguage(String language) {
 		this.language = language;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setPages(java.lang.String)
-	 */
+	@Override
 	public void setPages(String pages) {
 		this.pages = pages;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setPublishDate(java.lang.String)
-	 */
+	@Override
 	public void setPublicationDate(String month, String year) {
 		this.pubMonth = month;
 		this.pubYear = year;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setPublisher(java.lang.String)
-	 */
+	@Override
 	public void setPublisher(String publisher) {
 		this.publisher = publisher;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setWriter(java.lang.String)
-	 */
 	public void setWriter(String writer) {
 		this.creator = writer;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setWriter(java.lang.String)
-	 */
+	@Override
 	public void setCreator(String creator) {
 		this.creator = creator;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setSource(java.lang.String)
-	 */
+	@Override
 	public void setSource(String source) {
 		this.source = source;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setTitle(java.lang.String)
-	 */
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#setUrl(java.lang.String)
-	 */
+	@Override
 	public void setUrl(String url) {
 		this.url = url;
 	}
+
+	@Override
+	public String getLicenseTypeKey() {
+		return licenseTypeKey;
+	}
+
+	@Override
+	public void setLicenseTypeKey(String key) {
+		this.licenseTypeKey = key;
+	}
+
+	@Override
+	public String getLicenseTypeName() {
+		return licenseTypeName;
+	}
+
+	@Override
+	public void setLicenseTypeName(String name) {
+		this.licenseTypeName = name;
+	}
+
+	@Override
+	public String getLicenseText() {
+		return licenseText;
+	}
+
+	@Override
+	public void setLicenseText(String text) {
+		this.licenseText = text;
+	}
+
+	@Override
+	public String getLicensor() {
+		return licensor;
+	}
+
+	@Override
+	public void setLicensor(String licensor) {
+		this.licensor = licensor;
+	}
 	
+	@Override
 	public boolean isThumbnailAvailable() {
 		if(isDirectory()) return false;
 		if(originFile.isHidden()) return false;
@@ -824,6 +823,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return false;
 	}
 	
+	@Override
 	public VFSLeaf getThumbnail(int maxWidth, int maxHeight, boolean fill) {
 		if(isDirectory()) return null;
 		Thumbnail thumbnailInfo =  getThumbnailInfo(maxWidth, maxHeight, fill);
@@ -922,16 +922,12 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return "jpg";
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#increaseDownloadCount()
-	 */
+	@Override
 	public void increaseDownloadCount() {
 		this.downloadCount++;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getDownloadCount()
-	 */
+	@Override
 	public int getDownloadCount() {
 		return downloadCount;
 	}
@@ -1025,6 +1021,14 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			this.creator = current.toString();
 		} else if (qName.equals("url")) {
 			this.url = current.toString();
+		} else if (qName.equals("licenseTypeKey")) {
+			this.licenseTypeKey = current.toString();
+		} else if (qName.equals("licenseTypeName")) {
+			this.licenseTypeName = current.toString();
+		} else if (qName.equals("licenseText")) {
+			this.licenseText = current.toString();
+		} else if (qName.equals("licensor")) {
+			this.licensor = current.toString();
 		} else if (qName.equals("thumbnail")) {
 			String finalName = current.toString();
 			File thumbnailFile = new File(metaFile.getParentFile(), finalName);
@@ -1033,9 +1037,6 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		current = null;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getIconCssClass()
-	 */
 	@Override
 	public String getIconCssClass() {
 		String cssClass;

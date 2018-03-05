@@ -17,26 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.license;
+package org.olat.core.commons.modules.bc;
+
+import java.util.Locale;
+
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 21.02.2018<br>
+ * Initial date: 02.03.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface License {
+@Component
+public class FolderLicenseHandler implements LicenseHandler {
 
-	public String getLicensor();
-	
-	public void setLicensor(String licensor);
+	@Override
+	public String getType() {
+		return "folder";
+	}
 
-	public LicenseType getLicenseType();
-	
-	public void setLicenseType(LicenseType licenseType);
-	
-	public String getFreetext();
-	
-	public void setFreetext(String freetext);
-	
+	@Override
+	public String getTitle(Locale locale) {
+		Translator translator = Util.createPackageTranslator(FolderModule.class, locale);
+		return translator.translate("license.admin.title");
+	}
+
 }

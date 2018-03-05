@@ -35,7 +35,7 @@ import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.TestableLicenseHandler;
-import org.olat.core.commons.services.license.model.LicenseImpl;
+import org.olat.core.commons.services.license.model.ResourceLicenseImpl;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
 
 /**
@@ -56,7 +56,7 @@ public class LicenseSelectionConfigTest {
 	@Mock
 	private LicenseService licenseServiceMock;
 	
-	private License license = new LicenseImpl();;
+	private License license = new ResourceLicenseImpl();;
 	
 	private LicenseSelectionConfig sut;
 
@@ -72,7 +72,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(any())).thenReturn(Boolean.FALSE);
 		
 		license.setLicenseType(getActiveLicenseTypes().get(0));
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 		
 		boolean licenseMandatory = sut.isLicenseMandatory();
 		
@@ -84,7 +84,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(any())).thenReturn(Boolean.TRUE);
 		
 		license.setLicenseType(getActiveLicenseTypes().get(0));
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 		
 		boolean licenseMandatory = sut.isLicenseMandatory();
 		
@@ -94,7 +94,7 @@ public class LicenseSelectionConfigTest {
 	@Test
 	public void shouldReturnActiveLicenseTypes() {
 		license.setLicenseType(getActiveLicenseTypes().get(0));
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 		
 		String[] licenseTypeKeys = sut.getLicenseTypeKeys();
 		
@@ -106,7 +106,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(any())).thenReturn(Boolean.FALSE);
 	
 		license.setLicenseType(getInactiveLicenseType());
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 
 		String[] licenseTypeKeys = sut.getLicenseTypeKeys();
 		
@@ -118,7 +118,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(any())).thenReturn(Boolean.TRUE);
 		
 		license.setLicenseType(getInactiveLicenseType());
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 
 		String[] licenseTypeKeys = sut.getLicenseTypeKeys();
 		
@@ -130,7 +130,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(getInactiveLicenseType())).thenReturn(Boolean.FALSE);
 		
 		license.setLicenseType(getInactiveLicenseType());
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 
 		String key = sut.getSelectionLicenseTypeKey();
 		
@@ -142,7 +142,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(getActiveLicenseTypes().get(0))).thenReturn(Boolean.TRUE);
 		
 		license.setLicenseType(getActiveLicenseTypes().get(0));
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 
 		String key = sut.getSelectionLicenseTypeKey();
 		
@@ -154,7 +154,7 @@ public class LicenseSelectionConfigTest {
 		when(licenseServiceMock.isNoLicense(getInactiveLicenseType())).thenReturn(Boolean.TRUE);
 		
 		license.setLicenseType(getInactiveLicenseType());
-		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license);
+		sut = new LicenseSelectionConfig(licenseServiceMock, LICENSE_HANDLER, license.getLicenseType());
 
 		String key = sut.getSelectionLicenseTypeKey();
 		

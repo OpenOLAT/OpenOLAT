@@ -21,7 +21,6 @@ package org.olat.core.commons.services.license.ui;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -30,7 +29,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -40,67 +40,56 @@ import org.olat.core.util.StringHelper;
  */
 public class LicenseRenderer implements FlexiCellRenderer {
 	
-	private final String idPrefix;
 	private final Locale locale;
+	private final Translator translator;
 	
 	public LicenseRenderer(Locale locale) {
-		this(locale, null);
-	}
-	
-	public LicenseRenderer(Locale locale, String idPrefix) {
 		this.locale = locale;
-		this.idPrefix = idPrefix;
+		translator = Util.createPackageTranslator(LicenseAdminConfigController.class, locale);
 	}
 	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof License) {
 			License license = (License) cellValue;
-			LicenseType licenseType = license.getLicenseType();
 			if (renderer == null) {
 				// render for export
-				if (licenseType != null) {
-					target.append(LicenseUIFactory.translate(licenseType, locale));
-				}
+				target.append(LicenseUIFactory.translate(license.getLicenseType(), locale));
 			} else {
-				target.append("<div");
-				target.append(" style='white-space: nowrap;'");
-				String hoverText = getHoverText(licenseType);
-				if (StringHelper.containsNonWhitespace(hoverText)) {
-					target.append(" title=\"");
-					target.append(StringEscapeUtils.escapeHtml(hoverText));
-				}
-				target.append("\">");
-				target.append("<i");
-				String id = getId(row);
-				if (StringHelper.containsNonWhitespace(id)) {
-					target.append(" id='").append(id).append("'");
-				}
-				target.append(" class='").append(getCssClass(licenseType)).append("'> </i>");
-				target.append("</div>");	
+				render(target, license);	
 			}
 		}
 	}
 
-	protected String getCssClass(LicenseType licenseType) {
-		if (licenseType != null) {
-			return "o_icon o_icon-lg " + LicenseUIFactory.getCssOrDefault(licenseType);
-		}
-		return null;
-	}
-	
-	private String getHoverText(LicenseType licenseType) {
-		if (licenseType != null) {
-			return LicenseUIFactory.translate(licenseType, locale);
-		}
-		return null;
+	public void render(StringOutput sb, License license) {
+		LicenseType licenseType = license.getLicenseType();
+		long id = CodeHelper.getRAMUniqueID();
+		
+		// license icon
+		sb.append("<a id='o_lic_").append(id).append("' href='javascript:;'><i class='o_icon o_icon-lg ");
+		sb.append(LicenseUIFactory.getCssOrDefault(licenseType));
+		sb.append("'></i></a>");
+		
+		// popup with license informations
+		sb.append("<div id='o_lic_pop_").append(id).append("' style='display:none;'><div>");
+		appendStaticcontrol(sb, "license.popup.type", LicenseUIFactory.translate(licenseType, locale));
+		appendStaticcontrol(sb, "license.popup.licensor", license.getLicensor());
+		appendStaticcontrol(sb, "license.popup.text", LicenseUIFactory.getFormattedLicenseText(license));
+		sb.append("</div>");
+		
+		// JavaScript to pup up the popup
+		sb.append("<script type='text/javascript'>")
+	      .append("/* <![CDATA[ */")
+		  .append("jQuery(function() {\n")
+		  .append("  o_popover('o_lic_").append(id).append("','o_lic_pop_").append(id).append("','top');\n")
+		  .append("});")
+		  .append("/* ]]> */")
+		  .append("</script>");
 	}
 
-	private String getId(int row) {
-		if (StringHelper.containsNonWhitespace(idPrefix)) {
-			return idPrefix + String.valueOf(row);
-		}
-		return null;
+	private void appendStaticcontrol(StringOutput sb, String i18n, String text) {
+		sb.append("<label class='control-label'>").append(translator.translate(i18n)) .append("</label>");
+		sb.append("<p class='form-control-static'>").append(text).append("</p>");
 	}
 
 }

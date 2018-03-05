@@ -205,6 +205,22 @@ public interface MetaInfo {
 
 	public void setPublicationDate(String month, String year);
 	
+	public String getLicenseTypeKey();
+	
+	public void setLicenseTypeKey(String key);
+	
+	public String getLicenseTypeName();
+	
+	public void setLicenseTypeName(String name);
+	
+	public String getLicenseText();
+	
+	public void setLicenseText(String text);
+	
+	public String getLicensor();
+	
+	public void setLicensor(String licensor);
+	
 	
 	public boolean isThumbnailAvailable();
 	

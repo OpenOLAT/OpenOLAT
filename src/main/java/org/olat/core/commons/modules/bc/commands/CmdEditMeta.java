@@ -139,21 +139,11 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		return translate("mf.metadata.title");
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do here
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metaInfoCtr && event == Event.DONE_EVENT) {
@@ -169,9 +159,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 						getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
 						status = FolderCommandStatus.STATUS_FAILED;
 					} else {
-						if (meta != null) {
-							meta.rename(fileName);
-						}
+						meta.rename(fileName);
 						if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
 							getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
 							status = FolderCommandStatus.STATUS_FAILED;
@@ -198,10 +186,12 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 	}
 
+	@Override
 	protected void doDispose() {
 		// metaInfoCtr should be auto-disposed
 	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
 	}

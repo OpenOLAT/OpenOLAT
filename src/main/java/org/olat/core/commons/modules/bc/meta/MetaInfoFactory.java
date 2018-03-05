@@ -26,10 +26,18 @@ package org.olat.core.commons.modules.bc.meta;
 
 import java.io.File;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderLicenseHandler;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 
 
@@ -90,5 +98,49 @@ public class MetaInfoFactory {
 	
 	protected static File getOriginFile(OlatRelPathImpl olatRelPathImpl) {
 		return new File(FolderConfig.getCanonicalRoot() + olatRelPathImpl.getRelPath());
+	}
+	
+	/**
+	 * Get the license of the MetaInfo
+	 *
+	 * @param meta
+	 * @return the license or null if no license is stored in the MetaInfo
+	 */
+	public License getLicense(MetaInfo meta) {
+		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		License license = null;
+		boolean hasLicense = meta != null && StringHelper.containsNonWhitespace(meta.getLicenseTypeName());
+		if (hasLicense) { 
+			String licenseTypeName = meta.getLicenseTypeName();
+			LicenseType licenseType = licenseService.loadLicenseTypeByName(licenseTypeName);
+			if (licenseType == null) {
+				licenseType = licenseService.createLicenseType(licenseTypeName);
+				licenseType.setText(meta.getLicenseText());
+				licenseService.saveLicenseType(licenseType);
+			}
+			license = licenseService.createLicense(licenseType);
+			license.setLicensor(meta.getLicensor());
+			if (licenseService.isFreetext(licenseType)) {
+				license.setFreetext(meta.getLicenseText());
+			}
+		}
+		return license;
+	}
+	
+	/**
+	 * Get the license of the MetaInfo or create a new default license:
+	 *
+	 * @param meta
+	 * @param itentity the current user
+	 * @return
+	 */
+	public License getOrCreateLicense(MetaInfo meta, Identity itentity) {
+		LicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
+		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		License license = getLicense(meta);
+		if (license == null) {
+			license = licenseService.createDefaultLicense(licenseHandler, itentity);
+		}
+		return license;
 	}
 }

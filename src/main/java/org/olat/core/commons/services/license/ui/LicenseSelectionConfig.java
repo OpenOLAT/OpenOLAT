@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -49,14 +48,14 @@ public class LicenseSelectionConfig {
 	
 	private final LicenseService licenseService;
 
-	public LicenseSelectionConfig(LicenseHandler licenseHandler, License license) {
-		this(CoreSpringFactory.getImpl(LicenseService.class), licenseHandler, license);
+	public LicenseSelectionConfig(LicenseHandler licenseHandler, LicenseType actualLicenseType) {
+		this(CoreSpringFactory.getImpl(LicenseService.class), licenseHandler, actualLicenseType);
 	}
 
 	// Used for testing
-	LicenseSelectionConfig(LicenseService licenseService, LicenseHandler licenseHandler, License license) {
+	LicenseSelectionConfig(LicenseService licenseService, LicenseHandler licenseHandler, LicenseType actualLicenseType) {
 		this.licenseService = licenseService;
-		this.actualLicenseType = license.getLicenseType();
+		this.actualLicenseType = actualLicenseType;
 		init(licenseHandler);
 	}
 

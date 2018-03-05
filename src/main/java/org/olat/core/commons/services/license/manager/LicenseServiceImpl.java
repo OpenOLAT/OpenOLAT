@@ -27,6 +27,8 @@ import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ class LicenseServiceImpl implements LicenseService {
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
-	private LicenseDAO licenseDao;
+	private ResourceLicenseDAO licenseDao;
 	@Autowired
 	private LicenseTypeDAO licenseTypeDao;
 	@Autowired
@@ -54,16 +56,42 @@ class LicenseServiceImpl implements LicenseService {
 	private LicensorFactory licensorFactory;
 
 	@Override
-	public License createDefaultLicense(OLATResourceable ores, LicenseHandler handler, Identity licensor) {
-		String defaultLicenseTypeKey = licenseModule.getDefaultLicenseTypeKey(handler);
-		LicenseType defautlLicenseType = loadLicenseTypeByKey(defaultLicenseTypeKey);
+	public License createLicense(LicenseType licenseType) {
+		License license = new LicenseImpl();
+		license.setLicenseType(licenseType);
+		return license; 
+		
+	}
+
+	@Override
+	public License createDefaultLicense(LicenseHandler handler, Identity licensor) {
+		LicenseType defautlLicenseType = getDefaultLicenseType(handler);
 		String licensorName = licensorFactory.create(handler, licensor);
-		return licenseDao.createAndPersist(ores, defautlLicenseType, licensorName);
+		License license = new LicenseImpl();
+		license.setLicenseType(defautlLicenseType);
+		license.setLicensor(licensorName);
+		return license;
 	}
 	
 	@Override
-	public License loadOrCreateLicense(OLATResourceable ores) {
-		License license = licenseDao.loadByResource(ores);
+	public ResourceLicense createDefaultLicense(OLATResourceable ores, LicenseHandler handler, Identity licensor) {
+		LicenseType defautlLicenseType = getDefaultLicenseType(handler);
+		String licensorName = licensorFactory.create(handler, licensor);
+		return licenseDao.createAndPersist(ores, defautlLicenseType, licensorName);
+	}
+
+	private LicenseType getDefaultLicenseType(LicenseHandler handler) {
+		String defaultLicenseTypeKey = licenseModule.getDefaultLicenseTypeKey(handler);
+		LicenseType defautlLicenseType = loadLicenseTypeByKey(defaultLicenseTypeKey);
+		if (defautlLicenseType == null) {
+			defautlLicenseType = licenseTypeDao.loadNoLicenseType();
+		}
+		return defautlLicenseType;
+	}
+	
+	@Override
+	public ResourceLicense loadOrCreateLicense(OLATResourceable ores) {
+		ResourceLicense license = licenseDao.loadByResource(ores);
 		if (license == null) {
 			LicenseType licenseType = licenseTypeDao.loadNoLicenseType();
 			license = licenseDao.createAndPersist(ores, licenseType);
@@ -72,12 +100,12 @@ class LicenseServiceImpl implements LicenseService {
 	}
 
 	@Override
-	public License update(License license) {
+	public ResourceLicense update(ResourceLicense license) {
 		return licenseDao.save(license);
 	}
 
 	@Override
-	public List<License> loadLicenses(Collection<OLATResourceable> resources) {
+	public List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources) {
 		return licenseDao.loadLicenses(resources);
 	}
 
@@ -105,6 +133,11 @@ class LicenseServiceImpl implements LicenseService {
 			// bad luck
 		}
 		return licenseTypeDao.loadLicenseTypeByKey(key);
+	}
+	
+	@Override
+	public LicenseType loadLicenseTypeByName(String name) {
+		return licenseTypeDao.loadLicenseTypeByName(name);
 	}
 
 	@Override

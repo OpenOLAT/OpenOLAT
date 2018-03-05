@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.test.JunitTestHelper;
@@ -43,27 +44,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LicenseDAOTest extends OlatTestCase {
+public class ResourceLicenseDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private LicenseDAO licenseDao;
+	private ResourceLicenseDAO licenseDao;
 	@Autowired
 	private LicenseTypeDAO licenseTypeDao;
+	@Autowired
+	private LicenseCleaner licenseCleaner;
 	
 	@Before
 	public void cleanUp() {
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from license")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetypeactivation")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetype")
-				.executeUpdate();
-		dbInstance.commitAndCloseSession();
+		licenseCleaner.deleteAll();
 	}
 	
 	@Test
@@ -73,7 +67,7 @@ public class LicenseDAOTest extends OlatTestCase {
 		licenseType = licenseTypeDao.save(licenseType);
 		String licensor = "licensor";
 
-		License license = licenseDao.createAndPersist(ores, licenseType, licensor);
+		ResourceLicense license = licenseDao.createAndPersist(ores, licenseType, licensor);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(license.getResName()).isEqualTo(ores.getResourceableTypeName());
@@ -89,7 +83,7 @@ public class LicenseDAOTest extends OlatTestCase {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		LicenseType licenseType = licenseTypeDao.create("name");
 		licenseType = licenseTypeDao.save(licenseType);
-		License license = licenseDao.createAndPersist(ores, licenseType);
+		ResourceLicense license = licenseDao.createAndPersist(ores, licenseType);
 		dbInstance.commitAndCloseSession();
 		String freetext = "freetext";
 		license.setFreetext(freetext);
@@ -111,7 +105,7 @@ public class LicenseDAOTest extends OlatTestCase {
 		License license = licenseDao.createAndPersist(ores, licenseType);
 		dbInstance.commitAndCloseSession();
 		
-		License loadedLicense = licenseDao.loadByResource(ores);
+		ResourceLicense loadedLicense = licenseDao.loadByResource(ores);
 		
 		assertThat(loadedLicense).isEqualTo(license);
 	}
@@ -122,18 +116,18 @@ public class LicenseDAOTest extends OlatTestCase {
 		LicenseType licenseType = licenseTypeDao.create("name");
 		licenseType = licenseTypeDao.save(licenseType);
 		OLATResourceable ores1 = OresHelper.createOLATResourceableInstance(resName, (new Random()).nextLong());
-		License license1 = licenseDao.createAndPersist(ores1, licenseType);
+		ResourceLicense license1 = licenseDao.createAndPersist(ores1, licenseType);
 		OLATResourceable ores2 = OresHelper.createOLATResourceableInstance(resName, (new Random()).nextLong());
-		License license2 = licenseDao.createAndPersist(ores2, licenseType);
+		ResourceLicense license2 = licenseDao.createAndPersist(ores2, licenseType);
 		OLATResourceable ores3 = OresHelper.createOLATResourceableInstance(resName, (new Random()).nextLong());
-		License license3 = licenseDao.createAndPersist(ores3, licenseType);
+		ResourceLicense license3 = licenseDao.createAndPersist(ores3, licenseType);
 		OLATResourceable oresSameName = OresHelper.createOLATResourceableInstance(resName, (new Random()).nextLong());
 		licenseDao.createAndPersist(oresSameName, licenseType);
 		OLATResourceable oresSameId = OresHelper.createOLATResourceableInstance("other", ores1.getResourceableId());
 		licenseDao.createAndPersist(oresSameId, licenseType);
 		dbInstance.commitAndCloseSession();
 		
-		List<License> loadedLicenses = licenseDao.loadLicenses(Arrays.asList(ores1, ores2, ores3));
+		List<ResourceLicense> loadedLicenses = licenseDao.loadLicenses(Arrays.asList(ores1, ores2, ores3));
 		
 		assertThat(loadedLicenses).containsExactly(license1, license2, license3);
 	}

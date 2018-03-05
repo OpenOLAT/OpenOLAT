@@ -45,8 +45,8 @@ public class LicenseUIFactory {
 		// should not be instantiated
 	}
 	
-	public static LicenseSelectionConfig createLicenseSelectionConfig(LicenseHandler handler, License license) {
-		return new LicenseSelectionConfig(handler, license);
+	public static LicenseSelectionConfig createLicenseSelectionConfig(LicenseHandler handler, LicenseType actualLicenseType) {
+		return new LicenseSelectionConfig(handler, actualLicenseType);
 	}
 	
 	public static String translate(LicenseType licenseType, Locale locale) {

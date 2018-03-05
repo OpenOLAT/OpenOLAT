@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -104,7 +104,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
 	private final String repoEntryType;
-	private License license;
+	private ResourceLicense license;
 
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
@@ -216,7 +216,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			license = licenseService.loadOrCreateLicense(res);
 
 			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
-					.createLicenseSelectionConfig(licenseHandler, license);
+					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
 			licenseEl = uifactory.addDropdownSingleselect("cif.license", formLayout,
 					licenseSelectionConfig.getLicenseTypeKeys(),
 					licenseSelectionConfig.getLicenseTypeValues(getLocale()));

@@ -24,6 +24,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderLicenseHandler;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -57,7 +62,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MetaInfoController extends FormBasicController {
 	private VFSItem item;
 	private FormLink moreMetaDataLink;
-	private StaticTextElement  publisher, creator, sourceEl, city, pages, language, url;
+	private StaticTextElement publisher, creator, sourceEl, city, pages, language, url, publicationDateEl;;
+	private StaticTextElement licenseEl;
+	private StaticTextElement licensorEl;
+	private StaticTextElement licenseFreetextEl;
 	private SingleSelection locked;
 	private Set<FormItem> metaFields;
 	private String resourceUrl;
@@ -66,6 +74,12 @@ public class MetaInfoController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private FolderLicenseHandler licenseHandler;
 
 	/**
 	 * Use this controller for editing meta data of an existing file.
@@ -80,35 +94,21 @@ public class MetaInfoController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing so far
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//do nothing
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == moreMetaDataLink && event.wasTriggerdBy(FormEvent.ONCLICK)) {
@@ -120,10 +120,6 @@ public class MetaInfoController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mf.metadata.title");
@@ -159,15 +155,10 @@ public class MetaInfoController extends FormBasicController {
 		String cityVal = StringHelper.escapeHtml(meta != null ? meta.getCity() : null);
 		city = uifactory.addStaticTextElement("mf.city", cityVal, formLayout);
 
-		// publish date
-		FormLayoutContainer publicationDate = FormLayoutContainer.createHorizontalFormLayout("publicationDateLayout", getTranslator());
-		publicationDate.setLabel("mf.publishDate", null);
-		formLayout.add(publicationDate);
-
 		String[] pubDate = (meta != null ? meta.getPublicationDate() : new String[] { "", "" });
-		uifactory.addStaticTextElement("mf.month", StringHelper.escapeHtml(pubDate[1]), publicationDate);
-		uifactory.addStaticTextElement("mf.year", StringHelper.escapeHtml(pubDate[0]), publicationDate);
-
+		String publicationDate = new StringBuilder().append(translate("mf.month")).append(pubDate[0]).append(", ")
+				.append(translate("mf.year")).append(pubDate[1]).toString();
+		publicationDateEl = uifactory.addStaticTextElement("mf.publishDate", publicationDate, formLayout);
 
 		// number of pages
 		String pageVal = StringHelper.escapeHtml(meta != null ? meta.getPages() : null);
@@ -180,6 +171,24 @@ public class MetaInfoController extends FormBasicController {
 		// url/link
 		String urlVal = StringHelper.escapeHtml(meta != null ? meta.getUrl() : null);
 		url = uifactory.addStaticTextElement("mf.url", urlVal, formLayout);
+		
+		// license
+		if (licenseModule.isEnabled(licenseHandler)) {
+			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
+			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
+			boolean isNoLicense = !licenseService.isNoLicense(license.getLicenseType());
+			boolean isFreetext = licenseService.isFreetext(license.getLicenseType());
+
+			licenseEl = uifactory.addStaticTextElement("mf.license",
+					LicenseUIFactory.translate(license.getLicenseType(), getLocale()), formLayout);
+			if (isNoLicense) {
+				licensorEl = uifactory.addStaticTextElement("mf.licensor", license.getLicensor(), formLayout);
+			}
+			if (isFreetext) {
+				licenseFreetextEl = uifactory.addStaticTextElement("mf.freetext",
+						LicenseUIFactory.getFormattedLicenseText(license), formLayout);
+			}
+		}
 
 		/* static fields */
 		String sizeText, typeText;
@@ -192,15 +201,24 @@ public class MetaInfoController extends FormBasicController {
 		}
 
 		// Targets to hide
-		metaFields = new HashSet<FormItem>();
+		metaFields = new HashSet<>();
 		metaFields.add(creator);
 		metaFields.add(publisher);
 		metaFields.add(sourceEl);
 		metaFields.add(city);
-		metaFields.add(publicationDate);
+		metaFields.add(publicationDateEl);
 		metaFields.add(pages);
 		metaFields.add(language);
 		metaFields.add(url);
+		if (licenseEl != null) {
+			metaFields.add(licenseEl);
+		}
+		if (licensorEl != null) {
+			metaFields.add(licensorEl);
+		}
+		if (licenseFreetextEl != null) {
+			metaFields.add(licenseFreetextEl);
+		}
 
 		if (!hasMetadata(meta)) {
 			moreMetaDataLink = uifactory.addFormLink("mf.more.meta.link", formLayout, Link.LINK_CUSTOM_CSS);
@@ -239,25 +257,22 @@ public class MetaInfoController extends FormBasicController {
 			uifactory.addStaticTextElement("mf.lockedBy", lockedDetails, formLayout);
 			
 			// username
-			String author = StringHelper.escapeHtml(meta == null ? "" : meta.getHTMLFormattedAuthor());
+			String author = StringHelper.escapeHtml(meta.getHTMLFormattedAuthor());
 			uifactory.addStaticTextElement("mf.author", author, formLayout);
 
 			// filesize
 			uifactory.addStaticTextElement("mf.size", StringHelper.escapeHtml(sizeText), formLayout);
 
 			// last modified date
-			String lastModified = meta == null ? "" : StringHelper.formatLocaleDate(meta.getLastModified(), getLocale());
+			String lastModified = StringHelper.formatLocaleDate(meta.getLastModified(), getLocale());
 			uifactory.addStaticTextElement("mf.lastModified", lastModified, formLayout);
 
 			// file type
 			uifactory.addStaticTextElement("mf.type", StringHelper.escapeHtml(typeText), formLayout);
 
-			String downloads = meta == null ? "" : String.valueOf(meta.getDownloadCount());
+			String downloads = String.valueOf(meta.getDownloadCount());
 			uifactory.addStaticTextElement("mf.downloads", downloads, formLayout);
-
-			// Don't show any meta data except title and comment if the item is
-			// a directory.
-			// Hide the metadata.
+		} else {
 			setMetaFieldsVisible(false);
 			if (moreMetaDataLink != null) {
 				moreMetaDataLink.setVisible(false);
@@ -292,8 +307,10 @@ public class MetaInfoController extends FormBasicController {
 				|| StringHelper.containsNonWhitespace(meta.getPublisher()) || StringHelper.containsNonWhitespace(meta.getSource())
 				|| StringHelper.containsNonWhitespace(meta.getCity()) || StringHelper.containsNonWhitespace(meta.getPublicationDate()[0])
 				|| StringHelper.containsNonWhitespace(meta.getPublicationDate()[1]) || StringHelper.containsNonWhitespace(meta.getPages())
-				|| StringHelper.containsNonWhitespace(meta.getLanguage()) || StringHelper.containsNonWhitespace(meta.getUrl());
-		}
+				|| StringHelper.containsNonWhitespace(meta.getLanguage()) || StringHelper.containsNonWhitespace(meta.getUrl())
+				|| StringHelper.containsNonWhitespace(meta.getLicenseTypeKey()) || StringHelper.containsNonWhitespace(meta.getLicenseTypeName())
+				|| StringHelper.containsNonWhitespace(meta.getLicenseText()) || StringHelper.containsNonWhitespace(meta.getLicensor());
+				}
 		return false;
 	}
 
@@ -307,4 +324,5 @@ public class MetaInfoController extends FormBasicController {
 			formItem.setVisible(visible);
 		}
 	}
+	
 }

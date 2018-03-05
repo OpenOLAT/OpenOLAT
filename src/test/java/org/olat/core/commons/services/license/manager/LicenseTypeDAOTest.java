@@ -49,19 +49,12 @@ public class LicenseTypeDAOTest extends OlatTestCase {
 	private LicenseTypeDAO licenseTypeDao;
 	@Autowired
 	private LicenseTypeActivationDAO licenseTypeActivationDao;
+	@Autowired
+	private LicenseCleaner licenseCleaner;
 	
 	@Before
 	public void cleanUp() {
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from license")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetypeactivation")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetype")
-				.executeUpdate();
-		dbInstance.commitAndCloseSession();
+		licenseCleaner.deleteAll();
 	}
 	
 	@Test
@@ -146,6 +139,33 @@ public class LicenseTypeDAOTest extends OlatTestCase {
 		assertThat(noLicenseType).isNotNull();
 		assertThat(noLicenseType.getName()).isEqualTo(LicenseTypeDAO.NO_LICENSE_NAME);
 	}
+
+	@Test
+	public void shouldLoadLicenseTypeByKey() {
+		LicenseType licenseType = licenseTypeDao.create(UUID.randomUUID().toString());
+		licenseType = licenseTypeDao.save(licenseType);
+		LicenseType otherLicenseType = licenseTypeDao.create(UUID.randomUUID().toString());
+		licenseTypeDao.save(otherLicenseType);
+		dbInstance.commitAndCloseSession();
+		
+		LicenseType loadedLicenseType = licenseTypeDao.loadLicenseTypeByKey(licenseType.getKey());
+		
+		assertThat(loadedLicenseType).isEqualTo(licenseType);
+	}
+	
+	@Test
+	public void shouldLoadLicenseTypeByName() {
+		LicenseType licenseType = licenseTypeDao.create(UUID.randomUUID().toString());
+		licenseType = licenseTypeDao.save(licenseType);
+		LicenseType otherLicenseType = licenseTypeDao.create(UUID.randomUUID().toString());
+		licenseTypeDao.save(otherLicenseType);
+		dbInstance.commitAndCloseSession();
+		
+		LicenseType loadedLicenseType = licenseTypeDao.loadLicenseTypeByName(licenseType.getName());
+		
+		assertThat(loadedLicenseType).isEqualTo(licenseType);
+	}
+
 
 	@Test
 	public void shouldLoadAllLicensesTypes() {

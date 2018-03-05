@@ -45,19 +45,12 @@ public class LicenseTypeActivationDAOTest extends OlatTestCase {
 	private LicenseTypeDAO licenseTypeDao;
 	@Autowired
 	private LicenseTypeActivationDAO licenseTypeActivationDao;
+	@Autowired
+	private LicenseCleaner licenseCleaner;
 	
 	@Before
 	public void cleanUp() {
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from license")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetypeactivation")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetype")
-				.executeUpdate();
-		dbInstance.commitAndCloseSession();
+		licenseCleaner.deleteAll();
 	}
 	
 	@Test

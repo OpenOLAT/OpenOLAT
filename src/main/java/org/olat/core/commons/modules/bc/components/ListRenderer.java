@@ -35,7 +35,10 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
@@ -129,8 +132,9 @@ public class ListRenderer {
 		sb.append("<table class=\"table table-condensed table-striped table-hover o_bc_table\">")
 		  .append("<thead><tr><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
-		   .append(">").append(translator.translate("header.Name")).append("</a>")
-		   .append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_SIZE.equals(sortOrder)).append("' ");
+		   .append(">").append(translator.translate("header.Name")).append("</a>").append("</th>");
+		sb.append("<th>").append(translator.translate("header.license")).append("</th>");
+		sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_SIZE.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_SIZE))
 		   .append(">").append(translator.translate("header.Size")).append("</a>")
 		   .append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_DATE.equals(sortOrder)).append("' ");	
@@ -336,6 +340,15 @@ public class ListRenderer {
 				  .append("/* ]]> */")
 				  .append("</script>");
 			}
+		}
+		sb.append("</td><td>");
+		
+		// license
+		MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
+		License license = metaInfoFactory.getLicense(metaInfo);
+		if (license != null) {
+			LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
+			licenseRenderer.render(sb, license);
 		}
 		sb.append("</td><td>");
 		

@@ -32,9 +32,7 @@ import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
-import org.olat.core.commons.services.license.ui.LicenseQuickviewController;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -137,8 +135,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	private AuthoringEntryDataSource dataSource;
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
 
-	private CloseableCalloutWindowController licenseCalloutCtrl;
-	private LicenseQuickviewController licenseCtrl;
 	private ToolsController toolsCtrl;
 	protected CloseableModalController cmc;
 	private SendMailController sendMailCtrl;
@@ -299,7 +295,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.authors.name()));
 		if (licenseModule.isEnabled(licenseHandler)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license.i18nKey(), Cols.license.ordinal(), "license",
-					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale(), "lic-"))));
+					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
@@ -529,11 +525,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
-		} else if(licenseCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				licenseCalloutCtrl.deactivate();
-				cleanUp();
-			}
 		} else if(referencesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				toolsCalloutCtrl.deactivate();
@@ -569,24 +560,20 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	protected void cleanUp() {
-		removeAsListenerAndDispose(licenseCalloutCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
 		removeAsListenerAndDispose(sendMailCtrl);
-		removeAsListenerAndDispose(licenseCtrl);
 		removeAsListenerAndDispose(createCtrl);
 		removeAsListenerAndDispose(importCtrl);
 		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(closeCtrl);
 		removeAsListenerAndDispose(cmc);
-		licenseCalloutCtrl = null;
 		confirmDeleteCtrl = null;
 		toolsCalloutCtrl = null;
 		userSearchCtr = null;
 		sendMailCtrl = null;
-		licenseCtrl = null;
 		createCtrl = null;
 		importCtrl = null;
 		wizardCtrl = null;
@@ -660,8 +647,6 @@ public class AuthorListController extends FormBasicController implements Activat
 					launchEditor(ureq, row);
 				} else if("select".equals(cmd)) {
 					launch(ureq, row);
-				} else if("license".equals(cmd)) {
-					showLicenseDetails(ureq, row, se.getIndex());
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				AuthorListState stateEntry = new AuthorListState();
@@ -1097,22 +1082,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
-	private void showLicenseDetails(UserRequest ureq, AuthoringEntryRow row, int index) {
-		removeAsListenerAndDispose(licenseCtrl);
-		removeAsListenerAndDispose(licenseCalloutCtrl);
-
-		License license = row.getLicense();
-		if (license != null) {
-			licenseCtrl = new LicenseQuickviewController(ureq, getWindowControl(), license);
-			listenTo(licenseCtrl);
-	
-			licenseCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					licenseCtrl.getInitialComponent(), "lic-" + index, "", true, "");
-			listenTo(licenseCalloutCtrl);
-			licenseCalloutCtrl.activate();
-		}	
-	}
-	
 	private void launchDetails(UserRequest ureq, RepositoryEntryRef ref) {
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Infos:0]";
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {

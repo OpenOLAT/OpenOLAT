@@ -17,26 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.license;
+package org.olat.core.commons.services.license.manager;
+
+import org.olat.core.commons.persistence.DB;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 21.02.2018<br>
+ * Initial date: 05.03.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface License {
+@Component
+public class LicenseCleaner {
 
-	public String getLicensor();
-	
-	public void setLicensor(String licensor);
+	@Autowired
+	private DB dbInstance;
 
-	public LicenseType getLicenseType();
-	
-	public void setLicenseType(LicenseType licenseType);
-	
-	public String getFreetext();
-	
-	public void setFreetext(String freetext);
+	public void deleteAll() {
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from license")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from licensetypeactivation")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from licensetype")
+				.executeUpdate();
+		dbInstance.commitAndCloseSession();
+	}
 	
 }

@@ -19,24 +19,20 @@
  */
 package org.olat.core.commons.services.license;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
+
 /**
+ * License for a OLATResource. A ResourceLicense can be stored in the database.
  * 
  * Initial date: 21.02.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface License {
+public interface ResourceLicense extends CreateInfo, ModifiedInfo, License {
+	
+	public String getResName();
 
-	public String getLicensor();
-	
-	public void setLicensor(String licensor);
-
-	public LicenseType getLicenseType();
-	
-	public void setLicenseType(LicenseType licenseType);
-	
-	public String getFreetext();
-	
-	public void setFreetext(String freetext);
+	public Long getResId();
 	
 }

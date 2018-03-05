@@ -32,7 +32,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
@@ -154,7 +154,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
 		
 		Collection<OLATResourceable> resources = repoEntries.stream().map(RepositoryEntryAuthorView::getOlatResource).collect(Collectors.toList());
-		List<License> licenses = licenseService.loadLicenses(resources);
+		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);
 
 		List<AuthoringEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryAuthorView entry:repoEntries) {
@@ -192,7 +192,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			}
 			
 			// license
-			for (License license: licenses) {
+			for (ResourceLicense license: licenses) {
 				OLATResource resource = entry.getOlatResource();
 				if (license.getResId().equals(resource.getResourceableId()) && license.getResName().equals(resource.getResourceableTypeName())) {
 					row.setLicense(license);

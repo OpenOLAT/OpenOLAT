@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.LicenseType;
-import org.olat.core.commons.services.license.model.LicenseImpl;
+import org.olat.core.commons.services.license.model.ResourceLicenseImpl;
 import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,17 +41,17 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-class LicenseDAO {
+class ResourceLicenseDAO {
 	
 	@Autowired
 	private DB dbInstance;
 
-	License createAndPersist(OLATResourceable ores, LicenseType licenseType) {
+	ResourceLicense createAndPersist(OLATResourceable ores, LicenseType licenseType) {
 		return createAndPersist(ores, licenseType, null);
 	}
 
-	License createAndPersist(OLATResourceable ores, LicenseType licenseType, String licensor) {
-		LicenseImpl license = new LicenseImpl();
+	ResourceLicense createAndPersist(OLATResourceable ores, LicenseType licenseType, String licensor) {
+		ResourceLicenseImpl license = new ResourceLicenseImpl();
 		Date now = new Date();
 		license.setCreationDate(now);
 		license.setLastModified(now);
@@ -62,13 +62,13 @@ class LicenseDAO {
 		return license;
 	}
 
-	License save(License license) {
+	ResourceLicense save(ResourceLicense license) {
 		license.setLastModified(new Date());
 		license = dbInstance.getCurrentEntityManager().merge(license);
 		return license;
 	}
 
-	License loadByResource(OLATResourceable ores) {
+	ResourceLicense loadByResource(OLATResourceable ores) {
 		if (ores == null) return null;
 		
 		String query = new StringBuilder(256)
@@ -77,15 +77,15 @@ class LicenseDAO {
 				.append("        inner join fetch license.licenseType as licenseType")
 				.append("  where license.resName=:resName and license.resId=:resId")
 				.toString();
-		List<License> licenses = dbInstance.getCurrentEntityManager()
-				.createQuery(query, License.class)
+		List<ResourceLicense> licenses = dbInstance.getCurrentEntityManager()
+				.createQuery(query, ResourceLicense.class)
 				.setParameter("resName", ores.getResourceableTypeName())
 				.setParameter("resId", ores.getResourceableId())
 				.getResultList();
 		return licenses == null || licenses.isEmpty() ? null : licenses.get(0);
 	}
 
-	List<License> loadLicenses(Collection<OLATResourceable> resources) {
+	List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources) {
 		if (resources == null || resources.isEmpty()) return new ArrayList<>();
 		
 		Set<String> resNames = new HashSet<>();
@@ -103,7 +103,7 @@ class LicenseDAO {
 				.append("    and license.resId in (:resIds)")
 				.toString();
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, License.class)
+				.createQuery(query, ResourceLicense.class)
 				.setParameter("resNames", resNames)
 				.setParameter("resIds", resIds)
 				.getResultList();

@@ -41,15 +41,32 @@ import org.olat.resource.OLATResource;
 public interface LicenseService {
 
 	/**
+	 * Create a new license.
+	 * @param licenseType TODO
+	 *
+	 * @return
+	 */
+	public License createLicense(LicenseType licenseType);
+	
+	/**
+	 * Create a new license with the default license type.
+	 *
+	 * @param licenseHandler
+	 * @param identity
+	 */
+	public License createDefaultLicense(LicenseHandler licenseHandler, Identity identity);
+	
+	/**
 	 * Create a new license with the default license type. This method should be
-	 * used if a license is created for a new object e.g. a new learning resource.
+	 * used if a license is created for a new resourceable object e.g. a new
+	 * learning resource.
 	 *
 	 * @param ores
 	 * @param handler
 	 * @param licensor
 	 * @return
 	 */
-	public License createDefaultLicense(OLATResourceable ores, LicenseHandler handler, Identity licensor);
+	public ResourceLicense createDefaultLicense(OLATResourceable ores, LicenseHandler handler, Identity licensor);
 	
 	/**
 	 * Load the license of a resource. If no license was found, a new license with
@@ -61,7 +78,7 @@ public interface LicenseService {
 	 * @param ores
 	 * @return
 	 */
-	public License loadOrCreateLicense(OLATResourceable ores);
+	public ResourceLicense loadOrCreateLicense(OLATResourceable ores);
 
 	/**
 	 * Load the licenses for the resources.
@@ -69,7 +86,7 @@ public interface LicenseService {
 	 * @param resources
 	 * @return
 	 */
-	public List<License> loadLicenses(Collection<OLATResourceable> resources);
+	public List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources);
 
 	/**
 	 * Save the license.
@@ -77,7 +94,7 @@ public interface LicenseService {
 	 * @param license
 	 * @return
 	 */
-	public License update(License license);
+	public ResourceLicense update(ResourceLicense license);
 
 	/**
 	 * Check whether a license type with that name exists.
@@ -106,10 +123,19 @@ public interface LicenseService {
 	/**
 	 * Load a license type by its key.
 	 * 
-	 * @param licenseTypeKey the key of the license type as a String.
+	 * @param licenseTypeKey the key of the license type as a String
 	 * @return the license type or null if no license type was found for the key
 	 */
 	public LicenseType loadLicenseTypeByKey(String licenseTypeKey);
+
+
+	/**
+	 * Load a license type by its name
+	 *
+	 * @param name the name of the license type
+	 * @return the license type or null if no license type was found for the name
+	 */
+	public LicenseType loadLicenseTypeByName(String name);
 
 	/**
 	 * Load all license types. This method is primarily intended for the
