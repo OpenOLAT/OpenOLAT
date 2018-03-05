@@ -220,6 +220,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			licenseEl = uifactory.addDropdownSingleselect("cif.license", formLayout,
 					licenseSelectionConfig.getLicenseTypeKeys(),
 					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+			licenseEl.setElementCssClass("o_sel_repo_license");
 			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
 			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
 				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
@@ -435,8 +436,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		// Check for empty display name
-		boolean allOk = true;
 		if (!StringHelper.containsNonWhitespace(displayName.getValue())) {
 			displayName.setErrorKey("cif.error.displayname.empty", new String[] {});
 			allOk = false;
@@ -465,13 +467,15 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		}
 		
-		licenseEl.clearError();
-		if (licenseEl != null && licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
-			licenseEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+		if(licenseEl != null) {
+			licenseEl.clearError();
+			if (licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
+				licenseEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private boolean isLicenseTypeNotSelected() {
