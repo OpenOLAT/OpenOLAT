@@ -47,9 +47,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.DocumentPoolModule;
@@ -59,6 +57,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
+import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -122,46 +121,16 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 				TreeModel model = builder.buildTreeModel();
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItemForPublisher(), null);
 	
-				new TreeVisitor(new Visitor() {
-					@Override
-					public void visit(INode node) {
-						TaxonomyTreeNode tNode = (TaxonomyTreeNode)node;
-						if(tNode.getTaxonomyLevel() != null && tNode.isDocumentsLibraryEnabled() && tNode.isCanRead()) {
-							VFSContainer container = taxonomyService.getDocumentsLibrary(tNode.getTaxonomyLevel());
-							List<FileInfo> fInfos = FolderManager.getFileInfos(((OlatRelPathImpl)container).getRelPath(), compareDate);
-							
-							String prefixBusinessPath = "[DocumentPool:" + taxonomy.getKey() + "][TaxonomyLevel:" + tNode.getTaxonomyLevel().getKey() + "][path=";
-							for (FileInfo infos:fInfos) {
-								String title = infos.getRelPath();
-								
-								// don't show changes in meta-directories. first quick check
-								// for any dot files and then compare with our black list of
-								// known exclude prefixes
-								if (title != null && title.indexOf("/.") != -1 && FileUtils.isMetaFilename(title)) {
-									// skip this file, continue with next item in folder
-									continue;
-								}						
-								MetaInfo metaInfo = infos.getMetaInfo();
-								String iconCssClass =  null;
-								if (metaInfo != null) {
-									if (metaInfo.getTitle() != null) {
-										title += " (" + metaInfo.getTitle() + ")";
-									}
-									iconCssClass = metaInfo.getIconCssClass();
-								}
-								Identity ident = infos.getAuthor();
-								Date modDate = infos.getLastModified();
-
-								String desc = translator.translate("notifications.document.entry", new String[] { title, NotificationHelper.getFormatedName(ident) });
-								String urlToSend = null;
-								String businessPath = null;
-								if(p.getBusinessPath() != null) {
-									businessPath = prefixBusinessPath + infos.getRelPath() + "]";
-									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-								}
-								si.addSubscriptionListItem(new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass));
-							}
-						}
+				new TreeVisitor(node -> {
+					TaxonomyTreeNode tNode = (TaxonomyTreeNode)node;
+					if(tNode.getTaxonomyLevel() != null && tNode.isDocumentsLibraryEnabled() && tNode.isCanRead()) {
+						VFSContainer container = taxonomyService.getDocumentsLibrary(tNode.getTaxonomyLevel());
+						String prefixBusinessPath = "[DocumentPool:" + taxonomy.getKey() + "][TaxonomyLevel:" + tNode.getTaxonomyLevel().getKey() + "][path=";
+						createSubscriptionInfo(container, prefixBusinessPath, compareDate, si, p, translator);
+					} else if(tNode.getType() == TaxonomyTreeNodeType.templates) {
+						VFSContainer container = taxonomyService.getDocumentsLibrary(taxonomy);
+						String prefixBusinessPath = "[DocumentPool:" + taxonomy.getKey() + "][Templates:0s][path=";
+						createSubscriptionInfo(container, prefixBusinessPath, compareDate, si, p, translator);
 					}
 				}, model.getRootNode(), false).visitAll();
 			} else {
@@ -171,6 +140,40 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 		} catch (Exception e) {
 			log.error("Cannot create document pool notifications for subscriber: " + subscriber.getKey(), e);
 			return notificationsManager.getNoSubscriptionInfo();
+		}
+	}
+	
+	private void createSubscriptionInfo(VFSContainer container, String prefixBusinessPath, Date compareDate, SubscriptionInfo si, Publisher p, Translator translator) {
+		List<FileInfo> fInfos = FolderManager.getFileInfos(((OlatRelPathImpl)container).getRelPath(), compareDate);
+		for (FileInfo infos:fInfos) {
+			String title = infos.getRelPath();
+			
+			// don't show changes in meta-directories. first quick check
+			// for any dot files and then compare with our black list of
+			// known exclude prefixes
+			if (title != null && title.indexOf("/.") != -1 && FileUtils.isMetaFilename(title)) {
+				// skip this file, continue with next item in folder
+				continue;
+			}						
+			MetaInfo metaInfo = infos.getMetaInfo();
+			String iconCssClass =  null;
+			if (metaInfo != null) {
+				if (metaInfo.getTitle() != null) {
+					title += " (" + metaInfo.getTitle() + ")";
+				}
+				iconCssClass = metaInfo.getIconCssClass();
+			}
+			Identity ident = infos.getAuthor();
+			Date modDate = infos.getLastModified();
+
+			String desc = translator.translate("notifications.document.entry", new String[] { title, NotificationHelper.getFormatedName(ident) });
+			String urlToSend = null;
+			String businessPath = null;
+			if(p.getBusinessPath() != null) {
+				businessPath = prefixBusinessPath + infos.getRelPath() + "]";
+				urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+			}
+			si.addSubscriptionListItem(new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass));
 		}
 	}
 
