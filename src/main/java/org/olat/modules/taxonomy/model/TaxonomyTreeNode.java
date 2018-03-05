@@ -81,7 +81,6 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 				&& taxonomyLevel.getType().isDocumentsLibraryEnabled()
 				&& (taxonomyLevel.getType().isDocumentsLibraryManageCompetenceEnabled()
 						|| taxonomyLevel.getType().isDocumentsLibraryTeachCompetenceReadEnabled()
-						|| taxonomyLevel.getType().isDocumentsLibraryTeachCompetenceReadEnabled()
 						|| taxonomyLevel.getType().isDocumentsLibraryHaveCompetenceReadEnabled()
 						|| taxonomyLevel.getType().isDocumentsLibraryTargetCompetenceReadEnabled());
 	}

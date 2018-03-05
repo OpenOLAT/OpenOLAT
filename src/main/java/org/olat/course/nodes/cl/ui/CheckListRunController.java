@@ -314,7 +314,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 			theOne = wrapper.getDbCheckbox();
 		}
 		
-		boolean grantPoints = false;
 		if(theOne == null) {
 			//only warning because this happen in course preview
 			logWarn("A checkbox is missing: " + courseOres + " / " + courseNode.getIdent(), null);
@@ -325,10 +324,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			} else {
 				score = 0f;
 			}
-			if(wrapper.getCheckbox().getPoints() != null) {
-				grantPoints = true;
-			}
-			
+
 			checkboxManager.check(theOne, getIdentity(), score, Boolean.valueOf(checked));
 			//make sure all results is on the database before calculating some scores
 			//manager commit already 
@@ -337,11 +333,10 @@ public class CheckListRunController extends FormBasicController implements Contr
 			
 			Checkbox checkbox = wrapper.getCheckbox();
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
-			
 		}
 		
 		exposeUserDataToVC(ureq, flc);
-		return grantPoints;
+		return courseNode.hasScoreConfigured() || courseNode.hasPassedConfigured();
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {
