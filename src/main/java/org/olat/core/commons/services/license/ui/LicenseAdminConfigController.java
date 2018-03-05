@@ -59,6 +59,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -446,6 +447,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		LicenseType licenseType = handlerLicenseType.getLicenseType();
 		if (active) {
 			licenseService.activate(handler, licenseType);
+			initDefaultLicenseType(handler, licenseType);
 			reloadDefaultLicenseTypeEl(handler);
 		} else {
 			if (isDefaultLicenseType(handler, licenseType)) {
@@ -456,8 +458,24 @@ public class LicenseAdminConfigController extends FormBasicController {
 				reloadDefaultLicenseTypeEl(handler);
 			}
 		}
+		// checkboxes of enabled handlers was deactivated after deactivating a license type.
+		initGeneralElements();
 	}
 	
+	/**
+	 * Init the default license type of a new license handler, when the first
+	 * license type if activated for the handler.
+	 *
+	 * @param handler
+	 * @param licenseType
+	 */
+	private void initDefaultLicenseType(LicenseHandler handler, LicenseType licenseType) {
+		String defaultLicenseTypeKey = licenseModule.getDefaultLicenseTypeKey(handler);
+		if (!StringHelper.containsNonWhitespace(defaultLicenseTypeKey)) {
+			licenseModule.setDefaultLicenseTypeKey(handler, String.valueOf(licenseType.getKey()));
+		}
+	}
+
 	private boolean isDefaultLicenseType(LicenseHandler handler, LicenseType licenseType) {
 		String defaultLicenseTypeKey = licenseModule.getDefaultLicenseTypeKey(handler);
 		String licenseTypeKey = String.valueOf(licenseType.getKey());

@@ -66,7 +66,10 @@ public class LicenseModule extends AbstractSpringModule {
 			String handlerType = handler.getType();
 			
 			String enabledObj = getStringPropertyValue(ENABLED_HANDLERS + handlerType, true);
-			Boolean enabled = Boolean.valueOf(enabledObj);
+			Boolean enabled = Boolean.FALSE;
+			if (StringHelper.containsNonWhitespace(enabledObj)) {
+				enabled = Boolean.valueOf(enabledObj);
+			}
 			enabledHandlers.put(handlerType, enabled);
 			
 			String defaultLicenseTypeKey = getStringPropertyValue(DEFAULT_LICENSE_TYPE + handlerType, true);

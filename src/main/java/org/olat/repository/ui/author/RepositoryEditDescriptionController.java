@@ -36,10 +36,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
@@ -404,8 +404,12 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			licenseSelected = !licenseService.isNoLicense(licenseType);
 			freetextSelected = licenseService.isFreetext(licenseType);
 		}
-		licensorEl.setVisible(licenseSelected);
-		licenseFreetextEl.setVisible(freetextSelected);
+		if (licensorEl != null) {
+			licensorEl.setVisible(licenseSelected);
+		}
+		if (licenseFreetextEl != null) {
+			licenseFreetextEl.setVisible(freetextSelected);
+		}
 	}
 
 	private void updateDatesVisibility() {
@@ -477,7 +481,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			LicenseType selectedLicenseType = licenseService.loadLicenseTypeByKey(selectedKey);
 			isNoLicenseSelected = licenseService.isNoLicense(selectedLicenseType);
 		}
-		return !isNoLicenseSelected;
+		return isNoLicenseSelected;
 	}
 	
 	private boolean validateTextElement(TextElement el, int maxLength) {

@@ -33,11 +33,14 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -89,6 +92,7 @@ public class ListRenderer {
 
 	private VFSLockManager lockManager;
 	private UserManager userManager;
+	boolean licensesEnabled ;
  	
 	/**
 	 * Default constructor.
@@ -114,6 +118,9 @@ public class ListRenderer {
 		if(userManager == null) {
 			userManager = CoreSpringFactory.getImpl(UserManager.class);
 		}
+		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
+		LicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
+		licensesEnabled = licenseModule.isEnabled(licenseHandler);
 
 		List<VFSItem> children = fc.getCurrentContainerChildren();
 		// folder empty?
@@ -133,7 +140,9 @@ public class ListRenderer {
 		  .append("<thead><tr><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
 		   .append(">").append(translator.translate("header.Name")).append("</a>").append("</th>");
-		sb.append("<th>").append(translator.translate("header.license")).append("</th>");
+		if (licensesEnabled) {
+			sb.append("<th>").append(translator.translate("header.license")).append("</th>");
+		}
 		sb.append("<th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_SIZE.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_SIZE))
 		   .append(">").append(translator.translate("header.Size")).append("</a>")
@@ -344,13 +353,15 @@ public class ListRenderer {
 		sb.append("</td><td>");
 		
 		// license
-		MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
-		License license = metaInfoFactory.getLicense(metaInfo);
-		if (license != null) {
-			LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
-			licenseRenderer.render(sb, license);
+		if (licensesEnabled) {
+			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
+			License license = metaInfoFactory.getLicense(metaInfo);
+			if (license != null) {
+				LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
+				licenseRenderer.render(sb, license);
+			}
+			sb.append("</td><td>");
 		}
-		sb.append("</td><td>");
 		
 		// filesize
 		if (!isContainer) {
