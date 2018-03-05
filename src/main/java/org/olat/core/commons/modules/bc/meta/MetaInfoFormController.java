@@ -475,7 +475,7 @@ public class MetaInfoFormController extends FormBasicController {
 		License license = getLicenseFromFormItems();
 		meta.setLicenseTypeKey(license.getLicenseType() != null? String.valueOf(license.getLicenseType().getKey()): "");
 		meta.setLicenseTypeName(license.getLicenseType() != null? license.getLicenseType().getName(): "");
-		meta.setLicensor(license.getLicensor());
+		meta.setLicensor(license.getLicensor() != null? license.getLicensor(): "");
 		meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
 		return meta;
 	}

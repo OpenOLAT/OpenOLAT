@@ -27,8 +27,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
@@ -231,6 +237,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			MetaInfo infos = ((MetaTagged)childLeaf).getMetaInfo();
 			if(infos != null && !infos.hasAuthorIdentity()) {
 				infos.setAuthor(identity);
+				addLicense(infos, identity);
 				infos.clearThumbnails();
 				//infos.write(); the clearThumbnails call write()
 			}
@@ -246,6 +253,19 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		return true;
+	}
+
+	private void addLicense(MetaInfo meta, Identity identity) {
+		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
+		FolderLicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
+		if (licenseModule.isEnabled(licenseHandler)) {
+			License license = licenseService.createDefaultLicense(licenseHandler, identity);
+			meta.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+			meta.setLicenseTypeName(license.getLicenseType().getName());
+			meta.setLicensor(license.getLicensor());
+			meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
+		}
 	}
 
 	private void copyVFS(VFSLeaf file, InputStream is) throws IOException {

@@ -73,7 +73,8 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		// popup with license informations
 		sb.append("<div id='o_lic_pop_").append(id).append("' style='display:none;'><div>");
 		appendStaticcontrol(sb, "license.popup.type", LicenseUIFactory.translate(licenseType, locale));
-		appendStaticcontrol(sb, "license.popup.licensor", license.getLicensor());
+		String licensor = license.getLicensor() != null? license.getLicensor(): "";
+		appendStaticcontrol(sb, "license.popup.licensor", licensor);
 		appendStaticcontrol(sb, "license.popup.text", LicenseUIFactory.getFormattedLicenseText(license));
 		sb.append("</div>");
 		

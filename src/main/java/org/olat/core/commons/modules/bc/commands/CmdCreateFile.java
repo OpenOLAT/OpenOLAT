@@ -29,9 +29,14 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
 import org.olat.core.commons.modules.bc.FolderEvent;
+import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -53,6 +58,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -71,6 +77,13 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 	private Controller editorCtr;
 	private TextElement textElement;
 	private FolderComponent folderComponent;
+	
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private FolderLicenseHandler licenseHandler;
 
 	protected CmdCreateFile(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -182,6 +195,13 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 			if(item instanceof MetaTagged) {
 				MetaInfo meta = ((MetaTagged)item).getMetaInfo();
 				meta.setAuthor(ureq.getIdentity());
+				if (licenseModule.isEnabled(licenseHandler)) {
+					License license = licenseService.createDefaultLicense(licenseHandler, getIdentity());
+					meta.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+					meta.setLicenseTypeName(license.getLicenseType().getName());
+					meta.setLicensor(license.getLicensor());
+					meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
+				}
 				meta.write();
 			}
 

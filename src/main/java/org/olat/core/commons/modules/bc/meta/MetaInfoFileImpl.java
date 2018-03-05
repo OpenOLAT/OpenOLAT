@@ -258,7 +258,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	}
 	
 	/**
-	 * Copy values from froMeta into this object except name.
+	 * Copy values from fromMeta into this object except name.
 	 * @param fromMeta
 	 */
 	@Override
@@ -274,6 +274,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		this.setSource(fromMeta.getSource());
 		this.setTitle(fromMeta.getTitle());
 		this.setUrl(fromMeta.getUrl());
+		this.setLicenseTypeKey(fromMeta.getLicenseTypeKey());
+		this.setLicenseTypeName(fromMeta.getLicenseTypeName());
+		this.setLicensor(fromMeta.getLicensor());
+		this.setLicenseText(fromMeta.getLicenseText());
 	}
 
 	public boolean isLocked() {
@@ -809,7 +813,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 	@Override
 	public void setLicensor(String licensor) {
-		this.licensor = licensor;
+		this.licensor = licensor != null? licensor: "";
 	}
 	
 	@Override
