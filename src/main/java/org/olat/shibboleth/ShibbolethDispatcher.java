@@ -27,7 +27,6 @@ package org.olat.shibboleth;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +60,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.restapi.security.RestSecurityBean;
 import org.olat.shibboleth.manager.ShibbolethAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,10 +78,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 	public static final String PATH_SHIBBOLETH = "/shib/";
 
 	private Translator translator;
-	private boolean mobile = false;
 	private BaseSecurity securityManager;
 	private ShibbolethModule shibbolethModule;
-	private RestSecurityBean restSecurityBean;
 	private UserDeletionManager userDeletionManager;
 
 	@Autowired
@@ -91,26 +87,10 @@ public class ShibbolethDispatcher implements Dispatcher{
 
 	/**
 	 * [used by Spring]
-	 * @param mobile
-	 */
-	public void setMobile(boolean mobile) {
-		this.mobile = mobile;
-	}
-
-	/**
-	 * [used by Spring]
 	 * @param shibbolethModule
 	 */
 	public void setShibbolethModule(ShibbolethModule shibbolethModule) {
 		this.shibbolethModule = shibbolethModule;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param restSecurityBean
-	 */
-	public void setRestSecurityBean(RestSecurityBean restSecurityBean) {
-		this.restSecurityBean = restSecurityBean;
 	}
 
 	/**
@@ -142,16 +122,11 @@ public class ShibbolethDispatcher implements Dispatcher{
 		if(translator==null) {
 			translator = Util.createPackageTranslator(ShibbolethDispatcher.class, I18nModule.getDefaultLocale());
 		}
-		String uri = req.getRequestURI();
+
 		if (!shibbolethModule.isEnableShibbolethLogins()){
-			throw new OLATSecurityException("Got shibboleth request but shibboleth is not enabled: " + uri);
-		}
-		try {	uri = URLDecoder.decode(uri, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertException("UTF-8 encoding not supported!!!!");
+			throw new OLATSecurityException("Got shibboleth request but shibboleth is not enabled");
 		}
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(req);
-		uri = uri.substring(uriPrefix.length()); // guaranteed to exist by DispatcherAction
 
 		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);
 		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
@@ -213,22 +188,12 @@ public class ShibbolethDispatcher implements Dispatcher{
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttriutes.toMap()));
 
-		if(mobile) {
-			String token = restSecurityBean.generateToken(ureq.getIdentity(), ureq.getHttpReq().getSession(true));
-
-			try {
-				resp.sendRedirect(WebappHelper.getServletContextPath() + "/mobile?x-olat-token=" + token + "&username=" + ureq.getIdentity().getName());
-			} catch (IOException e) {
-				log.error("Redirect to mobile app.", e);
-			}
+		MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
+		if (mr instanceof RedirectMediaResource) {
+			RedirectMediaResource rmr = (RedirectMediaResource)mr;
+			rmr.prepare(resp);
 		} else {
-			MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
-			if (mr instanceof RedirectMediaResource) {
-				RedirectMediaResource rmr = (RedirectMediaResource)mr;
-				rmr.prepare(resp);
-			} else {
-				DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
-			}
+			DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
 		}
 	}
 
@@ -309,15 +274,15 @@ public class ShibbolethDispatcher implements Dispatcher{
 	 * @param req
 	 * @param resp
 	 */
-	private void handleException(Throwable e, HttpServletRequest req, HttpServletResponse resp, Translator translator) {
+	private void handleException(Throwable e, HttpServletRequest req, HttpServletResponse resp, Translator transl) {
 		UserRequest ureq = new UserRequestImpl(ShibbolethDispatcher.PATH_SHIBBOLETH, req, resp);
 		if(e instanceof ShibbolethException) {
 			String userMsg = "";
 			int errorCode = ((ShibbolethException)e).getErrorCode();
 			switch (errorCode) {
-				case ShibbolethException.GENERAL_SAML_ERROR: userMsg = translator.translate("error.shibboleth.generic"); break;
-				case ShibbolethException.UNIQUE_ID_NOT_FOUND: userMsg = translator.translate("error.unqueid.notfound"); break;
-				default: userMsg = translator.translate("error.shibboleth.generic"); break;
+				case ShibbolethException.GENERAL_SAML_ERROR: userMsg = transl.translate("error.shibboleth.generic"); break;
+				case ShibbolethException.UNIQUE_ID_NOT_FOUND: userMsg = transl.translate("error.unqueid.notfound"); break;
+				default: userMsg = transl.translate("error.shibboleth.generic"); break;
 			}
 			showMessage(ureq,"org.opensaml.SAMLException: " + e.getMessage(), e, userMsg, ((ShibbolethException)e).getContactPersonEmail());
 			return;

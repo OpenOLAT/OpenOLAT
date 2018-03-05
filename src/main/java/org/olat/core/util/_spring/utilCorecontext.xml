@@ -73,8 +73,7 @@
 				<value>.*Gecko/200[0123456].*</value>	<!-- Gecko engine older than 2006  -->
 				<value>.*Lynx.*</value>					<!-- Lynx console browser (no js) -->
 			</list>
-		</property>
-		<property name="crossOriginFilter" value="${allow.cross.origin.domain}"/>				
+		</property>		
 		<!-- 
 			Optional path to a directory which contains custom themes. This is an alternative to placing the theme
 			into the webapp, default is to have your custom themes in olatdata/customizing/themes
