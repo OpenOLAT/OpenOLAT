@@ -50,6 +50,8 @@ public class ToggleBoxController extends BasicController {
 	private final String titleOpen;
 	private final String titleClose;
 	private final String key;
+	private final Component componentToToggle;
+	private final boolean defaultToggleStatus;
 	private Link toggleButton;
 	private Link hideButton;
 	private final VelocityContainer mainVC;
@@ -69,20 +71,25 @@ public class ToggleBoxController extends BasicController {
 		this.key = key;
 		this.titleOpen = titleOpen;
 		this.titleClose = titleClose;
+		this.componentToToggle = componentToToggle;
+		this.defaultToggleStatus = defaultToggleStatus;
 		
 		mainVC = createVelocityContainer("togglebox");
 		toggleButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED, mainVC, this);
 		toggleButton.setIconLeftCSS("o_icon o_icon-fw");
 
+		hideButton = LinkFactory.createLink("hide", mainVC, this);	
+		hideButton.setCustomEnabledLinkCSS("o_hide");
+		reload(ureq);
+
+		putInitialPanel(mainVC);
+	}
+	
+	public void reload(UserRequest ureq) {
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		toggleStatus = (Boolean) prefs.get(this.getClass(), key, defaultToggleStatus);
 		mainVC.put("cmpToToggle", componentToToggle);
-
-		hideButton = LinkFactory.createLink("hide", mainVC, this);	
-		hideButton.setCustomEnabledLinkCSS("o_hide");
 		updateUI();
-
-		putInitialPanel(mainVC);
 	}
 	
 	protected void updateUI() {
