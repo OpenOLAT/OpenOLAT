@@ -331,6 +331,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RegistrationTest.class,
 	org.olat.restapi.DocumentPoolModuleWebServiceTest.class,
 	org.olat.restapi.TaxonomyWebServiceTest.class,
+	org.olat.restapi.security.RestSecurityBeanTest.class,
 	de.bps.onyx.plugin.OnyxModuleTest.class,
 	de.bps.onyx.plugin.OnyxResultManagerTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,

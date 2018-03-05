@@ -377,10 +377,13 @@ public class RestApiLoginFilter implements Filter {
 			Identity identity = securityBean.getIdentity(token);
 			int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 			if(loginStatus == AuthHelper.LOGIN_OK) {
-				response.setHeader(RestSecurityHelper.SEC_TOKEN, securityBean.renewToken(token));
-				synchronized(uress) {
-					chain.doFilter(request, response);
-				}
+				String renewedToken = securityBean.renewToken(token);
+				if(renewedToken != null) {
+					response.setHeader(RestSecurityHelper.SEC_TOKEN, renewedToken);
+					synchronized(uress) {
+						chain.doFilter(request, response);
+					}
+				} else response.sendError(401);
 			} else response.sendError(401);
 		} else response.sendError(401);
 	}

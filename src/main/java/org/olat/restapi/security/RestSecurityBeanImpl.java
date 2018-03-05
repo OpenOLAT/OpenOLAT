@@ -53,9 +53,9 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 	
 	public static final String REST_AUTH_PROVIDER = "REST";
 
-	private Map<String,Long> tokenToIdentity = new ConcurrentHashMap<String,Long>();
-	private Map<String,List<String>> tokenToSessionIds = new ConcurrentHashMap<String,List<String>>();
-	private Map<String,String> sessionIdToTokens = new ConcurrentHashMap<String,String>();
+	private Map<String,Long> tokenToIdentity = new ConcurrentHashMap<>();
+	private Map<String,List<String>> tokenToSessionIds = new ConcurrentHashMap<>();
+	private Map<String,String> sessionIdToTokens = new ConcurrentHashMap<>();
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -70,7 +70,7 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		
 		Authentication auth = securityManager.findAuthentication(identity, REST_AUTH_PROVIDER);
 		if(auth == null) {
-			auth = securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, identity.getName(), token, null);
+			securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, identity.getName(), token, null);
 		} else {
 			authenticationDao.updateCredential(auth, token);
 		}
@@ -79,6 +79,19 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 
 	@Override
 	public String renewToken(String token) {
+		if(token == null || token.length() > 40) {
+			return null;
+		}
+		// don't regex, never
+		for(char c:token.toCharArray()) {
+			if(c == '-'
+					|| (c >= 48 && c <= 57)
+					|| (c >= 65 && c <= 90)
+					|| (c >= 97 && c <= 122)) {
+				continue;
+			}
+			return null;
+		}
 		return token;
 	}
 
@@ -119,7 +132,7 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		String sessionId = session.getId();
 		synchronized(tokenToSessionIds) {//cluster notOK -> need probably a mapping on the DB
 			if(!tokenToSessionIds.containsKey(token)) {
-				List<String> sessionIds = new ArrayList<String>();
+				List<String> sessionIds = new ArrayList<>();
 				sessionIds.add(session.getId());
 				tokenToSessionIds.put(token, sessionIds);
 			} else {
