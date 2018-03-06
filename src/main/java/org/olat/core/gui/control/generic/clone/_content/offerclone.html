@@ -6,7 +6,7 @@ function $r.getId("undf")() {
 		var ww = window.open("$r.commandURI("cl")", "$winid", "height=" + jQuery(document).height()+ ", width=" + jQuery(document).width() + ", left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
 		ww.focus();
 	} catch(e) {
-		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Error when trying to dock div id::$r.getId("undck")', "org.olat.core.gui.control.generic.docking._content.docked.html");
+		if(window.console) console.log('Error when trying to dock div id::$r.getId("undck")');
 	}
 }
 /* ]]> */

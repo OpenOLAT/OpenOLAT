@@ -101,7 +101,7 @@ public class UserSessionDetailsController extends BasicController {
 		if (success) {
 			// lock information
 			String username = sessInfo.getLogin();
-			List<String> lockList = new ArrayList<String>();
+			List<String> lockList = new ArrayList<>();
 			List<LockEntry> locks = CoordinatorManager.getInstance().getCoordinator().getLocker().adminOnlyGetLockEntries();
 			Formatter f = Formatter.getInstance(ureq.getLocale());
 			for (LockEntry entry : locks) {

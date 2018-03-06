@@ -60,7 +60,7 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	public String getDeletedByFullName();
 	
 	/**
-	 * @return True if the user as bookmarked this entry
+	 * @return True if the user has bookmarked this entry
 	 */
 	public boolean isMarked();
 	

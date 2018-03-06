@@ -51,6 +51,6 @@ public class DownloadDocumentMapper implements Mapper {
 		if(document.exists() && document.getParentFile().equals(documentDir)) {
 			return new FileMediaResource(document, true);
 		}
-		return new NotFoundMediaResource(relPath);
+		return new NotFoundMediaResource();
 	}
 }

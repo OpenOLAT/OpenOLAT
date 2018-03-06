@@ -167,13 +167,13 @@ public class VideoPosterSelectionForm extends BasicController {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			if(relPath != null && relPath.contains("..") && !relPath.endsWith(FILENAME_POSTFIX_JPG)) { 
-				return new ForbiddenMediaResource(relPath);
+				return new ForbiddenMediaResource();
 			}
 			VFSItem mediaFile = tmpContainer.resolve(relPath);
 			if (mediaFile instanceof VFSLeaf){
 				return new VFSMediaResource((VFSLeaf)mediaFile);
 			}
-	 		return new NotFoundMediaResource(relPath);
+	 		return new NotFoundMediaResource();
 		}
 	}
 }

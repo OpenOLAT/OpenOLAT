@@ -370,7 +370,7 @@ public class HotspotInteractionStatisticsController extends BasicController {
 				File backgroundFile = new File(itemFile.getParentFile(), relPath);
 				return new VFSMediaResource(new LocalFileImpl(backgroundFile));
 			}
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 	}
 }

@@ -136,7 +136,7 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 			VFSItem sourceItem = rootContainer.resolve(moduleURI);
 			// return 404 if the requested file does not exist
 			if (sourceItem == null || (sourceItem instanceof VFSContainer)) {
-				return new NotFoundMediaResource(moduleURI);
+				return new NotFoundMediaResource();
 			}
 			// we know the file exists.
 			

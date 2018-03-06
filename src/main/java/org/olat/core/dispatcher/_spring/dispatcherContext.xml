@@ -34,9 +34,6 @@
 				<entry key="/shib/">
 					<ref bean="shibbean" />
 				</entry>
-				<entry key="/mshib/">
-					<ref bean="shibmobilebean" />
-				</entry>
 				<entry key="/admin.html">
 					<ref bean="adminbean" />
 				</entry>
@@ -189,15 +186,6 @@
 
 	<bean id="shibbean" class="org.olat.shibboleth.ShibbolethDispatcher">
 		<property name="shibbolethModule" ref="shibbolethModule"/>
-		<property name="restSecurityBean" ref="restSecurityBean"/>
-		<property name="securityManager" ref="baseSecurityManager"/>
-		<property name="userDeletionManager" ref="userDeletionManager"/>
-	</bean>
-	
-	<bean id="shibmobilebean" class="org.olat.shibboleth.ShibbolethDispatcher">
-		<property name="mobile" value="true"/>
-		<property name="shibbolethModule" ref="shibbolethModule"/>
-		<property name="restSecurityBean" ref="restSecurityBean"/>
 		<property name="securityManager" ref="baseSecurityManager"/>
 		<property name="userDeletionManager" ref="userDeletionManager"/>
 	</bean>

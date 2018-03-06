@@ -148,7 +148,7 @@ public class DialogElementController extends BasicController implements Activate
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
 					LoggingResourceable.wrapBCFile(element.getFilename()));
 		} else {
-			ureq.getDispatchResult().setResultingMediaResource(new NotFoundMediaResource(element.getFilename()));
+			ureq.getDispatchResult().setResultingMediaResource(new NotFoundMediaResource());
 			logError("No file to discuss: " + element, null);
 		}
 	}

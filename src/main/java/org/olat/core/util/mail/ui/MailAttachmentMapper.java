@@ -61,10 +61,10 @@ public class MailAttachmentMapper implements Mapper {
 					MediaResource resource = new VFSMediaResource(datas);
 					return resource;	
 				} catch(NumberFormatException e) {
-					return new NotFoundMediaResource(relPath);
+					return new NotFoundMediaResource();
 				}
 			}
 		}
-		return new NotFoundMediaResource(relPath);
+		return new NotFoundMediaResource();
 	}
 }

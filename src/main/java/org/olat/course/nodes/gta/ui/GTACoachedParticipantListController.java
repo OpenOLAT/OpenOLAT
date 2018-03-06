@@ -106,6 +106,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 	private CloseableModalController cmc;
 	private EditDueDatesController editDueDatesCtrl;
+	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -122,6 +123,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Autowired
 	private AssessmentService assessmentService;
 	
+	private FormLink extendButton;
+	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
 		super(ureq, wControl, userCourseEnv.getCourseEnvironment(), gtaNode);
@@ -134,12 +137,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.markedOnly = markedOnly;
 
 		assessableIdentities = new ArrayList<>();
-		collectIdentities(new Consumer<Identity>() {
-			@Override
-			public void accept(Identity participant) {
-				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
-			}
-		});
+		collectIdentities((participant) ->
+				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale())));
 		
 		initForm(ureq);
 		updateModel(ureq);
@@ -253,6 +252,10 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-" + markedOnly);
+		if(gtaManager.isDueDateEnabled(gtaNode) && !gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
+			tableEl.setMultiSelect(true);
+			extendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
+		}
 	}
 	
 	protected void updateModel(UserRequest ureq) {
@@ -336,6 +339,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else 	if(editMultipleDueDatesCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -343,8 +352,10 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(editMultipleDueDatesCtrl);
 		removeAsListenerAndDispose(editDueDatesCtrl);
 		removeAsListenerAndDispose(cmc);
+		editMultipleDueDatesCtrl = null;
 		editDueDatesCtrl = null;
 		cmc = null;
 	}
@@ -362,6 +373,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 					fireEvent(ureq, new SelectIdentityEvent(row.getIdentity().getIdentityKey()));	
 				}
 			}
+		} else if(extendButton == source) {
+			List<CoachedIdentityRow> rows = getSelectedRows();
+			doEditMultipleDueDates(ureq, rows);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -378,6 +392,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private List<CoachedIdentityRow> getSelectedRows() {
+		Set<Integer> selectedItems = tableEl.getMultiSelectedIndex();
+		List<CoachedIdentityRow> rows = new ArrayList<>(selectedItems.size());
+		if(!selectedItems.isEmpty()) {
+			for(Integer i:selectedItems) {
+				int index = i.intValue();
+				if(index >= 0 && index < tableModel.getRowCount()) {
+					CoachedIdentityRow row = tableModel.getObject(index);
+					if(row != null) {
+						rows.add(row);
+					}
+				}
+			}
+		}
+		return rows;
 	}
 	
 	private void doEditDueDate(UserRequest ureq, CoachedIdentityRow row) {
@@ -402,6 +433,34 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doEditMultipleDueDates(UserRequest ureq, List<CoachedIdentityRow> rows) {
+		if(editMultipleDueDatesCtrl != null) return;
+		
+		if(rows.isEmpty()) {
+			showWarning("error.atleast.task");
+		} else {
+			List<Task> tasks = new ArrayList<Task>(rows.size());
+			RepositoryEntry entry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			for (CoachedIdentityRow row : rows) {
+				if(row.getTask() == null) {
+					TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+					TaskList taskList = gtaManager.getTaskList(entry, gtaNode);
+					tasks.add(gtaManager.createAndPersistTask(null, taskList, firstStep, null, securityManager.loadIdentityByKey(row.getIdentity().getIdentityKey()), gtaNode));
+				} else {
+					tasks.add(gtaManager.getTask(row.getTask()));
+				}
+			}
+	
+			editMultipleDueDatesCtrl = new EditMultipleDueDatesController(ureq, getWindowControl(), tasks, gtaNode, entry);
+			listenTo(editMultipleDueDatesCtrl);
+			
+			String title = translate("duedates.multiple.user");
+			cmc = new CloseableModalController(getWindowControl(), "close", editMultipleDueDatesCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private boolean doToogleMark(UserRequest ureq, Long particiantKey) {

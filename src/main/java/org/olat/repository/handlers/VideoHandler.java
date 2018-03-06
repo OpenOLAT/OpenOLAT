@@ -148,7 +148,7 @@ public class VideoHandler extends FileHandler {
 		RepositoryManager repoManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		RepositoryEntry repoEntry = repoManager.lookupRepositoryEntry(res, false);
 		if (repoEntry == null) {
-			return new NotFoundMediaResource("Video Resource not found. ResourceableId::" + res.getResourceableId());
+			return new NotFoundMediaResource();
 		}
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);		
 		VideoExportMediaResource exportResource = videoManager.getVideoExportMediaResource(repoEntry);

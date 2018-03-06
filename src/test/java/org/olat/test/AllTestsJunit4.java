@@ -92,8 +92,12 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.jms.JMSTest.class,
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
+	org.olat.core.commons.modules.bc.meta.MetaInfoFactoryTest.class,
 	org.olat.core.commons.services.help.ConfluenceHelperTest.class,
 	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,
+	org.olat.core.commons.services.license.manager.LicenseTypeActivationDAOTest.class,
+	org.olat.core.commons.services.license.manager.LicenseTypeDAOTest.class,
+	org.olat.core.commons.services.license.manager.ResourceLicenseDAOTest.class,
 	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,
 	org.olat.core.commons.services.webdav.manager.DigestAuthenticationTest.class,
 	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,
@@ -332,6 +336,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RegistrationTest.class,
 	org.olat.restapi.DocumentPoolModuleWebServiceTest.class,
 	org.olat.restapi.TaxonomyWebServiceTest.class,
+	org.olat.restapi.security.RestSecurityBeanTest.class,
 	de.bps.onyx.plugin.OnyxModuleTest.class,
 	de.bps.onyx.plugin.OnyxResultManagerTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,
@@ -349,6 +354,7 @@ import org.junit.runners.Suite;
 	 * Pure JUnit test without need of framework
 	 */
 	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceImplTest.class,
+	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,

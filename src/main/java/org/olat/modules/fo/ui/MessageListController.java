@@ -828,7 +828,7 @@ public class MessageListController extends BasicController implements GenericEve
 			logError("Cannot deliver message attachment", e);
 		}
 		if(res == null) {
-			res = new NotFoundMediaResource(cmd);
+			res = new NotFoundMediaResource();
 		}
 		ureq.getDispatchResult().setResultingMediaResource(res);
 	}
@@ -1506,7 +1506,7 @@ public class MessageListController extends BasicController implements GenericEve
 				}
 			}
 			// In any error case, send not found
-			return new NotFoundMediaResource(request.getRequestURI());
+			return new NotFoundMediaResource();
 		}
 	}
 }

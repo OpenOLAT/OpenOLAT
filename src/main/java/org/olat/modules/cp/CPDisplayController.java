@@ -478,7 +478,7 @@ public class CPDisplayController extends BasicController implements Activateable
 				// controller has not been initialized display it non-inline
 				VFSItem currentItem = rootContainer.resolve(identifierRes);
 				MediaResource mr;
-				if (currentItem == null || !(currentItem instanceof VFSLeaf)) mr = new NotFoundMediaResource(identifierRes);
+				if (currentItem == null || !(currentItem instanceof VFSLeaf)) mr = new NotFoundMediaResource();
 				else mr = new VFSMediaResource((VFSLeaf) currentItem);
 				ureq.getDispatchResult().setResultingMediaResource(mr);
 				// Prevent 'don't reload' warning

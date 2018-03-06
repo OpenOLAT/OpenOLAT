@@ -69,7 +69,6 @@ public class Settings {
 	private static String clusterMode;
 	private static Date buildDate;
 	private static String repoRevision;
-	private static String crossOriginFilter;
 	private static File guiCustomThemePath;
 	
 	private static int securePort;
@@ -377,14 +376,6 @@ public class Settings {
 			uri = "http://" + getServerDomainName() + createURIPortPartWithDefaultPortCheck(port, 80);
 		}
 		return uri;
-	}
-	
-	public static String getCrossOriginFilter() {
-		return crossOriginFilter;
-	}
-	
-	public void setCrossOriginFilter(String crossOriginFilter) {
-		Settings.crossOriginFilter = crossOriginFilter;
 	}
 	
 	/**

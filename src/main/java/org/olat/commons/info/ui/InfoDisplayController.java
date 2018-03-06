@@ -508,7 +508,7 @@ public class InfoDisplayController extends FormBasicController {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			if(infoKeyToAttachment == null) {
-				return new NotFoundMediaResource(relPath);
+				return new NotFoundMediaResource();
 			}
 			
 			String[] query = relPath.split("/");
@@ -521,7 +521,7 @@ public class InfoDisplayController extends FormBasicController {
 					//ignore them
 				}
 			}
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 	}
 	
@@ -529,7 +529,7 @@ public class InfoDisplayController extends FormBasicController {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			if(infoKeyToAttachment == null) {
-				return new NotFoundMediaResource(relPath);
+				return new NotFoundMediaResource();
 			}
 			
 			String[] query = relPath.split("/");
@@ -553,7 +553,7 @@ public class InfoDisplayController extends FormBasicController {
 					//ignore them
 				}
 			}
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 	}
 }

@@ -48,7 +48,7 @@ public class VFSContainerMapper  implements Mapper {
 		VFSItem vfsItem = container.resolve(relPath);
 		MediaResource mr;
 		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
-			mr = new NotFoundMediaResource(relPath);
+			mr = new NotFoundMediaResource();
 		} else {
 			mr = new VFSMediaResource((VFSLeaf) vfsItem);
 		}

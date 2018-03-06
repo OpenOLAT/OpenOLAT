@@ -276,6 +276,7 @@ public class BinderController extends BasicController implements TooledControlle
 			listenTo(overviewCtrl);
 		} else {
 			overviewCtrl.loadModel();
+			overviewCtrl.updateSummaryView(ureq);
 		}
 
 		segmentButtonsCmp.setSelectedButton(overviewLink);

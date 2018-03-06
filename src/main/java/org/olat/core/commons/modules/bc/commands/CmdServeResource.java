@@ -77,9 +77,9 @@ public class CmdServeResource implements FolderCommand {
 		}
 
 		if (vfsitem == null) {
-			mr = new NotFoundMediaResource(path);
+			mr = new NotFoundMediaResource();
 		} else if(!(vfsitem instanceof VFSLeaf)) {
-			mr = new NotFoundMediaResource(path);
+			mr = new NotFoundMediaResource();
 		} else {
 			
 			VFSLeaf vfsfile = (VFSLeaf)vfsitem;
@@ -90,7 +90,7 @@ public class CmdServeResource implements FolderCommand {
 				// try to load in iso-8859-1
 				InputStream is = vfsfile.getInputStream();
 				if(is == null) {
-					mr = new NotFoundMediaResource(path);
+					mr = new NotFoundMediaResource();
 				} else {
 					String page = FileUtils.load(is, DEFAULT_ENCODING);
 					// search for the <meta content="text/html; charset=utf-8"

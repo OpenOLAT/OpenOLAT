@@ -33,7 +33,6 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -44,6 +43,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -102,6 +102,17 @@ public class RestConnection {
 				.build();
 	}
 	
+	public RestConnection(boolean enableCookieStore, boolean enableCredentialProvider) {
+		HttpClientBuilder builder = HttpClientBuilder.create();
+		if(enableCookieStore) {
+			builder = builder.setDefaultCookieStore(cookieStore);
+		}
+		if(enableCredentialProvider) {
+			builder = builder.setDefaultCredentialsProvider(provider);
+		}
+		httpclient = builder.build();
+	}
+	
 	public RestConnection(URL url) {
 		PORT = url.getPort();
 		HOST = url.getHost();
@@ -151,7 +162,11 @@ public class RestConnection {
 	}
 
 	public void shutdown() {
-		IOUtils.closeQuietly(httpclient);
+		try {
+			httpclient.close();
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 	public boolean login(String username, String password) throws IOException, URISyntaxException {
@@ -161,17 +176,20 @@ public class RestConnection {
 		provider.setCredentials(new AuthScope(HOST, PORT), new UsernamePasswordCredentials(username, password));
 		provider.setCredentials(new AuthScope(uri.getHost(), uri.getPort()), new UsernamePasswordCredentials(username, password));
 
+		int code = -1;
 		HttpGet httpget = new HttpGet(uri);
-		HttpResponse response = httpclient.execute(httpget);
-		
-		Header header = response.getFirstHeader(RestSecurityHelper.SEC_TOKEN);
-		if(header != null) {
-			securityToken = header.getValue();
+		try(CloseableHttpResponse response = httpclient.execute(httpget)) {
+			Header header = response.getFirstHeader(RestSecurityHelper.SEC_TOKEN);
+			if(header != null) {
+				securityToken = header.getValue();
+			}
+			
+		    HttpEntity entity = response.getEntity();
+		    code = response.getStatusLine().getStatusCode();
+		    EntityUtils.consume(entity);
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		
-	    HttpEntity entity = response.getEntity();
-	    int code = response.getStatusLine().getStatusCode();
-	    EntityUtils.consume(entity);
 	    return code == 200;
 	}
 	
@@ -310,8 +328,7 @@ public class RestConnection {
 	}
 	
 	public <U> U parse(HttpResponse response, Class<U> cl) {
-		try {
-			InputStream body = response.getEntity().getContent();
+		try(InputStream body = response.getEntity().getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			U obj = mapper.readValue(body, cl);
 			return obj;

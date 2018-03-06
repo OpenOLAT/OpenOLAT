@@ -22,6 +22,7 @@ package org.olat.repository.ui.author;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.filter.FilterFactory;
@@ -76,6 +77,8 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private List<PriceMethod> accessTypes;
 
 	private OLATResourceable olatResource;
+	
+	private License license;
 	
 	private FormLink markLink;
 	private FormLink toolsLink;
@@ -273,6 +276,14 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	public void setSelected(boolean selected) {
 		this.selected = selected;
+	}
+
+	public License getLicense() {
+		return license;
+	}
+
+	public void setLicense(License license) {
+		this.license = license;
 	}
 
 	public FormLink getMarkLink() {

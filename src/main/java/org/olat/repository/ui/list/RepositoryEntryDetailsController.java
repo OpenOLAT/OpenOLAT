@@ -32,6 +32,10 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -85,6 +89,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -152,6 +157,12 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected CoordinatorManager coordinatorManager;
 	@Autowired
 	protected ReferenceManager referenceManager;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 	
 	private String baseUrl;
 	private final boolean guestOnly;
@@ -470,19 +481,33 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             		? Boolean.TRUE : Boolean.FALSE;
             layoutCont.contextPut("isGuestAllowed", guestAllowed);
 
-            //Owners
-            List<String> authorLinkNames = new ArrayList<String>(authorKeys.size());
-    		Map<Long,String> authorNames = userManager.getUserDisplayNamesByKey(authorKeys);
-    		int counter = 0;
-    		for(Map.Entry<Long, String> author:authorNames.entrySet()) {
-    			Long authorKey = author.getKey();
-    			String authorName = StringHelper.escapeHtml(author.getValue());
-    			
-	    		FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
-	    		authorLink.setUserObject(authorKey);
-	    		authorLinkNames.add(authorLink.getComponent().getComponentName());
-    		}
-    		layoutCont.contextPut("authorlinknames", authorLinkNames);
+
+			//Owners
+			List<String> authorLinkNames = new ArrayList<String>(authorKeys.size());
+			Map<Long,String> authorNames = userManager.getUserDisplayNamesByKey(authorKeys);
+			int counter = 0;
+			for(Map.Entry<Long, String> author:authorNames.entrySet()) {
+				Long authorKey = author.getKey();
+				String authorName = StringHelper.escapeHtml(author.getValue());
+
+				FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
+				authorLink.setUserObject(authorKey);
+				authorLinkNames.add(authorLink.getComponent().getComponentName());
+			}
+			layoutCont.contextPut("authorlinknames", authorLinkNames);
+			
+			// License
+			boolean licEnabled = licenseModule.isEnabled(licenseHandler);
+			if (licEnabled) {
+				layoutCont.contextPut("licSwitch", Boolean.TRUE);
+				License license = licenseService.loadOrCreateLicense(entry.getOlatResource());
+				layoutCont.contextPut("license", LicenseUIFactory.translate(license.getLicenseType(), getLocale()));
+				String licensor = StringHelper.containsNonWhitespace(license.getLicensor())? license.getLicensor(): "";
+				layoutCont.contextPut("licensor", licensor);
+				layoutCont.contextPut("licenseText", LicenseUIFactory.getFormattedLicenseText(license));
+			} else {
+				layoutCont.contextPut("licSwitch", Boolean.FALSE);
+			}
 		}
 	}
 	

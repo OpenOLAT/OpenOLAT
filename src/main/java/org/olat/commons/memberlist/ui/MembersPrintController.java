@@ -179,7 +179,7 @@ public class MembersPrintController extends BasicController {
 					}
 				}
 			}
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 	}
 }

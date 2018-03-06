@@ -138,7 +138,7 @@ public class TunnelMapper implements Mapper {
 			HttpResponse response = httpClient.execute(meth);
 			if (response == null) {
 				// error
-				return new NotFoundMediaResource(relPath);
+				return new NotFoundMediaResource();
 			}
 
 			// get or post successfully
@@ -146,7 +146,7 @@ public class TunnelMapper implements Mapper {
 			if (responseHeader == null) {
 				// error
 				EntityUtils.consumeQuietly(response.getEntity());
-				return new NotFoundMediaResource(relPath);
+				return new NotFoundMediaResource();
 			}
 			return new HttpRequestMediaResource(response);
 		} catch (ClientProtocolException e) {

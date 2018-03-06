@@ -71,4 +71,5 @@ public class LightIconRenderer extends IconCssCellRenderer implements FlexiCellR
 	protected String getHoverText(Object val) {
 		return null;
 	}
+
 }

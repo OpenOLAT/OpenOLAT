@@ -254,7 +254,7 @@ public class CPPrintMapper implements Mapper {
 	protected MediaResource deliverFile(HttpServletRequest httpRequest, String path) {
 		//if directory gets renamed root becomes null
 		if (rootDir == null) {
-			return new NotFoundMediaResource("directory not found"+path);
+			return new NotFoundMediaResource();
 		}
 		
 		VFSLeaf vfsLeaf = null;
@@ -263,7 +263,7 @@ public class CPPrintMapper implements Mapper {
 		if (vfsItem instanceof VFSLeaf) {
 			vfsLeaf = (VFSLeaf)vfsItem;
 		} else {
-			return new NotFoundMediaResource(path);
+			return new NotFoundMediaResource();
 		}
 		
 		MediaResource mr;

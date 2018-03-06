@@ -60,12 +60,12 @@ class GlossaryTermMapper extends LogDelegator implements Mapper {
 		File glossaryFolderFile = new File(glossaryFolderString);
 		if (!glossaryFolderFile.isDirectory()) {
 			logWarn("GlossaryTerms delivery failed; path to glossaryFolder not existing: " + relPath, null);
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 		VFSContainer glossaryFolder = new LocalFolderImpl(glossaryFolderFile);
 		if (!gIM.isFolderContainingGlossary(glossaryFolder)) {
 			logWarn("GlossaryTerms delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder, null);
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 
 		// Create a media resource

@@ -82,11 +82,11 @@ public class UserSessionSnoopController extends BasicController {
 		appendFormattedKeyValue(sb, "Protocol", hreq.getProtocol());
 		appendFormattedKeyValue(sb, "Scheme", hreq.getScheme());
 		appendFormattedKeyValue(sb, "Server Name", hreq.getServerName());
-		appendFormattedKeyValue(sb, "Server Port", new Integer(hreq.getServerPort()));
+		appendFormattedKeyValue(sb, "Server Port", Integer.valueOf(hreq.getServerPort()));
 		appendFormattedKeyValue(sb, "Remote Addr", hreq.getRemoteAddr());
 		appendFormattedKeyValue(sb, "Remote Host", hreq.getRemoteHost());
 		appendFormattedKeyValue(sb, "Character Encoding", hreq.getCharacterEncoding());
-		appendFormattedKeyValue(sb, "Content Length", new Integer(hreq.getContentLength()));
+		appendFormattedKeyValue(sb, "Content Length", Integer.valueOf(hreq.getContentLength()));
 		appendFormattedKeyValue(sb, "Content Type", hreq.getContentType());
 		appendFormattedKeyValue(sb, "Locale", hreq.getLocale());
 
@@ -95,9 +95,9 @@ public class UserSessionSnoopController extends BasicController {
 		while (e.hasMoreElements()) {
 			String key = e.nextElement();
 			String[] values = hreq.getParameterValues(key);
-			String value = "";
+			StringBuilder value = new StringBuilder();
 			for (int i = 0; i < values.length; i++) {
-				value = value + " " + values[i];
+				value.append(" ").append(values[i]);
 			}
 			appendFormattedKeyValue(sb, key, value);
 		}
@@ -119,7 +119,7 @@ public class UserSessionSnoopController extends BasicController {
 		}
 
 		sb.append("<h4>Hreq parameters:</h4>");
-		appendFormattedKeyValue(sb, "Request Is Secure", new Boolean(hreq.isSecure()));
+		appendFormattedKeyValue(sb, "Request Is Secure", Boolean.valueOf(hreq.isSecure()));
 		appendFormattedKeyValue(sb, "Auth Type", hreq.getAuthType());
 		appendFormattedKeyValue(sb, "HTTP Method", hreq.getMethod());
 		appendFormattedKeyValue(sb, "Remote User", hreq.getRemoteUser());
@@ -131,10 +131,9 @@ public class UserSessionSnoopController extends BasicController {
 		appendFormattedKeyValue(sb, "Query String", hreq.getQueryString());
 
 		HttpSession hsession = hreq.getSession();
-		appendFormattedKeyValue(sb, "Current Session Id", hsession.getId());
-		appendFormattedKeyValue(sb, "Session Created Time", new Long(hsession.getCreationTime()));
-		appendFormattedKeyValue(sb, "Session Last Accessed Time", new Long(hsession.getLastAccessedTime()));
-		appendFormattedKeyValue(sb, "Session Max Inactive Interval Seconds",	new Long(hsession.getMaxInactiveInterval()));
+		appendFormattedKeyValue(sb, "Session Created Time", Long.valueOf(hsession.getCreationTime()));
+		appendFormattedKeyValue(sb, "Session Last Accessed Time", Long.valueOf(hsession.getLastAccessedTime()));
+		appendFormattedKeyValue(sb, "Session Max Inactive Interval Seconds", Long.valueOf(hsession.getMaxInactiveInterval()));
 		
 		sb.append("<h4>Session values:</h4> ");
 		Enumeration<String> names = hsession.getAttributeNames();

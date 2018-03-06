@@ -57,7 +57,7 @@ public class HtmlStaticMapper implements Mapper {
 		
 		VFSItem currentItem = mapperRootContainer.resolve(relPath);
 		if (currentItem == null || (currentItem instanceof VFSContainer)) {
-			return new NotFoundMediaResource(relPath);
+			return new NotFoundMediaResource();
 		}
 		VFSMediaResource vmr = new VFSMediaResource((VFSLeaf)currentItem);
 		String encoding = SimpleHtmlParser.extractHTMLCharset(((VFSLeaf)currentItem));

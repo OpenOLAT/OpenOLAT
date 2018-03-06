@@ -196,7 +196,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		VFSItem vfsItem = null;
 		//if directory gets renamed root becomes null
 		if (rootDir == null) {
-			return new NotFoundMediaResource("directory not found"+path);
+			return new NotFoundMediaResource();
 		} else {
 			vfsItem = rootDir.resolve(path);
 		}
@@ -204,10 +204,10 @@ public class IFrameDeliveryMapper implements Mapper {
 		if (vfsItem instanceof VFSLeaf) {
 			vfsLeaf = (VFSLeaf) rootDir.resolve(path);
 		} else {
-			mr = new NotFoundMediaResource(path);
+			mr = new NotFoundMediaResource();
 		}
 		if (vfsLeaf == null) {
-			mr = new NotFoundMediaResource(path);
+			mr = new NotFoundMediaResource();
 		} else {
 			// check if path ends with .html, .htm or .xhtml. We do this by searching for "htm" 
 			// and accept positions of this string at length-3 or length-4

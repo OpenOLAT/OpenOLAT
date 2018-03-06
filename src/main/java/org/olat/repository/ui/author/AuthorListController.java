@@ -32,6 +32,8 @@ import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -100,6 +102,7 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
@@ -173,6 +176,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected RepositoryManager repositoryManager;
 	@Autowired
 	protected RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch, boolean withClosedfilter) {
@@ -286,6 +293,10 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.displayname.name(), renderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
 				true, OrderBy.authors.name()));
+		if (licenseModule.isEnabled(licenseHandler)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license.i18nKey(), Cols.license.ordinal(), "license",
+					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
 		if(repositoryModule.isManagedRepositoryEntries()) {
@@ -514,7 +525,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
-		}  else if(referencesCtrl == source) {
+		} else if(referencesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
@@ -1070,7 +1081,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Catalog:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void launchDetails(UserRequest ureq, RepositoryEntryRef ref) {
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Infos:0]";
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {

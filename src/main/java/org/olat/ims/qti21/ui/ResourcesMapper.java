@@ -85,7 +85,7 @@ public class ResourcesMapper implements Mapper {
 			File file = new File(root.getParentFile(), filename);
 			if(file.exists()) {
 				if(file.getName().endsWith(".xml")) {
-					resource = new ForbiddenMediaResource(relPath);
+					resource = new ForbiddenMediaResource();
 				} else {
 					resource = new FileMediaResource(file, true);
 				}
@@ -120,15 +120,15 @@ public class ResourcesMapper implements Mapper {
 					if(submissionFile.exists()) {
 						resource = new FileMediaResource(submissionFile, true);
 					} else {
-						resource = new NotFoundMediaResource(href);
+						resource = new NotFoundMediaResource();
 					}
 				} else {
-					resource = new NotFoundMediaResource(href);
+					resource = new NotFoundMediaResource();
 				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
-			resource = new NotFoundMediaResource(filename);
+			resource = new NotFoundMediaResource();
 		}
 		return resource;
 	}

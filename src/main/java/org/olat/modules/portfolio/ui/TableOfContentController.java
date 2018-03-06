@@ -170,6 +170,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		loadModel();
 	}
 	
+	void updateSummaryView(UserRequest ureq) {
+		summaryCtrl.reload(ureq);
+	}
+	
 	private String getGuiPrefsKey(OLATResourceable binderOres) {
 		return new StringBuilder()
 				.append(binderOres.getResourceableTypeName())

@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +45,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,6 +70,10 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private RepositoryEntryLicenseHandler repositoryLicenseHandler;
 	
 	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
 		super(ureq, wControl);
@@ -188,6 +194,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		String displayname = displaynameEl.getValue();
 		
 		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), getLocale());
+		licenseService.createDefaultLicense(addedEntry.getOlatResource(), repositoryLicenseHandler, getIdentity());
 
 		repositoryManager.triggerIndexer(addedEntry);
 

@@ -363,18 +363,12 @@ public class FileUploadController extends FormBasicController {
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override	
 	protected void formCancelled(UserRequest ureq) {
 		status = FolderCommandStatus.STATUS_CANCELED;
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == overwriteDialog) {
@@ -759,9 +753,6 @@ public class FileUploadController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// 
