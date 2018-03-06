@@ -250,7 +250,6 @@ public class MetaInfoFormController extends FormBasicController {
 		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);
 		
 		if (licenseModule.isEnabled(licenseHandler)) {
-			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
 
 			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
@@ -573,10 +572,12 @@ public class MetaInfoFormController extends FormBasicController {
 			}			
 		}
 		
-		licenseEl.clearError();
-		if (licenseEl != null && licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
-			licenseEl.setErrorKey("form.legende.mandatory", null);
-			valid &= false;
+		if(licenseEl != null) {
+			licenseEl.clearError();
+			if (licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
+				licenseEl.setErrorKey("form.legende.mandatory", null);
+				valid &= false;
+			}
 		}
 		
 		return valid;
