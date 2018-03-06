@@ -167,6 +167,7 @@ public class VideoManagerImpl implements VideoManager {
 	 * @param videoResource the video resource
 	 * @param posterframe the newPosterFile
 	 */
+	@Override
 	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile) {
 		VideoMeta videoMetadata = getVideoMetadata(videoResource);
 		Size posterRes = imageHelper.getSize(newPosterFile, FILETYPE_JPG);
@@ -608,20 +609,10 @@ public class VideoManagerImpl implements VideoManager {
 		ZipFile zipFile;
 		try {
 			zipFile = new ZipFile(file);
-			// 1) Check if it contains a metadata file
-//			ZipEntry metadataEntry = zipFile.getEntry(VideoManagerImpl.FILENAME_VIDEO_METADATA_XML);
-//			VideoMetadata videoMetadataImpl = null;
-//			if (metadataEntry != null) {// does no harm
-//				InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
-//				videoMetadataImpl = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
-//				if (videoMetadataImpl != null) {
-//					eval.setValid(true);
-//				}
-//			}
-			// 2) Propose title from repo metadata
 			ZipEntry repoMetadataEntry = zipFile.getEntry(DIRNAME_REPOENTRY + "/" + RepositoryEntryImportExport.PROPERTIES_FILE);
 			RepositoryEntryImport repoMetadata = null;
 			if (repoMetadataEntry != null) {
+				eval.setValid(true);
 				InputStream repoMetaDataStream = zipFile.getInputStream(repoMetadataEntry);
 				repoMetadata = RepositoryEntryImportExport.getConfiguration(repoMetaDataStream);
 				if (repoMetadata != null) {
@@ -844,6 +835,7 @@ public class VideoManagerImpl implements VideoManager {
 	 * @param List<VideoChapterTableRow> chapters the chapters
 	 * @param OLATResource videoResource the video resource
 	 */
+	@Override
 	public List<VideoChapterTableRow> loadChapters(OLATResource videoResource) {
 		List<VideoChapterTableRow> chapters = new ArrayList<>();
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
