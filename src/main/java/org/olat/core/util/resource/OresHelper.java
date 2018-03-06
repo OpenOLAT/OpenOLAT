@@ -109,32 +109,9 @@ public class OresHelper {
 				subKey = subKey.substring(subKey.length()-25, subKey.length());
 			}
 			derivedString = subKey+"@"+derivedString;
-			//was: derivedString += "::"+subKey;
 		}
 		return derivedString;
 	}
-	
-	/**
-	 * -Not to use normally-<br>
-	 * Used to compress an olatresourceable with a subkey into a new olatresourceable.
-	 * Used to fit into API which only offer olatresourceable without subkey.<br>
-	 * e.g. "RepositoryEntry" : 123 with subkey 'author' turns into "author@RepositoryEntry" : 123
-	 * 
-	 * @param ores the olatresourceable
-	 * @param subKey the subkey, may be null (in which case the original olatresourceable is returned)
-	 * @return an olatresourceable representing the ores together with the subkey
-	 */
-	/*public static OLATResourceable createComposite(OLATResourceable ores, String subKey) {
-		if (subKey == null) {
-			return ores;
-		} else {
-			final String type = subKey+"@"+ores.getResourceableTypeName();
-			final Long id = ores.getResourceableId();
-			return createOLATResourceableInstanceWithoutCheck(type, id);
-		}
-	}*/
-	
-	
 
 	/**
 	 * used to generate an object (a String) which can be used in maps / set etc.
