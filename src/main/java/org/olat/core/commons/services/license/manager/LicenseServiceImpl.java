@@ -31,6 +31,8 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +45,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 class LicenseServiceImpl implements LicenseService {
+
+	private static final OLog log = Tracing.createLoggerFor(LicenseServiceImpl.class);
 
 	@Autowired
 	private LicenseModule licenseModule;
@@ -110,13 +114,33 @@ class LicenseServiceImpl implements LicenseService {
 	}
 
 	@Override
+	public ResourceLicense copy(OLATResourceable source, OLATResourceable target) {
+		if (source == null || target == null) return null;
+		
+		ResourceLicense targetLicense = null;
+		ResourceLicense sourceLicense = licenseDao.loadByResource(source);
+		if (sourceLicense != null) {
+			licenseDao.delete(target);
+			targetLicense = licenseDao.createAndPersist(target, sourceLicense);
+		}
+		return targetLicense;
+	}
+
+	@Override
+	public void delete(OLATResourceable resource) {
+		licenseDao.delete(resource);
+	}
+
+	@Override
 	public boolean licenseTypeExists(String name) {
 		return licenseTypeDao.exists(name);
 	}
 	
 	@Override
 	public LicenseType createLicenseType(String name) {
-		return licenseTypeDao.create(name);
+		LicenseType licenseType = licenseTypeDao.create(name);
+		log.info("License type created: " + licenseType);
+		return licenseType;
 	}
 
 	@Override

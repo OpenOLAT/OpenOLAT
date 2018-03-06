@@ -66,7 +66,7 @@ public interface LicenseService {
 	 * @param licensor
 	 * @return
 	 */
-	public ResourceLicense createDefaultLicense(OLATResourceable ores, LicenseHandler handler, Identity licensor);
+	public ResourceLicense createDefaultLicense(OLATResourceable resource, LicenseHandler handler, Identity licensor);
 	
 	/**
 	 * Load the license of a resource. If no license was found, a new license with
@@ -78,7 +78,7 @@ public interface LicenseService {
 	 * @param ores
 	 * @return
 	 */
-	public ResourceLicense loadOrCreateLicense(OLATResourceable ores);
+	public ResourceLicense loadOrCreateLicense(OLATResourceable resource);
 
 	/**
 	 * Load the licenses for the resources.
@@ -95,6 +95,24 @@ public interface LicenseService {
 	 * @return
 	 */
 	public ResourceLicense update(ResourceLicense license);
+	
+	/**
+	 * Copy the license form the source resource to the target resource. If the
+	 * target resource already has a license, the old license is overwritten by the
+	 * new license.
+	 *
+	 * @param source
+	 * @param target
+	 * @return the copied license or null if no license was copied
+	 */
+	public ResourceLicense copy(OLATResourceable source, OLATResourceable target);
+
+	/**
+	 * Delete the license of a resource.
+	 *
+	 * @param resource
+	 */
+	public void delete(OLATResourceable resource);
 
 	/**
 	 * Check whether a license type with that name exists.
