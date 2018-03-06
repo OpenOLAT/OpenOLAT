@@ -168,10 +168,12 @@ public class RepositoryEntryImportExport {
 	private void addLicenseInformations(RepositoryEntryImport imp, RepositoryEntry re) {
 		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		ResourceLicense license = licenseService.loadLicense(re.getOlatResource());
-		imp.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
-		imp.setLicenseTypeName(license.getLicenseType().getName());
-		imp.setLicensor(license.getLicensor());
-		imp.setLicenseText(LicenseUIFactory.getLicenseText(license));
+		if (license != null) {
+			imp.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+			imp.setLicenseTypeName(license.getLicenseType().getName());
+			imp.setLicensor(license.getLicensor());
+			imp.setLicenseText(LicenseUIFactory.getLicenseText(license));
+		}
 	}
 
 	public void exportDoExportProperties(ZipOutputStream zout) throws IOException {
