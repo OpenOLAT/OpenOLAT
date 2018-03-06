@@ -109,6 +109,11 @@ class LicenseServiceImpl implements LicenseService {
 	}
 
 	@Override
+	public ResourceLicense loadLicense(OLATResourceable resource) {
+		return licenseDao.loadByResource(resource);
+	}
+
+	@Override
 	public List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources) {
 		return licenseDao.loadLicenses(resources);
 	}

@@ -42,6 +42,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -150,6 +154,9 @@ public class RepositoryEntryImportExport {
 				imp.setMovieName(movie.getName());
 				FileUtils.copyFileToDir(((LocalFileImpl)movie).getBasefile(), baseDirectory, "");
 			}
+			
+			addLicenseInformations(imp, re);
+			
 			xstream.toXML(imp, fOut);
 		} catch (IOException ioe) {
 			throw new OLATRuntimeException("Error writing repo properties.", ioe);
@@ -158,6 +165,15 @@ public class RepositoryEntryImportExport {
 		}
 	}
 	
+	private void addLicenseInformations(RepositoryEntryImport imp, RepositoryEntry re) {
+		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		ResourceLicense license = licenseService.loadLicense(re.getOlatResource());
+		imp.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+		imp.setLicenseTypeName(license.getLicenseType().getName());
+		imp.setLicensor(license.getLicensor());
+		imp.setLicenseText(LicenseUIFactory.getLicenseText(license));
+	}
+
 	public void exportDoExportProperties(ZipOutputStream zout) throws IOException {
 		RepositoryEntryImport imp = new RepositoryEntryImport(re);
 		RepositoryManager rm = RepositoryManager.getInstance();
@@ -242,6 +258,7 @@ public class RepositoryEntryImportExport {
 				log.error("", e);
 			}
 		}
+
 		return setRepoEntryPropertiesFromImport(newEntry);
 	}
 
@@ -255,12 +272,39 @@ public class RepositoryEntryImportExport {
 		if(!propertiesLoaded) {
 			loadConfiguration();
 		}
+		
+		importLicense(newEntry);
+		
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
 				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null);
+	}
+
+	private void importLicense(RepositoryEntry newEntry) {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		boolean hasLicense = StringHelper.containsNonWhitespace(repositoryProperties.getLicenseTypeName());
+		if (hasLicense) { 
+			String licenseTypeName = repositoryProperties.getLicenseTypeName();
+			LicenseType licenseType = licenseService.loadLicenseTypeByName(licenseTypeName);
+			if (licenseType == null) {
+				licenseType = licenseService.createLicenseType(licenseTypeName);
+				licenseType.setText(repositoryProperties.getLicenseText());
+				licenseService.saveLicenseType(licenseType);
+			}
+			ResourceLicense license = licenseService.loadOrCreateLicense(newEntry.getOlatResource());
+			license.setLicenseType(licenseType);
+			license.setLicensor(repositoryProperties.getLicensor());
+			if (licenseService.isFreetext(licenseType)) {
+				license.setFreetext(repositoryProperties.getLicenseText());
+			}
+			licenseService.update(license);
+		}
 	}
 
 	/**
@@ -441,6 +485,11 @@ public class RepositoryEntryImportExport {
 		private String movieName;
 		private String imageName;
 		
+		private String licenseTypeKey;
+		private String licenseTypeName;
+		private String licensor;
+		private String licenseText;
+		
 		public RepositoryEntryImport() {
 			//
 		}
@@ -579,6 +628,38 @@ public class RepositoryEntryImportExport {
 
 		public void setExpenditureOfWork(String expenditureOfWork) {
 			this.expenditureOfWork = expenditureOfWork;
+		}
+
+		public String getLicenseTypeKey() {
+			return licenseTypeKey;
+		}
+
+		public void setLicenseTypeKey(String licenseTypeKey) {
+			this.licenseTypeKey = licenseTypeKey;
+		}
+
+		public String getLicenseTypeName() {
+			return licenseTypeName;
+		}
+
+		public void setLicenseTypeName(String licenseTypeName) {
+			this.licenseTypeName = licenseTypeName;
+		}
+
+		public String getLicensor() {
+			return licensor;
+		}
+
+		public void setLicensor(String licensor) {
+			this.licensor = licensor;
+		}
+
+		public String getLicenseText() {
+			return licenseText;
+		}
+
+		public void setLicenseText(String licenseText) {
+			this.licenseText = licenseText;
 		}
 	}
 }

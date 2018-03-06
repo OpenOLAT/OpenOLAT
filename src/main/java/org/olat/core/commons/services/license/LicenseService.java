@@ -79,6 +79,15 @@ public interface LicenseService {
 	 * @return
 	 */
 	public ResourceLicense loadOrCreateLicense(OLATResourceable resource);
+	
+	
+	/**
+	 * Load the license for the resource
+	 *
+	 * @param resource
+	 * @return the license or null if no license found
+	 */
+	public ResourceLicense loadLicense(OLATResourceable resource);
 
 	/**
 	 * Load the licenses for the resources.
