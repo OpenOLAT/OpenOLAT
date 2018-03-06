@@ -502,6 +502,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				layoutCont.contextPut("licSwitch", Boolean.TRUE);
 				License license = licenseService.loadOrCreateLicense(entry.getOlatResource());
 				layoutCont.contextPut("license", LicenseUIFactory.translate(license.getLicenseType(), getLocale()));
+				layoutCont.contextPut("licenseIconCss", LicenseUIFactory.getCssOrDefault(license.getLicenseType()));
 				String licensor = StringHelper.containsNonWhitespace(license.getLicensor())? license.getLicensor(): "";
 				layoutCont.contextPut("licensor", licensor);
 				layoutCont.contextPut("licenseText", LicenseUIFactory.getFormattedLicenseText(license));

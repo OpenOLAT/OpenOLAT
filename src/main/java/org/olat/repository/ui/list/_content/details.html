@@ -285,7 +285,11 @@
 				<div id="collapseUsage" class="panel-collapse collapse">
 					<table class="table table-condensed table-striped"><tbody>
 						#if ($licSwitch)
-							<tr><th>$r.translate("cif.license")</th><td>$license</td></tr>
+							<tr><th>$r.translate("cif.license")</th><td>
+							#if ($licenseIconCss != "")
+								<i class="o_icon ${licenseIconCss}"> </i> 
+							#end
+							$license</td></tr>
 							<tr><th>$r.translate("cif.licensor")</th><td>$licensor</td></tr>
 							<tr><th>$r.translate("cif.license.text")</th><td>$licenseText</td></tr>
 						#end

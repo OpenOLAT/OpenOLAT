@@ -66,16 +66,17 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		long id = CodeHelper.getRAMUniqueID();
 		
 		// license icon
-		sb.append("<a id='o_lic_").append(id).append("' href='javascript:;'><i class='o_icon o_icon-lg ");
+		sb.append("<a id='o_lic_").append(id).append("' href='javascript:;'><i class='o_icon o_icon-fw o_icon_lic_small ");
 		sb.append(LicenseUIFactory.getCssOrDefault(licenseType));
 		sb.append("'></i></a>");
 		
 		// popup with license informations
 		sb.append("<div id='o_lic_pop_").append(id).append("' style='display:none;'><div>");
-		appendStaticcontrol(sb, "license.popup.type", LicenseUIFactory.translate(licenseType, locale));
+		appendStaticControl(sb, "license.popup.type", LicenseUIFactory.translate(licenseType, locale),
+				LicenseUIFactory.getCssOrDefault(licenseType));
 		String licensor = license.getLicensor() != null? license.getLicensor(): "";
-		appendStaticcontrol(sb, "license.popup.licensor", licensor);
-		appendStaticcontrol(sb, "license.popup.text", LicenseUIFactory.getFormattedLicenseText(license));
+		appendStaticControl(sb, "license.popup.licensor", licensor);
+		appendStaticControl(sb, "license.popup.text", LicenseUIFactory.getFormattedLicenseText(license));
 		sb.append("</div>");
 		
 		// JavaScript to pup up the popup
@@ -88,9 +89,17 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		  .append("</script>");
 	}
 
-	private void appendStaticcontrol(StringOutput sb, String i18n, String text) {
+	private void appendStaticControl(StringOutput sb, String i18n, String text) {
 		sb.append("<label class='control-label'>").append(translator.translate(i18n)) .append("</label>");
 		sb.append("<p class='form-control-static'>").append(text).append("</p>");
+	}
+	
+	private void appendStaticControl(StringOutput sb, String i18n, String text, String immageCss) {
+		sb.append("<label class='control-label'>").append(translator.translate(i18n)) .append("</label>");
+		sb.append("<p class='form-control-static'>");
+		sb.append("<i class='o_icon ").append(immageCss).append("'> </i>");
+		sb.append("<span> ").append(text).append("</span>");
+		sb.append("</p>");
 	}
 
 }
