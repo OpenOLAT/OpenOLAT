@@ -83,8 +83,24 @@
 	border: 1px solid transparent;
 }
 
-.ui-dialog.o_modal-ui div.ui-dialog-buttonpane {
-	display:none;
+.ui-dialog.o_modal-ui {
+	/* in any case, never make dialog smaller than browser window */
+	max-width: 100vw;
+	max-height: 100vh;
+
+	div.ui-dialog-buttonpane {
+		display:none;
+	}
+	
+	/* on small screens set dimensions to take entire screen  */
+	@media (max-width: $screen-xs-max) { 
+		height: 100vh !important;	
+		width: 100vw !important;	
+		
+		div.ui-dialog-content {
+			height: 90vh !important;	
+		}
+	}	
 }
 
 /*
