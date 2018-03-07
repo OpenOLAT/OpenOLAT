@@ -865,7 +865,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			
 			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
 				RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, courseEntry, this, coachCourseEnv, assessedUserCourseEnv);
+				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, (TooledStackedPanel)stackPanel, courseEntry, this, coachCourseEnv, assessedUserCourseEnv);
 			} else if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
 				detailsCtrl =  new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
 			} else {

@@ -1,0 +1,12 @@
+<h4><i class="o_icon o_icon-fw o_icon_user"> </i> $r.escapeHtml($title)</h4>
+$r.render("table")
+#if($r.visible("cancel") || $r.visible("save"))
+<div class="o_button_group">
+	#if($r.visible("cancel"))
+		$r.render("cancel")
+	#end
+	#if($r.visible("save"))
+		$r.render("save")
+	#end
+</div>
+#end

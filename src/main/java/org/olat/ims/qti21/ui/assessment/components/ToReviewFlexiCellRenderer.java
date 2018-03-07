@@ -17,38 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+package org.olat.ims.qti21.ui.assessment.components;
 
-package org.olat.course.assessment;
-
-import java.util.Locale;
-
-import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.util.StringHelper;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Description:<br>
- * This render apply a format to the score
- * 
- * <P>
- * Initial Date:  14 mars 2011 <br>
+ * Initial date: 26 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-//fxdiff VCRP-4: assessment overview with max score
-public class ScoreCellRenderer implements CustomCellRenderer {
+public class ToReviewFlexiCellRenderer implements FlexiCellRenderer {
 
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof Float) {
-			Float score = (Float)val;
-			String scoreStr = AssessmentHelper.getRoundedScore(score);
-			if(StringHelper.containsNonWhitespace(scoreStr)) {
-				sb.append(scoreStr);
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator trans) {
+		if(cellValue instanceof Integer) {
+			Integer toReview = (Integer)cellValue;
+			if(toReview.intValue() > 0) {
+				target.append(toReview)
+				      .append(" <i class='o_icon o_icon_fw o_icon_warn'> </i>");
 			}
-		} else if(val instanceof String) {
-			sb.append((String)val);
 		}
 	}
 }

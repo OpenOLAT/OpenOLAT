@@ -21,8 +21,10 @@ package org.olat.ims.qti21.ui.assessment;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -40,21 +42,23 @@ public class IdentityAssessmentItemWrapper {
 	private final String fullName;
 	private String minScore, maxScore;
 	private Double minScoreVal, maxScoreVal;
-	private TextElement scoreEl, commentEl;
+	private AssessmentItemCorrection itemInfos;
 	private final AssessmentItem assessmentItem;
 	private final List<InteractionResultFormItem> responseFormItems;
-	
-	private AssessmentItemCorrection itemInfos;
+
+	private StaticTextElement statusEl;
+	private TextElement scoreEl, commentEl;
 	
 	public IdentityAssessmentItemWrapper(String fullName, AssessmentItem assessmentItem,
 			AssessmentItemCorrection itemInfos, List<InteractionResultFormItem> responseFormItems,
-			TextElement scoreEl, TextElement commentEl) {
+			TextElement scoreEl, TextElement commentEl, StaticTextElement statusEl) {
 		this.scoreEl = scoreEl;
 		this.fullName = fullName;
 		this.commentEl = commentEl;
 		this.assessmentItem = assessmentItem;
 		this.responseFormItems = responseFormItems;
 		this.itemInfos = itemInfos;
+		this.statusEl = statusEl;
 	}
 	
 	public AssessmentItemCorrection getCorrection() {
@@ -99,6 +103,10 @@ public class IdentityAssessmentItemWrapper {
 	
 	public TextElement getCommentEl() {
 		return commentEl;
+	}
+	
+	public StaticTextElement getStatusEl() {
+		return statusEl;
 	}
 
 	public List<InteractionResultFormItem> getResponseFormItems() {

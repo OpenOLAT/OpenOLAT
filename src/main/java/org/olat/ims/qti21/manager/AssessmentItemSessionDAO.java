@@ -61,8 +61,20 @@ public class AssessmentItemSessionDAO {
 		return itemSession;
 	}
 	
+	public AssessmentItemSession loadByKey(Long key) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select itemSession from qtiassessmentitemsession itemSession")
+		  .append(" where itemSession.key=:assessmentItemKey");
+		
+		List<AssessmentItemSession> itemSessions = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentItemSession.class)
+			.setParameter("assessmentItemKey", key)
+			.getResultList();
+		return itemSessions == null || itemSessions.isEmpty() ? null : itemSessions.get(0);
+	}
+	
 	public AssessmentItemSession getAssessmentItemSession(AssessmentTestSession assessmentTestSession, String assessmentItemIdentifier) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select itemSession from qtiassessmentitemsession itemSession")
 		  .append(" where itemSession.assessmentItemIdentifier=:assessmentItemIdentifier")
 		  .append(" and itemSession.assessmentTestSession.key=:assessmentTestSessionKey");

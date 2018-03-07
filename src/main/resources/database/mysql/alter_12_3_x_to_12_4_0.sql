@@ -6,6 +6,9 @@ alter table o_eva_form_response add column e_file_response_path varchar(4000);
 -- access control
 alter table o_ac_offer add column confirmation_email bit default 0;
 
+-- qti
+alter table o_qti_assessmentitem_session add column q_to_review bit default 0;
+
 -- licenses
 create table o_lic_license_type (
   id bigint not null auto_increment,

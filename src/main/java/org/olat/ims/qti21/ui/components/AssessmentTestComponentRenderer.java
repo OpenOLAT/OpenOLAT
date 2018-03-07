@@ -414,7 +414,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		sb.append(title)
 		  .append("</h4>")
-		  .append("<div id='itemBody' class='clearfix'>");
+		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
 
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)

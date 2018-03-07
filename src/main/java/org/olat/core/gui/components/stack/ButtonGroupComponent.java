@@ -72,6 +72,7 @@ public class ButtonGroupComponent extends AbstractComponent implements Component
 	
 	public void setSelectedButton(Link button) {
 		selectedButton = button;
+		setDirty(true);
 	}
 
 	@Override

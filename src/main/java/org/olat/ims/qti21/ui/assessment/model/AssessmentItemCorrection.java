@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.assessment;
+package org.olat.ims.qti21.ui.assessment.model;
 
 import java.math.BigDecimal;
 

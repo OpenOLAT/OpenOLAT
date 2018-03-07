@@ -1,0 +1,346 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.ims.qti21.ui.assessment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
+import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Module;
+import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.assessment.CorrectionIdentityTableModel.IdentityCols;
+import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
+import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
+import org.olat.ims.qti21.ui.assessment.components.ToReviewFlexiCellRenderer;
+import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityRow;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
+import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+
+/**
+ * A table of all the assessed identities with statistics
+ * among their questions / assessment items.
+ * 
+ * 
+ * Initial date: 23 févr. 2018<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class CorrectionIdentityListController extends FormBasicController {
+
+	public static final String USER_PROPS_ID = CorrectionIdentityListController.class.getCanonicalName();
+
+	public static final int USER_PROPS_OFFSET = 500;
+
+	private FlexiTableElement tableEl;
+	private FormLink saveTestsButton;
+	private final TooledStackedPanel stackPanel;
+	private CorrectionIdentityTableModel tableModel;
+
+	private CloseableModalController cmc;
+	private ConfirmSaveTestsController confirmSaveTestCtrl;
+	private CorrectionIdentityAssessmentItemListController identityItemListCtrl;
+
+	private final boolean isAdministrativeUser;
+	private List<UserPropertyHandler> userPropertyHandlers;
+
+	private LockResult lockResult;
+	private final boolean anonymous;
+	private final CorrectionOverviewModel model;
+	
+	@Autowired
+	private QTI21Module qtiModule;
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	
+	public CorrectionIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CorrectionOverviewModel model) {
+		super(ureq, wControl, "correction_identity_list");
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		this.model = model;
+		this.stackPanel = stackPanel;
+		anonymous = qtiModule.getCorrectionWorkflow() == CorrectionWorkflow.anonymous;
+		stackPanel.addListener(this);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+
+		initForm(ureq);
+		loadModel(true, false);
+	}
+	
+	public int getNumberOfAssessedIdentities() {
+		return model.getNumberOfAssessedIdentities();
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(anonymous) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.user, "select"));
+		} else {
+			if(isAdministrativeUser) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.username, "select"));
+			}
+			int colPos = USER_PROPS_OFFSET;
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler == null) continue;
+
+				String propName = userPropertyHandler.getName();
+				boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+
+				FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, "select", true, propName);
+				columnsModel.addFlexiColumnModel(col);
+				colPos++;
+			}
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.score, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.answered));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notAnswered));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.corrected, new CorrectedFlexiCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notCorrected, new NotCorrectedFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.toReview, new ToReviewFlexiCellRenderer()));
+		
+		tableModel = new CorrectionIdentityTableModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
+		
+		saveTestsButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
+	}
+	
+	private void loadModel(boolean reset, boolean lastSessions) {
+		if(lastSessions) {
+			model.loadLastSessions();
+		}
+		
+		int count = 0;
+		List<CorrectionIdentityRow> rows = new ArrayList<>(model.getNumberOfAssessedIdentities());
+		Map<Identity, CorrectionIdentityRow> identityToRows = new HashMap<>();
+		for(Map.Entry<Identity, AssessmentTestSession> entry:model.getLastSessions().entrySet()) {
+			String user = translate("number.assessed.identity", new String[]{ Integer.toString(++count) });
+			CorrectionIdentityRow row = new CorrectionIdentityRow(user, entry.getKey(), entry.getValue(), userPropertyHandlers, getLocale());
+			rows.add(row);
+			identityToRows.put(entry.getKey(), row);
+			
+			TestSessionState testSessionState = model.getTestSessionStates().get(entry.getKey());
+			for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:testSessionState.getItemSessionStates().entrySet()) {
+				if(itemEntry.getValue().isResponded()) {
+					row.addAnswered();
+				} else {
+					row.addNotAnswered();
+				}
+			}
+		}
+		
+		List<AssessmentItemSession> itemSessions = qtiService
+				.getAssessmentItemSessions(model.getCourseEntry(), model.getSubIdent(), model.getTestEntry(), null);
+		for(AssessmentItemSession itemSession:itemSessions) {
+			AssessmentTestSession candidateSession = itemSession.getAssessmentTestSession();
+			Identity assessedIdentity = model.getReversedLastSessions().get(candidateSession);
+			if(assessedIdentity != null) {// the map contains all test sessions the user is allowed to correct
+				CorrectionIdentityRow row = identityToRows.get(assessedIdentity);
+				if(row != null) {
+					appendStatistics(row, itemSession);
+				}
+			}
+		}
+		
+		tableModel.setObjects(rows);
+		tableEl.reset(reset, reset, true);
+	}
+	
+	private void appendStatistics(CorrectionIdentityRow row, AssessmentItemSession itemSession) {
+		row.addSession();
+		if(itemSession.isToReview()) {
+			row.addToReview();
+		}
+	}
+
+	@Override
+	protected void doDispose() {
+		stackPanel.removeListener(this);
+		if(lockResult != null && lockResult.isSuccess()) {
+			doUnlock();
+		}
+	}
+	
+	private void doUnlock() {
+		if(lockResult != null && lockResult.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
+		}
+	}
+	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == identityItemListCtrl) {
+					loadModel(false, true);
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(identityItemListCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.BACK_EVENT) {
+				doUnlock();
+				loadModel(false, true);
+				stackPanel.popController(identityItemListCtrl);
+			}
+		} else if(confirmSaveTestCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSaveTests(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmSaveTestCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmSaveTestCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("select".equals(cmd)) {
+					CorrectionIdentityRow row = tableModel.getObject(se.getIndex());
+					doSelect(ureq, row);
+				}
+			}
+		} else if(saveTestsButton == source) {
+			doConfirmSaveTests(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSelect(UserRequest ureq, CorrectionIdentityRow row) {
+		if(identityItemListCtrl != null) {
+			stackPanel.popController(identityItemListCtrl);
+		}
+		String title = anonymous ? row.getUser() : userManager.getUserDisplayName(row.getIdentity());
+		identityItemListCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
+				model, row.getIdentity(), title);
+		listenTo(identityItemListCtrl);
+		
+		String crumb;
+		if(qtiModule.getCorrectionWorkflow() == CorrectionWorkflow.anonymous) {
+			crumb = row.getUser();
+		} else {
+			crumb = userManager.getUserDisplayName(row.getIdentity());
+		}
+		stackPanel.pushController(crumb, identityItemListCtrl);
+	}
+	
+	private void doConfirmSaveTests(UserRequest ureq) {
+		int notCorrectedQuestions = 0;
+		List<CorrectionIdentityRow> rows = tableModel.getObjects();
+		for(CorrectionIdentityRow row:rows) {
+			notCorrectedQuestions += row.getNumNotCorrected();
+		}
+		
+		confirmSaveTestCtrl = new ConfirmSaveTestsController(ureq, getWindowControl(), notCorrectedQuestions > 0);
+		listenTo(confirmSaveTestCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
+				true, translate("save.tests"));
+		cmc.activate();
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSaveTests(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<AssessmentTestSession> rows = new ArrayList<>(selections.size());
+		for(Integer i:selections) {
+			CorrectionIdentityRow row = tableModel.getObject(i.intValue());
+			if(row != null) {
+				rows.add(row.getCandidateSession());
+			}
+		}
+		
+		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, AssessmentEntryStatus.done));
+	}
+}

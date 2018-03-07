@@ -1,0 +1,14 @@
+#if(!${interactionWrapper.isItemSessionStateFinal()})
+	<div class="o_assessment_item_not_final o_warning">$r.translate("warning.not.submitted")</div>
+#end
+<div class="o_qti_item_body clearfix">$r.render("answer")</div>
+
+#if($r.visible("solution"))
+	<div class="o_assessmentitem_control_view_solution">$r.render("view.solution")</div>
+	<div class="o_qti_item_body clearfix">$r.render("solution")</div>
+	<div class="o_assessmentitem_controls"> </div>
+#else
+	<div class="o_assessmentitem_controls">$r.render("view.solution")</div>
+#end
+
+$r.render("score.container")

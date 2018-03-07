@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,18 +70,21 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
-import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
+import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
+import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -102,6 +106,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	private FormLink resetButton;
 	private FlexiTableElement tableEl;
+	private final TooledStackedPanel stackPanel;
 	private QTI21AssessmentTestSessionTableModel tableModel;
 	
 	private RepositoryEntry entry;
@@ -119,7 +124,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private AssessmentResultController resultCtrl;
 	private QTI21ResetDataController resetToolCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
-	private IdentityAssessmentTestCorrectionController correctionCtrl;
+	private CorrectionIdentityAssessmentItemListController correctionCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -140,11 +145,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	 * @param coachCourseEnv
 	 * @param assessedUserCourseEnv
 	 */
-	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
+	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry assessableEntry, IQTESTCourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl, "assessment_details");
 		entry = assessableEntry;
+		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
@@ -169,7 +175,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	 * @param assessableEntry
 	 * @param assessedIdentity
 	 */
-	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
+	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry assessableEntry, Identity assessedIdentity) {
 		super(ureq, wControl, "assessment_details");
 		entry = assessableEntry;
@@ -178,6 +184,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		readOnly = false;
 		courseNode = null;
 		assessedUserCourseEnv = null;
+		this.stackPanel = stackPanel;
 		this.assessedIdentity = assessedIdentity;
 		manualCorrections = qtiService.needManualCorrection(assessableEntry);
 		reSecurity = repositoryManager.isAllowed(ureq, assessableEntry);
@@ -272,7 +279,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		if(cmc == source) {
 			cleanUp();
 		} else if(correctionCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if(event instanceof CompleteAssessmentTestSessionEvent) {
 				if(courseNode != null) {
 					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession());
 				} else {
@@ -280,9 +287,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				}
 				updateModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
+				stackPanel.popController(correctionCtrl);
+				cleanUp();
+			} else if(event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(correctionCtrl);
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(retrieveConfirmationCtr == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doPullSession(ureq, (AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
@@ -342,12 +352,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 
 	private void doCorrection(UserRequest ureq, AssessmentTestSession session) {
-		correctionCtrl = new IdentityAssessmentTestCorrectionController(ureq, getWindowControl(), session);
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		TestSessionState testSessionState = qtiService.loadTestSessionState(session);
+		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, subIdent, testEntry,
+				resolvedAssessmentTest, Collections.singletonMap(assessedIdentity, session),
+				Collections.singletonMap(assessedIdentity, testSessionState));
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, session, assessedIdentity);
 		listenTo(correctionCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", correctionCtrl.getInitialComponent(),
-				true, translate("correction"));
-		cmc.activate();
-		listenTo(cmc);
+		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}
 	
 	private void doUpdateCourseNode(AssessmentTestSession session) {

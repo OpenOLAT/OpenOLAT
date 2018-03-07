@@ -419,7 +419,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else {
 			exposeVisiblityPeriod();
 			mainVC.contextPut("showResultsVisible", Boolean.FALSE);
-			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage && !showSummary.none()));	
+			mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage && !showSummary.none()));	
 		}
 		
 		if(!anonym && resultsVisible) {

@@ -1511,6 +1511,7 @@ create table o_qti_assessmentitem_session (
    q_score decimal default null,
    q_manual_score decimal default null,
    q_coach_comment CLOB,
+   q_to_review  number default 0,
    q_passed number default null,
    q_storage varchar2(1024 char),
    fk_assessmenttest_session number(20) not null,

@@ -1,0 +1,9 @@
+#if($r.isTrue($notCorrectedQuestions))
+	<div class="o_warning">$r.translate("warning.confirm.save")</div>
+#else
+	<p>$r.translate("confirm.save")</p>
+#end
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("ok")
+</div>

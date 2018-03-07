@@ -242,7 +242,22 @@ public interface QTI21Service {
 
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session);
 	
+	/**
+	 * 
+	 * @param session The assessment test session to update
+	 * @return The merged assessment test session
+	 */
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session);
+	
+	/**
+	 * Recalculate the score and manual score of an assessment test session. As a security
+	 * will the method do a commit first to ensure that all item session are saved on the
+	 * database.
+	 * 
+	 * @param session The assessment test session primary key
+	 * @return The merged assessment test session
+	 */
+	public AssessmentTestSession recalculateAssessmentTestSessionScores(Long sessionKey);
 
 	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities);
 	
@@ -325,6 +340,8 @@ public interface QTI21Service {
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry);
 	
 	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier);
+
+	public AssessmentItemSession getAssessmentItemSession(AssessmentItemSessionRef candidateSession);
 	
 	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession candidateSession);
 	

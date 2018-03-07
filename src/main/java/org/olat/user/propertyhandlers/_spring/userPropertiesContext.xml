@@ -403,6 +403,27 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.ims.qti21.ui.assessment.CorrectionIdentityListController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="List of users in the QTI 2.1 correction workflow" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.group.ui.main.MemberInfoController">
 					<!-- First name and last name are already shown -->

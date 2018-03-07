@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -35,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
@@ -42,9 +45,14 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
-import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
+import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
+import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
+import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
 
 /**
@@ -55,14 +63,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsController {
 
-	private Link correctionLink, extraTimeLink, pullTestLink, reopenLink, deleteDataLink;
+	private Link correctionLink;
+	private Link extraTimeLink;
+	private Link pullTestLink;
+	private Link reopenLink;
+	private Link deleteDataLink;
+	private TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
 	private ConfirmReopenController reopenCtrl;
 	private QTI21ResetDataController resetDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
 	private QTI21RetrieveTestsController retrieveConfirmationCtr;
-	private IdentityAssessmentTestCorrectionController correctionCtrl;
+	private CorrectionIdentityAssessmentItemListController correctionCtrl;
 	
 	private RepositoryEntry testEntry;
 	private RepositoryEntry courseEntry;
@@ -74,12 +87,13 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public QTI21IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl,
+	public QTI21IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			IQTESTCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
 
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
+		this.stackPanel = stackPanel;
 		this.testCourseNode = courseNode;
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		manualCorrections = qtiService.needManualCorrection(testEntry)
@@ -88,7 +102,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService
 				.getAssessmentTestSessionsStatistics(courseEntry, courseNode.getIdent(), assessedIdentity);
-		if(sessionsStatistics.size() > 0) {
+		if(!sessionsStatistics.isEmpty()) {
 			Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
 			lastSession = sessionsStatistics.get(0).getTestSession();
 		}
@@ -169,8 +183,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			cmc.deactivate();
 			cleanUp();
 		} else if(correctionCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
-				cmc.deactivate();
+			if(event instanceof CompleteAssessmentTestSessionEvent || event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(correctionCtrl);
 				cleanUp();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -207,13 +221,15 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void doOpenCorrection(UserRequest ureq) {
-		correctionCtrl = new IdentityAssessmentTestCorrectionController(ureq, getWindowControl(), lastSession);
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		TestSessionState testSessionState = qtiService.loadTestSessionState(lastSession);
+		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode.getIdent(), testEntry,
+				resolvedAssessmentTest, Collections.singletonMap(assessedIdentity, lastSession),
+				Collections.singletonMap(assessedIdentity, testSessionState));
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, lastSession, assessedIdentity);
 		listenTo(correctionCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", correctionCtrl.getInitialComponent(),
-				true, translate("tool.correction"));
-		cmc.activate();
-		listenTo(cmc);
+		stackPanel.pushController(translate("tool.correction"), correctionCtrl);
 	}
 	
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {

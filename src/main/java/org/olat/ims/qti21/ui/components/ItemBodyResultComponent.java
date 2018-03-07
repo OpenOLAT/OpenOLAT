@@ -53,6 +53,7 @@ public class ItemBodyResultComponent extends AssessmentObjectComponent  {
 		super(name);
 		this.qtiItem = qtiItem;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		setDomReplacementWrapperRequired(false);
 	}
 
 	public boolean isShowSolution() {

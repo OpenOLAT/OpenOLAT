@@ -209,8 +209,8 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("itemResults", new ArrayList<>());
 				layoutCont.contextPut("testSessionNotFound", Boolean.TRUE);
 			} else {
-				layoutCont.contextPut("title", new Boolean(withTitle));
-				layoutCont.contextPut("print", new Boolean(withPrint));
+				layoutCont.contextPut("title", Boolean.valueOf(withTitle));
+				layoutCont.contextPut("print", Boolean.valueOf(withPrint));
 				layoutCont.contextPut("printCommand", Boolean.FALSE);
 				if(withPrint) {
 					layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
@@ -505,15 +505,12 @@ public class AssessmentResultController extends FormBasicController {
 	}
 
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator creator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest uureq, WindowControl wwControl) {
-				AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
-						candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, false, true);
-				printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
-				listenTo(printViewCtrl);
-				return printViewCtrl;
-			}
+		ControllerCreator creator = (uureq, wwControl) -> {
+			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
+					candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, false, true);
+			printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
+			listenTo(printViewCtrl);
+			return printViewCtrl;
 		};
 		openInNewBrowserWindow(ureq, creator);
 	}
@@ -693,7 +690,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		public void setAutoScore(Double autoScore) {
 			if(autoScore != null) {
-				this.autoScore = autoScore.doubleValue();
+				this.autoScore = autoScore;
 			}
 		}
 		

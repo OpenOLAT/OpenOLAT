@@ -79,6 +79,8 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
     
     @Column(name="q_manual_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal manualScore;
+    @Column(name="q_to_review", nullable=true, insertable=true, updatable=true)
+    private boolean toReview;
     @Column(name="q_coach_comment", nullable=true, insertable=true, updatable=true)
     private String coachComment;
     
@@ -155,12 +157,23 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 		this.manualScore = manualScore;
 	}
 
+	@Override
 	public String getCoachComment() {
 		return coachComment;
 	}
 
+	@Override
 	public void setCoachComment(String coachComment) {
 		this.coachComment = coachComment;
+	}
+
+	@Override
+	public boolean isToReview() {
+		return toReview;
+	}
+
+	public void setToReview(boolean toReview) {
+		this.toReview = toReview;
 	}
 
 	@Override

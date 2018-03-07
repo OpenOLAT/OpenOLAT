@@ -51,7 +51,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 
 	private Component curContent;
 	private String stackCssClass;
-	protected final List<Component> stackList = new ArrayList<Component>(3); // allow access to extending classes
+	protected final List<Component> stackList = new ArrayList<>(3); // allow access to extending classes
 
 	/**
 	 * @param name

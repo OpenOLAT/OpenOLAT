@@ -6,6 +6,9 @@ alter table o_eva_form_response add column e_file_response_path varchar(4000);
 -- access control
 alter table o_ac_offer add confirmation_email number default 0;
 
+-- qti
+alter table o_qti_assessmentitem_session add q_to_review  number default 0;
+
 -- licenses
 create table o_lic_license_type (
   id number(20) generated always as identity,
@@ -44,3 +47,4 @@ create index lic_activation_type_idx on o_lic_license_type_activation (fk_licens
 alter table o_lic_license add constraint lic_license_type_fk foreign key (fk_license_type_id) references o_lic_license_type (id);
 create index lic_license_type_idx on o_lic_license (fk_license_type_id);
 create unique index lic_license_ores_idx on o_lic_license (l_resid, l_resname);
+

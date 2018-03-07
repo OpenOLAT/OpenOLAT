@@ -206,7 +206,7 @@ img.o_hotspot_responsive[usemap] {
 }
 
 /* Essay extended text */
-#itemBody .extendedTextInteraction {
+.o_qti_item_body .extendedTextInteraction {
 	margin: 15px 0;
 
 	textarea {
@@ -222,11 +222,6 @@ img.o_hotspot_responsive[usemap] {
 		text-align:right;
 	}
 }
-
-.o_qti_items .extendedTextInteraction {
-	font-family: $font-family-monospace;
-}
-
 
 #o_qti_run_title {
 	 margin: 0 15px 0.5em 15px;
@@ -553,7 +548,7 @@ body>li.o_assessmentitem_order_item  {
 		padding: $padding-small-vertical $padding-small-horizontal;
 		line-height: 1.5em;
 	}
-	#itemBody {
+	.o_qti_item_body {
 		min-height: $o-qti-item-min-height;
 		margin: 0;
 		padding: $padding-small-vertical $padding-small-horizontal;
@@ -561,6 +556,9 @@ body>li.o_assessmentitem_order_item  {
 		border-right: 1px solid $o-qti-item-border-color;
 		font-size: $font-size-base;
 		line-height: 1.8; /* larger than .textEntryInteraction input */
+	}
+	.o_assessment_item_not_final.o_warning {
+		margin: 0;
 	}
 	.modalFeedback {
 		h4:first-of-type {
@@ -711,6 +709,13 @@ body>li.o_assessmentitem_order_item  {
 	}
 }
 
+.o_assessmentitem_control_view_solution {
+	background: $o-qti-item-controls-bg;
+	border: 1px solid $o-qti-item-controls-border-color;
+	margin: 0;
+	padding: $padding-small-vertical $padding-small-horizontal;
+}
+
 
 .itemPrompt {
 	margin: 1.5em 0;
@@ -718,7 +723,7 @@ body>li.o_assessmentitem_order_item  {
 	color: #666666;
 }
 
-#itemBody {
+.o_qti_item_body {
 	margin: 1em 0;
 }
 
