@@ -43,6 +43,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.login.AboutController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,6 +59,8 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 	private ImpressumModule impressumModule;
 	@Autowired
 	private HelpModule helpModule;
+	@Autowired
+	private I18nModule i18nModule;
 	
 	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -87,11 +91,13 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		vc.put("topnav.about", aboutLink);
 
 		//choosing language 
-		languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");
-		//DOKU:pb:2008-01 listenTo(languageChooserC); not necessary as LanguageChooser sends a MultiUserEvent
-		//which is catched by the BaseFullWebappController. This one is then 
-		//responsible to recreate the GUI with the new Locale
-		vc.put("languageChooser", languageChooserC.getInitialComponent());
+		if (i18nModule.getEnabledLanguageKeys().size() > 1) {
+			languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");
+			//DOKU:pb:2008-01 listenTo(languageChooserC); not necessary as LanguageChooser sends a MultiUserEvent
+			//which is catched by the BaseFullWebappController. This one is then 
+			//responsible to recreate the GUI with the new Locale
+			vc.put("languageChooser", languageChooserC.getInitialComponent());
+		}
 		putInitialPanel(vc);		
 	}
 
