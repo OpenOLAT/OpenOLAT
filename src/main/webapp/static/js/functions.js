@@ -669,11 +669,6 @@ function o_ainvoke(r) {
 		// BEGIN DEPRECATED DOM REPLACEMENT CALLBACK: new style below
 		// execute onDomReplacementFinished callback functions
 		var stacklength = b_onDomReplacementFinished_callbacks.length;
-		console.log(b_onDomReplacementFinished_callbacks.toSource);//TODO
-		if (b_onDomReplacementFinished_callbacks.toSource) { 
-			//
-		}
-		
 		for (mycounter = 0; stacklength > mycounter; mycounter++) {
 			
 			if (mycounter > 50) {
