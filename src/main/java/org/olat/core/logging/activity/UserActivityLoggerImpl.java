@@ -244,7 +244,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		session_ = bluePrint.session_;
 		identity_ = bluePrint.identity_;
 		stickyActionType_ = bluePrint.stickyActionType_;
-		resourceableList_ = bluePrint.resourceableList_==null ? null : new LinkedList<ILoggingResourceable>(bluePrint.resourceableList_);
+		resourceableList_ = bluePrint.resourceableList_==null ? null : new LinkedList<>(bluePrint.resourceableList_);
 		
 		// get the businessPath from the windowControl if possible
 		String businessPath = null;
@@ -252,7 +252,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			if (wControl.getBusinessControl() instanceof StackedBusinessControl) {
 				StackedBusinessControl sbc = (StackedBusinessControl)wControl.getBusinessControl();
 				final List<ContextEntry> ces = sbc.getContextEntryStack();
-				bcContextEntries_ = ces!=null ? new LinkedList<ContextEntry>(ces) : null;
+				bcContextEntries_ = ces!=null ? new LinkedList<>(ces) : null;
 			}
 			
 			businessPath = wControl.getBusinessControl().getAsString();
@@ -344,8 +344,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// don't set runtimeParent !
 	}
 	
-	
-	
 	@Override
 	public Identity getLoggedIdentity() {
 		if(identity_ == null && session_ != null) {
@@ -354,6 +352,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		return identity_;
 	}
 
+	@Override
 	public void frameworkSetSession(UserSession session) {
 		if (session_==session) {
 			return;
@@ -374,11 +373,12 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	 */
 	private List<ILoggingResourceable> getLoggingResourceableList() {
 		if (resourceableList_==null) {
-			resourceableList_ = new LinkedList<ILoggingResourceable>();
+			resourceableList_ = new LinkedList<>();
 		}
 		return resourceableList_;
 	}
 	
+	@Override
 	public void addLoggingResourceInfo(ILoggingResourceable loggingResourceable) {
 		if (loggingResourceable==null) {
 			throw new IllegalArgumentException("resourceInfo must not be null");
@@ -421,7 +421,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			threadLocalUserActivityLogger.addLoggingResourceInfo(loggingResourceable);
 		}
 	}
-	
+
+	@Override
 	public void frameworkSetBusinessPath(String businessPath) {
 		if (businessPath==businessPath_ || businessPath==null || businessPath.length()==0 || (businessPath_!=null && businessPath.length()<businessPath_.length())) {
 			return;
@@ -438,8 +439,9 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		}
 	}
 	
+	@Override
 	public void frameworkSetBCContextEntries(List<ContextEntry> bcEntries) {
-		if (bcContextEntries_==bcEntries || bcEntries==null || bcEntries.size()==0 || (bcContextEntries_!=null && bcEntries.size()<bcContextEntries_.size())) {
+		if (bcContextEntries_==bcEntries || bcEntries==null || bcEntries.isEmpty() || (bcContextEntries_!=null && bcEntries.size()<bcContextEntries_.size())) {
 			return;
 		}
 		if (bcEntries!=null) {
@@ -453,7 +455,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			threadLocalUserActivityLogger.frameworkSetBCContextEntries(bcEntries);
 		}
 	}
-	
+
+	@Override
 	public void frameworkSetBusinessPathFromWindowControl(WindowControl wControl) {
 		if (wControl!=null && wControl.getBusinessControl()!=null) {
 			if (wControl.getBusinessControl() instanceof StackedBusinessControl) {
@@ -484,8 +487,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	 * in the corresponding fields
 	 */
 	private List<ILoggingResourceable> getCombinedOrderedLoggingResourceables(ILoggingResourceable... additionalLoggingResourceables) {
-		List<ILoggingResourceable> result = new LinkedList<ILoggingResourceable>();
-		List<ILoggingResourceable> inputCopy = new LinkedList<ILoggingResourceable>(getLoggingResourceableList());
+		List<ILoggingResourceable> result = new LinkedList<>();
+		List<ILoggingResourceable> inputCopy = new LinkedList<>(getLoggingResourceableList());
 		if (additionalLoggingResourceables!=null) {
 			for (int i = 0; i < additionalLoggingResourceables.length; i++) {
 				ILoggingResourceable additionalLoggingResourceable = additionalLoggingResourceables[i];
@@ -511,7 +514,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			}
 		}
 		if (bcContextEntries_!=null) {
-			LinkedList<ContextEntry> bcContextEntriesCopy = new LinkedList<ContextEntry>();
+			LinkedList<ContextEntry> bcContextEntriesCopy = new LinkedList<>();
 			for (Iterator<ContextEntry> it = bcContextEntries_.iterator(); it.hasNext();) {
 				ContextEntry ce = it.next();
 				if (!bcContextEntriesCopy.contains(ce)) {
@@ -590,6 +593,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		return stickyActionType_;
 	}
 
+	@Override
 	public void log(ILoggingAction loggingAction, Class<?> callingClass, ILoggingResourceable... lriOrNull) {
 		Long logStart = null;
 		if (log_.isDebug()) {
@@ -624,21 +628,18 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		}
 		
 		final String sessionId;
-		if (session_.getSessionInfo() !=null &&
-				session_.getSessionInfo().getSession()==null) {
+		if (session_.getSessionInfo() != null &&
+				session_.getSessionInfo().getSession() == null) {
 			//background taks
 			sessionId = Thread.currentThread().getName();
-		} else if (session_.getSessionInfo()==null ||
-				session_.getSessionInfo().getSession()==null ||
-				session_.getSessionInfo().getSession().getId()==null ||
-				session_.getSessionInfo().getSession().getId().length()==0) {
+		} else if (session_.getSessionInfo() == null) {
 			// no session Id available - odd
 			log_.error("No session information available to UserActivityLogger. Cannot write log entry: "+
 					crudAction.name()+":"+actionVerb.name()+", "+actionObject+", "+
 					convertLoggingResourceableListToString(resourceInfos), new Exception());
 			return;
 		} else {
-			sessionId = session_.getSessionInfo().getSession().getId();
+			sessionId = Long.toString(session_.getSessionInfo().getCreationTime());
 		}
 
 		Identity identity = session_.getIdentity();
@@ -655,7 +656,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			final String identityKeyStr = String.valueOf(identityKey);
 			for (Iterator<ILoggingResourceable> it = resourceInfos.iterator(); it.hasNext();) {
 				ILoggingResourceable lr = it.next();
-				// fxdiff: we want this info as too much actionTypes are non-admin and log-entry will then be without value not containing targetIdent!, see FXOLAT-104
+				// we want this info as too much actionTypes are non-admin and log-entry will then be without value not containing targetIdent!, see FXOLAT-104
 				if (lr.getResourceableType()==StringResourceableType.targetIdentity && lr.getId().equals(identityKeyStr)) {
 					if (log_.isDebug()) {
 						// complain
@@ -664,12 +665,12 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 						(new Exception("OLAT-4955 debug stacktrac")).printStackTrace(printWriter);
 						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug(), strackTraceAsStringWriter.toString());
 					}
-					// OLAT-4955: remove targetIdentity (fxdiff: only if same as executing identity!)
+					// remove targetIdentity (fxdiff: only if same as executing identity!)
 					it.remove();
 				}
 			}
 		}
-		// fxdiff: end of moved code
+		// end of moved code
 		if(resourceInfos != null) {
 			//remove all ignorable resources
 			for(Iterator<ILoggingResourceable> riIterator=resourceInfos.iterator(); riIterator.hasNext(); ) {
@@ -747,7 +748,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		
 		//prepare the user properties, set them at once
-		List<String> tmpUserProperties = new ArrayList<String>(12);
+		List<String> tmpUserProperties = new ArrayList<>(12);
 		for(Iterator<String> iterator = userProperties_.iterator(); iterator.hasNext();) {
 			String userPropString = identity.getUser().getPropertyOrIdentityEnvAttribute(iterator.next(), locale);
 			boolean shorten = false;

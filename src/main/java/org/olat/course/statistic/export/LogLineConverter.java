@@ -55,15 +55,15 @@ public class LogLineConverter {
 	private static final OLog log_ = Tracing.createLoggerFor(LogLineConverter.class);
 	
 	/** spring property defining all properties - including the order in which they will be exported **/
-	private List<String> orderedExportedProperties = new ArrayList<String>();
+	private List<String> orderedExportedProperties = new ArrayList<>();
 	
 	/** spring property defining all properties which should be anonymized - they must also be in orderedExportedProperties **/
-	private Set<String> anonymizedProperties = new HashSet<String>();
+	private Set<String> anonymizedProperties = new HashSet<>();
 
 	/** internal property which contains (javax.bean) PropertyDescriptors of each of the above property -
 	 * given the properties are available
 	 */
-	private List<PropertyDescriptor> orderedExportedPropertyDescriptors = new ArrayList<PropertyDescriptor>();
+	private List<PropertyDescriptor> orderedExportedPropertyDescriptors = new ArrayList<>();
 	
 	/**
 	 * spring property setter for orderedExportedProperties - which is the list of all properties to be extracted
@@ -120,7 +120,7 @@ public class LogLineConverter {
 	 * excluding those properties which could not be retrieved, i.e. for which no PropertyDescriptor could be created
 	 */
 	public String getCSVHeader() {
-		List<String> propertyNames = new ArrayList<String>();
+		List<String> propertyNames = new ArrayList<>();
 		for (Iterator<PropertyDescriptor> it = orderedExportedPropertyDescriptors.iterator(); it.hasNext();) {
 			PropertyDescriptor pd = it.next();
 			propertyNames.add(pd.getName());
@@ -136,7 +136,7 @@ public class LogLineConverter {
 	 * @return the CSV line representing the given LoggingObject
 	 */
 	public String getCSVRow(LoggingObject loggingObject, boolean anonymize, Long resourceableId) {
-		List<String> loggingObjectList = new ArrayList<String>();
+		List<String> loggingObjectList = new ArrayList<>();
 		for (Iterator<PropertyDescriptor> it = orderedExportedPropertyDescriptors.iterator(); it.hasNext();) {
 			PropertyDescriptor pd = it.next();
 			
@@ -150,11 +150,7 @@ public class LogLineConverter {
 					// do anonymization
 					strValue = makeAnonymous(String.valueOf(value), resourceableId);
 				}
-			} catch (IllegalArgumentException e) {
-				// nothing to do
-			} catch (IllegalAccessException e) {
-				// nothing to do
-			} catch (InvocationTargetException e) {
+			} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
 				// nothing to do
 			}
 			loggingObjectList.add(strValue);

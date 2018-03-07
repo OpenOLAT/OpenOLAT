@@ -86,10 +86,8 @@ public class SessionInfo implements Serializable {
 		secure = false;
 		creationTime = new Date().getTime();
 	}
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+
+	@Override
 	public String toString() {
 		return String.format(FORMATTED, login, firstname, lastname, fromIP, fromFQN, authProvider, isWebDAV, isREST, isSecure(), getWebMode(),
 				getSessionDuration() / 1000);
@@ -272,7 +270,11 @@ public class SessionInfo implements Serializable {
 	 * @return timestamp in nanoseconds
 	 */
 	public long getLastClickTime(){
-		return this.timestmp;
+		return timestmp;
+	}
+	
+	public long getCreationTime() {
+		return creationTime;
 	}
 	
 	public long getSessionDuration(){
@@ -292,11 +294,8 @@ public class SessionInfo implements Serializable {
 	 */
 	public void setWebModeFromUreq(UserRequest ureq) {
 		String deliveryMode = "web 1.0"; // default, e.g. when connecting with webdav
-		if (ureq != null) {
-			// calculate ajax delivery mode
-			if (Windows.getWindows(ureq).getWindowManager().isAjaxEnabled()) {
-				deliveryMode = "web 2.0";
-			}
+		if (ureq != null && Windows.getWindows(ureq).getWindowManager().isAjaxEnabled()) {
+			deliveryMode = "web 2.0";
 		}
 		this.webMode = deliveryMode;
 	}
