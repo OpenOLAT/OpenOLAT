@@ -67,6 +67,7 @@ public class LecturesSearchFormController extends FormBasicController {
 	private FormLayoutContainer privateDatesCont;
 	private SingleSelection dateTypesEl, publicDatesEl;
 
+	private final boolean admin;
 	private final boolean adminProps;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
@@ -78,9 +79,10 @@ public class LecturesSearchFormController extends FormBasicController {
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
-	public LecturesSearchFormController(UserRequest ureq, WindowControl wControl) {
+	public LecturesSearchFormController(UserRequest ureq, WindowControl wControl, boolean admin) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.admin = admin;
 		adminProps = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		initForm(ureq);
@@ -250,7 +252,7 @@ public class LecturesSearchFormController extends FormBasicController {
 	private List<String> getBulkIdentifiers() {
 		String val = bulkEl.getValue();
 		
-		List<String> identifiers = new ArrayList<String>();
+		List<String> identifiers = new ArrayList<>();
 		String[] lines = val.split("\r?\n");
 		for (int i = 0; i < lines.length; i++) {
 			String username = lines[i].trim();
@@ -280,26 +282,28 @@ public class LecturesSearchFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		return validate() & super.validateFormLogic(ureq);
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validate();
+		return allOk;
 	}
 	
 	private boolean validate() {
 		boolean atLeastOne = false;
 		if(login.isVisible()) {
-			atLeastOne = StringHelper.containsNonWhitespace(login.getValue());
+			atLeastOne = isNotEmpty(login.getValue());
 		}
 				
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem ui = propFormItems.get(userPropertyHandler.getName());
 				String uiValue = userPropertyHandler.getStringValue(ui);
-				if (StringHelper.containsNonWhitespace(uiValue) && !uiValue.equals("-")) {
+				if (isNotEmpty(uiValue)) {
 					atLeastOne |= true;
 				}
 			}
 		}
 		
-		if(StringHelper.containsNonWhitespace(bulkEl.getValue())) {
+		if(isNotEmpty(bulkEl.getValue())) {
 			atLeastOne |= true;
 		}
 		
@@ -314,5 +318,30 @@ public class LecturesSearchFormController extends FormBasicController {
 			showWarning("error.search.form.notempty");
 		}
 		return atLeastOne;
+	}
+	
+	/**
+	 * Coaches have a restriction on the user they can see, the
+	 * test is therefore lighter for them.
+	 * 
+	 * @param val The value to check
+	 * @return false if the value is considered too small to be acceptable
+	 */
+	private boolean isNotEmpty(String val) {
+		if(admin) {
+			int count = 0;
+			if(StringHelper.containsNonWhitespace(val) && !val.equals("-") && !val.equals("*")) {
+				for(char c:val.toCharArray()) {
+					if(c == '-'
+							|| (c >= 48 && c <= 57)
+							|| (c >= 65 && c <= 90)
+							|| (c >= 97 && c <= 122)) {
+						count++;
+					}
+				}
+			}
+			return count >= 2;
+		}
+		return StringHelper.containsNonWhitespace(val) && !val.equals("-");
 	}
 }

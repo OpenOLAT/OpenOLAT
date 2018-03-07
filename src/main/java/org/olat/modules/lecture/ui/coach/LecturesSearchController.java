@@ -70,7 +70,7 @@ public class LecturesSearchController extends BasicController implements Activat
 		Roles roles = ureq.getUserSession().getRoles();
 		admin = (roles.isUserManager() || roles.isOLATAdmin());
 		
-		searchForm = new LecturesSearchFormController(ureq, getWindowControl());
+		searchForm = new LecturesSearchFormController(ureq, getWindowControl(), admin);
 		listenTo(searchForm);
 		putInitialPanel(searchForm.getInitialComponent());
 	}
@@ -115,7 +115,7 @@ public class LecturesSearchController extends BasicController implements Activat
 		List<LectureBlockIdentityStatistics> statistics = lectureService
 				.getLecturesStatistics(params, userPropertyHandlers, getIdentity(), admin);
 		
-		Set<Long> identities = statistics.stream().map(s -> s.getIdentityKey())
+		Set<Long> identities = statistics.stream().map(LectureBlockIdentityStatistics::getIdentityKey)
 			     .collect(Collectors.toSet());
 		
 		Controller ctrl;

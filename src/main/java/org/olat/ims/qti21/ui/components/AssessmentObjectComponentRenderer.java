@@ -1234,37 +1234,37 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString) {
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
-		sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
-		
 		boolean ended = component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
+		int expectedLines = interaction.getExpectedLines() == null ? 6 : interaction.getExpectedLines().intValue();
 		if(ended) {
-			sb.append(" disabled");
+			sb.append("<span id='oo_").append(responseUniqueId).append("'><div style='height:auto; min-height:").append(expectedLines * 1.5).append("em;' class='form-control textarea_disabled o_disabled o_form_element_disabled");
+		} else {
+			sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
+			if(StringHelper.containsNonWhitespace(interaction.getPlaceholderText())) {
+				sb.append(" placeholder=\"").append(StringHelper.escapeHtml(interaction.getPlaceholderText())).append("\"");
+			}
+			
+			sb.append(" rows='").append(expectedLines).append("'");
+			if(interaction.getExpectedLength() == null) {
+				sb.append(" cols='72'");
+			} else {
+				int cols = interaction.getExpectedLength().intValue() / expectedLines;
+				sb.append(" cols='").append(cols).append("'");
+			}
+			
+			ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
+			String checkJavascript = checkJavaScript(responseDeclaration, interaction.getPatternMask());
+			if(StringHelper.containsNonWhitespace(checkJavascript)) {
+				sb.append(" onchange=\"").append(checkJavascript).append("\"");
+			}
+			sb.append(" class='form-control");
 		}
-		if(!ended && StringHelper.containsNonWhitespace(interaction.getPlaceholderText())) {
-			sb.append(" placeholder=\"").append(StringHelper.escapeHtml(interaction.getPlaceholderText())).append("\"");
-		}
+		
 		if(isBadResponse(itemSessionState, interaction.getResponseIdentifier())
 				|| isInvalidResponse(itemSessionState, interaction.getResponseIdentifier())) {
-			sb.append(" class='form-control badResponse'");
-		} else {
-			sb.append(" class='form-control'");
+			sb.append(" badResponse");
 		}
-		
-		int expectedLines = interaction.getExpectedLines() == null ? 6 : interaction.getExpectedLines().intValue();
-		sb.append(" rows='").append(expectedLines).append("'");
-		if(interaction.getExpectedLength() == null) {
-			sb.append(" cols='72'");
-		} else {
-			int cols = interaction.getExpectedLength().intValue() / expectedLines;
-			sb.append(" cols='").append(cols).append("'");
-		}
-		
-		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
-		String checkJavascript = checkJavaScript(responseDeclaration, interaction.getPatternMask());
-		if(StringHelper.containsNonWhitespace(checkJavascript)) {
-			sb.append(" onchange=\"").append(checkJavascript).append("\"");
-		}
-		sb.append(">");
+		sb.append("'>");
 		
 		if(renderer.isSolutionMode()) {
 			String placeholder = interaction.getPlaceholderText();
@@ -1274,9 +1274,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		} else if( StringHelper.containsNonWhitespace(responseInputString)) {
 			sb.append(responseInputString);
 		}
-		sb.append("</textarea>");
 		
-		if(!ended) {
+		if(ended) {
+			sb.append("</div></span>");
+		} else {
+			sb.append("</textarea>");
+			
 			FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
 			sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
 			//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
