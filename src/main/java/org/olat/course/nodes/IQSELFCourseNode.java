@@ -38,8 +38,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -87,7 +89,6 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 import de.bps.onyx.plugin.OnyxModule;
-import de.bps.onyx.plugin.run.OnyxRunController;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -135,7 +136,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 		if (onyx) {
-			runController = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
+			Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+			runController = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 		} else {
 			RepositoryEntry testEntry = getReferencedRepositoryEntry();
 			if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {

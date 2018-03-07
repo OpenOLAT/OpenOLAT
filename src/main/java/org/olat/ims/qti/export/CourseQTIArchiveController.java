@@ -25,7 +25,6 @@
 
 package org.olat.ims.qti.export;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +63,8 @@ public class CourseQTIArchiveController extends BasicController {
 	private CloseableModalController cmc;
 	private StepsMainRunController archiveWizardCtrl;
 
-	private Link startExportDummyButton, startExportButton;
+	private Link startExportButton;
+	private Link startExportDummyButton;
 
 	private final OLATResourceable courseOres;
 	private final List<AssessmentNodeData> nodeList;
@@ -83,7 +83,7 @@ public class CourseQTIArchiveController extends BasicController {
 		startExportDummyButton = LinkFactory.createButtonSmall("command.start.exportwizard.dummy", introVC, this);
 		startExportButton = LinkFactory.createButtonSmall("command.start.exportwizard", introVC, this);
 
-		nodeList = doNodeChoose(ureq);
+		nodeList = doNodeChoose();
 		if (nodeList == null || nodeList.isEmpty()) {
 			introVC.contextPut("hasQTINodes", Boolean.FALSE);
 		} else {
@@ -138,13 +138,9 @@ public class CourseQTIArchiveController extends BasicController {
 	public class FinishArchive implements StepRunnerCallback {
 		@Override
 		public Step execute(UserRequest uureq, WindowControl lwControl, StepsRunContext runContext) {
-			try {
-				QTIArchiver archiver = (QTIArchiver)runContext.get("archiver");
-				MediaResource resource = archiver.export();
-				uureq.getDispatchResult().setResultingMediaResource(resource);
-			} catch (IOException e) {
-				logError("", e);
-			}
+			QTIArchiver archiver = (QTIArchiver)runContext.get("archiver");
+			MediaResource resource = archiver.export();
+			uureq.getDispatchResult().setResultingMediaResource(resource);
 			return StepsMainRunController.DONE_MODIFIED;
 		}
 	}
@@ -154,7 +150,7 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @param ureq
 	 * @return 
 	 */
-	private List<AssessmentNodeData> doNodeChoose(UserRequest ureq){
+	private List<AssessmentNodeData> doNodeChoose(){
 		// get list of course node data and populate table data model
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseNode rootNode = course.getRunStructure().getRootNode();

@@ -81,7 +81,6 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
@@ -124,10 +123,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 
-import de.bps.ims.qti.QTIResultDetailsController;
-import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
-import de.bps.onyx.plugin.run.OnyxRunController;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
@@ -182,7 +178,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 			if (onyx) {
-				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
+				Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.onyx"));
 			} else {
 				RepositoryEntry testEntry = getReferencedRepositoryEntry();
 				OLATResource ores = testEntry.getOlatResource();
@@ -284,7 +281,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		ModuleConfiguration config = getModuleConfiguration();
 		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 		if (onyx) {
-			controller = new OnyxRunController(ureq, wControl, this);
+			Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 		} else {
 			controller = new IQPreviewController(ureq, wControl, userCourseEnv, this);
 		}
@@ -573,8 +571,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String coachCommentValue = am.getNodeCoachComment(this, mySelf);
-		return coachCommentValue;
+		return am.getNodeCoachComment(this, mySelf);
 	}
 
 	/**
@@ -592,15 +589,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String logValue = am.getUserNodeLog(this, mySelf);
-		return logValue;
+		return am.getUserNodeLog(this, mySelf);
 	}
 
 	/**
@@ -610,8 +603,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
-		RepositoryEntry re = IQEditController.getIQReference(getModuleConfiguration(), false);
-		return re;
+		return IQEditController.getIQReference(getModuleConfiguration(), false);
 	}
 	
 	private String getRepositoryEntrySoftKey() {
@@ -675,11 +667,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 			boolean onyx = OnyxModule.isOnyxTest(re.getOlatResource());
 			if (onyx) {
-				QTIResultManager qrm = QTIResultManager.getInstance();
-				List<QTIResultSet> results = qrm.getResultSets(courseResourceableId, getIdent(), re.getKey(), null);
-				if (results.size() > 0) {
-					OnyxExportManager.getInstance().exportResults(results, exportStream, this);
-				}
 				return true;
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
@@ -716,10 +703,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
@@ -768,9 +751,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Integer userAttemptsValue = am.getNodeAttempts(this, mySelf);
-		return userAttemptsValue;
-
+		return am.getNodeAttempts(this, mySelf);
 	}
 
 	/**
@@ -829,8 +810,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Double currentCompletion = am.getNodeCurrentRunCompletion(this, mySelf);
-		return currentCompletion;
+		return am.getNodeCurrentRunCompletion(this, mySelf);
 	}
 	
 	@Override
@@ -867,7 +847,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, (TooledStackedPanel)stackPanel, courseEntry, this, coachCourseEnv, assessedUserCourseEnv);
 			} else if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
-				detailsCtrl =  new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
+				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+				detailsCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 			} else {
 				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), coachCourseEnv, assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
 			}	

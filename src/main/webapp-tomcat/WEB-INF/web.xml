@@ -33,11 +33,6 @@
 
 	<!-- 2. Filters -->
 	<filter>
-		<filter-name>OnyxHttpsFilter</filter-name>
-		<filter-class>org.olat.core.servlets.FakeHttpsFilter</filter-class>
-	</filter>
-	
-	<filter>
 		<filter-name>PaypalIPNFilter</filter-name>
 		<filter-class>org.olat.resource.accesscontrol.provider.paypal.PaypalIPNFilter</filter-class>
 	</filter>
@@ -46,16 +41,6 @@
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
-	
-	<!-- Use FakeHTTPSFilter for requests to WSService and TraineeStatusService (dynamic WSDL for ONYX) -->
-	<filter-mapping>
-		<filter-name>OnyxHttpsFilter</filter-name>
-		<url-pattern>/services/ReturnWSService</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>OnyxHttpsFilter</filter-name>
-		<url-pattern>/services/TraineeStatusService</url-pattern>
-	</filter-mapping>
 	
 	<!-- The mapping to the Login filter REST API -->
 	<filter-mapping>
@@ -68,27 +53,13 @@
 		<url-pattern>/restapi/*</url-pattern>
 	</filter-mapping>
 
-	
 	<!-- 3. Listeners -->
-    <listener>
-		<listener-class>
-			com.sun.xml.ws.transport.http.servlet.WSServletContextListener  
- 		</listener-class>
-	</listener> 
     <!-- triggers the above spring files to be processed by the spring framework  -->
     <listener>
             <listener-class>
                     org.springframework.web.context.ContextLoaderListener
             </listener-class>
     </listener>
-
-    <listener>
-            <listener-class>
-                    org.springframework.web.context.request.RequestContextListener
-            </listener-class>
-    </listener>
-    
-	
 	
 	<!-- this only works in an expanded war file: Comment on spring website:  
 	If you want to keep your WAR unexpanded or don't need application-specific log files within the WAR directory, 
@@ -138,18 +109,6 @@
 		<servlet-class>org.olat.core.servlets.StaticServlet</servlet-class>
 		<!-- Set the load order -->
 		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>ReturnWSService</servlet-name>  
-		<servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>  
-		<load-on-startup>2</load-on-startup>  
-	</servlet>  
-	<!-- </OLATCE-1322> -->
-    <servlet>
-		<servlet-name>TraineeStatusService</servlet-name>  
-		<servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>  
-		<load-on-startup>2</load-on-startup>  
 	</servlet>
 	
 	<!-- Jersey REST Servlet -->
@@ -225,21 +184,9 @@
 		<url-pattern>/ical/*</url-pattern>
   	</servlet-mapping><!-- Spring loading -->
 
-	<!-- Onyx mapping -->
-	<servlet-mapping>
- 		<servlet-name>ReturnWSService</servlet-name>
- 		<url-pattern>/services/ReturnWSService</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
- 		<servlet-name>TraineeStatusService</servlet-name>
- 		<url-pattern>/services/TraineeStatusService</url-pattern>
-	</servlet-mapping>
-
-
 	<!-- 6. Session-Config -->
 	<!-- default session timeout -->
 	<session-config>
 		<session-timeout>60</session-timeout>
     </session-config>
-
 </web-app>

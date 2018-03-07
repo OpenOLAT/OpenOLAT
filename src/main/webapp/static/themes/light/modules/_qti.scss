@@ -119,14 +119,6 @@ div.o_qti_metadatas .panel-body {
 .o_qti_menu_item_attempts_marked:after {
 	content: $fa-var-flag;
 	color: $brand-primary;
-}	
-
-/* onyx   */
-.onyx_iframe {
-	width: 100%;
-	height: 100%;
-	border: none;
-	min-height: 60em;
 }
 
 /* Instead of media print because Firefox doesn't take some rules in account */

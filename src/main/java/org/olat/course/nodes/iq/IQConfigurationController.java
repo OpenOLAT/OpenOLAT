@@ -81,8 +81,6 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bps.onyx.plugin.OnyxModule;
-import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
-import de.bps.onyx.plugin.run.OnyxRunController;
 
 /**
  * 
@@ -97,7 +95,11 @@ public class IQConfigurationController extends BasicController {
 	private VelocityContainer myContent;
 	private final BreadcrumbPanel stackPanel;
 	
-	private Link previewLink, previewButton, chooseTestButton, changeTestButton, editTestButton;
+	private Link previewLink;
+	private Link previewButton;
+	private Link chooseTestButton;
+	private Link changeTestButton;
+	private Link editTestButton;
 
 	private Controller previewLayoutCtr;
 	private CloseableModalController cmc;
@@ -106,7 +108,6 @@ public class IQConfigurationController extends BasicController {
 	private ReferencableEntriesSearchController searchController;
 	private ConfirmChangeResourceController confirmChangeResourceCtrl;
 	
-	private IQEditForm modOnyxConfigForm;
 	private IQ12EditForm mod12ConfigForm;
 	private QTI21EditForm mod21ConfigForm;
 	
@@ -209,10 +210,8 @@ public class IQConfigurationController extends BasicController {
 	protected void updateEditController(UserRequest ureq, boolean replacedTest) {
 		removeAsListenerAndDispose(mod12ConfigForm);
 		removeAsListenerAndDispose(mod21ConfigForm);
-		removeAsListenerAndDispose(modOnyxConfigForm);
 		mod12ConfigForm = null;
 		mod21ConfigForm = null;
-		modOnyxConfigForm = null;
 		
 		RepositoryEntry re = getIQReference();
 		if(re == null) {
@@ -235,10 +234,8 @@ public class IQConfigurationController extends BasicController {
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
 		} else if(OnyxModule.isOnyxTest(re.getOlatResource())) {
-			modOnyxConfigForm = new IQEditForm(ureq, getWindowControl(), moduleConfiguration, courseNode, re);
-			modOnyxConfigForm.update(re);
-			listenTo(modOnyxConfigForm);
-			myContent.put("iqeditform", modOnyxConfigForm.getInitialComponent());
+			myContent.remove("iqeditform");
+			showError("error.onyx");
 		} else {
 			boolean hasEssay = needManualCorrectionQTI12(re);
 			if(replacedTest) {// set some default settings in case the user don't save the next panel
@@ -338,10 +335,6 @@ public class IQConfigurationController extends BasicController {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == modOnyxConfigForm) {
-			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
 		}
 	}
 	
@@ -404,10 +397,7 @@ public class IQConfigurationController extends BasicController {
 		if(re != null) {
 			Controller previewController;
 			if(OnyxModule.isOnyxTest(re.getOlatResource())) {
-				Controller previewCtrl = new OnyxRunController(ureq, getWindowControl(), re, false);
-				listenTo(previewCtrl);
-				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtrl);
-				stackPanel.pushController(translate("preview"), previewLayoutCtr);
+				showError("error.onyx");
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				cleanUpQti21PreviewSession();//clean up last session
 				// need to clean up the assessment test session
@@ -496,28 +486,21 @@ public class IQConfigurationController extends BasicController {
 				onyxSuccess = QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), re.getKey());
 			}
 		}
-		
-		
+	
 		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI) != null
 				&& moduleConfiguration.get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2)
 				&& onyxSuccess > 0) {
-			
-			replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, null, onyxSuccess, true);
-			replaceWizard.addControllerListener(this);
-			
-			String title = replaceWizard.getAndRemoveWizardTitle();
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent(), true, title);
-			cmc.activate();
+			showError("error.onyx");
 		} else {
 			
 			List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), re.getKey(), null, 1);
 			// test was passed from an user
-			boolean passed = (results != null && results.size() > 0) ? true : false;
+			boolean passed = (results != null && !results.isEmpty()) ? true : false;
 			// test was started and not passed
 			// it exists partly results for this test
 			List<Identity> identitiesWithQtiSerEntry = iqManager.getIdentitiesWithQtiSerEntry(course.getResourceableId(), courseNode.getIdent());
-			if(passed || identitiesWithQtiSerEntry.size() > 0) {
-				learners = new ArrayList<Identity>();
+			if(passed || !identitiesWithQtiSerEntry.isEmpty()) {
+				learners = new ArrayList<>();
 				for(QTIResult result : results) {
 					Identity identity = result.getResultSet().getIdentity();
 					if(identity != null && !learners.contains(identity)){
@@ -530,7 +513,7 @@ public class IQConfigurationController extends BasicController {
 						learners.add(identity);
 					}
 				}
-				replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, results, identitiesWithQtiSerEntry.size(), false);
+				replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, results, identitiesWithQtiSerEntry.size());
 				replaceWizard.addControllerListener(this);
 				
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
@@ -637,7 +620,7 @@ public class IQConfigurationController extends BasicController {
 				// to velocity
 				
 				boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
-				myContent.contextPut("isOnyx", new Boolean(isOnyx));
+				myContent.contextPut("isOnyx", Boolean.valueOf(isOnyx));
 				if(isOnyx) {
 					myContent.contextPut("onyxDisplayName", displayName);
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);

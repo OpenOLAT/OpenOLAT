@@ -39,7 +39,6 @@ import java.util.List;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
@@ -58,8 +57,6 @@ import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.process.QTIHelper;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.resource.OLATResource;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * Initial Date: Apr 6, 2004
@@ -97,8 +94,7 @@ public class TestFileResource extends FileResource {
 	public static QTIReaderPackage getQTIEditorPackageReader(OLATResource resource) {
 		VFSContainer baseDir = FileResourceManager.getInstance().unzipContainerResource(resource);
 		QTIDocument document = getQTIDocument(resource);
-		return new QTIReaderPackage(baseDir, document);
-		
+		return new QTIReaderPackage(baseDir, document);	
 	}
 	
 	/**
@@ -106,11 +102,6 @@ public class TestFileResource extends FileResource {
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File unzippedDir) {
-		if(CoreSpringFactory.getImpl(OnyxModule.class).isEnabled() && OnyxModule.isOnyxTest(unzippedDir)) {
-			return true;
-		}
-
-		// with VFS FIXME:pb:c: remove casts to LocalFileImpl and LocalFolderImpl if
 		// no longer needed.
 		VFSContainer vfsUnzippedRoot = new LocalFolderImpl(unzippedDir);
 		VFSItem vfsQTI = vfsUnzippedRoot.resolve("qti.xml");

@@ -20,7 +20,6 @@
 package org.olat.course.nodes.iq;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -52,12 +51,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
-import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.ims.qti.QTIResult;
-import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
@@ -75,8 +71,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
-
-import de.bps.onyx.plugin.OnyxExportManager;
 
 /**
  * 
@@ -103,7 +97,6 @@ public class IQEditReplaceWizard extends WizardController {
 	private List<Identity> learners;
 	private List<QTIResult> results;
 	private String[] types;
-	private boolean isOnyx;
 
 	// presentation
 	private VelocityContainer vcStep1, vcStep2, vcStep3;
@@ -126,7 +119,7 @@ public class IQEditReplaceWizard extends WizardController {
 	 * @param courseNode
 	 */
 	public IQEditReplaceWizard(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode courseNode,
-			String[] types, List<Identity> learners, List<QTIResult> results, int numberOfQtiSerEntries, boolean isOnyx) {
+			String[] types, List<Identity> learners, List<QTIResult> results, int numberOfQtiSerEntries) {
 		super(ureq, wControl, STEPS);
 		
 		setBasePackage(IQEditReplaceWizard.class);
@@ -138,7 +131,6 @@ public class IQEditReplaceWizard extends WizardController {
 		this.learners = learners;
 		this.results = results;
 		this.numberOfQtiSerEntries = numberOfQtiSerEntries;
-		this.isOnyx = isOnyx;
 
 		setWizardTitle(translate("replace.wizard.title"));
 		doStep1(ureq);
@@ -173,11 +165,7 @@ public class IQEditReplaceWizard extends WizardController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == searchCtr && event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 			selectedRepositoryEntry = searchCtr.getSelectedEntry();
-			if (isOnyx) {
-				doStep2Onyx(ureq);
-			} else {
-				doStep2(ureq);
-			}
+			doStep2(ureq);
 		}
 	}
 	
@@ -191,7 +179,7 @@ public class IQEditReplaceWizard extends WizardController {
 	
 	private void doStep2(UserRequest ureq) {
 		String nodeTitle = courseNode.getShortTitle();
-		if (results != null && results.size() > 0) {
+		if (results != null && !results.isEmpty()) {
 			exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
 			UserManager um = UserManager.getInstance();
 			String charset = um.getUserCharset(ureq.getIdentity());
@@ -228,42 +216,6 @@ public class IQEditReplaceWizard extends WizardController {
 		}
 		nextBtn = LinkFactory.createButton("replace.wizard.next", vcStep2, this);
 		setNextWizardStep(translate("replace.wizard.title.step2"), vcStep2);
-	}
-
-	/**
-	 * Does export of test results for onyx tests
-	 * @param ureq
-	 */
-	private void doStep2Onyx(UserRequest ureq) {
-		String nodeTitle = courseNode.getShortTitle();
-		exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
-		OnyxExportManager onyxExportManager = OnyxExportManager.getInstance();
-		if (courseNode.getClass().equals(IQSURVCourseNode.class)) {
-			// it is an onyx survey
-			String surveyPath = course.getCourseEnvironment().getCourseBaseContainer().getBasefile() + File.separator + courseNode.getIdent() + File.separator;
-			resultExportFile = onyxExportManager.exportResults(surveyPath, exportDir, courseNode);
-		} else {
-			String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-			Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-			QTIResultManager qrm = QTIResultManager.getInstance();
-			List<QTIResultSet> resultSets = qrm.getResultSets(course.getResourceableId(), courseNode.getIdent(), repKey, null);
-			learners = new ArrayList<Identity>();
-			for (QTIResultSet resultSet : resultSets) {
-				if (!learners.contains(resultSet.getIdentity())) {
-					learners.add(resultSet.getIdentity());
-				}
-			}
-			resultExportFile = onyxExportManager.exportResults(resultSets, exportDir, courseNode);
-		}
-		// vcStep2 = new VelocityContainer("replaceWizard", VELOCITY_ROOT + "/replacewizard_step2.html", translator, this);
-		vcStep2 = createVelocityContainer("replacewizard_step2");
-		String[] args = new String[] {Integer.toString(learners != null ? learners.size() : 0), exportDir.getName(), resultExportFile };
-		vcStep2.contextPut("information", getTranslator().translate("replace.wizard.information", args));
-		vcStep2.contextPut("nodetitle", nodeTitle);
-		vcStep2.contextPut("filename", resultExportFile);
-		showFileButton = LinkFactory.createButton("replace.wizard.showfile", vcStep2, this);
-		nextBtn = LinkFactory.createButton("replace.wizard.next", vcStep2, this);
-		this.setNextWizardStep(getTranslator().translate("replace.wizard.title.step2"), vcStep2);
 	}
 
 	private void doStep3(UserRequest ureq) {
@@ -305,7 +257,7 @@ public class IQEditReplaceWizard extends WizardController {
 	}
 	
 	private Map<Class<?>, QTIExportItemFormatConfig> getQTIItemConfigs(List<QTIItemObject> qtiItemObjectList){
-		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<Class<?>, QTIExportItemFormatConfig>();
+		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<>();
   	
 		for (Iterator<QTIItemObject> iter = qtiItemObjectList.iterator(); iter.hasNext();) {
 			QTIItemObject item = iter.next();
@@ -352,5 +304,4 @@ public class IQEditReplaceWizard extends WizardController {
 		}
 		return itConfigs;
 	}
-
 }

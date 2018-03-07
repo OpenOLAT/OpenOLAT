@@ -19,9 +19,6 @@
  */
 package org.olat.ims.qti.export;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -31,46 +28,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
-import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
-import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.nodes.iq.IQEditController;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.helper.QTIItemObject;
 import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.resource.OLATResource;
 
-import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
 
 /**
@@ -89,7 +74,6 @@ public class QTIArchiver {
 	private AssessmentNodeData data;
 	
 	private final Locale locale;
-	private final Identity identity;
 	private final OLATResourceable courseOres;
 	
 	private boolean participants = true;
@@ -103,23 +87,18 @@ public class QTIArchiver {
 	private final QTIResultManager qrm;
 	private final QTIExportManager qem;
 	
-	private final OnyxExportManager onyxExportManager;
-	
 	private Type type;
 	
 	public enum Type {
-		onyx,
 		qti12,
 		qti21
 	}
 	
-	public QTIArchiver(OLATResourceable courseOres, Identity identity, Locale locale) {
+	public QTIArchiver(OLATResourceable courseOres, Locale locale) {
 		this.locale = locale;
-		this.identity = identity;
 		this.courseOres = courseOres;
 		qem = QTIExportManager.getInstance();
 		qrm = CoreSpringFactory.getImpl(QTIResultManager.class);
-		onyxExportManager = OnyxExportManager.getInstance();
 	}
 	
 	public CourseNode getCourseNode() {
@@ -165,73 +144,37 @@ public class QTIArchiver {
 	}
 	
 	public Type getType() {
-		if(type == null) {
-			if (courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
-				boolean isOnyx = courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2);
-				if(isOnyx) {
-					type = Type.onyx;
-				}
-			}
-			
-			if(type != Type.onyx) {
-				RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
-				if(ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
-			    	type = Type.qti21;
-			    } else {
-			    	type = Type.qti12;
-			    }
+		if (type == null) {
+			RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
+			if (ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
+				type = Type.qti21;
+			} else {
+				type = Type.qti12;
 			}
 		}
 		return type;
 	}
 	
 	public boolean hasResults() {
-		if(results != null) return results.booleanValue();
-
-		if (courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
-			boolean isOnyx = courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2);
-			if(isOnyx) {
-				type = Type.onyx;
-			}
-		}
+		if (results != null)
+			return results.booleanValue();
 
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
-		
+
 		boolean success = false;
-		if (type == Type.onyx) {
-	    	if (courseNode instanceof IQSURVCourseNode) {
-	    		File courseContainer = course.getCourseEnvironment().getCourseBaseContainer().getBasefile();
-    			File surveyDir = new File(courseContainer, courseNode.getIdent());
-    			success = surveyDir.exists() && surveyDir.listFiles().length > 0;
-			} else {
-				// <OLATBPS-498>
-				List<QTIResultSet> resultSets = qrm.getResultSets(course.getResourceableId(), courseNode.getIdent(), testRe.getKey(), null);
-				File fUserdataRoot = new File(WebappHelper.getUserDataRoot());
-				for (QTIResultSet rs : resultSets) {
-					String resultXml = onyxExportManager.getResultXml(rs.getIdentity().getName(),
-							courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString(), courseNode.getIdent(),
-							rs.getAssessmentID());
-					File xml = new File(fUserdataRoot, resultXml);
-					if (xml != null && xml.exists()) {
-						// there is at least one result file
-						success = true;
-						break;
-					}
-				}
-				// </OLATBPS-498>
-			}
-	    } else if(ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
-	    	type = Type.qti21;
-	    	RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-	    	QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testRe, courseEntry, courseNode.getIdent(), allUsers, anonymUsers);
-	    	success = new QTI21ArchiveFormat(locale, searchParams).hasResults();
-	    } else {
-	    	type = Type.qti12;
+		if (ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
+			type = Type.qti21;
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testRe, courseEntry,
+					courseNode.getIdent(), allUsers, anonymUsers);
+			success = new QTI21ArchiveFormat(locale, searchParams).hasResults();
+		} else {
+			type = Type.qti12;
 			success = qrm.hasResultSets(courseOres.getResourceableId(), courseNode.getIdent(), testRe.getKey());
-	    }
-		
-		results = new Boolean(success);
+		}
+
+		results = Boolean.valueOf(success);
 		return success;
 	}
 	
@@ -257,9 +200,8 @@ public class QTIArchiver {
 		return qtiItemConfigs;
 	}
 	
-	public MediaResource export() throws IOException {
+	public MediaResource export() {
 		switch(type) {
-			case onyx: return exportOnyx();
 			case qti12: return exportQTI12();
 			case qti21: return exportQTI21();
 			default: return null;
@@ -269,12 +211,13 @@ public class QTIArchiver {
 	public MediaResource exportQTI21() {
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
-    	RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-    	QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testRe, courseEntry, courseNode.getIdent(), allUsers, anonymUsers);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testRe, courseEntry,
+				courseNode.getIdent(), allUsers, anonymUsers);
 		return new QTI21ArchiveFormat(locale, searchParams).exportCourseElement();
 	}
 	
-	public MediaResource exportQTI12() throws IOException {
+	public MediaResource exportQTI12() {
 		RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
 
 		String sep = "\\t"; // fields separated by
@@ -311,8 +254,7 @@ public class QTIArchiver {
 				hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 				hres.setHeader("Content-Description", urlEncodedLabel);
 				
-				try {
-					OutputStream out = hres.getOutputStream();
+				try(OutputStream out = hres.getOutputStream()) {
 					List<QTIResult> qtiResults = qrm.selectResults(courseOres.getResourceableId(), courseNode.getIdent(), testRe.getKey(), null, 5);
 					qem.exportResults(formatter, qtiResults, qtiItemObjectList, out);
 				} catch (IOException e) {
@@ -335,80 +277,6 @@ public class QTIArchiver {
 		return frmtr;
 	}
 	
-	private MediaResource exportOnyx() {
-		return new DefaultMediaResource() {
-
-			@Override
-			public String getContentType() {
-				return "application/zip";
-			}
-
-			@Override
-			public void prepare(HttpServletResponse hres) {
-				try {
-					String label = courseNode.getType() + "_"
-							+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
-							+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
-							+ ".zip";
-					
-					String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
-					hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
-					hres.setHeader("Content-Description", urlEncodedLabel);
-					
-					
-					OutputStream out = hres.getOutputStream();
-					ICourse course = CourseFactory.loadCourse(courseOres);
-					if (courseNode.getClass().equals(IQSURVCourseNode.class)) {
-						// it is an onyx survey
-						File surveyPath = new File(course.getCourseEnvironment().getCourseBaseContainer().getBasefile(), courseNode.getIdent());
-						onyxExportManager.exportResults(surveyPath, courseNode, out);
-					} else {
-						File csvFile = null;
-						RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
-						
-						// <OLATCE-654>
-						if (testRe != null) {
-							List<QTIResultSet> resultSets = qrm.getResultSets(course.getResourceableId(), courseNode.getIdent(), testRe.getKey(), null);
-
-							OLATResource testResource = testRe.getOlatResource();
-							RepositoryHandler repoHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(testRe);
-							if (testRe != null) {
-								boolean isAlreadyLocked = repoHandler.isLocked(testResource);
-								LockResult lockResult = null;
-								try {
-									lockResult = repoHandler.acquireLock(testResource, identity);
-									if (lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
-										MediaResource mr = repoHandler.getAsMediaResource(testResource, false);
-										if (mr != null) {
-											try {
-												File exportDir = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
-												String filename = onyxExportManager.exportAssessmentResults(resultSets, exportDir, mr, courseNode, false, csvFile);
-												File archive = new File(exportDir, filename);
-												FileUtils.copy(new FileInputStream(archive), out);
-											} catch (FileNotFoundException e) {
-												log.error("", e);
-											}
-										}
-									} else if (lockResult != null && lockResult.isSuccess() && isAlreadyLocked) {
-										lockResult = null; // invalid lock, it was already locked
-									}
-								} finally {
-									if ((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
-										repoHandler.releaseLock(lockResult);
-										lockResult = null;
-									}
-								}
-							}
-						}
-						// </OLATCE-654>
-					}
-				} catch (IOException e) {
-					log.error("", e);
-				}
-			}
-		};
-	}
-	
 	public static String convert2CtrlChars(String source) {
 		if (source == null) return null;
 		StringBuilder sb = new StringBuilder(300);
@@ -420,11 +288,14 @@ public class QTIArchiver {
 				case '\\':
 					// check on \\ first
 					if (i < len - 1 && cs[i + 1] == 't') { // we have t as next char
-						sb.append("\t");i++;
+						sb.append("\t");
+						i++;
 					}else if (i < len - 1 && cs[i + 1] == 'r') { // we have r as next char
-						sb.append("\r");i++;
+						sb.append("\r");
+						i++;
 					}else if (i < len - 1 && cs[i + 1] == 'n') { // we have n as next char
-						sb.append("\n");i++;
+						sb.append("\n");
+						i++;
 					} else {
 						sb.append("\\");
 					}

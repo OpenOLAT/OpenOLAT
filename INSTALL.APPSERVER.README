@@ -38,7 +38,6 @@ Configuration WildFly (JBoss AS 10.1)
      sysbus.broker.jndi=java:jboss/exported/jms/topic/sysbus
      search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
      index.broker.jndi=java:jboss/exported/jms/queue/indexQueue
-     exam.broker.jndi=java:jboss/exported/jms/queue/examQueue
      certificate.broker.jndi=java:jboss/exported/jms/queue/certificateQueue
 
 
@@ -49,7 +48,7 @@ State              Feature
 OK                 JDBC Connections
 OK                 JMS
 OK                 JAX-RS (restapi)
-OK                 JAX-WS (onyx, vitero)
+OK                 JAX-WS (vitero, openmeetings)
 x                  Mail
 x                  LDAP Connection
 OK                 Hibernate/JPA (only JBoss AS, we depend on Hibernate)
