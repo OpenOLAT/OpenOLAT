@@ -1,5 +1,11 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("empty"))
 	<li>$r.render("empty")</li>
+	#end
+	#if($r.available("template"))
 	<li>$r.render("template")</li>
+	#end
+	#if($r.available("course"))
 	<li>$r.render("course")</li>
+	#end
 </ul>
