@@ -69,7 +69,8 @@ implements SortableFlexiTableDataModel<CorrectionIdentityRow> {
 				case score: return row.getCandidateSession().getFinalScore();
 				case answered: return row.getNumAnswered();
 				case notAnswered: return row.getNumNotAnswered();
-				case corrected: return row;
+				case autoCorrected:
+				case corrected:
 				case notCorrected: return row;
 				case toReview: return row.getNumToReview();
 				default: return "ERROR";
@@ -91,6 +92,7 @@ implements SortableFlexiTableDataModel<CorrectionIdentityRow> {
 		score("table.header.score"),
 		answered("table.header.answered"),
 		notAnswered("table.header.notAnswered"),
+		autoCorrected("table.header.autoCorrected"),
 		corrected("table.header.corrected"),
 		toReview("table.header.to.review"),
 		notCorrected("table.header.not.corrected");

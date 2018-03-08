@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.assessment;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.ToReviewFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityRow;
+import org.olat.ims.qti21.ui.assessment.model.ItemSessionKey;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
@@ -67,6 +69,7 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
@@ -158,7 +161,8 @@ public class CorrectionIdentityListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.answered));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notAnswered));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.corrected, new CorrectedFlexiCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.autoCorrected, new CorrectedFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.corrected, new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notCorrected, new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.toReview, new ToReviewFlexiCellRenderer()));
 		
@@ -176,6 +180,23 @@ public class CorrectionIdentityListController extends FormBasicController {
 			model.loadLastSessions();
 		}
 		
+		List<AssessmentItemRef> itemRefs = model.getResolvedAssessmentTest().getAssessmentItemRefs();
+		Map<String, AssessmentItemRef> identifierToItemRefMap = new HashMap<>();
+		for(AssessmentItemRef itemRef:itemRefs) {
+			identifierToItemRefMap.put(itemRef.getIdentifier().toString(), itemRef);
+		}
+		
+		List<AssessmentItemSession> itemSessions = qtiService
+				.getAssessmentItemSessions(model.getCourseEntry(), model.getSubIdent(), model.getTestEntry(), null);
+		Map<ItemSessionKey,AssessmentItemSession> itemSessionMap = new HashMap<>();
+		for(AssessmentItemSession itemSession:itemSessions) {
+			AssessmentTestSession candidateSession = itemSession.getAssessmentTestSession();
+			if(model.getReversedLastSessions().containsKey(candidateSession)) {// the map contains all test sessions the user is allowed to correct
+				String itemRefIdentifier = itemSession.getAssessmentItemIdentifier();
+				itemSessionMap.put(new ItemSessionKey(candidateSession.getKey(), itemRefIdentifier), itemSession);
+			}
+		}
+		
 		int count = 0;
 		List<CorrectionIdentityRow> rows = new ArrayList<>(model.getNumberOfAssessedIdentities());
 		Map<Identity, CorrectionIdentityRow> identityToRows = new HashMap<>();
@@ -187,24 +208,10 @@ public class CorrectionIdentityListController extends FormBasicController {
 			
 			TestSessionState testSessionState = model.getTestSessionStates().get(entry.getKey());
 			for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:testSessionState.getItemSessionStates().entrySet()) {
-				if(itemEntry.getValue().isResponded()) {
-					row.addAnswered();
-				} else {
-					row.addNotAnswered();
-				}
-			}
-		}
-		
-		List<AssessmentItemSession> itemSessions = qtiService
-				.getAssessmentItemSessions(model.getCourseEntry(), model.getSubIdent(), model.getTestEntry(), null);
-		for(AssessmentItemSession itemSession:itemSessions) {
-			AssessmentTestSession candidateSession = itemSession.getAssessmentTestSession();
-			Identity assessedIdentity = model.getReversedLastSessions().get(candidateSession);
-			if(assessedIdentity != null) {// the map contains all test sessions the user is allowed to correct
-				CorrectionIdentityRow row = identityToRows.get(assessedIdentity);
-				if(row != null) {
-					appendStatistics(row, itemSession);
-				}
+				String itemRefIdentifier = itemEntry.getKey().getIdentifier().toString();
+				AssessmentItemRef itemRef = identifierToItemRefMap.get(itemRefIdentifier);
+				AssessmentItemSession itemSession = itemSessionMap.get(new ItemSessionKey(entry.getValue().getKey(), itemRefIdentifier));
+				appendStatistics(row, itemSession, itemEntry.getValue(), itemRef);
 			}
 		}
 		
@@ -212,11 +219,37 @@ public class CorrectionIdentityListController extends FormBasicController {
 		tableEl.reset(reset, reset, true);
 	}
 	
-	private void appendStatistics(CorrectionIdentityRow row, AssessmentItemSession itemSession) {
+	private void appendStatistics(CorrectionIdentityRow row, AssessmentItemSession itemSession,
+			ItemSessionState itemSessionState, AssessmentItemRef itemRef) {
 		row.addSession();
-		if(itemSession.isToReview()) {
-			row.addToReview();
+		if(itemSessionState.isResponded()) {
+			row.addAnswered();
+		} else {
+			row.addNotAnswered();
 		}
+		
+		BigDecimal manualScore = null;
+		if(itemSession != null) {
+			manualScore = itemSession.getManualScore();
+			if(itemSession.isToReview()) {
+				row.addToReview();
+			}
+		}
+		
+		boolean manualCorrection = model.isManualCorrection(itemRef);
+		row.setManualCorrection(manualCorrection);
+		if(manualCorrection) {
+			if(manualScore == null) {
+				row.addNotCorrected();
+			} else {
+				row.addCorrected();
+			}
+		} else if(manualScore != null) {
+			row.addCorrected();
+		} else {
+			row.addAutoCorrected();
+		}
+		
 	}
 
 	@Override

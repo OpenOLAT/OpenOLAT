@@ -57,6 +57,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemTableModel.IdentityItemCols;
+import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
@@ -161,7 +162,8 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemType, new QuestionTypeFlexiCellRenderer(qti21Translator)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.answered, "answered"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.autoCorrected, "corrected", new AutoCorrectedFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.notCorrected, "notCorrected", new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.toReview, "toReview", new ToReviewFlexiCellRenderer()));
 		
@@ -200,7 +202,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 				AssessmentItem item = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(key);
-				boolean manualCorrection = model.isManualCorrection(itemRef, item);
+				boolean manualCorrection = model.isManualCorrection(itemRef);
 				CorrectionIdentityAssessmentItemRow row = new CorrectionIdentityAssessmentItemRow(assessedIdentity, item, itemRef,
 						candidateSession, itemSession, itemSessionState, manualCorrection);
 				row.setTitle(title);

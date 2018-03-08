@@ -82,6 +82,7 @@ public class CorrectionIdentityAssessmentItemRow extends AssessmentItemListEntry
 		return itemSessionState.isResponded();
 	}
 	
+	@Override
 	public boolean isToReview() {
 		return itemSession == null ? false : itemSession.isToReview();
 	}

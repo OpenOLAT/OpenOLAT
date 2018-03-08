@@ -58,6 +58,7 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemTableModel.ItemCols;
+import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
@@ -66,6 +67,7 @@ import org.olat.ims.qti21.ui.assessment.event.SelectAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionAssessmentItemRow;
+import org.olat.ims.qti21.ui.assessment.model.ItemSessionKey;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
@@ -135,7 +137,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemType, new QuestionTypeFlexiCellRenderer(qti21Translator)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.answered, "answered"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notAnswered, "notAnswered"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.autoCorrected, "autoCorrected", new AutoCorrectedFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notCorrected, "notCorrected", new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.toReview, "toReview", new ToReviewFlexiCellRenderer()));
 		
@@ -168,14 +171,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 
 		List<AssessmentItemSession> itemSessions = qtiService
 				.getAssessmentItemSessions(model.getCourseEntry(), model.getSubIdent(), model.getTestEntry(), null);
+		Map<ItemSessionKey,AssessmentItemSession> itemSessionMap = new HashMap<>();
 		for(AssessmentItemSession itemSession:itemSessions) {
 			AssessmentTestSession candidateSession = itemSession.getAssessmentTestSession();
 			if(model.getReversedLastSessions().containsKey(candidateSession)) {// the map contains all test sessions the user is allowed to correct
 				String itemRefIdentifier = itemSession.getAssessmentItemIdentifier();
-				CorrectionAssessmentItemRow row = itemRefIdToRows.get(itemRefIdentifier);
-				if(row != null) {
-					appendStatistics(row, itemSession);
-				}
+				itemSessionMap.put(new ItemSessionKey(candidateSession.getKey(), itemRefIdentifier), itemSession);
 			}
 		}
 		
@@ -186,11 +187,9 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 					String itemRefIdentifier = itemEntry.getKey().getIdentifier().toString();
 					CorrectionAssessmentItemRow row = itemRefIdToRows.get(itemRefIdentifier);
 					if(row != null) {
-						if(itemEntry.getValue().isResponded()) {
-							row.addAnswered();
-						} else {
-							row.addNotAnswered();
-						}
+						AssessmentItemSession itemSession = itemSessionMap
+								.get(new ItemSessionKey(entry.getValue().getKey(), itemRefIdentifier));
+						appendStatistics(row, itemSession, itemEntry.getValue());
 					}
 				}
 			}
@@ -200,11 +199,23 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		tableEl.reset(reset, reset, true);
 	}
 	
-	private void appendStatistics(CorrectionAssessmentItemRow row, AssessmentItemSession itemSession) {
+	private void appendStatistics(CorrectionAssessmentItemRow row, AssessmentItemSession itemSession, ItemSessionState itemSessionState) {
 		row.addSession();
+		if(itemSessionState.isResponded()) {
+			row.addAnswered();
+		} else {
+			row.addNotAnswered();
+		}
 
-		BigDecimal manualScore = itemSession.getManualScore();
-		boolean manualCorrection = model.isManualCorrection(row.getItemRef(), row.getItem());
+		BigDecimal manualScore = null;
+		if(itemSession != null) {
+			manualScore = itemSession.getManualScore();
+			if(itemSession.isToReview()) {
+				row.addToReview();
+			}
+		}
+		
+		boolean manualCorrection = model.isManualCorrection(row.getItemRef());
 		row.setManualCorrection(manualCorrection);
 		if(manualCorrection) {
 			if(manualScore == null) {
@@ -214,10 +225,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			}
 		} else if(manualScore != null) {
 			row.addCorrected();
-		}
-		
-		if(itemSession.isToReview()) {
-			row.addToReview();
+		} else {
+			row.addAutoCorrected();
 		}
 	}
 
@@ -294,11 +303,13 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				if("select".equals(cmd)) {
 					doSelect(ureq, row, r -> true);// accept all
 				} else if("answered".equals(cmd)) {
-					doSelect(ureq, row, new AnsweredPredicate(row));// accept all
+					doSelect(ureq, row, new ResponsedPredicate(row, true));// accept all
 				} else if("notAnswered".equals(cmd)) {
-					doSelect(ureq, row, new NotAnsweredPredicate(row));// accept all
-				} else if("corrected".equals(cmd)) {
-					doSelect(ureq, row, entry -> row.isManualCorrection() && entry.getManualScore() != null);
+					doSelect(ureq, row, new ResponsedPredicate(row, false));// accept all
+				} else if("autoCorrected".equals(cmd)) {
+					doSelect(ureq, row, entry -> !row.isManualCorrection() && entry.getManualScore() == null);
+				}  else if("corrected".equals(cmd)) {
+					doSelect(ureq, row, entry -> entry.getManualScore() != null);
 				} else if("notCorrected".equals(cmd)) {
 					doSelect(ureq, row, entry -> row.isManualCorrection() && entry.getManualScore() == null);
 				} else if("toReview".equals(cmd)) {
@@ -435,12 +446,14 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, AssessmentEntryStatus.done));
 	}
 	
-	private final class AnsweredPredicate implements Predicate<AssessmentItemListEntry> {
+	private final class ResponsedPredicate implements Predicate<AssessmentItemListEntry> {
 		
+		private final boolean responded;
 		private final CorrectionAssessmentItemRow row;
 		
-		public AnsweredPredicate(CorrectionAssessmentItemRow row) {
+		public ResponsedPredicate(CorrectionAssessmentItemRow row, boolean responded) {
 			this.row = row;
+			this.responded = responded;
 		}
 
 		@Override
@@ -450,28 +463,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			if(!nodes.isEmpty()) {
 				TestPlanNode itemNode = nodes.get(0);
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(itemNode.getKey());
-				return itemSessionState != null && itemSessionState.isResponded();
-			}
-			return false;
-		}
-	}
-	
-	private final class NotAnsweredPredicate implements Predicate<AssessmentItemListEntry> {
-		
-		private final CorrectionAssessmentItemRow row;
-		
-		public NotAnsweredPredicate(CorrectionAssessmentItemRow row) {
-			this.row = row;
-		}
-
-		@Override
-		public boolean test(AssessmentItemListEntry t) {
-			TestSessionState testSessionState = model.getTestSessionStates().get(t.getAssessedIdentity());
-			List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(row.getItemRef().getIdentifier());
-			if(!nodes.isEmpty()) {
-				TestPlanNode itemNode = nodes.get(0);
-				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(itemNode.getKey());
-				return itemSessionState != null && !itemSessionState.isResponded();
+				return itemSessionState != null && responded == itemSessionState.isResponded();
 			}
 			return false;
 		}

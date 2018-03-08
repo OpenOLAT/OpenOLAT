@@ -137,7 +137,8 @@ public class AssessmentItemListEntry {
 		}
 		if(obj instanceof AssessmentItemListEntry) {
 			AssessmentItemListEntry entry = (AssessmentItemListEntry)obj;
-			return itemSession.equals(entry.itemSession);
+			return assessedIdentity.equals(entry.assessedIdentity)
+					&& itemRef.getIdentifier().equals(entry.itemRef.getIdentifier());
 		}
 		return false;
 	}

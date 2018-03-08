@@ -40,6 +40,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
@@ -177,9 +178,6 @@ public class CorrectionOverviewModel {
 			TestSessionState sessionState = qtiService.loadTestSessionState(entry.getValue());
 			if(sessionState != null) {
 				identityToStates.put(entry.getKey(), sessionState);
-			} else {
-
-				System.out.println("No states:" + entry.getKey());
 			}
 		}
 		return identityToStates;
@@ -189,9 +187,11 @@ public class CorrectionOverviewModel {
 		return testSessionStates;
 	}
 
-	public boolean isManualCorrection(AssessmentItemRef itemRef, AssessmentItem item) {
+	public boolean isManualCorrection(AssessmentItemRef itemRef) {
 		String identifier = itemRef.getIdentifier().toString();
-		return manualCorrections.computeIfAbsent(identifier, (id) -> {
+		return manualCorrections.computeIfAbsent(identifier, id -> {
+			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+			AssessmentItem item = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			List<Interaction> interactions = item.getItemBody().findInteractions();
 			for(Interaction interaction:interactions) {
 				if(interaction instanceof UploadInteraction

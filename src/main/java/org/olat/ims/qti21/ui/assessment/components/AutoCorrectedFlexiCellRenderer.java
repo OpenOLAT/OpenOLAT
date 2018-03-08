@@ -30,11 +30,11 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionRow;
 
 /**
  * 
- * Initial date: 26 févr. 2018<br>
+ * Initial date: 8 mars 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CorrectedFlexiCellRenderer implements FlexiCellRenderer {
+public class AutoCorrectedFlexiCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
@@ -48,16 +48,18 @@ public class CorrectedFlexiCellRenderer implements FlexiCellRenderer {
 	}
 	
 	public void render(StringOutput target, CorrectionRow itemRow) {
-		target.append(itemRow.getNumCorrected());
-		if(!itemRow.isManualCorrection()) {
+		if(!itemRow.isManualCorrection() && itemRow.getNumAutoCorrected() > 0) {
+			target.append(itemRow.getNumAutoCorrected());
 			if(itemRow.getNumCorrected() + itemRow.getNumAutoCorrected() >= itemRow.getNumOfSessions()) {
-				target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i>");
-			} 
+				target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i> ");
+			} else {
+				target.append(" <i class='o_icon o_icon_fw o_icon_warn'> </i> ");
+			}
 		}
 	}
 	
 	private void render(StringOutput target, CorrectionIdentityAssessmentItemRow itemRow) {
-		if(itemRow.getManualScore() != null) {
+		if(!itemRow.isManualCorrection() && itemRow.getManualScore() == null) {
 			target.append("<i class='o_icon o_icon_fw o_icon_ok'> </i>");
 		}
 	}

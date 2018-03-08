@@ -28,12 +28,22 @@ package org.olat.ims.qti21.ui.assessment.model;
 public abstract class CorrectionRow {
 	
 	private int numCorrected = 0;
+	private int numAutoCorrected = 0;
 	private int numToReview = 0;
 	private int numNotCorrected = 0;
 	private int numOfSessions = 0;
 	private boolean manualCorrection;
 	private int numAnswered = 0;
 	private int numNotAnswered = 0;
+	
+	public int getNumAutoCorrected() {
+		return numAutoCorrected;
+	}
+	
+	public int addAutoCorrected() {
+		numAutoCorrected++;
+		return numAutoCorrected;
+	}
 	
 	public int getNumCorrected() {
 		return numCorrected;

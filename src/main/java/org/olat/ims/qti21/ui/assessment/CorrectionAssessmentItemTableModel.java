@@ -67,7 +67,8 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 			case itemType: return row.getItemType();
 			case answered: return row.getNumAnswered();
 			case notAnswered: return row.getNumNotAnswered();
-			case corrected: return row;
+			case autoCorrected:
+			case corrected:
 			case notCorrected: return row;
 			case toReview: return row.getNumToReview();
 			default: return "ERROR";
@@ -85,6 +86,7 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 		itemType("table.header.item.type"),
 		answered("table.header.answered"),
 		notAnswered("table.header.notAnswered"),
+		autoCorrected("table.header.autoCorrected"),
 		corrected("table.header.corrected"),
 		notCorrected("table.header.not.corrected"),
 		toReview("table.header.to.review");
