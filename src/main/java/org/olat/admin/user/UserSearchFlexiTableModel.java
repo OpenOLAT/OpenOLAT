@@ -23,8 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -33,7 +36,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity> {
+public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity>, SortableFlexiTableDataModel<Identity> {
 	private Locale locale;
 	private boolean isAdministrativeUser;
 	private FlexiTableColumnModel columnModel;
@@ -66,9 +69,14 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> i
 	@Override
 	public Object getValueAt(int row, int col) {
 		Identity identity = getObject(row);
+		return getValueAt(identity, col);
+	}
+
+	@Override
+	public Object getValueAt(Identity identity, int col) {
 		if(col == 0 && isAdministrativeUser) {
 			return identity.getName();
-		} 
+		}
 
 		int pos = isAdministrativeUser ? col - 1 : col;
 		if(pos >= 0 && pos < userPropertyHandlers.size()) {
@@ -81,5 +89,20 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> i
 	@Override
 	public UserSearchFlexiTableModel createCopyWithEmptyList() {
 		return new UserSearchFlexiTableModel(new ArrayList<Identity>(), userPropertyHandlers, isAdministrativeUser, locale, columnModel);
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if (orderBy != null) {
+			List<Identity> users = new UserSearchFlexiTableModel.UserSearchTableDataModelSorterDelegate(orderBy, this, locale).sort();
+			super.setObjects(users);
+		}
+	}
+
+	public static class UserSearchTableDataModelSorterDelegate extends SortableFlexiTableModelDelegate<Identity> {
+
+		public UserSearchTableDataModelSorterDelegate(SortKey orderBy, UserSearchFlexiTableModel model, Locale locale) {
+			super(orderBy, model, locale);
+		}
 	}
 }

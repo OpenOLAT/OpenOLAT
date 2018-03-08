@@ -35,9 +35,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.*;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -205,17 +203,17 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			int colPos = 0;
 			if(isAdministrativeUser) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++, true, "login"));
 			}
 			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-			List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<UserPropertyHandler>();
+			List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 			// followed by the users fields
 			for (int i = 0; i < userPropertyHandlers.size(); i++) {
 				UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 				boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
 				if(visible) {
 					resultingPropertyHandlers.add(userPropertyHandler);
-					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
+					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++, true, userPropertyHandler.getName()));
 				}
 			}
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
@@ -226,7 +224,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
-			
+
 			layoutCont.put("userTable", tableEl.getComponent());
 		}
 	}
@@ -327,8 +325,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates", null);
 			return false;
 		}		
-		int MIN_LENGTH = 4;
-		if ( fullString.length() < MIN_LENGTH ) {
+		if ( fullString.length() < 4) {
 			lastFormElement.setErrorKey("error.search.form.to.short", null);
 			return false;
 		}
@@ -377,7 +374,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			if(StringHelper.isLong(searchValue)) {
 				doFireSelection(ureq, Collections.singletonList(searchValue));
 			} else if(searchValue.length() >= 3){
-				Map<String, String> userProperties = new HashMap<String, String>();
+				Map<String, String> userProperties = new HashMap<>();
 				userProperties.put(UserConstants.FIRSTNAME, searchValue);
 				userProperties.put(UserConstants.LASTNAME, searchValue);
 				userProperties.put(UserConstants.EMAIL, searchValue);
