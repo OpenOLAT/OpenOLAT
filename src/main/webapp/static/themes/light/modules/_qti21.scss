@@ -551,6 +551,12 @@ body>li.o_assessmentitem_order_item  {
 		margin-bottom: 0;
 		padding: $padding-small-vertical $padding-small-horizontal;
 		line-height: 1.5em;
+		position: relative;
+		
+		.o_qti_item_max_score {
+			position: absolute;
+			left: 49%;
+		}
 	}
 	.o_qti_item_body {
 		min-height: $o-qti-item-min-height;

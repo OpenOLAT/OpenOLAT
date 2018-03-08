@@ -95,6 +95,14 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public void setHideFeedbacks(boolean hideFeedbacks) {
 		component.setHideFeedbacks(hideFeedbacks);
 	}
+	
+	public boolean isMaxScoreAssessmentItem() {
+		return component.isMaxScoreAssessmentItem();
+	}
+
+	public void setMaxScoreAssessmentItem(boolean maxScoreAssessmentItem) {
+		component.setMaxScoreAssessmentItem(maxScoreAssessmentItem);
+	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
 		return component.getResolvedAssessmentTest();

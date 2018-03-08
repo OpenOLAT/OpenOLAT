@@ -222,12 +222,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void initAssessment(UserRequest ureq) {
 	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
-		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));
+		mainVC.contextPut("enableScoreInfo", Boolean.valueOf(enableScoreInfo));
 	   
 	    // configuration data
 		int maxAttempts = deliveryOptions.getMaxAttempts();
 		if(maxAttempts > 0) {
-			mainVC.contextPut("attemptsConfig", new Integer(maxAttempts));
+			mainVC.contextPut("attemptsConfig", Integer.valueOf(maxAttempts));
 		} else {
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
@@ -393,7 +393,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
 		if(resultsVisible && !showSummary.none()) {
-			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage));			
+			mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage));			
 			boolean dateRelatedVisibility = isResultVisible(config);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
 				mainVC.contextPut("showResultsVisible",Boolean.TRUE);
@@ -583,9 +583,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(QTI21AssessmentRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+			guiPrefs.putAndSave(QTI21AssessmentRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
-		mainVC.contextPut("in-" + panelId, new Boolean(newValue));
+		mainVC.contextPut("in-" + panelId, Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {
@@ -687,6 +687,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setEnableCancel(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, testOptions.isEnableCancel()));
 			finalOptions.setEnableSuspend(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESUSPEND, testOptions.isEnableSuspend()));
 			finalOptions.setDisplayQuestionProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, testOptions.isDisplayQuestionProgress()));
+			finalOptions.setDisplayMaxScoreItem(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTION_MAX_SCORE, testOptions.isDisplayMaxScoreItem()));
 			finalOptions.setDisplayScoreProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, testOptions.isDisplayScoreProgress()));
 			finalOptions.setHideFeedbacks(config.getBooleanSafe(IQEditController.CONFIG_KEY_HIDE_FEEDBACKS, testOptions.isHideFeedbacks()));
 			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT)));

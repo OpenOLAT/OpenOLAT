@@ -52,7 +52,9 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -83,6 +85,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNode.TestNodeType;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
@@ -350,7 +353,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				AssessmentSection selectedSection = sectionParentLine.get(i);
 				for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {
 					sb.append("<div class='rubric'>");//@view (candidate)
-					rubricBlock.getBlocks().forEach((block) -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
+					rubricBlock.getBlocks().forEach(block -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
 					sb.append("</div>");
 				}
 			}
@@ -404,7 +407,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
-		
+		renderMaxScoreItem(sb, component, itemSessionState, translator);
 		String title;
 		if(component.isShowTitles()) {
 			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
@@ -417,17 +420,10 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
 
 		//render itemBody
-		assessmentItem.getItemBody().getBlocks().forEach((block)
+		assessmentItem.getItemBody().getBlocks().forEach(block
 				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
-
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
-		
-		//submit button -> moved with the other buttons
-		/*if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
-			Component submit = component.getQtiItem().getSubmitButton().getComponent();
-			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
-		}*/
 		//end body
 		sb.append("</div>");
 
@@ -436,6 +432,24 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
 		sb.append("</div>"); // end wrapper
+	}
+	
+	protected void renderMaxScoreItem(StringOutput sb, AssessmentTestComponent component, ItemSessionState itemSessionState, Translator translator) {
+		if(component.isMaxScoreAssessmentItem()) {
+			Value val = itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
+			if(val != null && val instanceof FloatValue) {
+				double dVal = ((FloatValue)val).doubleValue();
+				if(dVal > 0.0d ) {
+					String sVal;
+					if(dVal < 2.0) {
+						sVal = translator.translate("assessment.item.point", new String[] { AssessmentHelper.getRoundedScore(dVal) });
+					} else {
+						sVal = translator.translate("assessment.item.points", new String[] { AssessmentHelper.getRoundedScore(dVal) });
+					}
+					sb.append("<span class='o_qti_item_max_score'>").append(sVal).append("</span>");
+				}
+			}
+		}
 	}
 	
 	@Override

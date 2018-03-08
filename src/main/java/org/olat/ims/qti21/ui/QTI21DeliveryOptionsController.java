@@ -66,16 +66,23 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 	private FormLink chooseProfileButton;
 	private SingleSelection settingTypeEl;
-	private MultipleSelectionElement showTitlesEl, showMenuEl;
+	private MultipleSelectionElement showTitlesEl;
+	private MultipleSelectionElement showMenuEl;
 	private MultipleSelectionElement personalNotesEl;
 	private MultipleSelectionElement showFeedbacksEl;
-	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
-	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
-	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
+	private MultipleSelectionElement enableCancelEl;
+	private MultipleSelectionElement enableSuspendEl;
+	private MultipleSelectionElement limitAttemptsEl;
+	private MultipleSelectionElement blockAfterSuccessEl;
+	private MultipleSelectionElement displayQuestionProgressEl;
+	private MultipleSelectionElement displayScoreProgressEl;
+	private MultipleSelectionElement displayMaxScoreItemEl;
 	private MultipleSelectionElement allowAnonymEl;
 	private MultipleSelectionElement hideLmsEl;
-	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
-	private MultipleSelectionElement showResultsOnFinishEl, assessmentResultsOnFinishEl;
+	private MultipleSelectionElement digitalSignatureEl;
+	private MultipleSelectionElement digitalSignatureMailEl;
+	private MultipleSelectionElement showResultsOnFinishEl;
+	private MultipleSelectionElement assessmentResultsOnFinishEl;
 	private TextElement maxAttemptsEl;
 	
 	private boolean changes;
@@ -148,6 +155,9 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
 		displayScoreProgressEl.setElementCssClass("o_sel_qti_progress_score");
+		
+		displayMaxScoreItemEl = uifactory.addCheckboxesHorizontal("maxScoreItem", "qti.form.max.score.item", formLayout, onKeys, onValues);
+		displayMaxScoreItemEl.setElementCssClass("o_sel_qti_progress_max_score_item");
 
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
 		enableSuspendEl.setElementCssClass("o_sel_qti_enable_suspend");
@@ -204,6 +214,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		applyMultipleSelection(personalNotesEl, options.isPersonalNotes());
 		applyMultipleSelection(displayQuestionProgressEl, options.isDisplayQuestionProgress());
 		applyMultipleSelection(displayScoreProgressEl, options.isDisplayScoreProgress());
+		applyMultipleSelection(displayMaxScoreItemEl, options.isDisplayMaxScoreItem());
 		applyMultipleSelection(enableSuspendEl, options.isEnableSuspend());
 		applyMultipleSelection(enableCancelEl, options.isEnableCancel());
 		applyMultipleSelection(showFeedbacksEl, !options.isHideFeedbacks());
@@ -324,6 +335,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setEnableSuspend(enableSuspendEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayQuestionProgress(displayQuestionProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
+		deliveryOptions.setDisplayMaxScoreItem(displayMaxScoreItemEl.isAtLeastSelected(1));
 		deliveryOptions.setAllowAnonym(allowAnonymEl.isAtLeastSelected(1));
 		deliveryOptions.setHideLms(hideLmsEl.isAtLeastSelected(1));
 		deliveryOptions.setHideFeedbacks(!showFeedbacksEl.isAtLeastSelected(1));//reverse logic for compatibility

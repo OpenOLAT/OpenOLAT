@@ -61,8 +61,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class IQEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	public final String PANE_TAB_IQCONFIG_XXX;
-	public final String PANE_TAB_IQLAYOUTCONFIG = "pane.tab.iqconfig.layout";
+	private static final String PANE_TAB_IQLAYOUTCONFIG = "pane.tab.iqconfig.layout";
 	
 	public static final String PANE_TAB_IQCONFIG_SURV = "pane.tab.iqconfig.surv";
 	public static final String PANE_TAB_IQCONFIG_SELF = "pane.tab.iqconfig.self";
@@ -90,6 +89,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_ENABLESUSPEND = "enableSuspend";
 	/** configuration key: enable question progress switch*/
 	public static final String CONFIG_KEY_QUESTIONPROGRESS = "displayQuestionProgss";
+	/** configuration key: enable question max score*/
+	public static final String CONFIG_KEY_QUESTION_MAX_SCORE = "displayQuestionMaxScore";
 	/** configuration key: enable question progress switch*/
 	public static final String CONFIG_KEY_QUESTIONTITLE = "displayQuestionTitle";
 	/** configuration key: enable automatic enumeration of "choice" options */
@@ -125,22 +126,22 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED = "suspendAllowed";
 	//</OLATCE-2009>
 	/** Test in full window mode*/
-	public final static String CONFIG_FULLWINDOW = "fullwindow";
+	public static final String CONFIG_FULLWINDOW = "fullwindow";
 	/** Enable manual correction */
-	public final static String CONFIG_CORRECTION_MODE = "correctionMode";
+	public static final String CONFIG_CORRECTION_MODE = "correctionMode";
 	/** Test in full window mode*/
-	public final static String CONFIG_ALLOW_ANONYM = "allowAnonym";
+	public static final String CONFIG_ALLOW_ANONYM = "allowAnonym";
 	/** Digitally signed the assessment results */
-	public final static String CONFIG_DIGITAL_SIGNATURE = "digitalSignature";
+	public static final String CONFIG_DIGITAL_SIGNATURE = "digitalSignature";
 	/** Send the signature per mail */
-	public final static String CONFIG_DIGITAL_SIGNATURE_SEND_MAIL = "digitalSignatureMail";
+	public static final String CONFIG_DIGITAL_SIGNATURE_SEND_MAIL = "digitalSignatureMail";
 	/** configuration key: use configuration of the reference repository entry */
 	public static final String CONFIG_KEY_CONFIG_REF = "configFromRef";
 	/** configuration key: use a time limit for the test in seconds */
 	public static final String CONFIG_KEY_TIME_LIMIT = "timeLimit";
 	
-	public final static String CORRECTION_AUTO = "auto";
-	public final static String CORRECTION_MANUAL = "manual";
+	public static final String CORRECTION_AUTO = "auto";
+	public static final String CORRECTION_MANUAL = "manual";
 
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";
@@ -159,8 +160,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final Object CONFIG_VALUE_QTI1 = "qti1";
 	public static final String CONFIG_KEY_IS_SURVEY = "issurv";
 
+	
 	private final String[] paneKeys;
-
+	private final String paneTabIQConfiguration;
 
 	private ICourse course;
 	
@@ -200,8 +202,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		
 		
 		type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
-		this.PANE_TAB_IQCONFIG_XXX = PANE_TAB_IQCONFIG_TEST;
-		paneKeys = new String[]{PANE_TAB_IQCONFIG_XXX,PANE_TAB_ACCESSIBILITY};
+		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_TEST;
+		paneKeys = new String[]{paneTabIQConfiguration,PANE_TAB_ACCESSIBILITY};
 		// put some default values
 		if (moduleConfiguration.get(CONFIG_KEY_ENABLECANCEL) == null) {
 			moduleConfiguration.set(CONFIG_KEY_ENABLECANCEL, Boolean.FALSE);
@@ -235,8 +237,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.euce = euce;
 
 		type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
-		this.PANE_TAB_IQCONFIG_XXX = PANE_TAB_IQCONFIG_SELF;
-		paneKeys = new String[]{PANE_TAB_IQCONFIG_XXX,PANE_TAB_ACCESSIBILITY};
+		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SELF;
+		paneKeys = new String[]{paneTabIQConfiguration,PANE_TAB_ACCESSIBILITY};
 		// put some default values
 		if (moduleConfiguration.get(CONFIG_KEY_ENABLECANCEL) == null) {
 			moduleConfiguration.set(CONFIG_KEY_ENABLECANCEL, Boolean.TRUE);
@@ -267,8 +269,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		this.euce = euce;
 
 		type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
-		this.PANE_TAB_IQCONFIG_XXX = PANE_TAB_IQCONFIG_SURV;
-		paneKeys = new String[]{PANE_TAB_IQCONFIG_XXX,PANE_TAB_ACCESSIBILITY};
+		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SURV;
+		paneKeys = new String[]{paneTabIQConfiguration,PANE_TAB_ACCESSIBILITY};
 
 		// put some default values
 		if (moduleConfiguration.get(CONFIG_KEY_SCOREPROGRESS) == null){
@@ -332,7 +334,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		//PANE_TAB_IQCONFIG_XXX is set during construction time
-		tabbedPane.addTab(translate(PANE_TAB_IQCONFIG_XXX), configurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(paneTabIQConfiguration), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), layoutConfigurationCtrl.getInitialComponent());
 		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
