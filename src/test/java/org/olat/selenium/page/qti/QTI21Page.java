@@ -745,7 +745,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnAssessmentResultEssay(String text) {
-		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/textarea[contains(text(),'" + text + "')]");
+		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/pre[contains(text(),'" + text + "')]");
 		OOGraphene.waitElement(uploadBy, 5, browser);
 		return this;
 	}
