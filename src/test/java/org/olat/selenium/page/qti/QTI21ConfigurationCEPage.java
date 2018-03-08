@@ -76,10 +76,6 @@ public class QTI21ConfigurationCEPage {
 			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
 		}
-		if(options.isQuestions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questions']");
-			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
-		}
 		if(options.isUserSolutions()) {
 			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);

@@ -210,7 +210,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "open"));
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), "open"),
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"),
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
 		}
 		if(manualCorrections && !readOnly) {
@@ -461,7 +461,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), true, true);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
-				true, translate("table.header.results"));
+				true, translate("results.report"));
 		cmc.activate();
 		listenTo(cmc);
 	}

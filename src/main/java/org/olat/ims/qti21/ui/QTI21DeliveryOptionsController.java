@@ -60,7 +60,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private static final String[] settingTypeKeys = new String[]{ "choose", TestType.summative.name(), TestType.formative.name() };
 	private static final String[] resultsOptionsKeys = new String[] { 
 			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,
-			QTI21AssessmentResultsOptions.QUESTION_SUMMARY, QTI21AssessmentResultsOptions.QUESTIONS,
+			QTI21AssessmentResultsOptions.QUESTION_SUMMARY,
 			QTI21AssessmentResultsOptions.USER_SOLUTIONS, QTI21AssessmentResultsOptions.CORRECT_SOLUTIONS
 		};
 
@@ -169,7 +169,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		
 		String[] resultsOptionsValues = new String[] {
 				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"),
-				translate("qti.form.summary.questions.metadata"), translate("qti.form.summary.questions"),
+				translate("qti.form.summary.questions.metadata"),
 				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFiniish", "qti.form.summary", formLayout,
@@ -223,14 +223,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			if(resultsOptions.isQuestionSummary()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[2], true);
 			}
-			if(resultsOptions.isQuestions()) {
+			if(resultsOptions.isUserSolutions()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[3], true);
 			}
-			if(resultsOptions.isUserSolutions()) {
-				assessmentResultsOnFinishEl.select(resultsOptionsKeys[4], true);
-			}
 			if(resultsOptions.isCorrectSolutions()) {
-				assessmentResultsOnFinishEl.select(resultsOptionsKeys[5], true);
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[4], true);
 			}
 		} else {
 			assessmentResultsOnFinishEl.uncheckAll();
@@ -334,8 +331,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
 			QTI21AssessmentResultsOptions resultsOptions = new QTI21AssessmentResultsOptions(
 					assessmentResultsOnFinishEl.isSelected(0), assessmentResultsOnFinishEl.isSelected(1),
-					assessmentResultsOnFinishEl.isSelected(2), assessmentResultsOnFinishEl.isSelected(3),
-					assessmentResultsOnFinishEl.isSelected(4), assessmentResultsOnFinishEl.isSelected(5));
+					assessmentResultsOnFinishEl.isSelected(2),
+					assessmentResultsOnFinishEl.isSelected(3), assessmentResultsOnFinishEl.isSelected(4));
 			deliveryOptions.setAssessmentResultsOptions(resultsOptions);
 			deliveryOptions.setShowAssessmentResultsOnFinish(true);
 		} else {
