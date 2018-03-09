@@ -24,9 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.NoResultException;
-
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.ItemImpl;
@@ -138,18 +137,13 @@ public class ItemDAO {
 	public Item loadItemByGuid(Long feedKey, String guid) {
 		if (feedKey == null) return null;
 		
-		Item item = null;
-		try {
-			item = dbInstance.getCurrentEntityManager()
-					.createNamedQuery("loadItemByGuid", ItemImpl.class)
-					.setParameter("feedKey", feedKey)
-					.setParameter("guid", guid)
-					.getSingleResult();
-		} catch (NoResultException nre) {
-			// nothing to do, return null
-		}
+		List<Item >items = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadItemByGuid", Item.class)
+				.setParameter("feedKey", feedKey)
+				.setParameter("guid", guid)
+				.getResultList();
 		
-		return item;
+		return items != null && !items.isEmpty()? items.get(0): null;
 	}
 	
 	/**
@@ -161,19 +155,14 @@ public class ItemDAO {
 	 * @return
 	 */
 	public Item loadItemByGuid(String guid) {
-		if (guid == null) return null;
+		if (!StringHelper.containsNonWhitespace(guid)) return null;
 		
-		Item item = null;
-		try {
-			item = dbInstance.getCurrentEntityManager()
-					.createNamedQuery("loadItemByGuidWithoutFeed", ItemImpl.class)
-					.setParameter("guid", guid)
-					.getSingleResult();
-		} catch (Exception e) {
-			// nothing to do, return null
-		}
+		List<Item >items = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadItemByGuidWithoutFeed", Item.class)
+				.setParameter("guid", guid)
+				.getResultList();
 		
-		return item;
+		return items != null && items.size() == 1? items.get(0): null;
 	}
 	
 	/**

@@ -196,16 +196,6 @@ public abstract class FeedManager {
 
 	/**
 	 * Load the Item with the given guid from the database or NULL if no such
-	 * item exists.
-	 * @param feedKey the key of the feed
-	 * @param guid the guid of the Item
-	 *
-	 * @return the loaded Item or NULL
-	 */
-	public abstract Item loadItemByGuid(Long feedKey, String guid);
-
-	/**
-	 * Load the Item with the given guid from the database or NULL if no such
 	 * item exists or more then one items with the same guid exist.
 	 *
 	 * @param itemId
