@@ -344,11 +344,6 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public Item loadItemByGuid(Long feedKey, String guid) {
-		return itemDAO.loadItemByGuid(feedKey, guid);
-	}
-
-	@Override
 	public Item loadItemByGuid(String guid) {
 		return itemDAO.loadItemByGuid(guid);
 	}
