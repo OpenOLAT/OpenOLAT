@@ -669,6 +669,13 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
+	public int setAssessmentItemSessionReviewFlag(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef, boolean toReview) {
+		int rows = itemSessionDao.setAssessmentItemSessionReviewFlag(courseEntry, subIdent, testEntry, itemRef, toReview);
+		dbInstance.commit();
+		return rows;
+	}
+
+	@Override
 	public AssessmentResponse createAssessmentResponse(AssessmentTestSession assessmentTestSession, AssessmentItemSession assessmentItemSession, String responseIdentifier,
 			ResponseLegality legality, ResponseDataType type) {
 		return testResponseDao.createAssessmentResponse(assessmentTestSession, assessmentItemSession,

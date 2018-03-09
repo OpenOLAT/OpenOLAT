@@ -39,11 +39,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -101,10 +105,13 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private FlexiTableElement tableEl;
 	private CorrectionAssessmentItemTableModel tableModel;
 
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private ConfirmSaveTestsController confirmSaveTestCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CorrectionIdentityAssessmentItemController identityItemCtrl;
 
+	private int counter = 0;
 	private LockResult lockResult;
 	private final boolean anonymous;
 	private final CorrectionOverviewModel model;
@@ -141,6 +148,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notCorrected, "notCorrected", new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.toReview, "toReview", new ToReviewFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.tools));
 		
 		tableModel = new CorrectionAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
@@ -162,9 +170,10 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			
-			itemRef.getParentSection().getTitle();
-			
-			CorrectionAssessmentItemRow itemRow = new CorrectionAssessmentItemRow(itemRef, assessmentItem);
+			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			CorrectionAssessmentItemRow itemRow = new CorrectionAssessmentItemRow(itemRef, assessmentItem, toolsLink);
+			toolsLink.setUserObject(itemRow);
 			itemRows.add(itemRow);
 			itemRefIdToRows.put(itemRef.getIdentifier().toString(), itemRow);
 		}
@@ -275,6 +284,9 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(toolsCalloutCtrl == source || toolsCtrl == source) {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -283,8 +295,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmSaveTestCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmSaveTestCtrl = null;
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -318,8 +334,33 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			}
 		} else if(saveTestsButton == source) {
 			doConfirmSaveTests(ureq);
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("tools".equals(link.getCmd())) {
+				doOpenTools(ureq, (CorrectionAssessmentItemRow)link.getUserObject(), link);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	
+	private void doOpenTools(UserRequest ureq, CorrectionAssessmentItemRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private void doSetReviewFlag(CorrectionAssessmentItemRow row, boolean toReview) {
+		String itemRefId = row.getItemRef().getIdentifier().toString();
+		qtiService.setAssessmentItemSessionReviewFlag(model.getCourseEntry(), model.getSubIdent(), model.getTestEntry(), itemRefId, toReview);
+		loadModel(false, false);
 	}
 	
 	private void doSelect(UserRequest ureq, CorrectionAssessmentItemRow row, Predicate<AssessmentItemListEntry> filter) {
@@ -466,6 +507,39 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				return itemSessionState != null && responded == itemSessionState.isResponded();
 			}
 			return false;
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final Link reviewAllLink;
+		private final Link unreviewAllLink;
+		private final CorrectionAssessmentItemRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, CorrectionAssessmentItemRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("tools");
+			reviewAllLink = LinkFactory.createLink("tool.review.all", "review", getTranslator(), mainVC, this, Link.LINK);
+			unreviewAllLink = LinkFactory.createLink("tool.unreview.all", "unreview", getTranslator(), mainVC, this, Link.LINK);
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(reviewAllLink == source) {
+				doSetReviewFlag(row, true);
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(unreviewAllLink == source) {
+				doSetReviewFlag(row, false);
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		}
+
+		@Override
+		protected void doDispose() {
+			//
 		}
 	}
 }

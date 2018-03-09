@@ -22,6 +22,7 @@ package org.olat.ims.qti21.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -132,6 +133,38 @@ public class AssessmentItemSessionDAO {
 			query.setParameter("itemRef", itemRef);
 		}
 		return query.getResultList();
+	}
+	
+	public int setAssessmentItemSessionReviewFlag(RepositoryEntryRef entry, String subIdent, RepositoryEntry testEntry, String itemRef, boolean toReview) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update qtiassessmentitemsession item set item.toReview=:review where item.assessmentTestSession.id in")
+		  .append(" (select testSession.id from qtiassessmenttestsession testSession")
+		  .append(" where testSession.testEntry.key=:testEntryKey");
+		if(entry != null) {
+			sb.append(" and testSession.repositoryEntry.key=:courseEntryKey");
+		} else {
+			sb.append(" and testSession.repositoryEntry.key=:testEntryKey");
+		}
+		
+		if(subIdent != null) {
+			sb.append(" and testSession.subIdent=:subIdent");
+		} else {
+			sb.append(" and testSession.subIdent is null");
+		}
+		sb.append(" ) and item.assessmentItemIdentifier=:itemRef");
+
+		Query query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString())
+			.setParameter("testEntryKey", testEntry.getKey())
+			.setParameter("itemRef", itemRef)
+			.setParameter("review", Boolean.valueOf(toReview));
+		if(entry != null) {
+			query.setParameter("courseEntryKey", entry.getKey());
+		}
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		}
+		return query.executeUpdate();
 	}
 	
 	public AssessmentItemSession merge(AssessmentItemSession itemSession) {

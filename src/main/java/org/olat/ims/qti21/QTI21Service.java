@@ -343,6 +343,17 @@ public interface QTI21Service {
 
 	public AssessmentItemSession getAssessmentItemSession(AssessmentItemSessionRef candidateSession);
 	
+	/**
+	 * Update the review flag on a batch of assessment item sessions. The method will do a commit.
+	 * 
+	 * @param courseEntry The course
+	 * @param subIdent Typically the course element identifier
+	 * @param testEntry The test (mandatory)
+	 * @param itemRef The item reference (mandatory)
+	 * @param toReview The flag (true/false)
+	 */
+	public int setAssessmentItemSessionReviewFlag(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef, boolean toReview);
+	
 	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession candidateSession);
 	
 	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef);

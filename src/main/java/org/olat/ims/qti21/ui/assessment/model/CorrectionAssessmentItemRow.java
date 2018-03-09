@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.assessment.model;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -36,9 +37,12 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 	private final AssessmentItemRef itemRef;
 	private final QTI21QuestionType itemType;
 	
-	public CorrectionAssessmentItemRow(AssessmentItemRef itemRef, AssessmentItem item) {
+	private final FormLink toolsLink;
+	
+	public CorrectionAssessmentItemRow(AssessmentItemRef itemRef, AssessmentItem item, FormLink toolsLink) {
 		this.item = item;
 		this.itemRef = itemRef;
+		this.toolsLink = toolsLink;
 		itemType = QTI21QuestionType.getTypeRelax(item);
 	}
 	
@@ -60,6 +64,10 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 	
 	public QTI21QuestionType getItemType() {
 		return itemType;
+	}
+	
+	public FormLink getToolsLink() {
+		return toolsLink;
 	}
 
 	@Override

@@ -71,6 +71,7 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 			case corrected:
 			case notCorrected: return row;
 			case toReview: return row.getNumToReview();
+			case tools: return row.getToolsLink();
 			default: return "ERROR";
 		}
 	}
@@ -89,7 +90,8 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 		autoCorrected("table.header.autoCorrected"),
 		corrected("table.header.corrected"),
 		notCorrected("table.header.not.corrected"),
-		toReview("table.header.to.review");
+		toReview("table.header.to.review"),
+		tools("table.header.action");
 		
 		private final String i18n;
 		
