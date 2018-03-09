@@ -15,3 +15,8 @@
 		}
 	}
 }
+
+p.o_gta_reopen_warning {
+	margin-top: -20px;
+	@extend %o_warning;
+}
