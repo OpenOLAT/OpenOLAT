@@ -47,6 +47,11 @@
 		<filter-class>org.olat.restapi.security.RestApiLoginFilter</filter-class>
 	</filter>
 	
+	<filter>
+		<filter-name>HeadersFilter</filter-name>
+		<filter-class>org.olat.core.servlets.HeadersFilter</filter-class>
+	</filter>
+	
 	 <filter>
         <filter-name>Resteasy</filter-name>
             <filter-class>
@@ -73,8 +78,12 @@
 		<filter-name>Resteasy</filter-name>
 		<url-pattern>/restapi/*</url-pattern>
 	</filter-mapping>
-
 	
+	<filter-mapping>
+		<filter-name>HeadersFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
 	<!-- 3. Listeners -->
     <!-- triggers the above spring files to be processed by the spring framework  -->
     <listener>

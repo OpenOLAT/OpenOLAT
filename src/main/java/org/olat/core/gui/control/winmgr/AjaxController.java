@@ -116,10 +116,10 @@ public class AjaxController extends DefaultController {
 		this.wboImpl = wboImpl;
 		
 		pollPeriodContent = new VelocityContainer("jsserverpartpoll", VELOCITY_ROOT + "/pollperiod.html", null, this);
-		pollPeriodContent.contextPut("pollperiod", new Integer(pollperiod));
+		pollPeriodContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		
 		myContent = new VelocityContainer("jsserverpart", VELOCITY_ROOT + "/serverpart.html", null, this);
-		myContent.contextPut("pollperiod", new Integer(pollperiod));
+		myContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		
 		//more debug information: OLAT-3529
 		if (ajaxEnabled) myContent.contextPut("isAdmin", Boolean.valueOf(ureq.getUserSession().getRoles().isOLATAdmin()));
@@ -200,14 +200,13 @@ public class AjaxController extends DefaultController {
 				StringMediaResource smr = new StringMediaResource();
 				smr.setContentType("text/html;charset=utf-8");
 				smr.setEncoding("utf-8");
-				try {
-					
-					StringOutput slink = new StringOutput(50);
+				try(StringOutput slink = new StringOutput(50);
+						StringOutput blink = new StringOutput(50)) {
+
 					StaticMediaDispatcher.renderStaticURI(slink, null);
 					//slink now holds static url base like /olat/raw/700/
 					
 					URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, "1", "1");
-					StringOutput blink = new StringOutput(50);
 					ubu.buildURI(blink, null, null);
 					//blink holds the link back to olat like /olat/auth/1%3A1%3A0%3A0%3A0/
 		
@@ -224,7 +223,7 @@ public class AjaxController extends DefaultController {
 					
 				} catch (Exception e) {
 					smr.setData(e.toString());
-				};
+				}
 				return smr;
 			}
 		};
@@ -257,9 +256,7 @@ public class AjaxController extends DefaultController {
 					// -> in all cases, do not show the json command, but reload the window which contained the link clicked (= window id of url)
 				.append(" try{ parent.window.o_removeIframe(document.defaultView.frameElement.id); } catch(e) {} ")
 				.append("} else {") 
-					// inform user that ajax-request cannot be opened in a new window,
-					// todo felix: maybe send back request to bookmark-launch current url? -> new window?
-					// we could then come near to what the user probably wanted when he/she opened a link in a new window
+					// inform user that ajax-request cannot be opened in a new window
 				.append("this.document.location=\"")
 				.append(StaticMediaDispatcher.createStaticURIFor("msg/json/en/info.html"))
 				.append("\";")
@@ -339,9 +336,7 @@ public class AjaxController extends DefaultController {
 					// c) ...
 					// -> in all cases, do not show the json command, but reload the window which contained the link clicked (= window id of url)
 			  .append("} else {") 
-					// inform user that ajax-request cannot be opened in a new window,
-					// todo felix: maybe send back request to bookmark-launch current url? -> new window?
-					// we could then come near to what the user probably wanted when he/she opened a link in a new window
+					// inform user that ajax-request cannot be opened in a new window
 			  .append("  this.document.location=\"").append(StaticMediaDispatcher.createStaticURIFor("msg/json/en/info.html")).append("\";")
 			  .append("}}")
 			  .append("\n/* ]]> */\n</script></head><body onLoad=\"invoke()\"></body></html>");
@@ -414,7 +409,7 @@ public class AjaxController extends DefaultController {
 	 */
 	@Override
 	protected void doDispose() {
-		List<MapperKey> mappers = new ArrayList<MapperKey>();
+		List<MapperKey> mappers = new ArrayList<>();
 		mappers.add(mKey);
 		mappers.add(sbmKey);
 		CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
