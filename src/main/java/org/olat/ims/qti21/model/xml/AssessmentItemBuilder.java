@@ -25,12 +25,16 @@ import static org.olat.ims.qti21.QTI21Constants.MINSCORE_IDENTIFIER;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.transform.stream.StreamResult;
+
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder.ModalFeedbackType;
 
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
@@ -47,12 +51,14 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.serialization.SaxFiringOptions;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
 
 /**
  * 
@@ -335,6 +341,12 @@ public abstract class AssessmentItemBuilder {
 		}
 		
 		return interactionNames;
+	}
+	
+	protected final void serializeJqtiObject(QtiNode block, StringOutput sb) {
+		final XsltSerializationOptions xsltSerializationOptions = new XsltSerializationOptions();
+        xsltSerializationOptions.setIndenting(false);
+		qtiSerializer.serializeJqtiObject(block, new StreamResult(sb), new SaxFiringOptions(), xsltSerializationOptions);
 	}
 
 	public final void build() {

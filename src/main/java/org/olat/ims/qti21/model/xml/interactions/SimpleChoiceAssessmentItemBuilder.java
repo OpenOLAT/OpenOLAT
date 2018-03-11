@@ -19,13 +19,14 @@
  */
 package org.olat.ims.qti21.model.xml.interactions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 
@@ -50,6 +51,8 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  *
  */
 public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
+	
+	private static final OLog log = Tracing.createLoggerFor(SimpleChoiceAssessmentItemBuilder.class);
 
 	protected int maxChoices;
 	protected int minChoices;
@@ -97,19 +100,22 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	}
 	
 	private void extractChoiceInteraction() {
-		StringOutput sb = new StringOutput();
-		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
-		for(Block block:blocks) {
-			if(block instanceof ChoiceInteraction) {
-				choiceInteraction = (ChoiceInteraction)block;
-				responseIdentifier = choiceInteraction.getResponseIdentifier();
-				shuffle = choiceInteraction.getShuffle();
-				break;
-			} else if(block != null) {
-				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
+		try(StringOutput sb = new StringOutput()) {
+			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+			for(Block block:blocks) {
+				if(block instanceof ChoiceInteraction) {
+					choiceInteraction = (ChoiceInteraction)block;
+					responseIdentifier = choiceInteraction.getResponseIdentifier();
+					shuffle = choiceInteraction.getShuffle();
+					break;
+				} else if(block != null) {
+					serializeJqtiObject(block, sb);
+				}
 			}
+			question = sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		question = sb.toString();
 		
 		choices = new ArrayList<>();
 		if(choiceInteraction != null) {
