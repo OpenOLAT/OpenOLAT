@@ -661,6 +661,16 @@ ul.o_assessment_docs>li:last-child {
 	background: $o-progress-marker-color;
 }
 
+.progress .progress-bar {
+	text-shadow: 1px 1px 2px #000000;
+}
+
+.o_progress_label_right {
+	float:left;
+	margin-right: 10px;
+}
+
+
 /* web documents */
 .o_web_content {
 	padding-bottom: floor($grid-gutter-width / 2);

@@ -139,6 +139,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.serialization.SaxFiringOptions;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPartSessionState;
@@ -372,8 +373,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject) {
 		try(FileOutputStream out = new FileOutputStream(resourceFile)) {
-			qtiSerializer().serializeJqtiObject(assessmentObject, out);
-			//TODO qti
+			final XsltSerializationOptions xsltSerializationOptions = new XsltSerializationOptions();
+	        xsltSerializationOptions.setIndenting(false);	
+			qtiSerializer().serializeJqtiObject(assessmentObject, new StreamResult(out), new SaxFiringOptions(), xsltSerializationOptions);
 			assessmentTestsCache.remove(resourceFile);
 			assessmentItemsCache.remove(resourceFile);
 			return true;

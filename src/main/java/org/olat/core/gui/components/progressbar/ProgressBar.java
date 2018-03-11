@@ -45,9 +45,12 @@ public class ProgressBar extends AbstractComponent {
 	private float actual;
 	private float max;
 	private boolean isNoMax = false;
+	private boolean renderLabelRights = false;
 	private String unitLabel;
 	private boolean percentagesEnabled = true; // default
 	private String info;
+	
+	
 
 	/**
 	 * @param name
@@ -141,6 +144,20 @@ public class ProgressBar extends AbstractComponent {
 			width = 100;
 		}
 		this.widthInPercent = widthInPercent;
+	}
+
+	public boolean isRenderLabelRights() {
+		return renderLabelRights;
+	}
+	
+	/**
+	 * The labels are rendered at the right of the progress bar (but the
+	 * percent still within if configured).
+	 * 
+	 * @param renderLabelRights true to render the labels at the right of the progress bar
+	 */
+	public void setRenderLabelRights(boolean renderLabelRights) {
+		this.renderLabelRights = renderLabelRights;
 	}
 
 	/**

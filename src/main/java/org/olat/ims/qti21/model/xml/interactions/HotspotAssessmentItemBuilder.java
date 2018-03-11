@@ -27,15 +27,16 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createHotspotEn
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersFromCorrectResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -88,6 +89,8 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
+	private static final OLog log = Tracing.createLoggerFor(HotspotAssessmentItemBuilder.class);
+	
 	private String question;
 	private Cardinality cardinality;
 	private Identifier responseIdentifier;
@@ -136,18 +139,21 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 	}
 	
 	private void extractHotspotInteraction() {
-		StringOutput sb = new StringOutput();
-		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
-		for(Block block:blocks) {
-			if(block instanceof HotspotInteraction) {
-				hotspotInteraction = (HotspotInteraction)block;
-				responseIdentifier = hotspotInteraction.getResponseIdentifier();
-				break;
-			} else {
-				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
+		try(StringOutput sb = new StringOutput()) {
+			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+			for(Block block:blocks) {
+				if(block instanceof HotspotInteraction) {
+					hotspotInteraction = (HotspotInteraction)block;
+					responseIdentifier = hotspotInteraction.getResponseIdentifier();
+					break;
+				} else {
+					serializeJqtiObject(block, sb);
+				}
 			}
+			question = sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		question = sb.toString();
 	}
 	
 	private void extractCorrectAnswers() {

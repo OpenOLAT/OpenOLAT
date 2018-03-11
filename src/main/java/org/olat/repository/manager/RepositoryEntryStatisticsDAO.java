@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
@@ -97,11 +98,19 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 		
 		Date newUsage = new Date();
 		if(re.getStatistics().getLastUsage().getTime() + 60000 < newUsage.getTime()) {
-			String updateQuery = "update repoentrystats set lastUsage=:now where key=:statsKey";
-			dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.MINUTE, -1);
+			Date limit = cal.getTime();
+
+			String updateQuery = "update repoentrystats set lastUsage=:now where key=:statsKey and lastUsage<:limit";
+			int updated = dbInstance.getCurrentEntityManager().createQuery(updateQuery)
 				.setParameter("statsKey", re.getStatistics().getKey())
-				.setParameter("now", new Date())
+				.setParameter("now", newUsage)
+				.setParameter("limit", limit)
 				.executeUpdate();
+			if(updated > 0) {
+				dbInstance.commit();//big performance improvement
+			}
 		}
 	}
 	
