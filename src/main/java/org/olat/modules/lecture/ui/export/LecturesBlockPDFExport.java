@@ -90,6 +90,11 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	}
 
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
@@ -141,7 +146,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	}
 
 	public void create(List<Identity> rows, List<LectureBlockRollCall> rollCalls)
-    throws IOException, COSVisitorException, TransformerException {
+    throws IOException, TransformerException {
 	    	addPageLandscape();
 	    	String lectureBlockTitle = lectureBlock.getTitle();
 	    	String resourceTitle = entry.getDisplayname();

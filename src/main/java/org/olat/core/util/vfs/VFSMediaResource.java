@@ -31,6 +31,7 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -48,6 +49,11 @@ public class VFSMediaResource implements MediaResource {
 		this.vfsLeaf = vfsLeaf;
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_ONE_HOUR;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return true;

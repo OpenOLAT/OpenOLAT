@@ -482,6 +482,11 @@ public class CertificatesOptionsController extends FormBasicController {
 		}
 		
 		@Override
+		public long getCacheControlDuration() {
+			return 0;
+		}
+
+		@Override
 		public boolean acceptRanges() {
 			return true;
 		}

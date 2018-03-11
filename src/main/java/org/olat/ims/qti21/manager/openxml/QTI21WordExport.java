@@ -126,7 +126,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class QTI21WordExport implements MediaResource {
 	
-	private final static OLog log = Tracing.createLoggerFor(QTIWordExport.class);
+	private static final OLog log = Tracing.createLoggerFor(QTIWordExport.class);
 	
 	private String encoding;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
@@ -145,6 +145,11 @@ public class QTI21WordExport implements MediaResource {
 		htmlBuilder = new AssessmentHtmlBuilder();
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return false;
@@ -212,8 +217,9 @@ public class QTI21WordExport implements MediaResource {
 	}
 	
 	private void exportTest(AssessmentTest assessmentTest, String header, OutputStream out, boolean withResponses) {
-		ZipOutputStream zout = null;
-		try {
+		try(ZipOutputStream zout = new ZipOutputStream(out)) {
+			zout.setLevel(9);
+			
 			OpenXMLDocument document = new OpenXMLDocument();
 			document.setMediaContainer(mediaContainer);
 			document.setDocumentHeader(header);
@@ -230,21 +236,10 @@ public class QTI21WordExport implements MediaResource {
 				}
 			}
 
-			zout = new ZipOutputStream(out);
-			zout.setLevel(9);
-			
 			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
 			writer.createDocument(zout, document);
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			if(zout != null) {
-				try {
-					zout.finish();
-				} catch (IOException e) {
-					log.error("", e);
-				}
-			}
 		}
 	}
 

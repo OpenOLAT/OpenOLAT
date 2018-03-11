@@ -232,6 +232,7 @@ public class QTIArchiver {
 		formatter.setMapWithExportItemConfigs(qtiItemConfigs);
 
 		return new DefaultMediaResource() {
+			
 			@Override
 			public String getContentType() {
 				return "text/csv";

@@ -27,7 +27,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -36,6 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -105,6 +105,11 @@ public class CmdDownloadZip implements FolderCommand {
 		}
 		
 		@Override
+		public long getCacheControlDuration() {
+			return ServletUtil.CACHE_NO_CACHE;
+		}
+
+		@Override
 		public boolean acceptRanges() {
 			return false;
 		}
@@ -148,12 +153,10 @@ public class CmdDownloadZip implements FolderCommand {
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 			hres.setHeader("Content-Description", urlEncodedLabel);
 			
-			ZipOutputStream zout = null;
-			try {
-				zout = new ZipOutputStream(hres.getOutputStream());
+			try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 				zout.setLevel(9);
 				
-				List<VFSItem> vfsFiles = new ArrayList<VFSItem>();
+				List<VFSItem> vfsFiles = new ArrayList<>();
 				for (String fileName : selectedFiles) {
 					VFSItem item = currentContainer.resolve(fileName);
 					if (item != null) {
@@ -175,8 +178,6 @@ public class CmdDownloadZip implements FolderCommand {
 				zout.flush();
 			} catch (Exception e) {
 				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(zout);
 			}
 		}
 

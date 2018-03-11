@@ -58,6 +58,11 @@ public class JSONMediaResource extends DefaultMediaResource {
 	}
 
 	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
+	}
+
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		super.prepare(hres);
 		try {
@@ -72,9 +77,7 @@ public class JSONMediaResource extends DefaultMediaResource {
 			} else if(jsonArray != null) {
 				jsonArray.write(hres.getWriter());
 			}
-		} catch (JSONException e) {
-			log.error("", e);
-		} catch (IOException e) {
+		} catch (JSONException | IOException e) {
 			log.error("", e);
 		}
 	}

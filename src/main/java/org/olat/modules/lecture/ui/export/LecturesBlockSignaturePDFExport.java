@@ -75,6 +75,11 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 	}
 
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
@@ -126,7 +131,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 	}
 
 	public void create(List<Identity> rows)
-    throws IOException, COSVisitorException, TransformerException {
+    throws IOException, TransformerException {
 	    	addPage();
 	    	String lectureBlockTitle = lectureBlock.getTitle();
 	    	String resourceTitle = entry.getDisplayname();

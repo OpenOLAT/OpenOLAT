@@ -38,6 +38,11 @@ import javax.servlet.http.HttpServletResponse;
 public class NotFoundMediaResource extends DefaultMediaResource {
 
 	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_ONE_HOUR;
+	}
+
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
 			hres.sendError(HttpServletResponse.SC_NOT_FOUND);

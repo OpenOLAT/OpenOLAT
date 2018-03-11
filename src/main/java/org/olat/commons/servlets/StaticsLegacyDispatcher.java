@@ -244,6 +244,11 @@ public class StaticsLegacyDispatcher implements Dispatcher {
 		}
 
 		@Override
+		public long getCacheControlDuration() {
+			return ServletUtil.CACHE_ONE_DAY;
+		}
+
+		@Override
 		public Long getSize() {
 			return rd.getSize();
 		}

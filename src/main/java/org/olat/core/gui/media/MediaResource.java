@@ -31,7 +31,6 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * TODO:fj:b intro. method isIndependent -> no need to lock while serving this resource (e.g. user can continue to click while downloading a large file)
  * @author Felix Jost
  */
 public interface MediaResource {
@@ -39,24 +38,31 @@ public interface MediaResource {
 	public boolean acceptRanges();
 
 	/**
-	 * @return
+	 * @return The mime type
 	 */
 	public String getContentType();
 
 	/**
-	 * @return
+	 * @return The size or null if unknown
 	 */
 	public Long getSize();
 
 	/**
-	 * @return
+	 * @return The stream or null
 	 */
 	public InputStream getInputStream();
 
 	/**
-	 * @return
+	 * @return The last modification date or null
 	 */
 	public Long getLastModified();
+	
+	/**
+	 * 
+	 * @return The cache duration in seconds. If 0, all the headers
+	 * 			to prevent caching will be added.
+	 */
+	public long getCacheControlDuration();
 
 	/**
 	 * @param hres

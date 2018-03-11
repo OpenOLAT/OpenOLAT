@@ -36,6 +36,11 @@ import javax.servlet.http.HttpServletResponse;
 public class ForbiddenMediaResource extends DefaultMediaResource {
 
 	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
+	}
+
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
 			hres.sendError(HttpServletResponse.SC_FORBIDDEN);

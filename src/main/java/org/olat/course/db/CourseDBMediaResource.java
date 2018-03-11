@@ -49,6 +49,11 @@ public class CourseDBMediaResource implements MediaResource {
 	}
 	
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
@@ -60,7 +65,7 @@ public class CourseDBMediaResource implements MediaResource {
 
 	@Override
 	public Long getSize() {
-		return content == null ? new Long(0) : content.length;
+		return content == null ? Long.valueOf(0) : content.length;
 	}
 
 	@Override

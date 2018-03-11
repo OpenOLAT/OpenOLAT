@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,8 +58,9 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.pushpoll.WindowCommand;
+import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NothingChangedMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -450,7 +452,20 @@ public class AjaxController extends DefaultController {
 		if (pollperiod != this.pollperiod) {
 			if (pollperiod == -1) pollperiod = DEFAULT_POLLPERIOD;
 			this.pollperiod = pollperiod;
-			pollPeriodContent.contextPut("pollperiod", new Integer(pollperiod));
+			pollPeriodContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		} // else no need to change anything
+	}
+	
+	private final class NothingChangedMediaResource extends DefaultMediaResource {
+		
+		@Override
+		public long getCacheControlDuration() {
+			return ServletUtil.CACHE_NO_CACHE;
+		}
+
+		@Override
+		public void prepare(HttpServletResponse hres) {
+			hres.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+		}
 	}
 }

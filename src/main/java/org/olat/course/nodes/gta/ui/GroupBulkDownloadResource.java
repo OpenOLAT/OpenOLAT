@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -60,9 +61,9 @@ import org.olat.group.BusinessGroupService;
 public class GroupBulkDownloadResource implements MediaResource {
 	
 	private static final OLog log = Tracing.createLoggerFor(GroupBulkDownloadResource.class);
+	private static final String encoding = "UTF-8";
 	
 	private final Locale locale;
-	private final String encoding = "UTF-8";
 	private final List<BusinessGroup> groups;
 	private final GTACourseNode courseNode;
 	private final OLATResourceable courseOres;
@@ -75,6 +76,11 @@ public class GroupBulkDownloadResource implements MediaResource {
 		this.courseOres = courseOres;
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return false;

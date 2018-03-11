@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.DefaultMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -49,6 +50,11 @@ public abstract class OpenXMLWorkbookResource extends DefaultMediaResource {
 		this.label = label;
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
+	}
+
 	@Override
 	public String getContentType() {
 		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";

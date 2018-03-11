@@ -134,6 +134,11 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
@@ -445,5 +450,5 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		public boolean isIdDivsForced() {
 			return false;
 		}
-	};
+	}
 }

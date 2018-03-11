@@ -51,41 +51,36 @@ public class RedirectMediaResource implements MediaResource {
 	}
 	
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
+	@Override
 	public String getContentType() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getSize()
-	 */
+	@Override
 	public Long getSize() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
+	@Override
 	public InputStream getInputStream() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
-	 */
+	@Override
 	public Long getLastModified() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
 			hres.sendRedirect(redirectURL);
@@ -102,9 +97,7 @@ public class RedirectMediaResource implements MediaResource {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
+	@Override
 	public void release() {
 	// nothing to do
 	}
