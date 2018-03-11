@@ -60,6 +60,16 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setWidthInPercent(widthInPercent);
 	}
 
+	/**
+	 * The labels are rendered at the right of the progress bar (but the
+	 * percent still within if configured).
+	 * 
+	 * @param renderLabelRights true to render the labels at the right of the progress bar
+	 */
+	public void setRenderLabelRights(boolean renderLabelRights) {
+		component.setRenderLabelRights(renderLabelRights);
+	}
+
 	@Override
 	protected void rootFormAvailable() {
 		//

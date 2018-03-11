@@ -42,12 +42,6 @@ import org.olat.core.util.StringHelper;
  */
 public class ProgressBarRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -64,7 +58,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		if (percent > 100) {
 			percent = 100;
 		}
-		target.append("<div class='progress' style=\"width:")
+		target.append("<div class='progress").append(" o_progress_label_right", ubar.isRenderLabelRights()).append("' style=\"width:")
 			.append(ubar.getWidth())
 			.append("%", "px", ubar.isWidthInPercent())
 			.append(";\"><div class='progress-bar' style=\"width:")
@@ -75,22 +69,34 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		if (renderLabels) {
 			if (ubar.isPercentagesEnabled()) {
 				target.append(Math.round(percent));
-				target.append("% (");
+				target.append("%");
+				
 			}
-			target.append(Math.round(ubar.getActual()));
-			target.append("/");
-			if (ubar.getIsNoMax()) target.append("-");
-			else target.append(Math.round(ubar.getMax()));
-			target.append(" ");
-			target.append(ubar.getUnitLabel());
-			if (ubar.isPercentagesEnabled()) {
-				target.append(")");				
-			}				
+			if(!ubar.isRenderLabelRights()) {
+				target.append(" (", ubar.isPercentagesEnabled());
+				renderLabel(target, ubar);
+				target.append(")", ubar.isPercentagesEnabled());
+			}
 		}
 		String info = ubar.getInfo();
 		if(StringHelper.containsNonWhitespace(info)) {
 			target.append(info);
 		}
 		target.append("</div></div>");
+		
+		if (ubar.isRenderLabelRights()) {
+			target.append("<div class='o_progress_label'>");
+			renderLabel(target, ubar);
+			target.append("</div>");			
+		}
+	}
+	
+	private void renderLabel(StringOutput target, ProgressBar ubar) {
+		target.append(Math.round(ubar.getActual()));
+		target.append("/");
+		if (ubar.getIsNoMax()) target.append("-");
+		else target.append(Math.round(ubar.getMax()));
+		target.append(" ");
+		target.append(ubar.getUnitLabel());
 	}
 }
