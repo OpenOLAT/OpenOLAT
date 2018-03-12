@@ -1372,6 +1372,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	
 	private final List<KalendarRecurEvent> getRecurringEventsInPeriod(KalendarEvent kEvent, Date periodStart, Date periodEnd, TimeZone userTz) {
 		VEvent vEvent = getVEvent(kEvent);
+		if(vEvent.getEndDate() == null || vEvent.getStartDate().getDate().after(vEvent.getEndDate().getDate())) {
+			return Collections.emptyList();
+		}
 
 		//calculate the events in the specified period
         Period recurringPeriod = new Period(new DateTime(periodStart), new DateTime(periodEnd));
