@@ -76,8 +76,32 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String STRICT_TRANSPORT_SECURITY = "strictTransportSecurity";
 	private static final String X_CONTENT_TYPES_OPTIONS = "xContentTypeOptions";
 	private static final String CONTENT_SECURITY_POLICY = "contentSecurityPolicy";
+	private static final String CONTENT_SECURITY_POLICY_DEFAULT_SRC = "base.security.contentSecurityPolicy.defaultSrc";
+	private static final String CONTENT_SECURITY_POLICY_SCRIPT_SRC = "base.security.contentSecurityPolicy.scriptSrc";
+	private static final String CONTENT_SECURITY_POLICY_STYLE_SRC = "base.security.contentSecurityPolicy.styleSrc";
+	private static final String CONTENT_SECURITY_POLICY_IMG_SRC = "base.security.contentSecurityPolicy.imgSrc";
+	private static final String CONTENT_SECURITY_POLICY_FONT_SRC = "base.security.contentSecurityPolicy.fontSrc";
+	private static final String CONTENT_SECURITY_POLICY_CONNECT_SRC = "base.security.contentSecurityPolicy.connectSrc";
+	private static final String CONTENT_SECURITY_POLICY_FRAME_SRC = "base.security.contentSecurityPolicy.frameSrc";
+	private static final String CONTENT_SECURITY_POLICY_WORKER_SRC = "base.security.contentSecurityPolicy.workerSrc";
+	private static final String CONTENT_SECURITY_POLICY_MEDIA_SRC = "base.security.contentSecurityPolicy.mediaSrc";
+	private static final String CONTENT_SECURITY_POLICY_OBJECT_SRC = "base.security.contentSecurityPolicy.objectSrc";
+	private static final String CONTENT_SECURITY_POLICY_PLUGIN_TYPE = "base.security.contentSecurityPolicy.pluginType";
+	
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_DEFAULT_SRC = "'self'";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC = "'unsafe-inline' 'unsafe-eval' 'self' https://player.vimeo.com https://www.youtube.com https://s.ytimg.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC = "'unsafe-inline' 'self'";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_IMG_SRC = "'self' data:";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC = "'self'";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC = "'self' https://youtu.be https://www.youtube.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC = "'self' https://player.vimeo.com https://youtu.be https://www.youtube.com https://s.ytimg.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC = "'self' blob:";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_MEDIA_SRC = "'self' blob: https://player.vimeo.com https://youtu.be https://www.youtube.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC = "'self'";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_PLUGIN_TYPE_SRC = null;
+	
 	private static final String WIKI_ENABLED = "wiki";
-
+	
 	/**
 	 * default values
 	 */
@@ -150,7 +174,30 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	@Value("${base.security.contentSecurityPolicy:disabled}")
 	private String contentSecurityPolicy;
 	
-
+	@Value("${base.security.contentSecurityPolicy.defaultSrc:}")
+	private String contentSecurityPolicyDefaultSrc;
+	@Value("${base.security.contentSecurityPolicy.scriptSrc:}")
+	private String contentSecurityPolicyScriptSrc;
+	@Value("${base.security.contentSecurityPolicy.styleSrc:}")
+	private String contentSecurityPolicyStyleSrc;
+	@Value("${base.security.contentSecurityPolicy.imgSrc:}")
+	private String contentSecurityPolicyImgSrc;
+	@Value("${base.security.contentSecurityPolicy.fontSrc:}")
+	private String contentSecurityPolicyFontSrc;
+	@Value("${base.security.contentSecurityPolicy.connectSrc:}")
+	private String contentSecurityPolicyConnectSrc;
+	@Value("${base.security.contentSecurityPolicy.frameSrc:}")
+	private String contentSecurityPolicyFrameSrc;
+	@Value("${base.security.contentSecurityPolicy.workerSrc:}")
+	private String contentSecurityPolicyWorkerSrc;
+	@Value("${base.security.contentSecurityPolicy.mediaSrc:}")
+	private String contentSecurityPolicyMediaSrc;
+	@Value("${base.security.contentSecurityPolicy.objectSrc:}")
+	private String contentSecurityPolicyObjectSrc;
+	@Value("${base.security.contentSecurityPolicy.pluginType:}")
+	private String contentSecurityPolicyPluginType;
+	
+	
 	@Autowired
 	public BaseSecurityModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -266,6 +313,50 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			contentSecurityPolicy = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_DEFAULT_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyDefaultSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_SCRIPT_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyScriptSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_STYLE_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyStyleSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_IMG_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyImgSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_FONT_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyFontSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_CONNECT_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyConnectSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_FRAME_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyFrameSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_WORKER_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyWorkerSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_MEDIA_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyMediaSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_OBJECT_SRC, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyObjectSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_PLUGIN_TYPE, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyPluginType = enabled;
 		}
 		enabled = getStringPropertyValue(WIKI_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
@@ -537,5 +628,104 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		String enabled = enable ? "enabled" : "disabled";
 		contentSecurityPolicy = enabled;
 		setStringProperty(CONTENT_SECURITY_POLICY, enabled, true);
+	}
+
+	public String getContentSecurityPolicyDefaultSrc() {
+		return contentSecurityPolicyDefaultSrc;
+	}
+
+	public void setContentSecurityPolicyDefaultSrc(String policy) {
+		contentSecurityPolicyDefaultSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_DEFAULT_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyScriptSrc() {
+		return contentSecurityPolicyScriptSrc;
+	}
+
+	public void setContentSecurityPolicyScriptSrc(String policy) {
+		contentSecurityPolicyScriptSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_SCRIPT_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyStyleSrc() {
+		return contentSecurityPolicyStyleSrc;
+	}
+
+	public void setContentSecurityPolicyStyleSrc(String policy) {
+		contentSecurityPolicyStyleSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_STYLE_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyImgSrc() {
+		return contentSecurityPolicyImgSrc;
+	}
+
+	public void setContentSecurityPolicyImgSrc(String policy) {
+		contentSecurityPolicyImgSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_IMG_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyFontSrc() {
+		return contentSecurityPolicyFontSrc;
+	}
+
+	public void setContentSecurityPolicyFontSrc(String policy) {
+		contentSecurityPolicyFontSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_FONT_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyConnectSrc() {
+		return contentSecurityPolicyConnectSrc;
+	}
+
+	public void setContentSecurityPolicyConnectSrc(String policy) {
+		this.contentSecurityPolicyConnectSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_CONNECT_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyFrameSrc() {
+		return contentSecurityPolicyFrameSrc;
+	}
+
+	public void setContentSecurityPolicyFrameSrc(String policy) {
+		this.contentSecurityPolicyFrameSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_FRAME_SRC, policy, true);
+	}
+	
+	public String getContentSecurityPolicyWorkerSrc() {
+		return contentSecurityPolicyWorkerSrc;
+	}
+
+	public void setContentSecurityPolicyWorkerSrc(String policy) {
+		this.contentSecurityPolicyWorkerSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_WORKER_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyMediaSrc() {
+		return contentSecurityPolicyMediaSrc;
+	}
+
+	public void setContentSecurityPolicyMediaSrc(String policy) {
+		this.contentSecurityPolicyMediaSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_MEDIA_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyObjectSrc() {
+		return contentSecurityPolicyObjectSrc;
+	}
+
+	public void setContentSecurityPolicyObjectSrc(String policy) {
+		this.contentSecurityPolicyObjectSrc = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_OBJECT_SRC, policy, true);
+	}
+
+	public String getContentSecurityPolicyPluginType() {
+		return contentSecurityPolicyPluginType;
+	}
+
+	public void setContentSecurityPolicyPluginType(String policy) {
+		this.contentSecurityPolicyPluginType = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_PLUGIN_TYPE, policy, true);
 	}
 }
