@@ -400,6 +400,64 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	/**
+	 * A recurring event with the start and end date reversed. This error
+	 * in the calendar cause the whole calendar to crash.
+	 * 
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 */
+	@Test
+	public void testCalendarRecurringEventInversed() throws URISyntaxException, IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
+		URL calendarUrl = CalendarImportTest.class.getResource("ReversedRecurringEvent.ics");
+		File calendarFile = new File(calendarUrl.toURI());
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(2018, 03, 10, 10, 00);
+		Date startDate = cal.getTime();
+		cal.set(2018, 03, 17);
+		Date endDate = cal.getTime();
+		
+		List<KalendarEvent> recurringEvents = calendarManager.getEvents(importedCalendar.getKalendar(), startDate, endDate, true);
+		Assert.assertEquals(0, recurringEvents.size());
+	}
+	
+	/**
+	 * A recurring event with missing end date. This error
+	 * in the calendar cause the whole calendar to crash.
+	 * 
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 */
+	@Test
+	public void testCalendarRecurringEventMissingEndDate() throws URISyntaxException, IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
+		URL calendarUrl = CalendarImportTest.class.getResource("RecurringEventMissingEnd.ics");
+		File calendarFile = new File(calendarUrl.toURI());
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(2018, 03, 10, 10, 00);
+		Date startDate = cal.getTime();
+		cal.set(2018, 03, 17);
+		Date endDate = cal.getTime();
+		
+		List<KalendarEvent> recurringEvents = calendarManager.getEvents(importedCalendar.getKalendar(), startDate, endDate, true);
+		Assert.assertEquals(0, recurringEvents.size());
+	}
+	
+	/**
 	 * Check a NPE
 	 * @throws IOException
 	 */
@@ -576,7 +634,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testImportICal() throws URISyntaxException, IOException {
+	public void testImportICal_recurringEvent() throws URISyntaxException, IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
 		URL calendarUrl = CalendarImportTest.class.getResource("RecurringEvent.ics");
 		File calendarFile = new File(calendarUrl.toURI());
