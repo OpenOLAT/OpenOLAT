@@ -293,10 +293,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.displayname.name(), renderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
 				true, OrderBy.authors.name()));
-		if (licenseModule.isEnabled(licenseHandler)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license.i18nKey(), Cols.license.ordinal(), "license",
-					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
-		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
 		if(repositoryModule.isManagedRepositoryEntries()) {
@@ -325,6 +321,10 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lastUsage.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
 				true, OrderBy.references.name()));
+		if (licenseModule.isEnabled(licenseHandler)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license.i18nKey(), Cols.license.ordinal(), "license",
+					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
+		}
 		
 		initActionsColumns(columnsModel);
 		

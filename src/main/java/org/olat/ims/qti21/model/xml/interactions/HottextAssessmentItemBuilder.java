@@ -27,6 +27,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createHottextCo
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersFromCorrectResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,9 +35,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -90,6 +91,8 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
+	private static final OLog log = Tracing.createLoggerFor(HottextAssessmentItemBuilder.class);
+	
 	private String question;
 	private Identifier responseIdentifier;
 	private List<Identifier> correctAnswers;
@@ -141,19 +144,22 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 	}
 	
 	private void extractHottextInteraction() {
-		StringOutput sb = new StringOutput();
-		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
-		for(Block block:blocks) {
-			if(block instanceof HottextInteraction) {
-				hottextInteraction = (HottextInteraction)block;
-				for(BlockStatic innerBlock: hottextInteraction.getBlockStatics()) {
-					qtiSerializer.serializeJqtiObject(innerBlock, new StreamResult(sb));
+		try(StringOutput sb = new StringOutput()) {
+			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+			for(Block block:blocks) {
+				if(block instanceof HottextInteraction) {
+					hottextInteraction = (HottextInteraction)block;
+					for(BlockStatic innerBlock: hottextInteraction.getBlockStatics()) {
+						serializeJqtiObject(innerBlock, sb);
+					}
+					responseIdentifier = hottextInteraction.getResponseIdentifier();
+					break;
 				}
-				responseIdentifier = hottextInteraction.getResponseIdentifier();
-				break;
 			}
+			question = sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		question = sb.toString();
 	}
 	
 	private void extractScoreEvaluationMode() {

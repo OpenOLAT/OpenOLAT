@@ -143,6 +143,11 @@ public class ExportBinderAsCPResource implements MediaResource {
 		portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		mapperService = CoreSpringFactory.getImpl(MapperService.class);
 	}
+	
+	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
 
 	@Override
 	public boolean acceptRanges() {

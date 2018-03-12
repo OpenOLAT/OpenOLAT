@@ -37,8 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -232,7 +230,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 					shuffle = matchInteraction.getShuffle();
 					break;
 				} else {
-					qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
+					serializeJqtiObject(block, sb);
 				}
 			}
 			question = sb.toString();

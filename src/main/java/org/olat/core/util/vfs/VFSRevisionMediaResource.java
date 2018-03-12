@@ -24,6 +24,7 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.version.VFSRevision;
@@ -47,10 +48,16 @@ public class VFSRevisionMediaResource implements MediaResource {
 	}
 	
 	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_ONE_HOUR;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return true;
 	}
 
+	@Override
 	public String getContentType() {
 		String mimeType = WebappHelper.getMimeType(revision.getName());
 		if (mimeType == null) {
@@ -66,20 +73,24 @@ public class VFSRevisionMediaResource implements MediaResource {
 		return mimeType;
 	}
 
+	@Override
 	public InputStream getInputStream() {
 		return revision.getInputStream();
 	}
 
+	@Override
 	public Long getLastModified() {
 		long lastModified = revision.getLastModified();
 		return (lastModified == VFSConstants.UNDEFINED) ? null : new Long(lastModified);
 	}
 
+	@Override
 	public Long getSize() {
 		long size = revision.getSize();
 		return (size == VFSConstants.UNDEFINED) ? null : new Long(size);
 	}
 
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		String filename = StringHelper.urlEncodeUTF8(revision.getName());
 		if (forceDownload || unknownMimeType) {
@@ -89,6 +100,7 @@ public class VFSRevisionMediaResource implements MediaResource {
 		}
 	}
 
+	@Override
 	public void release() {
 		//do nothing
 	}

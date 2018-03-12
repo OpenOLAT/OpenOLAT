@@ -60,20 +60,21 @@ public class SyndFeedMediaResource implements MediaResource {
 	}
 	
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
+	@Override
 	public String getContentType() {
 		return CONTENT_TYPE;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
+	@Override
 	public InputStream getInputStream() {
 		ByteArrayInputStream inputStream = null;
 		try {
@@ -84,9 +85,7 @@ public class SyndFeedMediaResource implements MediaResource {
 		return inputStream;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
-	 */
+	@Override
 	public Long getLastModified() {
 		Long lastModified = null;
 		Date date = feed.getPublishedDate();
@@ -96,26 +95,18 @@ public class SyndFeedMediaResource implements MediaResource {
 		return lastModified;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getSize()
-	 */
+	@Override
 	public Long getSize() {
-		return new Long(feedString.getBytes().length);
+		return Long.valueOf(feedString.getBytes().length);
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
 	public void prepare(HttpServletResponse hres) {
 	// nothing to prepare
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
+	@Override
 	public void release() {
 	// nothing to release
 	}
-
 }

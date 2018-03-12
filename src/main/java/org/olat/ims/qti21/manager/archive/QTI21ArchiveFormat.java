@@ -645,10 +645,12 @@ public class QTI21ArchiveFormat {
 			AssessmentItemRef itemRef = item.getAssessmentItemRef();
 			String itemRefIdentifier = itemRef.getIdentifier().toString();
 			AssessmentItemSession itemSession = responses.getItemSession(itemRefIdentifier);
-			if(itemSession.getManualScore() != null) {
-				sectionScore = sectionScore.add(itemSession.getManualScore());
-			} else if(itemSession.getScore() != null){
-				sectionScore = sectionScore.add(itemSession.getScore());
+			if(itemSession != null) {
+				if(itemSession.getManualScore() != null) {
+					sectionScore = sectionScore.add(itemSession.getManualScore());
+				} else if(itemSession.getScore() != null){
+					sectionScore = sectionScore.add(itemSession.getScore());
+				}
 			}
 		}
 		

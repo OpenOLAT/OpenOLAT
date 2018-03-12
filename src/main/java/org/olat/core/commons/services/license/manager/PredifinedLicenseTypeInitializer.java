@@ -39,8 +39,8 @@ public class PredifinedLicenseTypeInitializer {
 	
 	@PostConstruct
 	void initPredefinedLicenseTypes() {
-		createAndPersistPredefined(LicenseTypeDAO.NO_LICENSE_NAME, null, null);
-		createAndPersistPredefined(LicenseTypeDAO.FREETEXT_NAME, null, null);
+		createAndPersistPredefined(LicenseTypeDAO.NO_LICENSE_NAME, "o_icon_lic_no_license", null);
+		createAndPersistPredefined(LicenseTypeDAO.FREETEXT_NAME, "o_icon_lic_freetext", null);
 		createAndPersistPredefined("public domain", "o_lic_public_domain", "https://creativecommons.org/share-your-work/public-domain/pdm/");
 		createAndPersistPredefined("CC0", "o_icon_lic_cc0", "https://creativecommons.org/share-your-work/public-domain/cc0/");
 		createAndPersistPredefined("CC BY", "o_icon_lic_by", "https://creativecommons.org/licenses/by/4.0/");

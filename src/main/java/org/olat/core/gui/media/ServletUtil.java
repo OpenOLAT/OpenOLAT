@@ -45,7 +45,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.render.StringOutput;
@@ -63,10 +62,10 @@ import org.olat.core.util.session.UserSessionManager;
  */
 public class ServletUtil {
 	private static final OLog log = Tracing.createLoggerFor(ServletUtil.class);
-	private static final BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 	
-	private static final String KEY_X_FRAME_OPTION = "X-FRAME-OPTIONS";
-	private static final String VALUE_SAMEORIGIN = "SAMEORIGIN";
+	public static final long CACHE_NO_CACHE = 0l;
+	public static final long CACHE_ONE_HOUR = 60l * 60l;
+	public static final long CACHE_ONE_DAY = 24l * 60l * 60l;
 	
 	
 	public static void printOutRequestParameters(HttpServletRequest request) {
@@ -101,8 +100,6 @@ public class ServletUtil {
 	 */
 	public static void serveResource(HttpServletRequest httpReq, HttpServletResponse httpResp, MediaResource mr) {
 		boolean debug = log.isDebug();
-
-		setXFrameHeader(httpResp);
 		try {
 			Long lastModified = mr.getLastModified();
 			if (lastModified != null) {
@@ -168,14 +165,17 @@ public class ServletUtil {
 		BufferedInputStream bis = null;
 
 		try {
+			// cache-control first
+			setCacheHeaders(httpResp, mr.getCacheControlDuration());
+			
 			Long size = mr.getSize();
 			Long lastModified = mr.getLastModified();
-
-			//fxdiff FXOLAT-118: accept range to deliver videos for iPad (implementation based on Tomcat)
+			// accept range to deliver videos for iPad (implementation based on Tomcat)
 			List<Range> ranges = parseRange(httpReq, httpResp, (lastModified == null ? -1 : lastModified.longValue()), (size == null ? 0 : size.longValue()));
 			if(ranges != null && mr.acceptRanges()) {
 				httpResp.setHeader("Accept-Ranges", "bytes");
 			}
+			
 			// maybe some more preparations
 			mr.prepare(httpResp);
 			
@@ -398,6 +398,8 @@ public class ServletUtil {
 		OutputStream out = null;
 		
 		try {
+			setCacheHeaders(httpResp, mr.getCacheControlDuration());
+			
 			s = new BufferedInputStream(mr.getInputStream());
 			out = httpResp.getOutputStream();
 
@@ -460,7 +462,6 @@ public class ServletUtil {
 	 */
 	public static void serveStringResource(HttpServletRequest httpReq, HttpServletResponse response, String result) {
 		setStringResourceHeaders(response);
-		setXFrameHeader(response);
 
 		// log the response headers prior to sending the output
 		boolean isDebug = log.isDebug();
@@ -471,6 +472,8 @@ public class ServletUtil {
 		}
 
 		try {
+			setNoCacheHeaders(response);
+			
 			long rstart = 0;
 			if (isDebug) {
 				rstart = System.currentTimeMillis();
@@ -517,7 +520,6 @@ public class ServletUtil {
 
 	public static void serveStringResource(HttpServletResponse response, StringOutput result) {
 		setStringResourceHeaders(response);
-		setXFrameHeader(response);
 
 		// log the response headers prior to sending the output
 		boolean isDebug = log.isDebug();
@@ -552,36 +554,34 @@ public class ServletUtil {
 		}
 	}
 	
-	/**
-	 * Set the X-FRAME-OPTIONS header to SAMEORIGIN if the security module is
-	 * configured to add this header
-	 * 
-	 * @param response
-	 */
-	public static void setXFrameHeader(HttpServletResponse response) {
-		if (securityModule.isXFrameOptionsSameoriginEnabled()) {			
-			response.setHeader(KEY_X_FRAME_OPTION, VALUE_SAMEORIGIN);
-		}
-	}
-	
 	public static void setStringResourceHeaders(HttpServletResponse response) {
 		// we ignore the accept-charset from the request and always write in utf-8
 		// -> see comment below
 		response.setContentType("text/html;charset=utf-8");
 		// never allow to cache pages since they contain a timestamp valid only once
-		// HTTP 1.1
-		response.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate, proxy-revalidate, s-maxage=0, max-age=0");
-		// HTTP 1.0
-		response.setHeader("Pragma", "no-cache");
-		response.setDateHeader("Expires", 0);
+		setNoCacheHeaders(response);
 	}
 	
 	public static void setJSONResourceHeaders(HttpServletResponse response) {
 		// we ignore the accept-charset from the request and always write in utf-8
 		// -> see comment below
-		//response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json;charset=utf-8");
 		// never allow to cache pages since they contain a timestamp valid only once
+		setNoCacheHeaders(response);
+	}
+	
+	public static void setCacheHeaders(HttpServletResponse response, long duration) {
+		if(duration == 0) {
+			setNoCacheHeaders(response);
+		} else {
+			long now = System.currentTimeMillis();
+			//res being the HttpServletResponse of the request
+			response.addHeader("Cache-Control", "max-age=" + duration);
+			response.setDateHeader("Expires", now + duration);
+		}
+	}
+	
+	public static void setNoCacheHeaders(HttpServletResponse response) {
 		// HTTP 1.1
 		response.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate, proxy-revalidate, s-maxage=0, max-age=0");
 		// HTTP 1.0
@@ -664,7 +664,6 @@ public class ServletUtil {
         int pos = -1;
         boolean inQuotes = false;
         for (int i = 0; i < header.length() - 1; ++i) { //-1 because we need room for the = at the end
-            //TODO: a more efficient matching algorithm
             char c = header.charAt(i);
             if (inQuotes) {
                 if (c == '"') {

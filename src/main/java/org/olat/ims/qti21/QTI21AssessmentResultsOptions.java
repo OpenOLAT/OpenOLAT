@@ -37,24 +37,23 @@ public class QTI21AssessmentResultsOptions {
 	public static final String METADATA = "metadata";
 	public static final String SECTION_SUMMARY = "sectionsSummary";
 	public static final String QUESTION_SUMMARY = "questionSummary";
-	public static final String QUESTIONS = "questions";
 	public static final String USER_SOLUTIONS = "userSolutions";
 	public static final String CORRECT_SOLUTIONS = "correctSolutions";
 	
 	private final boolean metadata;
 	private final boolean sectionSummary;
 	private final boolean questionSummary;
-	private final boolean questions;
 	private final boolean userSolutions;
 	private final boolean correctSolutions;
 	
+	/** Not used but need to say for XStream deserialization */
+	private boolean questions;
+	
 	public QTI21AssessmentResultsOptions(boolean metadata, boolean sectionSummary,
-			boolean questionSummary, boolean questions,
-			boolean userSolutions, boolean correctSolutions) {
+			boolean questionSummary, boolean userSolutions, boolean correctSolutions) {
 		this.metadata = metadata;
 		this.sectionSummary = sectionSummary;
 		this.questionSummary = questionSummary;
-		this.questions = questions;
 		this.userSolutions = userSolutions;
 		this.correctSolutions = correctSolutions;
 	}
@@ -85,22 +84,22 @@ public class QTI21AssessmentResultsOptions {
 	
 	@Override
 	public QTI21AssessmentResultsOptions clone() {
-		return new QTI21AssessmentResultsOptions(metadata, sectionSummary, questionSummary, questions, userSolutions, correctSolutions);
+		return new QTI21AssessmentResultsOptions(metadata, sectionSummary, questionSummary, userSolutions, correctSolutions);
 	}
 
 	@Transient
 	public boolean none() {
-		return !metadata && !sectionSummary && !questionSummary && !questions && !userSolutions && !correctSolutions;
+		return !metadata && !sectionSummary && !questionSummary && !userSolutions && !correctSolutions;
 	}
 
 	@Transient
 	public static final QTI21AssessmentResultsOptions allOptions() {
-		return new QTI21AssessmentResultsOptions(true, true, true, true, true, true);
+		return new QTI21AssessmentResultsOptions(true, true, true, true, true);
 	}
 
 	@Transient
 	public static final QTI21AssessmentResultsOptions noOptions() {
-		return new QTI21AssessmentResultsOptions(false, false, false, false, false, false);
+		return new QTI21AssessmentResultsOptions(false, false, false, false, false);
 	}
 
 	@Transient
@@ -111,8 +110,8 @@ public class QTI21AssessmentResultsOptions {
 		} else {
 			switch(showResults) {
 				case none: options = noOptions(); break;
-				case compact: options = new QTI21AssessmentResultsOptions(true, false, false, false, false, false); break;
-				case sections: options = new QTI21AssessmentResultsOptions(true, true, false, false, false, false); break;
+				case compact: options = new QTI21AssessmentResultsOptions(true, false, false, false, false); break;
+				case sections: options = new QTI21AssessmentResultsOptions(true, true, false, false, false); break;
 				case details: options = allOptions(); break;
 				default: options = noOptions();
 			}
@@ -124,17 +123,16 @@ public class QTI21AssessmentResultsOptions {
 		if(StringHelper.containsNonWhitespace(value)) {
 			switch(value) {
 				case AssessmentInstance.QMD_ENTRY_SUMMARY_NONE: return noOptions();
-				case AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT: return new QTI21AssessmentResultsOptions(true, false, false, false, false, false);
-				case AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION: return new QTI21AssessmentResultsOptions(true, true, false, false, false, false);
+				case AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT: return new QTI21AssessmentResultsOptions(true, false, false, false, false);
+				case AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION: return new QTI21AssessmentResultsOptions(true, true, false, false, false);
 				case AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED: return allOptions();
 				default: {
 					boolean metadata = value.contains(METADATA);
 					boolean sections = value.contains(SECTION_SUMMARY);
 					boolean questionSummary = value.contains(QUESTION_SUMMARY);
-					boolean questions = value.contains(QUESTIONS);
 					boolean userSolutions = value.contains(USER_SOLUTIONS);
 					boolean correctSolutions = value.contains(CORRECT_SOLUTIONS);
-					return new QTI21AssessmentResultsOptions(metadata, sections, questionSummary, questions, userSolutions, correctSolutions);
+					return new QTI21AssessmentResultsOptions(metadata, sections, questionSummary, userSolutions, correctSolutions);
 				}
 			}
 		}

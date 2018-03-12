@@ -86,8 +86,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
-import de.bps.onyx.plugin.run.OnyxRunController;
-
 /**
  * Initial Date: Feb 9, 2004
  * @author Mike Stock Comment:
@@ -143,7 +141,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 			if (onyx) {
-				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
+				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 			} else {
 				RepositoryEntry repositoryEntry = getReferencedRepositoryEntry();
 				OLATResourceable ores = repositoryEntry.getOlatResource();

@@ -20,7 +20,6 @@
 package org.olat.modules.fo.archiver.formatters;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -31,8 +30,8 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -52,7 +51,7 @@ import org.olat.modules.fo.archiver.ForumArchiveManager;
  */
 public class ForumDownloadResource implements MediaResource {
 	
-	private final static OLog log = Tracing.createLoggerFor(ForumDownloadResource.class);
+	private static final OLog log = Tracing.createLoggerFor(ForumDownloadResource.class);
 	
 	private final Forum forum;
 	private final ForumCallback foCallback;
@@ -69,6 +68,11 @@ public class ForumDownloadResource implements MediaResource {
 		this.foCallback = foCallback;
 		this.topMessageId = topMessageId;
 		this.mediaContainer = mediaContainer;
+	}
+	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
 	}
 	
 	@Override
@@ -109,17 +113,13 @@ public class ForumDownloadResource implements MediaResource {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		
-		ZipOutputStream zout = null;
-		try {
+
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
 
 			String file = secureLabel + ".zip";
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
-			
-			zout = new ZipOutputStream(hres.getOutputStream());
-			zout.setLevel(9);
 
 			ZipEntry test = new ZipEntry(secureLabel + ".docx");
 			zout.putNextEntry(test);
@@ -137,16 +137,14 @@ public class ForumDownloadResource implements MediaResource {
 			}
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(zout);
 		}
 	}
 	
 	private Map<File,DocReference> exportForum(OutputStream out) {
-		ZipOutputStream zout = null;
-		try {
-			ForumOpenXMLFormatter openXmlFormatter = new ForumOpenXMLFormatter(mediaContainer, locale);
+		try(ZipOutputStream zout = new ZipOutputStream(out)) {
+			zout.setLevel(9);
 			
+			ForumOpenXMLFormatter openXmlFormatter = new ForumOpenXMLFormatter(mediaContainer, locale);
 			if(topMessageId != null) {
 				ForumArchiveManager.getInstance()
 					.applyFormatterForOneThread(openXmlFormatter, forum.getKey(), topMessageId);
@@ -154,9 +152,6 @@ public class ForumDownloadResource implements MediaResource {
 				ForumArchiveManager.getInstance()
 					.applyFormatter(openXmlFormatter, forum.getKey(), foCallback);
 			}
-
-			zout = new ZipOutputStream(out);
-			zout.setLevel(9);
 			
 			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
 			writer.createDocument(zout, openXmlFormatter.getOpenXMLDocument());
@@ -164,14 +159,6 @@ public class ForumDownloadResource implements MediaResource {
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
-		} finally {
-			if(zout != null) {
-				try {
-					zout.finish();
-				} catch (IOException e) {
-					log.error("", e);
-				}
-			}
 		}
 	}
 }

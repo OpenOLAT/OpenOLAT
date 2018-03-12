@@ -10,6 +10,9 @@
 	#if($r.available("correction.test.title"))
 		$r.render("correction.test.title")
 	#end
+	#if($r.available("correction_v2"))
+		$r.render("correction_v2")
+	#end
 	#if($r.available("validate.xml.signature"))
 		$r.render("validate.xml.signature")
 	#end

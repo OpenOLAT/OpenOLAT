@@ -55,7 +55,9 @@ public class AssessmentItemPreviewSolutionController extends BasicController {
 		
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
 				resolvedAssessmentItem, rootDirectory, itemFile, candidateAuditLogger);
-		displayCtrl.requestSolution(ureq);
+		if(!displayCtrl.isExploded()) {
+			displayCtrl.requestSolution(ureq);
+		}
 		listenTo(displayCtrl);
 		mainVC = createVelocityContainer("assessment_item_preview");
 		mainVC.put("display", displayCtrl.getInitialComponent());

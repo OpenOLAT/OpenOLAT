@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -54,6 +55,11 @@ public class ZippedDirectoryMediaResource implements MediaResource {
 	public ZippedDirectoryMediaResource(String filename, File unzipDir) {
 		this.filename = filename;
 		this.unzipDir = unzipDir;
+	}
+
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
 	}
 
 	@Override

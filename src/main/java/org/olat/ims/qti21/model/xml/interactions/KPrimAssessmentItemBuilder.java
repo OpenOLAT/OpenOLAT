@@ -27,14 +27,15 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendMatchInte
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createKPrimResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -79,6 +80,8 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  *
  */
 public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
+	
+	private static final OLog log = Tracing.createLoggerFor(KPrimAssessmentItemBuilder.class);
 
 	private boolean shuffle;
 	private String question;
@@ -166,20 +169,23 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	private void extractMatchInteraction() {
-		StringOutput sb = new StringOutput();
-		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
-		for(Block block:blocks) {
-			if(block instanceof MatchInteraction) {
-				matchInteraction = (MatchInteraction)block;
-				responseIdentifier = matchInteraction.getResponseIdentifier();
-				shuffle = matchInteraction.getShuffle();
-				cssClass = matchInteraction.getClassAttr();
-				break;
-			} else {
-				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
+		try(StringOutput sb = new StringOutput()) {
+			List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+			for(Block block:blocks) {
+				if(block instanceof MatchInteraction) {
+					matchInteraction = (MatchInteraction)block;
+					responseIdentifier = matchInteraction.getResponseIdentifier();
+					shuffle = matchInteraction.getShuffle();
+					cssClass = matchInteraction.getClassAttr();
+					break;
+				} else {
+					serializeJqtiObject(block, sb);
+				}
 			}
+			question = sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		question = sb.toString();
 	}
 	
 	@Override

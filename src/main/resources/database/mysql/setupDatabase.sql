@@ -1484,6 +1484,7 @@ create table o_qti_assessmentitem_session (
    q_score float(65,30) default null,
    q_manual_score float(65,30) default null,
    q_coach_comment mediumtext default null,
+   q_to_review bit default 0,
    q_passed bit default null,
    q_storage varchar(1024),
    fk_assessmenttest_session bigint not null,

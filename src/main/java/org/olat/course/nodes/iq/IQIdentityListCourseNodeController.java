@@ -25,10 +25,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -71,13 +69,13 @@ import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
-import org.olat.ims.qti21.ui.assessment.AssessmentTestCorrection;
-import org.olat.ims.qti21.ui.assessment.IdentitiesAssessmentTestCorrectionController;
+import org.olat.ims.qti21.ui.assessment.CorrectionOverviewController;
 import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -96,14 +94,18 @@ import de.bps.onyx.plugin.OnyxModule;
 public class IQIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
 	private FormLink extraTimeButton;
-	private FormLink exportResultsButton, statsButton, validateButton, correctionButton, pullButton, resetButton;
+	private FormLink exportResultsButton;
+	private FormLink statsButton;
+	private FormLink validateButton;
+	private FormLink correctionButton;
+	private FormLink pullButton;
+	private FormLink resetButton;
 
-	private Controller statisticsCtrl;
 	private Controller retrieveConfirmationCtr;
 	private QTI21ResetDataController resetDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
 	private ValidationXmlSignatureController validationCtrl;
-	private IdentitiesAssessmentTestCorrectionController correctionCtrl;
+	private CorrectionOverviewController correctionIdentitiesCtrl;
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -270,22 +272,24 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(validationCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
-		} else if(correctionCtrl == source) {
-			if(event instanceof CompleteAssessmentTestSessionEvent) {
-				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
-				List<AssessmentTestSession> testSessionsToComplete = catse.getTestSessions();
-				doUpdateCourseNode(correctionCtrl.getTestCorrections(), testSessionsToComplete);
-				loadModel(ureq);				
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(retrieveConfirmationCtr == source || resetDataCtrl == source || extraTimeCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(correctionIdentitiesCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(correctionIdentitiesCtrl);
+				loadModel(ureq);				
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}else if(event instanceof CompleteAssessmentTestSessionEvent) {
+				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
+				doUpdateCourseNode(catse.getTestSessions(), catse.getStatus());
+				loadModel(ureq);	
+				stackPanel.popController(correctionIdentitiesCtrl);		
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -327,7 +331,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		if(isTestQTI21()) {
-			return new QTI21IdentityListCourseNodeToolsController(ureq, getWindowControl(),
+			return new QTI21IdentityListCourseNodeToolsController(ureq, getWindowControl(), stackPanel,
 					(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv);
 		}
 		return  new IdentityListCourseNodeToolsController(ureq, getWindowControl(),
@@ -349,7 +353,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private void doExportResults(UserRequest ureq) {
 		List<Identity> identities = getIdentities();
-		if (identities != null && identities.size() > 0) {
+		if (identities != null && !identities.isEmpty()) {
 			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();
 			if(isTestQTI21()) {
@@ -374,37 +378,35 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		listenTo(cmc);
 	}
 	
-	public void doStartCorrection(UserRequest ureq) {
+	private void doStartCorrection(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
-		correctionCtrl = new IdentitiesAssessmentTestCorrectionController(ureq, getWindowControl(),
+
+		correctionIdentitiesCtrl = new CorrectionOverviewController(ureq, getWindowControl(), stackPanel,
 				getCourseEnvironment(), asOptions, (IQTESTCourseNode)courseNode);
-		if(correctionCtrl.getNumberOfAssessedIdentities() == 0) {
+		if(correctionIdentitiesCtrl.getNumberOfAssessedIdentities() == 0) {
 			showWarning("grade.nobody");
-			correctionCtrl = null;
+			correctionIdentitiesCtrl = null;
 		} else {
-			listenTo(correctionCtrl);
-			cmc = new CloseableModalController(getWindowControl(), "close", correctionCtrl.getInitialComponent(),
-					true, translate("correction.test.title"));
-			cmc.activate();
-			listenTo(cmc);
+			listenTo(correctionIdentitiesCtrl);
+			stackPanel.pushController(translate("correction.test.title"), correctionIdentitiesCtrl);
 		}
 	}
 	
-	private void doUpdateCourseNode(AssessmentTestCorrection corrections, List<AssessmentTestSession> testSessionsToComplete) {
-		Set<AssessmentTestSession> selectedSessions = new HashSet<>(testSessionsToComplete);
-		for(AssessmentTestSession testSession:corrections.getTestSessions()) {
-			if(selectedSessions.contains(testSession)) {
-				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
-						.createAndInitUserCourseEnvironment(testSession.getIdentity(), getCourseEnvironment());
-				ScoreEvaluation scoreEval = ((IQTESTCourseNode)courseNode).getUserScoreEvaluation(assessedUserCourseEnv);
-				
-				BigDecimal finalScore = testSession.getFinalScore();
-				Float score = finalScore == null ? null : finalScore.floatValue();
-				ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
-						scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
-						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
-				((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
-			}
+	private void doUpdateCourseNode(List<AssessmentTestSession> testSessionsToComplete, AssessmentEntryStatus status) {
+		if(testSessionsToComplete == null || testSessionsToComplete.isEmpty()) return;
+		
+		for(AssessmentTestSession testSession:testSessionsToComplete) {
+			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+					.createAndInitUserCourseEnvironment(testSession.getIdentity(), getCourseEnvironment());
+			ScoreEvaluation scoreEval = ((IQTESTCourseNode)courseNode).getUserScoreEvaluation(assessedUserCourseEnv);
+			
+			BigDecimal finalScore = testSession.getFinalScore();
+			Float score = finalScore == null ? null : finalScore.floatValue();
+			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
+					finalStatus, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
+			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		}
 	}
 	
@@ -440,6 +442,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	private void doLaunchStatistics(UserRequest ureq) {
+		Controller statisticsCtrl;
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
 			statisticsCtrl = new QTI21StatisticsToolController(ureq, getWindowControl(), 

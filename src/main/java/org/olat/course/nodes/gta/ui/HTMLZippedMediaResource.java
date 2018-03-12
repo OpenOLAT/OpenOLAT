@@ -21,7 +21,6 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,13 +32,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -58,6 +57,11 @@ public class HTMLZippedMediaResource implements MediaResource {
 	public HTMLZippedMediaResource(String filename, File documentsDir) {
 		this.filename = filename;
 		this.documentsDir = documentsDir;
+	}
+
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
 	}
 
 	@Override
@@ -126,12 +130,6 @@ public class HTMLZippedMediaResource implements MediaResource {
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(in));
 			return contentHandler;
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

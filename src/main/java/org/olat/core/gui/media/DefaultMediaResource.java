@@ -40,41 +40,35 @@ public class DefaultMediaResource implements MediaResource {
 	private String contentType;
 	
 	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
+	@Override
 	public String getContentType() {
 		return contentType;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
+	@Override
 	public InputStream getInputStream() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
-	 */
+	@Override
 	public Long getLastModified() {
 		return lastModified;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getSize()
-	 */
+	@Override
 	public Long getSize() {
 		return size;
 	}
 
-	/**
-	 * @param contentType
-	 */
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
@@ -93,16 +87,12 @@ public class DefaultMediaResource implements MediaResource {
 		this.size = size;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
+	@Override
 	public void release() {
 		//
 	}

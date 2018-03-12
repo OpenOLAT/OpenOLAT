@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.manager;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
@@ -27,7 +26,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -58,6 +56,11 @@ public abstract class AbstractExportTestResource implements MediaResource {
 		return locale;
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return false;
@@ -99,18 +102,12 @@ public abstract class AbstractExportTestResource implements MediaResource {
 		String file = StringHelper.transformDisplayNameToFileSystemName(label) + ".zip";
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
-		
-		ZipOutputStream zout = null;
-		try {
-			zout = new ZipOutputStream(hres.getOutputStream());
+
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			exportTest(items, zout);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("", e);
-		}  catch (Exception e) {
-			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(zout);
 		}
 	}
 	

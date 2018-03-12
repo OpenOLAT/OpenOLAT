@@ -84,7 +84,7 @@ class GlossaryDefinitionMapper extends LogDelegator implements Mapper {
 		}
 		glossaryMainTerm = glossaryMainTerm.toLowerCase();
 		
-		Set<String> alternatives = new HashSet<String>();
+		Set<String> alternatives = new HashSet<>();
 		prepareAlternatives(glossaryMainTerm, alternatives);
 
 		// Create a media resource

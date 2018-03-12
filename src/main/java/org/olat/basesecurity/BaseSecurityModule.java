@@ -73,6 +73,9 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	/** The feature is enabled, always */
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
 	private static final String X_FRAME_OPTIONS_SAMEORIGIN = "xFrameOptionsSameOrigin";
+	private static final String STRICT_TRANSPORT_SECURITY = "strictTransportSecurity";
+	private static final String X_CONTENT_TYPES_OPTIONS = "xContentTypeOptions";
+	private static final String CONTENT_SECURITY_POLICY = "contentSecurityPolicy";
 	private static final String WIKI_ENABLED = "wiki";
 
 	/**
@@ -137,9 +140,17 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	@Value("${userinfos.tunnelcoursebuildingblock}")
 	private String userInfosTunnelCourseBuildingBlock;
 	
-	private String forceTopFrame = "disabled";
-	private String xFrameOptionsSameorigin = "disabled";
-	private String wikiEnabled = "enabled";
+	@Value("${base.security.wiki:enabled}")
+	private String wikiEnabled;
+	@Value("${base.security.frameOptionsSameOrigine:disabled}")
+	private String xFrameOptionsSameorigin;
+	@Value("${base.security.strictTransportSecurity:disabled}")
+	private String strictTransportSecurity;
+	@Value("${base.security.xContentTypeOptions:disabled}")
+	private String xContentTypeOptions;
+	@Value("${base.security.contentSecurityPolicy:disabled}")
+	private String contentSecurityPolicy;
+	
 
 	@Autowired
 	public BaseSecurityModule(CoordinatorManager coordinatorManager) {
@@ -240,14 +251,22 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			userInfosTunnelCourseBuildingBlock = enabled;
 		}
-		
-		enabled = getStringPropertyValue(FORCE_TOP_FRAME, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			forceTopFrame = enabled;
-		}
+
 		enabled = getStringPropertyValue(X_FRAME_OPTIONS_SAMEORIGIN, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			xFrameOptionsSameorigin = enabled;
+		}
+		enabled = getStringPropertyValue(STRICT_TRANSPORT_SECURITY, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			strictTransportSecurity = enabled;
+		}
+		enabled = getStringPropertyValue(X_CONTENT_TYPES_OPTIONS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			xContentTypeOptions = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicy = enabled;
 		}
 		enabled = getStringPropertyValue(WIKI_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
@@ -463,7 +482,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	}
 
 	public boolean isForceTopFrame() {
-		return true;//"enabled".equals(forceTopFrame);
+		return true;
 	}
 
 	public void setForceTopFrame(boolean enable) {
@@ -475,17 +494,49 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		return "enabled".equals(wikiEnabled);
 	}
 
+	public void setWikiEnabled(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		wikiEnabled = enabled;
+		setStringProperty(WIKI_ENABLED, enabled, true);
+	}
+
 	public boolean isXFrameOptionsSameoriginEnabled() {
 		return "enabled".equals(xFrameOptionsSameorigin);
 	}
 
-	public void setWikiEnabled(boolean enable) {
-		String enabled = enable ? "enabled" : "disabled";
-		setStringProperty(WIKI_ENABLED, enabled, true);
-	}
-
 	public void setXFrameOptionsSameoriginEnabled(boolean enable) {
 		String enabled = enable ? "enabled" : "disabled";
+		xFrameOptionsSameorigin = enabled;
 		setStringProperty(X_FRAME_OPTIONS_SAMEORIGIN, enabled, true);
+	}
+
+	public boolean isStrictTransportSecurityEnabled() {
+		return "enabled".equals(strictTransportSecurity);
+	}
+
+	public void setStrictTransportSecurity(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		strictTransportSecurity = enabled;
+		setStringProperty(STRICT_TRANSPORT_SECURITY, enabled, true);
+	}
+
+	public boolean isXContentTypeOptionsEnabled() {
+		return "enabled".equals(xContentTypeOptions);
+	}
+
+	public void setxContentTypeOptions(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		xContentTypeOptions = enabled;
+		setStringProperty(X_CONTENT_TYPES_OPTIONS, enabled, true);
+	}
+
+	public boolean isContentSecurityPolicyEnabled() {
+		return "enabled".equals(contentSecurityPolicy);
+	}
+
+	public void setContentSecurityPolicy(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		contentSecurityPolicy = enabled;
+		setStringProperty(CONTENT_SECURITY_POLICY, enabled, true);
 	}
 }

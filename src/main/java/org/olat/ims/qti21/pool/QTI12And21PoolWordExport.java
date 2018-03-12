@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -72,7 +71,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
  */
 public class QTI12And21PoolWordExport implements MediaResource {
 	
-	private final static OLog log = Tracing.createLoggerFor(QTI12And21PoolWordExport.class);
+	private static final OLog log = Tracing.createLoggerFor(QTI12And21PoolWordExport.class);
 	
 	private final Locale locale;
 	private final String encoding;
@@ -93,6 +92,11 @@ public class QTI12And21PoolWordExport implements MediaResource {
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return false;
@@ -131,12 +135,11 @@ public class QTI12And21PoolWordExport implements MediaResource {
 			log.error("", e);
 		}
 
-		ZipOutputStream zout = null;
-		try {
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());) {
 			String label = "Items_Export";
 			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
 			
-			List<Long> itemKeys = new ArrayList<Long>();
+			List<Long> itemKeys = new ArrayList<>();
 			for(QuestionItemShort item:items) {
 				itemKeys.add(item.getKey());
 			}
@@ -147,7 +150,6 @@ public class QTI12And21PoolWordExport implements MediaResource {
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 			
-			zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);
 
 			ZipEntry test = new ZipEntry(secureLabel + ".docx");
@@ -161,8 +163,6 @@ public class QTI12And21PoolWordExport implements MediaResource {
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(zout);
 		}
 	}
 	

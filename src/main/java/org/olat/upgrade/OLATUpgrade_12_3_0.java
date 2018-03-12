@@ -329,9 +329,11 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		StringBuilder sb = new StringBuilder();
 		sb.append("/forum/").append(forumKey).append("/");
 		OlatRootFolderImpl forumContainer = new OlatRootFolderImpl(sb.toString(), null);
-		VFSItem vl = forumContainer.getItems().get(0);
-		if(vl instanceof VFSLeaf) {
-			return ((VFSLeaf)vl).getSize();
+		if(forumContainer.exists() && !forumContainer.getItems().isEmpty()) {
+			VFSItem vl = forumContainer.getItems().get(0);
+			if(vl instanceof VFSLeaf) {
+				return ((VFSLeaf)vl).getSize();
+			}
 		}
 		return -1l;
 	}

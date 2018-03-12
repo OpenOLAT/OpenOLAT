@@ -46,11 +46,14 @@ import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.exception.QtiModelException;
 import uk.ac.ed.ph.jqtiplus.node.AbstractNode;
 import uk.ac.ed.ph.jqtiplus.node.LoadingContext;
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.InlineStatic;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.serialization.SaxFiringOptions;
 import uk.ac.ed.ph.jqtiplus.xmlutils.SimpleDomBuilderHandler;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
 
 /**
  * Do the ugly job to convert the Tiny MCE HTML code to the object model
@@ -92,9 +95,9 @@ public class AssessmentHtmlBuilder {
 	
 	public String flowStaticString(List<? extends FlowStatic> statics) {
 		StringOutput sb = new StringOutput();
-		if(statics != null && statics.size() > 0) {
+		if(statics != null && !statics.isEmpty()) {
 			for(FlowStatic flowStatic:statics) {
-				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
+				serializeJqtiObject(flowStatic, sb);
 			}
 		}
 		return cleanUpNamespaces(sb);
@@ -102,9 +105,9 @@ public class AssessmentHtmlBuilder {
 	
 	public String blocksString(List<? extends Block> statics) {
 		StringOutput sb = new StringOutput();
-		if(statics != null && statics.size() > 0) {
+		if(statics != null && !statics.isEmpty()) {
 			for(Block flowStatic:statics) {
-				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
+				serializeJqtiObject(flowStatic, sb);
 			}
 		}
 		
@@ -113,12 +116,18 @@ public class AssessmentHtmlBuilder {
 	
 	public String inlineStaticString(List<? extends InlineStatic> statics) {
 		StringOutput sb = new StringOutput();
-		if(statics != null && statics.size() > 0) {
+		if(statics != null && !statics.isEmpty()) {
 			for(InlineStatic inlineStatic:statics) {
-				qtiSerializer.serializeJqtiObject(inlineStatic, new StreamResult(sb));
+				serializeJqtiObject(inlineStatic, sb);
 			}
 		}
 		return cleanUpNamespaces(sb);
+	}
+	
+	private void serializeJqtiObject(QtiNode node, StringOutput sb) {
+		final XsltSerializationOptions xsltSerializationOptions = new XsltSerializationOptions();
+        xsltSerializationOptions.setIndenting(false);
+		qtiSerializer.serializeJqtiObject(node, new StreamResult(sb), new SaxFiringOptions(), xsltSerializationOptions);
 	}
 	
 	private String cleanUpNamespaces(StringOutput sb) {

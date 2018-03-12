@@ -261,6 +261,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		if(check != null && check.getChecked() != null && check.getChecked().booleanValue()) {
 			el.select(onKeys[0], true);
 			wrapper.setDbCheckbox(check.getCheckbox());
+			wrapper.setScore(check.getScore());
 		}
 		if(downloadLink != null) {
 			downloadLink.setUserObject(wrapper);
@@ -373,11 +374,20 @@ public class CheckListRunController extends FormBasicController implements Contr
 		private final DownloadLink downloadLink;
 		private final MultipleSelectionElement checkboxEl;
 		private DBCheckbox dbCheckbox;
+		private Float score = null;
 		
 		public CheckboxWrapper(Checkbox checkbox, DownloadLink downloadLink, MultipleSelectionElement checkboxEl) {
 			this.checkboxEl = checkboxEl;
 			this.downloadLink = downloadLink;
 			this.checkbox = checkbox;
+		}
+
+		public void setScore(Float score) {
+			this.score = score;
+		}
+
+		public String getScore() {
+			return AssessmentHelper.getRoundedScore(score);
 		}
 
 		public Checkbox getCheckbox() {

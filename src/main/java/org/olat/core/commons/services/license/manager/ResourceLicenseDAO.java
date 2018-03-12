@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.model.ResourceLicenseImpl;
 import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,18 +47,28 @@ class ResourceLicenseDAO {
 	@Autowired
 	private DB dbInstance;
 
-	ResourceLicense createAndPersist(OLATResourceable ores, LicenseType licenseType) {
-		return createAndPersist(ores, licenseType, null);
+	ResourceLicense createAndPersist(OLATResourceable resource, LicenseType licenseType) {
+		return createAndPersist(resource, licenseType, null);
 	}
 
-	ResourceLicense createAndPersist(OLATResourceable ores, LicenseType licenseType, String licensor) {
+	ResourceLicense createAndPersist(OLATResourceable resource, LicenseType licenseType, String licensor) {
+		return createAndPersist(resource, licenseType, licensor, null);
+	}
+
+	ResourceLicense createAndPersist(OLATResourceable resource, License license) {
+		return createAndPersist(resource, license.getLicenseType(), license.getLicensor(), license.getFreetext());
+	}
+	
+	private ResourceLicense createAndPersist(OLATResourceable resource, LicenseType licenseType, String licensor,
+			String freetext) {
 		ResourceLicenseImpl license = new ResourceLicenseImpl();
 		Date now = new Date();
 		license.setCreationDate(now);
 		license.setLastModified(now);
-		license.setOLATResourceable(ores);
+		license.setOLATResourceable(resource);
 		license.setLicenseType(licenseType);
 		license.setLicensor(licensor);
+		license.setFreetext(freetext);
 		dbInstance.getCurrentEntityManager().persist(license);
 		return license;
 	}
@@ -68,19 +79,19 @@ class ResourceLicenseDAO {
 		return license;
 	}
 
-	ResourceLicense loadByResource(OLATResourceable ores) {
-		if (ores == null) return null;
+	ResourceLicense loadByResource(OLATResourceable resource) {
+		if (resource == null) return null;
 		
 		String query = new StringBuilder(256)
 				.append("select license")
 				.append("  from license license")
-				.append("        inner join fetch license.licenseType as licenseType")
-				.append("  where license.resName=:resName and license.resId=:resId")
+				.append("       inner join fetch license.licenseType as licenseType")
+				.append(" where license.resName=:resName and license.resId=:resId")
 				.toString();
 		List<ResourceLicense> licenses = dbInstance.getCurrentEntityManager()
 				.createQuery(query, ResourceLicense.class)
-				.setParameter("resName", ores.getResourceableTypeName())
-				.setParameter("resId", ores.getResourceableId())
+				.setParameter("resName", resource.getResourceableTypeName())
+				.setParameter("resId", resource.getResourceableId())
 				.getResultList();
 		return licenses == null || licenses.isEmpty() ? null : licenses.get(0);
 	}
@@ -98,15 +109,31 @@ class ResourceLicenseDAO {
 		String query =  new StringBuilder(256)
 				.append("select license")
 				.append("  from license license")
-				.append("        inner join fetch license.licenseType as licenseType")
-				.append("  where license.resName in (:resNames)")
-				.append("    and license.resId in (:resIds)")
+				.append("       inner join fetch license.licenseType as licenseType")
+				.append(" where license.resName in (:resNames)")
+				.append("   and license.resId in (:resIds)")
 				.toString();
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, ResourceLicense.class)
 				.setParameter("resNames", resNames)
 				.setParameter("resIds", resIds)
 				.getResultList();
+	}
+
+	public void delete(OLATResourceable resource) {
+		if (resource == null) return;
+		
+		String query = new StringBuilder(256)
+				.append("delete ")
+				.append("  from license license")
+				.append(" where license.resName=:resName and license.resId=:resId")
+				.toString();
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("resName", resource.getResourceableTypeName())
+				.setParameter("resId", resource.getResourceableId())
+				.executeUpdate();
 	}
 	
 }

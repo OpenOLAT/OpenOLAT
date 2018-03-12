@@ -333,13 +333,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(editDueDatesCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				updateModel(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else 	if(editMultipleDueDatesCtrl == source) {
+		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel(ureq);
 			}
@@ -425,7 +419,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			task = gtaManager.getTask(row.getTask());
 		}
 
-		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, assessedIdentity, null, gtaNode, entry);
+		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, assessedIdentity, null, gtaNode, entry, courseEnv);
 		listenTo(editDueDatesCtrl);
 		
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
@@ -441,7 +435,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		if(rows.isEmpty()) {
 			showWarning("error.atleast.task");
 		} else {
-			List<Task> tasks = new ArrayList<Task>(rows.size());
+			List<Task> tasks = new ArrayList<>(rows.size());
 			RepositoryEntry entry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			for (CoachedIdentityRow row : rows) {
 				if(row.getTask() == null) {
@@ -453,7 +447,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				}
 			}
 	
-			editMultipleDueDatesCtrl = new EditMultipleDueDatesController(ureq, getWindowControl(), tasks, gtaNode, entry);
+			editMultipleDueDatesCtrl = new EditMultipleDueDatesController(ureq, getWindowControl(), tasks, gtaNode, entry, courseEnv);
 			listenTo(editMultipleDueDatesCtrl);
 			
 			String title = translate("duedates.multiple.user");
@@ -466,7 +460,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private boolean doToogleMark(UserRequest ureq, Long particiantKey) {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		Identity participant = securityManager.loadIdentityByKey(particiantKey);
-		boolean isMarked = gtaManager.toggleMark(entry, gtaNode, ureq.getIdentity(), participant);
-		return isMarked;
+		return gtaManager.toggleMark(entry, gtaNode, ureq.getIdentity(), participant);
 	}
 }

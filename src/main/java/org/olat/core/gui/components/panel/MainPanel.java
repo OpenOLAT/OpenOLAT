@@ -42,10 +42,12 @@ public class MainPanel extends SimpleStackedPanel {
 		super(name);
 	}
 
+	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
 
+	@Override
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 	}

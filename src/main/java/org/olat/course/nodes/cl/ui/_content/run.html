@@ -196,7 +196,12 @@
 				<h4 class="o_cl_title">
 					$r.escapeHtml($checkbox.title )
 					#if($withScore && $checkbox.pointsAvailable) 
-					<small>$r.translate("box.points.info", $checkbox.points)</small>
+						#if ($checkbox.score)
+							#set($params = [$checkbox.score,$checkbox.points])
+							<small>$r.translate("box.points.info.score", $params)</small>
+						#else 
+							<small>$r.translate("box.points.info", $checkbox.points)</small>
+						#end
 					#end
 				</h4>
 				#if($checkbox.description)

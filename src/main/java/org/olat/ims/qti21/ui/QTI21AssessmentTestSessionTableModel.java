@@ -137,7 +137,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		manualScore("table.header.manualScore"),
 		finalScore("table.header.finalScore"),
 		open("table.header.action"),
-		correction("table.header.action");
+		correction("table.header.correction");
 		
 		private final String i18nKey;
 		

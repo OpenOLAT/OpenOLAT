@@ -39,6 +39,7 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -49,9 +50,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
- * Description: <br>
- * TODO: alex Class Description
- * <P>
  * 
  * Initial Date: Sept 08, 2005 <br>
  * @author Alexander Schneider
@@ -117,15 +115,15 @@ public class DisplayPortraitManager implements UserDataDeletable {
 		return getPortraitResource(identityKey, PORTRAIT_SMALL_FILENAME);
 	}
 	
-	public MediaResource getBigPortraitResource(String String) {
-		return getPortraitResource(String, PORTRAIT_BIG_FILENAME);
+	public MediaResource getBigPortraitResource(String string) {
+		return getPortraitResource(string, PORTRAIT_BIG_FILENAME);
 	}
 	public MediaResource getBigPortraitResource(Long identityKey) {
 		return getPortraitResource(identityKey, PORTRAIT_BIG_FILENAME);
 	}
 	
-	public MediaResource getMasterPortraitResource(String String) {
-		return getPortraitResource(String, PORTRAIT_MASTER_FILENAME);
+	public MediaResource getMasterPortraitResource(String string) {
+		return getPortraitResource(string, PORTRAIT_MASTER_FILENAME);
 	}
 	public MediaResource getMasterPortraitResource(Long identityKey) {
 		return getPortraitResource(identityKey, PORTRAIT_MASTER_FILENAME);
@@ -349,10 +347,11 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	 * @return imageResource portrait
 	 */
 	public MediaResource getPortrait(File uploadDir, String portraitName){
-		MediaResource imageResource = null;
+		FileMediaResource imageResource = null;
 		File imgFile = new File(uploadDir, portraitName);
 		if (imgFile.exists()){
-			imageResource = new FileMediaResource(imgFile);	
+			imageResource = new FileMediaResource(imgFile);
+			imageResource.setCacheControlDuration(ServletUtil.CACHE_ONE_DAY);
 		}
 		return imageResource;
 	}

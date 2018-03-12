@@ -47,8 +47,8 @@ public class ArchiveResource implements MediaResource {
 	
 	private static final OLog log = Tracing.createLoggerFor(ArchiveResource.class);
 	
+	private static final String encoding = "UTF-8";
 	private final Locale locale;
-	private final String encoding = "UTF-8";
 	private final ArchiveOptions options;
 	private final CourseNode courseNode;
 	private final OLATResourceable courseOres;
@@ -61,6 +61,11 @@ public class ArchiveResource implements MediaResource {
 		this.courseOres = courseOres;
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return false;

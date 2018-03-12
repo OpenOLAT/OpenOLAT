@@ -40,7 +40,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -51,11 +50,10 @@ import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
 import org.olat.repository.RepositoryEntry;
 
 /**
- * Description: TODO
  * 
  * @author Alexander Schneider
  */
-public class QTIExportManager extends BasicManager{
+public class QTIExportManager {
 	
 	/**
 	 * <code>PACKAGE</code>

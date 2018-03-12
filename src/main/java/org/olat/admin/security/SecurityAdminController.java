@@ -39,8 +39,17 @@ import org.olat.core.gui.control.WindowControl;
  *
  */
 public class SecurityAdminController extends FormBasicController {
+
+	private static final String[] keys = new String[]{ "on" };
+	private static final String[] values = new String[]{ "" };
 	
-	private MultipleSelectionElement wikiEl, topFrameEl, forceDownloadEl, xFrameOptionsSameoriginEl;
+	private MultipleSelectionElement wikiEl;
+	private MultipleSelectionElement topFrameEl;
+	private MultipleSelectionElement forceDownloadEl;
+	
+	private MultipleSelectionElement strictTransportSecurityEl;
+	private MultipleSelectionElement xContentTypeOptionsEl;
+	private MultipleSelectionElement xFrameOptionsSameoriginEl;
 
 	private final FolderModule folderModule;
 	private final BaseSecurityModule securityModule;
@@ -57,9 +66,6 @@ public class SecurityAdminController extends FormBasicController {
 		setFormTitle("sec.title");
 		setFormDescription("sec.description");
 		setFormContextHelp("Security");
-
-		String[] keys = new String[]{ "on" };
-		String[] values = new String[]{ "" };
 		
 		// on: force top top frame (more security); off: allow in frame (less security)
 		topFrameEl = uifactory.addCheckboxesHorizontal("sec.topframe", "sec.topframe", formLayout, keys, values);
@@ -70,18 +76,36 @@ public class SecurityAdminController extends FormBasicController {
 
 		// on: send HTTP header X-FRAME-OPTIONS -> SAMEDOMAIN to prevent click-jack attacks. JS-top frame hack not save enough
 		xFrameOptionsSameoriginEl = uifactory.addCheckboxesHorizontal("sec.xframe.sameorigin", "sec.xframe.sameorigin", formLayout, keys, values);
-		xFrameOptionsSameoriginEl.select("off", securityModule.isXFrameOptionsSameoriginEnabled());
 		xFrameOptionsSameoriginEl.addActionListener(FormEvent.ONCHANGE);
+		if(securityModule.isXFrameOptionsSameoriginEnabled()) {
+			xFrameOptionsSameoriginEl.select("on", true);
+		}
+		
+		strictTransportSecurityEl = uifactory.addCheckboxesHorizontal("sec.strict.transport.sec", "sec.strict.transport.sec", formLayout, keys, values);
+		strictTransportSecurityEl.addActionListener(FormEvent.ONCHANGE);
+		if(securityModule.isStrictTransportSecurityEnabled()) {
+			strictTransportSecurityEl.select("on", true);
+		}
+		
+		xContentTypeOptionsEl = uifactory.addCheckboxesHorizontal("sec.content.type.options", "sec.content.type.options", formLayout, keys, values);
+		xContentTypeOptionsEl.addActionListener(FormEvent.ONCHANGE);
+		if(securityModule.isXContentTypeOptionsEnabled()) {
+			xContentTypeOptionsEl.select("on", true);
+		}
 
 		// on: block wiki (more security); off: do not block wiki (less security)
 		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, keys, values);
-		wikiEl.select("off", securityModule.isWikiEnabled());
 		wikiEl.addActionListener(FormEvent.ONCHANGE);
+		if(!securityModule.isWikiEnabled()) {
+			wikiEl.select("on", true);
+		}
 
 		// on: force file download in folder component (more security); off: allow execution of content (less security)
 		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", formLayout, keys, values);
-		forceDownloadEl.select("on", folderModule.isForceDownload());
 		forceDownloadEl.addActionListener(FormEvent.ONCHANGE);
+		if(folderModule.isForceDownload()) {
+			forceDownloadEl.select("on", true);
+		}
 	}
 	
 	@Override
@@ -95,16 +119,17 @@ public class SecurityAdminController extends FormBasicController {
 			boolean enabled = topFrameEl.isAtLeastSelected(1);
 			securityModule.setForceTopFrame(enabled);
 		} else if(wikiEl == source) {
-			boolean enabled = wikiEl.isAtLeastSelected(1);
-			securityModule.setWikiEnabled(!enabled);
+			securityModule.setWikiEnabled(!wikiEl.isAtLeastSelected(1));
 			// update collaboration tools list
 			CollaborationToolsFactory.getInstance().initAvailableTools();
 		} else if(xFrameOptionsSameoriginEl == source) {
-			boolean enabled = xFrameOptionsSameoriginEl.isAtLeastSelected(1);
-			securityModule.setXFrameOptionsSameoriginEnabled(enabled);
+			securityModule.setXFrameOptionsSameoriginEnabled(xFrameOptionsSameoriginEl.isAtLeastSelected(1));
+		} else if(strictTransportSecurityEl == source) {
+			securityModule.setStrictTransportSecurity(strictTransportSecurityEl.isAtLeastSelected(1));
+		} else if(xContentTypeOptionsEl == source) {
+			securityModule.setxContentTypeOptions(xContentTypeOptionsEl.isAtLeastSelected(1));
 		} else if(forceDownloadEl == source) {
-			boolean enabled = forceDownloadEl.isAtLeastSelected(1);
-			folderModule.setForceDownload(enabled);
+			folderModule.setForceDownload(forceDownloadEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

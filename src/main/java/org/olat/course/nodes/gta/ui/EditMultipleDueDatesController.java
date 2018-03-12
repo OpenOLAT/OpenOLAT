@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -34,8 +35,11 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskDueDate;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,15 +57,17 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	private GTACourseNode gtaNode;
 	private final Formatter formatter;
 	private final RepositoryEntry courseEntry;
+	private final CourseEnvironment courseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
 	
 	public EditMultipleDueDatesController(UserRequest ureq, WindowControl wControl, List<Task> tasks,
-			GTACourseNode gtaNode, RepositoryEntry courseEntry) {
+			GTACourseNode gtaNode, RepositoryEntry courseEntry, CourseEnvironment courseEnv) {
 		super(ureq, wControl);
 		this.tasks = tasks;
 		this.gtaNode = gtaNode;
+		this.courseEnv = courseEnv;
 		this.courseEntry = courseEntry;
 		formatter = Formatter.getInstance(getLocale());
 		initForm(ureq);
@@ -81,7 +87,18 @@ public class EditMultipleDueDatesController extends FormBasicController {
 		submissionDueDateEl.setDateChooserTimeEnabled(true);
 		DueDate standardSubmissionDueDate = gtaManager.getSubmissionDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(submissionDueDateEl, standardSubmissionDueDate);
-		submissionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT));
+		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
+		submissionDueDateEl.setVisible(submissionDeadline);
+		if(submissionDeadline) {
+			for(Task task:tasks) {
+				if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()) {
+					StaticTextElement warningReopenEl = uifactory.addStaticTextElement("reopen", translate("warning.reopen"), formLayout);
+					warningReopenEl.setElementCssClass("o_gta_reopen_warning");
+					warningReopenEl.setLabel(null, null);
+					break;
+				}
+			}
+		}
 		
 		revisionDueDateEl = uifactory.addDateChooser("revisions.duedate", null, formLayout);
 		revisionDueDateEl.setDateChooserTimeEnabled(true);
@@ -123,6 +140,16 @@ public class EditMultipleDueDatesController extends FormBasicController {
 			dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
 			dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
 			dueDates = gtaManager.updateTaskDueDate(dueDates);
+			
+			if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()
+					&& dueDates.getSubmissionDueDate() != null
+					&& dueDates.getSubmissionDueDate().after(ureq.getRequestTimestamp())) {
+				TaskProcess submit = gtaManager.previousStep(TaskProcess.review, gtaNode);//only submit allowed
+				if(submit == TaskProcess.submit) {
+					task = gtaManager.updateTask(task, submit, gtaNode, Role.coach);
+					gtaManager.log("Back to submission", "revert status of task back to submission", task, getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode);
+				}
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

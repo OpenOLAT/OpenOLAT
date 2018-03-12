@@ -21,7 +21,6 @@ package org.olat.course.assessment.ui.tool;
 
 import java.text.Collator;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -167,11 +166,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager()
 				.getParticipatingBusinessGroups(assessedIdentity);
 		final Collator collator = Collator.getInstance(getLocale());
-		Collections.sort(participantGroups, new Comparator<BusinessGroup>() {
-			@Override
-			public int compare(BusinessGroup a, BusinessGroup b) {
-				return collator.compare(a.getName(), b.getName());
-			}
+		Collections.sort(participantGroups, (a, b) -> {
+			return collator.compare(a.getName(), b.getName());
 		});
 		identityAssessmentVC.contextPut("participantGroups", participantGroups);
 	}
@@ -235,6 +231,6 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		 
+		//
 	}
 }

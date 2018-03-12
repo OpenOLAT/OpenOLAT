@@ -106,7 +106,7 @@ public class Tracing {
 	private static long __debugRefNum__ = 0;
 	
 	// VM local cache to have one logger object per class
-	private static final ConcurrentMap<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<Class<?>, OLog>();
+	private static final ConcurrentMap<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<>();
 
 	/**
 	 * per-thread singleton holding the actual HttpServletRequest which is the
@@ -377,7 +377,7 @@ public class Tracing {
 			}
 		}
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		if (Settings.isDebuging()) {
 			// Short version for console output during debugging
 			if (userObj != null) {
@@ -439,7 +439,7 @@ public class Tracing {
 			referer = ureq.getHeader("Referer");
 		}
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(2048);
 		if (!Settings.isDebuging()) {
 			sb.append(PREFIX);
 			sb.append(category);

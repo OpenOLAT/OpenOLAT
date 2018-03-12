@@ -239,7 +239,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 			task = gtaManager.getTask(row.getTask());
 		}
 
-		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, null, assessedGroup, gtaNode, entry);
+		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, null, assessedGroup, gtaNode, entry, courseEnv);
 		listenTo(editDueDatesCtrl);
 		
 		String title = translate("duedates.user", new String[] { StringHelper.escapeHtml(assessedGroup.getName()) });

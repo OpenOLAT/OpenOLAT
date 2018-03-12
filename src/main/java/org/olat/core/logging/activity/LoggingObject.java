@@ -126,8 +126,8 @@ public class LoggingObject extends PersistentObject {
 	 * may throw IllegalArgumentExceptions if it doesn't like your input.
 	 * <p>
 	 * @param sessionId the id of the session - which is directly stored to the database
-	 * @param identityKey TODO
-	 * @param identityName TODO
+	 * @param identityKey The identity primary key
+	 * @param identityName The user name
 	 * @param actionCrudType the crudAction type
 	 * @param action - the actual log message
 	 */

@@ -53,6 +53,11 @@ public class OAuthResource implements MediaResource {
 	}
 	
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}

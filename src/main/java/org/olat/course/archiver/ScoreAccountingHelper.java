@@ -412,10 +412,10 @@ public class ScoreAccountingHelper {
 		}
 
 		List<Identity> assessedList = courseEnv.getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(userSet);
-		if(assessedList.size() > 0) {
+		if(!assessedList.isEmpty()) {
 			userSet.addAll(assessedList);
 		}
-		return new ArrayList<Identity>(userSet);
+		return new ArrayList<>(userSet);
 	}
 	
 	public static List<Identity> loadUsers(CourseEnvironment courseEnv, ArchiveOptions options) {

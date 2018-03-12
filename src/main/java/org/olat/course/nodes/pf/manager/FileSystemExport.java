@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -71,6 +72,11 @@ public class FileSystemExport implements MediaResource {
 		this.courseEnv = courseEnv;
 		this.translator = Util.createPackageTranslator(PFRunController.class, locale);
 
+	}
+	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
 	}
 
 	@Override

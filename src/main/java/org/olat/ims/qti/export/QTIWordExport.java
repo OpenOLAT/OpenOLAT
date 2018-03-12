@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.olat.core.gui.media.MediaResource;
@@ -88,6 +87,11 @@ public class QTIWordExport implements MediaResource {
 	}
 	
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
@@ -125,8 +129,9 @@ public class QTIWordExport implements MediaResource {
 			log.error("", e);
 		}
 
-		ZipOutputStream zout = null;
-		try {
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
+			zout.setLevel(9);
+			
 			String label = rootNode.getTitle();
 			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
 
@@ -134,8 +139,6 @@ public class QTIWordExport implements MediaResource {
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 			
-			zout = new ZipOutputStream(hres.getOutputStream());
-			zout.setLevel(9);
 
 			ZipEntry test = new ZipEntry(secureLabel + ".docx");
 			zout.putNextEntry(test);
@@ -150,7 +153,6 @@ public class QTIWordExport implements MediaResource {
 			log.error("", e);
 		} finally {
 			latch.countDown();
-			IOUtils.closeQuietly(zout);
 		}
 	}
 	

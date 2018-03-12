@@ -68,8 +68,6 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 	@Override
 	public QuestionItem createItem(Identity owner, String title, Locale locale) {
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
-		QuestionItem newItem = spi.createItem(owner, type, title, locale);
-		//QTI21EditorController ctrl = new QTI21EditorController(ureq, wControl, newItem);
-		return newItem;
+		return spi.createItem(owner, type, title, locale);
 	}
 }

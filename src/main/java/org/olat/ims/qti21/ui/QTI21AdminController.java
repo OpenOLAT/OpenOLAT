@@ -41,6 +41,7 @@ import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.crypto.X509CertificatePrivateKeyPair;
 import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti21.QTI21Module;
+import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,13 +54,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21AdminController extends FormBasicController {
 	
-	private static final String PASSWORD_PLACEHOLDER = "xOOx32x00x";
+	private static final String PLACEHOLDER = "xOOx32x00x";
 
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
 	private FormLink validationButton;
-	private MultipleSelectionElement mathExtensionEl, digitalSignatureEl, createQTI12resourcesEl;
+	private MultipleSelectionElement mathExtensionEl;
+	private MultipleSelectionElement digitalSignatureEl;
+	private MultipleSelectionElement createQTI12resourcesEl;
+	private MultipleSelectionElement anonymCorrectionWorkflowEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
 	
@@ -117,10 +121,16 @@ public class QTI21AdminController extends FormBasicController {
 		}
 		
 		String certificatePassword = qti21Module.getDigitalSignatureCertificatePassword();
-		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PASSWORD_PLACEHOLDER : "";
+		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PLACEHOLDER : "";
 		certificatePasswordEl = uifactory.addPasswordElement("digital.signature.certificate.password", "digital.signature.certificate.password",
 				256, password, layoutCont);
 		certificatePasswordEl.setAutocomplete("new-password");
+		
+		anonymCorrectionWorkflowEl = uifactory.addCheckboxesHorizontal("correction.workflow", "correction.workflow", layoutCont,
+				onKeys, new String[] { translate("correction.workflow.anonymous") });
+		if(qti21Module.getCorrectionWorkflow() == CorrectionWorkflow.anonymous) {
+			anonymCorrectionWorkflowEl.select(onKeys[0], true);
+		}
 
 		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", layoutCont,
 				onKeys, onValues);
@@ -156,7 +166,7 @@ public class QTI21AdminController extends FormBasicController {
 			}
 		} else {
 			String password = certificatePasswordEl.getValue();
-			if(!PASSWORD_PLACEHOLDER.equals(password) && certificateEl.getInitialFile() != null) {
+			if(!PLACEHOLDER.equals(password) && certificateEl.getInitialFile() != null) {
 				allOk &= validateCertificatePassword(certificateEl.getInitialFile());
 			}
 		}
@@ -218,7 +228,9 @@ public class QTI21AdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		qti12Module.setCreateResourcesEnabled(createQTI12resourcesEl.isSelected(0));
-		
+		CorrectionWorkflow correctionWf = anonymCorrectionWorkflowEl.isAtLeastSelected(1)
+				? CorrectionWorkflow.anonymous : CorrectionWorkflow.named;
+		qti21Module.setCorrectionWorkflow(correctionWf);
 		qti21Module.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
 		qti21Module.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
 		if(digitalSignatureEl.isSelected(0)) {
@@ -230,7 +242,7 @@ public class QTI21AdminController extends FormBasicController {
 				certificateEl.setInitialFile(newFile);
 			}
 			String password = certificatePasswordEl.getValue();
-			if(!PASSWORD_PLACEHOLDER.equals(password)) {
+			if(!PLACEHOLDER.equals(password)) {
 				qti21Module.setDigitalSignatureCertificatePassword(password);
 			}
 		}

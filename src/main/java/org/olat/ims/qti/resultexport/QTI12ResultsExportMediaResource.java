@@ -103,6 +103,11 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	}
 
 	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptRanges() {
 		return false;
 	}
@@ -139,8 +144,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 	
-		try {
-			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream()); 
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {	
 			zout.setLevel(9);
 								
 			List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
@@ -159,9 +163,6 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 			fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
 			File qtiJs = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
 			ZipUtil.addDirectoryToZip(qtiJs.toPath(), exportFolderName + "/js/jquery", zout);
-
-			zout.close();
-
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
 		}

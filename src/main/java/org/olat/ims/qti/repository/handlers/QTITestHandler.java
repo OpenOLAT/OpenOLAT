@@ -35,13 +35,17 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.QTIModule;
@@ -63,7 +67,6 @@ import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 
 import de.bps.onyx.plugin.OnyxModule;
-import de.bps.onyx.plugin.run.OnyxRunController;
 
 
 /**
@@ -94,11 +97,7 @@ public class QTITestHandler extends QTIHandler {
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		ResourceEvaluation eval = TestFileResource.evaluate(file, filename);
-		if(!eval.isValid() && CoreSpringFactory.getImpl(OnyxModule.class).isEnabled()) {
-			eval = OnyxModule.isOnyxTest(file, filename);
-		}
-		return eval;
+		return TestFileResource.evaluate(file, filename);
 	}
 
 	@Override
@@ -153,8 +152,8 @@ public class QTITestHandler extends QTIHandler {
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					if (OnyxModule.isOnyxTest(res)) {
-						// <OLATCE-1054>
-						runController = new OnyxRunController(uureq, wwControl, entry, false);
+						Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+						runController = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 					} else {
 						Resolver resolver = new ImsRepositoryResolver(entry);
 						IQSecurityCallback secCallback = new IQPreviewSecurityCallback();

@@ -383,7 +383,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI12Page(browser);
 		qtiPage
 			.options()
-			.showResults(Boolean.TRUE, new QTI21AssessmentResultsOptions(true, true, false, false, false, false))
+			.showResults(Boolean.TRUE, new QTI21AssessmentResultsOptions(true, true, false, false, false))
 			.save();
 		
 		//check simple time limit

@@ -1255,7 +1255,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	private void addToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group, MailPackage mailing,
-			List<BusinessGroupModifiedEvent.Deferred> events) {
+								  List<BusinessGroupModifiedEvent.Deferred> events) {
+		if (!businessGroupRelationDAO.hasRole(identity, group, GroupRoles.waiting.name())) {
+			internalAddToWaitingList(ureqIdentity, identity, group, mailing, events);
+		}
+	}
+
+	/**
+	 * This method is for internal usage only. It adds the identity to to group without synchronization or checks!
+	 *
+	 */
+	private void internalAddToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group, MailPackage mailing,
+										  List<BusinessGroupModifiedEvent.Deferred> events) {
 		businessGroupRelationDAO.addRole(identity, group, GroupRoles.waiting.name());
 
 		// notify currently active users of this business group
@@ -1289,7 +1300,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					response.getIdentitiesAlreadyInGroup().add(identity);
 				} else {
 					// identity has permission and is not already in group => add it
-					addToWaitingList(ureqIdentity, identity, currBusinessGroup, mailing, events);
+					internalAddToWaitingList(ureqIdentity, identity, currBusinessGroup, mailing, events);
 					response.getAddedIdentities().add(identity);
 				}
 			}

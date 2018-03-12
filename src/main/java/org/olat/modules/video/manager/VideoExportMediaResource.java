@@ -32,6 +32,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -65,6 +66,11 @@ public class VideoExportMediaResource implements MediaResource {
 	VideoExportMediaResource(VFSContainer baseContainer, String title) {
 		this.baseContainer = baseContainer;
 		this.title = title;
+	}
+
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_NO_CACHE;
 	}
 
 	@Override

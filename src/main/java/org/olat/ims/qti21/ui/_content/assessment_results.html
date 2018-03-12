@@ -450,40 +450,31 @@
 			</div>
 		#end
 		
-		#foreach($itemInteraction in $itemResult.interactionResults)
-			#if($r.isNotNull($itemInteraction.responseFormItem.name) || $r.isNotNull($itemInteraction.solutionFormItem.name))
-			<div class="row #if(!$foreach.hasNext && !$r.isNotNull($itemResult.correctSolutionItem)) o_block_bottom #end">
-				#if($r.isNotNull($itemInteraction.responseFormItem.name) && $r.isNotNull($itemInteraction.solutionFormItem.name))
-					<div class="col-xs-6"><h4>$r.translate("response")</h4>
-						$r.render($itemInteraction.responseFormItem.name)
-					</div>
-					<div class="col-xs-6"><h4>$r.translate("solution")</h4>
-						$r.render($itemInteraction.solutionFormItem.name)
-					</div>
-				#elseif($r.isNotNull($itemInteraction.responseFormItem.name))
-					<div class="col-xs-12"><h4>$r.translate("response")</h4>
-						$r.render($itemInteraction.responseFormItem.name)
-					</div>
-				#else
-					<div class="col-xs-12"><h4>$r.translate("solution")</h4>
-						$r.render($itemInteraction.solutionFormItem.name)
-					</div>
-				#end
-			</div>
+		#if($r.isNotNull($itemResult.interactionResults))
+			#if($r.isNotNull($itemResult.interactionResults.responseFormItem.name))
+				<h4>$r.translate("response")</h4>
+				<div>$r.render($itemResult.interactionResults.responseFormItem.name)</div>
+			#end
+			#if($r.isNotNull($itemResult.interactionResults.solutionFormItem.name))
+				<h4 data-toggle="collapse" data-target="#collapse_${itemResult.interactionResults.solutionFormItem.name}">
+					#if(!$printCommand)<i id="collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>#end $r.translate("solution")</h4>
+				<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="panel-collapse #if(!$printCommand) collapse #end">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
+				<script type="text/javascript">
+					/* <![CDATA[ */
+						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').on('hide.bs.collapse', function () {
+							jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+						})
+						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').on('show.bs.collapse', function () {
+							jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+						})
+					/* ]]> */
+				</script>
 			#end
 		#end
 	
 		#if($r.isNotNull($itemResult.correctSolutionItem))
-			<div class="row o_block_bottom">
-			#if(${itemResult.hasResponses()} && ${itemResult.hasSolutions()})
-				<div class="col-sm-offset-6 col-sm-6">
-					$r.render($itemResult.correctSolutionItem.name)
-				</div>
-			#else
-				<div class="col-sm-12">
-					$r.render($itemResult.correctSolutionItem.name)
-				</div>
-			#end
+			<div class="o_block_bottom">
+				$r.render($itemResult.correctSolutionItem.name)
 			</div>
 		#end
 		

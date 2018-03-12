@@ -123,8 +123,7 @@ public class ArquillianDeployments {
 		return archive
 				.addAsWebInfResource(new File(WEBINF, "olat_portals_links.xsd"), "olat_portals_links.xsd")
 				.addAsWebInfResource(new File(WEBINF, "olat_portals_links.xml"), "olat_portals_links.xml")
-				.addAsWebInfResource(new File(WEBINF, "olat_portals_institution.xml"), "olat_portals_institution.xml")
-				.addAsWebInfResource(new File(WEBINF, "sun-jaxws.xml"), "sun-jaxws.xml");
+				.addAsWebInfResource(new File(WEBINF, "olat_portals_institution.xml"), "olat_portals_institution.xml");
 	}
 	
 	public static WebArchive addWebResourceRecursive(File root, String startPath, FileFilter filter, WebArchive archive) {
@@ -257,6 +256,7 @@ public class ArquillianDeployments {
 			this.properties = properties;
 		}
 
+		@Override
 		public String resolvePlaceholder(String placeholderName) {
 			try {
 				String propVal = System.getProperty(placeholderName);

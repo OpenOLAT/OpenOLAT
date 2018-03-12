@@ -24,6 +24,7 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -40,6 +41,11 @@ public class CertificateMediaResource implements MediaResource {
 	public CertificateMediaResource(String filename, VFSLeaf certificate) {
 		this.certificate = certificate;
 		this.filename = filename;
+	}
+	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_ONE_DAY;
 	}
 	
 	@Override

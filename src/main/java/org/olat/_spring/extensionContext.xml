@@ -304,26 +304,6 @@
 			</property>
 	</bean>
 	
-	<!-- Devel / snoop user session -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-			<property name="order" value="15110" />
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.admin.sysinfo.UserSessionSnoopController"/>
-				</bean>
-			</property>
-			<property name="navigationKey" value="snoop" />
-			<property name="parentTreeNodeIdentifier" value="develParent" /> 
-			<property name="translationPackage" value="org.olat.admin"/>
-			<property name="i18nActionKey" value="menu.snoop"/>
-			<property name="i18nDescriptionKey" value="menu.snoop.alt"/>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.admin.SystemAdminMainController</value>		
-				</list>
-			</property>
-	</bean>
-	
 	<!-- Privacy admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7423" />

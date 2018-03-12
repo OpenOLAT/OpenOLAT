@@ -66,7 +66,7 @@ public class Archive_1_SelectNodeStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		if(!runContext.containsKey("archiver")) {
-			runContext.put("archiver", new QTIArchiver(courseOres, ureq.getIdentity(), ureq.getLocale()));
+			runContext.put("archiver", new QTIArchiver(courseOres, ureq.getLocale()));
 		}
 		return new SelectNodeController(ureq, wControl, form, nodeList, runContext);
 	}
@@ -104,7 +104,7 @@ public class Archive_1_SelectNodeStep extends BasicStep {
 			if(source == selectCtrl) {
 				if(event instanceof SelectTestOrSurveyEvent) {
 					QTIArchiver archiver = ((QTIArchiver)getFromRunContext("archiver"));
-					if(archiver.getType() == Type.onyx || (archiver.getType() == Type.qti12 && !advanced)) {
+					if(archiver.getType() == Type.qti12 && !advanced) {
 						fireEvent(ureq, StepsEvent.INFORM_FINISHED);	
 					} else {
 						fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

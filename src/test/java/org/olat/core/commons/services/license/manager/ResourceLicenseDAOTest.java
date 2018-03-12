@@ -77,6 +77,30 @@ public class ResourceLicenseDAOTest extends OlatTestCase {
 		assertThat(license.getCreationDate()).isNotNull();
 		assertThat(license.getLastModified()).isNotNull();
 	}
+	
+	@Test
+	public void shouldCreateAndPersistRawLicense() {
+		OLATResourceable oresTarget = JunitTestHelper.createRandomResource();
+		OLATResourceable oresSource = JunitTestHelper.createRandomResource();
+		LicenseType licenseType = licenseTypeDao.create("name");
+		licenseType = licenseTypeDao.save(licenseType);
+		String licensor = "licensor";
+		String freetext = "freetext";
+		ResourceLicense sourceLicense = licenseDao.createAndPersist(oresSource, licenseType, licensor);
+		sourceLicense.setFreetext(freetext);
+		sourceLicense = licenseDao.save(sourceLicense);
+		dbInstance.commitAndCloseSession();
+		
+		ResourceLicense targetLicense = licenseDao.createAndPersist(oresTarget, sourceLicense);
+		
+		assertThat(targetLicense.getResName()).isEqualTo(oresTarget.getResourceableTypeName());
+		assertThat(targetLicense.getResId()).isEqualTo(oresTarget.getResourceableId());
+		assertThat(targetLicense.getLicenseType()).isEqualTo(sourceLicense.getLicenseType());
+		assertThat(targetLicense.getLicensor()).isEqualTo(sourceLicense.getLicensor());
+		assertThat(targetLicense.getFreetext()).isEqualTo(sourceLicense.getFreetext());
+		assertThat(targetLicense.getCreationDate()).isNotNull();
+		assertThat(targetLicense.getLastModified()).isNotNull();
+	}
 
 	@Test
 	public void shouldUpdateLicense() {
@@ -131,6 +155,25 @@ public class ResourceLicenseDAOTest extends OlatTestCase {
 		
 		assertThat(loadedLicenses).containsExactly(license1, license2, license3);
 	}
+	
+	@Test
+	public void shoulDeleteLicenseOfResource() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		LicenseType licenseType = licenseTypeDao.create("name");
+		licenseType = licenseTypeDao.save(licenseType);
+		licenseDao.createAndPersist(ores, licenseType);
+		dbInstance.commitAndCloseSession();
+		
+		ResourceLicense loadedLicense = licenseDao.loadByResource(ores);
+		assertThat(loadedLicense).isNotNull();
+		
+		licenseDao.delete(ores);
+		dbInstance.commitAndCloseSession();
+		
+		loadedLicense = licenseDao.loadByResource(ores);
+		assertThat(loadedLicense).isNull();
+	}
+
 
 
 }

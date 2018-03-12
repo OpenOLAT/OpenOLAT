@@ -79,10 +79,14 @@ public class LicenseUIFactory {
 	}
 	
 	public static String getCssOrDefault(LicenseType licenseType) {
-		if (licenseType != null && StringHelper.containsNonWhitespace(licenseType.getCssClass())) {
-			return licenseType.getCssClass();
+		String cssClass = "";
+		if (licenseType != null)
+			if (StringHelper.containsNonWhitespace(licenseType.getCssClass())) {
+				cssClass = licenseType.getCssClass();
+			} else {
+				cssClass = "o_icon_lic_general";
 		}
-		return "o_icon_lic_general";
+		return cssClass;
 	}
 
 }

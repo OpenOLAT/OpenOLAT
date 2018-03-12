@@ -79,6 +79,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentItemSessionRef;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestHelper;
@@ -138,6 +139,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.serialization.SaxFiringOptions;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPartSessionState;
@@ -371,8 +373,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject) {
 		try(FileOutputStream out = new FileOutputStream(resourceFile)) {
-			qtiSerializer().serializeJqtiObject(assessmentObject, out);
-			//TODO qti
+			final XsltSerializationOptions xsltSerializationOptions = new XsltSerializationOptions();
+	        xsltSerializationOptions.setIndenting(false);	
+			qtiSerializer().serializeJqtiObject(assessmentObject, new StreamResult(out), new SaxFiringOptions(), xsltSerializationOptions);
 			assessmentTestsCache.remove(resourceFile);
 			assessmentItemsCache.remove(resourceFile);
 			return true;
@@ -523,6 +526,30 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session) {
 		return testSessionDao.loadByKey(session.getKey());
 	}
+	
+	
+
+	@Override
+	public AssessmentTestSession recalculateAssessmentTestSessionScores(Long sessionKey) {
+		dbInstance.commit();
+		
+		//fresh and lock by the identity assessmentItem controller
+		AssessmentTestSession candidateSession = getAssessmentTestSession(sessionKey);
+
+		BigDecimal totalScore = BigDecimal.valueOf(0l);
+		BigDecimal totalManualScore = BigDecimal.valueOf(0l);
+		List<AssessmentItemSession> itemResults = itemSessionDao.getAssessmentItemSessions(candidateSession);
+		for(AssessmentItemSession itemResult:itemResults) {
+			if(itemResult.getManualScore() != null) {
+				totalManualScore = totalManualScore.add(itemResult.getManualScore());
+			} else if(itemResult.getScore() != null) {
+				totalScore = totalScore.add(itemResult.getScore());
+			}
+		}
+		candidateSession.setScore(totalScore);
+		candidateSession.setManualScore(totalManualScore);
+		return testSessionDao.update(candidateSession);
+	}
 
 	@Override
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session) {
@@ -635,6 +662,19 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef) {
 		return itemSessionDao.getAssessmentItemSessions(courseEntry, subIdent, testEntry, itemRef);
+	}
+
+	@Override
+	public AssessmentItemSession getAssessmentItemSession(AssessmentItemSessionRef candidateSession) {
+		if(candidateSession == null) return null;
+		return itemSessionDao.loadByKey(candidateSession.getKey());
+	}
+
+	@Override
+	public int setAssessmentItemSessionReviewFlag(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef, boolean toReview) {
+		int rows = itemSessionDao.setAssessmentItemSessionReviewFlag(courseEntry, subIdent, testEntry, itemRef, toReview);
+		dbInstance.commit();
+		return rows;
 	}
 
 	@Override
@@ -1354,9 +1394,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data) {
 		File submissionDir = getSubmissionDirectory(candidateSession);
-        
-        FileOutputStream out = null;
-        try {
+
         	//add the date in the file
         	String extension = FileUtils.getFileSuffix(filename);
         	if(extension != null && extension.length() > 0) {
@@ -1369,20 +1407,18 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         	String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
         	
         	//make sure we don't overwrite an existing file
-			File submittedFile = new File(submissionDir, datedFilename);
-			String renamedFile = FileUtils.rename(submittedFile);
-			if(!datedFilename.equals(renamedFile)) {
-				submittedFile = new File(submissionDir, datedFilename);
-			}
-			
-			out = new FileOutputStream(submittedFile);
+		File submittedFile = new File(submissionDir, datedFilename);
+		String renamedFile = FileUtils.rename(submittedFile);
+		if(!datedFilename.equals(renamedFile)) {
+			submittedFile = new File(submissionDir, datedFilename);
+		}
+		
+		try(FileOutputStream out = new FileOutputStream(submittedFile)) {
 			out.write(data);
 			return submittedFile;
 		} catch (IOException e) {
 			log.error("", e);
 			return null;
-		} finally {
-			IOUtils.closeQuietly(out);
 		}
 	}
 
@@ -1390,19 +1426,19 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile) {
 		File submissionDir = getSubmissionDirectory(candidateSession);
         
-        try {
-        	//add the date in the file
-        	String filename = multipartFile.getFileName();
-        	String extension = FileUtils.getFileSuffix(filename);
-        	if(extension != null && extension.length() > 0) {
-        		filename = filename.substring(0, filename.length() - extension.length() - 1);
-        		extension = "." + extension;
-        	} else {
-        		extension = "";
-        	}
-        	String date = testSessionDao.formatDate(new Date());
-        	String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
-        	//make sure we don't overwrite an existing file
+		try {
+			//add the date in the file
+			String filename = multipartFile.getFileName();
+			String extension = FileUtils.getFileSuffix(filename);
+			if(extension != null && extension.length() > 0) {
+				filename = filename.substring(0, filename.length() - extension.length() - 1);
+				extension = "." + extension;
+			} else {
+				extension = "";
+			}
+			String date = testSessionDao.formatDate(new Date());
+			String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
+			//make sure we don't overwrite an existing file
 			File submittedFile = new File(submissionDir, datedFilename);
 			String renamedFile = FileUtils.rename(submittedFile);
 			if(!datedFilename.equals(renamedFile)) {

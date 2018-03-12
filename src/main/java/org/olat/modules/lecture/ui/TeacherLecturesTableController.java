@@ -24,7 +24,6 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
@@ -302,7 +301,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants, rollCalls);
 			ureq.getDispatchResult().setResultingMediaResource(export);
-		} catch (COSVisitorException | IOException | TransformerException e) {
+		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}
 	}
@@ -315,7 +314,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants);
 			ureq.getDispatchResult().setResultingMediaResource(export);
-		} catch (COSVisitorException | IOException | TransformerException e) {
+		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}
 	}

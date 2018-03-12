@@ -42,6 +42,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
+ * The cache control is set to one hour.
+ * 
  * @author Mike Stock
  */
 public class HttpRequestMediaResource implements MediaResource {
@@ -57,6 +59,11 @@ public class HttpRequestMediaResource implements MediaResource {
 		this.response = response;
 	}
 	
+	@Override
+	public long getCacheControlDuration() {
+		return ServletUtil.CACHE_ONE_HOUR;
+	}
+
 	@Override
 	public boolean acceptRanges() {
 		return false;
@@ -105,7 +112,7 @@ public class HttpRequestMediaResource implements MediaResource {
 				DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
 				Date d = df.parse(h.getValue());
 				long l = d.getTime();
-				return new Long(l);
+				return Long.valueOf(l);
 			} catch (ParseException e) {
 				//
 			}
@@ -113,9 +120,6 @@ public class HttpRequestMediaResource implements MediaResource {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
 	@Override
 	public void release() {
 		if(response instanceof Closeable) {
@@ -123,9 +127,6 @@ public class HttpRequestMediaResource implements MediaResource {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		//deliver content-disposition if available to forward this information 

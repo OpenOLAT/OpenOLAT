@@ -39,6 +39,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.id.Identity;
@@ -149,6 +150,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private ReminderDAO reminderDao;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
+	@Autowired
+	private LicenseService licenseService;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -247,6 +250,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 		copyEntry = handler.copy(author, sourceEntry, copyEntry);
+		
+		//copy the license
+		licenseService.copy(sourceResource, copyResource);
 
 		//copy the image
 		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
@@ -427,6 +433,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		dbInstance.commit();
 		//delete lectures
 		CoreSpringFactory.getImpl(LectureService.class).delete(entry);
+		dbInstance.commit();
+		//delete license
+		CoreSpringFactory.getImpl(LicenseService.class).delete(resource);
 		dbInstance.commit();
 		//detach portfolio if there are some lost
 		CoreSpringFactory.getImpl(PortfolioService.class).detachCourseFromBinders(entry);

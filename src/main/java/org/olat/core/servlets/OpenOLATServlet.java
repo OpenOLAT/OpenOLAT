@@ -43,6 +43,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.MapperDispatcher;
 import org.olat.core.extensions.ExtManager;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -72,7 +73,6 @@ public class OpenOLATServlet extends HttpServlet {
     
 	private String legacyContext;
 	
-	private DispatcherModule dispatcherModule;
 	private SessionStatsManager sessionStatsManager;
 	private RequestBasedLogLevelManager requestBasedLogLevelManager;
 	
@@ -103,9 +103,9 @@ public class OpenOLATServlet extends HttpServlet {
 		FrameworkStartupEventChannel.fireEvent();
 		log.info("FrameworkStartupEvent processed by alle listeners. Webapp has started.");
 		sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
-		dispatcherModule = CoreSpringFactory.getImpl(DispatcherModule.class);
+		DispatcherModule dispatcherModule = CoreSpringFactory.getImpl(DispatcherModule.class);
 		
-		dispatchers = new HashMap<String, Dispatcher>(dispatcherModule.getDispatchers());
+		dispatchers = new HashMap<>(dispatcherModule.getDispatchers());
 		dispatchers.put(DispatcherModule.PATH_MAPPED, new MapperDispatcher());
 		dispatchers.put(DispatcherModule.PATH_GLOBAL_MAPPED,  GlobalMapperRegistry.getInstance());
 		
@@ -141,10 +141,6 @@ public class OpenOLATServlet extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		/*if(!req.getPathInfo().startsWith("/m/")) {
-			log.info(req.getMethod() + " :: " + req.getPathInfo());
-			ServletUtil.printOutRequestParameters(req);
-		}*/
 
 		Tracing.setUreq(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
@@ -213,6 +209,7 @@ public class OpenOLATServlet extends HttpServlet {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
+	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException {
 		executeUserRequest(request, response);
@@ -227,6 +224,7 @@ public class OpenOLATServlet extends HttpServlet {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
+	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		executeUserRequest(request, response);
@@ -301,11 +299,14 @@ public class OpenOLATServlet extends HttpServlet {
 					if(index > 0) {
 						String redirectUri = Settings.getServerContextPathURI() + uri.substring(index, uri.length());
 						response.sendRedirect(redirectUri);
+						ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 					} else {
 						response.sendError(HttpServletResponse.SC_NOT_FOUND);
+						ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 					}
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+					ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
 				}
 			}
 		}
@@ -315,5 +316,6 @@ public class OpenOLATServlet extends HttpServlet {
 	throws IOException {
 		String dmzUri = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
 		response.sendRedirect(dmzUri);
+		ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_NO_CACHE);
 	}
 }

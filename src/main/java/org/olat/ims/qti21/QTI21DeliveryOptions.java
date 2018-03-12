@@ -36,6 +36,7 @@ public class QTI21DeliveryOptions {
 	private boolean enableSuspend;
 	private boolean displayScoreProgress;
 	private boolean displayQuestionProgress;
+	private boolean displayMaxScoreItem;
 	
 	private boolean showMenu;
 	private boolean showTitles;
@@ -92,6 +93,14 @@ public class QTI21DeliveryOptions {
 		this.displayQuestionProgress = displayQuestionProgress;
 	}
 	
+	public boolean isDisplayMaxScoreItem() {
+		return displayMaxScoreItem;
+	}
+
+	public void setDisplayMaxScoreItem(boolean displayMaxScoreItem) {
+		this.displayMaxScoreItem = displayMaxScoreItem;
+	}
+
 	public boolean isHideFeedbacks() {
 		return hideFeedbacks;
 	}
@@ -226,6 +235,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.enableSuspend = false;
 		defaultSettings.displayScoreProgress = false;
 		defaultSettings.displayQuestionProgress = false;
+		defaultSettings.displayMaxScoreItem = true;
 		defaultSettings.hideFeedbacks = false;
 		defaultSettings.hideLms = true;
 		defaultSettings.showMenu = true;
@@ -247,6 +257,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.enableSuspend = true;
 		defaultSettings.displayScoreProgress = true;
 		defaultSettings.displayQuestionProgress = true;
+		defaultSettings.displayMaxScoreItem = true;
 		defaultSettings.hideFeedbacks = false;
 		defaultSettings.hideLms = true;
 		defaultSettings.showMenu = true;
@@ -269,6 +280,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.enableSuspend = false;
 		defaultSettings.displayScoreProgress = false;
 		defaultSettings.displayQuestionProgress = true;
+		defaultSettings.displayMaxScoreItem = true;
 		defaultSettings.hideFeedbacks = true;
 		defaultSettings.hideLms = true;
 		defaultSettings.showMenu = true;
@@ -292,6 +304,7 @@ public class QTI21DeliveryOptions {
 		clone.enableSuspend = enableSuspend;
 		clone.displayScoreProgress = displayScoreProgress;
 		clone.displayQuestionProgress = displayQuestionProgress;
+		clone.displayMaxScoreItem = displayMaxScoreItem;
 		clone.hideFeedbacks = hideFeedbacks;
 		clone.hideLms = hideLms;
 		clone.showMenu = showMenu;
