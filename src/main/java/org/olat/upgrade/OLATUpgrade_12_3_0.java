@@ -58,6 +58,7 @@ import org.olat.upgrade.legacy.DialogPropertyElements;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.ConversionException;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -279,10 +280,16 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		
 			String value = property.getTextValue();
 			if(StringHelper.containsNonWhitespace(value)) {
-				DialogPropertyElements propertyElements = (DialogPropertyElements)xstream.fromXML(value);
-				List<DialogElement> elements = propertyElements.getDialogPropertyElements();
-				for(DialogElement element:elements) {
-					createDialogElement(element, entry, category);
+				try {
+					DialogPropertyElements propertyElements = (DialogPropertyElements)xstream.fromXML(value);
+					List<DialogElement> elements = propertyElements.getDialogPropertyElements();
+					for(DialogElement element:elements) {
+						createDialogElement(element, entry, category);
+					}
+				} catch (ConversionException e) {
+					log.error("Cannot read following dialog element of course: " + entry.getKey() + " with property: " + property.getKey(), e);
+				} catch (Exception e) {
+					log.error("Error converting following dialog element of course: " + entry.getKey() + " with property: " + property.getKey(), e);
 				}
 			}
 		}
