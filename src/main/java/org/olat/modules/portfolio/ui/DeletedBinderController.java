@@ -84,7 +84,8 @@ public class DeletedBinderController extends BinderListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		model.getTableColumnModel().addFlexiColumnModel(new DefaultFlexiColumnModel("restore.binder", translate("restore.binder"), "restore"));
-		
+
+		tableEl.setElementCssClass("o_portfolio_listing o_portfolio_deleted_listing");
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setMultiSelect(true);
 		
