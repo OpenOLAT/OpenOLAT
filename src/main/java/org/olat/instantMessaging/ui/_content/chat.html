@@ -3,7 +3,10 @@
 function resize_${panelName}() {	
 	var win = jQuery('#${panelName}');
 	jQuery('.o_im_chat_history', win).each(function(index, el){
-		jQuery(el).height(win.height() - 100);
+		## maximize chat history height, but not higher than window (mobile phone)
+		var viewportH = jQuery(window).height() - 50;
+		var panelH = win.height();
+		jQuery(el).height((viewportH < panelH ? viewportH : panelH) - 100);
 		jQuery(el).scrollTop(el.scrollHeight);
 	});
 }
@@ -15,7 +18,16 @@ function tweak_${panelName}() {
 function focus_${panelName}() {
 	try {
 		resize_${panelName}();
-		setTimeout(function(){ jQuery('#o_fioinput_${panelName}').focus(); }, 100);
+		setTimeout(function(){ 
+			jQuery('#o_fioinput_${panelName}').focus(); 
+			## on mobile device (window on 0/0 position and window not fully in viewport), always scroll to top
+			## Text inpput on smart phone scolls content to make space for virtual keyboard. 
+			var dialogTop = jQuery('.ui-dialog.o_modal-ui').offset().top;
+			var viewportTop = jQuery(window).scrollTop();
+			if (dialogTop == 0 && viewportTop > 0) {
+				jQuery(window).scrollTop(0);
+			}
+		}, 100);
 	} catch (e) { if(window.console) console.log(e) }
 }
 /* ]]> */
