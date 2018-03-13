@@ -93,6 +93,7 @@ public class StandardResultController extends FormBasicController implements Res
 			if (StringHelper.containsNonWhitespace(document.getLicenseTypeKey())) {
 				LicenseType licenseType = licenseService.loadLicenseTypeByKey(document.getLicenseTypeKey());
 				if (!licenseService.isNoLicense(licenseType)) {
+					formLayoutCont.contextPut("licenseIcon", LicenseUIFactory.getCssOrDefault(licenseType));
 					formLayoutCont.contextPut("license", LicenseUIFactory.translate(licenseType, getLocale()));
 				}
 			}
