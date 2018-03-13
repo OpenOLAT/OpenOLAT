@@ -465,6 +465,8 @@ public interface LectureService {
 	public void recalculateSummary(RepositoryEntry entry, Identity identity);
 	
 	
+	public List<LectureBlockIdentityStatistics> groupByIdentity(List<LectureBlockIdentityStatistics> statistics);
+	
 	/**
 	 * Returns the statistics for the specified participant.
 	 * 

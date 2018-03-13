@@ -45,6 +45,7 @@ import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.coach.LecturesListDataModel.StatsCols;
+import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +132,7 @@ public class LecturesListController extends FormBasicController {
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.absentLectures));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.currentRate, new PercentCellRenderer()));
 		
 		tableModel = new LecturesListDataModel(columnsModel, getTranslator());
 		AggregatedLectureBlocksStatistics total = lectureService.aggregatedStatistics(statistics);

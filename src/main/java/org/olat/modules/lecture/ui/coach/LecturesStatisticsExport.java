@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -32,6 +33,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -49,6 +51,7 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
+	private final LectureService lectureService;
 	
 	public LecturesStatisticsExport(List<LectureBlockIdentityStatistics> statistics,
 			List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser, Translator translator) {
@@ -57,6 +60,7 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 		this.statistics = statistics;
 		this.isAdministrativeUser = isAdministrativeUser;
 		this.userPropertyHandlers = userPropertyHandlers;
+		lectureService = CoreSpringFactory.getImpl(LectureService.class);
 	}
 	
 	private static final String label() {
@@ -70,12 +74,12 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			exportSheet.setHeaderRows(1);
 			addHeadersAggregated(exportSheet);
-			addContentAggregated(exportSheet);
+			addContentAggregated(exportSheet, workbook);
 			
 			exportSheet = workbook.nextWorksheet();
 			exportSheet.setHeaderRows(1);
 			addHeadersDetailled(exportSheet);
-			addContentDetailled(exportSheet);
+			addContentDetailled(exportSheet, workbook);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -86,7 +90,7 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 		
 		int pos = 0;
 		pos = addHeadersUser(headerRow, pos);
-		pos = addHeadersStatistics(headerRow, pos);
+		addHeadersStatistics(headerRow, pos);
 	}
 	
 	private void addHeadersDetailled(OpenXMLWorksheet exportSheet) {
@@ -96,7 +100,7 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 		pos = addHeadersUser(headerRow, pos);
 		headerRow.addCell(pos++, translator.translate("table.header.external.ref"));
 		headerRow.addCell(pos++, translator.translate("table.header.entry"));
-		pos = addHeadersStatistics(headerRow, pos);
+		addHeadersStatistics(headerRow, pos);
 	}
 	
 	private int addHeadersUser(Row headerRow, int pos) {
@@ -116,21 +120,22 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("table.header.attended.lectures"));
 		headerRow.addCell(pos++, translator.translate("table.header.absent.lectures"));
 		headerRow.addCell(pos++, translator.translate("table.header.authorized.absence"));
+		headerRow.addCell(pos++, translator.translate("table.header.attended.current.rate"));
 		return pos;
 	}
 	
-	private void addContentAggregated(OpenXMLWorksheet exportSheet) {
-		List<LectureBlockIdentityStatistics> aggregatedStatistics = LecturesSearchController.groupByIdentity(statistics);
+	private void addContentAggregated(OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+		List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(statistics);
 		for(LectureBlockIdentityStatistics statistic:aggregatedStatistics) {
 			Row row = exportSheet.newRow();
 			
 			int pos = 0;
 			pos = addContentUser(statistic, row, pos);
-			pos = addContentStatistics(statistic, row, pos);
+			addContentStatistics(statistic, row, pos, workbook);
 		}
 	}
 
-	private void addContentDetailled(OpenXMLWorksheet exportSheet) {
+	private void addContentDetailled(OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
 
 		for(LectureBlockIdentityStatistics statistic:statistics) {
 			Row row = exportSheet.newRow();
@@ -139,7 +144,7 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 			pos = addContentUser(statistic, row, pos);
 			row.addCell(pos++, statistic.getExternalRef());
 			row.addCell(pos++, statistic.getDisplayName());
-			pos = addContentStatistics(statistic, row, pos);
+			addContentStatistics(statistic, row, pos, workbook);
 		}
 	}
 
@@ -156,11 +161,12 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 		return pos;
 	}
 
-	private int addContentStatistics(LectureBlockIdentityStatistics statistic, Row row, int pos) {
+	private int addContentStatistics(LectureBlockIdentityStatistics statistic, Row row, int pos, OpenXMLWorkbook workbook) {
 		row.addCell(pos++, positive(statistic.getTotalPersonalPlannedLectures()), null);
 		row.addCell(pos++, positive(statistic.getTotalAttendedLectures()), null);
 		row.addCell(pos++, positive(statistic.getTotalAbsentLectures()), null);
 		row.addCell(pos++, positive(statistic.getTotalAuthorizedAbsentLectures()), null);
+		row.addCell(pos++, statistic.getAttendanceRate(), workbook.getStyles().getPercentStyle());
 		return pos;
 	}
 	
