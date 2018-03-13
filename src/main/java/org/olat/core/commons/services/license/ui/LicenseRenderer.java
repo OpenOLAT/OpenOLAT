@@ -30,6 +30,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -71,7 +72,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		sb.append("'></i></a>");
 		
 		// popup with license informations
-		sb.append("<div id='o_lic_pop_").append(id).append("' style='display:none;'><div>");
+		sb.append("<div id='o_lic_pop_").append(id).append("' style='display:none;' class='o_lic_popup'><div>");
 		appendStaticControl(sb, "license.popup.type", LicenseUIFactory.translate(licenseType, locale),
 				LicenseUIFactory.getCssOrDefault(licenseType));
 		String licensor = license.getLicensor() != null? license.getLicensor(): "";
@@ -90,16 +91,20 @@ public class LicenseRenderer implements FlexiCellRenderer {
 	}
 
 	private void appendStaticControl(StringOutput sb, String i18n, String text) {
-		sb.append("<label class='control-label'>").append(translator.translate(i18n)) .append("</label>");
-		sb.append("<p class='form-control-static'>").append(text).append("</p>");
+		if (StringHelper.containsNonWhitespace(text)) {
+			sb.append("<div class='o_block_bottom'><h5>").append(translator.translate(i18n)).append("</h5>");
+			sb.append("<div>").append(text).append("</div></div>");
+		}
 	}
 	
 	private void appendStaticControl(StringOutput sb, String i18n, String text, String immageCss) {
-		sb.append("<label class='control-label'>").append(translator.translate(i18n)) .append("</label>");
-		sb.append("<p class='form-control-static'>");
-		sb.append("<i class='o_icon ").append(immageCss).append("'> </i>");
-		sb.append("<span> ").append(text).append("</span>");
-		sb.append("</p>");
+		if (StringHelper.containsNonWhitespace(text)) {
+			sb.append("<div class='o_block_bottom'><h5>").append(translator.translate(i18n)).append("</h5>");
+			sb.append("<div>");
+			sb.append("<i class='o_icon ").append(immageCss).append("'> </i>");
+			sb.append("<span> ").append(text).append("</span>");
+			sb.append("</div></div>");
+		}
 	}
 
 }
