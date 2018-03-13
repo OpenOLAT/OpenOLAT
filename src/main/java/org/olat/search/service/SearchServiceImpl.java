@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -416,7 +417,10 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	@Override
 	public Set<String> spellCheck(String query) {
 		if(searchSpellChecker==null) throw new AssertException ("Try to call spellCheck() in Search.java but searchSpellChecker is null");
-		return searchSpellChecker.check(query);
+		if (StringHelper.containsNonWhitespace(query)) {
+			return searchSpellChecker.check(query);
+		}
+		return new HashSet<>();
 	}
 
 	@Override

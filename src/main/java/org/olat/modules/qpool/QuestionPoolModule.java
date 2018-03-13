@@ -263,7 +263,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	
 	public QPoolSPI getQuestionPoolProvider(String format) {
 		for(QPoolSPI provider:questionPoolProviders) {
-			if(format.equals(provider.getFormat())) {
+			if(provider.getFormat().equals(format)) {
 				return provider;
 			}
 		}
