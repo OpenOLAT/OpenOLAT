@@ -178,9 +178,9 @@ public class AuthoringEnvPage {
 	 * @return Itself
 	 */
 	public AuthoringEnvPage uploadResource(String title, File resource) {
-		WebElement importLink = browser.findElement(By.className("o_sel_author_import"));
-		Assert.assertTrue(importLink.isDisplayed());
-		importLink.click();
+		By importBy = By.className("o_sel_author_import");
+		OOGraphene.waitElement(importBy, browser);
+		browser.findElement(importBy).click();
 		OOGraphene.waitBusy(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
