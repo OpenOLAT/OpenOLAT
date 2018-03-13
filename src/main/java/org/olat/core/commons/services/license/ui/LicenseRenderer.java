@@ -57,12 +57,22 @@ public class LicenseRenderer implements FlexiCellRenderer {
 				// render for export
 				target.append(LicenseUIFactory.translate(license.getLicenseType(), locale));
 			} else {
-				render(target, license);	
+				renderLicense(target, license);	
 			}
+		} else if (renderer != null) {
+			renderMissingLicense(target);
+		}
+	}
+	
+	public void render(StringOutput sb, License license) {
+		if (license != null) {
+			renderLicense(sb, license);
+		} else {
+			renderMissingLicense(sb);
 		}
 	}
 
-	public void render(StringOutput sb, License license) {
+	private void renderLicense(StringOutput sb, License license) {
 		LicenseType licenseType = license.getLicenseType();
 		long id = CodeHelper.getRAMUniqueID();
 		
@@ -105,6 +115,10 @@ public class LicenseRenderer implements FlexiCellRenderer {
 			sb.append("<span> ").append(text).append("</span>");
 			sb.append("</div></div>");
 		}
+	}
+
+	private void renderMissingLicense(StringOutput sb) {
+		sb.append("<i class='o_icon o_icon_lic_small o_icon_lic_missing'> </i>");
 	}
 
 }

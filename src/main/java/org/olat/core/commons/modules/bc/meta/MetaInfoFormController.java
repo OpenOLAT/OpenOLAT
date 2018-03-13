@@ -203,6 +203,28 @@ public class MetaInfoFormController extends FormBasicController {
 		// comment/description
 		String commentVal = (meta != null ? meta.getComment() : null);
 		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, commentVal, formLayout);
+		
+		// license
+		if (licenseModule.isEnabled(licenseHandler)) {
+			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
+
+			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
+					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
+			licenseEl = uifactory.addDropdownSingleselect("mf.license", formLayout,
+					licenseSelectionConfig.getLicenseTypeKeys(),
+					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
+			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
+			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
+				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
+			}
+			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			
+			licensorEl = uifactory.addTextElement("mf.licensor", 1000, license.getLicensor(), formLayout);
+
+			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
+			licenseFreetextEl = uifactory.addTextAreaElement("mf.freetext", 4, 72, freetext, formLayout);
+			updateLicenseUI();
+		}
 
 		// creator
 		String creatorVal = (meta != null ? meta.getCreator() : null);
@@ -247,28 +269,7 @@ public class MetaInfoFormController extends FormBasicController {
 
 		// url/link
 		String urlVal = (meta != null ? meta.getUrl() : null);
-		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);
-		
-		if (licenseModule.isEnabled(licenseHandler)) {
-			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
-
-			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
-					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
-			licenseEl = uifactory.addDropdownSingleselect("mf.license", formLayout,
-					licenseSelectionConfig.getLicenseTypeKeys(),
-					licenseSelectionConfig.getLicenseTypeValues(getLocale()));
-			licenseEl.setMandatory(licenseSelectionConfig.isLicenseMandatory());
-			if (licenseSelectionConfig.getSelectionLicenseTypeKey() != null) {
-				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
-			}
-			licenseEl.addActionListener(FormEvent.ONCHANGE);
-			
-			licensorEl = uifactory.addTextElement("mf.licensor", 1000, license.getLicensor(), formLayout);
-
-			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
-			licenseFreetextEl = uifactory.addTextAreaElement("mf.freetext", 4, 72, freetext, formLayout);
-			updateLicenseUI();
-		}
+		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);	
 
 		/* static fields */
 		String sizeText, typeText;
@@ -290,15 +291,6 @@ public class MetaInfoFormController extends FormBasicController {
 		metaFields.add(pages);
 		metaFields.add(language);
 		metaFields.add(url);
-		if (licenseEl != null) {
-			metaFields.add(licenseEl);
-		}
-		if (licensorEl != null) {
-			metaFields.add(licensorEl);
-		}
-		if (licenseFreetextEl != null) {
-			metaFields.add(licenseFreetextEl);
-		}
 
 		if (!hasMetadata(meta)) {
 			moreMetaDataLink = uifactory.addFormLink("mf.more.meta.link", formLayout, Link.LINK_CUSTOM_CSS);
