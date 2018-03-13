@@ -9,7 +9,10 @@
 		#end	
 		</h4>
 		#if ($license && $license != "")
-			<span class="o_search_result_license">$license</span>
+			<span class="o_search_result_license badge">
+				<i class="o_icon o_icon-fw o_icon_lic_small $licenseIcon"></i>
+				$license
+			</span>
 		#end
 	</div>
     #if ($result.parentContextName && $result.parentContextName != "")
