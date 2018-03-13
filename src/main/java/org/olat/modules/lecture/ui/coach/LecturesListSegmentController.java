@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.user.UserManager;
@@ -64,6 +65,8 @@ public class LecturesListSegmentController extends BasicController {
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
@@ -116,7 +119,7 @@ public class LecturesListSegmentController extends BasicController {
 	
 	private Controller doOpenAggregatedListController(UserRequest ureq) {
 		if(aggregatedListCtrl == null) {
-			List<LectureBlockIdentityStatistics> aggregatedStatistics = LecturesSearchController.groupByIdentity(statistics);
+			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(statistics);
 			aggregatedListCtrl = new LecturesListController(ureq, getWindowControl(),
 					aggregatedStatistics, userPropertyHandlers, propsIdentifier, false, false);
 			listenTo(aggregatedListCtrl);
