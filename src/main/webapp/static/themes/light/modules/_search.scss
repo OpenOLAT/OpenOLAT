@@ -23,6 +23,10 @@
 	
 }
 
+.o_search_result_license {
+	color: $text-muted;
+	font-size: $font-size-small;
+}
 .o_search_result_highlight {
 	font-weight: $o-search-highlight-font-weight;
 	background-color: $o-search-highlight-color;

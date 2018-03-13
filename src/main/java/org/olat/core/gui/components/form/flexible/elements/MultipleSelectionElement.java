@@ -133,6 +133,7 @@ public interface MultipleSelectionElement extends SelectionElement {
 	
 	public enum Layout {
 		horizontal,
-		vertical
+		vertical,
+		dropdown
 	}
 }

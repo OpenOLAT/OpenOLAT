@@ -123,6 +123,7 @@ public class OlatDocument extends AbstractOlatDocument {
 		} else {
 			document.add(new StringField(RESERVED_TO, "public", Field.Store.YES));
 		}
+		document.add(new StringField(LICNESE_TYPE_FIELD_NAME, getLicenseTypeKey(), Field.Store.YES));
 		return document;
 	}
 	

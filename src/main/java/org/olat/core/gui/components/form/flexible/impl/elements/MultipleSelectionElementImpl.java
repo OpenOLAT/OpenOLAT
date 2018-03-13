@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.ValidationStatus;
 
 /**
@@ -64,6 +65,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean domReplacementWrapperRequired = true;
+	private ConsumableBoolean formRequestEval = new ConsumableBoolean(false);
 
 	public MultipleSelectionElementImpl(String name) {
 		this(name, Layout.horizontal, 1);
@@ -75,7 +77,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 
 	public MultipleSelectionElementImpl(String name, Layout layout, int columns) {
 		super(name);
-		selected = new HashSet<String>();
+		selected = new HashSet<>();
 		this.layout = layout;
 		this.columns = columns;
 	}
@@ -121,6 +123,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		this.escapeHtml = escapeHtml;
 	}
 
+	@Override
 	public Collection<String> getSelectedKeys() {
 		return selected;
 	}
@@ -138,15 +141,14 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		this.iconLeftCSS = iconLeftCSS;
 		initSelectionElements();
 	}
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#isAtLeastSelected(int,
-	 *      java.lang.String)
-	 */
+	
+	@Override
 	public boolean isAtLeastSelected(int howmany) {
 		boolean ok = selected.size() >= howmany;
 		return ok;
 	}
 
+	@Override
 	public String getKey(int which) {
 		if(which >= 0 && which < keys.length) {
 			return keys[which];
@@ -154,28 +156,32 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		return null;
 	}
 
+	@Override
 	public int getSize() {
 		return keys.length;
 	}
 
+	@Override
 	public String getValue(int which) {
 		return values[which];
 	}
 
-	/**
-	 * selection element supports multiple select
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#isMultiselect()
-	 */
+	public ConsumableBoolean getFormRequestEval() {
+		return formRequestEval;
+	}
+
+	@Override
 	public boolean isMultiselect() {
 		return true;
 	}
 
+	@Override
 	public boolean isSelected(int which) {
 		String key = getKey(which);
 		return selected.contains(key);
 	}
 
+	@Override
 	public void select(String key, boolean select) {
 		if (select) {
 			selected.add(key);
@@ -195,13 +201,8 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		component.setDirty(true);
 	}
 
-	/**
-	 * array of values which are selected
-	 * 
-	 * @param values
-	 */
 	public void setSelectedValues(String[] values) {
-		selected = new HashSet<String>(3);
+		selected = new HashSet<>(3);
 		//remember original values
 		if(!originalIsDefined){
 			originalIsDefined = true;
@@ -263,12 +264,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 				reqVals = form.getRequestParameterValues(getName() + "_SELBOX");
 			}
 			//
-			selected = new HashSet<String>();
+			selected= new HashSet<>();
 			if (reqVals != null) {
 				for (int i = 0; i < reqVals.length; i++) {
 					selected.add(reqVals[i]);
 				}
 			}
+		}
+		String dispatchuri = form.getRequestParameter("dispatchuri");
+		if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+			formRequestEval = new ConsumableBoolean(true);
 		}
 	}
 
@@ -283,9 +288,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		clearError();
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#setEnabled(boolean)
-	 */
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
@@ -293,9 +295,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	}
 	
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setEnabled(java.lang.String, boolean)
-	 */
 	@Override
 	public void setEnabled(String key, boolean isEnabled) {
 		for(CheckboxElement check : component.getCheckComponents()) {
@@ -305,9 +304,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setEnabled(java.util.Set, boolean)
-	 */
 	@Override
 	public void setEnabled(Set<String> keys, boolean isEnabled) {
 		for (String key : keys) {
@@ -322,9 +318,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		component.setVisible(isVisible);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setVisible(java.lang.String, boolean)
-	 */
 	@Override
 	public void setVisible(String key, boolean isVisible) {
 		for(CheckboxElement check : component.getCheckComponents()) {
@@ -334,9 +327,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setVisible(java.util.Set, boolean)
-	 */
 	@Override
 	public void setVisible(Set<String> keys, boolean isEnabled) {
 		for (String key : keys) {
@@ -344,12 +334,9 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 	}
 	
-	/**
-	 * Returns the keys of the checkboxes in this {@link MultipleSelectionElement}.
-	 * @return Keys of the checkboxes
-	 */
+	@Override
 	public Set<String> getKeys() {
-		return new HashSet<String>(Arrays.asList(keys));
+		return new HashSet<>(Arrays.asList(keys));
 	}
 	
 	protected void initSelectionElements() {
@@ -383,9 +370,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider#getFormDispatchId()
-	 */
 	@Override
 	public String getFormDispatchId() {
 		return DISPPREFIX.concat(getComponent().getDispatchID());
@@ -396,11 +380,9 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		return component;
 	}
 
-	/**
-	 * Select all selection elements.
-	 */
+	@Override
 	public void selectAll() {
-		selected = new HashSet<String>(3);
+		selected = new HashSet<>(3);
 		for (int i = 0; i < keys.length; i++) {
 			selected.add(keys[i]);
 		}
@@ -408,11 +390,9 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		component.setDirty(true);
 	}
 
-	/**
-	 * Uncheck all selection elements.
-	 */
+	@Override
 	public void uncheckAll() {
-		selected = new HashSet<String>(3); 
+		selected = new HashSet<>(3); 
 		// set container dirty to render new selection
 		component.setDirty(true);
 	}

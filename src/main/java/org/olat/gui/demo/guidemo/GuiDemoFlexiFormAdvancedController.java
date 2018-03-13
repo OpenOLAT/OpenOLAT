@@ -27,8 +27,8 @@ package org.olat.gui.demo.guidemo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -55,7 +55,6 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 	private SingleSelection horizontalRadioButtons;
 	private SingleSelection verticalRadioButtons;
-	private FileElement file;
 	// Usually, the keys are i18n keys and the options correspond to their
 	// translated values. To avoid unnecessary translation these dummy values are
 	// defined right here.
@@ -65,6 +64,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	private final static String[] yesOrNoKeys = new String[] { "advanced_form.yes", "advanced_form.no" };
 
 	private RichTextElement richTextElement, disabledRichTextElement;
+	private MultipleSelectionElement addCheckboxesVertical;
+	private MultipleSelectionElement checkboxesDropdown;
 	
 	public GuiDemoFlexiFormAdvancedController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -83,8 +84,10 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected void formOK(UserRequest ureq) {		
-		showInfo("advanced_form.successfully_submitted", file.getUploadFileName());
+	protected void formOK(UserRequest ureq) {
+
+		addCheckboxesVertical.getSelectedKeys().forEach(System.out::println);
+//		showInfo("advanced_form.successfully_submitted", file.getUploadFileName());
 		// add your code here:
 		// file.getUploadInputStream() ...
 		// verticalRadioButtons.getSelectedKey() ...
@@ -173,7 +176,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 		// File Chooser
 		// There is a multipart parameter problem with that element.
-		file = uifactory.addFileElement(getWindowControl(), "file", "advanced_form.file", form);
+		uifactory.addFileElement(getWindowControl(), "file", "advanced_form.file", form);
 	}
 
 	/**
@@ -194,14 +197,36 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// to their listeners.
 		verticalRadioButtons.addActionListener(FormEvent.ONCLICK);
 
-		// checkboxes
-		uifactory.addCheckboxesVertical("checkboxes", "advanced_form.checkboxes", form, keys, options, 1);
+		addCheckboxesVertical = uifactory.addCheckboxesVertical("checkboxes", "advanced_form.checkboxes", form, keys, options, 1);
+		addCheckboxesVertical.select(keys[0], true);
+		addCheckboxesVertical.addActionListener(FormEvent.ONCHANGE);
 
 		// Translate the keys to the yes and no option values
 		final String[] yesOrNoOptions = new String[yesOrNoKeys.length];
 		for (int i = 0; i < yesOrNoKeys.length; i++) {
 			yesOrNoOptions[i] = translate(yesOrNoKeys[i]);
 		}
+	
+		// Drop down checkboxes 
+		String[] keys = new String[] { "phone", "clock", "book", "letter" };
+		String[] values = new String[] {
+				getTranslator().translate("guidemo.cbdropdown.phone"), 
+				getTranslator().translate("guidemo.cbdropdown.clock"),
+				getTranslator().translate("guidemo.cbdropdown.book"),
+				getTranslator().translate("guidemo.cbdropdown.letter")};
+		String[] cssClasses = new String[] {"", "", "", "o_userbulk_changedcell"};
+		String[] iconLeftCSS = new String[] {
+				"o_icon o_icon-fw o_icon_phone",
+				"o_icon o_icon-fw o_icon_time",
+				"o_icon o_icon-fw o_icon_lecture",
+				"o_icon o_icon-fw o_icon_mail"};
+		checkboxesDropdown = uifactory.addCheckboxesDropdown("dropdown", "advanced_form.cbdropdown", form, keys, values,
+				cssClasses, iconLeftCSS);
+		checkboxesDropdown.select(keys[0], true);
+		checkboxesDropdown.setEnabled("book", false);
+		checkboxesDropdown.addActionListener(FormEvent.ONCLICK);
+//		checkboxesDropdown.setEnabled(false);
+//		checkboxesDropdown.setAjaxOnly(true);
 
 		// Horizontal radio buttons. Choice between Yes or No.
 		horizontalRadioButtons = uifactory.addRadiosHorizontal("guidemo.form.radio2", form, yesOrNoKeys,
@@ -245,6 +270,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	 * @param source
 	 * @param event
 	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == verticalRadioButtons) {
 			if (event.wasTriggerdBy(FormEvent.ONCLICK)) {

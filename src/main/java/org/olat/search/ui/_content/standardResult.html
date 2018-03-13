@@ -8,6 +8,9 @@
 			$r.render("open_doc")
 		#end	
 		</h4>
+		#if ($license && $license != "")
+			<span class="o_search_result_license">$license</span>
+		#end
 	</div>
     #if ($result.parentContextName && $result.parentContextName != "")
 	<div class="o_search_result_context">

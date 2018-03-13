@@ -25,6 +25,9 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.search.model.ResultDocument;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -54,6 +58,9 @@ public class StandardResultController extends FormBasicController implements Res
 	protected final ResultDocument document;
 	protected FormLink docLink, docHighlightLink;
 	private boolean highlight;
+	
+	@Autowired
+	private LicenseService licenseService;
 	
 	public StandardResultController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "standardResult", mainForm);
@@ -82,6 +89,13 @@ public class StandardResultController extends FormBasicController implements Res
 				}
 			}
 			formLayoutCont.contextPut("author", author);
+			
+			if (StringHelper.containsNonWhitespace(document.getLicenseTypeKey())) {
+				LicenseType licenseType = licenseService.loadLicenseTypeByKey(document.getLicenseTypeKey());
+				if (!licenseService.isNoLicense(licenseType)) {
+					formLayoutCont.contextPut("license", LicenseUIFactory.translate(licenseType, getLocale()));
+				}
+			}
 		}
 		
 		String icon = document.getCssIcon();

@@ -20,6 +20,9 @@
 package org.olat.repository.manager;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.search.model.OlatDocument;
@@ -39,7 +42,12 @@ public class RepositoryEntryDocumentFactory {
 	
 	@Autowired
 	private RepositoryService repositoryService;
-	
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 
 	public String getResourceUrl(Long itemKey) {
 		return "[RepositoryEntry:" + itemKey + "]";
@@ -83,6 +91,13 @@ public class RepositoryEntryDocumentFactory {
 		oDocument.setParentContextName(searchResourceContext.getParentContextName());
 		oDocument.setAuthor(re.getAuthors());
 		oDocument.setLocation(re.getLocation());
+		
+		if (licenseModule.isEnabled(licenseHandler)) {
+			ResourceLicense license = licenseService.loadLicense(re.getOlatResource());
+			if (license != null && license.getLicenseType() != null) {
+				oDocument.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+			}
+		}
 		
 		//add specific fields
 		Document document = oDocument.getLuceneDocument();

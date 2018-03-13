@@ -53,8 +53,8 @@ class CheckCallable implements Callable<Set<String>> {
 			SpellChecker spellChecker  = spellCheckerService.getSpellChecker();
   		if (spellChecker != null) {
   			String[] words = spellChecker.suggestSimilar(query,5);
-  			// Remove dublicate 
-  			Set<String> filteredList = new TreeSet<String>();
+  			// Remove duplicates
+  			Set<String> filteredList = new TreeSet<>();
   			for (String word : words) {
   				filteredList.add(word);
 				}
@@ -63,6 +63,6 @@ class CheckCallable implements Callable<Set<String>> {
 		} catch (IOException e) {
 			log.warn("Can not spell check",e);
 		}
-		return new HashSet<String>();
+		return new HashSet<>();
 	}
 }

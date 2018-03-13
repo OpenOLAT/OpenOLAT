@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.context.StateEntry;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
@@ -41,11 +44,11 @@ public class SearchEvent extends Event implements StateEntry {
 	private Boolean closed;
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage;
+	private Set<Long> licenseTypeKeys;
 	
 	public SearchEvent() {
 		super("re-search");
 	}
-
 	
 	public String getId() {
 		return id;
@@ -111,6 +114,14 @@ public class SearchEvent extends Event implements StateEntry {
 		this.closed = closed;
 	}
 
+	public Set<Long> getLicenseTypeKeys() {
+		return licenseTypeKeys;
+	}
+
+	public void setLicenseTypeKeys(Set<Long> licenseTypeKeys) {
+		this.licenseTypeKeys = licenseTypeKeys;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
@@ -122,6 +133,7 @@ public class SearchEvent extends Event implements StateEntry {
 		clone.ownedResourcesOnly = ownedResourcesOnly;
 		clone.resourceUsage = resourceUsage;
 		clone.closed = closed;
+		clone.licenseTypeKeys = new HashSet<>(licenseTypeKeys);
 		return clone;
 	}
 }

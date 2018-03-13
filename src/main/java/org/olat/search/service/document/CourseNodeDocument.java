@@ -43,7 +43,7 @@ public class CourseNodeDocument extends OlatDocument {
 	private static final long serialVersionUID = -2035945166792451137L;
 
 	// Must correspond with LocalString_xx.properties
-	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
+	// Do not use '_' because we want to search for certain document type and lucene has problems with '_' 
 	public final static String TYPE = "type.course.node";
 	
 	public CourseNodeDocument() {

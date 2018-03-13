@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -58,6 +62,7 @@ import org.olat.search.service.document.file.PowerPointDocument;
 import org.olat.search.service.document.file.TextDocument;
 import org.olat.search.service.document.file.UnkownDocument;
 import org.olat.search.service.document.file.WordDocument;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -69,10 +74,10 @@ import org.olat.search.service.document.file.WordDocument;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class AdvancedSearchInputController extends FormBasicController {
+	
 	private static final OLog log = Tracing.createLoggerFor(AdvancedSearchInputController.class);
+	
 	private DateFormat format = new SimpleDateFormat("yyyyMMdd");
-	
-	
 	
 	private static final String HTML_TYPES = HtmlDocument.FILE_TYPE;
 	private static final String WORD_TYPES = WordDocument.FILE_TYPE;
@@ -90,7 +95,7 @@ public class AdvancedSearchInputController extends FormBasicController {
 	private static final String OTHER_TYPES = TextDocument.FILE_TYPE + " " + OpenDocument.FORMULA_FILE_TYPE + " " + OpenDocument.GRAPHIC_FILE_TYPE + " " 
 		+ UnkownDocument.UNKOWN_TYPE + " " + OpenDocument.TEXT_FILE_TYPE;
 	
-	private final List<DocumentInfo> documentInfos = new ArrayList<DocumentInfo>();
+	private final List<DocumentInfo> documentInfos = new ArrayList<>();
 	 
 	private FormLink searchButton;
 	private TextElement searchInput;
@@ -99,13 +104,17 @@ public class AdvancedSearchInputController extends FormBasicController {
 	private TextElement descriptionQuery;
 	private DateChooser createdDate;
 	private DateChooser modifiedDate;
+	private MultipleSelectionElement licenseQuery;
 	private TextElement metadataQuery;
 	private SingleSelection metadataType;
 	private SingleSelection contextSelection;
 	private MultipleSelectionElement documentTypeQuery;
 	
 	private boolean resourceContextEnable = true;
-	private Set<String> selectedDocumentTypes = new HashSet<String>();
+	private Set<String> selectedDocumentTypes = new HashSet<>();
+	
+	@Autowired
+	private LicenseService licenseService;
 	
 	public AdvancedSearchInputController(UserRequest ureq, WindowControl wControl, Form mainForm) {
 		super(ureq, wControl, -1, null, mainForm);
@@ -131,7 +140,22 @@ public class AdvancedSearchInputController extends FormBasicController {
 			documentTypeKeys[j] = documentType.getKey();
 			documentTypeValues[j++] = documentType.getValue();
 		}
-		documentTypeQuery = uifactory.addCheckboxesHorizontal("doc_type", "form.search.label.documenttype", formLayout, documentTypeKeys, documentTypeValues);
+		documentTypeQuery = uifactory.addCheckboxesDropdown("doc_type", "form.search.label.documenttype", formLayout, documentTypeKeys, documentTypeValues);
+		
+		//licenses
+		List<LicenseType> activeLicenseTypes = licenseService.loadLicenseTypes();
+		activeLicenseTypes.removeIf(licenseService::isNoLicense);
+		Collections.sort(activeLicenseTypes);
+		
+		String[] licenseTypeKeys = new String[activeLicenseTypes.size()];
+		String[] licenseTypeValues = new String[activeLicenseTypes.size()];
+		int counter = 0;
+		for (LicenseType licenseType: activeLicenseTypes) {
+			licenseTypeKeys[counter] = String.valueOf(licenseType.getKey());
+			licenseTypeValues[counter] = LicenseUIFactory.translate(licenseType, getLocale());
+			counter++;
+		}
+		licenseQuery = uifactory.addCheckboxesDropdown("search_license", "form.search.label.license", formLayout, licenseTypeKeys, licenseTypeValues);
 		
 		//metadatas
 		SearchMetadataFieldsProvider metadataProvider = (SearchMetadataFieldsProvider) CoreSpringFactory.getBean("SearchMetadataFieldsProvider");
@@ -221,40 +245,43 @@ public class AdvancedSearchInputController extends FormBasicController {
 	}
 	
 	public List<String> getQueryStrings() {
-		List<String> queries = new ArrayList<String>();
+		List<String> queries = new ArrayList<>();
 
 		if (StringHelper.containsNonWhitespace(authorQuery.getValue())) {
 			appendAnd(queries, AbstractOlatDocument.AUTHOR_FIELD_NAME, ":(", authorQuery.getValue(), ") ");
-	  }
+		}
 		if(!documentTypeQuery.getSelectedKeys().isEmpty()) {
 			buildDocumentTypeQuery(queries);	
 		}
+		if (!licenseQuery.getSelectedKeys().isEmpty()) {
+			buildLicenseTypeQuery(queries);
+		}
 		if (StringHelper.containsNonWhitespace(titleQuery.getValue())) {
 			appendAnd(queries, AbstractOlatDocument.TITLE_FIELD_NAME, ":(", titleQuery.getValue(), ") ");
-	  }
+		}
 		if (StringHelper.containsNonWhitespace(descriptionQuery.getValue())) {
 			appendAnd(queries, AbstractOlatDocument.DESCRIPTION_FIELD_NAME, ":(", descriptionQuery.getValue(), ") ");
-	  }
+		}
 		if (StringHelper.containsNonWhitespace(createdDate.getValue())) {
 			Date creationDate = createdDate.getDate();
 			if(creationDate != null) {
 				appendAnd(queries, AbstractOlatDocument.CREATED_FIELD_NAME, ":(", format.format(creationDate), ") ");
 			}
-	  }
+		}
 		if (StringHelper.containsNonWhitespace(modifiedDate.getValue())) {
 			Date modificationDate = modifiedDate.getDate();
 			if(modificationDate != null) {
 				appendAnd(queries, AbstractOlatDocument.CHANGED_FIELD_NAME, ":(", format.format(modificationDate), ") ");
 			}
-	  }
+		}
 		//Check for null on metadata element since it might not be configured and initialized
 		if (metadataQuery != null && StringHelper.containsNonWhitespace(metadataQuery.getValue())) {
 			appendAnd(queries, metadataType.getSelectedKey(), ":(", metadataQuery.getValue(), ") ");
-	  }
+		}
 		if (log.isDebug()) log.debug("Advanced query=" + queries);
 		return queries;
 	}
-	
+
 	/**
 	 * Append 'AND' operation if buf is not empty.
 	 * @param buf
@@ -281,8 +308,8 @@ public class AdvancedSearchInputController extends FormBasicController {
 			return;
 		}
 		
-		List<String> docTypes = new ArrayList<String>();
-		List<String> fTypes = new ArrayList<String>();
+		List<String> docTypes = new ArrayList<>();
+		List<String> fTypes = new ArrayList<>();
 		for(String selectedocType:selectDocTypes) {
 			for(DocumentInfo info:documentInfos) {
 				if(selectedocType.equals(info.getKey())) {
@@ -317,13 +344,34 @@ public class AdvancedSearchInputController extends FormBasicController {
 			for(String fileType:fTypes) {
 				buf.append(fileType).append(' ');
 			}
-		  buf.append(")");
+			buf.append(")");
 		}
-	  buf.append(") ");
-	  
-	  if(buf.length() > 4) {
-	  	queries.add(buf.toString());
-	  }
+		buf.append(") ");
+		
+		if(buf.length() > 4) {
+			queries.add(buf.toString());
+		}
+	}
+	
+	private void buildLicenseTypeQuery(List<String> queries) {
+		Collection<String> selectedLicTypes = licenseQuery.getSelectedKeys();
+		if(selectedLicTypes.size() == licenseQuery.getKeys().size() || selectedLicTypes.isEmpty()) {
+			//all selected -> no constraints of the type
+			return;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append('(');
+		sb.append(AbstractOlatDocument.LICNESE_TYPE_FIELD_NAME);
+		sb.append(":(");
+		for(String licenseTypeKey: selectedLicTypes) {
+			sb.append(licenseTypeKey).append(' ');
+		}
+		sb.append(")) ");
+		
+		if (sb.length() > 6) {
+			queries.add(sb.toString());
+		}
 	}
 	
 	public void getSearchProperties(Properties props) {
@@ -346,6 +394,13 @@ public class AdvancedSearchInputController extends FormBasicController {
 			sb.append(selectedKey).append('|');
 		}
 		props.setProperty("dtypes", sb.toString());
+		
+		Collection<String> licenseTypeKeys = licenseQuery.getSelectedKeys();
+		StringBuilder licSb = new StringBuilder();
+		for (String licenseTypeKey: licenseTypeKeys) {
+			licSb.append(licenseTypeKey).append('|');
+		}
+		props.setProperty("lictypes", licSb.toString());
 	}
 	
 	private void setSearchProperty(Properties props, String key, String value) {
@@ -401,6 +456,14 @@ public class AdvancedSearchInputController extends FormBasicController {
 				if(selected) {
 					selectedDocumentTypes.add(documentInfo.getKey());
 				}
+			}
+		}
+
+		String lictypes = props.getProperty("lictypes");
+		if(StringHelper.containsNonWhitespace(lictypes)) {
+			for (String licenseTypeKey: licenseQuery.getKeys()) {
+				boolean selected = lictypes.indexOf(licenseTypeKey) >= 0;
+				licenseQuery.select(licenseTypeKey, selected);
 			}
 		}
 	}

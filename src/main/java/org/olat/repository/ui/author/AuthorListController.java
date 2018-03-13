@@ -503,6 +503,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				searchParams.setDescription(null);
 				searchParams.setOwnedResourcesOnly(false);
 				searchParams.setResourceUsage(ResourceUsage.all);
+				searchParams.setLicneseTypeKeys(null);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -790,6 +791,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setClosed(se.getClosed());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
+		searchParams.setLicneseTypeKeys(se.getLicenseTypeKeys());
 		tableEl.reset(true, true, true);
 		
 		AuthorListState stateEntry = new AuthorListState();

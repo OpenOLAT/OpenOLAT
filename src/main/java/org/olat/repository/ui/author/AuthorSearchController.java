@@ -22,7 +22,13 @@ package org.olat.repository.ui.author;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +50,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +74,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private SingleSelection closedEl;
 	private SingleSelection resourceUsageEl;
 	private MultipleSelectionElement ownedResourcesOnlyEl;
+	private MultipleSelectionElement licenseEl;
 	private FormLink searchButton;
 	
 	private String[] typeKeys;
@@ -76,6 +84,12 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 	
 	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed) {
 		super(ureq, wControl, "search");
@@ -138,7 +152,20 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		resourceUsageEl = uifactory.addRadiosHorizontal("cif_used", "cif.owned.resources.usage", rightContainer, usageKeys, usageValues);
 		resourceUsageEl.select(usageKeys[0], true);
 		
-
+		if (licenseModule.isEnabled(licenseHandler)) {
+			List<LicenseType> activeLicenseTypes = licenseService.loadActiveLicenseTypes(licenseHandler);
+			Collections.sort(activeLicenseTypes);
+			
+			String[] licenseTypeKeys = new String[activeLicenseTypes.size()];
+			String[] licenseTypeValues = new String[activeLicenseTypes.size()];
+			int counter = 0;
+			for (LicenseType licenseType: activeLicenseTypes) {
+				licenseTypeKeys[counter] = String.valueOf(licenseType.getKey());
+				licenseTypeValues[counter] = LicenseUIFactory.translate(licenseType, getLocale());
+				counter++;
+			}
+			licenseEl = uifactory.addCheckboxesDropdown("cif.license", "cif.license", rightContainer, licenseTypeKeys, licenseTypeValues);
+		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -173,6 +200,12 @@ public class AuthorSearchController extends FormBasicController implements Exten
 				if(type.equals(typeKey)) {
 					types.select(typeKey, true);
 				}
+			}
+		}
+		if (licenseModule.isEnabled(licenseHandler)) {
+			for (Long licenseTypeKey: se.getLicenseTypeKeys()) {
+				String key = String.valueOf(licenseTypeKey);
+				licenseEl.select(key, true);
 			}
 		}
 	}
@@ -298,11 +331,15 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setOwnedResourcesOnly(isOwnedResourcesOnly());
 		e.setResourceUsage(getResourceUsage());
 		e.setClosed(getClosed());
+		if (licenseModule.isEnabled(licenseHandler)) {
+			Set<Long> keys = licenseEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
+			e.setLicenseTypeKeys(keys);
+		}
 		fireEvent(ureq, e);
 	}
-
+	
 	private String[] getTranslatedResources(List<String> resources) {
-		List<String> l = new ArrayList<String>();
+		List<String> l = new ArrayList<>();
 		for(String key: resources){
 			if(StringHelper.containsNonWhitespace(key)) {
 				l.add(translate(key));
@@ -314,7 +351,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	}
 	
 	private List<String> getResources() {
-		List<String> resources = new ArrayList<String>();
+		List<String> resources = new ArrayList<>();
 		resources.add("");
 		for(OrderedRepositoryHandler handler:repositoryHandlerFactory.getOrderRepositoryHandlers()) {
 			resources.add(handler.getHandler().getSupportedType());
