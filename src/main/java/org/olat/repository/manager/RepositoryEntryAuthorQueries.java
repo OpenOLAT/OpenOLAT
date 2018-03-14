@@ -215,6 +215,12 @@ public class RepositoryEntryAuthorQueries {
 			  .append("   where mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry'")
 			  .append(" )");
 		}
+		if (params.isLicenseTypeDefined()) {
+			sb.append(" and exists (");
+			sb.append(" select license.key from license as license");
+			sb.append("  where license.resId=res.resId and license.resName=res.resName");
+			sb.append("    and license.licenseType.key in (:licenseTypeKeys))");
+		}
 		
 		String author = params.getAuthor();
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
@@ -337,6 +343,9 @@ public class RepositoryEntryAuthorQueries {
 
 		if(needIdentity) {
 			dbQuery.setParameter("identityKey", identity.getKey());
+		}
+		if (params.isLicenseTypeDefined()) {
+			dbQuery.setParameter("licenseTypeKeys", params.getLicenseTypeKeys());
 		}
 		return dbQuery;
 	}

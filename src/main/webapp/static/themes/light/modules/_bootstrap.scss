@@ -120,3 +120,17 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
         display: table-cell;
     }
 }
+
+/* 
+	iOS: prevent browser zoom when selecting a form (iOS zooms when input element font size < 16px but does not zoom back)
+	https://stackoverflow.com/questions/2989263/disable-auto-zoom-in-input-text-tag-safari-on-iphone
+	https://stackoverflow.com/questions/30102792/css-media-query-target-only-ios-devices
+*/
+@media screen and (max-width: 768px) {
+	@supports (-webkit-overflow-scrolling: touch) {
+	  	.form-control,
+	  	.ui-widget input, .ui-widget select, .ui-widget textarea {
+    		font-size: 16px;
+  		}
+	}
+}

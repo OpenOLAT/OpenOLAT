@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.context.StateEntry;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
@@ -37,15 +40,15 @@ public class SearchEvent extends Event implements StateEntry {
 	private String displayname;
 	private String author;
 	private String description;
-	private String type;
+	private Set<String> types;
 	private Boolean closed;
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage;
+	private Set<Long> licenseTypeKeys;
 	
 	public SearchEvent() {
 		super("re-search");
 	}
-
 	
 	public String getId() {
 		return id;
@@ -79,12 +82,12 @@ public class SearchEvent extends Event implements StateEntry {
 		this.description = description;
 	}
 
-	public String getType() {
-		return type;
+	public Set<String> getTypes() {
+		return types;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setTypes(Set<String> types) {
+		this.types = types;
 	}
 
 	public boolean isOwnedResourcesOnly() {
@@ -111,6 +114,14 @@ public class SearchEvent extends Event implements StateEntry {
 		this.closed = closed;
 	}
 
+	public Set<Long> getLicenseTypeKeys() {
+		return licenseTypeKeys;
+	}
+
+	public void setLicenseTypeKeys(Set<Long> licenseTypeKeys) {
+		this.licenseTypeKeys = licenseTypeKeys;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
@@ -118,10 +129,11 @@ public class SearchEvent extends Event implements StateEntry {
 		clone.displayname = displayname;
 		clone.author = author;
 		clone.description = description;
-		clone.type = type;
+		clone.types = (types == null ? null : new HashSet<>(types));
 		clone.ownedResourcesOnly = ownedResourcesOnly;
 		clone.resourceUsage = resourceUsage;
 		clone.closed = closed;
+		clone.licenseTypeKeys = (licenseTypeKeys == null ? null : new HashSet<>(licenseTypeKeys));
 		return clone;
 	}
 }

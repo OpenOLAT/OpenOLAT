@@ -84,9 +84,11 @@ public abstract class AbstractOlatDocument implements Serializable {
 	public static final String CSS_ICON = "cssicon";
 	
 	public static final String RESERVED_TO = "reservedto";
+
+	public static final String LICNESE_TYPE_FIELD_NAME = "licensetype";
 	
 	public static final Set<String> getFields() {
-		Set<String> fields = new HashSet<String>();
+		Set<String> fields = new HashSet<>();
 		fields.add(DB_ID_NAME);
 		fields.add(TITLE_FIELD_NAME);
 		fields.add(DESCRIPTION_FIELD_NAME);
@@ -104,6 +106,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		fields.add(PARENT_CONTEXT_NAME_FIELD_NAME);
 		fields.add(CSS_ICON);
 		fields.add(RESERVED_TO);
+		fields.add(LICNESE_TYPE_FIELD_NAME);
 		return fields;
 	}
 
@@ -131,6 +134,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 	private String parentContextName = "";
 	private String cssIcon;
 	private String reservedTo;
+	private String licenseTypeKey = "";
 	
 	public AbstractOlatDocument() {
 		timestamp = new Date();
@@ -156,6 +160,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		parentContextType = document.get(PARENT_CONTEXT_TYPE_FIELD_NAME);
 		parentContextName = document.get(PARENT_CONTEXT_NAME_FIELD_NAME);
 		cssIcon = document.get(CSS_ICON);
+		licenseTypeKey = document.get(LICNESE_TYPE_FIELD_NAME);
 	}
 	
 	private Date toDate(Document document, String fieldName) {
@@ -323,6 +328,17 @@ public abstract class AbstractOlatDocument implements Serializable {
 		this.reservedTo = reservedTo;
 	}
 
+	public String getLicenseTypeKey() {
+		if (licenseTypeKey == null) {
+			return ""; // Do not return null
+		}
+		return licenseTypeKey;
+	}
+
+	public void setLicenseTypeKey(String licenseTypeKey) {
+		this.licenseTypeKey = licenseTypeKey;
+	}
+
 	/**
 	 * Add generic metadata. It is strongly recommended not to use anything else
 	 * than the doublin core metadata namespace here. See {@link http
@@ -342,12 +358,12 @@ public abstract class AbstractOlatDocument implements Serializable {
 	public synchronized void addMetadata(String key, String value) {
 		if (key == null || ! StringHelper.containsNonWhitespace(value)) return;
 		// initialize metadata map if never done before
-		if (metadata == null) metadata = new HashMap<String, List<String>>();
+		if (metadata == null) metadata = new HashMap<>();
 		// get list of already added values for this key
 		List<String> values = metadata.get(key);
 		if (values == null) {
 			// this meta key has never been added so far
-			values = new ArrayList<String>(1);
+			values = new ArrayList<>(1);
 			metadata.put(key, values);
 		}
 		values.add(value);

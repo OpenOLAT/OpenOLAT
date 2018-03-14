@@ -19,10 +19,7 @@
  */
 package org.olat.modules.lecture.ui.coach;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -133,17 +130,5 @@ public class LecturesSearchController extends BasicController implements Activat
 
 		stackPanel.popUpToRootController(ureq);
 		stackPanel.pushController(translate("results"), ctrl);
-	}
-	
-	protected static List<LectureBlockIdentityStatistics> groupByIdentity(List<LectureBlockIdentityStatistics> statistics) {
-		Map<Long,LectureBlockIdentityStatistics> groupBy = new HashMap<>();
-		for(LectureBlockIdentityStatistics statistic:statistics) {
-			if(groupBy.containsKey(statistic.getIdentityKey())){
-				groupBy.get(statistic.getIdentityKey()).aggregate(statistic);
-			} else {
-				groupBy.put(statistic.getIdentityKey(), statistic.cloneForAggregation());
-			}
-		}
-		return new ArrayList<>(groupBy.values());
 	}
 }

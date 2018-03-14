@@ -700,3 +700,24 @@ ul.o_assessment_docs>li:last-child {
  .dropdown-menu.o_labeled {
  	background-color: inherit;
  }
+ 
+ /* Multiselect dropdown element */
+ .o_ms_button {
+ 	max-width: 100%;
+ 	width: 100%;
+ 	display: flex;
+	span:not(.o_ms_carret) {
+ 		text-overflow: ellipsis;
+    		overflow: hidden;
+    		white-space: nowrap; 
+	}
+	.o_ms_carret {
+		margin: auto 0 auto auto;
+	}
+}
+.o_ms_list {
+	width: 100%;
+	height: auto;
+    max-height: 300px;
+    overflow-x: hidden;
+}

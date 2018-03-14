@@ -137,6 +137,13 @@ public abstract class FileDocument extends OlatDocument {
 		// Add file type
 		String mimeType = WebappHelper.getMimeType(leaf.getName());
 		addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_FORMAT, mimeType);
+		
+		// License
+		String licenseTypeKey = "";
+		if (meta != null && StringHelper.containsNonWhitespace(meta.getLicenseTypeKey())) {
+			licenseTypeKey = meta.getLicenseTypeKey();
+		}
+		setLicenseTypeKey(licenseTypeKey);
 	}
 	
 	private Date getDateFromPublicationDateArray(String[] pubDateArray) {

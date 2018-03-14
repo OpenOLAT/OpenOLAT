@@ -293,6 +293,24 @@ public class FormUIFactory {
 		formLayout.add(mse);
 		return mse;
 	}
+	
+	public MultipleSelectionElement addCheckboxesDropdown(String name, FormItemContainer formLayout) {
+		return addCheckboxesDropdown(name, name, formLayout, new String[] {}, new String[] {});
+	}
+	
+	public MultipleSelectionElement addCheckboxesDropdown(String name, String i18nLabel, FormItemContainer formLayout,
+			String[] keys, String[] values) {
+		return addCheckboxesDropdown(name, i18nLabel, formLayout, keys, values, null, null);
+	}
+	
+	public MultipleSelectionElement addCheckboxesDropdown(String name, String i18nLabel, FormItemContainer formLayout,
+			String[] keys, String[] values, String[] cssClasses, String[] iconLeftCSS) {
+		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, Layout.dropdown);
+		mse.setKeysAndValues(keys, values, cssClasses, iconLeftCSS);
+		setLabelIfNotNull(i18nLabel, mse);
+		formLayout.add(mse);
+		return mse;
+	}
 
 	/**
 	 * Create a multiple selection element as a tree.

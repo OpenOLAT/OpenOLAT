@@ -76,6 +76,7 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 				case unauthorizedAbsenceLectures:
 				case absentLectures: return positive(row.getTotalAbsentLectures());
 				case authorizedAbsenceLectures: return positive(row.getTotalAuthorizedAbsentLectures());
+				case currentRate: return row.getAttendanceRate();
 			}
 		}
 		
@@ -128,7 +129,8 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
 		unauthorizedAbsenceLectures("table.header.unauthorized.absence"),
-		authorizedAbsenceLectures("table.header.authorized.absence")
+		authorizedAbsenceLectures("table.header.authorized.absence"),
+		currentRate("table.header.attended.current.rate")
 		;
 		
 		private final String i18nKey;

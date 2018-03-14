@@ -138,6 +138,24 @@ public class MetaInfoController extends FormBasicController {
 		// comment/description
 		String commentVal =  StringHelper.xssScan(meta != null ? meta.getComment() : null);
 		uifactory.addStaticTextElement("mf.comment", commentVal, formLayout);
+		
+		// license
+		if (licenseModule.isEnabled(licenseHandler)) {
+			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
+			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
+			boolean isNoLicense = !licenseService.isNoLicense(license.getLicenseType());
+			boolean isFreetext = licenseService.isFreetext(license.getLicenseType());
+
+			licenseEl = uifactory.addStaticTextElement("mf.license",
+					LicenseUIFactory.translate(license.getLicenseType(), getLocale()), formLayout);
+			if (isNoLicense) {
+				licensorEl = uifactory.addStaticTextElement("mf.licensor", license.getLicensor(), formLayout);
+			}
+			if (isFreetext) {
+				licenseFreetextEl = uifactory.addStaticTextElement("mf.freetext",
+						LicenseUIFactory.getFormattedLicenseText(license), formLayout);
+			}
+		;
 
 		// creator
 		String creatorVal = StringHelper.escapeHtml(meta != null ? meta.getCreator() : null);
@@ -170,25 +188,7 @@ public class MetaInfoController extends FormBasicController {
 
 		// url/link
 		String urlVal = StringHelper.escapeHtml(meta != null ? meta.getUrl() : null);
-		url = uifactory.addStaticTextElement("mf.url", urlVal, formLayout);
-		
-		// license
-		if (licenseModule.isEnabled(licenseHandler)) {
-			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
-			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
-			boolean isNoLicense = !licenseService.isNoLicense(license.getLicenseType());
-			boolean isFreetext = licenseService.isFreetext(license.getLicenseType());
-
-			licenseEl = uifactory.addStaticTextElement("mf.license",
-					LicenseUIFactory.translate(license.getLicenseType(), getLocale()), formLayout);
-			if (isNoLicense) {
-				licensorEl = uifactory.addStaticTextElement("mf.licensor", license.getLicensor(), formLayout);
-			}
-			if (isFreetext) {
-				licenseFreetextEl = uifactory.addStaticTextElement("mf.freetext",
-						LicenseUIFactory.getFormattedLicenseText(license), formLayout);
-			}
-		}
+		url = uifactory.addStaticTextElement("mf.url", urlVal, formLayout);}
 
 		/* static fields */
 		String sizeText, typeText;

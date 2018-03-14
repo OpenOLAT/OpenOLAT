@@ -23,6 +23,11 @@
 	
 }
 
+.o_search_result_license {
+	font-weight: normal;
+	font-size: $o-font-size-xsmall;
+	vertical-align: middle;
+}
 .o_search_result_highlight {
 	font-weight: $o-search-highlight-font-weight;
 	background-color: $o-search-highlight-color;

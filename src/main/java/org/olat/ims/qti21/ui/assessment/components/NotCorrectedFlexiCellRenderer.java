@@ -45,12 +45,12 @@ public class NotCorrectedFlexiCellRenderer implements FlexiCellRenderer {
 			CorrectionRow itemRow = (CorrectionRow)obj;
 			if(itemRow.isManualCorrection() && itemRow.getNumNotCorrected() > 0) {
 				target.append(itemRow.getNumNotCorrected());
-				target.append(" <i class='o_icon o_icon_fw o_icon_warn'> </i> ");
+				target.append(" <i class='o_icon o_icon_fw o_icon_error'> </i> ");
 			}
 		} else if(obj instanceof CorrectionIdentityAssessmentItemRow) {
 			CorrectionIdentityAssessmentItemRow itemRow = (CorrectionIdentityAssessmentItemRow)obj;
 			if(itemRow.isManualCorrection() && itemRow.getManualScore() == null) {
-				target.append("<i class='o_icon o_icon_fw o_icon_warn'> </i>");
+				target.append("<i class='o_icon o_icon_fw o_icon_error'> </i>");
 			}
 		}
 	}

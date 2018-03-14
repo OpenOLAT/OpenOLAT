@@ -27,58 +27,45 @@ package org.olat.modules.lecture.model;
  */
 public class AggregatedLectureBlocksStatistics {
 
-	private long personalPlannedLectures;
-	private long attendedLectures;
-	private long authorizedAbsentLectures;
-	private long absentLectures;
-	private double rate;
+	private final long personalPlannedLectures;
+	private final long attendedLectures;
+	private final long authorizedAbsentLectures;
+	private final long absentLectures;
+	private final double rate;
+	private final double currentRate;
 	
 	public AggregatedLectureBlocksStatistics(long personalPlannedLectures, long attendedLectures,
-			long authorizedAbsentLectures, long absentLectures, double rate) {
+			long authorizedAbsentLectures, long absentLectures, double rate, double currentRate) {
 		this.personalPlannedLectures = personalPlannedLectures;
 		this.attendedLectures = attendedLectures;
 		this.authorizedAbsentLectures = authorizedAbsentLectures;
 		this.absentLectures = absentLectures;
 		this.rate = rate;
+		this.currentRate = currentRate;
 	}
 	
 	public long getPersonalPlannedLectures() {
 		return personalPlannedLectures;
 	}
 	
-	public void setPersonalPlannedLectures(long personalPlannedLectures) {
-		this.personalPlannedLectures = personalPlannedLectures;
-	}
 	
 	public long getAttendedLectures() {
 		return attendedLectures;
-	}
-	
-	public void setAttendedLectures(long attendedLectures) {
-		this.attendedLectures = attendedLectures;
 	}
 	
 	public long getAuthorizedAbsentLectures() {
 		return authorizedAbsentLectures;
 	}
 	
-	public void setAuthorizedAbsentLectures(long authorizedAbsentLectures) {
-		this.authorizedAbsentLectures = authorizedAbsentLectures;
-	}
-	
 	public long getAbsentLectures() {
 		return absentLectures;
-	}
-	
-	public void setAbsentLectures(long absentLectures) {
-		this.absentLectures = absentLectures;
 	}
 	
 	public double getRate() {
 		return rate;
 	}
 	
-	public void setRate(double rate) {
-		this.rate = rate;
+	public double getCurrentRate() {
+		return currentRate;
 	}
 }

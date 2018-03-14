@@ -385,7 +385,7 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
-	public List<LectureBlockStatistics> getStatistics(IdentityRef identity,
+	public List<LectureBlockStatistics> getStatistics(IdentityRef identity, boolean authorizedAbsenceEnabled,
 			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		StringBuilder sb = new StringBuilder();
@@ -433,7 +433,13 @@ public class LectureBlockRollCallDAO {
 			int pos = 1;//jump roll call key
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
-			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
+			Boolean absenceAuthorized;
+			if(authorizedAbsenceEnabled) {
+				absenceAuthorized = (Boolean)rawObject[pos++];
+			} else {
+				absenceAuthorized = null;
+				pos++;
+			}
 			
 			pos++;//jump block key
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
@@ -481,6 +487,7 @@ public class LectureBlockRollCallDAO {
 	
 	public List<LectureBlockIdentityStatistics> getStatistics(LectureStatisticsSearchParameters params,
 			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin,
+			boolean authorizedAbsenceEnabled,
 			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		
@@ -587,7 +594,13 @@ public class LectureBlockRollCallDAO {
 			String identityName = (String)rawObject[pos++];
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
-			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
+			Boolean absenceAuthorized;
+			if(authorizedAbsenceEnabled) {
+				absenceAuthorized = (Boolean)rawObject[pos++];
+			} else {
+				absenceAuthorized = null;
+				pos++;
+			}
 			
 			pos++;//jump block key
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
@@ -694,7 +707,7 @@ public class LectureBlockRollCallDAO {
 	
 
 	public List<LectureBlockStatistics> getStatistics(RepositoryEntry entry,
-			RepositoryEntryLectureConfiguration config,
+			RepositoryEntryLectureConfiguration config, boolean authorizedAbsenceEnabled,
 			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		
@@ -739,7 +752,13 @@ public class LectureBlockRollCallDAO {
 			Long identityKey = (Long)rawObject[pos++];
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
-			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
+			Boolean absenceAuthorized;
+			if(authorizedAbsenceEnabled) {
+				absenceAuthorized = (Boolean)rawObject[pos++];
+			} else {
+				absenceAuthorized = null;
+				pos++;
+			}
 			
 			pos++;//jump block key
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
@@ -781,26 +800,30 @@ public class LectureBlockRollCallDAO {
 	
 	private void calculateAttendanceRate(List<? extends LectureBlockStatistics> statisticsList, boolean countAuthorizedAbsenceAsAttendant) {
 		for(LectureBlockStatistics statistics:statisticsList) {
-			long totalAttendedLectures = statistics.getTotalAttendedLectures();
-			long totalAbsentLectures = statistics.getTotalAbsentLectures();
-			if(countAuthorizedAbsenceAsAttendant) {
-				totalAttendedLectures += statistics.getTotalAuthorizedAbsentLectures();
-			} else {
-				totalAbsentLectures += statistics.getTotalAuthorizedAbsentLectures();
-			}
-			if(totalAbsentLectures < 0) {
-				totalAbsentLectures = 0;
-			}
-
-			long totalLectures = totalAbsentLectures + totalAttendedLectures;
-			double rate;
-			if(totalLectures == 0 || totalAttendedLectures == 0) {
-				rate = 0.0d;
-			} else {
-				rate = (double)totalAttendedLectures / (double)totalLectures;
-			}
-			statistics.setAttendanceRate(rate);
+			calculateAttendanceRate(statistics, countAuthorizedAbsenceAsAttendant);
 		}
+	}
+
+	protected void calculateAttendanceRate(LectureBlockStatistics statistics, boolean countAuthorizedAbsenceAsAttendant) {
+		long totalAttendedLectures = statistics.getTotalAttendedLectures();
+		long totalAbsentLectures = statistics.getTotalAbsentLectures();
+		if(countAuthorizedAbsenceAsAttendant) {
+			totalAttendedLectures += statistics.getTotalAuthorizedAbsentLectures();
+		} else {
+			totalAbsentLectures += statistics.getTotalAuthorizedAbsentLectures();
+		}
+		if(totalAbsentLectures < 0) {
+			totalAbsentLectures = 0;
+		}
+
+		long totalLectures = totalAbsentLectures + totalAttendedLectures;
+		double rate;
+		if(totalLectures == 0 || totalAttendedLectures == 0) {
+			rate = 0.0d;
+		} else {
+			rate = (double)totalAttendedLectures / (double)totalLectures;
+		}
+		statistics.setAttendanceRate(rate);
 	}
 	
 	private LectureBlockStatistics create(Long identityKey, Long entryKey, String displayName, String externalRef,
@@ -931,7 +954,15 @@ public class LectureBlockRollCallDAO {
 			rate = (double)attendedForRate / (double)totalLectures;
 		}
 		
-		return new AggregatedLectureBlocksStatistics(totalPersonalPlannedLectures, totalAttendedLectures, totalAuthorizedAbsentLectures, totalAbsentLectures, rate);
+		double currentRate;
+		if(attendedForRate == 0) {
+			currentRate = 0.0d;
+		} else {
+			currentRate = attendedForRate / ((double)attendedForRate + (double)absentForRate);
+		}
+		
+		return new AggregatedLectureBlocksStatistics(totalPersonalPlannedLectures, totalAttendedLectures, totalAuthorizedAbsentLectures, totalAbsentLectures,
+				rate, currentRate);
 	}
 	
 	private static class Membership {

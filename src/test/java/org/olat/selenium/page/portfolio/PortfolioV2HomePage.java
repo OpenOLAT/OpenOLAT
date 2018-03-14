@@ -105,6 +105,8 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(deletedBindersBy, 5, browser);
 		browser.findElement(deletedBindersBy).click();
 		OOGraphene.waitBusy(browser);
+		By deletedListingBy = By.cssSelector("div.o_portfolio_listing.o_portfolio_deleted_listing");
+		OOGraphene.waitElement(deletedListingBy, browser);
 		return new BindersPage(browser);
 	}
 	

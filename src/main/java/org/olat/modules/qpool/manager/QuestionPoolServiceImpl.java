@@ -386,11 +386,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public Set<ExportFormatOptions> getExportFormatOptions(List<QuestionItemShort> items, Outcome outcome) {
 		return items.stream()
+				.filter(item -> StringHelper.containsNonWhitespace(item.getFormat()))
 				.map(QuestionItemShort::getFormat)
 				.map(qpoolModule::getQuestionPoolProvider)
 				.map(QPoolSPI::getTestExportFormats)
 				.flatMap(List::stream)
-				.filter(exportFormat -> exportFormat.getOutcome().equals(outcome))
+				.filter(exportFormat -> outcome.equals(exportFormat.getOutcome()))
 				.collect(Collectors.toSet()); 
 	}
 

@@ -372,10 +372,8 @@ public class ListRenderer {
 		if (licensesEnabled) {
 			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 			License license = metaInfoFactory.getLicense(metaInfo);
-			if (license != null) {
-				LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
-				licenseRenderer.render(sb, license);
-			}
+			LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
+			licenseRenderer.render(sb, license);
 			sb.append("</td><td>");
 		}
 

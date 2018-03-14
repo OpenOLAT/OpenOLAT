@@ -158,4 +158,11 @@ class LicenseTypeDAO {
 		return number != null && number > 0;
 	}
 
+	List<LicenseType> loadPredefinedLicenseTypes() {
+		String query = "select licensetype from licensetype licensetype where predefined is true";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LicenseType.class)
+				.getResultList();
+	}
+
 }

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -205,6 +206,26 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		for (int i = 0; i < yesOrNoKeys.length; i++) {
 			yesOrNoOptions[i] = translate(yesOrNoKeys[i]);
 		}
+	
+		// Drop down checkboxes 
+		String[] keys = new String[] { "phone", "clock", "book", "letter" };
+		String[] values = new String[] {
+				getTranslator().translate("guidemo.cbdropdown.phone"), 
+				getTranslator().translate("guidemo.cbdropdown.clock"),
+				getTranslator().translate("guidemo.cbdropdown.book"),
+				getTranslator().translate("guidemo.cbdropdown.letter")};
+		String[] cssClasses = new String[] {"", "", "", "o_userbulk_changedcell"};
+		String[] iconLeftCSS = new String[] {
+				"o_icon o_icon-fw o_icon_phone",
+				"o_icon o_icon-fw o_icon_time",
+				"o_icon o_icon-fw o_icon_lecture",
+				"o_icon o_icon-fw o_icon_mail"};
+		MultipleSelectionElement checkboxesDropdown = uifactory.addCheckboxesDropdown("dropdown", "advanced_form.cbdropdown", form, keys, values,
+				cssClasses, iconLeftCSS);
+		checkboxesDropdown.setNonSelectedText(getTranslator().translate("guidemo.cbdropdown.non.selected"));
+		checkboxesDropdown.select(keys[0], true);
+		checkboxesDropdown.setEnabled("book", false);
+		checkboxesDropdown.addActionListener(FormEvent.ONCLICK);
 
 		// Horizontal radio buttons. Choice between Yes or No.
 		horizontalRadioButtons = uifactory.addRadiosHorizontal("guidemo.form.radio2", form, yesOrNoKeys,
