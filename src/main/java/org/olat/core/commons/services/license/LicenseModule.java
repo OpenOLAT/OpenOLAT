@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.license;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,8 @@ public class LicenseModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
-		for (LicenseHandler handler: handlers) {
+		List<LicenseHandler> initHandlers = new ArrayList<>(handlers);
+		for (LicenseHandler handler: initHandlers) {
 			String handlerType = handler.getType();
 			
 			String enabledObj = getStringPropertyValue(ENABLED_HANDLERS + handlerType, true);
