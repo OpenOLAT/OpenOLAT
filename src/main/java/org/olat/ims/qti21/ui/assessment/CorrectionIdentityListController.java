@@ -237,7 +237,9 @@ public class CorrectionIdentityListController extends FormBasicController {
 		}
 		
 		boolean manualCorrection = model.isManualCorrection(itemRef);
-		row.setManualCorrection(manualCorrection);
+		if(!row.isManualCorrection()) {
+			row.setManualCorrection(manualCorrection);
+		}
 		if(manualCorrection) {
 			if(manualScore == null) {
 				row.addNotCorrected();
@@ -249,7 +251,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 		} else {
 			row.addAutoCorrected();
 		}
-		
 	}
 
 	@Override
