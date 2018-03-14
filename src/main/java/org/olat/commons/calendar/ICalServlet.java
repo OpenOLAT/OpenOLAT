@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -90,8 +89,7 @@ public class ICalServlet extends HttpServlet {
 	private static final long serialVersionUID = -155266285395912535L;
 	private static final OLog log = Tracing.createLoggerFor(ICalServlet.class);
 	
-	private static final int TTL_HOURS = 1;
-	private static final int cacheAge = 60 * 60 * TTL_HOURS;//6 Hours
+	private static final int TTL_MINUTES = 15;
 	private static final ConcurrentMap<String,VTimeZone> outlookVTimeZones = new ConcurrentHashMap<>();
 	
 	/** collection of iCal feed prefixs **/
@@ -246,9 +244,8 @@ public class ICalServlet extends HttpServlet {
 	}
 	
 	private void setCacheControl(HttpServletResponse httpResponse) {
-		long expiry = new Date().getTime() + cacheAge * 1000;
-	    httpResponse.setDateHeader("Expires", expiry);
-	    httpResponse.setHeader("Cache-Control", "max-age="+ cacheAge);
+	    httpResponse.setDateHeader("Expires", 0l);
+	    httpResponse.setHeader("Cache-Control", "max-age=0");
 	}
 	
 	private void outputCalendar(Calendar calendar, HttpServletRequest request, HttpServletResponse response)
@@ -363,10 +360,10 @@ public class ICalServlet extends HttpServlet {
 	 */
 	private void outputTTL(Agent agent, Writer out)
 	throws IOException {
-		out.write("X-PUBLISHED-TTL:PT" + TTL_HOURS + "H");
+		out.write("X-PUBLISHED-TTL:PT" + TTL_MINUTES + "M");
 		out.write(Strings.LINE_SEPARATOR);
 		if(agent == null || agent != Agent.java) {
-			out.write("REFRESH-INTERVAL;VALUE=DURATION:PT" + TTL_HOURS + "H");
+			out.write("REFRESH-INTERVAL;VALUE=DURATION:PT" + TTL_MINUTES + "M");
 			out.write(Strings.LINE_SEPARATOR);
 		}
 	}
