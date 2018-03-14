@@ -778,8 +778,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSearch(UserRequest ureq, SearchEvent se) {
-		if(StringHelper.containsNonWhitespace(se.getType())) {
-			searchParams.setResourceTypes(Collections.singletonList(se.getType()));
+		if(se.getTypes() != null && se.getTypes().size() > 0) {
+			searchParams.setResourceTypes(new ArrayList<String>(se.getTypes()));
 		} else {
 			searchParams.setResourceTypes(null);
 		}
