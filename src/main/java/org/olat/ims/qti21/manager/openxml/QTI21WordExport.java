@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -130,17 +131,20 @@ public class QTI21WordExport implements MediaResource {
 	
 	private String encoding;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
-	private VFSContainer mediaContainer;
-	private Locale locale;
+	private final File mediaDir;
+	private final VFSContainer mediaContainer;
+	private final Locale locale;
 	private final CountDownLatch latch;
 	private final AssessmentHtmlBuilder htmlBuilder;
 	
-	public QTI21WordExport(ResolvedAssessmentTest resolvedAssessmentTest, VFSContainer mediaContainer,
+	public QTI21WordExport(ResolvedAssessmentTest resolvedAssessmentTest,
+			VFSContainer mediaContainer, File mediaDir,
 			Locale locale, String encoding, CountDownLatch latch) {
 		this.encoding = encoding;
 		this.locale = locale;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.latch = latch;
+		this.mediaDir = mediaDir;
 		this.mediaContainer = mediaContainer;
 		htmlBuilder = new AssessmentHtmlBuilder();
 	}
@@ -275,7 +279,7 @@ public class QTI21WordExport implements MediaResource {
 				ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
-				renderAssessmentItem(assessmentItem, new File(itemUri), document, withResponses, translator, htmlBuilder);
+				renderAssessmentItem(assessmentItem, new File(itemUri), mediaDir, document, withResponses, translator, htmlBuilder);
 				document.appendPageBreak();
 			}
 		}
@@ -303,7 +307,7 @@ public class QTI21WordExport implements MediaResource {
 		}
 	}
 	
-	public static void renderAssessmentItem(AssessmentItem item, File itemFile, OpenXMLDocument document,
+	public static void renderAssessmentItem(AssessmentItem item, File itemFile, File mediaDir, OpenXMLDocument document,
 			boolean withResponses, Translator translator, AssessmentHtmlBuilder htmlBuilder) {
 		StringBuilder addText = new StringBuilder();
 		
@@ -339,7 +343,7 @@ public class QTI21WordExport implements MediaResource {
 
 		List<Block> itemBodyBlocks = item.getItemBody().getBlocks();
 		String html = htmlBuilder.blocksString(itemBodyBlocks);
-		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses, htmlBuilder, translator));
+		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, mediaDir, withResponses, htmlBuilder, translator));
 	
 		if(withResponses && (type == QTI21QuestionType.essay || type == QTI21QuestionType.upload || type == QTI21QuestionType.drawing)) {
 			renderCorrectSolutionForWord(item, document, translator, htmlBuilder);
@@ -373,6 +377,7 @@ public class QTI21WordExport implements MediaResource {
 	private static class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
 		
 		private final File itemFile;
+		private final String relPath;
 		private final AssessmentItem assessmentItem;
 		private final boolean withResponses;
 		private final AssessmentHtmlBuilder htmlBuilder;
@@ -383,13 +388,21 @@ public class QTI21WordExport implements MediaResource {
 		private boolean renderElement = true;
 
 		public QTI21AndHTMLToOpenXMLHandler(OpenXMLDocument document, AssessmentItem assessmentItem,
-				File itemFile, boolean withResponses, AssessmentHtmlBuilder htmlBuilder, Translator translator) {
+				File itemFile, File mediaDir, boolean withResponses, AssessmentHtmlBuilder htmlBuilder, Translator translator) {
 			super(document);
 			this.itemFile = itemFile;
 			this.withResponses = withResponses;
 			this.assessmentItem = assessmentItem;
 			this.htmlBuilder = htmlBuilder;
 			this.translator = translator;
+			
+			if(mediaDir.equals(itemFile.getParentFile())) {
+				relPath = "";
+			} else {
+				Path relativePath = mediaDir.toPath().relativize(itemFile.getParentFile().toPath());
+				String relativePathString = relativePath.toString();
+				relPath = relativePathString.concat("/");
+			}
 		}
 		
 		@Override
@@ -477,6 +490,11 @@ public class QTI21WordExport implements MediaResource {
 					}
 				}
 			}
+		}
+		
+		@Override
+		protected String path(String path) {
+			return relPath.concat(path);
 		}
 
 		@Override

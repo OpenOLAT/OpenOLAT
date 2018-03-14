@@ -203,7 +203,7 @@ public class QTI12And21PoolWordExport implements MediaResource {
 					ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 							.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
 					AssessmentItem item = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
-					QTI21WordExport.renderAssessmentItem(item, resourceFile, document, withResponses, translator, htmlBuilder);
+					QTI21WordExport.renderAssessmentItem(item, resourceFile, resourceDirectory, document, withResponses, translator, htmlBuilder);
 				}
 				if(itemIt.hasNext()) {
 					document.appendPageBreak();

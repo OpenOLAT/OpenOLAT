@@ -443,7 +443,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			Style[] styles = setTextPreferences(Style.bold);
 			styleStack.add(new StyleStatus(tag, styles));
 		} else if("img".equals(tag)) {
-			String path = attributes.getValue("src");
+			String path = path(attributes.getValue("src"));
 			setImage(path);
 		} else if("table".equals(tag)) {
 			startTable();
@@ -479,6 +479,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				styleStack.add(new StyleStatus(tag, new Style[0]));
 			}
 		}
+	}
+	
+	protected String path(String path) {
+		return path;
 	}
 
 	@Override

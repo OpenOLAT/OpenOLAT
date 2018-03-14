@@ -710,7 +710,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private void doExportDocx(UserRequest ureq) {
 		exportLatch = new CountDownLatch(1);
-		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, getLocale(), "UTF-8", exportLatch);
+		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot, getLocale(), "UTF-8", exportLatch);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 	
