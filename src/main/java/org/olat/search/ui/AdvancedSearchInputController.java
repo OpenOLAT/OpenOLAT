@@ -141,6 +141,7 @@ public class AdvancedSearchInputController extends FormBasicController {
 			documentTypeValues[j++] = documentType.getValue();
 		}
 		documentTypeQuery = uifactory.addCheckboxesDropdown("doc_type", "form.search.label.documenttype", formLayout, documentTypeKeys, documentTypeValues);
+		documentTypeQuery.setNonSelectedText(translate("drop.down.no.selection"));
 		
 		//licenses
 		List<LicenseType> activeLicenseTypes = licenseService.loadLicenseTypes();
@@ -156,7 +157,8 @@ public class AdvancedSearchInputController extends FormBasicController {
 			counter++;
 		}
 		licenseQuery = uifactory.addCheckboxesDropdown("search_license", "form.search.label.license", formLayout, licenseTypeKeys, licenseTypeValues);
-		
+		licenseQuery.setNonSelectedText(translate("drop.down.no.selection"));
+
 		//metadatas
 		SearchMetadataFieldsProvider metadataProvider = (SearchMetadataFieldsProvider) CoreSpringFactory.getBean("SearchMetadataFieldsProvider");
 		// The metadata key selection, e.g DC.language for doublin core language metadata
