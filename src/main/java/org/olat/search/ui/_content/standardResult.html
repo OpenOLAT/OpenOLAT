@@ -8,12 +8,6 @@
 			$r.render("open_doc")
 		#end	
 		</h4>
-		#if ($license && $license != "")
-			<span class="o_search_result_license badge">
-				<i class="o_icon o_icon-fw o_icon_lic_small $licenseIcon"></i>
-				$license
-			</span>
-		#end
 	</div>
     #if ($result.parentContextName && $result.parentContextName != "")
 	<div class="o_search_result_context">
@@ -22,37 +16,59 @@
 		<span class="o_search_result_context_name">"$r.escapeHtml($result.parentContextName)"</span>
 	</div> 
     #end
+	#if ($license && $license != "")
+		<div class="o_search_result_license">
+			<i class="o_icon o_icon-fw o_icon_lic_small $licenseIcon"></i>
+			$license
+		</div>
+	#end
+
+
+	<a data-toggle="collapse" data-target="#o_search_result_${id}" class="o_opener" onclick="jQuery(this).toggleClass('o_in'); return false;">
+		<i class="o_icon o_icon-fw"></i> 
+		$r.translate("metadata.show")
+	</a>
+	<div class="o_search_result_details">
+		<div class="o_togglebox_wrapper o_block">
+			<div id="o_search_result_${id}" class="collapse">
+				<div class="o_togglebox_content clearfix">	
+					<div>
+						#if (!$author.equals("") ) 
+						<div class="o_search_result_author">
+						   	<strong>$r.translate("label.search.author"):</strong> $r.escapeHtml($author).
+						</div>
+						#end
+						#if ($result.lastChange )
+						<div class="o_search_result_lastmod">
+						  	<strong>$r.translate("label.search.result.last.changed"):</strong> $formatter.formatDate($result.lastChange)
+						</div>
+					  	#end		  
+						<div class="o_search_result_type">
+						    <strong>$r.translate("label.search.result.documenttype"):</strong> 
+						    $r.translate($result.documentType)
+					  	</div>
+						#if (!$result.description.equals("")) 
+						<div class="o_search_result_desc">
+						  	<strong>$r.translate("result.description"):</strong> $r.escapeHtml($result.description)
+						</div>		  
+						#end
+						#if ($license && $license != "")
+						<div class="o_search_result_license">
+							<strong>$r.translate("form.search.label.license"):</strong> $license
+							<br />
+							<i class="o_icon $licenseIcon"> </i>
+						</div>
+						#end
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	
 	#if ($highlight && !$result.highlightResult.equals("")) 
 		<div class="o_search_result_excerpt">
 		  $result.highlightResult
 		</div>
 	#end
-	
-	<div class="o_search_result_details">
-		#o_togglebox_start("o_search_result_$id" $r.translate("metadata.show"))
-		<div>
-			#if (!$author.equals("") ) 
-				<div class="o_search_result_author">
-			    	<strong>$r.translate("label.search.author"):</strong> $r.escapeHtml($author).
-				</div>
-			#end
-			#if ($result.lastChange )
-				<div class="o_search_result_lastmod">
-				  	<strong>$r.translate("label.search.result.last.changed"):</strong> $formatter.formatDate($result.lastChange)
-				</div>
-		  	#end		  
-			<div class="o_search_result_type">
-			    <strong>$r.translate("label.search.result.documenttype"):</strong> 
-			    $r.translate($result.documentType)
-		  	</div>
-			#if (!$result.description.equals("")) 
-				<div class="o_search_result_desc">
-				  	<strong>$r.translate("result.description"):</strong> $r.escapeHtml($result.description)
-			  	</div>		  
-			#end
-		</div>
-		#o_togglebox_end()
-	</div>
-	
+		
 </div>
