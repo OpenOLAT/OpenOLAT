@@ -24,7 +24,6 @@ import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersF
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.ArrayList;
@@ -46,6 +45,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.HTMLToOpenXMLHandler;
 import org.olat.core.util.openxml.OpenXMLConstants;
 import org.olat.core.util.openxml.OpenXMLDocument;
@@ -216,8 +216,9 @@ public class QTI21WordExport implements MediaResource {
 		}
 	}
 	
-	private void exportTest(AssessmentTest assessmentTest, String header, OutputStream out, boolean withResponses) {
-		try(ZipOutputStream zout = new ZipOutputStream(out)) {
+	private void exportTest(AssessmentTest assessmentTest, String header, ZipOutputStream out, boolean withResponses) {
+		try(ShieldOutputStream sout = new ShieldOutputStream(out);
+				ZipOutputStream zout = new ZipOutputStream(sout)) {
 			zout.setLevel(9);
 			
 			OpenXMLDocument document = new OpenXMLDocument();
