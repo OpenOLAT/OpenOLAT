@@ -37,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -415,7 +417,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		listenTo(overrideScoreCtrl);
 
 		overrideScoreCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				overrideScoreCtrl.getInitialComponent(), overrideScoreButton.getFormDispatchId(), "", true, "");
+				overrideScoreCtrl.getInitialComponent(), overrideScoreButton.getFormDispatchId(), "", true, "o_assessmentitem_scoring_override_window");
 		listenTo(overrideScoreCalloutCtrl);
 		overrideScoreCalloutCtrl.activate();
 	}
@@ -444,8 +446,10 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttonsCont", getTranslator());
 			formLayout.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-			uifactory.addFormSubmitButton("override.score", buttonsCont);
+			FormCancel cancel = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			cancel.setElementCssClass("btn-xs");
+			FormSubmit submit = uifactory.addFormSubmitButton("override.score", buttonsCont);
+			submit.setElementCssClass("btn-xs");
 		}
 
 		@Override

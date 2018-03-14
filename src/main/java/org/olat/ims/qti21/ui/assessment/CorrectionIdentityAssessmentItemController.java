@@ -133,10 +133,11 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			}
 		}
 		
-		backButton = uifactory.addFormLink("back", formLayout, Link.BUTTON);
-		backButton.setIconLeftCSS("o_icon o_icon_back");
+		backButton = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
+		backButton.setElementCssClass("o_correction_navigation_back");
 		
 		nextQuestionButton = uifactory.addFormLink("next.item", formLayout, Link.BUTTON);
+		nextQuestionButton.setElementCssClass("o_correction_navigation_next");
 		nextQuestionButton.setIconRightCSS("o_icon o_icon_next");
 		
 		String[] identityKeys = new String[assessmentEntryList.size()];
@@ -154,6 +155,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		}
 
 		previousQuestionButton = uifactory.addFormLink("previous.item", formLayout, Link.BUTTON);
+		previousQuestionButton.setElementCssClass("o_correction_navigation_previous");
 		previousQuestionButton.setIconLeftCSS("o_icon o_icon_previous");
 
 		identityInteractionsCtrl = new CorrectionIdentityInteractionsController(ureq, getWindowControl(), 
