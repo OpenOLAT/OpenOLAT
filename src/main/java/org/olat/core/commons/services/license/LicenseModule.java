@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.license.manager.DefaultModuleValues;
 import org.olat.core.commons.services.license.manager.LicensorCreator;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
@@ -45,6 +46,8 @@ public class LicenseModule extends AbstractSpringModule {
 	private static final String LICENSOR_CREATOR_CONSTANT = "licensor.creator.constant-";
 	
 	@Autowired
+	private DefaultModuleValues defaultModuleValues;
+	@Autowired
 	private List<LicensorCreator> licensorCreators;
 	@Autowired
     private List<LicenseHandler> handlers;
@@ -60,17 +63,17 @@ public class LicenseModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
-		handlers.sort((LicenseHandler h1, LicenseHandler h2) -> h1.getType().compareTo(h2.getType()));
-		
 		for (LicenseHandler handler: handlers) {
 			String handlerType = handler.getType();
 			
 			String enabledObj = getStringPropertyValue(ENABLED_HANDLERS + handlerType, true);
-			Boolean enabled = Boolean.FALSE;
 			if (StringHelper.containsNonWhitespace(enabledObj)) {
-				enabled = Boolean.valueOf(enabledObj);
+				Boolean enabled = Boolean.valueOf(enabledObj);
+				enabledHandlers.put(handlerType, enabled);
+			} else {
+				// New license handler was never initialized
+				initLicenseHandler(handler);
 			}
-			enabledHandlers.put(handlerType, enabled);
 			
 			String defaultLicenseTypeKey = getStringPropertyValue(DEFAULT_LICENSE_TYPE + handlerType, true);
 			if (StringHelper.containsNonWhitespace(defaultLicenseTypeKey)) {
@@ -87,6 +90,17 @@ public class LicenseModule extends AbstractSpringModule {
 				licensorConstantValues.put(handlerType, licensorCreatorConstant);
 			}
 		}
+
+		handlers.sort((LicenseHandler h1, LicenseHandler h2) -> h1.getType().compareTo(h2.getType()));
+	}
+	
+	private void initLicenseHandler(LicenseHandler handler) {
+		setEnabled(handler.getType(), defaultModuleValues.isEnabled());
+
+		defaultModuleValues.activateLicenseTypes(handler);
+		
+		LicenseType licenseType = defaultModuleValues.getLicenseType();
+		setDefaultLicenseTypeKey(handler, String.valueOf(licenseType.getKey()));
 	}
 
 	@Override

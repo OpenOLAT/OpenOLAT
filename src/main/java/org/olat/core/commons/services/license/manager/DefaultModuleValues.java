@@ -19,8 +19,12 @@
  */
 package org.olat.core.commons.services.license.manager;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,10 +36,12 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class PredifinedLicenseTypeInitializer {
+public class DefaultModuleValues {
 	
 	@Autowired
-	private LicenseTypeDAO privateTypeDao;
+	private LicenseTypeDAO licenseTypeDao;
+	@Autowired
+	private LicenseTypeActivationDAO licenseTypeActivationDao;
 	
 	@PostConstruct
 	void initPredefinedLicenseTypes() {
@@ -53,13 +59,30 @@ public class PredifinedLicenseTypeInitializer {
 	}
 	
 	private void createAndPersistPredefined(String name, String cssClass, String text) {
-		if (!privateTypeDao.exists(name)) {
-			LicenseTypeImpl licenseType = (LicenseTypeImpl) privateTypeDao.create(name);
+		if (!licenseTypeDao.exists(name)) {
+			LicenseTypeImpl licenseType = (LicenseTypeImpl) licenseTypeDao.create(name);
 			licenseType.setCssClass(cssClass);
 			licenseType.setText(text);
 			licenseType.setPredefined(true);
-			privateTypeDao.save(licenseType);
+			licenseTypeDao.save(licenseType);
 		}
+	}
+	
+	public boolean isEnabled() {
+		return true;
+	}
+	
+	public void activateLicenseTypes(LicenseHandler handler) {
+		List<LicenseType> licenseTypes = licenseTypeDao.loadPredefinedLicenseTypes();
+		for (LicenseType licenseType: licenseTypes) {
+			if (!licenseTypeActivationDao.isActive(handler, licenseType)) {
+				licenseTypeActivationDao.createAndPersist(handler, licenseType);
+			}
+		}
+	}
+
+	public LicenseType getLicenseType() {
+		return licenseTypeDao.loadLicenseTypeByName(LicenseTypeDAO.NO_LICENSE_NAME);
 	}
 	
 }
