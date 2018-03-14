@@ -135,7 +135,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("<script type='text/javascript'>");
 		    sb.append("/* <![CDATA[ */");
 			sb.append("jQuery('#").append(buttonTitleId).append("').ready(function() {");
-			sb.append(getJsSetButtonText(buttonTitleId, listId));
+			sb.append(getJsSetButtonText(stF, buttonTitleId, listId));
 			sb.append("});");
 			sb.append("/* ]]> */");
 			sb.append("</script>");
@@ -151,7 +151,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append("   setTimeout( function() {");
 				sb.append("     $inp.prop('checked', $check);");
 				sb.append("     $inp.data('checked', $check);");
-				sb.append(getJsSetButtonText(buttonTitleId, listId));
+				sb.append(getJsSetButtonText(stF, buttonTitleId, listId));
 				sb.append(getRawJSFor(check));
 				sb.append(getAjaxOnlyJs(stF, stC, key));
 				sb.append("   }, 0);");
@@ -167,14 +167,18 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 	}
 	
-	private StringBuilder getJsSetButtonText(long buttonTitleId, long listId) {
+	private StringBuilder getJsSetButtonText(MultipleSelectionElementImpl stF, long buttonTitleId, long listId) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("jQuery('#").append(buttonTitleId).append("').text(function() {");
-		sb.append("  return jQuery.makeArray(");
+		sb.append("  var $buttonText = jQuery.makeArray(");
 		sb.append("    jQuery('#").append(listId).append(" li a input').filter(':checked').map(function() {");
 		sb.append("		 return jQuery(this).data('value');");
 		sb.append("    })");
 		sb.append("  ).join(', ');");
+		sb.append("  if ($buttonText == '') {");
+		sb.append("    $buttonText = '").append(stF.getNonSelectedText()).append("';");
+		sb.append("  }");
+		sb.append("  return $buttonText;");
 		sb.append("});");
 		return sb;
 	}

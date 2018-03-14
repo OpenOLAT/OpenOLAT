@@ -51,11 +51,19 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @param values
 	 * @param cssClasses
 	 *            The CSS classes that should be used in the form element for
-	 *            each key-value pair or NULL not not use special styling
+	 *            each key-value pair or NULL not not use special styling.
+	 * @param iconLeftCSS
 	 */
 	public void setKeysAndValues(String[] keys, String values[], String[] cssClasses, String[] iconLeftCSS);
 	
 	public Set<String> getKeys();
+	
+	/**
+	 * Text to display if all checkboxes are unchecked.
+	 * 
+	 * @param text the displayed text
+	 */
+	public void setNonSelectedText(String text);
 	
 	/**
 	 * @param howmany

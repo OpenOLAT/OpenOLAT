@@ -65,6 +65,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean domReplacementWrapperRequired = true;
+	private String nonSelectedText = "";
 	private ConsumableBoolean formRequestEval = new ConsumableBoolean(false);
 
 	public MultipleSelectionElementImpl(String name) {
@@ -164,6 +165,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public String getValue(int which) {
 		return values[which];
+	}
+	
+
+	@Override
+	public void setNonSelectedText(String text) {
+		this.nonSelectedText = text != null? text: "";
+	}
+
+	public String getNonSelectedText() {
+		return nonSelectedText;
 	}
 
 	public ConsumableBoolean getFormRequestEval() {

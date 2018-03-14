@@ -222,6 +222,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 				"o_icon o_icon-fw o_icon_mail"};
 		checkboxesDropdown = uifactory.addCheckboxesDropdown("dropdown", "advanced_form.cbdropdown", form, keys, values,
 				cssClasses, iconLeftCSS);
+		checkboxesDropdown.setNonSelectedText(getTranslator().translate("guidemo.cbdropdown.non.selected"));
 		checkboxesDropdown.select(keys[0], true);
 		checkboxesDropdown.setEnabled("book", false);
 		checkboxesDropdown.addActionListener(FormEvent.ONCLICK);
