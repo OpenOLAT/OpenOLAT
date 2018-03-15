@@ -26,9 +26,9 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.olat.admin.jmx.JMXManager;
 import org.olat.admin.sysinfo.model.DatabaseConnectionVO;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.jmx.JMXManager;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.stereotype.Service;

@@ -22,8 +22,9 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.admin.user;
+package org.olat.gui.demo.guidemo.guisoa;
 
+import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -36,10 +37,12 @@ public class UserSearchUIServiceImpl implements UserSearchUIService {
 		// needed for spring
 	}
 	
+	@Override
 	public Controller createUserSearch(boolean withCancelButton, UserRequest ureq, WindowControl wControl) {
 		return new UserSearchController(ureq, wControl, withCancelButton);
 	}
 
+	@Override
 	public Identity getChosenUser(Event event) {
 		if (event == Event.CANCELLED_EVENT) {
 			return null;

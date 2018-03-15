@@ -30,7 +30,6 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.ui.GroupController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
