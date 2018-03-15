@@ -19,35 +19,41 @@
  */
 package org.olat.basesecurity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 26.02.2014<br>
+ * Initial date: 9 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum GroupRoles {
+public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef {
 	
-	owner,
-	coach,
-	participant,
-	invitee,
-	waiting,
+	public String getMaterializedPathKeys();
 	
-	usermanager;
+	public String getIdentifier();
 	
+	public void setIdentifier(String identifier);
 	
-	public static List<String> toList(String... roles) {
-		if(roles != null && roles.length > 0 && !(roles.length == 1 && roles[0] == null)) {
-			List<String> roleList = new ArrayList<>(roles.length);
-			for(String role:roles) {
-				roleList.add(role);
-			}
-			return roleList;
-		}
-		return Collections.emptyList();
-	}
+	public String getDisplayName();
+	
+	public void setDisplayName(String displayName);
+	
+	public String getDescription();
+	
+	public void setDescription(String description);
+	
+	public String getExternalId();
+	
+	public void setExternalId(String externalId);
+	
+	public OrganisationManagedFlag[] getManagedFlags();
+	
+	public void setManagedFlags(OrganisationManagedFlag[] flags);
+	
+	public Organisation getParent();
+	
+	public Organisation getRoot();
+
 }

@@ -24,12 +24,12 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
-import org.olat.modules.organisation.Organisation;
-import org.olat.modules.organisation.manager.OrganisationDAO;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 

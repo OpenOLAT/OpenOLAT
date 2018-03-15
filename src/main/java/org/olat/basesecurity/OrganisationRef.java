@@ -19,35 +19,14 @@
  */
 package org.olat.basesecurity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * 
- * Initial date: 26.02.2014<br>
+ * Initial date: 9 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum GroupRoles {
+public interface OrganisationRef {
 	
-	owner,
-	coach,
-	participant,
-	invitee,
-	waiting,
-	
-	usermanager;
-	
-	
-	public static List<String> toList(String... roles) {
-		if(roles != null && roles.length > 0 && !(roles.length == 1 && roles[0] == null)) {
-			List<String> roleList = new ArrayList<>(roles.length);
-			for(String role:roles) {
-				roleList.add(role);
-			}
-			return roleList;
-		}
-		return Collections.emptyList();
-	}
+	public Long getKey();
+
 }

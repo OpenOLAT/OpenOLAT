@@ -1,0 +1,12 @@
+#if($r.available("add.user.manager"))
+<div class="o_button_group o_button_group_right">
+	$r.render("add.user.manager")
+</div>
+#end
+$r.render("table")
+#if($r.available("remove.memberships"))
+<div class="o_button_group">
+	$r.render("remove.memberships")
+</div>
+#end
+

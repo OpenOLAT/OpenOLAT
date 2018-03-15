@@ -22,7 +22,7 @@ package org.olat.modules.curriculum.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.modules.organisation.Organisation;
+import org.olat.basesecurity.Organisation;
 
 /**
  * 

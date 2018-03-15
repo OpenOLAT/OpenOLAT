@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.basesecurity.model;
 
 import java.util.Date;
 
@@ -35,11 +35,9 @@ import javax.persistence.TemporalType;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.Organisation;
-import org.olat.basesecurity.model.GroupImpl;
-import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationType;
 import org.olat.core.id.Persistable;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumManagedFlag;
 
 /**
  * 
@@ -47,11 +45,11 @@ import org.olat.modules.curriculum.CurriculumManagedFlag;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="curriculum")
-@Table(name="o_cur_curriculum")
-public class CurriculumImpl implements Persistable, Curriculum {
+@Entity(name="organisation")
+@Table(name="o_org_organisation")
+public class OrganisationImpl implements Persistable, Organisation {
 
-	private static final long serialVersionUID = 1219053866793474521L;
+	private static final long serialVersionUID = 3062294568262911860L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,21 +62,24 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-
-	@Column(name="c_identifier", nullable=true, insertable=true, updatable=true)
-	private String identifier;
-	@Column(name="c_displayname", nullable=true, insertable=true, updatable=true)
-	private String displayName;
-	@Column(name="c_description", nullable=true, insertable=true, updatable=true)
-	private String description;
-	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
-	private String status;
-	@Column(name="c_degree", nullable=true, insertable=true, updatable=true)
-	private String degree;
 	
-	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
+	@Column(name="o_identifier", nullable=true, insertable=true, updatable=true)
+	private String identifier;
+	@Column(name="o_displayname", nullable=true, insertable=true, updatable=true)
+	private String displayName;
+	@Column(name="o_description", nullable=true, insertable=true, updatable=true)
+	private String description;
+	@Column(name="o_css_class", nullable=true, insertable=true, updatable=true)
+	private String cssClass;
+	@Column(name="o_status", nullable=true, insertable=true, updatable=true)
+	private String status;
+	
+	@Column(name="o_m_path_keys", nullable=true, insertable=true, updatable=true)
+	private String materializedPathKeys;
+	
+	@Column(name="o_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
-	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
+	@Column(name="o_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
@@ -86,14 +87,23 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	private Group group;
 	
 	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_organisation", nullable=true, insertable=true, updatable=false)
-	private Organisation organisation;
+	@JoinColumn(name="fk_root", nullable=true, insertable=true, updatable=true)
+	private Organisation root;
+	
+	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_parent", nullable=true, insertable=true, updatable=true)
+	private Organisation parent;
+	
+	@ManyToOne(targetEntity=OrganisationTypeImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
+	private OrganisationType type;
 
+	
 	@Override
 	public Long getKey() {
 		return key;
 	}
-
+	
 	public void setKey(Long key) {
 		this.key = key;
 	}
@@ -102,7 +112,7 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	public Date getCreationDate() {
 		return creationDate;
 	}
-
+	
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
@@ -111,10 +121,10 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	public Date getLastModified() {
 		return lastModified;
 	}
-
+	
 	@Override
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
+	public void setLastModified(Date date) {
+		lastModified = date;
 	}
 
 	@Override
@@ -147,6 +157,14 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		this.description = description;
 	}
 
+	public String getCssClass() {
+		return cssClass;
+	}
+
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
+	}
+
 	public String getStatus() {
 		return status;
 	}
@@ -155,12 +173,12 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		this.status = status;
 	}
 
-	public String getDegree() {
-		return degree;
+	public String getMaterializedPathKeys() {
+		return materializedPathKeys;
 	}
 
-	public void setDegree(String degree) {
-		this.degree = degree;
+	public void setMaterializedPathKeys(String materializedPathKeys) {
+		this.materializedPathKeys = materializedPathKeys;
 	}
 
 	@Override
@@ -180,15 +198,15 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	public void setManagedFlagsString(String managedFlagsString) {
 		this.managedFlagsString = managedFlagsString;
 	}
-
+	
 	@Override
-	public CurriculumManagedFlag[] getManagedFlags() {
-		return CurriculumManagedFlag.toEnum(managedFlagsString);
+	public OrganisationManagedFlag[] getManagedFlags() {
+		return OrganisationManagedFlag.toEnum(managedFlagsString);
 	}
-
+	
 	@Override
-	public void setManagedFlags(CurriculumManagedFlag[] flags) {
-		setManagedFlagsString(CurriculumManagedFlag.toString(flags));
+	public void setManagedFlags(OrganisationManagedFlag[] flags) {
+		managedFlagsString = OrganisationManagedFlag.toString(flags);
 	}
 
 	public Group getGroup() {
@@ -199,18 +217,33 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		this.group = group;
 	}
 
-	@Override
-	public Organisation getOrganisation() {
-		return organisation;
+	public Organisation getRoot() {
+		return root;
 	}
 
-	public void setOrganisation(Organisation organisation) {
-		this.organisation = organisation;
+	public void setRoot(Organisation root) {
+		this.root = root;
+	}
+
+	public Organisation getParent() {
+		return parent;
+	}
+
+	public void setParent(Organisation parent) {
+		this.parent = parent;
+	}
+
+	public OrganisationType getType() {
+		return type;
+	}
+
+	public void setType(OrganisationType type) {
+		this.type = type;
 	}
 
 	@Override
 	public int hashCode() {
-		return key == null ? 261825789 : key.hashCode();
+		return key == null ? 147518 : key.hashCode();
 	}
 
 	@Override
@@ -218,9 +251,9 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumImpl) {
-			CurriculumImpl curriculum = (CurriculumImpl)obj;
-			return key != null && key.equals(curriculum.getKey());
+		if(obj instanceof OrganisationImpl) {
+			OrganisationImpl org = (OrganisationImpl)obj;
+			return key != null && key.equals(org.getKey());
 		}
 		return super.equals(obj);
 	}

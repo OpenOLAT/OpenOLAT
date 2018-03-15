@@ -271,6 +271,26 @@
 	<bean class="org.olat.user.DisplayPortraitManager"/>
 	<bean class="org.olat.user.HomePageConfigManagerImpl"/>
 	
+	<!-- Organisation admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="9012" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.ui.organisation.OrganisationAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="organisations" />
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.user.ui.organisation"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
 	<!--  user properties admin-gui -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="actionController">

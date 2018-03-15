@@ -76,8 +76,7 @@ public class GroupDAO {
 	}
 	
 	public Group loadGroup(Long key) {
-		Group group = dbInstance.getCurrentEntityManager().find(GroupImpl.class, key);
-		return group;
+		return dbInstance.getCurrentEntityManager().find(GroupImpl.class, key);
 	}
 	
 	/**
@@ -133,7 +132,7 @@ public class GroupDAO {
 				.executeUpdate();
 	}
 	
-	public int removeMembership(Group group, Identity identity) {
+	public int removeMembership(Group group, IdentityRef identity) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		List<GroupMembership> memberships = em.createNamedQuery("membershipsByGroupAndIdentity", GroupMembership.class)
 			.setParameter("groupKey", group.getKey())

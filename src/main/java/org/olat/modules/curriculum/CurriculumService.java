@@ -21,8 +21,8 @@ package org.olat.modules.curriculum;
 
 import java.util.List;
 
+import org.olat.basesecurity.Organisation;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
-import org.olat.modules.organisation.Organisation;
 
 /**
  * 

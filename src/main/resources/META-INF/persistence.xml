@@ -68,6 +68,9 @@
 		<class>org.olat.basesecurity.model.GroupMembershipImpl</class>
 		<class>org.olat.basesecurity.model.UserProperty</class>
 		<class>org.olat.basesecurity.model.IdentityLastLoginImpl</class>
+		<class>org.olat.basesecurity.model.OrganisationTypeImpl</class>
+		<class>org.olat.basesecurity.model.OrganisationTypeToTypeImpl</class>
+		<class>org.olat.basesecurity.model.OrganisationImpl</class>
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.commons.calendar.model.ImportedCalendar</class>
 		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
@@ -177,9 +180,6 @@
 		<class>org.olat.modules.lecture.model.LectureParticipantCalendarSummary</class>
 		<class>org.olat.modules.lecture.model.LectureBlockReminderImpl</class>
 		<class>org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl</class>
-		<class>org.olat.modules.organisation.model.OrganisationTypeImpl</class>
-		<class>org.olat.modules.organisation.model.OrganisationTypeToTypeImpl</class>
-		<class>org.olat.modules.organisation.model.OrganisationImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>
