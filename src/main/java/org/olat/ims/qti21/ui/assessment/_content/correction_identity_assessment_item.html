@@ -12,9 +12,9 @@
 <div class="o_assessmentitem_wrapper clearfix">
 	<h4 class="itemTitle"><i class="o_icon $labelCssClass"> </i> $r.escapeHtml($label)</h4>
 	$r.render("interactions")
-</div>
-<div class="o_button_group">
-	$r.render("cancel")
-	$r.render("save")
-	$r.render("save.next")
+	<div class="o_button_group o_assessmentitem_scoring_buttons">
+		$r.render("cancel")
+		$r.render("save")
+		$r.render("save.next")
+	</div>
 </div>

@@ -136,6 +136,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		String[] typeValues = getTranslatedResources(typeList);
 		String[] typeCSS = getResourcesCSS(typeList);
 		types = uifactory.addCheckboxesDropdown("cif.type", "cif.type", rightContainer, typeKeys, typeValues, null, typeCSS);
+		types.setNonSelectedText(translate("table.showall"));
 		
 		if (licenseModule.isEnabled(licenseHandler)) {
 			List<LicenseType> activeLicenseTypes = licenseService.loadActiveLicenseTypes(licenseHandler);
@@ -152,6 +153,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 				counter++;
 			}
 			licenseEl = uifactory.addCheckboxesDropdown("cif.license", "cif.license", rightContainer, licenseTypeKeys, licenseTypeValues, null, licenseTypeCSS);
+			licenseEl.setNonSelectedText(translate("table.showall"));
 		}
 
 		String[] statusValues = new String[] {

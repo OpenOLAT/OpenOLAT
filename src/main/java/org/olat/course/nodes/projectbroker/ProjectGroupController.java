@@ -34,7 +34,6 @@ import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.WaitingGroupController;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.ui.GroupController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;

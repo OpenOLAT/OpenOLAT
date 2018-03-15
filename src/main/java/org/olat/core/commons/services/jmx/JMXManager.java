@@ -22,7 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.admin.jmx;
+package org.olat.core.commons.services.jmx;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +36,8 @@ import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -46,7 +47,9 @@ import org.olat.core.manager.BasicManager;
  * Initial Date:  01.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class JMXManager extends BasicManager {
+public class JMXManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(JMXManager.class);
 
 	private MBeanServer mBeanServer;
 
@@ -72,6 +75,7 @@ public class JMXManager extends BasicManager {
 			List<MBeanAttributeInfo> mbal = Arrays.asList(ainfo);
 			
 			Collections.sort(mbal, new Comparator<MBeanAttributeInfo>(){
+				@Override
 				public int compare(MBeanAttributeInfo o1, MBeanAttributeInfo o2) {
 					return o1.getName().compareTo(o2.getName());
 				}});
@@ -96,6 +100,7 @@ public class JMXManager extends BasicManager {
 			Set<ObjectInstance> mbeansset = mBeanServer.queryMBeans(null, null);
 			List<ObjectInstance> mbeans = new ArrayList<ObjectInstance>(mbeansset);
 			Collections.sort(mbeans, new Comparator<ObjectInstance>(){
+				@Override
 				public int compare(ObjectInstance o1, ObjectInstance o2) {
 					return o1.getObjectName().getCanonicalName().compareTo(o2.getObjectName().getCanonicalName());
 				}});
@@ -106,6 +111,7 @@ public class JMXManager extends BasicManager {
 				MBeanAttributeInfo[] ainfo = mBeanServer.getMBeanInfo(on).getAttributes();
 				List<MBeanAttributeInfo> mbal = Arrays.asList(ainfo);
 				Collections.sort(mbal, new Comparator<MBeanAttributeInfo>(){
+					@Override
 					public int compare(MBeanAttributeInfo o1, MBeanAttributeInfo o2) {
 						return o1.getName().compareTo(o2.getName());
 					}});
@@ -124,7 +130,7 @@ public class JMXManager extends BasicManager {
 			}
 			return sb.toString();
 		} catch (Exception e) {
-			logError("", e);
+			log.error("", e);
 			return "error:"+e.getMessage();
 		}
 	}

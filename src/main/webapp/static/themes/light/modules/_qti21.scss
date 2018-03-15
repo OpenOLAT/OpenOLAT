@@ -733,6 +733,29 @@ body>li.o_assessmentitem_order_item  {
 	padding: $padding-small-vertical $padding-small-horizontal;
 }
 
+/* manual correction workflow */
+.o_assessmentitem_scoring {
+	background: $o-qti-item-title-bg;
+	border: 1px solid $o-qti-item-title-border-color;
+	border-bottom: 0;
+	border-radius: $o-qti-item-title-border-radius $o-qti-item-title-border-radius 0 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding: $padding-small-vertical $padding-small-horizontal;
+}
+.o_assessmentitem_scoring_buttons {
+	background: $o-qti-item-controls-bg;
+	border: 1px solid $o-qti-item-controls-border-color;
+	border-top: 0;
+	border-radius: 0 0 $o-qti-item-controls-border-radius $o-qti-item-controls-border-radius;
+	margin-top: 0;
+	margin-bottom: $padding-large-horizontal;
+	padding: $padding-small-vertical $padding-small-horizontal;
+}
+.o_assessmentitem_scoring_override_window {
+	width: 300px;
+}
+
 
 .itemPrompt {
 	margin: 1.5em 0;

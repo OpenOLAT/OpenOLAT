@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.basesecurity.ui;
+package org.olat.course.nodes.projectbroker;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -9,6 +9,8 @@
   http://www.springframework.org/schema/context/spring-context.xsd">
   
 	<context:component-scan base-package="org.olat.core.commons.services" />
+	
+  	<import resource="classpath:/org/olat/core/commons/services/jmx/_spring/jmxContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/scheduler/_spring/schedulerContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/taskexecutor/_spring/taskExecutorCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/notifications/_spring/notificationsContext.xml"/>

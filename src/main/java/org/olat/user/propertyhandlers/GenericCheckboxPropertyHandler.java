@@ -17,7 +17,7 @@
  * BPS Bildungsportal Sachsen GmbH, http://www.bps-system.de
  * <p>
  */
-package de.bps.olat.user.propertyhandlers;
+package org.olat.user.propertyhandlers;
 
 import java.util.Locale;
 import java.util.Map;

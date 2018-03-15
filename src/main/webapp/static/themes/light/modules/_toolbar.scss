@@ -324,6 +324,7 @@
 		}
 		.o_tools.o_tools_segments {
 			margin: 0 auto -1.1em auto;
+			text-align: center; /* override the override from o_tools_container */
 		}
 		.o_tools_center {
 			float: left;

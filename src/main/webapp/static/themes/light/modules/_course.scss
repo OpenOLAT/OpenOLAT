@@ -283,10 +283,36 @@
 
 /* Assessment tool */
 div.o_correction_navigation {
-	text-align: center;
-	
-	#o_cocurrent_item_SELBOX {
-		display: inline-block;
+	.o_correction_navigation_back {
+		float: left;
+		line-height: ($line-height-computed + 2 * $padding-base-vertical); /* same height as buttons */
 	}
-	
+	/* position selbox in center, previous left and next right of it */
+	.o_correction_navigation_previous {
+		position: absolute;
+		right: 50%;
+		margin-right: 102px;
+	}
+	#o_cocurrent_item_SELBOX {
+		width: 200px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;		
+		position: absolute;
+		left: 50%;
+		margin-left: -100px;
+	}
+	.o_correction_navigation_next {
+		position: absolute;
+		left: 50%;
+		margin-left: 102px;
+	}
+	@media (max-width: $screen-xs-max) {
+		.o_correction_navigation_previous,
+		.o_correction_navigation_next {
+			span {
+				display: none;
+			}
+		}
+	}
 }

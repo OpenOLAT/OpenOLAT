@@ -22,7 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.admin.user;
+package org.olat.gui.demo.guidemo.guisoa;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;

@@ -5,7 +5,7 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="jmxManager" class="org.olat.admin.jmx.JMXManager" >
+	<bean id="jmxManager" class="org.olat.core.commons.services.jmx.JMXManager" >
 		<constructor-arg ref="org.springframework.jmx.support.MBeanServerFactoryBean" />
 	</bean>
 

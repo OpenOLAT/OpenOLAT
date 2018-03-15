@@ -192,7 +192,7 @@
 		<property name="deletable" value="true" />
 	</bean>
 
-	<bean id="userPropertyEmailDisabled" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+	<bean id="userPropertyEmailDisabled" class="org.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
 		<property name="name" value="emailDisabled" />
 		<property name="group" value="account" />
 		<property name="deletable" value="true" />
@@ -283,17 +283,17 @@
 		<property name="deletable" value="true" />
 	</bean>
 	
-	<bean id="userPropertyGenericCheckbox" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+	<bean id="userPropertyGenericCheckbox" class="org.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
 		<property name="name" value="genericCheckboxProperty" />
 		<property name="group" value="person" />
 		<property name="deletable" value="true" />
 	</bean>
-	<bean id="userPropertyGenericCheckbox2" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+	<bean id="userPropertyGenericCheckbox2" class="org.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
 		<property name="name" value="genericCheckboxProperty2" />
 		<property name="group" value="person" />
 		<property name="deletable" value="true" />
 	</bean>
-	<bean id="userPropertyGenericCheckbox3" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+	<bean id="userPropertyGenericCheckbox3" class="org.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
 		<property name="name" value="genericCheckboxProperty3" />
 		<property name="group" value="person" />
 		<property name="deletable" value="true" />

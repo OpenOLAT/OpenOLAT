@@ -25,8 +25,6 @@
 
 package org.olat.gui.demo.guidemo.guisoa;
 
-import org.olat.admin.user.UserSearchUIService;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,6 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.dev.controller.SourceViewController;
 import org.olat.core.id.Identity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class GuiDemoSoaController extends BasicController {
 
@@ -47,6 +46,9 @@ public class GuiDemoSoaController extends BasicController {
 	private Link button;
 	
 	private Controller userSearch;
+	
+	@Autowired
+	private UserSearchUIService searchService;
 
 	public GuiDemoSoaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -55,8 +57,8 @@ public class GuiDemoSoaController extends BasicController {
 		mainVC.put("usersearchholder", usersearchHolder = new Panel("usersearchholder"));
 		
 		//add source view control
-    Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), mainVC);
-    mainVC.put("sourceview", sourceview.getInitialComponent());
+		Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), mainVC);
+		mainVC.put("sourceview", sourceview.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}
@@ -65,7 +67,6 @@ public class GuiDemoSoaController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == button) {
 			showInfo("hello.world", ureq.getIdentity().getName());
-			UserSearchUIService searchService = (UserSearchUIService) CoreSpringFactory.getBean(UserSearchUIService.class);
 			userSearch = searchService.createUserSearch(false, ureq, getWindowControl());
 			listenTo(userSearch);
 			usersearchHolder.setContent(userSearch.getInitialComponent());
@@ -75,7 +76,6 @@ public class GuiDemoSoaController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == userSearch) {
-			UserSearchUIService searchService = (UserSearchUIService) CoreSpringFactory.getBean(UserSearchUIService.class);
 			Identity user = searchService.getChosenUser(event);
 			String chosenName = user.getName();
 			showInfo("user.chosen", chosenName);
@@ -83,9 +83,9 @@ public class GuiDemoSoaController extends BasicController {
 		}
 	}
 
+	@Override
 	protected void doDispose() {
 	// nothing to do yet
 	}
-
 }
 
