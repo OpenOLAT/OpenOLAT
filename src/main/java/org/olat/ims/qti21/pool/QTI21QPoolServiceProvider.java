@@ -147,7 +147,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public int getPriority() {
-		return 10;
+		return 20;
 	}
 
 	@Override
