@@ -141,7 +141,7 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
-			Translator translator = Util.createPackageTranslator(FileUploadNotificationHandler.class, locale);
+			Translator translator = Util.createPackageTranslator(DialogCourseNodeRunController.class, locale);
 			String displayname = repositoryManager.lookupDisplayNameByOLATResourceableId(subscriber.getPublisher().getResId());
 			if(displayname == null) {
 				checkPublisher(subscriber.getPublisher());

@@ -142,7 +142,7 @@
 	<!-- RSS feed requests -->
 	<servlet>
 		<servlet-name>rss</servlet-name>
-		<servlet-class>org.olat.commons.servlets.RSSServlet</servlet-class>
+		<servlet-class>org.olat.core.commons.services.notifications.PersonalRSSServlet</servlet-class>
 		<load-on-startup>3</load-on-startup>
 	</servlet>	
 

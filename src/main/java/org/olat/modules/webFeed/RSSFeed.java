@@ -22,7 +22,7 @@ package org.olat.modules.webFeed;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.commons.servlets.RSSServlet;
+import org.olat.core.commons.services.notifications.PersonalRSSServlet;
 import org.olat.core.id.Identity;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -61,7 +61,7 @@ public class RSSFeed extends SyndFeedImpl {
 		FeedViewHelper helper = new FeedViewHelper(feed, identity, courseId, nodeId);
 
 		setFeedType("rss_2.0");
-		setEncoding(RSSServlet.DEFAULT_ENCODING);
+		setEncoding(PersonalRSSServlet.DEFAULT_ENCODING);
 		setTitle(feed.getTitle());
 		// According to the rss specification, the feed channel description is not
 		// (explicitly) allowed to contain html tags.
