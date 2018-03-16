@@ -110,7 +110,7 @@ public class CourseTest extends Deployments {
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
 		
-		String title = "Create-Selen-" + UUID.randomUUID().toString();
+		String title = "Create-Selen-" + UUID.randomUUID();
 		//create course
 		RepositoryEditDescriptionPage editDescription = authoringEnv
 			.openCreateDropDown()
@@ -910,7 +910,8 @@ public class CourseTest extends Deployments {
 			.fillCreateForm(title)
 			.assertOnGeneralTab()
 			.setLifecycle(validFrom, validTo, Locale.GERMAN)
-			.save();
+			.save()
+			.clickToolbarBack();
 
 		//open course editor, create a node, set access
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -1000,7 +1001,7 @@ public class CourseTest extends Deployments {
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
 			.assertOnGeneralTab()
-			.save();
+			.clickToolbarBack();
 		
 		String infoTitle = "Info - " + UUID.randomUUID();
 		String structureTitle = "St - " + UUID.randomUUID();
