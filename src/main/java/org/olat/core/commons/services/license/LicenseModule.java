@@ -118,6 +118,15 @@ public class LicenseModule extends AbstractSpringModule {
 		return licensorCreators;
 	}
 	
+	public boolean isAnyHandlerEnabled() {
+		for (LicenseHandler handler: handlers) {
+			if (isEnabled(handler)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isEnabled(LicenseHandler handler) {
 		Boolean enabled = enabledHandlers.get(handler.getType());
 		return enabled != null? enabled.booleanValue(): false;

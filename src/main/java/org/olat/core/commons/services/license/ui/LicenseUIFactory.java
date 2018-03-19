@@ -21,6 +21,7 @@ package org.olat.core.commons.services.license.ui;
 
 import java.util.Locale;
 
+import org.apache.log4j.Level;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
@@ -52,7 +53,9 @@ public class LicenseUIFactory {
 	public static String translate(LicenseType licenseType, Locale locale) {
 		Translator translator = Util.createPackageTranslator(LicenseAdminConfigController.class, locale);
 		String i18nKey = LICENSE_TYPE_TRANS + licenseType.getName().toLowerCase();
-		String translation = translator.translate(i18nKey);
+		// It is ok to have missing i18n keys, the license name itself is shown in this case.
+		// So do not log missing keys and pollute the log file.
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if(i18nKey.equals(translation) || translation.length() > 256) {
 			translation = licenseType.getName();
 		}
