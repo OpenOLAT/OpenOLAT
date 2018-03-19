@@ -73,8 +73,6 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
-	private QLicenseDAO qLicenseDao;
-	@Autowired
 	private QItemQueriesDAO qItemQueriesDao;
 	@Autowired
 	private QEducationalContextDAO qEduContextDao;

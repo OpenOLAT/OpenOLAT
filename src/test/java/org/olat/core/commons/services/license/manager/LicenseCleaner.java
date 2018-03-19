@@ -43,7 +43,7 @@ public class LicenseCleaner {
 				.createQuery("delete from licensetypeactivation")
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetype")
+				.createQuery("delete from licensetype where predefined is false")
 				.executeUpdate();
 		dbInstance.commitAndCloseSession();
 	}

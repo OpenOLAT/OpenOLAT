@@ -42,8 +42,6 @@ class LicenseTypeDAO {
 	static final String NO_LICENSE_NAME = "no.license";
 	static final String FREETEXT_NAME = "freetext";
 	
-	private static LicenseType NO_LICENSE;
-	
 	@Autowired
 	private DB dbInstance;
 
@@ -80,15 +78,12 @@ class LicenseTypeDAO {
 	}
 
 	LicenseType loadNoLicenseType() {
-		if (NO_LICENSE == null) {
-			String query = "select licensetype from licensetype licensetype where licensetype.name=:name";
-			List<LicenseType> licenseTypes = dbInstance.getCurrentEntityManager()
-					.createQuery(query, LicenseType.class)
-					.setParameter("name", NO_LICENSE_NAME)
-					.getResultList();
-			NO_LICENSE = licenseTypes == null || licenseTypes.isEmpty() ? null : licenseTypes.get(0);
-		}
-		return NO_LICENSE;
+		String query = "select licensetype from licensetype licensetype where licensetype.name=:name";
+		List<LicenseType> licenseTypes = dbInstance.getCurrentEntityManager()
+				.createQuery(query, LicenseType.class)
+				.setParameter("name", NO_LICENSE_NAME)
+				.getResultList();
+		return licenseTypes == null || licenseTypes.isEmpty() ? null : licenseTypes.get(0);
 	}
 	
 	boolean isNoLicense(LicenseType licenseType) {

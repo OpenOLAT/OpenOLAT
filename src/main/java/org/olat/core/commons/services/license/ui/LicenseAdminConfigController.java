@@ -354,9 +354,9 @@ public class LicenseAdminConfigController extends FormBasicController {
 			} else if (name.startsWith(LICENSOR_CREATOR_TYPE_PREFIX)) {
 				doSetLicensorCreator(source, singleSelection);
 			}
-		} if (source instanceof FormLink) {
+		} else if (source instanceof FormLink) {
 			LicenseHandler handler = (LicenseHandler) source.getUserObject();
-			doEditLicensorConstatant(ureq, handler);
+			doEditLicensorConstant(ureq, handler);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -477,7 +477,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		}
 	}
 
-	private void doEditLicensorConstatant(UserRequest ureq, LicenseHandler handler) {
+	private void doEditLicensorConstant(UserRequest ureq, LicenseHandler handler) {
 		String licensor = licenseModule.getConstantLicensor(handler);
 		licensorConstantCtrl = new LicensorConstantController(ureq, getWindowControl(), handler, licensor);
 		listenTo(licensorConstantCtrl);
