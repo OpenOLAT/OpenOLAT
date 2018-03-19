@@ -74,9 +74,6 @@
 	<listener>
 		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
 	</listener>
-	<listener>
-		<listener-class>org.olat.core.servlets.OLATContextListener</listener-class>
-	</listener>
     
   <!-- 4. Servlets -->
   <servlet>
