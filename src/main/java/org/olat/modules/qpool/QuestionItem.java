@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool;
 
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
@@ -56,8 +57,16 @@ public interface QuestionItem extends QuestionItemShort {
 	public String getItemVersion();
 	
 	//rights
+	/**
+	 * @deprecated Use @see {@link LicenseService}
+	 */
+	@Deprecated
 	public QLicense getLicense();
 	
+	/**
+	 * @deprecated Use @see {@link LicenseService}
+	 */
+	@Deprecated
 	public String getCreator();
 
 	//technics

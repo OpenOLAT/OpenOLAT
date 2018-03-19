@@ -19,12 +19,10 @@
  */
 package org.olat.modules.qpool.ui.metadata;
 
-import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.getQLicenseKeyValues;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toInt;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
-import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateRights;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
 import java.util.ArrayList;
@@ -33,6 +31,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -54,6 +59,7 @@ import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.ItemRow;
@@ -80,13 +86,12 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private IntegerElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
 	private SingleSelection assessmentTypeEl;
 	private TextElement difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl;
+	private SingleSelection licenseEl;
+	private TextElement licensorEl;
+	private TextElement licenseFreetextEl;
 	private TextElement versionEl;
 	private SingleSelection statusEl;
-	private TextElement creatorEl;
-	private KeyValues licenseKeys;
-	private SingleSelection copyrightEl;
-	private TextElement descriptionEl;
-	private FormLayoutContainer rightsWrapperCont;
+	private FormLayoutContainer licenseWrapperCont;
 
 	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
@@ -101,6 +106,12 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private QPoolService qpoolService;
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
 
 	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<ItemRow> items, boolean ignoreCompetences) {
 		super(ureq, wControl, "bulk_change");
@@ -238,24 +249,30 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private void initRightsForm(FormItemContainer formLayout) {
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		rightsCont.setRootForm(mainForm);
-		formLayout.add(rightsCont);
+		if (licenseModule.isEnabled(licenseHandler)) {
+			formLayout.add(rightsCont);
+		}
 		
-		creatorEl = uifactory.addTextElement("rights.creator", "rights.creator", 1000, null, rightsCont);
-		decorate(creatorEl, rightsCont);
+		LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory.createLicenseSelectionConfig(licenseHandler);
+		
+		licensorEl = uifactory.addTextElement("rights.licensor", 1000, "", rightsCont);
+		decorate(licensorEl, rightsCont);
+		
+		licenseWrapperCont = FormLayoutContainer.createDefaultFormLayout("rights.license", getTranslator());
+		licenseWrapperCont.setRootForm(mainForm);
+		rightsCont.add(licenseWrapperCont);
+		decorate(licenseWrapperCont, rightsCont);
+		
+		if (licenseSelectionConfig.getLicenseTypeKeys().length > 0) {
+			licenseEl = uifactory.addDropdownSingleselect("rights.license.sel", "rights.license", licenseWrapperCont,
+					licenseSelectionConfig.getLicenseTypeKeys(),
+					licenseSelectionConfig.getLicenseTypeValues(getLocale()), null);
+			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			licenseEl.select(licenseSelectionConfig.getLicenseTypeKeys()[0], true);
 
-		rightsWrapperCont = FormLayoutContainer.createDefaultFormLayout("rights.copyright", getTranslator());
-		rightsWrapperCont.setRootForm(mainForm);
-		rightsCont.add(rightsWrapperCont);
-		decorate(rightsWrapperCont, rightsCont);
-
-		licenseKeys = getQLicenseKeyValues(qpoolService);
-		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright.sel", "rights.copyright", rightsWrapperCont,
-				licenseKeys.getKeys(), licenseKeys.getValues(), null);
-		copyrightEl.setAllowNoSelection(true);
-		copyrightEl.addActionListener(FormEvent.ONCHANGE);
-
-		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, null, rightsWrapperCont);
-		descriptionEl.setVisible(false);
+			licenseFreetextEl = uifactory.addTextAreaElement("rights.freetext", 4, 72, "", licenseWrapperCont);
+			licenseFreetextEl.setVisible(false);
+		}
 	}
 	
 	private FormItem decorate(FormItem item, FormLayoutContainer formLayout) {
@@ -275,6 +292,16 @@ public class MetadataBulkChangeController extends FormBasicController {
 		return checkbox;
 	}
 	
+	void updateLicenseVisibility() {
+		boolean freetextSelected = false;
+		if (licenseEl != null && licenseEl.isOneSelected()) {
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType licenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			freetextSelected = licenseService.isFreetext(licenseType);
+		}
+		licenseFreetextEl.setVisible(freetextSelected);
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -287,9 +314,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 			FormItem item = (FormItem)checkbox.getUserObject();
 			item.setVisible(checkbox.isAtLeastSelected(1));
 			checkboxContainer.get(checkbox).setDirty(true);
-		} else if(copyrightEl == source) {
-			descriptionEl.setVisible(copyrightEl.isVisible() && copyrightEl.isOneSelected() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
-			rightsWrapperCont.setDirty(true);
+		} else if(licenseEl == source) {
+			updateLicenseVisibility();
+			licenseWrapperCont.setDirty(true);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -316,8 +343,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		allOk &= validateSelection(statusEl, isEnabled(statusEl));
 		
 		//rights
-		allOk &= validateElementLogic(creatorEl, 1000, false, isEnabled(creatorEl));
-		allOk &= validateRights(copyrightEl, descriptionEl, licenseKeys, isEnabled(rightsWrapperCont));
+		allOk &= validateElementLogic(licensorEl, 1000, false, isEnabled(licensorEl));
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -340,11 +366,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 				formOKGeneral(itemImpl);
 				formOKQuestion(itemImpl);
 				formOKTechnical(itemImpl);
-				if(isEnabled(creatorEl))
-					itemImpl.setCreator(creatorEl.getValue());
-				if(isEnabled(rightsWrapperCont)) {
-					RightsMetadataEditController.formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
-				}
+				formOKRights(itemImpl);
 				QuestionItem merged = qpoolService.updateItem(itemImpl);
 				builder.withAfter(itemImpl);
 				qpoolService.persist(builder.create());
@@ -410,6 +432,29 @@ public class MetadataBulkChangeController extends FormBasicController {
 			itemImpl.setStatus(statusEl.getSelectedKey());
 		if(isEnabled(versionEl))
 			itemImpl.setItemVersion(versionEl.getValue());
+	}
+	
+	private void formOKRights(QuestionItemImpl itemImpl) {
+		if (isEnabled(licenseWrapperCont) || isEnabled(licensorEl)) {
+			ResourceLicense license = licenseService.loadOrCreateLicense(itemImpl);
+			if (isEnabled(licenseWrapperCont)) {
+				if (licenseEl != null && licenseEl.isOneSelected()) {
+					String licenseTypeKey = licenseEl.getSelectedKey();
+					LicenseType licneseType = licenseService.loadLicenseTypeByKey(licenseTypeKey);
+					license.setLicenseType(licneseType);
+					String freetext = null;
+					if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
+						freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+					}
+					license.setFreetext(freetext);
+					license = licenseService.update(license);
+				}
+			}
+			if (isEnabled(licensorEl)) {
+				license.setLicensor(licensorEl.getValue());
+			}
+			licenseService.update(license);
+		}
 	}
 	
 	@Override

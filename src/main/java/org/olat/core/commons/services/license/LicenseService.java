@@ -42,7 +42,7 @@ public interface LicenseService {
 
 	/**
 	 * Create a new license.
-	 * @param licenseType TODO
+	 * @param licenseType
 	 *
 	 * @return
 	 */
@@ -57,9 +57,25 @@ public interface LicenseService {
 	public License createDefaultLicense(LicenseHandler licenseHandler, Identity identity);
 	
 	/**
-	 * Create a new license with the default license type. This method should be
-	 * used if a license is created for a new resourceable object e.g. a new
-	 * learning resource.
+	 * Convert the license to XML.
+	 *
+	 * @param license
+	 * @return
+	 */
+	public String toXml(License license);
+	
+	/**
+	 * Convert the XML to a license
+	 *
+	 * @param xml
+	 * @return the license or null if conversion fails
+	 */
+	public License licenseFromXml(String xml);
+	
+	/**
+	 * Create and persist a new license with the default license type. This method
+	 * should be used if a license is created for a new resourceable object e.g. a
+	 * new learning resource.
 	 *
 	 * @param ores
 	 * @param handler
@@ -82,7 +98,7 @@ public interface LicenseService {
 	
 	
 	/**
-	 * Load the license for the resource
+	 * Load the license for the resource.
 	 *
 	 * @param resource
 	 * @return the license or null if no license found
@@ -95,7 +111,7 @@ public interface LicenseService {
 	 * @param resources
 	 * @return
 	 */
-	public List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources);
+	public List<ResourceLicense> loadLicenses(Collection<? extends OLATResourceable> resources);
 
 	/**
 	 * Save the license.
@@ -181,6 +197,13 @@ public interface LicenseService {
 	 */
 	public List<LicenseType> loadActiveLicenseTypes(LicenseHandler handler);
 	
+	/**
+	 * Load the free text license type.
+	 *
+	 * @return
+	 */
+	public LicenseType loadFreetextLicenseType();
+
 	/**
 	 * Check whether the license type is the no license type.
 	 *

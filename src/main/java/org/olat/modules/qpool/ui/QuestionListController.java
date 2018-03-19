@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -85,6 +87,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.datasource.TaxonomyLevelItemsSource;
@@ -107,7 +110,6 @@ import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateEntryController;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -173,6 +175,12 @@ public class QuestionListController extends AbstractItemListController implement
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key,
@@ -763,9 +771,14 @@ public class QuestionListController extends AbstractItemListController implement
 		if (taxonomyLevel != null && item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
 			itemImpl.setTaxonomyLevel(taxonomyLevel);
-			String creator = UserManager.getInstance().getUserDisplayName(getIdentity());
-			itemImpl.setCreator(creator);
 			qpoolService.updateItem(itemImpl);
+		}
+		if (licenseModule.isEnabled(licenseHandler)) {
+			// The QItemFactory may create a no license as part of the import process.
+			// But for new question items the default license should be created.
+			// So delete the no license first, so that the default license can be created.
+			licenseService.delete(item);
+			licenseService.createDefaultLicense(item, licenseHandler, getIdentity());
 		}
 		getItemsTable().reset();
 		

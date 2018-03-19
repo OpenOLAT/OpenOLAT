@@ -17,40 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.manager;
 
-import org.olat.core.id.Roles;
+import java.util.Locale;
+
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.modules.qpool.ui.admin.QuestionPoolAdminConfigurationController;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 05.12.2017<br>
+ * Initial date: 13.03.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QPoolSecurityCallback {
-	
-	public void setRoles(Roles roles);
-	
-	boolean canUseCollections();
+@Component
+public class QuestionPoolLicenseHandler implements LicenseHandler {
 
-	boolean canUsePools();
+	@Override
+	public String getType() {
+		return "qpool";
+	}
 
-	boolean canUseGroups();
+	@Override
+	public String getTitle(Locale locale) {
+		Translator translator = Util.createPackageTranslator(QuestionPoolAdminConfigurationController.class, locale);
+		return translator.translate("license.admin.title");
+	}
 
-	boolean canUseReviewProcess();
-	
-	boolean canCreateTest();
-
-	boolean canEditAllQuestions();
-	
-	boolean canConfigReviewProcess();
-	
-	boolean canConfigTaxonomies();
-	
-	boolean canConfigPools();
-	
-	boolean canConfigItemTypes();
-	
-	boolean canConfigEducationalContext();
-	
 }

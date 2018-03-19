@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -44,7 +45,8 @@ public class QuestionItemAuditLogBuilderImplTest {
 	private static final QuestionItemAuditLog.Action ACTION = QuestionItemAuditLog.Action.CREATE_QUESTION_ITEM_NEW;
 	private static final Long QITEM_KEY = 234l;
 	private static final String MESSAGE = "message";
-	private static final String XML = "xml";
+	private static final String ITEM_XML = "xml";
+	private static final String LICENSE_XML = "license";
 	
 	@Mock
 	private Identity authorMock;
@@ -52,6 +54,8 @@ public class QuestionItemAuditLogBuilderImplTest {
 	private QuestionItem qitemMock;
 	@Mock
 	private QPoolService qpoolServiceMock;
+	@Mock
+	private LicenseService licenseServiceMock;
 
 	@Before
 	public void setUp() {
@@ -59,24 +63,28 @@ public class QuestionItemAuditLogBuilderImplTest {
 		
 		when(authorMock.getKey()).thenReturn(AUTHOR_KEY);
 		when(qitemMock.getKey()).thenReturn(QITEM_KEY);
-		when(qpoolServiceMock.toAuditXml(any())).thenReturn(XML);
+		when(qpoolServiceMock.toAuditXml(any())).thenReturn(ITEM_XML);
+		when(licenseServiceMock.toXml(any())).thenReturn(LICENSE_XML);
 	}
 	
 	@Test
 	public void shouldBuildMinimalAuditLog() {
-		QuestionItemAuditLog auditLog = new QuestionItemAuditLogBuilderImpl(qpoolServiceMock, authorMock, ACTION).create();
+		QuestionItemAuditLog auditLog = new QuestionItemAuditLogBuilderImpl(qpoolServiceMock, licenseServiceMock,
+				authorMock, ACTION).create();
 		
 		assertThat(auditLog.getAuthorKey()).isEqualTo(AUTHOR_KEY);
 		assertThat(auditLog.getAction()).isEqualTo(ACTION.name());
 		assertThat(auditLog.getQuestionItemKey()).isNull();
 		assertThat(auditLog.getBefore()).isNull();
 		assertThat(auditLog.getAfter()).isNull();
+		assertThat(auditLog.getLicenseBefore()).isNull();
+		assertThat(auditLog.getLicenseAfter()).isNull();
 		assertThat(auditLog.getMessage()).isNull();
 	}
 	
 	@Test
 	public void shouldBuildAuditLogWithAllAttributes() {
-		QuestionItemAuditLog auditLog = new QuestionItemAuditLogBuilderImpl(qpoolServiceMock, authorMock, ACTION)
+		QuestionItemAuditLog auditLog = new QuestionItemAuditLogBuilderImpl(qpoolServiceMock, licenseServiceMock, authorMock, ACTION)
 				.withBefore(qitemMock)
 				.withAfter(qitemMock)
 				.withMessage(MESSAGE)
@@ -87,6 +95,8 @@ public class QuestionItemAuditLogBuilderImplTest {
 		assertThat(auditLog.getQuestionItemKey()).isEqualTo(QITEM_KEY);
 		assertThat(auditLog.getBefore()).isNotNull();
 		assertThat(auditLog.getAfter()).isNotNull();
+		assertThat(auditLog.getLicenseBefore()).isNotNull();
+		assertThat(auditLog.getLicenseAfter()).isNotNull();
 		assertThat(auditLog.getMessage()).isEqualTo(MESSAGE);
 	}
 }

@@ -233,9 +233,13 @@ public class GeneralMetadataEditController extends FormBasicController {
 			
 			itemImpl.setTopic(topicEl.getValue());
 			
-			String selectedKey = taxonomyLevelEl.getSelectedKey();
-			TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
-			itemImpl.setTaxonomyLevel(taxonomyLevel);
+			if (taxonomyLevelEl.isOneSelected()) {
+				String selectedKey = taxonomyLevelEl.getSelectedKey();
+				TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
+				itemImpl.setTaxonomyLevel(taxonomyLevel);
+			} else {
+				itemImpl.setTaxonomyLevel(null);
+			}
 	
 			QEducationalContext context = contextEl.isOneSelected()
 					? qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey())

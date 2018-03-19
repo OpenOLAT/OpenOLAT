@@ -1583,6 +1583,8 @@ create table o_qp_item_audit_log (
   q_action varchar(64),
   q_val_before mediumtext,
   q_val_after mediumtext,
+  q_lic_before mediumtext,
+  q_lic_after mediumtext,
   q_message mediumtext,
   fk_author_id bigint,
   fk_item_id bigint,

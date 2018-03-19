@@ -60,7 +60,6 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	private static final String POOL_MANAGER_POOLS = "pool.manager.pools";
 	private static final String POOL_MANAGER_ITEM_TYPES = "pool.manager.item.types";
 	private static final String POOL_MANAGER_EDUCATIONAL_CONTEXT = "pool.manager.educational.context";
-	private static final String POOL_MANAGER_LICENSES = "pool.manager.licenses";
 	private static final String[] POOL_MANAGER_RIGHTS_KEYS = {
 			POOL_MANAGER_EDIT_METADATA,
 			POOL_MANAGER_EDIT_STATUS,
@@ -69,7 +68,6 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 			POOL_MANAGER_POOLS,
 			POOL_MANAGER_ITEM_TYPES,
 			POOL_MANAGER_EDUCATIONAL_CONTEXT,
-			POOL_MANAGER_LICENSES
 	};
 	
 	private MultipleSelectionElement reviewProcessEnabledEl;
@@ -182,7 +180,6 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		poolManagerRightsEl.select(POOL_MANAGER_POOLS, qpoolModule.isPoolAdminAllowedToConfigPools());
 		poolManagerRightsEl.select(POOL_MANAGER_ITEM_TYPES, qpoolModule.isPoolAdminAllowedToConfigItemTypes());
 		poolManagerRightsEl.select(POOL_MANAGER_EDUCATIONAL_CONTEXT, qpoolModule.isPoolAdminAllowedToConfigEducationalContext());
-		poolManagerRightsEl.select(POOL_MANAGER_LICENSES, qpoolModule.isPoolAdminAllowedToConfigLicenses());
 		
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
 		buttonsWrapperCont.setRootForm(mainForm);
@@ -289,8 +286,6 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		qpoolModule.setPoolAdminAllowedToConfigItemTypes(poolAdminAllowedToConfigItemTypes);
 		boolean poolAdminAllowedToConfigEducationalContext = selectedPoolManagerRights.contains(POOL_MANAGER_EDUCATIONAL_CONTEXT);
 		qpoolModule.setPoolAdminAllowedToConfigEducationalContext(poolAdminAllowedToConfigEducationalContext);
-		boolean poolAdminAllowedToConfigLicenses = selectedPoolManagerRights.contains(POOL_MANAGER_LICENSES);
-		qpoolModule.setPoolAdminAllowedToConfigLicenses(poolAdminAllowedToConfigLicenses);
 	}
 	
 	@Override

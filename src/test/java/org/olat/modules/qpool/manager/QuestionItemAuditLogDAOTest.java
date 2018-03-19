@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
@@ -56,12 +57,15 @@ public class QuestionItemAuditLogDAOTest extends OlatTestCase {
 	private QuestionItemDAO questionDao;
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private LicenseService licenseService;
 	
 	@Test
 	public void shouldPersistAuditLog() {
 		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("qitem-audit-log");
 		QuestionItem item = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		licenseService.loadOrCreateLicense(item);
 		QuestionItemAuditLog auditLog = qpoolService.createAuditLogBuilder(id, QuestionItemAuditLog.Action.CREATE_QUESTION_ITEM_NEW)
 				.withBefore(item)
 				.withAfter(item)
@@ -71,6 +75,15 @@ public class QuestionItemAuditLogDAOTest extends OlatTestCase {
 		
 		sut.persist(auditLog);
 		dbInstance.commitAndCloseSession();
+		
+		List<QuestionItemAuditLog> auditLogs = sut.getAuditLogByQuestionItem(item);
+		QuestionItemAuditLog loadedAuditLog = auditLogs.get(0);
+		assertThat(loadedAuditLog.getAuthorKey()).isNotNull();
+		assertThat(loadedAuditLog.getBefore()).isNotNull();
+		assertThat(loadedAuditLog.getAfter()).isNotNull();
+		assertThat(loadedAuditLog.getLicenseBefore()).isNotNull();
+		assertThat(loadedAuditLog.getLicenseAfter()).isNotNull();
+		assertThat(loadedAuditLog.getMessage()).isNotNull();
 	}
 	
 	@Test

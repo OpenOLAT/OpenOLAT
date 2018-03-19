@@ -20,8 +20,6 @@
 package org.olat.modules.qpool.ui.metadata;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -34,7 +32,6 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
 
 /**
  * 
@@ -86,29 +83,6 @@ public class MetaUIFactory {
 			contextValues[count++] = translation;
 		}
 		return new KeyValues(contextKeys, contextValues);
-	}
-	
-	public static KeyValues getQLicenseKeyValues(QPoolService qpoolService) {
-		List<QLicense> allLicenses = qpoolService.getAllLicenses();
-		List<QLicense> licenses = new ArrayList<>(allLicenses);
-		for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
-			String key = it.next().getLicenseKey();
-			if(key != null && key.startsWith("perso-")) {
-				it.remove();
-			}
-		}
-
-		String[] keys = new String[licenses.size() + 1];
-		String[] values = new String[licenses.size() + 1];
-		int count = 0;
-		for(QLicense license:licenses) {
-			keys[count] = license.getLicenseKey();
-			values[count++] = license.getLicenseKey();
-		}
-		keys[keys.length  - 1] = "free";
-		values[values.length - 1] = "Freetext";
-		
-		return new KeyValues(keys, values);
 	}
 	
 	public static KeyValues getQItemTypeKeyValues(Translator translator, QPoolService qpoolService) {
@@ -203,23 +177,6 @@ public class MetaUIFactory {
 		if(enabled && !el.isOneSelected()) {
 			el.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
-		}
-		return allOk;
-	}
-	
-	protected static boolean validateRights(SingleSelection copyrightEl, TextElement descriptionEl,
-			KeyValues licenseKeys, boolean enabled) {
-		boolean allOk = true;
-		copyrightEl.clearError();
-		descriptionEl.clearError();
-		if(enabled) {
-			if(copyrightEl.isOneSelected() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey())) {
-				String licence = descriptionEl.getValue();
-				if(!StringHelper.containsNonWhitespace(licence)) {
-					descriptionEl.setErrorKey("form.mandatory.hover", null);
-					allOk &= false;
-				}
-			}
 		}
 		return allOk;
 	}

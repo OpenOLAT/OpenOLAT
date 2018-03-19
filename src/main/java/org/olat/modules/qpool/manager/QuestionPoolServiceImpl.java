@@ -38,6 +38,7 @@ import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -75,7 +76,6 @@ import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemAuditLogBuilderImpl;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ReviewDecision;
@@ -118,8 +118,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Autowired
 	private CollectionDAO collectionDao;
 	@Autowired
-	private QLicenseDAO qpoolLicenseDao;
-	@Autowired
 	private QItemTypeDAO qpoolItemTypeDao;
 	@Autowired
 	private QEducationalContextDAO qEduContextDao;
@@ -149,6 +147,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private ReviewService reviewService;
 	@Autowired
 	private QuestionItemAuditLogDAO auditLogDao;
+	@Autowired
+	private LicenseService licenseService;
 
 	@Override
 	public void deleteItems(List<? extends QuestionItemShort> items) {
@@ -160,6 +160,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		for (QuestionItemShort item: items) {
 			markManager.deleteMarks(item);
 			commentAndRatingService.deleteAllIgnoringSubPath(item);
+			licenseService.delete(item);
 			QuestionItem loadedItem = loadItemById(item.getKey());
 			if (loadedItem instanceof QuestionItemImpl) {
 				QuestionItemImpl itemImpl = (QuestionItemImpl) loadedItem;
@@ -293,6 +294,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			if(provider != null) {
 				provider.copyItem(original, copy);
 			}
+			licenseService.copy(original, copy);
 			copies.add(copy);
 		}
 		
@@ -308,6 +310,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		List<QuestionItem> convertedQuestions = new ArrayList<>(itemsToConvert.size());
 		for(QuestionItemShort item: itemsToConvert) {
 			QuestionItem convertedQuestion = sp.convert(cloner, item, locale);
+			licenseService.copy(item, convertedQuestion);
 			if(convertedQuestion != null) {
 				convertedQuestions.add(convertedQuestion);
 			}
@@ -930,31 +933,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		return qEduContextDao.delete(context);
 	}
 
-	@Override
-	public QLicense createLicense(String licenseKey, String text) {
-		return qpoolLicenseDao.create(licenseKey, text, true);
-	}
-
-	@Override
-	public List<QLicense> getAllLicenses() {
-		return qpoolLicenseDao.getLicenses();
-	}
-
-	@Override
-	public QLicense getLicense(String licenseKey) {
-		return qpoolLicenseDao.loadByLicenseKey(licenseKey);
-	}
-
-	@Override
-	public QLicense updateLicense(QLicense license) {
-		return qpoolLicenseDao.update(license);
-	}
-
-	@Override
-	public boolean deleteLicense(QLicense license) {
-		return qpoolLicenseDao.delete(license);
-	}
-	
 	private TaxonomyRef getQPoolTaxonomyRef() {
 		String key = qpoolModule.getTaxonomyQPoolKey();
 		try {

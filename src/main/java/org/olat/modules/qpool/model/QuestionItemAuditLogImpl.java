@@ -59,6 +59,10 @@ public class QuestionItemAuditLogImpl implements QuestionItemAuditLog, Persistab
 	private String before;	
 	@Column(name="q_val_after", nullable=true, insertable=true, updatable=false)
 	private String after;
+	@Column(name="q_lic_before", nullable=true, insertable=true, updatable=false)
+	private String licenseBefore;	
+	@Column(name="q_lic_after", nullable=true, insertable=true, updatable=false)
+	private String licenseAfter;
 	@Column(name="q_message", nullable=true, insertable=true, updatable=false)
 	private String message;
 	
@@ -107,6 +111,24 @@ public class QuestionItemAuditLogImpl implements QuestionItemAuditLog, Persistab
 
 	public void setAfter(String after) {
 		this.after = after;
+	}
+
+	@Override
+	public String getLicenseBefore() {
+		return licenseBefore;
+	}
+
+	public void setLicenseBefore(String licenseBefore) {
+		this.licenseBefore = licenseBefore;
+	}
+
+	@Override
+	public String getLicenseAfter() {
+		return licenseAfter;
+	}
+
+	public void setLicenseAfter(String licenseAfter) {
+		this.licenseAfter = licenseAfter;
 	}
 
 	@Override

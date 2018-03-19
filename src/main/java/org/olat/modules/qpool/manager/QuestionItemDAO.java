@@ -154,9 +154,6 @@ public class QuestionItemDAO {
 		copy.setItemVersion(original.getItemVersion());
 		copy.setStatus(QuestionStatus.draft.name());
 		
-		//rights
-		copy.setLicense(original.getLicense());
-		
 		//technical
 		copy.setEditor(original.getEditor());
 		copy.setEditorVersion(original.getEditorVersion());

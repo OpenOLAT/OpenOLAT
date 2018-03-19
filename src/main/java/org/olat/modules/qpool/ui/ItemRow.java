@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
@@ -39,6 +40,7 @@ public class ItemRow implements QuestionItemView {
 	private final QuestionItemSecurityCallback securityCallback;
 	
 	private FormLink markLink;
+	private License license;
 
 	public ItemRow(QuestionItemView delegate, QuestionItemSecurityCallback securityCallback) {
 		this.delegate = delegate;
@@ -257,6 +259,14 @@ public class ItemRow implements QuestionItemView {
 		if(markLink != null) {
 			markLink.setIconLeftCSS("o_icon o_icon-lg " +  (mark ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON));
 		}
+	}
+
+	public License getLicense() {
+		return license;
+	}
+
+	public void setLicense(License license) {
+		this.license = license;
 	}
 
 	public QuestionItemSecurityCallback getSecurityCallback() {

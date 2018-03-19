@@ -102,6 +102,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case statusLastModified: return item.getQuestionStatusLastModified();
 			case editable: return item.isEditable() ? Boolean.TRUE : Boolean.FALSE;
 			case mark: return item.getMarkLink();
+			case license: return item.getLicense();
 			default: return "-";
 		}
 	}
@@ -136,6 +137,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		itemVersion("lifecycle.version"),
 		status("lifecycle.status"),
 		statusLastModified("lifecycle.status.last.modified"),
+		license("rights.license"),
 		editable("editable"),
 		mark("mark");
 		

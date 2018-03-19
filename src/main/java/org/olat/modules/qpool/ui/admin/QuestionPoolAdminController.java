@@ -50,7 +50,6 @@ public class QuestionPoolAdminController extends BasicController implements Brea
 	private final Link poolsLink;
 	private final Link itemTypesLink;
 	private final Link educationalContextLink;
-	private final Link licensesLink;
 	
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
@@ -63,7 +62,6 @@ public class QuestionPoolAdminController extends BasicController implements Brea
 	private PoolsAdminController poolsCtrl;
 	private QItemTypesAdminController itemTypesCtrl;
 	private QEducationalContextsAdminController educationalContextCtrl;
-	private QLicensesAdminController licensesCtrl;
 
 	public QuestionPoolAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -84,8 +82,6 @@ public class QuestionPoolAdminController extends BasicController implements Brea
 		segmentView.addSegment(itemTypesLink, false);
 		educationalContextLink = LinkFactory.createLink("segment.educational.context", mainVC, this);
 		segmentView.addSegment(educationalContextLink, false);
-		licensesLink = LinkFactory.createLink("segment.licenses", mainVC, this);
-		segmentView.addSegment(licensesLink, false);
 		
 		doOpenConfiguration(ureq);
 		putInitialPanel(mainVC);
@@ -125,8 +121,6 @@ public class QuestionPoolAdminController extends BasicController implements Brea
 				doOpenItemTypes(ureq);
 			} else if (clickedLink == educationalContextLink) {
 				doOpenEducationalContext(ureq);
-			} else if (clickedLink == licensesLink) {
-				doOpenLicenses(ureq);
 			}
 		}
 	}
@@ -188,13 +182,4 @@ public class QuestionPoolAdminController extends BasicController implements Brea
 		mainVC.put(SEGMENTS_CMP, educationalContextCtrl.getInitialComponent());
 	}
 
-	private void doOpenLicenses(UserRequest ureq) {
-		if(licensesCtrl == null) {
-			licensesCtrl = new QLicensesAdminController(ureq, getWindowControl());
-			listenTo(licensesCtrl);
-		}
-		mainVC.put(SEGMENTS_CMP, licensesCtrl.getInitialComponent());
-	}
-
-		
 }

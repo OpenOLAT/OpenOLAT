@@ -85,7 +85,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 	
 	public static final String RESERVED_TO = "reservedto";
 
-	public static final String LICNESE_TYPE_FIELD_NAME = "licensetype";
+	public static final String LICENSE_TYPE_FIELD_NAME = "licensetype";
 	
 	public static final Set<String> getFields() {
 		Set<String> fields = new HashSet<>();
@@ -106,7 +106,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		fields.add(PARENT_CONTEXT_NAME_FIELD_NAME);
 		fields.add(CSS_ICON);
 		fields.add(RESERVED_TO);
-		fields.add(LICNESE_TYPE_FIELD_NAME);
+		fields.add(LICENSE_TYPE_FIELD_NAME);
 		return fields;
 	}
 
@@ -160,7 +160,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		parentContextType = document.get(PARENT_CONTEXT_TYPE_FIELD_NAME);
 		parentContextName = document.get(PARENT_CONTEXT_NAME_FIELD_NAME);
 		cssIcon = document.get(CSS_ICON);
-		licenseTypeKey = document.get(LICNESE_TYPE_FIELD_NAME);
+		licenseTypeKey = document.get(LICENSE_TYPE_FIELD_NAME);
 	}
 	
 	private Date toDate(Document document, String fieldName) {

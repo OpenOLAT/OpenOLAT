@@ -5,9 +5,11 @@ $r.contextHelpWithWrapper("Data Management#qb_change_md")<br/>
 <fieldset><legend>$r.translate("question")</legend>
 	$r.render("question")
 </fieldset>
-<fieldset><legend>$r.translate("rights")</legend>
-	$r.render("rights")
-</fieldset>
+#if ($r.available("rights"))
+	<fieldset><legend>$r.translate("rights")</legend>
+		$r.render("rights")
+	</fieldset>
+#end
 #if($r.available("technical"))
 	<fieldset><legend>$r.translate("technical")</legend>
 		$r.render("technical")

@@ -231,7 +231,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("cif.freetext", 4, 72, freetext, formLayout);
-			updateLicenseUI();
+			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 		}
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
@@ -395,23 +395,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		submit.setVisible(!managed);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
-	
-	private void updateLicenseUI() {
-		boolean licenseSelected = false;
-		boolean freetextSelected = false;
-		if (licenseEl != null && licenseEl.isOneSelected()) {
-			String selectedKey = licenseEl.getSelectedKey();
-			LicenseType licenseType = licenseService.loadLicenseTypeByKey(selectedKey);
-			licenseSelected = !licenseService.isNoLicense(licenseType);
-			freetextSelected = licenseService.isFreetext(licenseType);
-		}
-		if (licensorEl != null) {
-			licensorEl.setVisible(licenseSelected);
-		}
-		if (licenseFreetextEl != null) {
-			licenseFreetextEl.setVisible(freetextSelected);
-		}
-	}
 
 	private void updateDatesVisibility() {
 		if(dateTypesEl.isOneSelected()) {
@@ -467,25 +450,15 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		}
 		
-		if(licenseEl != null) {
+		if (licenseEl != null) {
 			licenseEl.clearError();
-			if (licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
+			if (LicenseUIFactory.validateLicenseTypeMandatoryButNonSelected(licenseEl)) {
 				licenseEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
 		}
 
 		return allOk;
-	}
-
-	private boolean isLicenseTypeNotSelected() {
-		boolean isNoLicenseSelected = false;
-		if (licenseEl != null && licenseEl.isOneSelected()) {
-			String selectedKey = licenseEl.getSelectedKey();
-			LicenseType selectedLicenseType = licenseService.loadLicenseTypeByKey(selectedKey);
-			isNoLicenseSelected = licenseService.isNoLicense(selectedLicenseType);
-		}
-		return isNoLicenseSelected;
 	}
 	
 	private boolean validateTextElement(TextElement el, int maxLength) {
@@ -510,7 +483,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
 		} else if (source == licenseEl) {
-			updateLicenseUI();
+			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);;
 		} else if (source == fileUpload) {
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
 				fileUpload.clearError();

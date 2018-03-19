@@ -44,7 +44,6 @@ import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -122,7 +121,6 @@ public class QuestionDAOTest extends OlatTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-QP", "QPool taxonomy", null, null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QP-L-1", "QLevel 1", "For testing only", null, null, null, null, taxonomy);
 		QEducationalContext eduContext = qEduContextDao.create("primary.school", true);
-		QLicense mitLicense = qLicenseDao.create("mit-" + UUID.randomUUID().toString(), null, true);
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		QItemType essayType = qItemTypeDao.loadByType(QuestionType.ESSAY.name());
 		
@@ -156,8 +154,6 @@ public class QuestionDAOTest extends OlatTestCase {
 		//lifecycle
 		original.setItemVersion("1.0");
 		original.setStatus(QuestionStatus.review.name());
-		//rights
-		original.setLicense(mitLicense);
 		//technical
 		original.setEditor("OpenOLAT");
 		original.setEditorVersion("9.0a");
@@ -202,8 +198,6 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertEquals(QuestionStatus.draft.name(), clone.getStatus());
 		Assert.assertNotNull(clone.getQuestionStatusLastModified());
 		Assert.assertEquals(original.getItemVersion(), clone.getItemVersion());
-		//rights
-		Assert.assertEquals(original.getLicense(), clone.getLicense());
 		//technical
 		Assert.assertEquals(original.getEditor(), clone.getEditor());
 		Assert.assertEquals(original.getEditorVersion(), clone.getEditorVersion());

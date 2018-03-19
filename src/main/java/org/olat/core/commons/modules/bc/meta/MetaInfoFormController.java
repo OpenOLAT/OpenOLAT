@@ -176,7 +176,7 @@ public class MetaInfoFormController extends FormBasicController {
 			flc.setDirty(true);
 			moreMetaDataLink.setVisible(false);
 		} else if (source == licenseEl) {
-			updateLicenseUI();
+			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 		}
 	}
 
@@ -223,7 +223,7 @@ public class MetaInfoFormController extends FormBasicController {
 
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("mf.freetext", 4, 72, freetext, formLayout);
-			updateLicenseUI();
+			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
 		}
 
 		// creator
@@ -381,23 +381,6 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 	}
 
-	private void updateLicenseUI() {
-		boolean licenseSelected = false;
-		boolean freetextSelected = false;
-		if (licenseEl != null && licenseEl.isOneSelected()) {
-			String selectedKey = licenseEl.getSelectedKey();
-			LicenseType licenseType = licenseService.loadLicenseTypeByKey(selectedKey);
-			licenseSelected = !licenseService.isNoLicense(licenseType);
-			freetextSelected = licenseService.isFreetext(licenseType);
-		}
-		if (licensorEl != null) {
-			licensorEl.setVisible(licenseSelected);
-		}
-		if (licenseFreetextEl != null) {
-			licenseFreetextEl.setVisible(freetextSelected);
-		}
-	}
-	
 	/**
 	 * @return True if one or more metadata fields are non-emtpy.
 	 */
@@ -421,9 +404,6 @@ public class MetaInfoFormController extends FormBasicController {
 	private void setMetaFieldsVisible(boolean visible) {
 		for (FormItem formItem : metaFields) {
 			formItem.setVisible(visible);
-		}
-		if (visible) {
-			updateLicenseUI();
 		}
 	}
 
@@ -564,9 +544,9 @@ public class MetaInfoFormController extends FormBasicController {
 			}			
 		}
 		
-		if(licenseEl != null) {
+		if (licenseEl != null) {
 			licenseEl.clearError();
-			if (licenseEl.isMandatory() && isLicenseTypeNotSelected()) {
+			if (LicenseUIFactory.validateLicenseTypeMandatoryButNonSelected(licenseEl)) {
 				licenseEl.setErrorKey("form.legende.mandatory", null);
 				valid &= false;
 			}
@@ -575,16 +555,6 @@ public class MetaInfoFormController extends FormBasicController {
 		return valid;
 	}
 	
-	private boolean isLicenseTypeNotSelected() {
-		boolean isNoLicenseSelected = false;
-		if (licenseEl != null && licenseEl.isOneSelected()) {
-			String selectedKey = licenseEl.getSelectedKey();
-			LicenseType selectedLicenseType = licenseService.loadLicenseTypeByKey(selectedKey);
-			isNoLicenseSelected = licenseService.isNoLicense(selectedLicenseType);
-		}
-		return isNoLicenseSelected;
-	}
-
 	/**
 	 * Get the form item representing this form
 	 * 

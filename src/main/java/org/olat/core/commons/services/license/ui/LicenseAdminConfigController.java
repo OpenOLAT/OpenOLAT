@@ -433,11 +433,11 @@ public class LicenseAdminConfigController extends FormBasicController {
 	}
 
 	private void doActivateLicenseType(MultipleSelectionElement multipleSelectionElement) {
-		boolean active = multipleSelectionElement.isAtLeastSelected(1)? true: false;
+		boolean doActivate = multipleSelectionElement.isAtLeastSelected(1)? true: false;
 		HandlerLicenseType handlerLicenseType = (HandlerLicenseType) multipleSelectionElement.getUserObject();
 		LicenseHandler handler = handlerLicenseType.getHandler();
 		LicenseType licenseType = handlerLicenseType.getLicenseType();
-		if (active) {
+		if (doActivate) {
 			licenseService.activate(handler, licenseType);
 			reloadDefaultLicenseTypeEl(handler);
 		} else {

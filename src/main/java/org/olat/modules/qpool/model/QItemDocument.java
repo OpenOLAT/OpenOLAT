@@ -50,7 +50,6 @@ public class QItemDocument extends OlatDocument {
 	public static final String ASSESSMENT_TYPE_FIELD = "assessmentType";
 	public static final String ITEM_VERSION_FIELD = "itemVersion";
 	public static final String ITEM_STATUS_FIELD = "itemStatus";
-	public static final String COPYRIGHT_FIELD = "copyright";
 	public static final String EDITOR_FIELD = "editor";
 	public static final String EDITOR_VERSION_FIELD = "editorVersion";
 	public static final String FORMAT_FIELD = "format";

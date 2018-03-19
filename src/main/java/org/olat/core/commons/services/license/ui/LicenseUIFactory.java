@@ -27,6 +27,8 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -46,6 +48,27 @@ public class LicenseUIFactory {
 		// should not be instantiated
 	}
 	
+	/**
+	 * Get configuration for a SingleSelectionElement. The keys and values contains
+	 * all active LicenseTypes for the LicenseHandler.
+	 *
+	 * @param handler
+	 * @return
+	 */
+	public static LicenseSelectionConfig createLicenseSelectionConfig(LicenseHandler handler) {
+		return new LicenseSelectionConfig(handler);
+	}
+	
+	/**
+	 * Get configuration for a SingleSelectionElement. The keys and values contains
+	 * all active LicenseTypes for the LicenseHandler. The actual LicenseType is
+	 * always in the configuration, even if it is not active. It is marked as
+	 * "inactive" in the values.
+	 *
+	 * @param handler
+	 * @param actualLicenseType
+	 * @return
+	 */
 	public static LicenseSelectionConfig createLicenseSelectionConfig(LicenseHandler handler, LicenseType actualLicenseType) {
 		return new LicenseSelectionConfig(handler, actualLicenseType);
 	}
@@ -90,6 +113,38 @@ public class LicenseUIFactory {
 				cssClass = "o_icon_lic_general";
 		}
 		return cssClass;
+	}
+
+	public static boolean validateLicenseTypeMandatoryButNonSelected(SingleSelection licenseEl) {
+		if (licenseEl == null) return false;
+		if (!licenseEl.isMandatory()) return false;
+		
+		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		boolean isNoLicenseSelected = false;
+		if (licenseEl.isOneSelected()) {
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType selectedLicenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			isNoLicenseSelected = licenseService.isNoLicense(selectedLicenseType);
+		}
+		return isNoLicenseSelected;
+	}
+	
+	public static void updateVisibility(SingleSelection licenseEl, TextElement licensorEl, TextElement licenseFreetextEl) {
+		boolean licenseSelected = false;
+		boolean freetextSelected = false;
+		if (licenseEl != null && licenseEl.isOneSelected()) {
+			LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+			String selectedKey = licenseEl.getSelectedKey();
+			LicenseType licenseType = licenseService.loadLicenseTypeByKey(selectedKey);
+			licenseSelected = !licenseService.isNoLicense(licenseType);
+			freetextSelected = licenseService.isFreetext(licenseType);
+		}
+		if (licensorEl != null) {
+			licensorEl.setVisible(licenseSelected);
+		}
+		if (licenseFreetextEl != null) {
+			licenseFreetextEl.setVisible(freetextSelected);
+		}
 	}
 
 }

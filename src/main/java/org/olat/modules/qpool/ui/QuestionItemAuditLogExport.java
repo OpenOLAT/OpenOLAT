@@ -28,6 +28,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -42,6 +45,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
@@ -62,6 +66,9 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 	
 	private final QPoolService qpoolService;
 	private final UserManager userManager;
+	private final LicenseService licenseService;
+	private final LicenseModule licenseModule;
+	private final QuestionPoolLicenseHandler licenseHandler;
 
 	public QuestionItemAuditLogExport(QuestionItemShort item, List<QuestionItemAuditLog> auditLog,
 			Translator translator) {
@@ -70,6 +77,9 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 		this.translator = translator;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		licenseService = CoreSpringFactory.getImpl(LicenseService.class);
+		licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
+		licenseHandler = CoreSpringFactory.getImpl(QuestionPoolLicenseHandler.class);
 	}
 	
 	private static final String label(QuestionItemShort item) {
@@ -122,16 +132,17 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("export.log.header.differentiation"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.numOfAnswerAlternatives"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.usage"));
-		headerRow.addCell(pos++, translator.translate("export.log.header.creator"));
-		headerRow.addCell(pos++, translator.translate("export.log.header.copyright"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.version"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.status"));
+		if (licenseModule.isEnabled(licenseHandler)) {
+			headerRow.addCell(pos++, translator.translate("export.log.header.license"));
+			headerRow.addCell(pos++, translator.translate("export.log.header.licensor"));
+		}
 		headerRow.addCell(pos++, translator.translate("export.log.header.log.author"));
 	}
-	
-	
+
+	@SuppressWarnings("deprecation")
 	private void addContent(OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
-		
 		for(QuestionItemAuditLog logEntry:auditLog) {
 			int pos = 0;
 			Row row = exportSheet.newRow();
@@ -161,12 +172,25 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 				row.addCell(pos++, format(item.getDifferentiation()));
 				row.addCell(pos++, String.valueOf(item.getNumOfAnswerAlternatives()));
 				row.addCell(pos++, String.valueOf(item.getUsage()));
-				row.addCell(pos++, item.getCreator());
-				row.addCell(pos++, item.getLicense() != null? item.getLicense().getLicenseKey(): null);
 				row.addCell(pos++, item.getItemVersion());
 				row.addCell(pos++, getTranslatedStatus(item.getQuestionStatus()));
 			} else {
-				pos += 20;
+				pos += 18;
+			}
+			
+			if (licenseModule.isEnabled(licenseHandler)) {
+				License license = licenseService.licenseFromXml(logEntry.getLicenseAfter());
+				if (license != null) {
+					row.addCell(pos++, license.getLicenseType() != null? license.getLicenseType().getName(): null);
+					row.addCell(pos++, license.getLicensor());
+				} else if (item != null) {
+					// Backward compatibility:
+					// Before the introduction of the LicenseService the license was stored in the item itself.
+					row.addCell(pos++, item.getLicense() != null? item.getLicense().getLicenseKey(): null);
+					row.addCell(pos++, item.getCreator());
+				 } else {
+					pos += 2;
+				}
 			}
 
 			Long authorKey = logEntry.getAuthorKey();
