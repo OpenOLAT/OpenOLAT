@@ -26,6 +26,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -61,6 +63,8 @@ public class QuestionItemDocumentFactory {
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private LicenseService licenseService;
 
 	public String getResourceUrl(Long itemKey) {
 		return "[QuestionItem:" + itemKey + "]";
@@ -143,9 +147,10 @@ public class QuestionItemDocumentFactory {
 		}
 		
 		//rights
-		if(item.getLicense() != null) {
-			String licenseKey = item.getLicense().getLicenseKey();
-			addTextField(document, QItemDocument.COPYRIGHT_FIELD, licenseKey, 2.0f);
+		ResourceLicense license = licenseService.loadLicense(item);
+		if(license != null && license.getLicenseType() != null) {
+			String licenseKey = String.valueOf(license.getLicenseType().getKey());
+			addTextField(document, QItemDocument.LICENSE_TYPE_FIELD_NAME, licenseKey, 2.0f);
 		}
 
 		//technical

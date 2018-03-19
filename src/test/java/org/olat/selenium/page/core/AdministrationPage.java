@@ -59,6 +59,13 @@ public class AdministrationPage {
 		return this;
 	}
 	
+	public AdministrationPage selecCoreConfiguration() {
+		By coreConfigurationLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'sysconfigParent')]");
+		browser.findElement(coreConfigurationLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public AdministrationPage selectModules() {
 		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'modulesParent')]");
 		browser.findElement(systemLinkby).click();
@@ -143,5 +150,17 @@ public class AdministrationPage {
 		OOGraphene.check(authorConfirmationEl, authorConfirmationCheckEl, new Boolean(mandatory));
 		OOGraphene.waitBusy(browser);
 		return this;
+	}
+	
+	public LicensesAdminstrationPage openLicenses() {
+		selecCoreConfiguration();
+		
+		By licenseBy = By.cssSelector(".o_sel_license span.o_tree_level_label_leaf>a");
+		browser.findElement(licenseBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By licenseAdminBy = By.cssSelector(".o_sel_license_general");
+		OOGraphene.waitElement(licenseAdminBy, browser);
+		return new LicensesAdminstrationPage(browser);
 	}
 }

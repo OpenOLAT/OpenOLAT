@@ -401,11 +401,6 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			TreeNode node = new QEducationalContextsAdminTreeNode(translator.translate("menu.admin.levels"));
 			adminNode.addChild(node);
 		}
-
-		if (securityCallback.canConfigLicences()) {
-			TreeNode node = new QLicensesAdminTreeNode(translator.translate("menu.admin.licenses"));
-			adminNode.addChild(node);
-		}
 	}
 	
 	private void setFirstChildAsDelegate(INode node) {

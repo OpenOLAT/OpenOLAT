@@ -370,7 +370,7 @@ public class AdvancedSearchInputController extends FormBasicController {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append('(');
-		sb.append(AbstractOlatDocument.LICNESE_TYPE_FIELD_NAME);
+		sb.append(AbstractOlatDocument.LICENSE_TYPE_FIELD_NAME);
 		sb.append(":(");
 		for(String licenseTypeKey: selectedLicTypes) {
 			sb.append(licenseTypeKey).append(' ');

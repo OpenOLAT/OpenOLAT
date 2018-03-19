@@ -29,6 +29,10 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -50,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.table.QuestionStatusCellRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -68,6 +73,7 @@ import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.ItemWrapper;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
@@ -103,6 +109,12 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected QPoolService qpoolService;
 	@Autowired
 	private QPoolSecurityCallbackFactory qpoolSecurityCallbackFactory;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
 	
 	private EventBus eventBus;
 	private QuestionItemsSource itemsSource;
@@ -184,7 +196,11 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numberOfRatings.i18nKey(), Cols.numberOfRatings.ordinal(), true, OrderBy.numberOfRatings.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion.i18nKey(), Cols.itemVersion.ordinal(), true, OrderBy.itemVersion.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, OrderBy.status.name(), new QuestionStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified.i18nKey(), Cols.statusLastModified.ordinal(), true, OrderBy.statusLastModified.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified.i18nKey(), Cols.statusLastModified.ordinal(), true, OrderBy.statusLastModified.name()));	
+		if (licenseModule.isEnabled(licenseHandler)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
+		}
 		initActionColumns(columnsModel);
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
@@ -440,8 +456,9 @@ public abstract class AbstractItemListController extends FormBasicController
 
 		List<QuestionItemView> reloadedItems = itemsSource.getItems(itemToReload);
 		List<ItemRow> reloadedRows = new ArrayList<>(reloadedItems.size());
+		List<ResourceLicense> licenses = licenseService.loadLicenses(reloadedItems);
 		for(QuestionItemView item:reloadedItems) {
-			ItemRow reloadedRow = forgeRow(item);
+			ItemRow reloadedRow = forgeRow(item, licenses);
 			reloadedRows.add(reloadedRow);
 		}
 		return reloadedRows;
@@ -451,22 +468,32 @@ public abstract class AbstractItemListController extends FormBasicController
 	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, condQueries, firstResult, maxResults, orderBy);
 		List<ItemRow> rows = new ArrayList<>(items.getObjects().size());
+		List<ResourceLicense> licenses = licenseService.loadLicenses(items.getObjects());
 		for(QuestionItemView item:items.getObjects()) {
-			ItemRow row = forgeRow(item);
+			ItemRow row = forgeRow(item, licenses);
 			rows.add(row);
 		}
 		return new DefaultResultInfos<>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
 	}
 	
-	protected ItemRow forgeRow(QuestionItemView item) {
+	protected ItemRow forgeRow(QuestionItemView item, List<ResourceLicense> licenses) {
 		boolean marked = item.isMarked();
 		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
 				.createQuestionItemSecurityCallback(item, getSource(), roles);
 		ItemRow row = new ItemRow(item, securityCallback);
+		
+		// favorite
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
+		
+		// license
+		for (ResourceLicense license: licenses) {
+			if (license.getResId().equals(item.getResourceableId()) && license.getResName().equals(item.getResourceableTypeName())) {
+				row.setLicense(license);
+			}
+		}
 		return row;
 	}
 

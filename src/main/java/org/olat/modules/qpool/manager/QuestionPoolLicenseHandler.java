@@ -17,35 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.license.manager;
+package org.olat.modules.qpool.manager;
 
-import org.olat.core.commons.persistence.DB;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Locale;
+
+import org.olat.core.commons.services.license.LicenseHandler;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.modules.qpool.ui.admin.QuestionPoolAdminConfigurationController;
 import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 05.03.2018<br>
+ * Initial date: 13.03.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Component
-public class LicenseCleaner {
+public class QuestionPoolLicenseHandler implements LicenseHandler {
 
-	@Autowired
-	private DB dbInstance;
-
-	public void deleteAll() {
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from license")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetypeactivation")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from licensetype where predefined is false")
-				.executeUpdate();
-		dbInstance.commitAndCloseSession();
+	@Override
+	public String getType() {
+		return "qpool";
 	}
-	
+
+	@Override
+	public String getTitle(Locale locale) {
+		Translator translator = Util.createPackageTranslator(QuestionPoolAdminConfigurationController.class, locale);
+		return translator.translate("license.admin.title");
+	}
+
 }

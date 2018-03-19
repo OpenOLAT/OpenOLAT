@@ -73,7 +73,6 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String POOL_ADMIN_POOLS = "pool.admin.pools";
 	private static final String POOL_ADMIN_ITEM_TYPES = "pool.admin.item.types";
 	private static final String POOL_ADMIN_EDUCATIONAL_CONTEXT = "pool.admin.educational.context";
-	private static final String POOL_ADMIN_LICENSES = "pool.admin.licenses";
 	
 	private boolean collectionsEnabled = true;
 	private boolean poolsEnabled = true;
@@ -94,7 +93,6 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private boolean poolAdminAllowedToConfigPools = true;
 	private boolean poolAdminAllowedToConfigItemTypes = true;
 	private boolean poolAdminAllowedToConfigEducationalContext = true;
-	private boolean poolAdminAllowedToConfigLicenses = true;
 	
 	@Autowired
 	private DB dbInstance;
@@ -229,11 +227,6 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		String poolAdminAllowedToConfigEducationalContextObj = getStringPropertyValue(POOL_ADMIN_EDUCATIONAL_CONTEXT, true);
 		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigEducationalContextObj)) {
 			poolAdminAllowedToConfigEducationalContext = "true".equals(poolAdminAllowedToConfigEducationalContextObj);
-		}
-		
-		String poolAdminAllowedToConfigLicensesObj = getStringPropertyValue(POOL_ADMIN_LICENSES, true);
-		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigLicensesObj)) {
-			poolAdminAllowedToConfigLicenses = "true".equals(poolAdminAllowedToConfigLicensesObj);
 		}
 		
 	}
@@ -442,13 +435,4 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		setStringProperty(POOL_ADMIN_EDUCATIONAL_CONTEXT, Boolean.toString(poolAdminAllowedToConfigEducationalContext), true);
 	}
 
-	public boolean isPoolAdminAllowedToConfigLicenses() {
-		return poolAdminAllowedToConfigLicenses;
-	}
-
-	public void setPoolAdminAllowedToConfigLicenses(boolean poolAdminAllowedToConfigLicenses) {
-		this.poolAdminAllowedToConfigLicenses = poolAdminAllowedToConfigLicenses;
-		setStringProperty(POOL_ADMIN_LICENSES, Boolean.toString(poolAdminAllowedToConfigLicenses), true);
-	}
-	
 }

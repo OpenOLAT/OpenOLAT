@@ -21,11 +21,13 @@ package org.olat.modules.qpool.ui.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,8 +47,8 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QItemDocument;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
@@ -77,6 +79,10 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private QPoolService qpoolService;
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
 
 	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm, boolean allTaxonomyLevels) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
@@ -345,7 +351,9 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			attributes.add(new SearchAttribute("technical.editor", new StringQueryParameter(QItemDocument.EDITOR_FIELD)));
 			attributes.add(new SearchAttribute("technical.format", new FormatQueryParameter()));
 			//rights
-			attributes.add(new SearchAttribute("rights.copyright", new LicenseQueryParameter()));	
+			if (licenseModule.isEnabled(licenseHandler)) {
+				attributes.add(new SearchAttribute("rights.license", new LicenseQueryParameter()));	
+			}
 		}
 		
 		public QueryParameterFactory getQueryParameterFactory(String type) {
@@ -439,26 +447,13 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	public class LicenseQueryParameter extends SingleChoiceQueryParameter {
 		
 		public LicenseQueryParameter() {
-			super(QItemDocument.COPYRIGHT_FIELD);
+			super(QItemDocument.LICENSE_TYPE_FIELD_NAME);
 		}
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			List<QLicense> allLicenses = qpoolService.getAllLicenses();
-			List<QLicense> licenses = new ArrayList<>(allLicenses);
-			for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
-				String key = it.next().getLicenseKey();
-				if(key != null && key.startsWith("perso-")) {
-					it.remove();
-				}
-			}
-
-			String[] keys = new String[licenses.size()];
-			int count = 0;
-			for(QLicense license:licenses) {
-				keys[count++] = license.getLicenseKey();
-			}
-			return createItem(keys, keys, startValue);
+			LicenseSelectionConfig config = LicenseUIFactory.createLicenseSelectionConfig(licenseHandler);
+			return createItem(config.getLicenseTypeKeys(), config.getLicenseTypeValues(getLocale()), startValue);
 		}
 	}
 	

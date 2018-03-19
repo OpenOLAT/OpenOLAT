@@ -1815,6 +1815,8 @@ create table o_qp_item_audit_log (
   q_action varchar2(64 char),
   q_val_before CLOB,
   q_val_after CLOB,
+  q_lic_before CLOB,
+  q_lic_after CLOB,
   q_message CLOB,
   fk_author_id number(20),
   fk_item_id number(20),

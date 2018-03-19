@@ -38,7 +38,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
@@ -251,17 +250,6 @@ public interface QPoolService {
 	
 	public boolean deleteEducationalContext(QEducationalContext context);
 	
-	//licenses administration
-	public QLicense createLicense(String licenseKey, String text);
-	
-	public List<QLicense> getAllLicenses();
-	
-	public QLicense getLicense(String licenseKey);
-	
-	public QLicense updateLicense(QLicense license);
-	
-	public boolean deleteLicense(QLicense license);
-
 	// Audit log
 	public QuestionItemAuditLogBuilder createAuditLogBuilder(Identity author, Action action);
 	

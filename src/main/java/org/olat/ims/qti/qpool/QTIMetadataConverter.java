@@ -22,19 +22,20 @@ package org.olat.ims.qti.qpool;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.dom4j.Element;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
-import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -51,7 +52,7 @@ public class QTIMetadataConverter {
 	
 	private Element qtimetadata;
 
-	private QLicenseDAO licenseDao;
+	private LicenseService licenseService;
 	private QItemTypeDAO itemTypeDao;
 	private QPoolService qpoolService;
 	private QEducationalContextDAO educationalContextDao;
@@ -60,21 +61,18 @@ public class QTIMetadataConverter {
 		this.qtimetadata = qtimetadata;
 	}
 	
-	QTIMetadataConverter(Element qtimetadata, QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
-			QEducationalContextDAO educationalContextDao, QPoolService qpoolService) {
+	QTIMetadataConverter(Element qtimetadata, QItemTypeDAO itemTypeDao, QEducationalContextDAO educationalContextDao,
+			QPoolService qpoolService) {
 		this.qtimetadata = qtimetadata;
-		this.licenseDao = licenseDao;
 		this.itemTypeDao = itemTypeDao;
 		this.qpoolService = qpoolService;
 		this.educationalContextDao = educationalContextDao;
+		licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 	}
 	
-	public QTIMetadataConverter(QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
-			QEducationalContextDAO educationalContextDao, QPoolService qpoolService) {
-		this.licenseDao = licenseDao;
-		this.itemTypeDao = itemTypeDao;
-		this.qpoolService = qpoolService;
-		this.educationalContextDao = educationalContextDao;
+	public QTIMetadataConverter(QItemTypeDAO itemTypeDao, QEducationalContextDAO educationalContextDao,
+			QPoolService qpoolService) {
+		this(null, itemTypeDao, educationalContextDao, qpoolService);
 	}
 	
 	public QItemType toType(String itemType) {
@@ -85,16 +83,41 @@ public class QTIMetadataConverter {
 		return type;
 	}
 	
-	public QLicense toLicense(String license) {
-		QLicense qLicense = null;
-		if(StringHelper.containsNonWhitespace(license)) {
-			qLicense = licenseDao.searchLicense(license);
-			if(qLicense == null) {
-				String key = "perso-" + UUID.randomUUID().toString();
-				qLicense = licenseDao.create(key, license, false);
+	public void createLicense(QuestionItemImpl poolItem, String licenseText) {
+		createLicense(poolItem, licenseText, null);
+	}
+	
+	public void createLicense(QuestionItemImpl poolItem, String licenseText, String licensor) {
+		ResourceLicense license = licenseService.loadOrCreateLicense(poolItem);
+
+		if (StringHelper.containsNonWhitespace(licenseText)) {
+			String mappedLicenseText = mapLicenseTypeName(licenseText);
+			LicenseType licenseType = licenseService.loadLicenseTypeByName(mappedLicenseText);
+			if (licenseType == null) {
+				licenseType = licenseService.loadFreetextLicenseType();
+				license.setFreetext(mappedLicenseText);
+			} else {
+				license.setFreetext(null);
 			}
+			license.setLicenseType(licenseType);
 		}
-		return qLicense;
+		if (StringHelper.containsNonWhitespace(licensor)) {
+			license.setLicensor(licensor);
+		}
+		licenseService.update(license);
+	}
+	
+	private String mapLicenseTypeName(String licenseKey) {
+		switch (licenseKey) {
+			case "CC by": return "CC BY";
+			case "CC by-sa": return "CC BY-SA";
+			case "CC by-nd": return "CC BY-ND";
+			case "CC by-nc": return "CC BY-NC";
+			case "CC by-nc-sa": return "CC BY-NC-SA";
+			case "CC by-nc-nd": return "CC BY-NC-ND";
+			case "all rights reserved": return "all rights reserved";
+			default: return licenseKey;
+		}
 	}
 	
 	public TaxonomyLevel toTaxonomy(String str) {
@@ -215,7 +238,7 @@ public class QTIMetadataConverter {
 		}
 		String license = getMetadataEntry("license");
 		if(StringHelper.containsNonWhitespace(license)) {
-			fullItem.setLicense(toLicense(license));
+			createLicense(fullItem, license);
 		}
 		String taxonomy = getMetadataEntry("oo_taxonomy");
 		if(StringHelper.containsNonWhitespace(taxonomy)) {
@@ -244,7 +267,7 @@ public class QTIMetadataConverter {
 		addMetadataField("version", fullItem.getItemVersion(), qtimetadata);
 		addMetadataField("keywords", fullItem.getKeywords(), qtimetadata);
 		addMetadataField("language", fullItem.getLanguage(), qtimetadata);
-		addMetadataField("license", fullItem.getLicense(), qtimetadata);
+		addLicenseMetadataField("license", fullItem, qtimetadata);
 		addMetadataField("oo_master", fullItem.getMasterIdentifier(), qtimetadata);
 		addMetadataField("oo_num_of_answer_alternatives", fullItem.getNumOfAnswerAlternatives(), qtimetadata);
 		addMetadataField("status", fullItem.getQuestionStatus(), qtimetadata);
@@ -262,9 +285,20 @@ public class QTIMetadataConverter {
 		}
 	}
 	
-	private void addMetadataField(String label, QLicense entry, Element metadata) {
-		if(entry != null) {
-			addMetadataField(label, entry.getLicenseText(), metadata);
+	private void addLicenseMetadataField(String label, QuestionItemFull fullItem, Element metadata) {
+		LicenseService lService = CoreSpringFactory.getImpl(LicenseService.class);
+		ResourceLicense license = lService.loadLicense(fullItem);
+		if(license != null) {
+			String licenseText = null;
+			LicenseType licenseType = license.getLicenseType();
+			if (lService.isFreetext(licenseType)) {
+				licenseText = license.getFreetext();
+			} else if (!lService.isNoLicense(licenseType)) {
+				licenseText = license.getLicenseType().getName();
+			}
+			if (StringHelper.containsNonWhitespace(licenseText)) {
+				addMetadataField(label, licenseText, metadata);
+			}
 		}
 	}
 	

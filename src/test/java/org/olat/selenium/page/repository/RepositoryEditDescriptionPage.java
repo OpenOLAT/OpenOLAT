@@ -30,6 +30,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -70,6 +71,18 @@ public class RepositoryEditDescriptionPage {
 		String validToStr = Formatter.getInstance(locale).formatDate(validTo);
 		browser.findElement(validToBy).sendKeys(validToStr);
 		
+		return this;
+	}
+	
+	/**
+	 * Set a license
+	 * 
+	 * @return Itself
+	 */
+	public RepositoryEditDescriptionPage setLicense() {
+		By licenseBy = By.cssSelector("div.o_sel_repo_license select");
+		WebElement licenseEl = browser.findElement(licenseBy);
+		new Select(licenseEl).selectByIndex(1);
 		return this;
 	}
 	

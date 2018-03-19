@@ -130,10 +130,6 @@ public class LicenseTypeDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldLoadNoLicenseType() {
-		LicenseType licenseType = licenseTypeDao.create(LicenseTypeDAO.NO_LICENSE_NAME);
-		licenseTypeDao.save(licenseType);
-		dbInstance.commitAndCloseSession();
-				
 		LicenseType noLicenseType = licenseTypeDao.loadNoLicenseType();
 		
 		assertThat(noLicenseType).isNotNull();

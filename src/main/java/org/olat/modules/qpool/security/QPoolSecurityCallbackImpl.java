@@ -106,8 +106,4 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigEducationalContext());
 	}
 
-	@Override
-	public boolean canConfigLicences() {
-		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigLicenses());
-	}
 }

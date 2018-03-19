@@ -35,6 +35,10 @@ public interface QuestionItemAuditLog extends CreateInfo {
 
 	public String getAfter();
 
+	public String getLicenseBefore();
+
+	public String getLicenseAfter();
+
 	public String getMessage();
 	
 	public Long getQuestionItemKey();

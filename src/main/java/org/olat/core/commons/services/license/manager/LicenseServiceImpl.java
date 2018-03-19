@@ -58,6 +58,8 @@ class LicenseServiceImpl implements LicenseService {
 	private LicenseTypeActivationDAO licenseTypeActivationDao;
 	@Autowired
 	private LicensorFactory licensorFactory;
+	@Autowired
+	private LicenseXStreamHelper xStreamHelper;
 
 	@Override
 	public License createLicense(LicenseType licenseType) {
@@ -75,6 +77,16 @@ class LicenseServiceImpl implements LicenseService {
 		license.setLicenseType(defautlLicenseType);
 		license.setLicensor(licensorName);
 		return license;
+	}
+
+	@Override
+	public String toXml(License license) {
+		return xStreamHelper.toXml(license);
+	}
+
+	@Override
+	public License licenseFromXml(String xml) {
+		return xStreamHelper.licenseFromXml(xml);
 	}
 	
 	@Override
@@ -114,7 +126,7 @@ class LicenseServiceImpl implements LicenseService {
 	}
 
 	@Override
-	public List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources) {
+	public List<ResourceLicense> loadLicenses(Collection<? extends OLATResourceable> resources) {
 		return licenseDao.loadLicenses(resources);
 	}
 
@@ -178,6 +190,11 @@ class LicenseServiceImpl implements LicenseService {
 	public List<LicenseType> loadActiveLicenseTypes(LicenseHandler handler) {
 		return licenseTypeDao.loadActiveLicenseTypes(handler);
 	}
+
+	@Override
+	public LicenseType loadFreetextLicenseType() {
+		return licenseTypeDao.loadLicenseTypeByName(LicenseTypeDAO.FREETEXT_NAME);
+	}
 	
 	@Override
 	public boolean isNoLicense(LicenseType licenseType) {
@@ -196,7 +213,10 @@ class LicenseServiceImpl implements LicenseService {
 
 	@Override
 	public void activate(LicenseHandler handler, LicenseType licenseType) {
-		licenseTypeActivationDao.createAndPersist(handler, licenseType);
+		boolean active = isActive(handler, licenseType);
+		if (!active) {
+			licenseTypeActivationDao.createAndPersist(handler, licenseType);
+		}
 	}
 
 	@Override

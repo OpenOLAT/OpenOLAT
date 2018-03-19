@@ -96,7 +96,7 @@ class ResourceLicenseDAO {
 		return licenses == null || licenses.isEmpty() ? null : licenses.get(0);
 	}
 
-	List<ResourceLicense> loadLicenses(Collection<OLATResourceable> resources) {
+	List<ResourceLicense> loadLicenses(Collection<? extends OLATResourceable> resources) {
 		if (resources == null || resources.isEmpty()) return new ArrayList<>();
 		
 		Set<String> resNames = new HashSet<>();

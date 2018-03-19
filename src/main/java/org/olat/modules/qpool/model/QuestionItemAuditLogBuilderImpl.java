@@ -20,6 +20,8 @@
 package org.olat.modules.qpool.model;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -40,16 +42,24 @@ public class QuestionItemAuditLogBuilderImpl implements QuestionItemAuditLogBuil
 	private Long questionItemKey;
 	private String before;
 	private String after;
+	private String licenseBefore;
+	private String licenseAfter;
 	private String message;
 	
 	private final QPoolService qpoolService;
+	private final LicenseService licenseService;
 	
 	public QuestionItemAuditLogBuilderImpl(Identity author, Action action) {
-		this(CoreSpringFactory.getImpl(QPoolService.class), author, action);
+		this(CoreSpringFactory.getImpl(QPoolService.class),
+				CoreSpringFactory.getImpl(LicenseService.class),
+				author,
+				action);
 	}
 	
-	QuestionItemAuditLogBuilderImpl(QPoolService qpoolService, Identity author, Action action) {
+	QuestionItemAuditLogBuilderImpl(QPoolService qpoolService, LicenseService licenseService, Identity author,
+			Action action) {
 		this.qpoolService = qpoolService;
+		this.licenseService = licenseService;
 		if (author != null) {
 			this.authorKey = author.getKey();
 		}
@@ -58,15 +68,19 @@ public class QuestionItemAuditLogBuilderImpl implements QuestionItemAuditLogBuil
 
 	@Override
 	public QuestionItemAuditLogBuilder withBefore(QuestionItem item) {
-		this.before = qpoolService.toAuditXml(item);
 		this.questionItemKey = item.getKey();
+		this.before = qpoolService.toAuditXml(item);
+		License license = licenseService.loadLicense(item);
+		this.licenseBefore = licenseService.toXml(license);
 		return this;
 	}
 
 	@Override
 	public QuestionItemAuditLogBuilder withAfter(QuestionItem item) {
-		this.after = qpoolService.toAuditXml(item);
 		this.questionItemKey = item.getKey();
+		this.after = qpoolService.toAuditXml(item);
+		License license = licenseService.loadLicense(item);
+		this.licenseAfter = licenseService.toXml(license);
 		return this;
 	}
 
@@ -84,6 +98,8 @@ public class QuestionItemAuditLogBuilderImpl implements QuestionItemAuditLogBuil
 		auditLog.setQuestionItemKey(questionItemKey);
 		auditLog.setAfter(after);
 		auditLog.setBefore(before);
+		auditLog.setLicenseBefore(licenseBefore);
+		auditLog.setLicenseAfter(licenseAfter);
 		auditLog.setMessage(message);
 		return auditLog;
 	}

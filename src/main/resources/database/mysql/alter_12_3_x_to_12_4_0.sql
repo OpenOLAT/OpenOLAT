@@ -52,3 +52,6 @@ create index lic_activation_type_idx on o_lic_license_type_activation (fk_licens
 alter table o_lic_license add constraint lic_license_type_fk foreign key (fk_license_type_id) references o_lic_license_type (id);
 create index lic_license_type_idx on o_lic_license (fk_license_type_id);
 create unique index lic_license_ores_idx on o_lic_license (l_resid, l_resname);
+
+alter table o_qp_item_audit_log add column q_lic_before mediumtext;
+alter table o_qp_item_audit_log add column q_lic_after mediumtext;

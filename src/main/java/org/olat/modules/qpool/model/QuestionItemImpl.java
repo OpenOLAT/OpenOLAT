@@ -452,6 +452,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		return license;
 	}
 
+	@Deprecated
 	public void setLicense(QLicense license) {
 		this.license = license;
 	}
@@ -469,6 +470,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		return creator;
 	}
 
+	@Deprecated
 	public void setCreator(String creator) {
 		this.creator = creator;
 	}

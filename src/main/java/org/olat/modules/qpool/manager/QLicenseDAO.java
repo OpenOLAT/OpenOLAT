@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("qpoolLicenseDao")
+@Deprecated
 public class QLicenseDAO implements ApplicationListener<ContextRefreshedEvent> {
 	
 	@Autowired

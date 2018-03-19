@@ -33,6 +33,10 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -64,7 +68,6 @@ import org.olat.imsmd.xml.manifest.ValueType;
 import org.olat.imsmd.xml.manifest.VersionType;
 import org.olat.imsqti.xml.manifest.QTIMetadataType;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.oo.xml.manifest.OpenOLATMetadataType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -862,13 +865,20 @@ public class ManifestMetadataBuilder {
 			setLifecycleVersion(item.getItemVersion());
 		}
 		//LOM : Rights
-		QLicense license = item.getLicense();
+		LicenseService lService = CoreSpringFactory.getImpl(LicenseService.class);
+		ResourceLicense license = lService.loadLicense(item);
 		if(license != null) {
-			if(StringHelper.containsNonWhitespace(license.getLicenseText())) {
-				setLicense(license.getLicenseText());
-			} else if(StringHelper.containsNonWhitespace(license.getLicenseKey())) {
-				setLicense(license.getLicenseKey());
+			String licenseText = null;
+			LicenseType licenseType = license.getLicenseType();
+			if (lService.isFreetext(licenseType)) {
+				licenseText = license.getFreetext();
+			} else if (!lService.isNoLicense(licenseType)) {
+				licenseText = license.getLicenseType().getName();
 			}
+			if (StringHelper.containsNonWhitespace(licenseText)) {
+				setLicense(licenseText);
+			}
+			setOpenOLATMetadataCreator(license.getLicensor());
 		}
 		//LOM : classification
 		if(StringHelper.containsNonWhitespace(item.getTaxonomicPath())) {
@@ -900,7 +910,6 @@ public class ManifestMetadataBuilder {
 		setOpenOLATMetadataStandardDeviation(item.getStdevDifficulty());
 		setOpenOLATMetadataUsage(item.getUsage());
 		setOpenOLATMetadataAssessmentType(item.getAssessmentType());
-		setOpenOLATMetadataCreator(item.getCreator());
 		setOpenOLATMetadataTopic(item.getTopic());
 		setOpenOLATMetadataAdditionalInformations(item.getAdditionalInformations());
 	}

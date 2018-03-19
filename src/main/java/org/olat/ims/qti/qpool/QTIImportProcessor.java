@@ -77,12 +77,10 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
-import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
-import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,8 +106,6 @@ class QTIImportProcessor {
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private QLicenseDAO qLicenseDao;
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
@@ -249,6 +245,7 @@ class QTIImportProcessor {
 		}
 		if(metadata != null) {
 			processItemMetadata(poolItem, metadata);
+			createLicense(poolItem, metadata);
 		}
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
@@ -291,14 +288,14 @@ class QTIImportProcessor {
 		
 		String taxonomyPath = metadata.getTaxonomyPath();
 		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
 			TaxonomyLevel taxonomyLevel = converter.toTaxonomy(taxonomyPath);
 			poolItem.setTaxonomyLevel(taxonomyLevel);
 		}
 		
 		String level = metadata.getLevel();
 		if(StringHelper.containsNonWhitespace(level)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
 			QEducationalContext educationalContext = converter.toEducationalContext(level);
 			poolItem.setEducationalContext(educationalContext);
 		}
@@ -326,13 +323,12 @@ class QTIImportProcessor {
 		poolItem.setDifficulty(metadata.getDifficulty());
 		poolItem.setDifferentiation(metadata.getDifferentiation());
 		poolItem.setStdevDifficulty(metadata.getStdevDifficulty());
-		
+	}
+
+	private void createLicense(QuestionItemImpl poolItem, ItemAndMetadata metadata) {
 		String license = metadata.getLicense();
-		if(StringHelper.containsNonWhitespace(license)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
-			QLicense qLicense = converter.toLicense(license);
-			poolItem.setLicense(qLicense);
-		}
+		QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qEduContextDao, qpoolService);
+		converter.createLicense(poolItem, license);
 	}
 	
 	private void processItemMetadata(QuestionItemImpl poolItem, Element itemEl) {
@@ -588,7 +584,7 @@ class QTIImportProcessor {
 				SAXReader reader = new SAXReader();
 		        Document document = reader.read(metadataIn);
 		        Element rootElement = document.getRootElement();
-		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
+		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qEduContextDao, qpoolService);
 		        enricher.toQuestion(item);
 			}
 	        return true;

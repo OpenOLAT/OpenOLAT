@@ -117,6 +117,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("admin.menu.title"));
 		generalCont.setRootForm(mainForm);
+		generalCont.setElementCssClass("o_sel_license_general");
 		flc.add("general", generalCont);
 
 		String[] enabledHandlerKeys = licenseHandlers.stream()
@@ -354,9 +355,9 @@ public class LicenseAdminConfigController extends FormBasicController {
 			} else if (name.startsWith(LICENSOR_CREATOR_TYPE_PREFIX)) {
 				doSetLicensorCreator(source, singleSelection);
 			}
-		} if (source instanceof FormLink) {
+		} else if (source instanceof FormLink) {
 			LicenseHandler handler = (LicenseHandler) source.getUserObject();
-			doEditLicensorConstatant(ureq, handler);
+			doEditLicensorConstant(ureq, handler);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -433,11 +434,11 @@ public class LicenseAdminConfigController extends FormBasicController {
 	}
 
 	private void doActivateLicenseType(MultipleSelectionElement multipleSelectionElement) {
-		boolean active = multipleSelectionElement.isAtLeastSelected(1)? true: false;
+		boolean doActivate = multipleSelectionElement.isAtLeastSelected(1)? true: false;
 		HandlerLicenseType handlerLicenseType = (HandlerLicenseType) multipleSelectionElement.getUserObject();
 		LicenseHandler handler = handlerLicenseType.getHandler();
 		LicenseType licenseType = handlerLicenseType.getLicenseType();
-		if (active) {
+		if (doActivate) {
 			licenseService.activate(handler, licenseType);
 			reloadDefaultLicenseTypeEl(handler);
 		} else {
@@ -477,7 +478,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		}
 	}
 
-	private void doEditLicensorConstatant(UserRequest ureq, LicenseHandler handler) {
+	private void doEditLicensorConstant(UserRequest ureq, LicenseHandler handler) {
 		String licensor = licenseModule.getConstantLicensor(handler);
 		licensorConstantCtrl = new LicensorConstantController(ureq, getWindowControl(), handler, licensor);
 		listenTo(licensorConstantCtrl);

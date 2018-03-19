@@ -48,6 +48,10 @@ public class LicenseSelectionConfig {
 	
 	private final LicenseService licenseService;
 
+	public LicenseSelectionConfig(LicenseHandler licenseHandler) {
+		this(CoreSpringFactory.getImpl(LicenseService.class), licenseHandler, null);
+	}
+		
 	public LicenseSelectionConfig(LicenseHandler licenseHandler, LicenseType actualLicenseType) {
 		this(CoreSpringFactory.getImpl(LicenseService.class), licenseHandler, actualLicenseType);
 	}
@@ -77,7 +81,7 @@ public class LicenseSelectionConfig {
 	private void initSelectableLicenseTypes() {
 		selectableLicenseTypes = new ArrayList<>(activeLicenseTypes);
 		Collections.sort(selectableLicenseTypes);
-		boolean actualLicenceTypeMissing = !selectableLicenseTypes.contains(actualLicenseType);
+		boolean actualLicenceTypeMissing = actualLicenseType != null && !selectableLicenseTypes.contains(actualLicenseType);
 		if (actualLicenceTypeMissing) {
 			selectableLicenseTypes.add(0, actualLicenseType);
 			actualLicenseTypeIsInactive = true;
@@ -108,21 +112,21 @@ public class LicenseSelectionConfig {
 	
 	private String setSpecialTranslation(String translation, LicenseType licenseType, Locale locale) {
 		Translator translator = Util.createPackageTranslator(LicenseAdminConfigController.class, locale);
-		String spetialTranslation = translation;
+		String specialTranslation = translation;
 		if (actualLicenseTypeIsInactive && licenseType.equals(actualLicenseType)) {
 			if (licenseService.isNoLicense(actualLicenseType)) {
-				spetialTranslation = translator.translate("license.type.missing");
+				specialTranslation = translator.translate("license.type.missing");
 			} else {
-				spetialTranslation = translator.translate("license.type.inactive", new String[] {translation});
+				specialTranslation = translator.translate("license.type.inactive", new String[] {translation});
 			}
 		}
-		return spetialTranslation;
+		return specialTranslation;
 	}
 
 	public String getSelectionLicenseTypeKey() {
-		if (mandatory && licenseService.isNoLicense(actualLicenseType)) {
-			return null;
-		}
+		if (actualLicenseType == null) return null;
+		if (mandatory && licenseService.isNoLicense(actualLicenseType)) return null;
+		
 		return String.valueOf(actualLicenseType.getKey());
 	}
 

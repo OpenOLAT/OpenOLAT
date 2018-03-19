@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -73,7 +74,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
-	private RepositoryEntryLicenseHandler repositoryLicenseHandler;
+	private LicenseModule licenseModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 	
 	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
 		super(ureq, wControl);
@@ -194,7 +197,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		String displayname = displaynameEl.getValue();
 		
 		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), getLocale());
-		licenseService.createDefaultLicense(addedEntry.getOlatResource(), repositoryLicenseHandler, getIdentity());
+		if (licenseModule.isEnabled(licenseHandler)) {
+			licenseService.createDefaultLicense(addedEntry.getOlatResource(), licenseHandler, getIdentity());
+		}
 
 		repositoryManager.triggerIndexer(addedEntry);
 

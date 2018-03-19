@@ -53,6 +53,4 @@ public interface QPoolSecurityCallback {
 	
 	boolean canConfigEducationalContext();
 	
-	boolean canConfigLicences();
-
 }
