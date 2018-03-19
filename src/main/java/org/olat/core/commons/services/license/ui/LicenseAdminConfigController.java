@@ -117,6 +117,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("admin.menu.title"));
 		generalCont.setRootForm(mainForm);
+		generalCont.setElementCssClass("o_sel_license_general");
 		flc.add("general", generalCont);
 
 		String[] enabledHandlerKeys = licenseHandlers.stream()
