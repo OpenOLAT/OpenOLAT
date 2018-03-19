@@ -87,8 +87,10 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -115,6 +117,8 @@ import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,6 +131,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BaseFullWebappController extends BasicController implements DTabs, ChiefController, GenericEventListener {
 	private static final String PRESENTED_AFTER_LOGIN_WORKFLOW = "presentedAfterLoginWorkflow";
+	private static final String USER_PROPS_ID = BaseFullWebappController.class.getCanonicalName();
 	
 	//Base chief
 	private Panel contentPanel;
@@ -190,6 +195,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private AnalyticsModule analyticsModule;
 	
@@ -333,6 +340,21 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		// the current language; used e.g. by screenreaders
 		mainVc.contextPut("lang", ureq.getLocale().toString());
+		
+		// some user properties
+		if (ureq.getUserSession().isAuthenticated()) {
+			Identity ident = ureq.getIdentity();
+			StringBuilder sb = new StringBuilder();
+			sb.append("{ identity : ").append( ident.getKey());
+			User user = ident.getUser();
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, ureq.getUserSession().getRoles().isOLATAdmin());
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				String escapedValue = StringHelper.escapeJavaScript(userPropertyHandler.getUserProperty(user, getLocale()));
+				sb.append(", ").append(userPropertyHandler.getName()).append(" : \"").append(escapedValue).append("\"");				
+			}
+			sb.append("}");
+			mainVc.contextPut("userJSON", sb);
+		}
 
 		// the current GUI theme and the global settings that contains the
 		// font-size. both are pushed as objects so that window.dirty always reads

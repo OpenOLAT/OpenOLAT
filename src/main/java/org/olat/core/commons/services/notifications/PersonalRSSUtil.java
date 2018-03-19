@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.commons.rss;
+package org.olat.core.commons.services.notifications;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.basesecurity.Authentication;
@@ -42,7 +42,7 @@ import org.olat.core.id.Identity;
  *
  * @author gnaegi 
  */
-public class RSSUtil {
+public class PersonalRSSUtil {
 
 	/** Authentication provider name for RSS authentication **/
 	public static final String RSS_AUTH_PROVIDER = "RSS-OLAT";
@@ -80,7 +80,7 @@ public class RSSUtil {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		return sb.append(RSSUtil.URI_PERSONAL_CHANNEL).append(ureq.getIdentity().getName())
+		return sb.append(PersonalRSSUtil.URI_PERSONAL_CHANNEL).append(ureq.getIdentity().getName())
 				.append("/").append(token).append("/olat.rss").toString();
 	}
 }

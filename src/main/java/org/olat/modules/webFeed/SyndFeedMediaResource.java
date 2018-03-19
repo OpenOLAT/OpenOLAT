@@ -26,7 +26,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.commons.servlets.RSSServlet;
+import org.olat.core.commons.services.notifications.PersonalRSSServlet;
 import org.olat.core.gui.media.MediaResource;
 
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -78,7 +78,7 @@ public class SyndFeedMediaResource implements MediaResource {
 	public InputStream getInputStream() {
 		ByteArrayInputStream inputStream = null;
 		try {
-			inputStream = new ByteArrayInputStream(feedString.getBytes(RSSServlet.DEFAULT_ENCODING));
+			inputStream = new ByteArrayInputStream(feedString.getBytes(PersonalRSSServlet.DEFAULT_ENCODING));
 		} catch (UnsupportedEncodingException e) {
 			// log something
 		}

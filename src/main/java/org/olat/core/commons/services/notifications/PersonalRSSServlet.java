@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.commons.servlets;
+package org.olat.core.commons.services.notifications;
 
 import java.io.Writer;
 import java.util.Date;
@@ -32,12 +32,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.pdfbox.io.IOUtils;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.commons.rss.RSSUtil;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.notifications.PersonalRSSFeed;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -56,10 +53,10 @@ import com.rometools.rome.io.SyndFeedOutput;
  * 
  * @author Florian Gnägi
  */
-public class RSSServlet extends HttpServlet {
+public class PersonalRSSServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = -674630331334472714L;
-	private static final OLog log = Tracing.createLoggerFor(RSSServlet.class);
+	private static final OLog log = Tracing.createLoggerFor(PersonalRSSServlet.class);
 	public static final String DEFAULT_ENCODING = "UTF-8";
 
 	/**
@@ -86,21 +83,16 @@ public class RSSServlet extends HttpServlet {
 		}
 	}
 
-	/**
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest,
-	 *      javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-		SyndFeed feed = null;
-		Writer writer = null;
-
-		try {
+		try(Writer writer = response.getWriter()) {
 			String pathInfo = request.getPathInfo();
-			if ((pathInfo == null) || (pathInfo.equals(""))) { return; // error
+			if ((pathInfo == null) || (pathInfo.equals(""))) {
+				return; // error
 			}
-
+			SyndFeed feed = null;
 			// pathInfo is like /personal/username/tokenid.rss
-			if (pathInfo.indexOf(RSSUtil.RSS_PREFIX_PERSONAL) == 0) {
+			if (pathInfo.indexOf(PersonalRSSUtil.RSS_PREFIX_PERSONAL) == 0) {
 				feed = getPersonalFeed(pathInfo);
 				if (feed == null) {
 					DispatcherModule.sendNotFound(pathInfo, response);
@@ -133,11 +125,9 @@ public class RSSServlet extends HttpServlet {
 			if (pubDate != null) {
 				response.setDateHeader("Last-Modified", pubDate.getTime());
 			}
-
-			writer = response.getWriter();
+			
 			SyndFeedOutput output = new SyndFeedOutput();
 			output.output(feed, writer);
-
 		} catch (FeedException e) {
 			// throw olat exception for nice logging
 			log.warn("Error when generating RSS stream for path::" + request.getPathInfo(), e);
@@ -149,7 +139,6 @@ public class RSSServlet extends HttpServlet {
 			log.warn("Unknown Error in rssservlet", e);
 			DispatcherModule.sendNotFound("none", response);
 		} finally {
-			IOUtils.closeQuietly(writer);
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
@@ -162,8 +151,8 @@ public class RSSServlet extends HttpServlet {
 	 */
 	private SyndFeed getPersonalFeed(String pathInfo) {
 		// pathInfo is like /personal/username/tokenid/olat.rss
-		int startIdName = RSSUtil.RSS_PREFIX_PERSONAL.length();
-		int startIdToken = pathInfo.indexOf("/", RSSUtil.RSS_PREFIX_PERSONAL.length());
+		int startIdName = PersonalRSSUtil.RSS_PREFIX_PERSONAL.length();
+		int startIdToken = pathInfo.indexOf("/", PersonalRSSUtil.RSS_PREFIX_PERSONAL.length());
 		String idName = pathInfo.substring(startIdName, startIdToken);
 		int startUselessUri = pathInfo.indexOf("/", startIdToken + 1);
 		String idToken = pathInfo.substring(startIdToken + 1, startUselessUri);
@@ -176,7 +165,7 @@ public class RSSServlet extends HttpServlet {
 			return null;
 		}
 		// check if this is a valid authentication
-		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, RSSUtil.RSS_AUTH_PROVIDER);
+		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, PersonalRSSUtil.RSS_AUTH_PROVIDER);
 		if (auth == null) {
 			// error, rss authentication not yet set. user must login first, then the
 			// auth provider will be generated on the fly

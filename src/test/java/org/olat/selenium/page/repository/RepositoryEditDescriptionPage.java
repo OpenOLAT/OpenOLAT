@@ -75,9 +75,7 @@ public class RepositoryEditDescriptionPage {
 	
 	public RepositoryEditDescriptionPage save() {
 		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
-		WebElement saveButton = browser.findElement(saveBy);
-		saveButton.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickAndWait(saveBy, browser);
 		return this;
 	}
 	

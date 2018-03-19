@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
@@ -115,6 +116,8 @@ public class AdvancedSearchInputController extends FormBasicController {
 	
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
 	
 	public AdvancedSearchInputController(UserRequest ureq, WindowControl wControl, Form mainForm) {
 		super(ureq, wControl, -1, null, mainForm);
@@ -158,6 +161,9 @@ public class AdvancedSearchInputController extends FormBasicController {
 		}
 		licenseQuery = uifactory.addCheckboxesDropdown("search_license", "form.search.label.license", formLayout, licenseTypeKeys, licenseTypeValues);
 		licenseQuery.setNonSelectedText(translate("drop.down.no.selection"));
+		if (!licenseModule.isAnyHandlerEnabled()) {
+			licenseQuery.setVisible(false);
+		}
 
 		//metadatas
 		SearchMetadataFieldsProvider metadataProvider = (SearchMetadataFieldsProvider) CoreSpringFactory.getBean("SearchMetadataFieldsProvider");

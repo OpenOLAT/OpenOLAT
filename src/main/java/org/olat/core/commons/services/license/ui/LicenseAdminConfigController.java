@@ -58,8 +58,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -194,7 +192,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 			boolean handlerEnabled = licenseModule.isEnabled(handler);
 			if (handlerEnabled) {
 				String toggleName =  "toggle-" + licenseType.getKey() + handler.getType();
-				MultipleSelectionElement toggle = uifactory.addCheckboxesHorizontal(toggleName, flc, keys, values);
+				MultipleSelectionElement toggle = uifactory.addCheckboxesHorizontal(toggleName, null, flc, keys, values);
 				toggle.setUserObject(new HandlerLicenseType(licenseType, handler));
 				toggle.addActionListener(FormEvent.ONCHANGE);
 				toggle.setAjaxOnly(true);
@@ -281,16 +279,10 @@ public class LicenseAdminConfigController extends FormBasicController {
 	}
 
 	private String[] getLicenseTypeValues(List<LicenseType> licenseTypes) {
-		Translator translator = Util.createPackageTranslator(LicenseAdminConfigController.class, getLocale());
 		String[] handlerNames = new String[licenseTypes.size()];
 		int count = 0;
 		for (LicenseType licenseType: licenseTypes) {
-			String i18nKey = "license.type.trans." + licenseType.getName().toLowerCase();
-			String translation = translator.translate(i18nKey);
-			if (i18nKey.equals(translation) || translation.length() > 256) {
-				translation = licenseType.getName();
-			}
-			handlerNames[count++] = translation;
+			handlerNames[count++] = LicenseUIFactory.translate(licenseType, getLocale());
 		}
 		return handlerNames;
 	}
@@ -378,6 +370,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		initLicenseTypesTable();
 		loadModel();
 		initHandlerConfigs();
+		showInfo("admin.start.indexer");
 	}
 
 	private void doUp(int index) {

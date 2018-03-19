@@ -404,12 +404,12 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 					Path testPath = cp.getTest();
 					return testPath.toUri();
 				} catch (IOException e) {
-					log.error("", e);
+					log.error("Error reading this QTI 2.1 manifest: " + manifestPath, e);
 					return null;
 				}
 			});
 		} catch (RuntimeException e) {
-			log.error("", e);
+			log.error("Error reading this QTI 2.1 manifest: " + resourceDirectory, e);
 			return null;
 		}
 	}

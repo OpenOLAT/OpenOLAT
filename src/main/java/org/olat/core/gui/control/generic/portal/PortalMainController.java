@@ -19,8 +19,8 @@
  */
 package org.olat.core.gui.control.generic.portal;
 
-import org.olat.commons.rss.RSSUtil;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.notifications.PersonalRSSUtil;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -62,7 +62,7 @@ public class PortalMainController extends BasicController {
 		portalEditButton.setElementCssClass("pull-right");
 
 		// rss link
-		String rssLink = RSSUtil.getPersonalRssLink(ureq);
+		String rssLink = PersonalRSSUtil.getPersonalRssLink(ureq);
 		welcome.contextPut("rssLink", rssLink);
 		StringOutput staticUrl = new StringOutput();
 		StaticMediaDispatcher.renderStaticURI(staticUrl, "js/egg.js");
