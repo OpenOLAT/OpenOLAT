@@ -37,7 +37,7 @@ import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -56,11 +56,9 @@ public class WikiPageDocument extends OlatDocument {
 	private static final OLog log = Tracing.createLoggerFor(WikiPageDocument.class);
 	private static final DummyDataHandler DUMMY_DATA_HANDLER = new DummyDataHandler();
 	
-	private static BaseSecurity identityManager;
 
 	public WikiPageDocument() {
 		super();
-		identityManager = BaseSecurityManager.getInstance();
 	}
 
 	public static Document createDocument(SearchResourceContext searchResourceContext, WikiPage wikiPage) {		
@@ -68,7 +66,7 @@ public class WikiPageDocument extends OlatDocument {
 
 		long userId = wikiPage.getInitalAuthor();
 		if (userId != 0) {
-			Identity  identity = identityManager.loadIdentityByKey(Long.valueOf(userId));
+			Identity  identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(Long.valueOf(userId));
 			if(identity != null) {
 				wikiPageDocument.setAuthor(identity.getName());
 			}
@@ -103,8 +101,7 @@ public class WikiPageDocument extends OlatDocument {
 			AbstractParser parser = new JFlexParser(input);
 			ParserDocument parsedDoc = parser.parseHTML(wikiPage.getContent());
 			String parsedContent = parsedDoc.getContent();
-			String filteredContent = FilterFactory.getHtmlTagAndDescapingFilter().filter(parsedContent);
-			return filteredContent;
+			return FilterFactory.getHtmlTagAndDescapingFilter().filter(parsedContent);
 		} catch(Exception e) {
 			log.error("", e);
 			return wikiPage.getContent();

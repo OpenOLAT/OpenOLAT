@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 16 mars 2018<br>
@@ -27,6 +29,7 @@ package org.olat.basesecurity;
  */
 public enum OrganisationRoles {
 
+	sysadmin,
 	administrator,
 	usermanager,
 	learnresourcemanager,
@@ -36,5 +39,29 @@ public enum OrganisationRoles {
 	author,
 	user,
 	guest;
-
+	
+	public static boolean valid(String value) {
+		if(!StringHelper.containsNonWhitespace(value)) {
+			return false;
+		}
+		try {
+			return OrganisationRoles.valueOf(value) != null;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public static OrganisationRoles[] valuesWithoutGuest() {
+		return new OrganisationRoles[]{
+				sysadmin,
+				administrator,
+				usermanager,
+				learnresourcemanager,
+				groupmanager,
+				poolmanager,
+				curriculummanager,
+				author,
+				user,
+			};
+	}
 }

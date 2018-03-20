@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
@@ -58,8 +57,6 @@ public class PoolDAO {
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	public PoolImpl createPool(Identity owner, String name, boolean publicPool) {
 		PoolImpl pool = new PoolImpl();
@@ -71,7 +68,7 @@ public class PoolDAO {
 		pool.setOwnerGroup(ownerGroup);
 		dbInstance.getCurrentEntityManager().persist(pool);
 		if(owner != null) {
-			securityManager.addIdentityToSecurityGroup(owner, ownerGroup);
+			securityGroupDao.addIdentityToSecurityGroup(owner, ownerGroup);
 		}
 		return pool;
 	}
@@ -95,7 +92,7 @@ public class PoolDAO {
 	public int removeFromPool(List<QuestionItemShort> items, Pool pool) {
 		if(items == null || items.isEmpty()) return 0;
 		
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}

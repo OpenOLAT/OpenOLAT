@@ -49,7 +49,7 @@ public class UsersToGroupWizardStep01 extends BasicStep {
 		if(mailDefaultTemplate == null) {
 			setNextStep(BasicStep.NOSTEP);
 		} else {
-			setNextStep(new UsersToGroupWizardStep02(ureq, mailDefaultTemplate, mandatoryEmail));
+			setNextStep(new UsersToGroupWizardStep02(ureq));
 		}
 	}
 

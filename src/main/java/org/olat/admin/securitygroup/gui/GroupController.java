@@ -36,11 +36,11 @@ import java.util.UUID;
 
 import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardStep00;
 import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -149,7 +149,7 @@ public class GroupController extends BasicController {
 	protected boolean chatEnabled;
 
 	@Autowired
-	protected BaseSecurity securityManager;
+	private SecurityGroupDAO securityGroupDao;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -372,7 +372,7 @@ public class GroupController extends BasicController {
 				
 				if (toAdd.size() == 1) {
 					//check if already in group [makes only sense for a single choosen identity]
-					if (securityManager.isIdentityInSecurityGroup(toAdd.get(0), securityGroup)) {
+					if (securityGroupDao.isIdentityInSecurityGroup(toAdd.get(0), securityGroup)) {
 						String fullName = userManager.getUserDisplayName(toAdd.get(0));
 						getWindowControl().setInfo(translate("msg.subjectalreadyingroup", new String[]{ fullName }));
 						return;
@@ -381,7 +381,7 @@ public class GroupController extends BasicController {
 					//check if already in group
 					List<Identity> alreadyInGroup = new ArrayList<Identity>();
 					for (int i = 0; i < toAdd.size(); i++) {
-						if (securityManager.isIdentityInSecurityGroup(toAdd.get(i), securityGroup)) {
+						if (securityGroupDao.isIdentityInSecurityGroup(toAdd.get(i), securityGroup)) {
 							tableCtr.setMultiSelectSelectedAt(i, false);
 							alreadyInGroup.add(toAdd.get(i));
 						}
@@ -654,7 +654,7 @@ public class GroupController extends BasicController {
 
 	public void reloadData() {
 		// refresh view		
-		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(securityGroup); 
+		List<Object[]> combo = securityGroupDao.getIdentitiesAndDateOfSecurityGroup(securityGroup); 
 		List<GroupMemberView> views = new ArrayList<>(combo.size());
 		Map<Long,GroupMemberView> idToViews = new HashMap<>();
 

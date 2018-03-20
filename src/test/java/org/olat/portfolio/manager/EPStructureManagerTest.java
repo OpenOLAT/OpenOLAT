@@ -33,8 +33,8 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
@@ -80,7 +80,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	private SecurityGroupDAO securityGroupDao;
 	
 	private static Identity ident1, ident2;
 	private static boolean isInitialized = false;
@@ -688,11 +688,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertTrue(singleAuthor.contains(ident1));//owner
 		assertFalse(singleAuthor.contains(ident2));//owner
 		
-		securityManager.getSecurityGroupsForIdentity(ident1);
-		repositoryManager.queryReferencableResourcesLimitType(ident1, new Roles(false, false, false, false, false, false, false), null, null, null, null)
-;	}
-	
-
-	
-	
+		securityGroupDao.getSecurityGroupsForIdentity(ident1);
+		repositoryManager.queryReferencableResourcesLimitType(ident1, new Roles(false, false, false, false, false, false, false), null, null, null, null);
+	}
 }

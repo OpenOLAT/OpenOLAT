@@ -33,7 +33,6 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroup;
@@ -111,8 +110,6 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	private DB dbInstance;
 	@Autowired
 	private ImageService imageHelper;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
 	@Autowired
@@ -311,7 +308,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			dbInstance.getCurrentEntityManager().remove(ce);
 			if (owner != null) {
 				log.debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
-				securityManager.deleteSecurityGroup(owner);
+				securityGroupDao.deleteSecurityGroup(owner);
 			}
 		} 
 	}
@@ -335,7 +332,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				dbInstance.getCurrentEntityManager().remove(ce);
 				if (owner != null) {
 					log.debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
-					securityManager.deleteSecurityGroup(owner);
+					securityGroupDao.deleteSecurityGroup(owner);
 				}
 			}
 		} else {
@@ -354,7 +351,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			for (Iterator<SecurityGroup> iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
 				SecurityGroup grp = iter.next();
 				if(debug) log.debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
-				securityManager.deleteSecurityGroup(grp);
+				securityGroupDao.deleteSecurityGroup(grp);
 			}
 		}
 		if(debug) log.debug("deleteCatalogEntry END");
@@ -475,6 +472,26 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		}
 		return entries.get(0);
 	}
+	
+	public boolean isOwner(CatalogEntry catalogEntry, Identity identity) {
+		return securityGroupDao.isIdentityInSecurityGroup(identity, catalogEntry.getOwnerGroup());
+	}
+	
+	public List<Identity> getOwners(CatalogEntry catalogEntry) {
+		return securityGroupDao.getIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup());
+	}
+	
+	public boolean addOwner(CatalogEntry catalogEntry, Identity identity) {
+		if (!securityGroupDao.isIdentityInSecurityGroup(identity, catalogEntry.getOwnerGroup())) {
+			securityGroupDao.addIdentityToSecurityGroup(identity, catalogEntry.getOwnerGroup());
+			return true;
+		}
+		return false;
+	}
+	
+	public void removeOwner(CatalogEntry catalogEntry, Identity identity) {
+		securityGroupDao.removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
+	}
 
 	/**
 	 * Find catalog entries for certain identity
@@ -507,6 +524,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		return count == null ? false : count.intValue() > 0;
 	}
 	
+
+	
 	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {
 		List<CatalogEntry> parentLine = getCategoryParentLine(entry);
 		List<SecurityGroup> secGroups = new ArrayList<>();
@@ -515,7 +534,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				secGroups.add(parent.getOwnerGroup());
 			}
 		}
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		return securityGroupDao.getIdentitiesOfSecurityGroups(secGroups);
 	}
 	
 	private final List<CatalogEntry> getCategoryParentLine(CatalogEntry entry) {
@@ -574,7 +593,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			List<Identity> olatAdminIdents = organisationService.getDefaultsSystemAdministator();
 			SecurityGroup catalogAdmins = securityGroupDao.createAndPersistSecurityGroup();
 			for (int i = 0; i < olatAdminIdents.size(); i++) {
-				securityManager.addIdentityToSecurityGroup(olatAdminIdents.get(i), catalogAdmins);
+				securityGroupDao.addIdentityToSecurityGroup(olatAdminIdents.get(i), catalogAdmins);
 			}
 			/*
 			 * start with something called CATALOGROOT, you can rename it to whatever
@@ -654,11 +673,11 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		List<CatalogEntry> catalogEntries = getCatalogEntriesOwnedBy(identity);
 		for (CatalogEntry catalogEntry:catalogEntries) {
 			
-			securityManager.removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
-			if (securityManager.countIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup()) == 0 ) {
+			securityGroupDao.removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
+			if (securityGroupDao.countIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup()) == 0 ) {
 				// This group has no owner anymore => add OLAT-Admin as owner
 				Identity admin = CoreSpringFactory.getImpl(RepositoryDeletionModule.class).getAdminUserIdentity();
-				securityManager.addIdentityToSecurityGroup(admin, catalogEntry.getOwnerGroup());
+				securityGroupDao.addIdentityToSecurityGroup(admin, catalogEntry.getOwnerGroup());
 				log.info("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
 			}
 		}

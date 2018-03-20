@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -56,7 +58,8 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	private List<BGArea> areas;
 	private List<BusinessGroup> groups;
 	private RepositoryEntry courseResource;
-	private boolean isCoach, isCourseAdmin;
+	private boolean isCoach;
+	private boolean isCourseAdmin;
 	
 	private final BGAreaManager areaManager;
 	private final RepositoryService repositoryService;
@@ -91,20 +94,14 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return courseResource;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#hasRight(org.olat.core.id.Identity, java.lang.String)
-	 */
 	@Override
 	public boolean hasRight(Identity identity, String courseRight) {
-		if (courseRight.equals(CourseRights.RIGHT_COURSEEDITOR)) {
-			return false;
-		}
-		return false;
+		return !courseRight.equals(CourseRights.RIGHT_COURSEEDITOR);
 	}
 
 	@Override
 	public List<String> getRights(Identity identity) {
-		return new ArrayList<String>(1);
+		return new ArrayList<>(1);
 	}
 
 	@Override
@@ -117,9 +114,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isLearningGroupFull(java.lang.String)
-	 */
+	@Override
 	public boolean isBusinessGroupFull(Long groupKey){
 		for(BusinessGroup group:groups) {
 			if(groupKey.equals(group.getKey())) {
@@ -159,9 +154,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
-	 */
 	@Override
 	public boolean isIdentityCourseCoach(Identity identity) {
 		return isCoach;
@@ -172,9 +164,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseAdministrator(org.olat.core.id.Identity)
-	 */
 	@Override
 	public boolean isIdentityCourseAdministrator(Identity identity) {
 		return isCourseAdmin;
@@ -194,31 +183,27 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	public boolean isIdentityAnyCourseParticipant(Identity identity) {
 		return false;
 	}
+	
+	@Override
+	public boolean isIdentityInOrganisation(IdentityRef identity, String organisationIdentifier, OrganisationRoles... roles) {
+		return false;
+	}
 
 	@Override
 	public boolean hasBusinessGroups() {
-		return groups != null && groups.size() > 0;
+		return groups != null && !groups.isEmpty();
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllLearningGroupsFromAllContexts()
-	 */
 	@Override
 	public List<BusinessGroup> getAllBusinessGroups() {
 		return groups;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getOwnedBusinessGroups(org.olat.core.id.Identity)
-	 */
 	@Override
 	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity) {
 		return new ArrayList<>(1);
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingBusinessGroups(org.olat.core.id.Identity)
-	 */
 	@Override
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity) {
 		return new ArrayList<>(1);
@@ -226,41 +211,29 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	
 	@Override
 	public boolean hasAreas() {
-		return areas != null && areas.size() > 0;
+		return areas != null && !areas.isEmpty();
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllAreasFromAllContexts()
-	 */
 	@Override
 	public List<BGArea> getAllAreas() {
 		return areas;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
-	 */
 	@Override
 	public void deleteCourseGroupmanagement() {
 		//do nothing in preview
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getNumberOfMembersFromGroups(java.util.List)
-	 */
 	@Override
 	public List<Integer> getNumberOfMembersFromGroups(List<BusinessGroup> groupList) {
-		List<Integer> members = new ArrayList<Integer>();
+		List<Integer> members = new ArrayList<>();
 		for (BusinessGroup group:groups) {
 			int numbMembers = businessGroupService.countMembers(group, GroupRoles.participant.name());
-			members.add(new Integer(numbMembers));
+			members.add(Integer.valueOf(numbMembers));
 		}
 		return members;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueBusinessGroupNames()
-	 */
 	@Override
 	public List<String> getUniqueBusinessGroupNames() {
 		List<String> names = new ArrayList<>();
@@ -275,9 +248,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return names;
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getUniqueAreaNames()
-	 */
 	@Override
 	public List<String> getUniqueAreaNames() {
 		List<String> areaNames = new ArrayList<>();

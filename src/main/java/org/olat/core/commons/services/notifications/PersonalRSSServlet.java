@@ -33,7 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.id.Identity;
@@ -158,14 +159,18 @@ public class PersonalRSSServlet extends HttpServlet {
 		String idToken = pathInfo.substring(startIdToken + 1, startUselessUri);
 
 		// ---- check integrity and user authentication ----
-		if (idName == null || idName.equals("")) { return null; }
-		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(idName);
+		if (idName == null || idName.equals("")) {
+			return null;
+		}
+		
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity identity = securityManager.findIdentityByName(idName);
 		if (identity == null) {
 			// error - abort
 			return null;
 		}
 		// check if this is a valid authentication
-		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, PersonalRSSUtil.RSS_AUTH_PROVIDER);
+		Authentication auth = securityManager.findAuthentication(identity, PersonalRSSUtil.RSS_AUTH_PROVIDER);
 		if (auth == null) {
 			// error, rss authentication not yet set. user must login first, then the
 			// auth provider will be generated on the fly

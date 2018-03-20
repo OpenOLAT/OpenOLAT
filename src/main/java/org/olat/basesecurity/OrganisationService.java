@@ -56,7 +56,7 @@ public interface OrganisationService {
 	public List<Organisation> getOrganisations();
 	
 	public Organisation getDefaultOrganisation();
-	
+
 	public void addMember(Organisation organisation, Identity member, OrganisationRoles role);
 	
 	/**
@@ -74,7 +74,18 @@ public interface OrganisationService {
 	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role);
 	
 	public List<OrganisationMember> getMembers(Organisation organisation);
+
 	
+	/**
+	 * Return true if the specified user has a role in the list of specified roles
+	 * for an organization with the specified identifier.
+	 * 
+	 * @param organisationIdentifier An organization identifier (exact match)
+	 * @param identity The identity
+	 * @param roles A list of roles (need at least one)
+	 * @return true if a role was found for the user and an organization with the given identifier
+	 */
+	public boolean hasRole(String organisationIdentifier, IdentityRef identity, OrganisationRoles... roles);
 	
 	
 	public List<Identity> getDefaultsSystemAdministator();

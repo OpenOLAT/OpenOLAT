@@ -80,9 +80,9 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_3_0 successfully!");
+			log.audit("Finished OLATUpgrade_13_0_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_3_0 not finished, try to restart OpenOLAT!");
+			log.audit("OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -96,6 +96,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 					allOk &= false;
 				} else {
 					Organisation defOrganisation = defOrganisations.get(0);
+					migrate(defOrganisation, "fxadmins", OrganisationRoles.sysadmin);
 					migrate(defOrganisation, "admins", OrganisationRoles.administrator);
 					migrate(defOrganisation, "users", OrganisationRoles.user);
 					migrate(defOrganisation, "usermanagers", OrganisationRoles.usermanager);

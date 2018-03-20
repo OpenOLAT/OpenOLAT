@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -369,7 +368,7 @@ public class FeedManagerImpl extends FeedManager {
 	public List<Item> loadFilteredAndSortedItems(Feed feed, FeedSecurityCallback callback, Identity identity) {
 		List<Item> items = loadItems(feed);
 		List<Item> filteredItems = new ArrayList<>();
-		final Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
+		final Roles roles = securityManager.getRoles(identity);
 		if (roles != null && (roles.isOLATAdmin() || feed.isExternal())) {
 			// show all items
 			filteredItems = items;

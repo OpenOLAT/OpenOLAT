@@ -48,10 +48,10 @@ import java.util.UUID;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
@@ -294,8 +294,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 	public Identity getLockedByIdentity() {
 		if(lockedByIdentKey != null) {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(lockedByIdentKey);
-			return identity;
+			return CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(lockedByIdentKey);
 		}
 		return null;
 	}
@@ -323,11 +322,11 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 */
 	@Override
 	public boolean write() {
-		BufferedOutputStream bos = null;
 		if (metaFile == null) return false;
-		try {
-			bos = new BufferedOutputStream(new FileOutputStream(metaFile));
-			OutputStreamWriter sw = new OutputStreamWriter(bos, Charset.forName("UTF-8"));
+		
+		try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(metaFile));
+				OutputStreamWriter sw = new OutputStreamWriter(bos, Charset.forName("UTF-8"))) {
+			
 			sw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			sw.write("<meta");
 			if(StringHelper.containsNonWhitespace(uuid)) {
@@ -367,17 +366,8 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			}
 			sw.write("</thumbnails>");
 			sw.write("</meta>");
-			sw.close();
 		} catch (Exception e) { 
 			return false; 
-		} finally {
-			if (bos != null) {		
-				try {
-					bos.close();
-				} catch (IOException e) {
-					log.warn("Can not close stream, "+ e.getMessage());
-				}
-			}
 		}
 		return true;
 	}
@@ -415,29 +405,25 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 */
 	private boolean parseSAX(File fMeta) {
 		if (fMeta == null || !fMeta.exists() || fMeta.isDirectory()) return false;
-		
-		InputStream in = null;
-	  try {
-		//the performance gain of the SAX Parser over the DOM Parser allow
-		//this to be synchronized (factory 5 to 10 quicker)
-	  	synchronized(saxParser) {
-	  		in = new FileInputStream(fMeta);
-	  		saxParser.parse(in, this);
-	  		if(uuid == null) {
-		  		generateUUID();
-		  		write();
-		  	}
-	  	}
-	  } catch (SAXParseException ex) {
-	  	if(!parseSAXFiltered(fMeta)) {
-	  		//OLAT-5383,OLAT-5468: lowered error to warn to reduce error noise
-	  		log.warn("SAX Parser error while parsing " + fMeta, ex);
-	  	}
-	  } catch(Exception ex) {
-	  	log.error("Error while parsing " + fMeta, ex);
-	  } finally {
-	  	IOUtils.closeQuietly(in);
-	  }
+
+		try(InputStream in = new FileInputStream(fMeta)) {
+			//the performance gain of the SAX Parser over the DOM Parser allow
+			//this to be synchronized (factory 5 to 10 quicker)
+			synchronized(saxParser) {
+				saxParser.parse(in, this);
+				if(uuid == null) {
+					generateUUID();
+					write();
+				}
+			}
+		} catch (SAXParseException ex) {
+			if(!parseSAXFiltered(fMeta)) {
+				//OLAT-5383,OLAT-5468: lowered error to warn to reduce error noise
+				log.warn("SAX Parser error while parsing " + fMeta, ex);
+			}
+		} catch(Exception ex) {
+			log.error("Error while parsing " + fMeta, ex);
+		}
 		return true;
 	}
 	
@@ -564,7 +550,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			return "-";
 		} else {
 			try {
-				Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(authorIdentKey);
+				Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(authorIdentKey);
 				if (identity == null) {
 					log.warn("Found no idenitiy with key='" + authorIdentKey + "'");
 					return "-";
@@ -595,7 +581,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if (authorIdentKey == null) {
 			return null;
 		} else {
-			return BaseSecurityManager.getInstance().loadIdentityByKey(authorIdentKey);
+			return CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(authorIdentKey);
 		}
 	}
 
@@ -647,7 +633,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 	@Override
 	public void setAuthor(String username) { 
-		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(username);
+		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByName(username);
 		if (identity == null) {
 			log.warn("Found no idenitiy with username='" + username + "'");
 			authorIdentKey = null;

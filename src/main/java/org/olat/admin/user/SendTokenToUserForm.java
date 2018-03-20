@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -73,6 +73,8 @@ public class SendTokenToUserForm extends FormBasicController {
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private RegistrationManager registrationManager;
 
 	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity) {
@@ -113,6 +115,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
+	@Override
 	public FormItem getInitialFormItem() {
 		return flc;
 	}
@@ -140,8 +143,8 @@ public class SendTokenToUserForm extends FormBasicController {
 		// We allow creation of password token when user has no password so far or when he as an OpenOLAT Password. 
 		// For other cases such as Shibboleth, LDAP, oAuth etc. we don't allow creation of token as this is most 
 		// likely not a desired action.
-		List<Authentication> authentications = BaseSecurityManager.getInstance().getAuthentications(user);
-		boolean isOOpwdAllowed = (authentications.size() == 0);
+		List<Authentication> authentications = securityManager.getAuthentications(user);
+		boolean isOOpwdAllowed = authentications.isEmpty();
 		for (Authentication authentication : authentications) {
 			if (authentication.getProvider().equals(BaseSecurityModule.getDefaultAuthProviderIdentifier())) {
 				isOOpwdAllowed = true;

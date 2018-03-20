@@ -152,9 +152,11 @@ public class OrganisationDAOTest extends OlatTestCase {
 		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
 		dbInstance.commitAndCloseSession();
 		
-		boolean isPoolManager = organisationDao.hasRole(member, OrganisationRoles.poolmanager.name());
+		boolean isPoolManager = organisationDao.hasRole(member, identifier, OrganisationRoles.poolmanager.name());
 		Assert.assertTrue(isPoolManager);
-		boolean isUserManager = organisationDao.hasRole(member, OrganisationRoles.usermanager.name());
+		boolean isUserManager = organisationDao.hasRole(member, identifier, OrganisationRoles.usermanager.name());
 		Assert.assertFalse(isUserManager);
+		boolean isNotPoolManager = organisationDao.hasRole(member, "something else", OrganisationRoles.poolmanager.name());
+		Assert.assertFalse(isNotPoolManager);
 	}
 }

@@ -28,7 +28,6 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -162,8 +161,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private RepositoryManager repositoryManager;
 	
 	public CatalogNodeManagerController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
@@ -183,8 +180,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		if(isOLATAdmin) {
 			isLocalTreeAdmin = false;
 		} else {
-			isLocalTreeAdmin = localTreeAdmin || securityManager
-					.isIdentityInSecurityGroup(ureq.getIdentity(), catalogEntry.getOwnerGroup());
+			isLocalTreeAdmin = localTreeAdmin || catalogManager.isOwner(catalogEntry, getIdentity());
 		}
 
 		initForm(ureq);
@@ -818,16 +814,15 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
 			List<Identity> list = identitiesAddedEvent.getAddIdentities();
 	        for (Identity identity : list) {
-	        	if (!securityManager.isIdentityInSecurityGroup(identity, catalogEntry.getOwnerGroup())) {
-	        		securityManager.addIdentityToSecurityGroup(identity, catalogEntry.getOwnerGroup());
-	        		identitiesAddedEvent.getAddedIdentities().add(identity);
-	        	}
+				if(catalogManager.addOwner(catalogEntry, identity)) {
+					identitiesAddedEvent.getAddedIdentities().add(identity);
+				}
 	        }
 		} else if (event instanceof IdentitiesRemoveEvent) {
 			IdentitiesRemoveEvent identitiesRemoveEvent = (IdentitiesRemoveEvent) event;
 			List<Identity> list = identitiesRemoveEvent.getRemovedIdentities();
 			for (Identity identity : list) {
-				securityManager.removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
+				catalogManager.removeOwner(catalogEntry, identity);
 			}		
 		}
 	}
@@ -841,9 +836,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		CatalogEntry parent = catalogEntry;
 		while(parent != null && owners.isEmpty()) {
-			SecurityGroup parentOwner = parent.getOwnerGroup();
-			if (parentOwner != null) {
-				owners = securityManager.getIdentitiesOfSecurityGroup(parentOwner);
+			if (parent.getOwnerGroup() != null) {
+				owners = catalogManager.getOwners(parent);
 			}
 			parent = parent.getParent();			
 		}

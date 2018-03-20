@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
@@ -48,8 +47,6 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private SecurityGroupDAO securityGroupDao;
 	
 	/**
@@ -60,10 +57,10 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		//create a user with the default provider
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("update-membership-" + UUID.randomUUID().toString());
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(identity, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(identity, secGroup);
 		dbInstance.commitAndCloseSession();
 
-		boolean member = securityManager.isIdentityInSecurityGroup(identity, secGroup);
+		boolean member = securityGroupDao.isIdentityInSecurityGroup(identity, secGroup);
 		Assert.assertTrue(member);
 	}
 	
@@ -102,13 +99,13 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-2-" + UUID.randomUUID().toString());
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-3-" + UUID.randomUUID().toString());
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup);
-		securityManager.addIdentityToSecurityGroup(id3, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id1, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id2, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id3, secGroup);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve them
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(secGroup, 0, -1);
+		List<Identity> identities = securityGroupDao.getIdentitiesOfSecurityGroup(secGroup, 0, -1);
 		Assert.assertNotNull(identities);
 		Assert.assertEquals(3, identities.size());
 		Assert.assertTrue(identities.contains(id1));
@@ -124,17 +121,17 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-3-" + UUID.randomUUID().toString());
 		SecurityGroup secGroup1 = securityGroupDao.createAndPersistSecurityGroup();
 		SecurityGroup secGroup2 = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup1);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup1);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup2);
-		securityManager.addIdentityToSecurityGroup(id3, secGroup2);
+		securityGroupDao.addIdentityToSecurityGroup(id1, secGroup1);
+		securityGroupDao.addIdentityToSecurityGroup(id2, secGroup1);
+		securityGroupDao.addIdentityToSecurityGroup(id2, secGroup2);
+		securityGroupDao.addIdentityToSecurityGroup(id3, secGroup2);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve them
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		List<SecurityGroup> secGroups = new ArrayList<>();
 		secGroups.add(secGroup1);
 		secGroups.add(secGroup2);
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		List<Identity> identities = securityGroupDao.getIdentitiesOfSecurityGroups(secGroups);
 		Assert.assertNotNull(identities);
 		Assert.assertEquals(3, identities.size());
 		Assert.assertTrue(identities.contains(id1));
@@ -149,12 +146,12 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		SecurityGroup secGroup1 = securityGroupDao.createAndPersistSecurityGroup();
 		SecurityGroup secGroup2 = securityGroupDao.createAndPersistSecurityGroup();
 		SecurityGroup secGroup3 = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id, secGroup1);
-		securityManager.addIdentityToSecurityGroup(id, secGroup2);
+		securityGroupDao.addIdentityToSecurityGroup(id, secGroup1);
+		securityGroupDao.addIdentityToSecurityGroup(id, secGroup2);
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<SecurityGroup> secGroups = securityManager.getSecurityGroupsForIdentity(id);
+		List<SecurityGroup> secGroups = securityGroupDao.getSecurityGroupsForIdentity(id);
 		Assert.assertNotNull(secGroups);
 		Assert.assertTrue(secGroups.contains(secGroup1));
 		Assert.assertTrue(secGroups.contains(secGroup2));
@@ -165,24 +162,24 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 	public void testRemoveIdentityFromSecurityGroup() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("sec-1");
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id, secGroup);
 		dbInstance.commitAndCloseSession();
 	
-		Assert.assertTrue(securityManager.isIdentityInSecurityGroup(id, secGroup));
-		securityManager.removeIdentityFromSecurityGroup(id, secGroup);
-		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(id, secGroup));
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
-		Assert.assertTrue(securityManager.isIdentityInSecurityGroup(id, secGroup));
+		Assert.assertTrue(securityGroupDao.isIdentityInSecurityGroup(id, secGroup));
+		securityGroupDao.removeIdentityFromSecurityGroup(id, secGroup);
+		Assert.assertFalse(securityGroupDao.isIdentityInSecurityGroup(id, secGroup));
+		securityGroupDao.addIdentityToSecurityGroup(id, secGroup);
+		Assert.assertTrue(securityGroupDao.isIdentityInSecurityGroup(id, secGroup));
 	}
 	
 	@Test
 	public void testGetIdentitiesAndDateOfSecurityGroup() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("sec-2");
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id, secGroup);
 		dbInstance.commitAndCloseSession();
 
-		List<Object[]> identities = securityManager.getIdentitiesAndDateOfSecurityGroup(secGroup);// not sortedByAddDate
+		List<Object[]> identities = securityGroupDao.getIdentitiesAndDateOfSecurityGroup(secGroup);// not sortedByAddDate
 		Assert.assertFalse("Found no users", identities.isEmpty());
 		Object[] firstIdentity = identities.get(0);
 		Assert.assertTrue("Wrong type, Identity[0] must be an Identity", firstIdentity[0] instanceof Identity);
@@ -195,17 +192,17 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser( "rm-1-sec");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser( "rm-2-sec");
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id1, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id2, secGroup);
 		dbInstance.commitAndCloseSession();
 		
 		//remove the first one
-		securityManager.removeIdentityFromSecurityGroup(id1, secGroup);
+		securityGroupDao.removeIdentityFromSecurityGroup(id1, secGroup);
 		dbInstance.commitAndCloseSession();
 		
-		int countMembers = securityManager.countIdentitiesOfSecurityGroup(secGroup);
+		int countMembers = securityGroupDao.countIdentitiesOfSecurityGroup(secGroup);
 		Assert.assertEquals(1, countMembers);
-		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		List<Identity> members = securityGroupDao.getIdentitiesOfSecurityGroup(secGroup);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(id2, members.get(0));
@@ -217,42 +214,42 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-3-sec-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-4-sec-" + UUID.randomUUID().toString());
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id1, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id2, secGroup);
 		dbInstance.commitAndCloseSession();
 		
 		//remove the first one
 		List<Identity> ids = new ArrayList<Identity>();
 		ids.add(id1);
 		ids.add(id2);
-		securityManager.removeIdentityFromSecurityGroups(ids, Collections.singletonList(secGroup));
+		securityGroupDao.removeIdentityFromSecurityGroups(ids, Collections.singletonList(secGroup));
 		dbInstance.commitAndCloseSession();
 		
-		int countMembers = securityManager.countIdentitiesOfSecurityGroup(secGroup);
+		int countMembers = securityGroupDao.countIdentitiesOfSecurityGroup(secGroup);
 		Assert.assertEquals(0, countMembers);
-		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(secGroup);
+		List<Identity> members = securityGroupDao.getIdentitiesOfSecurityGroup(secGroup);
 		Assert.assertNotNull(members);
 		Assert.assertTrue(members.isEmpty());
 		
 		//check if robust against null and empty
-		securityManager.removeIdentityFromSecurityGroups(ids, Collections.<SecurityGroup>emptyList());
-		securityManager.removeIdentityFromSecurityGroups(Collections.<Identity>emptyList(), Collections.singletonList(secGroup));
-		securityManager.removeIdentityFromSecurityGroups(ids, null);
-		securityManager.removeIdentityFromSecurityGroups(null, Collections.singletonList(secGroup));
+		securityGroupDao.removeIdentityFromSecurityGroups(ids, Collections.<SecurityGroup>emptyList());
+		securityGroupDao.removeIdentityFromSecurityGroups(Collections.<Identity>emptyList(), Collections.singletonList(secGroup));
+		securityGroupDao.removeIdentityFromSecurityGroups(ids, null);
+		securityGroupDao.removeIdentityFromSecurityGroups(null, Collections.singletonList(secGroup));
 	}
 	
 	@Test
 	public void deleteSecurityGroup() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("test-del-2");
 		SecurityGroup secGroup = securityGroupDao.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		securityGroupDao.addIdentityToSecurityGroup(id, secGroup);
 		dbInstance.commitAndCloseSession();
 		
 		//delete the security group (and membership, and policies)
-		securityManager.deleteSecurityGroup(secGroup);
+		securityGroupDao.deleteSecurityGroup(secGroup);
 		dbInstance.commit();
 
-		boolean membership = securityManager.isIdentityInSecurityGroup(id, secGroup);
+		boolean membership = securityGroupDao.isIdentityInSecurityGroup(id, secGroup);
 		Assert.assertFalse(membership);
 	}
 

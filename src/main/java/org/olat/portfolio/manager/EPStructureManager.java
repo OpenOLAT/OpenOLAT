@@ -1577,7 +1577,7 @@ public class EPStructureManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select element from ").append(EPStructureElement.class.getName()).append(" element")
 		  .append(" left join fetch element.olatResource as oRes")
-		  .append(" where element.key=:key");;
+		  .append(" where element.key=:key");
 		
 		List<PortfolioStructure> resources = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PortfolioStructure.class)

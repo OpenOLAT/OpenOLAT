@@ -39,6 +39,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
@@ -61,6 +62,8 @@ public class ShibbolethManagerImplTest {
 	private AccessControlModule acModuleMock;
 	@Mock
 	private BaseSecurity securityManagerMock;
+	@Mock
+	private SecurityGroupDAO securityGroupDaoMock;
 	@Mock
 	private SecurityGroup securityGroupOlatusersMock;
 	@Mock
@@ -141,7 +144,7 @@ public class ShibbolethManagerImplTest {
 
 		sut.syncUser(identityMock, attributesMock);
 
-		verify(securityManagerMock, never()).removeIdentityFromSecurityGroup(identityMock, securityGroupAuthorMock);
+		verify(securityGroupDaoMock, never()).removeIdentityFromSecurityGroup(identityMock, securityGroupAuthorMock);
 	}
 
 	@Test

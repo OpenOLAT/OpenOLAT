@@ -51,6 +51,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -87,6 +88,8 @@ public class CatalogTest extends OlatJerseyTestCase {
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
+	private SecurityGroupDAO securityGroupDao;
+	@Autowired
 	private OLATResourceManager orm;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -117,7 +120,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		
 		dbInstance.intermediateCommit();
 		entry1 = catalogManager.loadCatalogEntry(entry1);
-		securityManager.addIdentityToSecurityGroup(admin, entry1.getOwnerGroup());
+		securityGroupDao.addIdentityToSecurityGroup(admin, entry1.getOwnerGroup());
 		
 		subEntry11 = catalogManager.createCatalogEntry();
 		subEntry11.setType(CatalogEntry.TYPE_NODE);
@@ -544,7 +547,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertNotNull(voes);
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
+		List<Identity> identities = securityGroupDao.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		assertNotNull(identities);
 		assertEquals(identities.size(), voes.size());
 
@@ -590,7 +593,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
+		List<Identity> identities = securityGroupDao.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		boolean found = false;
 		for(Identity identity:identities) {
 			if(identity.getKey().equals(id1.getKey())) {
@@ -615,7 +618,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
+		List<Identity> identities = securityGroupDao.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		boolean found = false;
 		for(Identity identity:identities) {
 			if(identity.getKey().equals(id1.getKey())) {

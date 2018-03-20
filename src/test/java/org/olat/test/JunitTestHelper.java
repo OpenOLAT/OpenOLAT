@@ -35,7 +35,6 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -120,7 +119,7 @@ public class JunitTestHelper {
 	 * @return
 	 */
 	public static final Identity createAndPersistIdentityAsUser(String login) {
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.findIdentityByName(login);
 		if (identity != null) {
 			return identity;
@@ -138,7 +137,7 @@ public class JunitTestHelper {
 	 * @return
 	 */
 	public static final Identity createAndPersistIdentityAsAuthor(String login) {
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.findIdentityByName(login);
 		if (identity != null) {
 			return identity;
@@ -157,7 +156,7 @@ public class JunitTestHelper {
 	 * @return
 	 */
 	public static final Identity createAndPersistIdentityAsAdmin(String login) {
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.findIdentityByName(login);
 		if (identity != null) {
 			return identity;

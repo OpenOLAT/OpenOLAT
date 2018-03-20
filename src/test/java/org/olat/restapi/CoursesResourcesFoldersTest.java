@@ -49,7 +49,7 @@ import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -59,6 +59,7 @@ import org.olat.course.ICourse;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.LinkVO;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 
@@ -67,12 +68,15 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	
 	private RestConnection conn;
 	
+	@Autowired
+	private BaseSecurity securityManager;
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
 		conn = new RestConnection();
 		
-		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		admin = securityManager.findIdentityByName("administrator");
 		course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
 		
 		//copy a couple of files in the resource folder

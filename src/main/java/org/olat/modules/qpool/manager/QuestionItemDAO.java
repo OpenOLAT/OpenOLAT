@@ -29,7 +29,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -68,8 +67,6 @@ public class QuestionItemDAO {
 	private SecurityGroupDAO securityGroupDao;
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	
 	public QuestionItemImpl create(String title, String format, String dir, String rootFilename) {
@@ -114,7 +111,7 @@ public class QuestionItemDAO {
 		}
 		dbInstance.getCurrentEntityManager().persist(item);
 		if(owner != null) {
-			securityManager.addIdentityToSecurityGroup(owner, item.getOwnerGroup());
+			securityGroupDao.addIdentityToSecurityGroup(owner, item.getOwnerGroup());
 		}
 	}
 	
@@ -174,8 +171,8 @@ public class QuestionItemDAO {
 		QuestionItemImpl lockedItem = loadForUpdate(item);
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
-			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
-				securityManager.addIdentityToSecurityGroup(author, secGroup);
+			if(!securityGroupDao.isIdentityInSecurityGroup(author, secGroup)) {
+				securityGroupDao.addIdentityToSecurityGroup(author, secGroup);
 			}
 		}
 		dbInstance.commit();
@@ -185,8 +182,8 @@ public class QuestionItemDAO {
 		QuestionItemImpl lockedItem = loadForUpdate(item);
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
-			if(securityManager.isIdentityInSecurityGroup(author, secGroup)) {
-				securityManager.removeIdentityFromSecurityGroup(author, secGroup);
+			if(securityGroupDao.isIdentityInSecurityGroup(author, secGroup)) {
+				securityGroupDao.removeIdentityFromSecurityGroup(author, secGroup);
 			}
 		}
 		dbInstance.commit();
@@ -338,11 +335,10 @@ public class QuestionItemDAO {
 		  .append(" left join fetch item.type itemType")
 		  .append(" left join fetch item.educationalContext educationalContext")
 		  .append(" where item.key in (:keys)");
-		List<QuestionItemFull> items = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemFull.class)
 				.setParameter("keys", key)
 				.getResultList();
-		return items;
 	}
 	
 	public QuestionItemImpl loadForUpdate(QuestionItemShort item) {

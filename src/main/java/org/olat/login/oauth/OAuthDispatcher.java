@@ -31,7 +31,7 @@ import javax.servlet.http.HttpSession;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.MessageWindowController;
 import org.olat.core.dispatcher.Dispatcher;
@@ -77,7 +77,7 @@ public class OAuthDispatcher implements Dispatcher {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurityManager securityManager;
+	private BaseSecurity securityManager;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)

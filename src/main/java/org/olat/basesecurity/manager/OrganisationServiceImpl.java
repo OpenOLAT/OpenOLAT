@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -140,6 +141,22 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		OrganisationImpl org = (OrganisationImpl)organisation;
 		groupDao.removeMembership(org.getGroup(), member, role.name());
 	}
+	
+	@Override
+	public boolean hasRole(String organisationIdentifier, IdentityRef identity, OrganisationRoles... roles) {
+		List<String> roleList = new ArrayList<>();
+		if(roles != null && roles.length > 0 && roles[0] != null) {
+			for(int i=0; i<roles.length; i++) {
+				if(roles[i] != null) {
+					roleList.add(roles[i].name());
+				}
+			}
+		}
+		if(roleList.isEmpty()) {
+			return false;
+		}
+		return organisationDao.hasRole(identity, organisationIdentifier, roleList.toArray(new String[roleList.size()]));
+	}
 
 	@Override
 	public List<Identity> getDefaultsSystemAdministator() {
@@ -148,7 +165,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public boolean hasRole(IdentityRef identity, OrganisationRoles role) {
-		return organisationDao.hasRole(identity, role.name());
+		return organisationDao.hasRole(identity, null, role.name());
 	}
 
 	@Override

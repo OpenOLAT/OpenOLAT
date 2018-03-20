@@ -25,7 +25,7 @@
 
 package org.olat.registration;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -58,7 +58,7 @@ public class PwChangeForm extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurityManager securityManager;
+	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 	

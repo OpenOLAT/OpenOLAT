@@ -30,9 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
@@ -133,29 +133,35 @@ public class ProjectImpl extends PersistentObject implements Project {
 	 * 
 	 * @return List of Identity objects
 	 */
+	@Override
 	public SecurityGroup getCandidateGroup() {
 		return candidateGroup;
 	}
 
+	@Override
 	public String getState() {
 		return state;
 	}
 
+	@Override
 	public int getSelectedPlaces() {
 		int numOfParticipants = CoreSpringFactory.getImpl(BusinessGroupService.class).countMembers(getProjectGroup(), GroupRoles.participant.name());
-		int numOfCandidates = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(getCandidateGroup());
+		int numOfCandidates = CoreSpringFactory.getImpl(SecurityGroupDAO.class).countIdentitiesOfSecurityGroup(getCandidateGroup());
 		int numOfReservations = CoreSpringFactory.getImpl(ACReservationDAO.class).countReservations(getProjectGroup().getResource());
 		return numOfParticipants + numOfCandidates + numOfReservations;                     
 	}
 
+	@Override
 	public int getMaxMembers() {
 		return maxMembers;
 	}
-	
+
+	@Override
 	public BusinessGroup getProjectGroup() {
 		return projectGroup;
 	}	
-	
+
+	@Override
 	public ProjectBroker getProjectBroker() {
 		return projectBroker;
 	}

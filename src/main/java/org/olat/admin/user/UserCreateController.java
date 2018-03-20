@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -131,9 +130,9 @@ class NewUserForm extends FormBasicController {
 	
 	private static final OLog log = Tracing.createLoggerFor(NewUserForm.class);
 	
-	private static final String formIdentifyer = NewUserForm.class.getCanonicalName();
-	private static final String PASSWORD_NEW1 = "passwordnew1";
-	private static final String PASSWORD_NEW2 = "passwordnew2";
+	private static final String USER_PROPS_IDENTIFIER = NewUserForm.class.getCanonicalName();
+	private static final String FIELD_NEW1 = "passwordnew1";
+	private static final String FIELD_NEW2 = "passwordnew2";
 	private static final String LOGINNAME = "loginname";
 	private static final String USER_CREATE_SUCCESS = "user successfully created: ";
 	private List<UserPropertyHandler> userPropertyHandlers;
@@ -178,11 +177,11 @@ class NewUserForm extends FormBasicController {
 		usernameTextElement.setElementCssClass("o_sel_id_username");
 		
 		UserManager um = UserManager.getInstance();
-		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
+		userPropertyHandlers = um.getUserPropertyHandlersFor(USER_PROPS_IDENTIFIER, true);
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
-			FormItem formItem = userPropertyHandler.addFormItem(ureq.getLocale(), null, formIdentifyer, true, formLayout);
+			FormItem formItem = userPropertyHandler.addFormItem(ureq.getLocale(), null, USER_PROPS_IDENTIFIER, true, formLayout);
 			// special case to handle email field
 			if(userPropertyHandler.getName().equals(UserConstants.EMAIL)) {
 				emailTextElement = (TextElement) formItem;
@@ -215,14 +214,14 @@ class NewUserForm extends FormBasicController {
 			authCheckbox.addActionListener(FormEvent.ONCLICK);
 
 			// if OLAT authentication is used, use the pwd below
-			psw1TextElement = uifactory.addPasswordElement(PASSWORD_NEW1, "new.form.password.new1", 255, "", formLayout);
+			psw1TextElement = uifactory.addPasswordElement(FIELD_NEW1, "new.form.password.new1", 255, "", formLayout);
 			psw1TextElement.setMandatory(true);
 			psw1TextElement.setDisplaySize(30);
 			psw1TextElement.setVisible(showPasswordFields);
 			psw1TextElement.setElementCssClass("o_sel_id_password1");
 			psw1TextElement.setAutocomplete("new-password");
 
-			psw2TextElement = uifactory.addPasswordElement(PASSWORD_NEW2, "new.form.password.new2", 255, "", formLayout);
+			psw2TextElement = uifactory.addPasswordElement(FIELD_NEW2, "new.form.password.new2", 255, "", formLayout);
 			psw2TextElement.setMandatory(true);
 			psw2TextElement.setDisplaySize(30);		
 			psw2TextElement.setVisible(showPasswordFields);
@@ -250,7 +249,7 @@ class NewUserForm extends FormBasicController {
 			return false;
 		}
 		// Check if login is still available
-		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(loginName);
+		Identity identity = securityManager.findIdentityByName(loginName);
 		if (identity != null) {			
 			usernameTextElement.setErrorKey("new.error.loginname.choosen", new String[]{});
 			return false;
@@ -345,8 +344,7 @@ class NewUserForm extends FormBasicController {
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
-		Identity ident = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, pwd, newUser);
-		return ident;
+		return securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, pwd, newUser);
 	}
 	
 	@Override

@@ -25,6 +25,7 @@
 
 package org.olat.course.editor;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.AssertException;
@@ -61,17 +62,13 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 		courseEditorEnv.setConditionInterpreter(ci);
 		sa = new ScoreAccounting(this);
 	}
-	
-	/**
-	 * @see org.olat.course.run.userview.UserCourseEnvironment#getCourseEnvironment()
-	 */
+
+	@Override
 	public CourseEnvironment getCourseEnvironment() {
 		throw new AssertException("should never be called since it is the EDITOR user course environment");
 	}
 
-	/**
-	 * @see org.olat.course.run.userview.UserCourseEnvironment#getCourseEditorEnv()
-	 */
+	@Override
 	public CourseEditorEnv getCourseEditorEnv() {
 		return courseEditorEnv;
 	}
@@ -81,30 +78,28 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return windowControl;
 	}
 
-	/**
-	 * @see org.olat.course.run.userview.UserCourseEnvironment#getConditionInterpreter()
-	 */
+	@Override
 	public ConditionInterpreter getConditionInterpreter() {
 		return ci;
 	}
 
-	/**
-	 * @see org.olat.course.run.userview.UserCourseEnvironment#getIdentityEnvironment()
-	 */
+	@Override
 	public IdentityEnvironment getIdentityEnvironment() {
 		throw new AssertException("should never be called since it is the EDITOR user course environment");
 	}
 
-	/**
-	 * @see org.olat.course.run.userview.UserCourseEnvironment#getScoreAccounting()
-	 */
+	@Override
 	public ScoreAccounting getScoreAccounting() {
 		return sa;
 	}
 
 	@Override
 	public boolean isIdentityInCourseGroup(Long groupKey) {
-		//TODO OO-502
+		return false;
+	}
+
+	@Override
+	public boolean isInOrganisation(String organisationIdentifier, OrganisationRoles... roles) {
 		return false;
 	}
 

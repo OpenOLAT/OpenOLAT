@@ -43,7 +43,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
@@ -197,7 +197,7 @@ public class UserCalendarWebService {
 			if(id.equals(ureq.getIdentity().getName())) {
 				wrapper = getPersonalCalendar(ureq.getIdentity());
 			} else if(isAdmin(ureq.getHttpReq())) {
-				Identity identity = BaseSecurityManager.getInstance().findIdentityByName(id);
+				Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByName(id);
 				wrapper = getPersonalCalendar(identity);
 			}
 		}

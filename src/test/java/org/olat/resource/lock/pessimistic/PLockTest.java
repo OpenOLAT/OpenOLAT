@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -559,7 +558,7 @@ public class PLockTest extends OlatTestCase {
 
 		// now count 
 		dbInstance.closeSession();
-		int cnt2 = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(group2);
+		int cnt2 = securityGroupDao.countIdentitiesOfSecurityGroup(group2);
 		assertTrue("cnt should be smaller or eq than allowed since synced with select for update. cnt:"+cnt2+", max "+MAX_COUNT, cnt2 <= MAX_COUNT);
 		assertTrue("cnt should be eq to allowed since synced with select for update. cnt:"+cnt2+", max "+MAX_COUNT, cnt2 == MAX_COUNT);
 		log.info("cnt lock "+cnt2);
@@ -570,14 +569,14 @@ public class PLockTest extends OlatTestCase {
 		// check that below max
 		try {
 			StringBuilder sb = new StringBuilder();
-			int cnt = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(group);
+			int cnt = securityGroupDao.countIdentitiesOfSecurityGroup(group);
 			sb.append("enrol:cnt:"+cnt);
 			if (cnt < MAX_COUNT) {
 				// now sleep a while to allow others to think also that there is still space left in the group
 				sleep(100);
 				// now add the user to the security group
 				sb.append(" adding "+i.getName()+": current.. "+cnt+", max = "+MAX_COUNT);
-				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(i, group);
+				securityGroupDao.addIdentityToSecurityGroup(i, group);
 			}
 			log.info(sb.toString());
 		} catch (Exception e) {

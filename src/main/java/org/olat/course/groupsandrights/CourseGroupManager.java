@@ -28,6 +28,8 @@ package org.olat.course.groupsandrights;
 import java.io.File;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
@@ -153,6 +155,16 @@ public interface CourseGroupManager {
 	 * @return boolean
 	 */
 	public boolean isIdentityAnyCourseParticipant(Identity identity);
+	
+	/**
+	 * Check if the identity has one of the specified roles in the organisation
+	 * 
+	 * @param identity The identity
+	 * @param organisationIdentifier The organisation identifier
+	 * @param roles The roles
+	 * @return true if a role match
+	 */
+	public boolean isIdentityInOrganisation(IdentityRef identity, String organisationIdentifier, OrganisationRoles... roles);
 	
 	/**
 	 * @return True if there are some business groups linked to this resource

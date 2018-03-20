@@ -38,7 +38,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
@@ -118,7 +117,7 @@ public class InfoMessagesWebService {
 		if(authorKey == null) {
 			author = ureq.getIdentity();
 		} else {
-			BaseSecurity securityManager = BaseSecurityManager.getInstance();
+			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			author = securityManager.loadIdentityByKey(authorKey, false);
 			if(author == null) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();

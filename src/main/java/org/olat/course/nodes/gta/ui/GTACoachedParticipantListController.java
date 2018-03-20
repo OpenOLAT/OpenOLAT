@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -115,7 +115,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private BaseSecurityManager securityManager;
+	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired

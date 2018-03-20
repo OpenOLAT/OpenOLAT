@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -79,6 +79,8 @@ public class RegistrationForm2 extends FormBasicController {
 	private UserModule userModule;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	/**
 	 * @param name
@@ -93,7 +95,7 @@ public class RegistrationForm2 extends FormBasicController {
 		this.userInUse = userInUse;
 		this.usernameReadonly = usernameReadonly;
 
-		propFormItems = new HashMap<String,FormItem>();
+		propFormItems = new HashMap<>();
 		initForm(ureq);
 	}
 	
@@ -228,7 +230,7 @@ public class RegistrationForm2 extends FormBasicController {
 			return false;
 		}
 		
-		Identity s = BaseSecurityManager.getInstance().findIdentityByName(getLogin());
+		Identity s = securityManager.findIdentityByName(getLogin());
 		if (s != null || userModule.isLoginOnBlacklist(getLogin())) {
 			setLoginErrorKey("form.check6");
 			return false;

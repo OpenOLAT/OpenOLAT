@@ -52,8 +52,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
@@ -433,21 +432,17 @@ public class CatalogWebService {
 		}
 		
 		CatalogEntry ce = catalogManager.loadCatalogEntry(key);
-		if(ce.getType() == CatalogEntry.TYPE_NODE) {
-			//check if can admin category
-			if(!canAdminSubTree(ce, httpRequest)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
+		if(ce.getType() == CatalogEntry.TYPE_NODE
+				&& !canAdminSubTree(ce, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		//fxdiff FXOLAT-122: course management
+		
 		CatalogEntry newParent = null;
 		if(newParentKey != null) {
 			newParent = catalogManager.loadCatalogEntry(newParentKey);
-			if(newParent.getType() == CatalogEntry.TYPE_NODE) {
-				//check if can admin category
-				if(!canAdminSubTree(newParent, httpRequest)) {
-					return Response.serverError().status(Status.UNAUTHORIZED).build();
-				}
+			if(newParent.getType() == CatalogEntry.TYPE_NODE
+					&& !canAdminSubTree(newParent, httpRequest)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
 		
@@ -562,13 +557,8 @@ public class CatalogWebService {
 		if(!isAuthor(httpRequest) && !canAdminSubTree(ce, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		SecurityGroup sg = ce.getOwnerGroup();
-		if(sg == null) {
-			return Response.ok(new UserVO[0]).build();
-		}
-		
-		List<Identity> ids = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(sg);
+
+		List<Identity> ids = catalogManager.getOwners(ce);
 		int count = 0;
 		UserVO[] voes = new UserVO[ids.size()];
 		for(Identity id:ids) {
@@ -607,13 +597,8 @@ public class CatalogWebService {
 		if(!isAuthor(httpRequest) && !canAdminSubTree(ce, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		SecurityGroup sg = ce.getOwnerGroup();
-		if(sg == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		
-		List<Identity> ids = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(sg);
+
+		List<Identity> ids = catalogManager.getOwners(ce);
 		UserVO vo = null;
 		for(Identity id:ids) {
 			if(id.getKey().equals(identityKey)) {
@@ -659,7 +644,7 @@ public class CatalogWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -672,7 +657,7 @@ public class CatalogWebService {
 		}
 		
 		try {
-			securityManager.addIdentityToSecurityGroup(identity, ce.getOwnerGroup());
+			CoreSpringFactory.getImpl(SecurityGroupDAO.class).addIdentityToSecurityGroup(identity, ce.getOwnerGroup());
 		} catch(Exception e) {
 			throw new WebApplicationException(e);
 		} finally {
@@ -712,14 +697,9 @@ public class CatalogWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
-			return Response.ok().build();
-		}
-		
-		SecurityGroup sg = ce.getOwnerGroup();
-		if(sg == null) {
 			return Response.ok().build();
 		}
 		
@@ -730,7 +710,7 @@ public class CatalogWebService {
 		}
 		
 		try {
-			securityManager.removeIdentityFromSecurityGroup(identity, ce.getOwnerGroup());
+			catalogManager.removeOwner(ce, identity);
 		} catch(Exception e) {
 			throw new WebApplicationException(e);
 		} finally {
@@ -770,13 +750,12 @@ public class CatalogWebService {
 	}
 	
 	private boolean canAdminSubTree(CatalogEntry ce, HttpServletRequest httpRequest) {
-		if(isAdmin(httpRequest)) return true;
-		Identity identity = getUserRequest(httpRequest).getIdentity();
-		SecurityGroup owners = ce.getOwnerGroup();
-		if (owners != null && BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, owners)) {
+		if(isAdmin(httpRequest)) {
 			return true;
 		}
-		return false;
+		
+		Identity identity = getUserRequest(httpRequest).getIdentity();
+		return catalogManager.isOwner(ce, identity);
 	}
 	
 	private int guessType(CatalogEntryVO vo) {

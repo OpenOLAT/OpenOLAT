@@ -67,56 +67,8 @@ public interface BaseSecurity {
 	 */
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
 
-
-	/**
-	 * use only if really needed. Normally better use
-	 * isIdentityPermittedOnResourceable!
-	 * 
-	 * @param identity
-	 * @param secGroup
-	 * @return true if the identity is in the group
-	 */
-	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup);
-	
-	
 	public boolean isGuest(IdentityRef identity);
 	
-	/**
-	 * Change the last modificaiton date of the membership
-	 * @param identity
-	 * @param secGroups
-	 */
-	public void touchMembership(Identity identity, List<SecurityGroup> secGroups);
-
-	/**
-	 * search
-	 * 
-	 * @param secGroup
-	 * @return list of Identities
-	 */
-	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup);
-	
-	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup, int firstResult, int maxResults);
-	
-	/**
-	 * Return the primary key of
-	 * @param secGroups
-	 * @return
-	 */
-	public List<Identity> getIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups);
-
-	/**
-	 * @param secGroup
-	 * @return a List of Object[] with the array[0] = Identity, array[1] =
-	 *         addedToGroupTimestamp
-	 */
-	public List<Object[]> getIdentitiesAndDateOfSecurityGroup(SecurityGroup secGroup);
-	
-	/**
-	 * @param securityGroupName
-	 * @return the securitygroup
-	 */
-	public SecurityGroup findSecurityGroupByName(String securityGroupName);
 
 	/**
 	 * Find an identity by its name. This is an exact match. Use the
@@ -252,12 +204,6 @@ public interface BaseSecurity {
 	 * @return
 	 */
 	public Long countUniqueUserLoginsSince (Date lastLoginLimit);
-	
-	/**
-	 * @param secGroup
-	 * @return nr of members in the securitygroup
-	 */
-	public int countIdentitiesOfSecurityGroup(SecurityGroup secGroup);
 	
 	/**
 	 * @param username the username
@@ -396,37 +342,6 @@ public interface BaseSecurity {
 	 * @return
 	 */
 	public Authentication updateCredentials(Authentication authentication, String password, Encoder.Algorithm algorithm);
-
-	/**
-	 * removes the group with all the idendities contained in it, the idenities
-	 * itself are of course not deleted.
-	 * 
-	 * @param secGroup
-	 */
-	public void deleteSecurityGroup(SecurityGroup secGroup);
-
-	/**
-	 * @param identity
-	 * @param secGroup
-	 */
-	public void addIdentityToSecurityGroup(Identity identity, SecurityGroup secGroup);
-
-	/**
-	 * Removes the identity from this security group or does nothing if the
-	 * identity is not in the group at all.
-	 * 
-	 * @param identity
-	 * @param secGroup
-	 */
-	public boolean removeIdentityFromSecurityGroup(Identity identity, SecurityGroup secGroup);
-
-	/**
-	 * Remove an Identity
-	 * @param identity
-	 * @param secGroups
-	 * @return
-	 */
-	public boolean removeIdentityFromSecurityGroups(List<Identity> identities, List<SecurityGroup> secGroups);
 
 	/**
 	 * @param authusername
@@ -575,13 +490,6 @@ public interface BaseSecurity {
 	 */
 	public boolean isIdentityVisible(Identity identity);
 	
-	
-	/**
-	 * Get all SecurtityGroups an Identity is in
-	 * @param identity
-	 * @return List with SecurityGroups
-	 */
-	public List<SecurityGroup> getSecurityGroupsForIdentity(Identity identity);
 
 	/**
 	 * Returns the anonymous identity for a given locale, normally used to log in

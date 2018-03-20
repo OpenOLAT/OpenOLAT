@@ -25,6 +25,7 @@
 
 package org.olat.course.run.userview;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -81,6 +82,9 @@ public interface UserCourseEnvironment {
 	public boolean isParticipant();
 	
 	public boolean isIdentityInCourseGroup(Long groupKey);
+	
+	
+	public boolean isInOrganisation(String organisationIdentifier, OrganisationRoles... roles);
 	
 	/**
 	 * Is administrator of some courses (as owner, OpenOLAT administrator or institutional resource manager).

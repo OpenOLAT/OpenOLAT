@@ -58,7 +58,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BaseSecurityManager securityManager;
+	private BaseSecurity securityManager;
 	
 	@Before
 	public void setup() throws Exception {

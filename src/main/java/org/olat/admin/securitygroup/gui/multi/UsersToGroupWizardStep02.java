@@ -26,7 +26,6 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.member.wizard.ImportMemberMailController;
 
 /**
@@ -36,7 +35,7 @@ import org.olat.course.member.wizard.ImportMemberMailController;
  */
 public class UsersToGroupWizardStep02 extends BasicStep {
 
-	public UsersToGroupWizardStep02(UserRequest ureq, MailTemplate addUserMailDefaultTempl, boolean mandatoryEmail) {
+	public UsersToGroupWizardStep02(UserRequest ureq) {
 		super(ureq);
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("import.title.email", "import.title.email");

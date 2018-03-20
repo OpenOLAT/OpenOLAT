@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -257,7 +256,7 @@ class ImportStep00 extends BasicStep {
 				}
 				columnId++;
 
-				Identity ident = BaseSecurityManager.getInstance().findIdentityByName(login);
+				Identity ident = securityManager.findIdentityByName(login);
 				if (ident != null) {
 					// update existing accounts, add info message
 					
@@ -409,7 +408,7 @@ class ImportStep00 extends BasicStep {
 		 */
 		private Mapper createMapper(UserRequest ureq) {
 			final String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
-			Mapper m = new Mapper() {
+			return new Mapper() {
 				@Override
 				public MediaResource handle(String relPath, HttpServletRequest request) {
 					setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
@@ -438,7 +437,6 @@ class ImportStep00 extends BasicStep {
 					return emr;
 				}
 			};
-			return m;
 		}
 
 	}

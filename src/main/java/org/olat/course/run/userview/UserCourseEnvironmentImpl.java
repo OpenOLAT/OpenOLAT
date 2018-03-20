@@ -28,6 +28,7 @@ package org.olat.course.run.userview;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.control.WindowControl;
@@ -140,6 +141,12 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public boolean isInOrganisation(String organisationIdentifier, OrganisationRoles... roles) {
+		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
+		return cgm.isIdentityInOrganisation(identityEnvironment.getIdentity(), organisationIdentifier, roles);
+	}
+
+	@Override
 	public boolean isCoach() {
 		if(coach != null) {
 			return coach.booleanValue();
@@ -147,7 +154,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		//lazy loading
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean coachLazy = cgm.isIdentityCourseCoach(identityEnvironment.getIdentity());
-		coach = new Boolean(coachLazy);
+		coach = Boolean.valueOf(coachLazy);
 		return coachLazy;
 	}
 
@@ -159,7 +166,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		//lazy loading
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean admiLazy = cgm.isIdentityCourseAdministrator(identityEnvironment.getIdentity());
-		admin = new Boolean(admiLazy);
+		admin = Boolean.valueOf(admiLazy);
 		return admiLazy;
 	}
 
@@ -171,7 +178,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		//lazy loading
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean partLazy = cgm.isIdentityCourseParticipant(identityEnvironment.getIdentity());
-		participant = new Boolean(partLazy);
+		participant = Boolean.valueOf(partLazy);
 		return partLazy;
 	}
 
@@ -185,7 +192,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		boolean adminLazy = identityEnvironment.getRoles().isOLATAdmin()
 				|| identityEnvironment.getRoles().isInstitutionalResourceManager()
 				|| cgm.isIdentityAnyCourseAdministrator(identityEnvironment.getIdentity());
-		adminAnyCourse = new Boolean(adminLazy);
+		adminAnyCourse = Boolean.valueOf(adminLazy);
 		return adminLazy;
 	}
 
@@ -197,7 +204,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean coachLazy = cgm.isIdentityAnyCourseCoach(identityEnvironment.getIdentity());
-		coachAnyCourse = new Boolean(coachLazy);
+		coachAnyCourse = Boolean.valueOf(coachLazy);
 		return coachLazy;
 	}
 
@@ -209,7 +216,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean participantLazy = cgm.isIdentityAnyCourseParticipant(identityEnvironment.getIdentity());
-		participantAnyCourse = new Boolean(participantLazy);
+		participantAnyCourse = Boolean.valueOf(participantLazy);
 		return participantLazy;
 	}
 
@@ -290,8 +297,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 	
 	public void setUserRoles(boolean admin, boolean coach, boolean participant) {
-		this.admin = new Boolean(admin);
-		this.coach = new Boolean(coach);
-		this.participant = new Boolean(participant);
+		this.admin = Boolean.valueOf(admin);
+		this.coach = Boolean.valueOf(coach);
+		this.participant = Boolean.valueOf(participant);
 	}
 }

@@ -45,6 +45,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -107,6 +108,8 @@ public class UserDeletionManager {
 	private RegistrationManager registrationManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private SecurityGroupDAO securityGroupDao;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -289,9 +292,9 @@ public class UserDeletionManager {
 		}
 
 		//remove identity from its security groups
-		List<SecurityGroup> securityGroups = securityManager.getSecurityGroupsForIdentity(identity);
+		List<SecurityGroup> securityGroups = securityGroupDao.getSecurityGroupsForIdentity(identity);
 		for (SecurityGroup secGroup : securityGroups) {
-			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
+			securityGroupDao.removeIdentityFromSecurityGroup(identity, secGroup);
 			log.info("Removing user=" + identity + " from security group="  + secGroup.toString());
 		}
 		//remove identity from groups

@@ -32,7 +32,8 @@ import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
@@ -134,6 +135,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -193,9 +196,6 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
@@ -205,9 +205,6 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == propertiesCtr) {
@@ -242,16 +239,10 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @return boolean
 	 */
 	private boolean allowedToManageUser(UserRequest ureq, Identity identity) {
-		// prevent editing of users that are in frentix-superadmin group (except "frentix" wants to change own profile)
-		Identity editor = ureq.getUserSession().getIdentity();
-		SecurityGroup frentixSuperAdminGroup =  securityManager.findSecurityGroupByName("fxadmins");
-		if(securityManager.isIdentityInSecurityGroup(identity, frentixSuperAdminGroup)){
-			if(editor.equals(identity) || securityManager.isIdentityInSecurityGroup(editor, frentixSuperAdminGroup)) {
-				return true;
-			}
-			return false;
+		// prevent editing of users that are in sysadmin / superadmin group
+		if(organisationService.hasRole(identity, OrganisationRoles.sysadmin)){
+			return getIdentity().equals(identity) || organisationService.hasRole(getIdentity(), OrganisationRoles.sysadmin);
 		}
-
 		if (isOlatAdmin) {
 			return true;
 		}
@@ -457,10 +448,6 @@ public class UserAdminController extends BasicController implements Activateable
 		myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 	}
 
-	/**
-	 *
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//

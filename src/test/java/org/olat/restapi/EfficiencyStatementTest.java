@@ -35,7 +35,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
@@ -60,12 +60,14 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	@Test
 	public void getEfficiencyStatement() throws IOException, URISyntaxException {
 		// create a standalone efficiency statement
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		Identity admin = securityManager.findIdentityByName("administrator");
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("eff-1");
 		ICourse course = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();

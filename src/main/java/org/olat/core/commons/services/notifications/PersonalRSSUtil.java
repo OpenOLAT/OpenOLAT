@@ -28,7 +28,7 @@ package org.olat.core.commons.services.notifications;
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -69,12 +69,12 @@ public class PersonalRSSUtil {
 	public static String getPersonalRssLink(UserRequest ureq) {
 		String token = null;
 		Identity identity = ureq.getIdentity();
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
+		BaseSecurity secManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Authentication auth = secManager.findAuthentication(identity, RSS_AUTH_PROVIDER);
 		if (auth == null) {
 			// no token found - create one
 			 token = RandomStringUtils.randomAlphanumeric(6);
-			 auth = secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, identity.getName(), token, null);
+			 secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, identity.getName(), token, null);
 		} else {
 			token = auth.getCredential();
 		}
