@@ -66,7 +66,7 @@ public class EfficiencyStatementManagerGatling extends OlatTestCase {
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		
 		List<Identity> loadIdentities = securityManager
-				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, 0, 10000);
+				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, 0, 10000);
 		
 		int count = 0;
 		for(RepositoryEntry entry:entries) {

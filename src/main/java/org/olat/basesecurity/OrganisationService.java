@@ -55,12 +55,32 @@ public interface OrganisationService {
 	
 	public List<Organisation> getOrganisations();
 	
-	public void addMember(Organisation organisation, Identity member, GroupRoles role);
+	public Organisation getDefaultOrganisation();
+	
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role);
+	
+	/**
+	 * 
+	 * 
+	 * @param member The identity
+	 * @param role The role in the organisation
+	 */
+	public void addMember(Identity member, OrganisationRoles role);
+	
+	public void removeMember(IdentityRef member, OrganisationRoles role);
 
 	public void removeMember(Organisation organisation, IdentityRef member);
 	
-	public void removeMember(Organisation organisation, IdentityRef member, GroupRoles role);
+	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role);
 	
 	public List<OrganisationMember> getMembers(Organisation organisation);
+	
+	
+	
+	public List<Identity> getDefaultsSystemAdministator();
+	
+	public boolean hasRole(IdentityRef identity, OrganisationRoles role);
+	
+	public List<Identity> getIdentitiesWithRole(OrganisationRoles role);
 
 }

@@ -703,7 +703,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		newLinkNotPersistedYet.setDescription(selectedEntry.getDescription());
 		newLinkNotPersistedYet.setRepositoryEntry(selectedEntry);
 		newLinkNotPersistedYet.setType(CatalogEntry.TYPE_LEAF);
-		newLinkNotPersistedYet.setOwnerGroup(securityManager.createAndPersistSecurityGroup());
 		catalogManager.addCatalogEntry(catalogEntry, newLinkNotPersistedYet);
 		loadResources(ureq);
 	}
@@ -804,13 +803,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		// add ownership management
 		SecurityGroup secGroup = catalogEntry.getOwnerGroup();
-		if (secGroup == null) {
-			catalogEntry = catalogManager.loadCatalogEntry(catalogEntry);
-			secGroup = securityManager.createAndPersistSecurityGroup();
-			catalogEntry.setOwnerGroup(secGroup);
-			catalogEntry = catalogManager.saveCatalogEntry(catalogEntry);
-		}
-
 		groupCtrl = new GroupController(ureq, getWindowControl(), true, false, false, false, false, false, secGroup);
 		listenTo(groupCtrl);
 		
@@ -845,7 +837,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(contactCtrl);
 
 		ContactList caretaker = new ContactList(translate("contact.to.groupname.caretaker"));
-		List<Identity> owners = new ArrayList<Identity>();
+		List<Identity> owners = new ArrayList<>();
 		
 		CatalogEntry parent = catalogEntry;
 		while(parent != null && owners.isEmpty()) {

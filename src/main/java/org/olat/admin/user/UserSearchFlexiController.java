@@ -454,6 +454,6 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	  return securityManager.getVisibleIdentitiesByPowerSearch(
 			(login.equals("") ? null : login),
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-			null, null, null, null, null);
+			null, null, null, null);
 	}
 }

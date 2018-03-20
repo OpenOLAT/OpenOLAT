@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRef;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
@@ -130,6 +132,10 @@ public class OrganisationDAO {
 		return organisations == null || organisations.isEmpty() ? null : organisations.get(0);
 	}
 	
+	public List<Organisation> loadDefaultOrganisation() {
+		return loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+	}
+	
 	public List<Organisation> loadByIdentifier(String identifier) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select org from organisation org")
@@ -172,5 +178,50 @@ public class OrganisationDAO {
 			members.add(new OrganisationMember(identity, role));
 		}
 		return members;
+	}
+	
+	public List<Identity> getIdentities(String organisationIdentifier, String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where org.identifier=:organisationIdentifier and membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("organisationIdentifier", organisationIdentifier)
+				.setParameter("role", role)
+				.getResultList();
+	}
+	
+	public List<Identity> getIdentities(String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("role", role)
+				.getResultList();
+	}
+	
+	public boolean hasRole(IdentityRef identity, String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select membership.key from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		List<Long> memberships = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("role", role)
+				.setParameter("identityKey", identity.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return memberships != null && !memberships.isEmpty() && memberships.get(0) != null && memberships.get(0).longValue() > 0;
 	}
 }

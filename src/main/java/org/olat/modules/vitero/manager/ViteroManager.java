@@ -1386,7 +1386,7 @@ public class ViteroManager implements UserDataDeletable {
 				String vmsUsername = user.getUsername();
 				if(vmsUsername.startsWith(prefix)) {
 					String olatUsername = vmsUsername.substring(prefix.length(), vmsUsername.length());
-					List<Identity> identities = securityManager.getIdentitiesByPowerSearch(olatUsername, null, false, null, null, authProviders, null, null, null, null, null);
+					List<Identity> identities = securityManager.getIdentitiesByPowerSearch(olatUsername, null, false, null, authProviders, null, null, null, null, null);
 					if(identities.isEmpty()) {
 						Identity identity = securityManager.findIdentityByName(olatUsername);
 						if(identity != null) {
@@ -1401,7 +1401,7 @@ public class ViteroManager implements UserDataDeletable {
 		
 		//check if all openolat users with a vms authentication have an user
 		//on the vms server
-		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(null, null, false, null, null, authProviders, null, null, null, null, null);
+		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(null, null, false, null, authProviders, null, null, null, null, null);
 		for(Identity identity :identities) {
 			Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
 			String vmsUserId = authentication.getAuthusername();

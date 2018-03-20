@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
@@ -74,6 +73,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -100,19 +100,21 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private List<VFSLeaf> files;
 	private FileSelection selection;
 	private List<File> attachments;
-	private List<IdentityWrapper> toValues = new ArrayList<IdentityWrapper>();
-
-	private final MailManager mailManager;
-	private final BaseSecurity securityManager;
 	private final boolean allowAttachments;
+	private List<IdentityWrapper> toValues = new ArrayList<>();
+
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	public SendDocumentsByEMailController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfo.class, ureq.getLocale(),
 				Util.createPackageTranslator(MailModule.class, ureq.getLocale())));
 		setBasePackage(MailModule.class);
 
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
-		securityManager = BaseSecurityManager.getInstance();
 		allowAttachments = !FolderConfig.getSendDocumentLinkOnly();
 
 		initForm(ureq);
@@ -194,7 +196,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 		boolean selectionWithContainer = false;
 		List<String> filenames = selection.getFiles();
-		List<VFSLeaf> leafs = new ArrayList<VFSLeaf>();
+		List<VFSLeaf> leafs = new ArrayList<>();
 		for (String file : filenames) {
 			VFSItem item = currentContainer.resolve(file);
 			if (item instanceof VFSContainer) {
@@ -255,7 +257,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 				attachments.clear();
 				setFormWarning("send.mail.fileToBigForAttachments", new String[] { String.valueOf(mailQuota), String.valueOf(fileSizeInMB) });
 			} else {
-				List<FileInfo> infos = new ArrayList<FileInfo>(files.size());
+				List<FileInfo> infos = new ArrayList<>(files.size());
 				for (VFSLeaf file : files) {
 					final String name = file.getName();
 					final double size = file.getSize() / (1024.0 * 1024.0);
@@ -432,7 +434,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	 * @return
 	 */
 	private List<Identity> getInvalidToAddressesFromTextBoxList() {
-		List<Identity> invalidTos = new ArrayList<Identity>();
+		List<Identity> invalidTos = new ArrayList<>();
 
 		// the toValues are either usernames (from autocompletion, thus OLAT
 		// users) or email-addresses (external)
@@ -459,7 +461,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == addEmailLink) {
 			doAddEmail(ureq);
-		} if(source instanceof FormLink && source.getUserObject() instanceof IdentityWrapper) {
+		} else if(source instanceof FormLink && source.getUserObject() instanceof IdentityWrapper) {
 			if(source.getName().startsWith("rm-")) {
 				for(Iterator<IdentityWrapper> wrapperIt=toValues.iterator(); wrapperIt.hasNext(); ) {
 					IdentityWrapper wrapper = wrapperIt.next();
@@ -502,7 +504,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		List<Identity> tos = new ArrayList<Identity>(toValues.size());
+		List<Identity> tos = new ArrayList<>(toValues.size());
 		for(IdentityWrapper wrapper:toValues) {
 			tos.add(wrapper.getIdentity());
 		}
@@ -589,7 +591,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if(identity instanceof EMailIdentity) {
 				return identity.getUser().getProperty(UserConstants.EMAIL, null);
 			}
-			return UserManager.getInstance().getUserDisplayName(identity);
+			return userManager.getUserDisplayName(identity);
 		}
 		
 		public Identity getIdentity() {

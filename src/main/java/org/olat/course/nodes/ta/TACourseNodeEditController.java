@@ -32,7 +32,6 @@ import java.util.UUID;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
@@ -89,6 +88,7 @@ import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  
@@ -145,7 +145,10 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	private CloseableModalController cmc;
 	private List<Identity> identitiesToBeNotified;
 	
+	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private QuotaManager quotaManager;
 
 	/**
 	 * @param ureq
@@ -157,8 +160,6 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	public TACourseNodeEditController(UserRequest ureq, WindowControl wControl, ICourse course, TACourseNode node,
 			UserCourseEnvironment euce) {
 		super(ureq, wControl);
-		
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 
 		this.node = node;
 		//o_clusterOk by guido: save to hold reference to course inside editor
@@ -262,7 +263,12 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private VFSSecurityCallback getTaskFolderSecCallback(String relPath) {
-		return new TaskFolderCallback(relPath, false); // do not look task folder
+		Quota folderQuota = quotaManager.getCustomQuota(relPath);
+		if (folderQuota == null) {
+			Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
+			folderQuota = quotaManager.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+		}
+		return new TaskFolderCallback(false, folderQuota); // do not look task folder
 	}
 
 	/**
@@ -296,10 +302,10 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		} else if (source == vfButton) {
 			// switch to new dialog
 			OlatNamedContainerImpl namedContainer = TACourseNode.getNodeFolderContainer(node, course.getCourseEnvironment());
-			Quota quota = QuotaManager.getInstance().getCustomQuota(namedContainer.getRelPath());
+			Quota quota = quotaManager.getCustomQuota(namedContainer.getRelPath());
 			if (quota == null) {
-				Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
-				quota = QuotaManager.getInstance().createQuota(namedContainer.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+				Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
+				quota = quotaManager.createQuota(namedContainer.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 			}
 			SubscriptionContext subContext = SolutionFileUploadNotificationHandler.getSubscriptionContext(course.getCourseEnvironment(), node);
 			VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota, subContext);
@@ -612,18 +618,9 @@ class TaskFolderCallback implements VFSSecurityCallback {
 	/**
 	 * @param folderLocked
 	 */
-	public TaskFolderCallback(String relPath, boolean folderLocked) {
+	public TaskFolderCallback(boolean folderLocked, Quota folderQuota) {
 		this.folderLocked = folderLocked;
-		initTaskFolderQuota(relPath);
-	}
-
-	private void initTaskFolderQuota(String relPath) {
-		QuotaManager qm = QuotaManager.getInstance();
-		folderQuota = qm.getCustomQuota(relPath);
-		if (folderQuota == null) {
-			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
-			folderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
-		}
+		this.folderQuota = folderQuota;
 	}
 
 	/**

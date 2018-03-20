@@ -20,18 +20,16 @@
 package org.olat.admin.user.bulkChange;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.user.groups.GroupSearchController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -77,39 +75,32 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class UserBulkChangeStep02 extends BasicStep {
 
-	static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
-	public List<UserPropertyHandler> userPropertyHandlers;
+	private static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
+	
+	private final UserBulkChanges userBulkChanges;
+	private List<UserPropertyHandler> userPropertyHandlers;
 
-	public UserBulkChangeStep02(UserRequest ureq) {
+	public UserBulkChangeStep02(UserRequest ureq, UserBulkChanges userBulkChanges) {
 		super(ureq);
+		this.userBulkChanges = userBulkChanges;
 		setI18nTitleAndDescr("step2.description", null);
 		setNextStep(Step.NOSTEP);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getInitialPrevNextFinishConfig()
-	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(true, false, true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext,
-	 *      org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new UserBulkChangeStepForm02(ureq, windowControl, form, stepsRunContext);
-		return stepI;
+		return new UserBulkChangeStepForm02(ureq, windowControl, form, stepsRunContext);
 	}
 	
 	private final class UserBulkChangeStepForm02 extends StepFormBasicController {
-
-		private FormLayoutContainer textContainer;
 		
+		@Autowired
+		private BaseSecurity securityManager;
 		@Autowired
 		private UserBulkChangeManager ubcMan;
 		@Autowired
@@ -148,40 +139,39 @@ class UserBulkChangeStep02 extends BasicStep {
 			formLayout.add(formLayoutVertical);
 
 			setFormTitle("title");
-			List<List<String>> mergedDataChanges = new ArrayList<List<String>>();
-			
-			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step2.html");
-			formLayoutVertical.add(textContainer);
-			boolean validChange = (Boolean) getFromRunContext("validChange");
-			textContainer.contextPut("validChange", validChange);
-			if (!validChange) return;
 
-			@SuppressWarnings("unchecked")
-			List<Identity> selectedIdentities = (List<Identity>) getFromRunContext("identitiesToEdit");
-			@SuppressWarnings("unchecked")
-			HashMap<String, String> attributeChangeMap = (HashMap<String, String>) getFromRunContext("attributeChangeMap");
-			@SuppressWarnings("unchecked")
-			HashMap<String, String> roleChangeMap = (HashMap<String, String>) getFromRunContext("roleChangeMap");
+			List<List<String>> mergedDataChanges = new ArrayList<>();
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step2.html");
+			formLayoutVertical.add(textContainer);
+			boolean validChange = userBulkChanges.isValidChange();
+			textContainer.contextPut("validChange", validChange);
+			if (!validChange) {
+				return;
+			}
+
+			List<Identity> selectedIdentities = userBulkChanges.getIdentitiesToEdit();
+			Map<String, String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
+			Map<OrganisationRoles, String> roleChangeMap = userBulkChanges.getRoleChangeMap();
 
 			Roles roles = ureq.getUserSession().getRoles();
 			boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 
-			String[] securityGroups = {
-					Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS,
-					Constants.GROUP_POOL_MANAGER, Constants.GROUP_INST_ORES_MANAGER,
-					Constants.GROUP_AUTHORS, Constants.GROUP_ADMIN
+			OrganisationRoles[] organisationRoles = {
+					OrganisationRoles.usermanager, OrganisationRoles.groupmanager,
+					OrganisationRoles.poolmanager, OrganisationRoles.learnresourcemanager,
+					OrganisationRoles.author, OrganisationRoles.administrator
 				};
 
 			// loop over users to be edited:
 			for (Identity identity : selectedIdentities) {
-				List<String> userDataArray = new ArrayList<String>();
+				List<String> userDataArray = new ArrayList<>();
 
 				// add column for login
 				userDataArray.add(identity.getName());
 				// add columns for password
-				if (attributeChangeMap.containsKey(UserBulkChangeManager.PWD_IDENTIFYER)) {
-					userDataArray.add(attributeChangeMap.get(UserBulkChangeManager.PWD_IDENTIFYER));
+				if (attributeChangeMap.containsKey(UserBulkChangeManager.CRED_IDENTIFYER)) {
+					userDataArray.add(attributeChangeMap.get(UserBulkChangeManager.CRED_IDENTIFYER));
 				} else userDataArray.add("***");
 				// add column for language
 				String userLanguage = identity.getUser().getPreferences().getLanguage();
@@ -228,12 +218,12 @@ class UserBulkChangeStep02 extends BasicStep {
 
 				// add columns with roles
 				// loop over securityGroups and get result...
-				for (String securityGroup : securityGroups) {
-					String roleStatus = getRoleStatusForIdentity(identity, securityGroup, roleChangeMap);
-					userDataArray.add(roleStatus);
+				List<String> identityRoles = securityManager.getRolesAsString(identity);
+				for (OrganisationRoles organisationRole : organisationRoles) {
+					userDataArray.add(getRoleStatusForIdentity(organisationRole, identityRoles, roleChangeMap));
 				}
 				// add column with status
-				userDataArray.add(roleChangeMap.get("Status"));
+				userDataArray.add(userBulkChanges.getStatus() == null ? "" : userBulkChanges.getStatus().toString());
 
 				// add each user:
 				mergedDataChanges.add(userDataArray);
@@ -258,20 +248,17 @@ class UserBulkChangeStep02 extends BasicStep {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.admin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 
-			FlexiTableDataModel<List<String>> tableDataModel = new FlexiTableDataModelImpl<List<String>>(new OverviewModel(mergedDataChanges, colPos), tableColumnModel);
+			FlexiTableDataModel<List<String>> tableDataModel = new FlexiTableDataModelImpl<>(new OverviewModel(mergedDataChanges, colPos), tableColumnModel);
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 
-			Set<Long> allGroups = new HashSet<Long>(); 
-			@SuppressWarnings("unchecked")
-			List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");
-			@SuppressWarnings("unchecked")
-			List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
+			Set<Long> allGroups = new HashSet<>(); 
+			List<Long> ownGroups = userBulkChanges.getOwnerGroups();
+			List<Long> partGroups = userBulkChanges.getParticipantGroups();
 			allGroups.addAll(ownGroups);
 			allGroups.addAll(partGroups);
-			@SuppressWarnings("unchecked")
-			List<Long> mailGroups = (List<Long>) getFromRunContext("mailGroups");
+			List<Long> mailGroups = userBulkChanges.getMailGroups();
 			
-			if (allGroups.size() != 0) {
+			if (!allGroups.isEmpty()) {
 				uifactory.addSpacerElement("space", formLayout, true);
 				uifactory.addStaticTextElement("add.to.groups", "", formLayout);
 				FlexiTableColumnModel groupColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -282,7 +269,7 @@ class UserBulkChangeStep02 extends BasicStep {
 
 				List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(allGroups);
 				TableDataModel<BusinessGroup> model = new GroupAddOverviewModel(groups, ownGroups, partGroups, mailGroups, getTranslator()); 
-				FlexiTableDataModel<BusinessGroup> groupDataModel = new FlexiTableDataModelImpl<BusinessGroup>(model, groupColumnModel);
+				FlexiTableDataModel<BusinessGroup> groupDataModel = new FlexiTableDataModelImpl<>(model, groupColumnModel);
 				
 				uifactory.addTableElement(getWindowControl(), "groupOverview", groupDataModel, getTranslator(), formLayout);
 			}
@@ -297,18 +284,18 @@ class UserBulkChangeStep02 extends BasicStep {
 		 * @param roleChangeMap
 		 * @return
 		 */
-		private String getRoleStatusForIdentity(Identity identity, String securityGroup, HashMap<String, String> roleChangeMap) {
-			BaseSecurity secMgr = BaseSecurityManager.getInstance();
-			SecurityGroup secGroup = secMgr.findSecurityGroupByName(securityGroup);
-			Boolean isInGroup = secMgr.isIdentityInSecurityGroup(identity, secGroup);
+		private String getRoleStatusForIdentity(OrganisationRoles role, List<String> currentRoles, Map<OrganisationRoles, String> roleChangeMap) {
+			boolean isInGroup = currentRoles.contains(role.name());
 
 			String thisRoleAction = "";
-			if (roleChangeMap.containsKey(securityGroup)) {
-				thisRoleAction = roleChangeMap.get(securityGroup);
-			} else return isInGroup.toString();
+			if (roleChangeMap.containsKey(role)) {
+				thisRoleAction = roleChangeMap.get(role);
+			} else {
+				return Boolean.toString(isInGroup);
+			}
 
 			if ((isInGroup && thisRoleAction.equals("add")) || (!isInGroup && thisRoleAction.equals("remove"))) { 
-				return isInGroup.toString();
+				return Boolean.toString(isInGroup);
 			} else {
 				isInGroup = !isInGroup; //invert to represent the new state
 				return decorateChangedCell(isInGroup);		

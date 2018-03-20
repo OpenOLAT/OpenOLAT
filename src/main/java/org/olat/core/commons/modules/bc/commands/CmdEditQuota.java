@@ -40,12 +40,16 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CmdEditQuota extends DefaultController implements FolderCommand, ControllerEventListener {
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	private Controller quotaEditController;
 	private VFSSecurityCallback currentSecCallback = null;
+	
+	@Autowired
+	private QuotaManager quotaManager;
 	
 	protected CmdEditQuota(WindowControl wControl) {
 		super(wControl);
@@ -63,16 +67,15 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 		// cleanup old controller first
 		if (quotaEditController != null) quotaEditController.dispose();
 		// create a edit controller
-		quotaEditController = QuotaManager.getInstance().getQuotaEditorInstance(ureq, wControl, currentSecCallback.getQuota().getPath());
+		quotaEditController = quotaManager.getQuotaEditorInstance(ureq, wControl, currentSecCallback.getQuota().getPath());
 		quotaEditController.addControllerListener(this);
 		if (quotaEditController != null) {
 			setInitialComponent(quotaEditController.getInitialComponent());
 			return this;
-		} else {
-			// do nothing, quota can't be edited
-			wControl.setWarning("No quota editor available in briefcase, can't use this function!");
-			return null;
 		}
+		// do nothing, quota can't be edited
+		wControl.setWarning("No quota editor available in briefcase, can't use this function!");
+		return null;
 	}
 
 	@Override
@@ -98,7 +101,7 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 		if (source == quotaEditController) {
 			if (event == Event.CHANGED_EVENT) {
 				// update quota
-				Quota newQuota = QuotaManager.getInstance().getCustomQuota(currentSecCallback.getQuota().getPath());
+				Quota newQuota = quotaManager.getCustomQuota(currentSecCallback.getQuota().getPath());
 				if (newQuota != null) currentSecCallback.setQuota(newQuota);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// do nothing

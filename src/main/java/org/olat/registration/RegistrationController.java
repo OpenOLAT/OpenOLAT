@@ -34,7 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
@@ -110,6 +110,8 @@ public class RegistrationController extends BasicController implements Activatea
 	private UserModule userModule;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private RegistrationModule registrationModule;
 	@Autowired
@@ -202,7 +204,7 @@ public class RegistrationController extends BasicController implements Activatea
 							myContent = setErrorPage("reg.error.no_username", wControl);
 						}
 					} else {
-						Identity identity = BaseSecurityManager.getInstance().findIdentityByName(proposedUsername);
+						Identity identity = securityManager.findIdentityByName(proposedUsername);
 						if(identity != null) {
 							if(interceptor.allowChangeOfUsername()) {
 								createRegForm2(ureq, proposedUsername, true, false);

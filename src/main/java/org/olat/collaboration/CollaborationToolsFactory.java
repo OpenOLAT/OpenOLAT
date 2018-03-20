@@ -81,7 +81,7 @@ public class CollaborationToolsFactory {
 	 * configuration.
 	 */
 	public synchronized void initAvailableTools() {
-		ArrayList<String> toolArr = new ArrayList<String>();
+		ArrayList<String> toolArr = new ArrayList<>();
 		toolArr.add(CollaborationTools.TOOL_NEWS);
 		toolArr.add(CollaborationTools.TOOL_CONTACT);
 		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
@@ -138,7 +138,7 @@ public class CollaborationToolsFactory {
 	public CollaborationTools getOrCreateCollaborationTools(final BusinessGroup ores) {
 		if (ores == null) throw new AssertException("Null is not allowed here, you have to provide an existing ores here!");
 		
-		final String cacheKey = Long.valueOf(ores.getResourceableId()).toString();
+		final String cacheKey = Long.toString(ores.getResourceableId().longValue());
 		boolean debug = log.isDebug();
 		//sync operation cluster wide
 
@@ -173,7 +173,7 @@ public class CollaborationToolsFactory {
 	 * @return
 	 */
 	public CollaborationTools getCollaborationToolsIfExists(OLATResourceable ores) {
-		String cacheKey = Long.valueOf(ores.getResourceableId()).toString();
+		String cacheKey = Long.toString(ores.getResourceableId().longValue());
 		return cache.get(cacheKey);
 	}
 

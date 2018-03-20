@@ -38,13 +38,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,6 +54,9 @@ import org.olat.test.OlatJerseyTestCase;
  *
  */
 public class CoursesInfosTest extends OlatJerseyTestCase {
+	
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	@Test
 	public void testGetCourseInfos() throws IOException, URISyntaxException {
@@ -72,7 +76,7 @@ public class CoursesInfosTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseInfos_byId() throws IOException, URISyntaxException {
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		Identity admin = securityManager.findIdentityByName("administrator");
 		ICourse course = CoursesWebService.createEmptyCourse(admin, "course-info 1", "course long name", null);
 
 		RestConnection conn = new RestConnection();

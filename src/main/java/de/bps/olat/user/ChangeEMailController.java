@@ -22,7 +22,7 @@ package de.bps.olat.user;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -50,7 +50,7 @@ public class ChangeEMailController extends DefaultController {
 
 	protected static final String CHANGE_EMAIL_ENTRY = "change.email.login";
 	
-	public static int TIME_OUT = 30;
+	public static final int TIME_OUT = 30;
 	
 	protected Translator pT;
 	protected String emKey;
@@ -58,7 +58,11 @@ public class ChangeEMailController extends DefaultController {
 	protected UserRequest userRequest;
 	
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	protected RegistrationManager rm;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * executed after click the link in email
@@ -69,7 +73,7 @@ public class ChangeEMailController extends DefaultController {
 		super(wControl);
 		this.userRequest = ureq;
 		pT = Util.createPackageTranslator(ProfileAndHomePageEditController.class, userRequest.getLocale());
-		pT = UserManager.getInstance().getPropertyHandlerTranslator(pT);
+		pT = userManager.getPropertyHandlerTranslator(pT);
 		emKey = userRequest.getHttpReq().getParameter("key");
 		if ((emKey == null) && (userRequest.getUserSession().getEntry(CHANGE_EMAIL_ENTRY) != null)) {
 			emKey = userRequest.getIdentity().getUser().getProperty("emchangeKey", null);
@@ -108,7 +112,7 @@ public class ChangeEMailController extends DefaultController {
 					// link time is up
 					userRequest.getUserSession().putEntryInNonClearedStore("error.change.email.time", pT.translate("error.change.email.time"));
 					Long identityKey = tempKey.getIdentityKey();
-					Identity ident = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
+					Identity ident = securityManager.loadIdentityByKey(identityKey);
 					if (ident != null) {
 						// remove keys
 						ident.getUser().setProperty("emchangeKey", null);

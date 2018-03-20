@@ -271,6 +271,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private QuotaManager quotaManager;
+	@Autowired
 	private QTIResultManager qtiResultManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -324,7 +326,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		this.referencees = referencees;
 		
 
-		Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
+		Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
 		//unlimited for author
 		Quota quota = new QuotaImpl(defQuota.getPath(), defQuota.getQuotaKB() * 100, defQuota.getUlLimitKB() * 100);
 		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota, null);

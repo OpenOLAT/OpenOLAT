@@ -59,7 +59,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -95,6 +95,8 @@ public class CoursesTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO reLifecycleDao;
@@ -110,7 +112,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
-			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+			admin = securityManager.findIdentityByName("administrator");
 			course1 = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, null);
 
 			externalId = UUID.randomUUID().toString();
@@ -422,7 +424,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(vo.getKey());
 
 		Long repoKey = vo.getRepoEntryKey();
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(repoKey);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoKey);
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
 		assertEquals("Very small course", re.getDisplayname());
@@ -462,7 +464,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 
 		CourseVO vo = conn.parse(response, CourseVO.class);
 		Long repoKey = vo.getRepoEntryKey();
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(repoKey);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoKey);
 		assertTrue(repositoryEntryRelationDao.hasRole(owner, re, GroupRoles.owner.name()));
 	}
 

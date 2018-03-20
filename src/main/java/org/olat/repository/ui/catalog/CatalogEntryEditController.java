@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,8 +52,8 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.CatalogEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -226,7 +225,6 @@ public class CatalogEntryEditController extends FormBasicController {
 		
 		if(catalogEntry.getKey() == null) {
 			//a new one
-			catalogEntry.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 			catalogEntry.setRepositoryEntry(null);
 			catalogEntry.setParent(parentEntry);
 			catalogEntry = catalogManager.saveCatalogEntry(catalogEntry);

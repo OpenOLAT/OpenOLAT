@@ -63,7 +63,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -302,7 +301,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		int voSize = vos.size();
 		vos = null;
 		
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		List<Identity> identities = securityManager
+				.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		assertEquals(voSize, identities.size());
 
 		conn.shutdown();
@@ -323,7 +323,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		List<UserVO> vos = parseUserArray(body);
 		
 		String[] authProviders = new String[]{"OLAT"};
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("administrator", null, true, null, null, authProviders, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		List<Identity> identities = securityManager
+				.getIdentitiesByPowerSearch("administrator", null, true, null, authProviders, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
@@ -556,7 +557,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		UserVO savedVo = conn.parse(response, UserVO.class);
-		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
+		Identity savedIdent = securityManager.findIdentityByName(username);
 
 		assertNotNull(savedVo);
 		assertNotNull(savedIdent);
@@ -596,7 +597,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		UserVO savedVo = conn.parse(response, UserVO.class);
-		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
+		Identity savedIdent = securityManager.findIdentityByName(username);
 
 		assertNotNull(savedVo);
 		assertNotNull(savedIdent);
@@ -633,7 +634,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		UserVO savedVo = conn.parse(response, UserVO.class);
-		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
+		Identity savedIdent = securityManager.findIdentityByName(username);
 
 		assertNotNull(savedVo);
 		assertNotNull(savedIdent);
@@ -670,7 +671,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		UserVO savedVo = conn.parse(response, UserVO.class);
-		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
+		Identity savedIdent = securityManager.findIdentityByName(username);
 
 		assertNotNull(savedVo);
 		assertNotNull(savedIdent);
@@ -729,7 +730,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(errors.get(1).getCode());
 		assertNotNull(errors.get(1).getTranslation());
 		
-		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(login);
+		Identity savedIdent = securityManager.findIdentityByName(login);
 		assertNull(savedIdent);
 		conn.shutdown();
 	}
@@ -941,7 +942,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
-		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(idToDelete.getKey());
+		Identity deletedIdent = securityManager.loadIdentityByKey(idToDelete.getKey());
 		assertNotNull(deletedIdent);//Identity aren't deleted anymore
 		assertEquals(Identity.STATUS_DELETED, deletedIdent.getStatus());
 		conn.shutdown();

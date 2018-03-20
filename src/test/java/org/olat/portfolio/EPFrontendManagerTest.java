@@ -34,10 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.Policy;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -829,27 +826,5 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		Roles roles = new Roles(true, false, false, false, false, false, false);
 		repositoryService.deletePermanently(reloadedRe, id, roles, Locale.GERMAN);
 		dbInstance.commit();	
-	}
-	
-	@Test
-	public void deleteMap_withOldPolicy() {
-		//create map
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("frtuse-7");
-		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(id, "Delete map", "Description");
-		PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(map, "Page while be deleted", "Page description");
-		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(id, "Forum");
-		epFrontendManager.addArtefactToStructure(id, artefact, page);
-		dbInstance.commit();
-		
-		//create an old policy manually
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		Policy policy = securityManager.createAndPersistPolicy(secGroup, "allusers_" + Constants.PERMISSION_READ, map.getOlatResource());
-		Assert.assertNotNull(policy);
-		dbInstance.commitAndCloseSession();
-		
-		//delete the map
-		PortfolioStructure reloadedMap = epFrontendManager.loadPortfolioStructureByKey(map.getKey());
-		epFrontendManager.deletePortfolioStructure(reloadedMap);
-		dbInstance.commit();
 	}
 }

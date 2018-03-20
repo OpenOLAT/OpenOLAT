@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -326,7 +325,6 @@ public class CourseCreationHelper {
 			newEntry.setName(addedEntry.getDisplayname());
 			newEntry.setDescription(addedEntry.getDescription());
 			newEntry.setType(CatalogEntry.TYPE_LEAF);
-			newEntry.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 			// save entry
 			cm.addCatalogEntry(getConfiguration().getSelectedCatalogEntry(), newEntry);
 		}

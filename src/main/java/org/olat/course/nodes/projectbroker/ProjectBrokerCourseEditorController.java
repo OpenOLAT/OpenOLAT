@@ -30,7 +30,6 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -77,6 +76,7 @@ import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  
@@ -86,15 +86,13 @@ import org.olat.modules.ModuleConfiguration;
 
 public class ProjectBrokerCourseEditorController extends ActivateableTabbableDefaultController implements ControllerEventListener {	
 
-//TODO:cg 28.01.2010 no assessment-tool in V1.0
-//	public static final String PANE_TAB_CONF_SCORING        = "pane.tab.conf.scoring";
 	public static final String PANE_TAB_CONF_DROPBOX        = "pane.tab.conf.dropbox";
 	public static final String PANE_TAB_CONF_MODULES        = "pane.tab.conf.modules";
 	public static final String PANE_TAB_ACCESSIBILITY       = "pane.tab.accessibility";
 	private static final String PANE_TAB_OPTIONS            = "pane.tab.options";
 	private static final String PANE_TAB_ACCOUNT_MANAGEMENT = "pane.tab.accountmanagement";
 	
-	private static final String[] paneKeys = { /*PANE_TAB_CONF_SCORING,*/ PANE_TAB_CONF_DROPBOX, PANE_TAB_CONF_MODULES,
+	private static final String[] paneKeys = { PANE_TAB_CONF_DROPBOX, PANE_TAB_CONF_MODULES,
 			PANE_TAB_ACCESSIBILITY };
 
 
@@ -112,7 +110,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private DropboxForm dropboxForm;
 	private MSEditFormController scoringController;
 	private FolderRunController frc;
-//	private ConditionEditController dropConditionC, scoringConditionC, returnboxConditionC;
 	private ConditionEditController projectBrokerConditionController;
 	private boolean hasLogEntries;	
 	private DialogBoxController dialogBoxController;
@@ -128,9 +125,14 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private CloseableModalController cmc;
 	private Long projectBrokerId;
 	
-	private final BusinessGroupService businessGroupService;
-	private final ProjectBrokerManager projectBrokerManager;
-	private final ProjectGroupManager projectGroupManager;
+	@Autowired
+	private QuotaManager quotaManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
+	@Autowired
+	private ProjectGroupManager projectGroupManager;
 	
 	/**
 	 * @param ureq
@@ -142,10 +144,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	protected ProjectBrokerCourseEditorController(UserRequest ureq, WindowControl wControl, ICourse course, ProjectBrokerCourseNode node,
 			UserCourseEnvironment euce) {
 		super(ureq, wControl);
-		
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
-		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 
 		this.node = node;
 		//o_clusterOk by guido: save to hold reference to course inside editor
@@ -229,12 +227,12 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		// if there is already user data available, make for read only
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
 		hasLogEntries = am.hasUserNodeLogs(node);
-		editScoring.contextPut("hasLogEntries", new Boolean(hasLogEntries));
+		editScoring.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
 		if (hasLogEntries) {
 			scoringController.setDisplayOnly(true);
 		}
 		//Initialstate
-		editScoring.contextPut("isOverwriting", new Boolean(false));
+		editScoring.contextPut("isOverwriting", Boolean.FALSE);
 		
 	}
 
@@ -247,7 +245,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		if (getLogger().isDebug()) getLogger().debug("event source=" + source + " " + event.toString());		
 		if (source == editScoringConfigButton){
 			scoringController.setDisplayOnly(false);
-			editScoring.contextPut("isOverwriting", new Boolean(true));
+			editScoring.contextPut("isOverwriting", Boolean.TRUE);
 		} 
 	}
 
@@ -268,7 +266,13 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 				String relPath = TACourseNode.getTaskFolderPathRelToFolderRoot(CourseFactory.loadCourse(courseId), node);
 				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(relPath, null);
 				OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(translate("taskfolder"), rootFolder);
-				namedFolder.setLocalSecurityCallback(new FolderCallback(relPath, false));
+
+				Quota folderQuota = quotaManager.getCustomQuota(relPath);
+				if (folderQuota == null) {
+					Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
+					folderQuota = quotaManager.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+				}
+				namedFolder.setLocalSecurityCallback(new FolderCallback(false, folderQuota));
 				
 				removeAsListenerAndDispose(frc);
 				frc = new FolderRunController(namedFolder, false, urequest, getWindowControl());
@@ -287,7 +291,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			if (event == Event.CANCELLED_EVENT) {
 				if (hasLogEntries) {
 					scoringController.setDisplayOnly(true);}
-				editScoring.contextPut("isOverwriting", new Boolean(false));
+				editScoring.contextPut("isOverwriting", Boolean.FALSE);
 				return;				
 			} else if (event == Event.DONE_EVENT){
 				scoringController.updateModuleConfiguration(config);
@@ -355,9 +359,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
 	public void addTabs(TabbedPane theTabbedPane) {
 		this.myTabbedPane = theTabbedPane;
 		myTabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessabilityVC);
@@ -365,14 +367,9 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		myTabbedPane.addTab(translate(PANE_TAB_ACCOUNT_MANAGEMENT), accountManagementFormVC);
 		myTabbedPane.addTab(translate(PANE_TAB_CONF_MODULES), editModules);
 		dropboxTabPosition = myTabbedPane.addTab(translate(PANE_TAB_CONF_DROPBOX), editDropbox);
-// TODO:cg 28.01.2010 no assessment-tool in V1.0
-//		scoringTabPosition = myTabbedPane.addTab(translate(PANE_TAB_CONF_SCORING), editScoring);
 
 		Boolean bool = (Boolean) config.get(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
 		myTabbedPane.setEnabled(dropboxTabPosition, (bool != null) ? bool.booleanValue() : true);
-		bool = (Boolean) config.get(ProjectBrokerCourseNode.CONF_SCORING_ENABLED);
-//		myTabbedPane.setEnabled(scoringTabPosition, (bool != null) ? bool.booleanValue() : true);
-		
 	}
 
 	/**
@@ -397,24 +394,15 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 
 class FolderCallback implements VFSSecurityCallback {
 
-	private boolean folderLocked;
-	private Quota folderQuota = null;
+	private Quota folderQuota;
+	private final boolean folderLocked;
 
 	/**
 	 * @param folderLocked
 	 */
-	public FolderCallback(String relPath, boolean folderLocked) {
+	public FolderCallback(boolean folderLocked, Quota folderQuota) {
 		this.folderLocked = folderLocked;
-		initFolderQuota(relPath);
-	}
-
-	private void initFolderQuota(String relPath) {
-		QuotaManager qm = QuotaManager.getInstance();
-		folderQuota = qm.getCustomQuota(relPath);
-		if (folderQuota == null) {
-			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
-			folderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
-		}
+		this.folderQuota = folderQuota;
 	}
 
 	/**

@@ -152,11 +152,11 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class CourseFactory {
 
 	private static CacheWrapper<Long,PersistingCourseImpl> loadedCourses;
-	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<Long, ModifyCourseEvent>();
+	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<>();
 
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
   //this is the lock that must be aquired at course editing, copy course, export course, configure course.
-	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<Long,PersistingCourseImpl>();
+	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<>();
 	private static final OLog log = Tracing.createLoggerFor(CourseFactory.class);
 	private static RepositoryManager repositoryManager;
 	private static ReferenceManager referenceManager;
@@ -496,7 +496,7 @@ public class CourseFactory {
 			Quota sourceQuota = VFSManager.isTopLevelQuotaContainer(sourceCourse.getCourseFolderContainer());
 			Quota targetQuota = VFSManager.isTopLevelQuotaContainer(targetCourse.getCourseFolderContainer());
 			if (sourceQuota != null && targetQuota != null) {
-				QuotaManager qm = QuotaManager.getInstance();
+				QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 				if (sourceQuota.getQuotaKB() != qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE).getQuotaKB()) {
 					targetQuota = qm.createQuota(targetQuota.getPath(), sourceQuota.getQuotaKB(), sourceQuota.getUlLimitKB());
 					qm.setCustomQuotaKB(targetQuota);

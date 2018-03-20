@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -96,9 +96,6 @@ public class PreferencesFormController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// Refresh user from DB to prevent stale object issues
@@ -136,18 +133,11 @@ public class PreferencesFormController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs");
@@ -164,10 +154,10 @@ public class PreferencesFormController extends FormBasicController {
 
 		// Roles
 		final String[] roleKeys = new String[] {
-			Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS,
-			Constants.GROUP_POOL_MANAGER, Constants.GROUP_CURRICULUM_MANAGER,
-			Constants.GROUP_AUTHORS, Constants.GROUP_INST_ORES_MANAGER,
-			Constants.GROUP_ADMIN
+			OrganisationRoles.usermanager.name(), OrganisationRoles.groupmanager.name(),
+			OrganisationRoles.poolmanager.name(), OrganisationRoles.curriculummanager.name(),
+			OrganisationRoles.author.name(), OrganisationRoles.learnresourcemanager.name(),
+			OrganisationRoles.administrator.name()
 		};
 		String iname = getIdentity().getUser().getProperty("institutionalName", null);
 		String ilabel = iname != null
@@ -301,10 +291,7 @@ public class PreferencesFormController extends FormBasicController {
 			}
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+
 	@Override
 	protected void doDispose() {
 		// nothing to do

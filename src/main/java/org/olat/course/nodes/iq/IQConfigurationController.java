@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -121,8 +119,6 @@ public class IQConfigurationController extends BasicController {
 	private IQManager iqManager;
 	@Autowired
 	private QTI21Service qti21service;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 
@@ -260,9 +256,9 @@ public class IQConfigurationController extends BasicController {
 			return false;
 		}
 
-		return (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
+		return roles.isOLATAdmin()
 				|| repositoryManager.isOwnerOfRepositoryEntry(identity, re)
-				|| repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, re));
+				|| repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, re);
 	}
 
 	@Override

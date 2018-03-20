@@ -24,7 +24,6 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -50,8 +49,6 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
@@ -126,7 +123,6 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	    catEntry.setName("Soft");
 	    catEntry.setRepositoryEntry(re);
 	    catEntry.setParent(rootEntries.get(0));
-	    catEntry.setOwnerGroup(securityManager.createAndPersistSecurityGroup());
 	    catalogManager.saveCatalogEntry(catEntry);
 	    dbInstance.commit();
 	    

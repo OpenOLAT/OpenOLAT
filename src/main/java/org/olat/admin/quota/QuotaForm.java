@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  08.07.2003
@@ -50,6 +51,9 @@ public class QuotaForm extends FormBasicController {
 	
 	private Quota quota;
 	private final boolean editable;
+	
+	@Autowired
+	private QuotaManager quotaManager;
 	
 	/**
 	 * @param name component name of form
@@ -90,7 +94,7 @@ public class QuotaForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
-		if (!QuotaManager.getInstance().isValidQuotaPath(path.getValue())) {
+		if (!quotaManager.isValidQuotaPath(path.getValue())) {
 			path.setErrorKey("qf.error.path.invalid", null);
 			return false;	
 		}

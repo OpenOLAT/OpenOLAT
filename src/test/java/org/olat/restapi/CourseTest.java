@@ -58,11 +58,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -99,6 +98,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BaseSecurityManager securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * SetUp is called before each test.
@@ -109,14 +110,14 @@ public class CourseTest extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
-			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+			admin = securityManager.findIdentityByName("administrator");
 			auth0 = JunitTestHelper.createAndPersistIdentityAsUser("rest-zero");
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
 			auth2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-two");
 			
 			course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
 			
-			DBFactory.getInstance().closeSession();
+			dbInstance.closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
 		}
@@ -255,8 +256,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//is auth0 author
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		boolean isAuthor = securityManager.isIdentityInSecurityGroup(auth0, authorGroup);
+		boolean isAuthor = organisationService.hasRole(auth0, OrganisationRoles.author);
 		dbInstance.intermediateCommit();
 		Assert.assertTrue(isAuthor);
 		
@@ -290,9 +290,8 @@ public class CourseTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//is auth0 author
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		boolean isAuthor1 = securityManager.isIdentityInSecurityGroup(author1, authorGroup);
-		boolean isAuthor2 = securityManager.isIdentityInSecurityGroup(author2, authorGroup);
+		boolean isAuthor1 = organisationService.hasRole(author1, OrganisationRoles.author);
+		boolean isAuthor2 = organisationService.hasRole(author2, OrganisationRoles.author);
 		dbInstance.commit();
 		Assert.assertTrue(isAuthor1);
 		Assert.assertTrue(isAuthor2);
@@ -309,14 +308,9 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void getAuthors() throws IOException, URISyntaxException {
 		//make auth1 and auth2 authors
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		if(!securityManager.isIdentityInSecurityGroup(auth1, authorGroup)) {
-			securityManager.addIdentityToSecurityGroup(auth1, authorGroup);
-		}
-		if(!securityManager.isIdentityInSecurityGroup(auth2, authorGroup)) {
-			securityManager.addIdentityToSecurityGroup(auth2, authorGroup);
-		}
-		dbInstance.intermediateCommit();
+		organisationService.addMember(auth1, OrganisationRoles.author);
+		organisationService.addMember(auth2, OrganisationRoles.author);
+		dbInstance.commitAndCloseSession();
 		
 		//make auth1 and auth2 owner
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
@@ -325,7 +319,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		authors.add(auth2);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);
 		repositoryManager.addOwners(admin, identitiesAddedEvent, repositoryEntry, null);
-		dbInstance.intermediateCommit();
+		dbInstance.commitAndCloseSession();
 		
 		//get them
 		assertTrue(conn.login("administrator", "openolat"));
@@ -343,14 +337,9 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void removeAuthor() throws IOException, URISyntaxException {
 		//make auth1 and auth2 authors
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		if(!securityManager.isIdentityInSecurityGroup(auth1, authorGroup)) {
-			securityManager.addIdentityToSecurityGroup(auth1, authorGroup);
-		}
-		if(!securityManager.isIdentityInSecurityGroup(auth2, authorGroup)) {
-			securityManager.addIdentityToSecurityGroup(auth2, authorGroup);
-		}
-		dbInstance.intermediateCommit();
+		organisationService.addMember(auth1, OrganisationRoles.author);
+		organisationService.addMember(auth2, OrganisationRoles.author);
+		dbInstance.commitAndCloseSession();
 		
 		//make auth1 and auth2 owner
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
@@ -359,7 +348,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		authors.add(auth2);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);
 		repositoryManager.addOwners(admin, identitiesAddedEvent, repositoryEntry, null);
-		dbInstance.intermediateCommit();
+		dbInstance.commitAndCloseSession();
 		//end setup
 		
 		//test

@@ -31,10 +31,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.gui.UserRequest;
@@ -63,6 +62,7 @@ import org.olat.core.util.vfs.version.VFSRevision;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -91,7 +91,13 @@ public class RevisionListController extends BasicController {
 	private DialogBoxController confirmDeleteBoxCtr;
 	private final VelocityContainer mainVC;
 	private final boolean isAdmin;
-	private final UserManager userManager;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile, boolean readOnly) {
 		this(ureq, wControl, versionedFile, null, null, readOnly);
@@ -100,9 +106,7 @@ public class RevisionListController extends BasicController {
 	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile,
 			String title, String description, boolean readOnly) {
 		super(ureq, wControl);
-		isAdmin = CoreSpringFactory.getImpl(BaseSecurityModule.class)
-				.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		isAdmin = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		//reload the file with all possible precautions
 		VFSLeaf versionedLeaf = null;
@@ -173,18 +177,18 @@ public class RevisionListController extends BasicController {
 	
 	private void loadModel(VFSLeaf versionedLeaf) {
 		Versions versions = versionedFile.getVersions();
-		List<VFSRevision> revisions = new ArrayList<VFSRevision>(versions.getRevisions());
+		List<VFSRevision> revisions = new ArrayList<>(versions.getRevisions());
 		revisions.add(new CurrentRevision(versionedLeaf, versions));
 		
-		Collection<String> names = new HashSet<String>();
+		Collection<String> names = new HashSet<>();
 		for(VFSRevision revision:revisions) {
 			if(revision.getAuthor() != null) {
 				names.add(revision.getAuthor());
 			}
 		}
 		
-		Map<String, IdentityShort> mappedIdentities = new HashMap<String, IdentityShort>();
-		for(IdentityShort identity :BaseSecurityManager.getInstance().findShortIdentitiesByName(names)) {
+		Map<String, IdentityShort> mappedIdentities = new HashMap<>();
+		for(IdentityShort identity :securityManager.findShortIdentitiesByName(names)) {
 			mappedIdentities.put(identity.getName(), identity);
 		}
 
@@ -274,7 +278,7 @@ public class RevisionListController extends BasicController {
 	private List<VFSRevision> getSelectedRevisions(BitSet objectMarkers) {
 		List<VFSRevision> allVersions = versionedFile.getVersions().getRevisions();
 
-		List<VFSRevision> results = new ArrayList<VFSRevision>();
+		List<VFSRevision> results = new ArrayList<>();
 		for (int i = objectMarkers.nextSetBit(0); i >= 0; i = objectMarkers.nextSetBit(i + 1)) {
 			if (i >= 0 && i < allVersions.size()) {
 				VFSRevision elem = allVersions.get(i);
@@ -297,14 +301,17 @@ public class RevisionListController extends BasicController {
 			format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		}
 
+		@Override
 		public int getColumnCount() {
 			return 4;
 		}
 
+		@Override
 		public int getRowCount() {
 			return versionList.size();
 		}
 
+		@Override
 		public Object getValueAt(int row, int col) {
 			VFSRevision version = versionList.get(row);
 			switch (col) {
@@ -356,10 +363,12 @@ public class RevisionListController extends BasicController {
 			this.versions = versions;
 		}
 
+		@Override
 		public String getAuthor() {
 			return versions.getAuthor();
 		}
 
+		@Override
 		public String getComment() {
 			String comment = versions.getComment();
 			if (StringHelper.containsNonWhitespace(comment)) {
@@ -370,22 +379,27 @@ public class RevisionListController extends BasicController {
 			return "";
 		}
 
+		@Override
 		public InputStream getInputStream() {
 			return versionFile.getInputStream();
 		}
 
+		@Override
 		public long getLastModified() {
 			return versionFile.getLastModified();
 		}
 
+		@Override
 		public String getName() {
 			return versionFile.getName();
 		}
 
+		@Override
 		public String getRevisionNr() {
 			return versions.getRevisionNr();
 		}
 
+		@Override
 		public long getSize() {
 			return versionFile.getSize();
 		}

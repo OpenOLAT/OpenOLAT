@@ -26,9 +26,8 @@ import java.util.List;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,6 +44,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,15 +59,17 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 	private List<Identity> oks;
 	private boolean isAdministrativeUser;
 	
-	private final UserManager userManager;
-	private final BaseSecurity securityManager;
-	private final BaseSecurityModule securityModule;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public ImportAuthorOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		userManager = UserManager.getInstance();
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 
 		oks = null;
 		if(containsRunContextKey("logins")) {
@@ -112,19 +114,18 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 	}
 	
 	private List<Identity> loadModel(List<String> keys) {
-		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
+		List<Identity> existIdents = Collections.emptyList();
 
-		List<Identity> okIdentities = new ArrayList<Identity>();
-		List<String> isanonymous = new ArrayList<String>();
-		List<String> notfounds = new ArrayList<String>();
-		List<String> alreadyin = new ArrayList<String>();
+		List<Identity> okIdentities = new ArrayList<>();
+		List<String> isanonymous = new ArrayList<>();
+		List<String> notfounds = new ArrayList<>();
+		List<String> alreadyin = new ArrayList<>();
 
-		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		for (String identityKey : keys) {
 			Identity ident = securityManager.loadIdentityByKey(Long.parseLong(identityKey));
 			if (ident == null) { // not found, add to not-found-list
 				notfounds.add(identityKey);
-			} else if (securityManager.isIdentityInSecurityGroup(ident, anonymousSecGroup)) {
+			} else if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
 				isanonymous.add(identityKey);
 			} else {
 				// check if already in group
@@ -145,14 +146,12 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 	}
 	
 	private List<Identity> loadModel(String inp) {
-		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
+		List<Identity> existIdents = Collections.emptyList();
 
-		List<Identity> okIdentities = new ArrayList<Identity>();
-		List<String> isanonymous = new ArrayList<String>();
-		List<String> notfounds = new ArrayList<String>();
-		List<String> alreadyin = new ArrayList<String>();
-
-		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
+		List<Identity> okIdentities = new ArrayList<>();
+		List<String> isanonymous = new ArrayList<>();
+		List<String> notfounds = new ArrayList<>();
+		List<String> alreadyin = new ArrayList<>();
 
 		String[] lines = inp.split("\r?\n");
 		for (int i = 0; i < lines.length; i++) {
@@ -161,7 +160,7 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 				Identity ident = securityManager.findIdentityByName(username);
 				if (ident == null) { // not found, add to not-found-list
 					notfounds.add(username);
-				} else if (securityManager.isIdentityInSecurityGroup(ident, anonymousSecGroup)) {
+				} else if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
 					isanonymous.add(username);
 				} else {
 					// check if already in group

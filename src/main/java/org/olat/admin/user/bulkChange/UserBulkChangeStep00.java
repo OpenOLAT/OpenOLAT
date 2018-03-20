@@ -20,14 +20,11 @@
 package org.olat.admin.user.bulkChange;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -70,48 +67,30 @@ public /**
  */
 class UserBulkChangeStep00 extends BasicStep {
 	
-	private final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
-	private final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
+	private static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
+	private static final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
+	
+	private final boolean isAdministrativeUser;
+	private final boolean isOLATAdmin;
 	private List<Identity> identitiesToEdit;
-	private static VelocityEngine velocityEngine;
-	private boolean isAdministrativeUser;
-	private boolean isOLATAdmin;
+	private final UserBulkChanges userBulkChanges;
 
-	static {
-		// init velocity engine
-		Properties p = new Properties();
-		try {
-			velocityEngine = new VelocityEngine();
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p);
-		}
-	}
-
-	public UserBulkChangeStep00(UserRequest ureq, List<Identity> toEdit) {
+	public UserBulkChangeStep00(UserRequest ureq, List<Identity> toEdit, UserBulkChanges userBulkChanges) {
 		super(ureq);
 		this.identitiesToEdit = toEdit;
+		this.userBulkChanges = userBulkChanges;
 		setI18nTitleAndDescr("step0.description", null);
-		setNextStep(new UserBulkChangeStep01(ureq));
+		setNextStep(new UserBulkChangeStep01(ureq, userBulkChanges));
 		Roles roles = ureq.getUserSession().getRoles();
 		isOLATAdmin = roles.isOLATAdmin();
 		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getInitialPrevNextFinishConfig()
-	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(false, true, false);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext,
-	 *      org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
 		return new UserBulkChangeStepForm00(ureq, windowControl, form, stepsRunContext);
@@ -144,7 +123,7 @@ class UserBulkChangeStep00 extends BasicStep {
 		@Override
 		protected void formOK(UserRequest ureq) {
 			// process changed attributes
-			HashMap<String, String> attributeChangeMap = new HashMap<>();
+			Map<String, String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
 			for (MultipleSelectionElement checkbox:checkBoxes) {
 				if (checkbox.isSelected(0)) {
 					FormItem formItem = (FormItem)checkbox.getUserObject();
@@ -152,9 +131,9 @@ class UserBulkChangeStep00 extends BasicStep {
 					if (formItem.getName().equals(UserBulkChangeManager.LANG_IDENTIFYER)) {
 						SingleSelection selectField = (SingleSelection) formItem;
 						attributeChangeMap.put(UserBulkChangeManager.LANG_IDENTIFYER, selectField.getSelectedKey());						
-					} else if (formItem.getName().equals(UserBulkChangeManager.PWD_IDENTIFYER)) {
+					} else if (formItem.getName().equals(UserBulkChangeManager.CRED_IDENTIFYER)) {
 						TextElement propertyField = (TextElement) formItem;
-						attributeChangeMap.put(UserBulkChangeManager.PWD_IDENTIFYER, propertyField.getValue());						
+						attributeChangeMap.put(UserBulkChangeManager.CRED_IDENTIFYER, propertyField.getValue());						
 					}					
 					// second get the values from all configured user properties
 					else {
@@ -178,14 +157,14 @@ class UserBulkChangeStep00 extends BasicStep {
 					}
 				}
 			}
-			addToRunContext("attributeChangeMap", attributeChangeMap);
-			addToRunContext("identitiesToEdit", identitiesToEdit);
+			
+			userBulkChanges.setIdentitiesToEdit(identitiesToEdit);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean validChange = true;
+			boolean validChange = super.validateFormLogic(ureq);
 
 			// loop through and check if any checkbox has been selected
 			for (MultipleSelectionElement checkbox:checkBoxes) {
@@ -196,7 +175,6 @@ class UserBulkChangeStep00 extends BasicStep {
 					if (formItem instanceof TextElement) {
 						TextElement propertyField = (TextElement) formItem;
 						String inputFieldValue = propertyField.getValue();
-
 
 						// check validity of velocity-variables by using default values from
 						// userproperties
@@ -227,20 +205,12 @@ class UserBulkChangeStep00 extends BasicStep {
 							propertyField.setErrorKey("error.password", new String[] { evaluatedInputFieldValue });
 							return false;
 						}
-
-						// already done by form.visitAll -> validate():
-						// //check all other types according to its FormItem type
-						// propertyField.validate(validationResults);
-						//						
-						// //set value back to inputValue in order to process input in later
-						// steps
-						// propertyField.setValue(origInputFieldValue);
 					}
 				}
 			} // for
-
-			addToRunContext("validChange", Boolean.valueOf(validChange));
-			return true;
+			
+			userBulkChanges.setValidChange(validChange);
+			return validChange;
 		}
 
 		@Override
@@ -274,7 +244,7 @@ class UserBulkChangeStep00 extends BasicStep {
 				MultipleSelectionElement passwordCheckEl = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
 				passwordCheckEl.select("changePWD", false);
 				passwordCheckEl.addActionListener(FormEvent.ONCLICK);
-				TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.PWD_IDENTIFYER, "password", 127, null, innerFormLayout);
+				TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.CRED_IDENTIFYER, "password", 127, null, innerFormLayout);
 				passwordTextEl.setDisplaySize(35);
 				passwordTextEl.setLabel(null, null);
 				passwordTextEl.setVisible(false);

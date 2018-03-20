@@ -21,17 +21,19 @@ package org.olat.basesecurity.manager;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class OrganisationServiceImpl implements OrganisationService, InitializingBean {
+	
+	private static final OLog log = Tracing.createLoggerFor(OrganisationServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -82,6 +86,20 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public Organisation getDefaultOrganisation() {
+		List<Organisation> defOrganisations = organisationDao.loadDefaultOrganisation();
+		if(defOrganisations.size() == 1) {
+			return defOrganisations.get(0);
+		}
+		if(defOrganisations.size() > 1) {
+			log.error("You have more than one default organisation");
+			return defOrganisations.get(0);
+		}
+		log.error("You don't have a defualt organisation");
+		return null;
+	}
+
+	@Override
 	public List<Organisation> getOrganisations() {
 		return organisationDao.find();
 	}
@@ -92,7 +110,19 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 	
 	@Override
-	public void addMember(Organisation organisation, Identity member, GroupRoles role) {
+	public void addMember(Identity member, OrganisationRoles role) {
+		Organisation defOrganisation = getDefaultOrganisation();
+		addMember(defOrganisation, member, role);
+	}
+
+	@Override
+	public void removeMember(IdentityRef member, OrganisationRoles role) {
+		Organisation defOrganisation = getDefaultOrganisation();
+		removeMember(defOrganisation, member, role);
+	}
+
+	@Override
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role) {
 		OrganisationImpl org = (OrganisationImpl)organisation;
 		if(!groupDao.hasRole(org.getGroup(), member, role.name())) {
 			groupDao.addMembershipOneWay(org.getGroup(), member, role.name());
@@ -106,13 +136,25 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public void removeMember(Organisation organisation, IdentityRef member, GroupRoles role) {
+	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role) {
 		OrganisationImpl org = (OrganisationImpl)organisation;
 		groupDao.removeMembership(org.getGroup(), member, role.name());
 	}
-	
-	
-	
-	
 
+	@Override
+	public List<Identity> getDefaultsSystemAdministator() {
+		return organisationDao.getIdentities(DEFAULT_ORGANISATION_IDENTIFIER, OrganisationRoles.administrator.name());
+	}
+
+	@Override
+	public boolean hasRole(IdentityRef identity, OrganisationRoles role) {
+		return organisationDao.hasRole(identity, role.name());
+	}
+
+	@Override
+	public List<Identity> getIdentitiesWithRole(OrganisationRoles role) {
+		return organisationDao.getIdentities(role.name());
+	}
+	
+	
 }

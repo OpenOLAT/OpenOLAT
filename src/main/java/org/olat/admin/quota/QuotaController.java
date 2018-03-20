@@ -46,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -63,6 +64,9 @@ public class QuotaController extends BasicController {
 	private Panel main;
 	private TableController tableCtr;
 	private Link addQuotaButton;
+	
+	@Autowired
+	private QuotaManager quotaManager;
 
 	/**
 	 * @param ureq
@@ -71,9 +75,9 @@ public class QuotaController extends BasicController {
 	public QuotaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		QuotaManager qm = QuotaManager.getInstance();
-		if (!qm.hasQuotaEditRights(ureq.getIdentity()))
+		if (!quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles())) {
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
+		}
 
 		main = new Panel("quotamain");
 		myContent = createVelocityContainer("index");
@@ -84,6 +88,7 @@ public class QuotaController extends BasicController {
 		listenTo (tableCtr);
 
 		quotaTableModel = new QuotaTableModel();
+		quotaTableModel.setObjects(quotaManager.listCustomQuotasKB());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.path", 0, null, getLocale()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.quota", 1, null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
@@ -116,7 +121,7 @@ public class QuotaController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == quotaEditCtr) {
 			if (event == Event.CHANGED_EVENT) {
-				quotaTableModel.refresh();
+				quotaTableModel.setObjects(quotaManager.listCustomQuotasKB());
 				tableCtr.setTableDataModel(quotaTableModel);
 			}
 			// else cancel event. in any case set content to list
@@ -136,9 +141,9 @@ public class QuotaController extends BasicController {
 
 				} else if (te.getActionId().equals("qf.del")) {
 					// try to delete quota
-					boolean deleted = QuotaManager.getInstance().deleteCustomQuota(q);
+					boolean deleted = quotaManager.deleteCustomQuota(q);
 					if (deleted) {
-						quotaTableModel.refresh();
+						quotaTableModel.setObjects(quotaManager.listCustomQuotasKB());
 						tableCtr.setTableDataModel(quotaTableModel);
 						showInfo("qf.deleted", q.getPath());
 					} else {

@@ -27,8 +27,6 @@ package org.olat.course.nodes.cp;
 
 import java.io.File;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -287,9 +285,9 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	 * @return
 	 */
 	private boolean isEditable(Identity identity, Roles roles, RepositoryEntry re) {
-		return (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)
+		return roles.isOLATAdmin()
 				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re));
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
 	}
 
 	/**

@@ -21,7 +21,7 @@ package de.bps.olat.user;
 
 import java.util.HashMap;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -34,6 +34,7 @@ import org.olat.home.HomeMainController;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -49,15 +50,19 @@ import com.thoughtworks.xstream.XStream;
 public class ChangeEMailExecuteController extends ChangeEMailController implements SupportsAfterLoginInterceptor {
 	
 	private static final String PRESENTED_EMAIL_CHANGE_REMINDER = "presentedemailchangereminder";
-	
 
 	protected static final String PACKAGE_HOME = ProfileAndHomePageEditController.class.getPackage().getName();
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	public ChangeEMailExecuteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		this.userRequest = ureq;
 		pT = Util.createPackageTranslator(ProfileAndHomePageEditController.class, userRequest.getLocale());
-		pT = UserManager.getInstance().getPropertyHandlerTranslator(pT);
+		pT = userManager.getPropertyHandlerTranslator(pT);
 		emKey = userRequest.getHttpReq().getParameter("key");
 		if (emKey == null) {
 			emKey = userRequest.getIdentity().getUser().getProperty("emchangeKey", null);
@@ -106,7 +111,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 		
-		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(tempKey.getIdentityKey());
+		Identity identity = securityManager.loadIdentityByKey(tempKey.getIdentityKey());
 		if (identity != null) {
 			String oldEmail = identity.getUser().getEmail();
 			identity.getUser().setProperty("email", mails.get("changedEMail"));
@@ -118,13 +123,13 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 			}
 			identity.getUser().setProperty("email", mails.get("changedEMail"));
 			// success info message
-			String currentEmailDisplay = UserManager.getInstance().getUserDisplayEmail(mails.get("currentEMail"), userRequest.getLocale());
-			String changedEmailDisplay = UserManager.getInstance().getUserDisplayEmail(mails.get("changedEMail"), userRequest.getLocale());
+			String currentEmailDisplay = userManager.getUserDisplayEmail(mails.get("currentEMail"), userRequest.getLocale());
+			String changedEmailDisplay = userManager.getUserDisplayEmail(mails.get("changedEMail"), userRequest.getLocale());
 			wControl.setInfo(pT.translate("success.change.email", new String[] { currentEmailDisplay, changedEmailDisplay }));
 			// remove keys
 			identity.getUser().setProperty("emchangeKey", null);
 			userRequest.getUserSession().removeEntryFromNonClearedStore(ChangeEMailController.CHANGE_EMAIL_ENTRY);
-			BaseSecurityManager.getInstance().deleteInvalidAuthenticationsByEmail(oldEmail);
+			securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 		} else {
 			// error message
 			wControl.setWarning(pT.translate("error.change.email.unexpected", new String[] { mails.get("currentEMail"), mails.get("changedEMail") }));

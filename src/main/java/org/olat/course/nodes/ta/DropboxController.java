@@ -28,7 +28,7 @@ package org.olat.course.nodes.ta;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -83,6 +83,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  02.09.2004
@@ -104,6 +105,8 @@ public class DropboxController extends BasicController {
 	private Link ulButton;
 	private CloseableModalController cmc;
 
+	@Autowired
+	private QuotaManager quotaManager;
 	
 	// Constructor for ProjectBrokerDropboxController
 	protected DropboxController(UserRequest ureq, WindowControl wControl) {
@@ -218,15 +221,15 @@ public class DropboxController extends BasicController {
 	 */
 	private int getUploadLimit() {
 		String dropboxPath = getRelativeDropBoxFilePath(getIdentity());
-		Quota dropboxQuota = QuotaManager.getInstance().getCustomQuota(dropboxPath);
+		Quota dropboxQuota = quotaManager.getCustomQuota(dropboxPath);
 		if (dropboxQuota == null) {
-			dropboxQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
+			dropboxQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
 		}
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl( getRelativeDropBoxFilePath(getIdentity()), null);
 		VFSContainer dropboxContainer = new OlatNamedContainerImpl(getIdentity().getName(), rootFolder);
 		FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(dropboxQuota);
 		rootFolder.setLocalSecurityCallback(secCallback);
-		return QuotaManager.getInstance().getUploadLimitKB(dropboxQuota.getQuotaKB(),dropboxQuota.getUlLimitKB(),dropboxContainer);
+		return quotaManager.getUploadLimitKB(dropboxQuota.getQuotaKB(),dropboxQuota.getUlLimitKB(),dropboxContainer);
 	}
 
 	/**
@@ -250,13 +253,10 @@ public class DropboxController extends BasicController {
 					fOut = fDropbox.createChildLeaf(filename);
 				}
 				
-				try {
-					InputStream in = new FileInputStream(fIn);
-					OutputStream out = new BufferedOutputStream(fOut.getOutputStream(false));
+				try(InputStream in = new FileInputStream(fIn);
+					OutputStream out = new BufferedOutputStream(fOut.getOutputStream(false))) {
 					success = FileUtils.copy(in, out);
-					FileUtils.closeSafely(in);
-					FileUtils.closeSafely(out);
-				} catch (FileNotFoundException e) {
+				} catch (IOException e) {
 					logError("", e);
 					return;
 				}
@@ -372,10 +372,7 @@ public class DropboxController extends BasicController {
 		return VelocityHelper.getInstance().evaluateVTL(confirmation, c);
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// DialogBoxController gets disposed by BasicController
 		if (fileChooserController != null) {

@@ -83,6 +83,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  02.09.2004
@@ -107,6 +108,9 @@ public class DropboxScoringViewController extends BasicController {
 	private boolean hasNotification = false;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
+	
+	@Autowired
+	private QuotaManager quotaManager;
 	
 	/**
 	 * Scoring view of the dropbox.
@@ -237,7 +241,7 @@ public class DropboxScoringViewController extends BasicController {
 		
 		SubscriptionContext subscriptionContext = ReturnboxFileUploadNotificationHandler
 				.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, assessedIdentity);
-		return new ReturnboxFullAccessCallback(returnboxRelPath, subscriptionContext);
+		return new ReturnboxFullAccessCallback(returnboxRelPath, subscriptionContext, quotaManager);
 	}
 
 	/**
@@ -448,13 +452,12 @@ class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 	private Quota quota;
 	private final SubscriptionContext subscriptionContext;
 
-	public ReturnboxFullAccessCallback(String relPath, SubscriptionContext subscriptionContext) {
+	public ReturnboxFullAccessCallback(String relPath, SubscriptionContext subscriptionContext, QuotaManager quotaManager) {
 		this.subscriptionContext = subscriptionContext;
-		QuotaManager qm = QuotaManager.getInstance();
-		quota = qm.getCustomQuota(relPath);
+		quota = quotaManager.getCustomQuota(relPath);
 		if (quota == null) { // if no custom quota set, use the default quotas...
-			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
-			quota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
+			quota = quotaManager.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 	}
 	

@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
@@ -631,8 +630,6 @@ public class PublishProcess {
 						break a_a;
 					}
 				}
-				
-				category.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 				cm.addCatalogEntry(parentCategory, category);
 			} else {
 				for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {

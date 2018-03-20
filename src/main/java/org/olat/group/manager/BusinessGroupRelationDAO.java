@@ -27,12 +27,10 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.NamedGroupImpl;
-import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.basesecurity.model.IdentityRefImpl;
@@ -234,14 +232,15 @@ public class BusinessGroupRelationDAO {
 		  .append(" inner join bgroup.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where bgroup.key=:businessGroupKey and membership.role='").append(GroupRoles.coach.name()).append("'")
-		  .append(" and exists (")
-		  .append("   select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi, ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
-		  .append("     where sgmsi.identity=membership.identity and sgmsi.securityGroup=ngroup.securityGroup")
-		  .append("     and ngroup.groupName in ('").append(Constants.GROUP_AUTHORS).append("')")
+		  .append(" and exists (select org.key from organisation as org")
+		  .append("   inner join org.group oGroup")
+		  .append("   inner join oGroup.members orgMembership")
+		  .append("   where orgMembership.identity.key=membership.identity.key and orgMembership.role=:role")
 		  .append(" )");
 	
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("role", OrganisationRoles.author.name())
 				.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
@@ -335,12 +334,11 @@ public class BusinessGroupRelationDAO {
 			groupKeys.add(group.getKey());
 		}
 		
-		List<Long> members = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("businessGroupKeys", groupKeys)
 				.setParameter("roles", roleList)
 				.getResultList();
-		return members;
 	}
 	
 	public List<Long> getMemberKeysOrderByDate(BusinessGroupRef group, String... roles) {
@@ -351,11 +349,10 @@ public class BusinessGroupRelationDAO {
 		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");
 
 		List<String> roleList = GroupRoles.toList(roles);
-		List<Long> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("businessGroupKey", group.getKey())
 				.setParameter("roles", roleList)
 				.getResultList();
-		return members;
 	}
 	
 	public List<Identity> getMembersOrderByDate(BusinessGroupRef group, String... roles) {
@@ -366,11 +363,10 @@ public class BusinessGroupRelationDAO {
 		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");
 
 		List<String> roleList = GroupRoles.toList(roles);
-		List<Identity> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Identity.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Identity.class)
 				.setParameter("businessGroupKey", group.getKey())
 				.setParameter("roles", roleList)
 				.getResultList();
-		return members;
 	}
 	
 	/**
@@ -549,7 +545,7 @@ public class BusinessGroupRelationDAO {
 			query.setMaxResults(maxResults);
 		}
 
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		for(BusinessGroupShort group:groups) {
 			groupKeys.add(group.getKey());
 		}
@@ -578,8 +574,8 @@ public class BusinessGroupRelationDAO {
 			return query.getResultList();
 		}
 
-		List<Long> groupKeyList = new ArrayList<Long>(groupKeys);
-		List<BGRepositoryEntryRelation> relations = new ArrayList<BGRepositoryEntryRelation>(groupKeys.size());
+		List<Long> groupKeyList = new ArrayList<>(groupKeys);
+		List<BGRepositoryEntryRelation> relations = new ArrayList<>(groupKeys.size());
 		
 		int count = 0;
 		int batch = 500;
@@ -597,7 +593,7 @@ public class BusinessGroupRelationDAO {
 		if(!StringHelper.containsNonWhitespace(groupNames)) return Collections.emptyList();
 		
 		String[] groupNameArr = groupNames.split(",");
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		for(String name:groupNameArr) {
 			names.add(name.trim());
 		}
@@ -612,11 +608,10 @@ public class BusinessGroupRelationDAO {
 		  .append("   select relation from repoentrytogroup as relation where relation.group=baseGroup and relation.entry.key=:repoEntryKey")
 		  .append(" )");
 
-		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("repoEntryKey", repoEntry.getKey())
 				.setParameter("names", names)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
-		return keys;
 	}
 }

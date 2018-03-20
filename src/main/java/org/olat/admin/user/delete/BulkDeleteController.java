@@ -26,8 +26,6 @@ import java.util.List;
 
 import org.olat.admin.securitygroup.gui.UserControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -46,11 +44,11 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class BulkDeleteController extends BasicController {
 	
 	private VelocityContainer vc;
-	private BaseSecurity securityManager;
 	
 	private String userlist, reason;
 	private List<Identity> toDelete;
@@ -60,14 +58,16 @@ public class BulkDeleteController extends BasicController {
 	private TableController tblCtrFound, tblCtrNotfound;
 	private Link btnNext;
 	
-	private final MailManager mailService;
+	@Autowired
+	private MailManager mailService;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	public BulkDeleteController(UserRequest ureq, WindowControl wControl, String userlist, String reason) {
 		super(ureq, wControl);
 		
 		this.userlist = userlist;
 		this.reason = reason;
-		mailService = CoreSpringFactory.getImpl(MailManager.class);
 		
 		vc = createVelocityContainer("bulkdelete");
 		processUserList(this.userlist);
@@ -106,10 +106,9 @@ public class BulkDeleteController extends BasicController {
 	 * @param loginsString
 	 */
 	private void processUserList(String loginsString) {
-		securityManager = BaseSecurityManager.getInstance();
-		toDelete = new ArrayList<Identity>();
-		lstLoginsFound = new ArrayList<String>();
-		lstLoginsNotfound = new ArrayList<String>();
+		toDelete = new ArrayList<>();
+		lstLoginsFound = new ArrayList<>();
+		lstLoginsNotfound = new ArrayList<>();
 		String[] logins = loginsString.split("\r?\n");
 		for( String login : logins) {
 			if(login.equals(""))

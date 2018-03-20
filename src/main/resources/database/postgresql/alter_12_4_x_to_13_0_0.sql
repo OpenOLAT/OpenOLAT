@@ -126,6 +126,9 @@ create index idx_cur_type_to_type_idx on o_cur_element_type_to_type (fk_type);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
 create index idx_cur_type_to_sub_type_idx on o_cur_element_type_to_type (fk_allowed_sub_type);
 
+-- drop policy
+alter table o_bs_policy drop constraint FK9A1C5101E2E76DB;
+
 
 
 

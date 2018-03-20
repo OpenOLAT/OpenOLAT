@@ -28,8 +28,6 @@ package org.olat.search.service.indexer.group;
 
 import java.io.IOException;
 
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -112,8 +110,8 @@ public class GroupForumIndexer extends ForumIndexer{
 		boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 		//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads
 		//here it is checked if the identity is owner of the forum tool but it has no way to find out whether is owner of the group that owns the forum tool
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS,  contextEntry.getOLATResourceable());
-		if(isMessageHidden && !isOwner) {
+		//TODO policy owner
+		if(isMessageHidden) {
 			return false;
 		}		
 		return super.checkAccess(contextEntry, businessControl, identity, roles);

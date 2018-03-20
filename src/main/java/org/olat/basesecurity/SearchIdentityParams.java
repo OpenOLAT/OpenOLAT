@@ -31,8 +31,7 @@ public class SearchIdentityParams {
 	private String login;
 	private Map<String, String> userProperties;
 	private boolean userPropertiesAsIntersectionSearch;
-	private SecurityGroup[] groups;
-	private PermissionOnResourceable[] permissionOnResources;
+	private OrganisationRoles[] roles;
 	private String[] authProviders;
 	private Date createdAfter;
 	private Date createdBefore;
@@ -47,13 +46,12 @@ public class SearchIdentityParams {
 	}
 	
 	public SearchIdentityParams(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
-			SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders,
+			OrganisationRoles[] roles, String[] authProviders,
 			Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
 		this.login = login;
 		this.userProperties = userproperties;
 		this.userPropertiesAsIntersectionSearch = userPropertiesAsIntersectionSearch;
-		this.groups = groups;
-		this.permissionOnResources = permissionOnResources;
+		this.roles = roles;
 		this.authProviders = authProviders;
 		this.createdAfter = createdAfter;
 		this.createdBefore = createdBefore;
@@ -86,20 +84,12 @@ public class SearchIdentityParams {
 		this.userPropertiesAsIntersectionSearch = userPropertiesAsIntersectionSearch;
 	}
 	
-	public SecurityGroup[] getGroups() {
-		return groups;
+	public OrganisationRoles[] getRoles() {
+		return roles;
 	}
-	
-	public void setGroups(SecurityGroup[] groups) {
-		this.groups = groups;
-	}
-	
-	public PermissionOnResourceable[] getPermissionOnResources() {
-		return permissionOnResources;
-	}
-	
-	public void setPermissionOnResources(PermissionOnResourceable[] permissionOnResources) {
-		this.permissionOnResources = permissionOnResources;
+
+	public void setRoles(OrganisationRoles[] roles) {
+		this.roles = roles;
 	}
 	
 	public String[] getAuthProviders() {

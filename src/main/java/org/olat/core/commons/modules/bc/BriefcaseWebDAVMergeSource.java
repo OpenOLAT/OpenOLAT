@@ -21,9 +21,11 @@ package org.olat.core.commons.modules.bc;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -39,15 +41,16 @@ import org.olat.user.PersonalFolderManager;
  */
 public class BriefcaseWebDAVMergeSource  extends MergeSource {
 	private boolean init = false;
+	private final Roles roles;
 	private final Identity identity;
 		
-	public BriefcaseWebDAVMergeSource(Identity identity) {
-		super(null, identity.getName());
-		this.identity = identity;
+	public BriefcaseWebDAVMergeSource(Identity identity, Roles roles) {
+		this(identity, roles, identity.getName());
 	}
 	
-	public BriefcaseWebDAVMergeSource(Identity identity, String name) {
+	public BriefcaseWebDAVMergeSource(Identity identity, Roles roles, String name) {
 		super(null, name);
+		this.roles = roles;
 		this.identity = identity;
 	}
 
@@ -79,8 +82,9 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 	public VFSSecurityCallback getLocalSecurityCallback() {
 		if(super.getLocalSecurityCallback() == null) {
 			//set quota for this merge source
-			QuotaManager qm = QuotaManager.getInstance();
-			Quota quota = qm.getCustomQuotaOrDefaultDependingOnRole(identity, PersonalFolderManager.getInstance().getRootPathFor(identity));
+			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
+			String path = PersonalFolderManager.getInstance().getRootPathFor(identity);
+			Quota quota = qm.getCustomQuotaOrDefaultDependingOnRole(identity, roles, path);
 			FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(quota);
 			setLocalSecurityCallback(secCallback);
 		}

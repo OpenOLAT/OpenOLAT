@@ -20,12 +20,13 @@
 package org.olat.upgrade;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.group.right.BGRightManager;
@@ -47,8 +48,6 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BGRightManager bgRightManager;
 	
@@ -145,10 +144,10 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 	}
 	
 	private List<String> findBGRights(SecurityGroup secGroup) {
-		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(secGroup);
+		List<Policy> results = getPoliciesOfSecurityGroup(secGroup);
 		// filter all business group rights permissions. group right permissions
 		// start with bgr.
-		List<String> rights = new ArrayList<String>();
+		List<String> rights = new ArrayList<>();
 		for (Policy rightPolicy:results) {
 			String right = rightPolicy.getPermission();
 			if (right.indexOf("bgr.") == 0) rights.add(right);
@@ -170,8 +169,16 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
-	
-	
-	
-	
+
+	private List<Policy> getPoliciesOfSecurityGroup(SecurityGroup secGroup) {
+		if(secGroup == null ) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi where poi.securityGroup.key=:secGroupKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("secGroupKey", secGroup.getKey())
+				.getResultList();
+	}
 }

@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -167,11 +165,9 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			}
 			boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 			//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads		
-			//TODO: (LD) fix this!!! - the contextEntry is not the right context for this check
+			//TODO: policy owner (LD) fix this!!! - the contextEntry is not the right context for this check
 			if(isMessageHidden) {
-				boolean isOwner = BaseSecurityManager.getInstance()
-						.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS,  contextEntry.getOLATResourceable());
-				return isOwner;
+				return false;
 			}		
 			return true;
 		} else {

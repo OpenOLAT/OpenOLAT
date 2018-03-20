@@ -29,13 +29,10 @@ import java.util.Properties;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.Translator;
@@ -78,8 +75,8 @@ public class UserBulkChangeManager implements InitializingBean {
 	private static VelocityEngine velocityEngine;
 	private static final OLog log = Tracing.createLoggerFor(UserBulkChangeManager.class);
 
-	static final String PWD_IDENTIFYER = "password";
-	static final String LANG_IDENTIFYER = "language";
+	protected static final String CRED_IDENTIFYER = "password";
+	protected static final String LANG_IDENTIFYER = "language";
 	
 	@Autowired
 	private DB dbInstance;
@@ -91,6 +88,8 @@ public class UserBulkChangeManager implements InitializingBean {
 	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -107,8 +106,8 @@ public class UserBulkChangeManager implements InitializingBean {
 	}
 
 
-	public void changeSelectedIdentities(List<Identity> selIdentities, Map<String, String> attributeChangeMap,
-			Map<String, String> roleChangeMap, List<String> notUpdatedIdentities, boolean isAdministrativeUser, List<Long> ownGroups, List<Long> partGroups,
+	public void changeSelectedIdentities(List<Identity> selIdentities, UserBulkChanges userBulkChanges,
+			List<String> notUpdatedIdentities, boolean isAdministrativeUser,
 			Translator trans, Identity addingIdentity) {
 
 		Translator transWithFallback = userManager.getPropertyHandlerTranslator(trans);
@@ -116,14 +115,14 @@ public class UserBulkChangeManager implements InitializingBean {
 
 		notUpdatedIdentities.clear();
 		List<Identity> changedIdentities = new ArrayList<>();
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer,
-				isAdministrativeUser);
-		String[] securityGroups = {
-				Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS,
-				Constants.GROUP_AUTHORS, Constants.GROUP_ADMIN,
-				Constants.GROUP_POOL_MANAGER, Constants.GROUP_INST_ORES_MANAGER
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		OrganisationRoles[] organisationRoles = {
+				OrganisationRoles.usermanager, OrganisationRoles.groupmanager,
+				OrganisationRoles.author, OrganisationRoles.administrator,
+				OrganisationRoles.poolmanager, OrganisationRoles.learnresourcemanager
 			};
-
+		
+		Map<String,String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
 		// loop over users to be edited:
 		for (Identity identity : selIdentities) {
 			//reload identity from cache, to prevent stale object
@@ -133,8 +132,8 @@ public class UserBulkChangeManager implements InitializingBean {
 			String errorDesc = "";
 			boolean updateError = false;
 			// change pwd
-			if (attributeChangeMap.containsKey(PWD_IDENTIFYER)) {
-				String newPwd = attributeChangeMap.get(PWD_IDENTIFYER);
+			if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {
+				String newPwd = attributeChangeMap.get(CRED_IDENTIFYER);
 				if (StringHelper.containsNonWhitespace(newPwd)) {
 					if (!userManager.syntaxCheckOlatPassword(newPwd)) {
 						errorDesc = transWithFallback.translate("error.password");
@@ -193,46 +192,38 @@ public class UserBulkChangeManager implements InitializingBean {
 
 			// set roles for identity
 			// loop over securityGroups defined above
-			for (String securityGroup : securityGroups) {
-				SecurityGroup secGroup = securityManager.findSecurityGroupByName(securityGroup);
-				Boolean isInGroup = securityManager.isIdentityInSecurityGroup(identity, secGroup);
+			Map<OrganisationRoles,String> roleChangeMap = userBulkChanges.getRoleChangeMap();
+			for (OrganisationRoles organisationRole : organisationRoles) {
+				boolean isInGroup = organisationService.hasRole(identity, organisationRole);
 				String thisRoleAction = "";
-				if (roleChangeMap.containsKey(securityGroup)) {
-					thisRoleAction = roleChangeMap.get(securityGroup);
+				if (roleChangeMap.containsKey(organisationRole)) {
+					thisRoleAction = roleChangeMap.get(organisationRole);
 					// user not anymore in security group, remove him
 					if (isInGroup && thisRoleAction.equals("remove")) {
-						securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
-						log.audit("User::" + addingIdentity.getName() + " removed system role::" + securityGroup + " from user::" + identity.getName(), null);
+						organisationService.removeMember(identity, organisationRole);
+						log.audit("User::" + addingIdentity.getName() + " removed system role::" + organisationRole + " from user::" + identity.getName(), null);
 					}
 					// user not yet in security group, add him
 					if (!isInGroup && thisRoleAction.equals("add")) {
-						securityManager.addIdentityToSecurityGroup(identity, secGroup);
-						log.audit("User::" + addingIdentity.getName() + " added system role::" + securityGroup + " to user::" + identity.getName(), null);
+						organisationService.addMember(identity, organisationRole);
+						log.audit("User::" + addingIdentity.getName() + " added system role::" + organisationRole + " to user::" + identity.getName(), null);
 					}
 				}
 			}
 			
 
 			// set status
-			if (roleChangeMap.containsKey("Status")) {
-				Integer status = Integer.parseInt(roleChangeMap.get("Status"));
+			if (userBulkChanges.getStatus() != null) {
+				Integer status = userBulkChanges.getStatus().intValue();
 
 				int oldStatus = identity.getStatus();
-				String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent"
-						: (oldStatus == Identity.STATUS_ACTIV ? "active"
-								: (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"
-										: (oldStatus == Identity.STATUS_DELETED ? "deleted"
-												: "unknown"))));
-				String newStatusText = (status == Identity.STATUS_PERMANENT ? "permanent"
-						: (status == Identity.STATUS_ACTIV ? "active"
-								: (status == Identity.STATUS_LOGIN_DENIED ? "login_denied"
-										: (status == Identity.STATUS_DELETED ? "deleted"
-												: "unknown"))));
-				if(oldStatus != status && status == Identity.STATUS_LOGIN_DENIED && Boolean.parseBoolean(roleChangeMap.get("sendLoginDeniedEmail"))) {
+				String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent" : (oldStatus == Identity.STATUS_ACTIV ? "active" : (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (oldStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
+				String newStatusText = (status == Identity.STATUS_PERMANENT ? "permanent" : (status == Identity.STATUS_ACTIV ? "active" : (status == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (status == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
+				if(oldStatus != status && status == Identity.STATUS_LOGIN_DENIED && userBulkChanges.isSendLoginDeniedEmail()) {
 					sendLoginDeniedEmail(identity);
 				}
 				identity = securityManager.saveIdentityStatus(identity, status);
-				log.audit("User::" + addingIdentity.getName() + " changed accout status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
+				log.audit("User::" + addingIdentity.getName() + " changed account status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
 			}
 
 			// persist changes:
@@ -251,9 +242,11 @@ public class UserBulkChangeManager implements InitializingBean {
 			dbInstance.commit();
 		} // for identities
 
-		// FXOLAT-101: add identity to new groups:
-		if (ownGroups.size() != 0 || partGroups.size() != 0) {
-			List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		// Add identity to new groups:
+		List<Long> ownGroups = userBulkChanges.getOwnerGroups();
+		List<Long> partGroups = userBulkChanges.getParticipantGroups();
+		if (!ownGroups.isEmpty() || !partGroups.isEmpty()) {
+			List<BusinessGroupMembershipChange> changes = new ArrayList<>();
 			for(Identity selIdentity:selIdentities) {
 				if(ownGroups != null && !ownGroups.isEmpty()) {
 					for(Long tutorGroupKey:ownGroups) {
@@ -325,15 +318,6 @@ public class UserBulkChangeManager implements InitializingBean {
 		// evaluate inputFieldValue to get a concatenated string
 		try {
 			velocityEngine.evaluate(vcContext, evaluatedUserValue, "vcUservalue", valToEval);
-		} catch (ParseErrorException e) {
-			log.error("parsing of values in BulkChange Field not possible!");
-			return "ERROR";
-		} catch (MethodInvocationException e) {
-			log.error("evaluating of values in BulkChange Field not possible!");
-			return "ERROR";
-		} catch (ResourceNotFoundException e) {
-			log.error("evaluating of values in BulkChange Field not possible!");
-			return "ERROR";
 		} catch (Exception e) {
 			log.error("evaluating of values in BulkChange Field not possible!");
 			return "ERROR";

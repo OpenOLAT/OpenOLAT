@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.user.ui.organisation;
 
 import java.util.ArrayList;
@@ -8,9 +27,9 @@ import java.util.Set;
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -146,12 +165,12 @@ public class OrganisationUserManagementController extends FormBasicController {
 				Identity choosenIdentity = singleEvent.getChosenIdentity();
 				if (choosenIdentity != null) {
 					List<Identity> toAdd = Collections.singletonList(choosenIdentity);
-					doAddMember(toAdd, (GroupRoles)userSearchCtrl.getUserObject());
+					doAddMember(toAdd, (OrganisationRoles)userSearchCtrl.getUserObject());
 				}
 			} else if (event instanceof MultiIdentityChosenEvent) {
 				MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent)event;
 				if(!multiEvent.getChosenIdentities().isEmpty()) {
-					doAddMember(multiEvent.getChosenIdentities(), (GroupRoles)userSearchCtrl.getUserObject());
+					doAddMember(multiEvent.getChosenIdentities(), (OrganisationRoles)userSearchCtrl.getUserObject());
 				}
 			}
 			cmc.deactivate();
@@ -179,7 +198,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addUserManagerButton == source) {
-			doSearchMember(ureq, GroupRoles.usermanager);
+			doSearchMember(ureq, OrganisationRoles.usermanager);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
 		}
@@ -208,7 +227,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		loadModel(true);
 	}
 	
-	private void doSearchMember(UserRequest ureq, GroupRoles role) {
+	private void doSearchMember(UserRequest ureq, OrganisationRoles role) {
 		if(userSearchCtrl != null) return;
 
 		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
@@ -221,7 +240,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doAddMember(List<Identity> identitiesToAdd, GroupRoles role) {
+	private void doAddMember(List<Identity> identitiesToAdd, OrganisationRoles role) {
 		for(Identity identityToAdd:identitiesToAdd) {
 			organisationService.addMember(organisation, identityToAdd, role);
 		}

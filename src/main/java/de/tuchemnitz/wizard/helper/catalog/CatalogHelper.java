@@ -33,7 +33,6 @@ package de.tuchemnitz.wizard.helper.catalog;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -75,7 +74,6 @@ public class CatalogHelper {
 		newLinkNotPersistedYet.setDescription(re.getDescription());
 		newLinkNotPersistedYet.setRepositoryEntry(re);
 		newLinkNotPersistedYet.setType(CatalogEntry.TYPE_LEAF);
-		newLinkNotPersistedYet.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 		cm.addCatalogEntry(catEntry, newLinkNotPersistedYet);
 	}
 

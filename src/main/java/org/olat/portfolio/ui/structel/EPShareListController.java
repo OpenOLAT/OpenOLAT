@@ -28,11 +28,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -92,7 +91,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EPShareListController extends FormBasicController {
 	
-	private final List<EPSharePolicyWrapper> policyWrappers = new ArrayList<EPSharePolicyWrapper>();
+	private final List<EPSharePolicyWrapper> policyWrappers = new ArrayList<>();
 	
 	private PortfolioStructureMap map;
 	
@@ -103,7 +102,7 @@ public class EPShareListController extends FormBasicController {
 	@Autowired
 	private InvitationDAO invitationDao;
 	@Autowired
-	private BaseSecurity securityManager;
+	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -161,7 +160,7 @@ public class EPShareListController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		// process all form-input fields and update data-model
 		secureListBox();
@@ -179,9 +178,8 @@ public class EPShareListController extends FormBasicController {
 				String mail = mailEl.getValue();
 				if (StringHelper.containsNonWhitespace(mail)) {
 					if (MailHelper.isValidEmailAddress(mail)) {
-						SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 						List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
-						if(isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
+						if(isAtLeastOneUser(shareWithIdentities)) {
 							mailEl.setErrorKey("error.invitation.mail.used", new String[] { mail });
 							allOk &= false;
 						}
@@ -195,13 +193,13 @@ public class EPShareListController extends FormBasicController {
 				}
 			} else if (type.equals(Type.group)) {
 				List<BusinessGroup> groups = policyWrapper.getGroups();
-				if (groups.size() == 0) {
+				if (groups.isEmpty()) {
 					genericError = translate("map.share.error.group");
 					allOk &= false;
 				}
 			} else if (type.equals(Type.user)) {
 				List<Identity> idents = policyWrapper.getIdentities();
-				if (idents.size() == 0) {
+				if (idents.isEmpty()) {
 					genericError = translate("map.share.error.user");
 					allOk &= false;
 				}
@@ -225,7 +223,7 @@ public class EPShareListController extends FormBasicController {
 			}
 		}
 
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -233,7 +231,7 @@ public class EPShareListController extends FormBasicController {
 		// process all form-input fields and update data-model (the policyWrappers)
 		secureListBox();
 		
-		List<EPMapPolicy> mapPolicies = new ArrayList<EPMapPolicy>();
+		List<EPMapPolicy> mapPolicies = new ArrayList<>();
 		for(EPSharePolicyWrapper wrapper:policyWrappers) {
 			if(wrapper.getType() == null) continue;
 			
@@ -416,7 +414,7 @@ public class EPShareListController extends FormBasicController {
 		} else {
 			BusinessControlFactory bCF = BusinessControlFactory.getInstance();
 			ContextEntry mapCE = bCF.createContextEntry(map.getOlatResource());
-			ArrayList<ContextEntry> cEList = new ArrayList<ContextEntry>();
+			ArrayList<ContextEntry> cEList = new ArrayList<>();
 			cEList.add(mapCE);
 			busLink = bCF.getAsURIString(cEList, true); 
 		}		
@@ -599,7 +597,7 @@ public class EPShareListController extends FormBasicController {
 		container.add("map.share.with." + cmpName, userListBox);
 		
 		List<Identity> identities = policyWrapper.getIdentities();
-		List<EPShareUserWrapper> groupWrappers = new ArrayList<EPShareUserWrapper>();
+		List<EPShareUserWrapper> groupWrappers = new ArrayList<>();
 		for(Identity identity: identities) {
 			FormLink rmLink = uifactory.addFormLink("rm-" + identity.getKey(), "", null, userListBox, Link.NONTRANSLATED + Link.LINK);
 			rmLink.setIconLeftCSS("o_icon o_icon_remove");
@@ -623,7 +621,7 @@ public class EPShareListController extends FormBasicController {
 		container.add("map.share.with." + cmpName, groupListBox);
 		
 		List<BusinessGroup> groups = policyWrapper.getGroups();
-		List<EPShareGroupWrapper> groupWrappers = new ArrayList<EPShareGroupWrapper>();
+		List<EPShareGroupWrapper> groupWrappers = new ArrayList<>();
 		for(BusinessGroup group: groups) {
 			FormLink rmGroupLink = uifactory.addFormLink("rm-" + group.getKey(), "", null, groupListBox, Link.NONTRANSLATED + Link.LINK);
 			rmGroupLink.setCustomEnabledLinkCSS("o_icon o_icon_remove");
@@ -660,9 +658,8 @@ public class EPShareListController extends FormBasicController {
 		mailEl.setNotEmptyCheck("map.share.empty.warn");
 		
 		if(StringHelper.containsNonWhitespace(invitation.getMail()) && MailHelper.isValidEmailAddress(invitation.getMail())) {
-			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 			List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
-			if(isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
+			if(isAtLeastOneUser(shareWithIdentities)) {
 				mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{invitation.getMail()});
 			}
 		}
@@ -676,9 +673,9 @@ public class EPShareListController extends FormBasicController {
 		linkEl.setLabel("map.share.with.link", null);
 	}
 	
-	private boolean isAtLeastOneInSecurityGroup(Collection<Identity> identites, SecurityGroup group) {
+	private boolean isAtLeastOneUser(Collection<Identity> identites) {
 		for (Identity identity: identites) {
-			if (securityManager.isIdentityInSecurityGroup(identity, group)) {
+			if (organisationService.hasRole(identity, OrganisationRoles.user)) {
 				return true;
 			}
 		}

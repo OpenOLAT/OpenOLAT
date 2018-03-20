@@ -53,9 +53,9 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.restapi.CalWebService;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -306,7 +306,7 @@ public class CourseWebService {
 		LockResult lockResult = null;
 		try {
 			lockResult = typeToDownload.acquireLock(ores, identity);
-			if (lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
 				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
 				if (mr != null) {
 					rs.incrementDownloadCounter(re);
@@ -670,12 +670,12 @@ public class CourseWebService {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 
 		Identity author = securityManager.loadIdentityByKey(identityKey, false);
 		if(repositoryService.hasRole(author, repositoryEntry, GroupRoles.owner.name()) &&
-				securityManager.isIdentityInSecurityGroup(author, authorGroup)) {
+				organisationService.hasRole(author, OrganisationRoles.author)) {
 			UserVO vo = UserVOFactory.get(author);
 			return Response.ok(vo).build();
 		}
@@ -699,20 +699,19 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity author = securityManager.loadIdentityByKey(identityKey, false);
 		if(author == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		Identity identity = getIdentity(httpRequest);
-
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		boolean hasBeenAuthor = securityManager.isIdentityInSecurityGroup(author, authorGroup);
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		boolean hasBeenAuthor = organisationService.hasRole(author, OrganisationRoles.author);
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
-			securityManager.addIdentityToSecurityGroup(author, authorGroup);
-			log.audit("User::" + identity.getName() + " added system role::" + Constants.GROUP_AUTHORS + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
+			organisationService.addMember(author, OrganisationRoles.author);
+			log.audit("User::" + identity.getName() + " added system role::" + OrganisationRoles.author + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
 		}
 		
 		//add the author as owner of the course
@@ -733,17 +732,17 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		
 		List<Identity> authorList = loadIdentities(authors);
 		Identity identity = getIdentity(httpRequest);
 
-		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 		for(Identity author:authorList) {
-			boolean hasBeenAuthor = securityManager.isIdentityInSecurityGroup(author, authorGroup);
+			boolean hasBeenAuthor = organisationService.hasRole(author, OrganisationRoles.author);
 			if(!hasBeenAuthor) {
 				//not an author already, add this identity to the security group "authors"
-				securityManager.addIdentityToSecurityGroup(author, authorGroup);
-				log.audit("User::" + identity.getName() + " added system role::" + Constants.GROUP_AUTHORS + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
+				organisationService.addMember(author, OrganisationRoles.author);
+				log.audit("User::" + identity.getName() + " added system role::" + OrganisationRoles.author + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
 			}
 		}
 		

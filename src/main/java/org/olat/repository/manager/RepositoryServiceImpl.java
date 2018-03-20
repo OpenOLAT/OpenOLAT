@@ -422,8 +422,6 @@ public class RepositoryServiceImpl implements RepositoryService {
 		assessmentModeDao.delete(entry);
 		// delete reminders
 		reminderDao.delete(entry);
-		//delete all policies
-		securityManager.deletePolicies(resource);
 		//delete reservations
 		reservationDao.deleteReservations(resource);
 		//delete references

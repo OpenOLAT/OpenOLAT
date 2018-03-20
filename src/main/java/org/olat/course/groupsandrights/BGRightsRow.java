@@ -64,7 +64,7 @@ public class BGRightsRow {
 	}
 
 	public List<String> getSelectedPermissions() {
-		List<String> permissions = new ArrayList<String>(rightsEl.size());
+		List<String> permissions = new ArrayList<>(rightsEl.size());
 		for(BGRight rightEl:rightsEl) {
 			if(rightEl.getSelection().isAtLeastSelected(1)) {
 				permissions.add(rightEl.getPermission());

@@ -26,6 +26,7 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -139,7 +140,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		}
 		// set default ulLimit if none is defined...
 		if (uploadLimitKB == Quota.UNLIMITED) {
-			uploadLimitKB = QuotaManager.getInstance().getDefaultQuotaDependingOnRole(ureq.getIdentity()).getUlLimitKB().longValue();
+			uploadLimitKB = CoreSpringFactory.getImpl(QuotaManager.class).getDefaultQuotaDependingOnRole(ureq.getIdentity(), ureq.getUserSession().getRoles()).getUlLimitKB().longValue();
 		}
 		
 		// Add file upload form

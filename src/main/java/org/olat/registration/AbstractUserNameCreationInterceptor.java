@@ -24,14 +24,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for AbstractUserNameCreationInterceptor
  * 
  * <P>
  * Initial Date:  5 mars 2010 <br>
@@ -64,12 +62,13 @@ public abstract class AbstractUserNameCreationInterceptor implements UserNameCre
 	}
 	
 	protected String makeUniqueProposal(String proposedUsername) {
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(proposedUsername, null, true, null, null, null, null, null, null, null, null);
+		List<Identity> identities = CoreSpringFactory.getImpl(BaseSecurity.class)
+				.getIdentitiesByPowerSearch(proposedUsername, null, true, null, null, null, null, null, null, null);
 		if(identities.isEmpty()) {
 			return proposedUsername;
 		}
 		
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new HashSet<>();
 		for(Identity identity:identities) {
 			names.add(identity.getName());
 		}

@@ -186,7 +186,7 @@ public class UserTest extends OlatTestCase {
 	public void testUmFindUserByInstitutionalUserIdentifier() throws Exception {
 		Map<String, String> searchValue = new HashMap<>();
 		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-		List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		assertTrue("must have elements", result != null);
 		assertEquals("at least three elements", 3, result.size());
 
@@ -275,7 +275,7 @@ public class UserTest extends OlatTestCase {
 		Map<String, String> searchValue = new HashMap<>();
 		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		// find identity 1
-		List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// setting null should remove this property but first reload user
 		User user = userManager.loadUserByKey(identity.getUser().getKey());
@@ -287,7 +287,7 @@ public class UserTest extends OlatTestCase {
 		searchValue = new HashMap<>();
 		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		// find identity 1
-		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		assertEquals(0, result.size());
 
 		//2. begin the tests: update the first name
@@ -295,7 +295,7 @@ public class UserTest extends OlatTestCase {
 		searchValue = new HashMap<>();
 		searchValue.put(UserConstants.FIRSTNAME, login);
 		// find identity 1
-		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		
 		//update user first name
@@ -308,13 +308,13 @@ public class UserTest extends OlatTestCase {
 		searchValue = new HashMap<>();
 		searchValue.put(UserConstants.FIRSTNAME, login);
 		// find identity 1
-		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		assertEquals(0, result.size());
 		// try to find it via updated property
 		Map<String,String> searchRotweinValue = new HashMap<>();
 		searchRotweinValue.put(UserConstants.FIRSTNAME, "rotwein");
 		// find identity 1
-		List<Identity> rotweinList = securityManager.getIdentitiesByPowerSearch(null, searchRotweinValue, true, null, null, null, null, null, null, null, null);
+		List<Identity> rotweinList = securityManager.getIdentitiesByPowerSearch(null, searchRotweinValue, true, null, null, null, null, null, null, null);
 		assertFalse(rotweinList.isEmpty());
 		for(Identity id:result) {
 			Assert.assertEquals("rotwein", id.getUser().getProperty(UserConstants.FIRSTNAME, null));
@@ -336,9 +336,9 @@ public class UserTest extends OlatTestCase {
 		//test user deletion
 	
 		// user still exists
-		List<Identity> result = securityManager.getVisibleIdentitiesByPowerSearch(login, null, true, null, null, null, null, null);
+		List<Identity> result = securityManager.getVisibleIdentitiesByPowerSearch(login, null, true, null, null, null, null);
 		assertEquals(1, result.size());
-		result = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// search with power search (to compare result later on with same search)
 		Map<String, String> searchValue = new HashMap<>();
@@ -349,22 +349,22 @@ public class UserTest extends OlatTestCase {
 		searchValue.put(UserConstants.INSTITUTIONALNAME, institutionName);
 		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, institutionName);
 		// find identity
-		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// find identity via institutional id
-		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// delete user now
 		UserDeletionManager.getInstance().deleteIdentity(identity);
 		dbInstance.commitAndCloseSession();
 		
 		// check if deleted successfully
-		result = securityManager.getVisibleIdentitiesByPowerSearch(login, null, true, null, null, null, null, null);
+		result = securityManager.getVisibleIdentitiesByPowerSearch(login, null, true, null, null, null, null);
 		assertEquals(0, result.size());
 		// not visible, but still there when using power search
-		result = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, null);
+		result = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null);
 		
-		List<Identity> deletedIdentities = securityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_DELETED);
+		List<Identity> deletedIdentities = securityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_DELETED);
 		boolean deleted = false;
 		for(Identity deletedIdentity:deletedIdentities) {
 			if(identity.getKey().equals(deletedIdentity.getKey())) {
@@ -373,10 +373,10 @@ public class UserTest extends OlatTestCase {
 		}
 		Assert.assertTrue(deleted);
 
-		List<Identity> activeIdentities = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
+		List<Identity> activeIdentities = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, Identity.STATUS_ACTIV);
 		Assert.assertEquals(0, activeIdentities.size());
 		
-		List<Identity> allActiveIdentities = securityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
+		List<Identity> allActiveIdentities = securityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_ACTIV);
 		boolean active = false;
 		for(Identity activeIdentity:allActiveIdentities) {
 			if(identity.getKey().equals(activeIdentity.getKey())) {
@@ -387,10 +387,10 @@ public class UserTest extends OlatTestCase {
 
 		// test if user attributes have been deleted successfully
 		// find identity 1 not anymore
-		List<Identity> searchResult_10 = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
+		List<Identity> searchResult_10 = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null);
 		Assert.assertEquals(0, searchResult_10.size());
 		// find identity via first, last and instuser id (non-deletable fields)
-		List<Identity> searchResult_11 = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null, null);
+		List<Identity> searchResult_11 = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null);
 		Assert.assertEquals(1, searchResult_11.size());
 		
 		// check using other methods

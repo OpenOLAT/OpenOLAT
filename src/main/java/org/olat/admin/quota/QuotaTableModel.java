@@ -25,12 +25,12 @@
 
 package org.olat.admin.quota;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.QuotaManager;
 
 /**
  * Initial Date: Mar 30, 2004
@@ -40,19 +40,9 @@ public class QuotaTableModel extends BaseTableDataModelWithoutFilter<Quota> impl
 
 	private List<Quota> quotaList;
 
-	/**
-	 * 
-	 */
-	public QuotaTableModel() {
-		refresh();
-	}
-
-	/**
-	 * 
-	 */
-	public void refresh() {
-		QuotaManager qm = QuotaManager.getInstance();
-		quotaList = qm.listCustomQuotasKB();
+	@Override
+	public void setObjects(List<Quota> objects) {
+		quotaList = new ArrayList<>(objects);
 	}
 
 	/**
@@ -63,23 +53,17 @@ public class QuotaTableModel extends BaseTableDataModelWithoutFilter<Quota> impl
 		return quotaList.get(row);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+	@Override
 	public int getColumnCount() {
 		return 4;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getRowCount()
-	 */
+	@Override
 	public int getRowCount() {
 		return quotaList.size();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		Quota q = quotaList.get(row);
 		switch (col) {
@@ -95,5 +79,4 @@ public class QuotaTableModel extends BaseTableDataModelWithoutFilter<Quota> impl
 				return "error";
 		}
 	}
-
 }

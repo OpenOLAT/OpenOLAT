@@ -74,6 +74,8 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private final BusinessGroup businessGroup;
 	
 	@Autowired
+	private QuotaManager quotaManager;
+	@Autowired
 	private CalendarModule calendarModule;
 
 	/**
@@ -104,9 +106,9 @@ public class CollaborationToolsSettingsController extends BasicController {
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
 			vc_collabtools.contextPut("isOlatAdmin", Boolean.TRUE);
 			if(managed) {
-				quotaCtr = QuotaManager.getInstance().getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
+				quotaCtr = quotaManager.getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			} else {
-				quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
+				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			}
 			listenTo(quotaCtr);
 		} else {

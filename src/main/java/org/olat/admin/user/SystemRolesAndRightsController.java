@@ -25,19 +25,27 @@
 
 package org.olat.admin.user;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,14 +67,25 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Usually this controller is called by the UserAdminController that takes care of all this. 
  * There should be no need to use it anywhere else.
  */
-public class SystemRolesAndRightsController extends BasicController {
+public class SystemRolesAndRightsController extends FormBasicController {
 	
-	private final VelocityContainer main;
-	private SystemRolesAndRightsForm sysRightsForm;
-	private Identity identity;
+	private SpacerElement rolesSep;
+	private SingleSelection statusEl;
+	private SingleSelection anonymousEl;
+	private MultipleSelectionElement rolesEl;
+	private MultipleSelectionElement sendLoginDeniedEmailEl;
+
+	private 	List<String> roleKeys;
+	private 	List<String> roleValues;
+	private 	List<String> statusKeys;
+	private 	List<String> statusValues;
+	
+	private Identity editedIdentity;
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private UserBulkChangeManager userBulkChangeManager;
 	
@@ -78,44 +97,182 @@ public class SystemRolesAndRightsController extends BasicController {
 	 */
 	public SystemRolesAndRightsController(WindowControl wControl, UserRequest ureq, Identity identity){
 		super(ureq, wControl);
-		main = createVelocityContainer("usysRoles");
-		this.identity = identity;
-		putInitialPanel(main);
-		createForm(ureq, identity);
-		main.put("sysRightsForm", sysRightsForm.getInitialComponent());		
+		this.editedIdentity = identity;
+		
+		initStatusKeysAndValues();
+		initRolesKeysAndValues(ureq);
+		initForm(ureq);
+		update();
 	}
 	
-	/**
-	 * Initialize a new SystemRolesAndRightsForm for the given identity using the
-	 * security manager
-	 * @param ureq
-	 * @param myIdentity
-	 * @return SystemRolesAndRightsForm
-	 */
-	private void createForm(UserRequest ureq, Identity myIdentity) {
-		removeAsListenerAndDispose(sysRightsForm);
-		sysRightsForm = new SystemRolesAndRightsForm(ureq, getWindowControl(), myIdentity);
-		listenTo (sysRightsForm);
-	}
+	private void initStatusKeysAndValues() {
+		statusKeys = new ArrayList<>(4);
+		statusKeys.add(Integer.toString(Identity.STATUS_ACTIV));
+		statusKeys.add(Integer.toString(Identity.STATUS_PERMANENT));
+		statusKeys.add(Integer.toString(Identity.STATUS_LOGIN_DENIED));
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
-
-	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == sysRightsForm) {
-			if (event == Event.DONE_EVENT) {
-				saveFormData(ureq, identity, sysRightsForm);
-			}
-			createForm(ureq, identity);
-			main.put("sysRightsForm", sysRightsForm.getInitialComponent());
+		statusValues = new ArrayList<>(4);
+		statusValues.add(translate("rightsForm.status.activ"));
+		statusValues.add(translate("rightsForm.status.permanent"));
+		statusValues.add(translate("rightsForm.status.login_denied"));
+		
+		if (editedIdentity.getStatus() == Identity.STATUS_DELETED) {
+			statusKeys.add(Integer.toString(Identity.STATUS_DELETED));
+			statusValues.add(translate("rightsForm.status.deleted"));
 		}
 	}
+	
+	private void initRolesKeysAndValues(UserRequest ureq) {
+		boolean iAmOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		
+		roleKeys = new ArrayList<>();
+		roleValues = new ArrayList<>();
+
+		if (iAmOlatAdmin) {
+			roleKeys.add(OrganisationRoles.usermanager.name());
+			roleValues.add(translate("rightsForm.isUsermanager"));
+		}
+		
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS.booleanValue()) {
+			roleKeys.add(OrganisationRoles.groupmanager.name());
+			roleValues.add(translate("rightsForm.isGroupmanager"));
+		}
+
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS.booleanValue()) {
+			roleKeys.add(OrganisationRoles.poolmanager.name());
+			roleValues.add(translate("rightsForm.isPoolmanager"));
+		}
+		
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_CURRICULUMMANAGERS.booleanValue()) {
+			roleKeys.add(OrganisationRoles.curriculummanager.name());
+			roleValues.add(translate("rightsForm.isCurriculummanager"));
+		}
+
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS.booleanValue()) {
+			roleKeys.add(OrganisationRoles.author.name());
+			roleValues.add(translate("rightsForm.isAuthor"));
+		}
+
+		if (iAmOlatAdmin) {
+			roleKeys.add(OrganisationRoles.administrator.name());
+			roleValues.add(translate("rightsForm.isAdmin"));
+		}
+
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER.booleanValue()) {
+			roleKeys.add(OrganisationRoles.learnresourcemanager.name());
+			String iname = editedIdentity.getUser().getProperty("institutionalName", null);
+			roleValues.add(
+				iname != null
+				? translate("rightsForm.isInstitutionalResourceManager.institution",iname)
+				: translate("rightsForm.isInstitutionalResourceManager")
+			);
+		}
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		boolean iAmOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		
+		anonymousEl = uifactory.addRadiosVertical(
+				"anonymous", "rightsForm.isAnonymous", formLayout, 
+				new String[]{"true", "false"},
+				new String[]{translate("rightsForm.isAnonymous.true"), translate("rightsForm.isAnonymous.false")}
+		);
+		SpacerElement sysSep = uifactory.addSpacerElement("syssep", formLayout, false);
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS.booleanValue()) {
+			anonymousEl.addActionListener(FormEvent.ONCLICK);
+		} else {
+			anonymousEl.setVisible(false);
+			sysSep.setVisible(false);
+		}
+		
+		rolesEl = uifactory.addCheckboxesVertical(
+				"roles", "rightsForm.roles", formLayout,
+				roleKeys.toArray(new String[roleKeys.size()]),
+				roleValues.toArray(new String[roleValues.size()]), 1);
+		rolesSep = uifactory.addSpacerElement("rolesSep", formLayout, false);
+		
+		statusEl = uifactory.addRadiosVertical(
+				"status", "rightsForm.status", formLayout,
+				statusKeys.toArray(new String[statusKeys.size()]),
+				statusValues.toArray(new String[statusKeys.size()])
+		);
+		statusEl.addActionListener(FormEvent.ONCHANGE);
+		sendLoginDeniedEmailEl = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", formLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
+		sendLoginDeniedEmailEl.setLabel(null, null);
+		
+		rolesSep.setVisible(iAmOlatAdmin);
+		statusEl.setVisible(iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER.booleanValue());
+		sendLoginDeniedEmailEl.setVisible(false);
+		
+		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
+		formLayout.add(buttonGroupLayout);
+		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+	}
+	
+	private void update() {
+		Roles editedRoles = securityManager.getRoles(editedIdentity);
+
+		if(editedRoles.isGuestOnly()) {
+			anonymousEl.select("true", true);
+		} else {
+			anonymousEl.select("false", true);
+		}
+		
+		setRole(OrganisationRoles.usermanager, editedRoles.isUserManager());
+		setRole(OrganisationRoles.groupmanager, editedRoles.isGroupManager());
+		setRole(OrganisationRoles.author, editedRoles.isAuthor());
+		setRole(OrganisationRoles.administrator, editedRoles.isOLATAdmin());
+		if(editedRoles.isOLATAdmin()) {
+			statusEl.setEnabled(false);
+		}
+		setRole(OrganisationRoles.learnresourcemanager, editedRoles.isInstitutionalResourceManager());
+		setRole(OrganisationRoles.poolmanager, editedRoles.isPoolAdmin());
+		setRole(OrganisationRoles.curriculummanager, editedRoles.isCurriculumManager());
+		setStatus(editedIdentity.getStatus());
+		rolesEl.setVisible(!isAnonymous());
+		rolesSep.setVisible(!isAnonymous());
+	}
+	
+	private void setStatus(Integer status) {
+		String statusStr = status.toString();
+		for(String statusKey:statusKeys) {
+			if(statusStr.equals(statusKey)) {
+				statusEl.select(statusKey, true);
+			}
+		}
+		statusEl.setEnabled(!Identity.STATUS_DELETED.equals(status));
+	}
+	
+	public boolean isAnonymous() {
+		return anonymousEl.getSelectedKey().equals("true");
+	}
+	
+	private boolean getRole(OrganisationRoles k) {
+		return roleKeys.contains(k.name()) && rolesEl.getSelectedKeys().contains(k.name());
+	}
+	
+	private void setRole(OrganisationRoles k, boolean enabled) {
+		if(roleKeys.contains(k.name()) && enabled) {
+			rolesEl.select(k.name(), enabled);
+		}
+	}
+	
+	private Integer getStatus() {
+		return new Integer(statusEl.getSelectedKey());
+	}
+	
+	public boolean getSendLoginDeniedEmail() {
+		return sendLoginDeniedEmailEl.isSelected(0);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		saveFormData(ureq);
+		update();
+	}
+
 	/**
 	 * Persist form data in database. User needs to logout / login to activate changes. A bit tricky here
 	 * is that only form elements should be gettet that the user is allowed to manipulate. See also the 
@@ -123,131 +280,78 @@ public class SystemRolesAndRightsController extends BasicController {
 	 * @param myIdentity
 	 * @param form
 	 */
-	private void saveFormData(UserRequest ureq, Identity myIdentity, SystemRolesAndRightsForm form) {
+	private void saveFormData(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
 		boolean iAmOlatAdmin = usess.getRoles().isOLATAdmin();
 		boolean iAmUserManager = usess.getRoles().isUserManager();
+		List<String> currentRoles = securityManager.getRolesAsString(editedIdentity);
 		
 		// 1) general user type - anonymous or user
 		// anonymous users
-		boolean isAnonymous = false;
+		boolean isAnonymous = currentRoles.contains(OrganisationRoles.guest.name());
 		Boolean canGuestsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS;	
 		if (canGuestsByConfig.booleanValue() || iAmOlatAdmin) {
-			SecurityGroup anonymousGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
-			boolean hasBeenAnonymous = securityManager.isIdentityInSecurityGroup(myIdentity, anonymousGroup);
-			isAnonymous = form.isAnonymous();
-			updateSecurityGroup(myIdentity, securityManager, anonymousGroup, hasBeenAnonymous, isAnonymous, Constants.GROUP_ANONYMOUS);
-			// system users - oposite of anonymous users
-			SecurityGroup usersGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-			boolean hasBeenUser = securityManager.isIdentityInSecurityGroup(myIdentity, usersGroup);
-			boolean isUser = !form.isAnonymous();
-			updateSecurityGroup(myIdentity, securityManager, usersGroup, hasBeenUser, isUser,Constants.GROUP_OLATUSERS);
-		}
-		// 2) system roles
-		// group manager
-		Boolean canGroupmanagerByConfig =BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;	
-		if (canGroupmanagerByConfig.booleanValue() || iAmOlatAdmin) {
-			SecurityGroup groupManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
-			boolean hasBeenGroupManager = securityManager.isIdentityInSecurityGroup(myIdentity, groupManagerGroup);
-			boolean isGroupManager = form.isGroupmanager();
-			updateSecurityGroup(myIdentity, securityManager, groupManagerGroup, hasBeenGroupManager, isGroupManager, Constants.GROUP_GROUPMANAGERS);
-		}
-		// pool manager
-		Boolean canPoolmanagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;	
-		if (canPoolmanagerByConfig.booleanValue() || iAmOlatAdmin) {
-			SecurityGroup poolManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
-			boolean hasBeenPoolManager = securityManager.isIdentityInSecurityGroup(myIdentity, poolManagerGroup);
-			boolean isPoolManager = form.isPoolmanager();
-			updateSecurityGroup(myIdentity, securityManager, poolManagerGroup, hasBeenPoolManager, isPoolManager, Constants.GROUP_AUTHORS);
-		}
-		// curriculum manager
-		Boolean canCurriculummanagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;	
-		if (canCurriculummanagerByConfig.booleanValue() || iAmOlatAdmin) {
-			SecurityGroup curriculumManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER);
-			boolean hasBeenCurriculumManager = securityManager.isIdentityInSecurityGroup(myIdentity, curriculumManagerGroup);
-			boolean isCurriculumManager = form.isCurriculumManager();
-			updateSecurityGroup(myIdentity, securityManager, curriculumManagerGroup, hasBeenCurriculumManager, isCurriculumManager, Constants.GROUP_CURRICULUM_MANAGER);
+			isAnonymous = anonymousEl.getSelectedKey().equals("true");
 		}
 		
+		// 2) system roles
+		// group manager
+		boolean groupManager = currentRoles.contains(OrganisationRoles.groupmanager.name());
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS.booleanValue()) {
+			groupManager = getRole(OrganisationRoles.groupmanager);
+		}
+		// pool manager
+		boolean poolmanager = currentRoles.contains(OrganisationRoles.poolmanager.name());
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS.booleanValue()) {
+			poolmanager = getRole(OrganisationRoles.poolmanager);
+		}
+		// curriculum manager
+		boolean curriculummanager = currentRoles.contains(OrganisationRoles.curriculummanager.name());
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS.booleanValue()) {
+			curriculummanager = getRole(OrganisationRoles.curriculummanager);
+		}
 		// author
-		Boolean canAuthorByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;	
-		if (canAuthorByConfig.booleanValue() || iAmOlatAdmin) {
-			SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-			boolean hasBeenAuthor = securityManager.isIdentityInSecurityGroup(myIdentity, authorGroup);
-			boolean isAuthor = form.isAuthor() || form.isInstitutionalResourceManager();
-			updateSecurityGroup(myIdentity, securityManager, authorGroup, hasBeenAuthor, isAuthor, Constants.GROUP_AUTHORS);
+		boolean author = currentRoles.contains(OrganisationRoles.author.name());
+		if (iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS.booleanValue()) {
+			author = getRole(OrganisationRoles.author);
 		}
 		// user manager, only allowed by admin
+		boolean usermanager = currentRoles.contains(OrganisationRoles.usermanager.name());
 		if (iAmOlatAdmin) {
-			SecurityGroup userManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
-			boolean hasBeenUserManager = securityManager.isIdentityInSecurityGroup(myIdentity, userManagerGroup);
-			boolean isUserManager = form.isUsermanager();
-			updateSecurityGroup(myIdentity, securityManager, userManagerGroup, hasBeenUserManager, isUserManager, Constants.GROUP_USERMANAGERS);
+			usermanager = getRole(OrganisationRoles.usermanager);
 		}
 	 	// institutional resource manager, only allowed by admin
+		boolean learnresourcemanager = currentRoles.contains(OrganisationRoles.learnresourcemanager.name());
 		if (iAmUserManager || iAmOlatAdmin) {
-			SecurityGroup institutionalResourceManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
-			boolean hasBeenInstitutionalResourceManager = securityManager.isIdentityInSecurityGroup(myIdentity, institutionalResourceManagerGroup);
-			boolean isInstitutionalResourceManager = form.isInstitutionalResourceManager();
-			updateSecurityGroup(myIdentity, securityManager, institutionalResourceManagerGroup, hasBeenInstitutionalResourceManager, isInstitutionalResourceManager, Constants.GROUP_INST_ORES_MANAGER);
+			learnresourcemanager = getRole(OrganisationRoles.learnresourcemanager);
 		}
 		// system administrator, only allowed by admin
+		boolean admin = currentRoles.contains(OrganisationRoles.administrator.name());
 		if (iAmOlatAdmin) {
-			SecurityGroup adminGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
-			boolean hasBeenAdmin = securityManager.isIdentityInSecurityGroup(myIdentity, adminGroup);
-			boolean isAdmin = form.isAdmin();
-			updateSecurityGroup(myIdentity, securityManager, adminGroup, hasBeenAdmin, isAdmin, Constants.GROUP_ADMIN);		
+			admin = getRole(OrganisationRoles.administrator);
 		}
-		Boolean canManageStatus =BaseSecurityModule.USERMANAGER_CAN_MANAGE_STATUS;	
-		if ((iAmOlatAdmin || canManageStatus.booleanValue()) &&  !myIdentity.getStatus().equals(form.getStatus()) ) {			
-			int oldStatus = myIdentity.getStatus();
-			String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent"
-					: (oldStatus == Identity.STATUS_ACTIV ? "active"
-							: (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"
-									: (oldStatus == Identity.STATUS_DELETED ? "deleted"
-											: "unknown"))));
-			int newStatus = form.getStatus();
-			String newStatusText = (newStatus == Identity.STATUS_PERMANENT ? "permanent"
-					: (newStatus == Identity.STATUS_ACTIV ? "active"
-							: (newStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"
-									: (newStatus == Identity.STATUS_DELETED ? "deleted"
-											: "unknown"))));
-			
-			if(oldStatus != newStatus && newStatus == Identity.STATUS_LOGIN_DENIED && form.getSendLoginDeniedEmail()) {
-				userBulkChangeManager.sendLoginDeniedEmail(myIdentity);
+		
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Roles updatedRoles = new Roles(admin, usermanager, groupManager, author, isAnonymous,
+				learnresourcemanager, poolmanager, curriculummanager, false);
+		securityManager.updateRoles(getIdentity(), editedIdentity, defOrganisation, updatedRoles);
+		
+		if ((iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_STATUS.booleanValue()) &&  !editedIdentity.getStatus().equals(getStatus()) ) {			
+			int oldStatus = editedIdentity.getStatus();
+			String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent" : (oldStatus == Identity.STATUS_ACTIV ? "active" : (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (oldStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
+			int newStatus = getStatus();
+			String newStatusText = (newStatus == Identity.STATUS_PERMANENT ? "permanent" : (newStatus == Identity.STATUS_ACTIV ? "active" : (newStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"	 : (newStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
+			if(oldStatus != newStatus && newStatus == Identity.STATUS_LOGIN_DENIED && getSendLoginDeniedEmail()) {
+				userBulkChangeManager.sendLoginDeniedEmail(editedIdentity);
 			}
 			
-			identity = securityManager.saveIdentityStatus(myIdentity, newStatus);
-			logAudit("User::" + getIdentity().getName() + " changed accout status for user::" + myIdentity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
+			editedIdentity = securityManager.saveIdentityStatus(editedIdentity, newStatus);
+			logAudit("User::" + getIdentity().getName() + " changed account status for user::" + editedIdentity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
 		}
 	}
 
-	/**
-	 * Update the security group in the database
-	 * @param myIdentity
-	 * @param secMgr
-	 * @param securityGroup
-	 * @param hasBeenInGroup
-	 * @param isNowInGroup
-	 */
-	private void updateSecurityGroup(Identity myIdentity, BaseSecurity secMgr, SecurityGroup securityGroup, boolean hasBeenInGroup, boolean isNowInGroup, String role) {
-		if (!hasBeenInGroup && isNowInGroup) {
-			// user not yet in security group, add him
-			secMgr.addIdentityToSecurityGroup(myIdentity, securityGroup);
-			logAudit("User::" + getIdentity().getName() + " added system role::" + role + " to user::" + myIdentity.getName(), null);
-		} else if (hasBeenInGroup && !isNowInGroup) {
-			// user not anymore in security group, remove him
-			secMgr.removeIdentityFromSecurityGroup(myIdentity, securityGroup);
-			logAudit("User::" + getIdentity().getName() + " removed system role::" + role + " from user::" + myIdentity.getName(), null);
-		}
-	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to do
 	}
-
 }

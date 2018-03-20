@@ -55,7 +55,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -257,7 +256,7 @@ public class CatalogWebService {
 		entryVo.setName(name);
 		entryVo.setDescription(description);
 		if(type != null) {
-			entryVo.setType(type.intValue());
+			entryVo.setType(type);
 		}
 		entryVo.setRepositoryEntryKey(repoEntryKey);
 		return addCatalogEntry(path, entryVo, httpRequest, uriInfo);
@@ -326,7 +325,6 @@ public class CatalogWebService {
 			ce.setType(guessType(entryVo));
 			ce.setName(entryVo.getName());
 			ce.setDescription(entryVo.getDescription());
-			ce.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 			if(re != null) {
 				ce.setRepositoryEntry(re);
 			}
@@ -674,11 +672,6 @@ public class CatalogWebService {
 		}
 		
 		try {
-			SecurityGroup sg = ce.getOwnerGroup();
-			if(sg == null) {
-				ce.setOwnerGroup(securityManager.createAndPersistSecurityGroup());
-				DBFactory.getInstance().intermediateCommit();
-			}
 			securityManager.addIdentityToSecurityGroup(identity, ce.getOwnerGroup());
 		} catch(Exception e) {
 			throw new WebApplicationException(e);

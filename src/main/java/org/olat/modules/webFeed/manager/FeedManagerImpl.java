@@ -115,6 +115,8 @@ public class FeedManagerImpl extends FeedManager {
 	@Autowired
 	private ItemDAO itemDAO;
 	@Autowired
+	private QuotaManager quotaManager;
+	@Autowired
 	private FeedFileStorge feedFileStorage;
 	@Autowired
 	private ExternalFeedFetcher externalFeedFetcher;
@@ -887,8 +889,7 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable feed, Identity identity) {
-		LockResult lockResult = coordinator.getLocker().acquireLock(feed, identity, null);
-		return lockResult;
+		return coordinator.getLocker().acquireLock(feed, identity, null);
 	}
 
 	@Override
@@ -898,21 +899,18 @@ public class FeedManagerImpl extends FeedManager {
 			key = Encoder.md5hash(key);
 		}
 		OLATResourceable itemResource = OresHelper.createOLATResourceableType(key);
-		LockResult lockResult = coordinator.getLocker().acquireLock(itemResource, identity, key);
-		return lockResult;
+		return coordinator.getLocker().acquireLock(itemResource, identity, key);
 	}
 
 	@Override
 	public Quota getQuota(OLATResourceable feed) {
 		OlatRootFolderImpl container = feedFileStorage.getResourceContainer(feed);
 
-		Quota quota = QuotaManager.getInstance().getCustomQuota(container.getRelPath());
+		Quota quota = quotaManager.getCustomQuota(container.getRelPath());
 		if (quota == null) {
-			Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS);
-			quota = QuotaManager.getInstance().createQuota(container.getRelPath(), defQuota.getQuotaKB(),
-					defQuota.getUlLimitKB());
+			Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS);
+			quota = quotaManager.createQuota(container.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
-
 		return quota;
 	}
 

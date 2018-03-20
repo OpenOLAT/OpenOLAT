@@ -45,14 +45,13 @@ public class MultipartReader {
 	private String filename;
 	private String contentType;
 	private File file;
-	private Map<String, String> fields = new HashMap<String, String>();
+	private Map<String, String> fields = new HashMap<>();
 
 	public MultipartReader(HttpServletRequest request) {
 		servlet31(request);
 	}
+	
 	private final void servlet31(HttpServletRequest request) {
-		
-		
 		try {
 			for(Part part:request.getParts()) {
 				if(part.getContentType() != null) {
@@ -95,8 +94,7 @@ public class MultipartReader {
 	}
 
 	public String getValue(String key) {
-		String value = fields.get(key);
-		return value;
+		return fields.get(key);
 	}
 	
 	public String getValue(String key, String defaultValue) {

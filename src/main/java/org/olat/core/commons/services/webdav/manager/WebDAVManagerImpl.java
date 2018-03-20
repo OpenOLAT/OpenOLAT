@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
@@ -79,6 +79,8 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 
 	private CacheWrapper<CacheKey,UserSession> timedSessionCache;
 
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private UserSessionManager sessionManager;
 	@Autowired
@@ -284,7 +286,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			usess.setIdentity(identity);
 			UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 			// set the roles (admin, author, guest)
-			Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
+			Roles roles = securityManager.getRoles(identity);
 			usess.setRoles(roles);
 			// set session info
 			SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), request.getSession());

@@ -2701,10 +2701,6 @@ create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
 create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
 
-alter table o_bs_policy add constraint FK9A1C5101E2E76DB foreign key (group_id) references o_bs_secgroup;
-create index idx_policy_grp_idx on o_bs_policy (group_id);
-create index idx_policy_grp_rsrc_idx on o_bs_policy (oresource_id, group_id);
-
 alter table o_bs_membership add constraint FK7B6288B45259603C foreign key (identity_id) references o_bs_identity;
 create index idx_membership_ident_idx on o_bs_membership (identity_id);
 alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgroup_id) references o_bs_secgroup;

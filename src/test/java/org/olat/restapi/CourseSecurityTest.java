@@ -44,8 +44,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -55,6 +55,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -73,6 +74,13 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	private ICourse course;
 	private RestConnection conn;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
 	/**
 	 * SetUp is called before each test.
 	 */
@@ -82,7 +90,7 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
-			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+			admin = securityManager.findIdentityByName("administrator");
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id-c-s-0");
 			Assert.assertNotNull(id1);
 			auth1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id-c-s-1");
@@ -91,19 +99,19 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 			Assert.assertNotNull(auth2);
 			
 			course = CoursesWebService.createEmptyCourse(admin, "course-security-2", "Test course for the security test", null);
-			DBFactory.getInstance().intermediateCommit();
+			dbInstance.intermediateCommit();
 
-			RepositoryManager rm = RepositoryManager.getInstance();
-			RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
+			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course, false);
 			IdentitiesAddEvent identitiesAddEvent = new IdentitiesAddEvent(Collections.singletonList(auth2));
-			rm.addOwners(admin, identitiesAddEvent, re, null);
+			repositoryManager.addOwners(admin, identitiesAddEvent, re, null);
 			
-			DBFactory.getInstance().closeSession();
+			dbInstance.closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
 		}
 	}
-  @After
+	
+	@After
 	public void tearDown() throws Exception {
 		try {
 			if(conn != null) {
@@ -111,8 +119,8 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 			}
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
-      e.printStackTrace();
-      throw e;
+			e.printStackTrace();
+			throw e;
 		}
 	}
 	

@@ -48,8 +48,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
@@ -60,6 +60,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -78,14 +79,19 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 
 	private RestConnection conn;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
 		conn = new RestConnection();
 		
-		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		admin = securityManager.findIdentityByName("administrator");
 		course1 = CoursesWebService.createEmptyCourse(admin, "course-rest-contacts", "Course to test the contacts elements", null);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		
 		rootNodeId = course1.getEditorTreeModel().getRootNode().getIdent();
 	}

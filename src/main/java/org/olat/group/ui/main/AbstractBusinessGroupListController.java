@@ -162,6 +162,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	@Autowired
 	protected ACService acService;
 	@Autowired
+	protected QuotaManager quotaManager;
+	@Autowired
 	protected BGAreaManager areaManager;
 	@Autowired
 	protected BGRightManager rightManager;
@@ -778,10 +780,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 								Quota quota = configuration.getQuota();
 								if(quota != null) {
 									String path = tools.getFolderRelPath();
-									Quota fQuota = QuotaManager.getInstance()
-										.createQuota(path, quota.getQuotaKB(), quota.getUlLimitKB());
-									QuotaManager.getInstance()
-										.setCustomQuotaKB(fQuota);
+									Quota fQuota = quotaManager.createQuota(path, quota.getQuotaKB(), quota.getUlLimitKB());
+									quotaManager.setCustomQuotaKB(fQuota);
 								}
 								
 							} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {

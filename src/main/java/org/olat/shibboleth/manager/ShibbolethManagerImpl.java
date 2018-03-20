@@ -20,9 +20,8 @@
 package org.olat.shibboleth.manager;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -43,18 +42,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class ShibbolethManagerImpl implements ShibbolethManager {
 
+	@Autowired
 	private BaseSecurity securityManager;
-
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
-
-	public ShibbolethManagerImpl() {
-		securityManager = BaseSecurityManager.getInstance();
-	}
+	@Autowired
+	private OrganisationService organisationService;
 
 	@Override
 	public Identity createUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes) {
@@ -76,25 +73,17 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 	}
 
 	private void addToUsersGroup(Identity identity) {
-		securityManager.addIdentityToSecurityGroup(identity, getUsersSecurityGroup());
+		organisationService.addMember(identity, OrganisationRoles.user);
 	}
 
 	private void addToAuthorsGroup(Identity identity, ShibbolethAttributes shibbolethAttributes) {
 		if (shibbolethAttributes.isAuthor() && isNotInAuthorsGroup(identity)) {
-			securityManager.addIdentityToSecurityGroup(identity, getAuthorsSecurityGroup());
+			organisationService.addMember(identity, OrganisationRoles.author);
 		}
 	}
 
 	private boolean isNotInAuthorsGroup(Identity identity) {
-		return !securityManager.isIdentityInSecurityGroup(identity, getAuthorsSecurityGroup());
-	}
-
-	private SecurityGroup getUsersSecurityGroup() {
-		return securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-	}
-
-	private SecurityGroup getAuthorsSecurityGroup() {
-		return securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
+		return !organisationService.hasRole(identity, OrganisationRoles.author);
 	}
 
 	private void createAndBookAdvanceOrders(Identity identity, ShibbolethAttributes shibbolethAttributes) {

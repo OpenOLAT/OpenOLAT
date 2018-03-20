@@ -25,11 +25,14 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
-import org.olat.basesecurity.manager.OrganisationDAO;
-import org.olat.basesecurity.manager.OrganisationTypeDAO;
 import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,10 +50,12 @@ public class OrganisationDAOTest extends OlatTestCase {
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private OrganisationTypeDAO organisationTypeDao;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void createOrganisation() {
-		Organisation organisation = organisationDao.createAndPersistOrganisation("TOA Heavy Industries", null, null, null, null);
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-4", null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organisation);
 		Assert.assertNotNull(organisation.getKey());
@@ -60,9 +65,9 @@ public class OrganisationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createOrganisation_allAttributes() {
-		OrganisationType type = organisationTypeDao.createAndPersist("Bio-Type", "BT");
+		OrganisationType type = organisationTypeDao.createAndPersist("Org-Type", "OT");
 		Organisation organisation = organisationDao
-				.createAndPersistOrganisation("TOA Heavy Industries", "TOA-1", null, null, type);
+				.createAndPersistOrganisation("Org-5", "ORG-5", null, null, type);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organisation);
 		
@@ -72,15 +77,15 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedOrganisation.getCreationDate());
 		Assert.assertNotNull(reloadedOrganisation.getLastModified());
 		Assert.assertNotNull(reloadedOrganisation.getGroup());
-		Assert.assertEquals("TOA Heavy Industries", reloadedOrganisation.getDisplayName());
-		Assert.assertEquals("TOA-1", reloadedOrganisation.getIdentifier());
+		Assert.assertEquals("Org-5", reloadedOrganisation.getDisplayName());
+		Assert.assertEquals("ORG-5", reloadedOrganisation.getIdentifier());
 		Assert.assertEquals(type, reloadedOrganisation.getType());
 	}
 	
 	@Test
 	public void loadByIdentifier() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation organisation = organisationDao.createAndPersistOrganisation("TOA Heavy Industries", identifier, null, null, null);
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-2", identifier, null, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organisation);
 		
@@ -89,5 +94,67 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, organisations.size());
 		Assert.assertEquals(organisation, organisations.get(0));
 	}
-
+	
+	@Test
+	public void findAllOrganisations() {
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-1", identifier, null, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(organisation);
+		
+		List<Organisation> allOrganisations = organisationDao.find();
+		Assert.assertNotNull(allOrganisations);
+		Assert.assertFalse(allOrganisations.isEmpty());
+		Assert.assertTrue(allOrganisations.contains(organisation));
+	}
+	
+	@Test
+	public void getMembers() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-1");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT EE", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		List<OrganisationMember> members = organisationDao.getMembers(organisation);
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		OrganisationMember organisationMember = members.get(0);
+		Assert.assertEquals(member, organisationMember.getIdentity());
+		Assert.assertEquals(OrganisationRoles.user.name(), organisationMember.getRole());
+	}
+	
+	@Test
+	public void getIdentities() {
+		Identity member1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-2");
+		Identity member2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-3");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org 6", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, member1, OrganisationRoles.groupmanager);
+		organisationService.addMember(organisation, member2, OrganisationRoles.usermanager);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> userManagers = organisationDao.getIdentities(identifier, OrganisationRoles.usermanager.name());
+		Assert.assertNotNull(userManagers);
+		Assert.assertEquals(1, userManagers.size());
+		Assert.assertEquals(member2, userManagers.get(0));
+		Assert.assertFalse(userManagers.contains(member1));
+	}
+	
+	@Test
+	public void hasRole() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-4");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E2E", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isPoolManager = organisationDao.hasRole(member, OrganisationRoles.poolmanager.name());
+		Assert.assertTrue(isPoolManager);
+		boolean isUserManager = organisationDao.hasRole(member, OrganisationRoles.usermanager.name());
+		Assert.assertFalse(isUserManager);
+	}
 }

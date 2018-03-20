@@ -26,7 +26,6 @@
 package org.olat.admin.user;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,11 +36,11 @@ import java.util.Set;
 
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.admin.user.bulkChange.UserBulkChangeStep00;
+import org.olat.admin.user.bulkChange.UserBulkChanges;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.PermissionOnResourceable;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -79,7 +78,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -190,8 +188,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param searchCreatedAfter
 	 * @param searchCreatedBefore
 	 */
-	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, SecurityGroup[] searchGroups,
-			PermissionOnResourceable[] searchPermissionOnResources, String[] searchAuthProviders, Date searchCreatedAfter,
+	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, OrganisationRoles[] roles,
+			String[] searchAuthProviders, Date searchCreatedAfter,
 			Date searchCreatedBefore, Integer status, boolean showEmailButton) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -208,7 +206,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.contextPut("showBackButton", Boolean.FALSE);
 		userListVC.contextPut("showTitle", Boolean.TRUE);
 
-		identitiesList = securityManager.getIdentitiesByPowerSearch(null, null, true, searchGroups, searchPermissionOnResources, searchAuthProviders,
+		identitiesList = securityManager.getIdentitiesByPowerSearch(null, null, true, roles, searchAuthProviders,
 				searchCreatedAfter, searchCreatedBefore, null, null, status);
 
 		initUserListCtr(ureq, identitiesList, status);
@@ -432,7 +430,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		if (searchform.getStatus().equals(Identity.STATUS_DELETED)) {
 			login = "*" + login;
 		}
-		Integer status = null;
+		login = (login.equals("") ? null : login);
 
 		// get user fields from form
 		// build user fields search map
@@ -454,52 +452,24 @@ public class UsermanagerUserSearchController extends BasicController implements 
 				userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
 			}
 		}
-		if (userPropertiesSearch.isEmpty()) userPropertiesSearch = null;
-
-		// get group memberships from form
-		List<SecurityGroup> groupsList = new ArrayList<>();
-		if (searchform.getRole("admin")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN));
-		}
-		if (searchform.getRole("author")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS));
-		}
-		if (searchform.getRole("groupmanager")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS));
-		}
-		if (searchform.getRole("usermanager")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS));
-		}
-		if (searchform.getRole("oresmanager")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER));
-		}
-		if (searchform.getRole("poolmanager")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER));
-		}
-		if (searchform.getRole("curriculummanager")) {
-			groupsList.add(securityManager.findSecurityGroupByName(Constants.GROUP_CURRICULUM_MANAGER));
+		if (userPropertiesSearch.isEmpty()) {
+			userPropertiesSearch = null;
 		}
 		
-		status = searchform.getStatus();
-		
-		SecurityGroup[] groups = groupsList.toArray(new SecurityGroup[groupsList.size()]);
-
-		// no permissions in this form so far
-		PermissionOnResourceable[] permissionOnResources = null;
-
-		
+		Integer status = searchform.getStatus();
 		String[] authProviders = searchform.getAuthProviders();
-		
-		
+		OrganisationRoles[] roles = searchform.getRoles().toArray(new OrganisationRoles[0]);
 		// get date constraints from form
 		Date createdBefore = searchform.getBeforeDate();
 		Date createdAfter = searchform.getAfterDate();
 		Date userLoginBefore = searchform.getUserLoginBefore();
 		Date userLoginAfter = searchform.getUserLoginAfter();
-
+		
+		SearchIdentityParams params = new SearchIdentityParams(login, userPropertiesSearch, true,
+				roles, authProviders, createdAfter, createdBefore,
+				userLoginAfter, userLoginBefore, status);
 		// now perform power search
-		return securityManager.getIdentitiesByPowerSearch((login.equals("") ? null : login), userPropertiesSearch, true, groups,
-				permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status);
+		return securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 	}
 
 	/**
@@ -514,7 +484,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 				identitiesList = findIdentitiesFromSearchForm();
 				initUserListCtr(ureq, identitiesList, null);
 				userListVC.put("userlist", tableCtr.getInitialComponent());
-				userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
+				userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
 				panel.setContent(userListVC);
 
 				//fxdiff BAKS-7 Resume function
@@ -564,32 +534,30 @@ public class UsermanagerUserSearchController extends BasicController implements 
 					}
 					selectedIdentities = tdm.getIdentities(tmse.getSelection());
 					// valid selection: load in wizard
-					Step start = new UserBulkChangeStep00(ureq, selectedIdentities);
-					
+					final UserBulkChanges userBulkChanges = new UserBulkChanges();
+					Step start = new UserBulkChangeStep00(ureq, selectedIdentities, userBulkChanges);
 					// callback executed in case wizard is finished.
-					StepRunnerCallback finish = new StepRunnerCallback() {
-						public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
-							// all information to do now is within the runContext saved
-							boolean hasChanges = false;
-							try {
-								if (runContext.containsKey("validChange") && ((Boolean) runContext.get("validChange")).booleanValue()) {
-									HashMap<String, String> attributeChangeMap = (HashMap<String, String>) runContext.get("attributeChangeMap");
-									HashMap<String, String> roleChangeMap = (HashMap<String, String>) runContext.get("roleChangeMap");
-									List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
-									List<Long> partGroups = (List<Long>) runContext.get("partGroups");
-									if (attributeChangeMap.size() != 0 || roleChangeMap.size() != 0 || ownGroups.size() != 0 || partGroups.size() != 0){
-										Identity addingIdentity = ureq1.getIdentity();
-										ubcMan.changeSelectedIdentities(selectedIdentities, attributeChangeMap, roleChangeMap, notUpdatedIdentities,
-											isAdministrativeUser, ownGroups, partGroups, getTranslator(), addingIdentity);
-										hasChanges = true;
-									}
+					StepRunnerCallback finish = (ureq1, wControl1, runContext) -> {
+						// all information to do now is within the runContext saved
+						boolean hasChanges = false;
+						try {
+							if (userBulkChanges.isValidChange()){
+								Map<String, String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
+								Map<OrganisationRoles, String> roleChangeMap = userBulkChanges.getRoleChangeMap();
+								List<Long> ownGroups = userBulkChanges.getOwnerGroups();
+								List<Long> partGroups = userBulkChanges.getParticipantGroups();
+								if (!attributeChangeMap.isEmpty() || !roleChangeMap.isEmpty() || !ownGroups.isEmpty() || !partGroups.isEmpty()){
+									Identity addingIdentity = ureq1.getIdentity();
+									ubcMan.changeSelectedIdentities(selectedIdentities, userBulkChanges, notUpdatedIdentities,
+										isAdministrativeUser, getTranslator(), addingIdentity);
+									hasChanges = true;
 								}
-							} catch (Exception any) {
-								// return new ErrorStep
 							}
-							// signal correct completion and tell if changes were made or not.
-							return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
+						} catch (Exception e) {
+							logError("", e);
 						}
+						// signal correct completion and tell if changes were made or not.
+						return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
 					};
 
 					removeAsListenerAndDispose(userBulkChangeStepsController);
@@ -709,18 +677,24 @@ public class UsermanagerUserSearchController extends BasicController implements 
 class UsermanagerUserSearchForm extends FormBasicController {
 	private static final String formIdentifyer = UsermanagerUserSearchForm.class.getCanonicalName();
 	private TextElement login;
-	private SelectionElement roles;
+	private MultipleSelectionElement roles;
 	private SingleSelection status;
 	private SelectionElement auth;
-	private DateChooser beforeDate, afterDate, userLoginBefore, userLoginAfter;
+	private DateChooser beforeDate;
+	private DateChooser afterDate;
+	private DateChooser userLoginBefore;
+	private DateChooser userLoginAfter;
 	private FormLink searchButton;
 	
 	
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
-	private String[] statusKeys, statusValues;
-	private String[] roleKeys, roleValues;
-	private String[] authKeys, authValues;
+	private String[] statusKeys;
+	private String[] statusValues;
+	private String[] roleKeys;
+	private String[] roleValues;
+	private String[] authKeys;
+	private String[] authValues;
 	
 	private Map <String,FormItem>items;
 	private final boolean isAdministrativeUser;
@@ -746,7 +720,13 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		items = new HashMap<>(); 
 		
 		roleKeys = new String[] {
-				"admin", "author", "groupmanager", "usermanager", "oresmanager", "poolmanager", "curriculummanager"
+				OrganisationRoles.administrator.name(),
+				OrganisationRoles.author.name(),
+				OrganisationRoles.groupmanager.name(),
+				OrganisationRoles.usermanager.name(),
+				OrganisationRoles.learnresourcemanager.name(),
+				OrganisationRoles.poolmanager.name(),
+				OrganisationRoles.curriculummanager.name()
 		};
 		
 		roleValues = new String[]{
@@ -846,8 +826,14 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		}
 	}
 	
-	protected boolean getRole(String key) {
-		return roles.isSelected(Arrays.asList(roleKeys).indexOf(key));
+	protected List<OrganisationRoles> getRoles() {
+		List<OrganisationRoles> selectedRoles = new ArrayList<>();
+		for(String selectedKey:roles.getSelectedKeys()) {
+			if(StringHelper.containsNonWhitespace(selectedKey)) {
+				selectedRoles.add(OrganisationRoles.valueOf(selectedKey));
+			}
+		}
+		return selectedRoles;
 	}
 	
 	protected Integer getStatus () {

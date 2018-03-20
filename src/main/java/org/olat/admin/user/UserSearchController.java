@@ -25,19 +25,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
@@ -59,6 +58,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Jul 29, 2003
@@ -114,7 +114,10 @@ public class UserSearchController extends BasicController {
 	private boolean isAdministrativeUser;
 	private Link backLink;
 	
-	private final BaseSecurityModule securityModule;
+	@Autowired
+	protected BaseSecurity securityManager;
+	@Autowired
+	protected BaseSecurityModule securityModule;
 
 	public static final String ACTION_KEY_CHOOSE = "action.choose";
 	public static final String ACTION_KEY_CHOOSE_FINISH = "action.choose.finish";
@@ -164,7 +167,6 @@ public class UserSearchController extends BasicController {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends UserSearchController and re-use translations
 		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(Util.createPackageTranslator(UserSearchController.class, ureq.getLocale()) );	
 		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
@@ -215,6 +217,7 @@ public class UserSearchController extends BasicController {
 		this.userObject = userObject;
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {		
 			myContent.contextPut("noList","false");			
@@ -223,10 +226,7 @@ public class UserSearchController extends BasicController {
 		} 
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -250,7 +250,7 @@ public class UserSearchController extends BasicController {
 				EntriesChosenEvent ece = (EntriesChosenEvent)event;
 				List<String> res = ece.getEntries();
 				// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
-				String mySel = res.isEmpty() ? null : (String) res.get(0);
+				String mySel = res.isEmpty() ? null : res.get(0);
 				if (( mySel == null) || mySel.trim().equals("")) {
 					getWindowControl().setWarning(translate("error.search.form.notempty"));
 					return;
@@ -259,7 +259,7 @@ public class UserSearchController extends BasicController {
 				try {
 					key = Long.valueOf(mySel);				
 					if (key > 0) {
-						Identity chosenIdent = BaseSecurityManager.getInstance().loadIdentityByKey(key);
+						Identity chosenIdent = securityManager.loadIdentityByKey(key);
 						// No need to check for null, exception is thrown when identity does not exist which really 
 						// should not happen at all. 
 						// Tell that an identity has been chosen
@@ -348,8 +348,8 @@ public class UserSearchController extends BasicController {
 	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
 		int maxResults = securityModule.getUserSearchMaxResultsValue() > 0 ? securityModule.getUserSearchMaxResultsValue() + 1 : -1;
 		login = (login.equals("") ? null : login);
-		return BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(login ,
+		return securityManager.getVisibleIdentitiesByPowerSearch(login ,
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-			null, null, null, null, null, 0, maxResults);
+			null, null, null, null, 0, maxResults);
 	}
 }

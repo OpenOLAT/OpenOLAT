@@ -54,7 +54,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.EventVO;
@@ -87,6 +87,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private CalendarManager calendarManager;
 	
@@ -184,7 +186,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 	@Test
 	public void putCalendarEvents() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		Identity admin = securityManager.findIdentityByName("administrator");
 
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		CourseConfigVO config = new CourseConfigVO();

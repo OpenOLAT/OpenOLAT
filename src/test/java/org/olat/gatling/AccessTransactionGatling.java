@@ -75,7 +75,7 @@ public class AccessTransactionGatling extends OlatTestCase {
 				.getResultList();
 		
 		List<Identity> loadIdentities = securityManager
-				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, 0, 40000);
+				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, 0, 40000);
 		
 		for(RepositoryEntry course:courses) {
 			try {

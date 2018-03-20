@@ -127,7 +127,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @param wControl
 	 */
 	public FolderRunController(UserRequest ureq, WindowControl wControl) {
-		this(new BriefcaseWebDAVMergeSource(ureq.getIdentity(), UserManager.getInstance().getUserDisplayName(ureq.getIdentity())),
+		this(new BriefcaseWebDAVMergeSource(ureq.getIdentity(), ureq.getUserSession().getRoles(), UserManager.getInstance().getUserDisplayName(ureq.getIdentity())),
 				true, true, true, ureq, wControl);
 		//set the resource URL to match the indexer ones
 		setResourceURL("[Identity:" + ureq.getIdentity().getKey() + "][userfolder:0]");

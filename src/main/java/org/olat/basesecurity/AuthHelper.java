@@ -241,7 +241,6 @@ public class AuthHelper {
 		}
 
 		UserManager um = UserManager.getInstance();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		GroupDAO groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
 		Invitation invitation = invitationDao.findInvitation(invitationToken);
 		if(invitation == null) {
@@ -251,8 +250,8 @@ public class AuthHelper {
 		//check if identity exists
 		Identity identity = um.findUniqueIdentityByEmail(invitation.getMail());
 		if(identity != null) {
-			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-			if(securityManager.isIdentityInSecurityGroup(identity, allUsers)) {
+			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+			if(organisationService.hasRole(identity, OrganisationRoles.user)) {
 				//already a normal olat user, cannot be invited
 				return LOGIN_DENIED;
 			} else {

@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,7 +48,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
@@ -57,7 +55,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
@@ -75,20 +72,17 @@ public class UserCreateController extends BasicController  {
 
 	private NewUserForm createUserForm;
 	
+	@Autowired
+	private UserManager userManager;
+	
 	/**
 	 * @param ureq
 	 * @param wControl
 	 */
 	public UserCreateController (UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
 		super(ureq, wControl, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		if (!mgr.isIdentityPermittedOnResourceable(
-				ureq.getIdentity(), 
-				Constants.PERMISSION_ACCESS, 
-				OresHelper.lookupType(this.getClass())))
-			throw new OLATSecurityException("Insufficient permissions to access UserCreateController");
-				
-		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());		
+		
+		Translator pT = userManager.getPropertyHandlerTranslator(getTranslator());		
 		createUserForm = new NewUserForm(ureq, wControl, canCreateOLATPassword, pT);		
 		listenTo(createUserForm);
 

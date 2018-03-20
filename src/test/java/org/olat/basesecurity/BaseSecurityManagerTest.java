@@ -19,16 +19,12 @@
  */
 package org.olat.basesecurity;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,7 +39,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
 import org.olat.login.LoginModule;
-import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -64,6 +59,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	private LoginModule loginModule;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	
 	@Test
@@ -287,92 +284,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(id.getUser().getKey(), foundId.getUserKey());
 		Assert.assertTrue(foundId.getStatus() < Identity.STATUS_VISIBLE_LIMIT);
 	}
-	
-	@Test
-	public void testGetSecurityGroupsForIdentity() {
-		// create
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser( "find-sec-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup1 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup2 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup3 = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id, secGroup1);
-		securityManager.addIdentityToSecurityGroup(id, secGroup2);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		List<SecurityGroup> secGroups = securityManager.getSecurityGroupsForIdentity(id);
-		Assert.assertNotNull(secGroups);
-		Assert.assertTrue(secGroups.contains(secGroup1));
-		Assert.assertTrue(secGroups.contains(secGroup2));
-		Assert.assertFalse(secGroups.contains(secGroup3));
-	}
-	
-	@Test
-	public void testCreateNamedGroup() {
-		String username = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-		SecurityGroup ng = securityManager.createAndPersistNamedSecurityGroup(username);
-		dbInstance.commitAndCloseSession();
-		
-		SecurityGroup sgFound = securityManager.findSecurityGroupByName(username);
-		Assert.assertNotNull(sgFound);
-		Assert.assertEquals(sgFound.getKey(), ng.getKey());
-	}
-	
-	@Test
-	public void testRemoveFromSecurityGroup() {
-		//create a security group with 2 identites
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-1-sec-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-2-sec-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup);
-		dbInstance.commitAndCloseSession();
-		
-		//remove the first one
-		securityManager.removeIdentityFromSecurityGroup(id1, secGroup);
-		dbInstance.commitAndCloseSession();
-		
-		int countMembers = securityManager.countIdentitiesOfSecurityGroup(secGroup);
-		Assert.assertEquals(1, countMembers);
-		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(secGroup);
-		Assert.assertNotNull(members);
-		Assert.assertEquals(1, members.size());
-		Assert.assertEquals(id2, members.get(0));
-	}
-	
-	@Test
-	public void testRemoveFromSecurityGroup_list() {
-		//create a security group with 2 identites
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-3-sec-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "rm-4-sec-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup);
-		dbInstance.commitAndCloseSession();
-		
-		//remove the first one
-		List<Identity> ids = new ArrayList<Identity>();
-		ids.add(id1);
-		ids.add(id2);
-		securityManager.removeIdentityFromSecurityGroups(ids, Collections.singletonList(secGroup));
-		dbInstance.commitAndCloseSession();
-		
-		int countMembers = securityManager.countIdentitiesOfSecurityGroup(secGroup);
-		Assert.assertEquals(0, countMembers);
-		List<Identity> members = securityManager.getIdentitiesOfSecurityGroup(secGroup);
-		Assert.assertNotNull(members);
-		Assert.assertTrue(members.isEmpty());
-		
-		//check if robust against null and empty
-		securityManager.removeIdentityFromSecurityGroups(ids, Collections.<SecurityGroup>emptyList());
-		securityManager.removeIdentityFromSecurityGroups(Collections.<Identity>emptyList(), Collections.singletonList(secGroup));
-		securityManager.removeIdentityFromSecurityGroups(ids, null);
-		securityManager.removeIdentityFromSecurityGroups(null, Collections.singletonList(secGroup));
-	}
-	
-	/**
-	 * 
-	 */
+
 	@Test
 	public void testLoadIdentityByKeys() {
 		//create a security group with 2 identites
@@ -402,8 +314,9 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//update roles
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Roles modifiedRoles = new Roles(true, true, true, true, false, true, true, true, false);
-		securityManager.updateRoles(id2, id1, modifiedRoles);
+		securityManager.updateRoles(id2, id1, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
 		//check roles
@@ -432,8 +345,9 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//update roles
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Roles modifiedRoles = new Roles(false, true, false, true, false, false, false, true, false);
-		securityManager.updateRoles(id2, id1, modifiedRoles);
+		securityManager.updateRoles(id2, id1, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
 		//check roles
@@ -462,8 +376,9 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//update roles
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Roles modifiedRoles = new Roles(true, true, true, true, true, true, false);
-		securityManager.updateRoles(user, invitee, modifiedRoles);
+		securityManager.updateRoles(user, invitee, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 
 		//check roles
@@ -627,280 +542,22 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void testGetIdentitiesByPowerSearchWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("user-1-" + UUID.randomUUID().toString());
-		SecurityGroup usersGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		dbInstance.commitAndCloseSession();
 		
 		//test positive result
-	  SecurityGroup[] groups = { usersGroup };
-	  List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(id.getName(), null, true, groups, null, null, null, null);
+		OrganisationRoles[] groups = { OrganisationRoles.user };
+		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(id.getName(), null, true, groups, null, null, null);
 		Assert.assertNotNull(userList);
-	  Assert.assertEquals(1, userList.size());
+		Assert.assertEquals(1, userList.size());
 		Assert.assertEquals(id, userList.get(0));
 	  
 		//test negatif -> with author security group
-		SecurityGroup[] authors = { securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS) };
-		List<Identity> authorList = securityManager.getVisibleIdentitiesByPowerSearch(id.getName(), null, true, authors, null, null, null, null);
+		OrganisationRoles[] authors = { OrganisationRoles.author };
+		List<Identity> authorList = securityManager.getVisibleIdentitiesByPowerSearch(id.getName(), null, true, authors, null, null, null);
 		Assert.assertNotNull(authorList);
 		Assert.assertTrue(authorList.isEmpty());
 	}
-	
-	@Test
-	public void testGetIdentitiesOfSecurityGroup() {
-		//create 3 identities and 2 security groups
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-3-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup);
-		securityManager.addIdentityToSecurityGroup(id3, secGroup);
-		dbInstance.commitAndCloseSession();
-		
-		//retrieve them
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(secGroup, 0, -1);
-		Assert.assertNotNull(identities);
-		Assert.assertEquals(3, identities.size());
-		Assert.assertTrue(identities.contains(id1));
-		Assert.assertTrue(identities.contains(id2));
-		Assert.assertTrue(identities.contains(id3));
-	}
-	
-	@Test
-	public void testGetIdentitiesOfSecurityGroups() {
-		//create 3 identities and 2 security groups
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-sec-3-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup1 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup2 = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup1);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup1);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup2);
-		securityManager.addIdentityToSecurityGroup(id3, secGroup2);
-		dbInstance.commitAndCloseSession();
-		
-		//retrieve them
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		secGroups.add(secGroup1);
-		secGroups.add(secGroup2);
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroups(secGroups);
-		Assert.assertNotNull(identities);
-		Assert.assertEquals(3, identities.size());
-		Assert.assertTrue(identities.contains(id1));
-		Assert.assertTrue(identities.contains(id2));
-		Assert.assertTrue(identities.contains(id3));
-	}
-	
 
-	@Test
-	public void testGetPoliciesOfSecurityGroup() {
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Policy policy_1 = securityManager.createAndPersistPolicy(secGroup, "test.right1", resource);
-		Policy policy_2 = securityManager.createAndPersistPolicy(secGroup, "test.right2", resource);
-		dbInstance.commitAndCloseSession();
-		
-		List<Policy> policies = securityManager.getPoliciesOfSecurityGroup(secGroup);
-		Assert.assertNotNull(policies);
-		Assert.assertEquals(2, policies.size());
-		Assert.assertTrue(policies.contains(policy_1));
-		Assert.assertTrue(policies.contains(policy_2));		
-	}
-		
-	/**
-	 * Test the method
-	 * @see public List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup secGroup)
-	 */
-	@Test
-	public void testGetPoliciesOfResource() {
-		//create 3 rights
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Policy policy_1 = securityManager.createAndPersistPolicy(secGroup, "test.right1", resource);
-		Policy policy_2 = securityManager.createAndPersistPolicy(secGroup, "test.right2", resource);
-		Policy policy_3 = securityManager.createAndPersistPolicy(secGroup, "test.right3", resource);
-		dbInstance.commitAndCloseSession();
-		
-		//test the method
-		List<Policy> policies = securityManager.getPoliciesOfResource(resource, secGroup);
-		Assert.assertNotNull(policies);
-		Assert.assertEquals(3, policies.size());
-		Assert.assertTrue(policies.contains(policy_1));
-		Assert.assertTrue(policies.contains(policy_2));
-		Assert.assertTrue(policies.contains(policy_3));
-	}
-	
-	@Test
-	public void testGetPoliciesOfIdentity() {
-		//create 3 security groups and 2 resources and an identity
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("test-right-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("test-right-2-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup_1 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup_2 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup_3 = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id1, secGroup_1);
-		securityManager.addIdentityToSecurityGroup(id1, secGroup_2);
-		securityManager.addIdentityToSecurityGroup(id2, secGroup_2);
-		OLATResource resource_1 = JunitTestHelper.createRandomResource();
-		OLATResource resource_2 = JunitTestHelper.createRandomResource();
-		Policy policy_1_1 = securityManager.createAndPersistPolicy(secGroup_1, "test.right11", resource_1);
-		Policy policy_1_2 = securityManager.createAndPersistPolicy(secGroup_1, "test.right12", resource_2);
-		Policy policy_2_1 = securityManager.createAndPersistPolicy(secGroup_2, "test.right21", resource_1);
-		Policy policy_3_1 = securityManager.createAndPersistPolicy(secGroup_3, "test.right31", resource_1);
-		Policy policy_3_2 = securityManager.createAndPersistPolicy(secGroup_3, "test.right32", resource_2);
-		dbInstance.commitAndCloseSession();
-		
-		//test the method for id1
-		List<Policy> policiesId1 = securityManager.getPoliciesOfIdentity(id1);
-		Assert.assertNotNull(policiesId1);
-		Assert.assertTrue(3 <= policiesId1.size());// OpenOLAT add automatically some standard policy to every user
-		Assert.assertTrue(policiesId1.contains(policy_1_1));
-		Assert.assertTrue(policiesId1.contains(policy_1_2));
-		Assert.assertTrue(policiesId1.contains(policy_2_1));
-		Assert.assertFalse(policiesId1.contains(policy_3_1));
-		Assert.assertFalse(policiesId1.contains(policy_3_2));
-		
-		//test the method for id2
-		List<Policy> policiesId2 = securityManager.getPoliciesOfIdentity(id2);
-		Assert.assertNotNull(policiesId2);
-		Assert.assertTrue(1 <= policiesId2.size());// OpenOLAT add automatically some standard policy to every user
-		Assert.assertFalse(policiesId2.contains(policy_1_1));
-		Assert.assertFalse(policiesId2.contains(policy_1_2));
-		Assert.assertTrue(policiesId2.contains(policy_2_1));
-		Assert.assertFalse(policiesId2.contains(policy_3_1));
-		Assert.assertFalse(policiesId2.contains(policy_3_2));
-	}
-	
-	@Test
-	public void testGetPoliciesOfIdentity_2() {
-		Identity s1 = JunitTestHelper.createAndPersistIdentityAsUser("s1-" + UUID.randomUUID().toString());
-		OLATResource olatres = JunitTestHelper.createRandomResource();
-		SecurityGroup olatUsersGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		securityManager.createAndPersistPolicy(olatUsersGroup, Constants.PERMISSION_ACCESS, olatres);
-		List<Policy> policies = securityManager.getPoliciesOfIdentity(s1);
-		
-		boolean foundPolicy = false;
-		for (Iterator<Policy> iterator = policies.iterator(); iterator.hasNext();) {
-			Policy policy = iterator.next();
-			Long resourcableId = policy.getOlatResource().getResourceableId();
-			if ((resourcableId != null) && (resourcableId.equals(olatres.getResourceableId()))) {
-				assertEquals(olatUsersGroup.getKey(), policy.getSecurityGroup().getKey());
-				assertEquals(Constants.PERMISSION_ACCESS, policy.getPermission());
-				assertEquals(olatres.getResourceableId(), policy.getOlatResource().getResourceableId());
-				foundPolicy = true;
-			}
-		}
-		assertTrue("Does not found policy", foundPolicy);
-	}
-	
-	@Test
-	public void isIdentityPermittedOnResourceable_checkType() {
-		//create an identity, a security group, a resource and give the identity some
-		//permissions on the resource
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-ipor-1-" + UUID.randomUUID().toString());
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
-		securityManager.createAndPersistPolicy(secGroup, "test.ipor-1_1", resource);
-		securityManager.createAndPersistPolicy(secGroup, "test.ipor-1_2", resource);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		boolean hasIpor_1_1 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_1", resource);
-		Assert.assertTrue(hasIpor_1_1);
-		boolean hasIpor_1_2 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_2", resource);
-		Assert.assertTrue(hasIpor_1_2);
-		boolean hasIpor_1_3 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_3", resource);
-		Assert.assertFalse(hasIpor_1_3);
-		
-		//check type
-		boolean hasIpor_1_1_ct = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_1", resource, true);
-		Assert.assertTrue(hasIpor_1_1_ct);
-		boolean hasIpor_1_2_ct = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_2", resource, true);
-		Assert.assertTrue(hasIpor_1_2_ct);
-		boolean hasIpor_1_3_ct = securityManager.isIdentityPermittedOnResourceable(id, "test.ipor-1_3", resource, true);
-		Assert.assertFalse(hasIpor_1_3_ct);
-	}
-	
-	@Test
-	public void isIdentityPermittedOnResourceable_noCheckType() {
-		//create an identity, a security group, a resource and give the identity some
-		//permissions on the resource
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-ipornc-1-" + UUID.randomUUID().toString());
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
-		securityManager.createAndPersistPolicy(secGroup, "test.ipornc-1_1", resource);
-		securityManager.createAndPersistPolicy(secGroup, "test.ipornc-1_2", resource);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		boolean hasIpor_1_1 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipornc-1_1", resource, false);
-		Assert.assertTrue(hasIpor_1_1);
-		boolean hasIpor_1_2 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipornc-1_2", resource, false);
-		Assert.assertTrue(hasIpor_1_2);
-		boolean hasIpor_1_3 = securityManager.isIdentityPermittedOnResourceable(id, "test.ipornc-1_3", resource, false);
-		Assert.assertFalse(hasIpor_1_3);
-	}
-	
-	@Test
-	public void isIdentityPermittedOnResourceable_null() {
-		//create an identity, a security group, a resource and give the identity some
-		//permissions on the resource
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-ipornc-null-" + UUID.randomUUID().toString());
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
-		securityManager.createAndPersistPolicy(secGroup, "test.ipornc-null", resource);
-		dbInstance.commitAndCloseSession();
-		
-		//check that null doesn't return an exception but false
-		boolean hasIpor = securityManager.isIdentityPermittedOnResourceable(null, "test.ipornc-null", resource, false);
-		Assert.assertFalse(hasIpor);
-	}
-
-	/**
-	 * Dummy test to make sure all works as wanted
-	 */
-	@Test
-	public void createSecurityGroupMembership() {
-		//create a user with the default provider
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("update-membership-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(identity, secGroup);
-		dbInstance.commitAndCloseSession();
-
-		boolean member = securityManager.isIdentityInSecurityGroup(identity, secGroup);
-		Assert.assertTrue(member);
-	}
-	
-	/**
-	 * We remove the optimistic locking from SecurityGroupMembershipImpl mapping
-	 */
-	@Test
-	public void createAndUpdateSecurityGroupMembership_lastCommitWin() {
-		//create a user with the default provider
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("update-membership-" + UUID.randomUUID().toString());
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		
-		SecurityGroupMembershipImpl sgmsi = new SecurityGroupMembershipImpl();
-		sgmsi.setIdentity(identity);
-		sgmsi.setSecurityGroup(secGroup);
-		sgmsi.setLastModified(new Date());
-		dbInstance.getCurrentEntityManager().persist(sgmsi);
-		dbInstance.commitAndCloseSession();
-
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, -1);
-		sgmsi.setLastModified(cal.getTime());
-		dbInstance.getCurrentEntityManager().merge(sgmsi);
-		dbInstance.commitAndCloseSession();
-	
-		cal.add(Calendar.DATE, -1);
-		sgmsi.setLastModified(cal.getTime());
-		dbInstance.getCurrentEntityManager().merge(sgmsi);
-		dbInstance.commitAndCloseSession();	
-	}
 	
 	@Test
 	public void findAuthenticationName() {
@@ -1016,29 +673,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT"));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identity.getName(), "OLAT"));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail"));
-	}
-	
-	@Test
-	public void deleteSecurityGroup() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("test-del-2");
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Policy policy = securityManager.createAndPersistPolicy(secGroup, "test.right11", resource);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(policy);
-		
-		//delete the security group (and membership, and policies)
-		securityManager.deleteSecurityGroup(secGroup);
-		dbInstance.commit();
-		
-		//checks
-		List<Policy> deletedPolicies = securityManager.getPoliciesOfResource(resource, secGroup);
-		Assert.assertNotNull(deletedPolicies);
-		Assert.assertTrue(deletedPolicies.isEmpty());
-		
-		boolean membership = securityManager.isIdentityInSecurityGroup(id, secGroup);
-		Assert.assertFalse(membership);
 	}
 	
 }

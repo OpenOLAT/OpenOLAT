@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -93,7 +93,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	private static final String CSS_CLASS_USER_ICON = "o_icon_user";
 
 	@Autowired
-	private BaseSecurity securityManager;
+	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -222,8 +222,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 		if (ident == null) return false;
 
 		CourseGroupManager grpMan = course.getCourseEnvironment().getCourseGroupManager();
-		
-		boolean isInstitutionalResourceManager = securityManager.isIdentityInSecurityGroup(ident, securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER));
+		boolean isInstitutionalResourceManager = organisationService.hasRole(ident, OrganisationRoles.learnresourcemanager);
 		return isInstitutionalResourceManager || grpMan.isIdentityCourseAdministrator(ident) || grpMan.isIdentityCourseCoach(ident) || grpMan.hasRight(ident, CourseRights.RIGHT_ASSESSMENT);
 	}
 
@@ -255,7 +254,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	 * </ul>
 	 */
 	private List<AssessableCourseNode> getCourseTestNodes(ICourse course) {
-		List<AssessableCourseNode> assessableNodes = new ArrayList<AssessableCourseNode>();
+		List<AssessableCourseNode> assessableNodes = new ArrayList<>();
 
 		Structure courseStruct = course.getRunStructure();
 		CourseNode rootNode = courseStruct.getRootNode();
@@ -294,10 +293,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
-	 *      java.util.Locale, java.util.Date)
-	 */
+	@Override
 	public SubscriptionInfo createSubscriptionInfo(final Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
@@ -323,7 +319,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 					final boolean hasFullAccess = (cgm.isIdentityCourseAdministrator(identity) ? true : cgm.hasRight(identity,
 							CourseRights.RIGHT_ASSESSMENT));
-					final Set<Identity> coachedUsers = new HashSet<Identity>();
+					final Set<Identity> coachedUsers = new HashSet<>();
 					if (!hasFullAccess) {
 						// initialize list of users, only when user has not full access
 						List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(identity);

@@ -38,29 +38,23 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 class UserBulkChangeStep01a extends BasicStep {
+	
+	private final UserBulkChanges userBulkChanges;
 
-	public UserBulkChangeStep01a(final UserRequest ureq) {
+	public UserBulkChangeStep01a(UserRequest ureq, UserBulkChanges userBulkChanges) {
 		super(ureq);
+		this.userBulkChanges = userBulkChanges;
 		setI18nTitleAndDescr("step1a.description", null);
-		setNextStep(new UserBulkChangeStep02(ureq));
+		setNextStep(new UserBulkChangeStep02(ureq, userBulkChanges));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getInitialPrevNextFinishConfig()
-	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(true, true, false);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl,
-	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext, org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(final UserRequest ureq, final WindowControl windowControl, final StepsRunContext stepsRunContext, final Form form) {
-		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext, false);
-		return stepI;
+		return new GroupSearchController(ureq, windowControl, form, stepsRunContext, userBulkChanges, false);
 	}
-
 }

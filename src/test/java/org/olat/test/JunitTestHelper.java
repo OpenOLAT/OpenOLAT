@@ -37,8 +37,8 @@ import java.util.UUID;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -120,14 +120,15 @@ public class JunitTestHelper {
 	 * @return
 	 */
 	public static final Identity createAndPersistIdentityAsUser(String login) {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 		Identity identity = securityManager.findIdentityByName(login);
-		if (identity != null) return identity;
-		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
-		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
+		if (identity != null) {
+			return identity;
+		}
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		User user = userManager.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
-		securityManager.addIdentityToSecurityGroup(identity, group);
+		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		return identity;
 	}
 
@@ -137,14 +138,16 @@ public class JunitTestHelper {
 	 * @return
 	 */
 	public static final Identity createAndPersistIdentityAsAuthor(String login) {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 		Identity identity = securityManager.findIdentityByName(login);
-		if (identity != null) return identity;
-		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_AUTHORS);
-		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
+		if (identity != null) {
+			return identity;
+		}
+
+		User user = CoreSpringFactory.getImpl(UserManager.class)
+				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
-		securityManager.addIdentityToSecurityGroup(identity, group);
+		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		return identity;
 	}
 	
@@ -154,15 +157,22 @@ public class JunitTestHelper {
 	 * @return
 	 */
 	public static final Identity createAndPersistIdentityAsAdmin(String login) {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 		Identity identity = securityManager.findIdentityByName(login);
-		if (identity != null) return identity;
-		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
-		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_ADMIN);
-		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
+		if (identity != null) {
+			return identity;
+		}
+
+		User user = CoreSpringFactory.getImpl(UserManager.class)
+				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
-		securityManager.addIdentityToSecurityGroup(identity, group);
+		addToDefaultOrganisation(identity, OrganisationRoles.administrator);
 		return identity;
+	}
+	
+	private static void addToDefaultOrganisation(Identity identity, OrganisationRoles role) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		organisationService.addMember(identity, role);
 	}
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry() {

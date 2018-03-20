@@ -61,8 +61,8 @@ public class RepositoryHandlerFactory {
 	private static Map<String, RepositoryHandler> handlerMap;
 	private static List<OrderedRepositoryHandler> handlerList;
 	static {
-		handlerMap = new HashMap<String, RepositoryHandler>(21);
-		handlerList = new ArrayList<OrderedRepositoryHandler>(21);
+		handlerMap = new HashMap<>(21);
+		handlerList = new ArrayList<>(21);
 
 		// 0-9 Most important resources = 0-9
 		registerHandler(new CourseHandler(), 0);

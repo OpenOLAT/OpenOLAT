@@ -23,9 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -57,7 +56,7 @@ public class InvitationEmailController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	private OrganisationService organisationService;
 	
 	public InvitationEmailController(UserRequest ureq, WindowControl wControl, Binder binder) {
 		super(ureq, wControl);
@@ -102,9 +101,8 @@ public class InvitationEmailController extends FormBasicController {
 			String mail = mailEl.getValue();
 			if (StringHelper.containsNonWhitespace(mail)) {
 				if (MailHelper.isValidEmailAddress(mail)) {
-					SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 					List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
-					if (isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
+					if (isAtLeastOneUser(shareWithIdentities)) {
 						mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[] { mail });
 						allOk &= false;
 					}
@@ -121,9 +119,9 @@ public class InvitationEmailController extends FormBasicController {
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
-	private boolean isAtLeastOneInSecurityGroup(Collection<Identity> identites, SecurityGroup group) {
+	private boolean isAtLeastOneUser(Collection<Identity> identites) {
 		for (Identity identity: identites) {
-			if (securityManager.isIdentityInSecurityGroup(identity, group)) {
+			if (organisationService.hasRole(identity, OrganisationRoles.user)) {
 				return true;
 			}
 		}

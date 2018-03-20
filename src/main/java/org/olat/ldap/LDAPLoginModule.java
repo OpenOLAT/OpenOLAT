@@ -31,8 +31,6 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Enumeration;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -152,11 +150,9 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	private static final OLog log = Tracing.createLoggerFor(LDAPLoginModule.class);
 	
 	@Autowired
-	private LDAPSyncConfiguration syncConfiguration;
-	@Autowired
 	private Scheduler scheduler;
 	@Autowired
-	private BaseSecurity securityManager;
+	private LDAPSyncConfiguration syncConfiguration;
 	
 	@Autowired
 	public LDAPLoginModule(CoordinatorManager coordinatorManager) {
@@ -175,12 +171,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		}
 		log.info("Starting LDAP module");
 		
-		// Create LDAP Security Group if not existing. Used to identify users that
-		// have to be synced with LDAP
-		SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-		if (ldapGroup == null) {
-			ldapGroup = securityManager.createAndPersistNamedSecurityGroup(LDAPConstants.SECURITY_GROUP_LDAP);
-		}
 		// check for valid configuration
 		if (!checkConfigParameterIsNotEmpty(ldapUrl)) return;
 		if (!checkConfigParameterIsNotEmpty(systemDN)) return;

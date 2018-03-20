@@ -34,10 +34,11 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -102,7 +103,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public static final String CATALOGROOT = "CATALOG ROOT";
 	/**
-	 * Resource identifyer for catalog entries
+	 * Resource identifier for catalog entries
 	 */
 	public static final String CATALOGENTRY = "CatalogEntry";
 	
@@ -113,21 +114,21 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private SecurityGroupDAO securityGroupDao;
+	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 
-	/**
-	 * [spring]
-	 * @param userDeletionManager
-	 */
-	private CatalogManager() {
-		// singleton
-	}
 
 	/**
 	 * @return transient catalog entry object
 	 */
 	public CatalogEntry createCatalogEntry() {
-		return new CatalogEntryImpl();
+		CatalogEntryImpl entry = new CatalogEntryImpl();
+		
+		entry.setOwnerGroup(securityGroupDao.createAndPersistSecurityGroup());
+		return entry;
 	}
 	
 	public List<CatalogEntry> getNodesChildrenOf(CatalogEntry ce) {
@@ -190,8 +191,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			dbQuery.setMaxResults(maxResults);
 		}
 
-		List<CatalogEntry> entries = dbQuery.getResultList();
-		return entries;
+		return dbQuery.getResultList();
 	}
 
 	/**
@@ -254,7 +254,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> filterOwnedLeafs(Identity identity, List<CatalogEntry> catalogEntries) {
-		List<CatalogEntry> ownedEntries = new ArrayList<CatalogEntry>();
+		List<CatalogEntry> ownedEntries = new ArrayList<>();
 		for(CatalogEntry cate:catalogEntries) {
 			if (cate.getType() == CatalogEntry.TYPE_LEAF) {
 				RepositoryEntry repe = cate.getRepositoryEntry();
@@ -339,7 +339,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				}
 			}
 		} else {
-			List<SecurityGroup> secGroupsToBeDeleted = new ArrayList<SecurityGroup>();
+			List<SecurityGroup> secGroupsToBeDeleted = new ArrayList<>();
 			//FIXME pb: the transaction must also include the deletion of the security
 			// groups. Why not using this method as a recursion and seperating the 
 			// deletion of the ce and the groups by collecting the groups? IMHO there 
@@ -509,7 +509,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
 	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {
 		List<CatalogEntry> parentLine = getCategoryParentLine(entry);
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		List<SecurityGroup> secGroups = new ArrayList<>();
 		for(CatalogEntry parent:parentLine) {
 			if(parent.getOwnerGroup() != null) {
 				secGroups.add(parent.getOwnerGroup());
@@ -519,7 +519,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	}
 	
 	private final List<CatalogEntry> getCategoryParentLine(CatalogEntry entry) {
-		List<CatalogEntry> parentLine = new ArrayList<CatalogEntry>();
+		List<CatalogEntry> parentLine = new ArrayList<>();
 		parentLine.add(entry);
 		
 		CatalogEntry current = entry;
@@ -571,9 +571,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			 * secMgr.findSecurityGroupByName(Constants.GROUP_ADMIN) directly into a
 			 * CatalogEntry!!
 			 */
-			SecurityGroup olatAdmins = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
-			List<Identity> olatAdminIdents = securityManager.getIdentitiesOfSecurityGroup(olatAdmins);
-			SecurityGroup catalogAdmins = securityManager.createAndPersistSecurityGroup();
+			List<Identity> olatAdminIdents = organisationService.getDefaultsSystemAdministator();
+			SecurityGroup catalogAdmins = securityGroupDao.createAndPersistSecurityGroup();
 			for (int i = 0; i < olatAdminIdents.size(); i++) {
 				securityManager.addIdentityToSecurityGroup(olatAdminIdents.get(i), catalogAdmins);
 			}

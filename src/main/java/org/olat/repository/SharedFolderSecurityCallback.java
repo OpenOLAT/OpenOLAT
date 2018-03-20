@@ -26,6 +26,7 @@
 package org.olat.repository;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -122,11 +123,11 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 	 * @param path
 	 */
 	private void initSharedFolderQuota(String path) {
-		QuotaManager qm = QuotaManager.getInstance();
+		QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 		sharedFolderQuota = qm.getCustomQuota(path);
 		if (sharedFolderQuota == null) {
 			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
-			sharedFolderQuota = QuotaManager.getInstance().createQuota(path, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			sharedFolderQuota = qm.createQuota(path, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 	}
 

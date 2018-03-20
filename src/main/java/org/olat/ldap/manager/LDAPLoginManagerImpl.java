@@ -22,6 +22,7 @@ package org.olat.ldap.manager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,10 +53,13 @@ import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -124,7 +128,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private OrganisationDAO organisationDao;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	@Autowired
@@ -427,12 +437,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 */
 	@Override
 	public void deletIdentities(List<Identity> identityList) {
-		SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-		
+
 		for (Identity identity:  identityList) {
-			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
 			userDeletionManager.deleteIdentity(identity);
-			dbInstance.intermediateCommit();
 		}
 	}
 
@@ -571,12 +578,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 
 		// Create Identity
 		Identity identity = securityManager.createAndPersistIdentityAndUser(uid, null, user, LDAPAuthenticationController.PROVIDER_LDAP, uid);
-		// Add to SecurityGroup LDAP
-		SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-		securityManager.addIdentityToSecurityGroup(identity, secGroup);
-		// Add to SecurityGroup OLATUSERS
-		secGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		securityManager.addIdentityToSecurityGroup(identity, secGroup);
+		// Add to the default organization as user
+		organisationService.addMember(identity, OrganisationRoles.user);
 		log.info("Created LDAP user username::" + uid);
 		return identity;
 	}
@@ -769,36 +772,29 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		Identity identity = securityManager.findIdentityByNameCaseInsensitive(uid);
 		if (identity == null) {
 			return null;
-		} else {
-			SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-			if (ldapGroup == null) {
-				log.error("Error getting user from OLAT security group '" + LDAPConstants.SECURITY_GROUP_LDAP + "' : group does not exist", null);
-				return null;
-			}
-
-			boolean inSecurityGroup = securityManager.isIdentityInSecurityGroup(identity, ldapGroup);
-			if (inSecurityGroup) {
-				Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
-				if(ldapAuth == null) {
-					//BUG Fixe: update the user and test if it has a ldap provider
-					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
-				} else if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
-					ldapAuth.setAuthusername(token);
-					securityManager.updateAuthentication(ldapAuth);
-				}
-				return identity;
-			} else if (ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
-				// Add user to LDAP security group and add the ldap provider
-				securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
-				securityManager.addIdentityToSecurityGroup(identity, ldapGroup);
-				log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::" + uid
-						+ " to be an LDAP managed user");
-				return identity;
-			} else {
-				errors.insert("findIdentyByLdapAuthentication: User with username::" + uid + " exist but not Managed by LDAP");
-				return null;
-			}
 		}
+
+		boolean hasLdapAuthentication = authenticationDao.hasAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+		if (hasLdapAuthentication) {
+			Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
+			if(ldapAuth == null) {
+				//BUG Fixe: update the user and test if it has a ldap provider
+				securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
+			} else if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
+				ldapAuth.setAuthusername(token);
+				securityManager.updateAuthentication(ldapAuth);
+			}
+			return identity;
+		}
+		if (ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
+			// Add user to LDAP security group and add the ldap provider
+			securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
+			log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::" + uid
+					+ " to be an LDAP managed user");
+			return identity;
+		}
+		errors.insert("findIdentyByLdapAuthentication: User with username::" + uid + " exist but not Managed by LDAP");
+		return null;
 	}
 
 	/**
@@ -821,7 +817,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 */
 	@Override
 	public List<Identity> getIdentitysDeletedInLdap(LdapContext ctx) {
-		if (ctx == null) return null;
+		if (ctx == null) {
+			return null;
+		}
 		// Find all LDAP Users
 		String userID = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 		String userFilter = syncConfiguration.getLdapUserFilter();
@@ -842,18 +840,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 
 		if (ldapList.isEmpty()) {
 			log.warn("No users in LDAP found, can't create deletionList!!", null);
-			return null;
+			return Collections.emptyList();
 		}
 
-		// Find all User in OLAT, members of LDAPSecurityGroup
-		SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-		if (ldapGroup == null) {
-			log.error("Error getting users from OLAT security group '" + LDAPConstants.SECURITY_GROUP_LDAP + "' : group does not exist", null);
-			return null;
-		}
-
-		List<Identity> identityListToDelete = new ArrayList<Identity>();
-		List<Identity> olatListIdentity = securityManager.getIdentitiesOfSecurityGroup(ldapGroup);
+		List<Identity> identityListToDelete = new ArrayList<>();
+		List<Identity> olatListIdentity = authenticationDao.getIdentitiesWithAuthentication(LDAPAuthenticationController.PROVIDER_LDAP);
 		for (Identity ida:olatListIdentity) {
 			// compare usernames with lowercase
 			if (!ldapList.contains(ida.getName().toLowerCase())) {
@@ -968,35 +959,38 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		ctx.close();
 		ctx = bindSystem();
 		
+		List<Organisation> organisations = organisationDao.loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+		Organisation organisation = organisations.get(0);
+		
 		//authors
 		if(syncConfiguration.getAuthorsGroupBase() != null && !syncConfiguration.getAuthorsGroupBase().isEmpty()) {
 			List<LDAPGroup> authorGroups = ldapDao.searchGroups(ctx, syncConfiguration.getAuthorsGroupBase());
-			syncRole(ctx, authorGroups, Constants.GROUP_AUTHORS, dnToIdentityKeyMap, errors);
+			syncRole(ctx, authorGroups, organisation, OrganisationRoles.author, dnToIdentityKeyMap, errors);
 		}
 		//user managers
 		if(syncConfiguration.getUserManagersGroupBase() != null && !syncConfiguration.getUserManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> userManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getUserManagersGroupBase());
-			syncRole(ctx, userManagerGroups, Constants.GROUP_USERMANAGERS, dnToIdentityKeyMap, errors);
+			syncRole(ctx, userManagerGroups, organisation, OrganisationRoles.usermanager, dnToIdentityKeyMap, errors);
 		}
 		//group managers
 		if(syncConfiguration.getGroupManagersGroupBase() != null && !syncConfiguration.getGroupManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> groupManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getGroupManagersGroupBase());
-			syncRole(ctx, groupManagerGroups, Constants.GROUP_GROUPMANAGERS, dnToIdentityKeyMap, errors);
+			syncRole(ctx, groupManagerGroups, organisation, OrganisationRoles.groupmanager, dnToIdentityKeyMap, errors);
 		}
 		//question pool managers
 		if(syncConfiguration.getQpoolManagersGroupBase() != null && !syncConfiguration.getQpoolManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> qpoolManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getQpoolManagersGroupBase());
-			syncRole(ctx, qpoolManagerGroups, Constants.GROUP_POOL_MANAGER, dnToIdentityKeyMap, errors);
+			syncRole(ctx, qpoolManagerGroups, organisation, OrganisationRoles.poolmanager, dnToIdentityKeyMap, errors);
 		}
 		//curriculum managers
 		if(syncConfiguration.getCurriculumManagersGroupBase() != null && !syncConfiguration.getCurriculumManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> curriculumManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getCurriculumManagersGroupBase());
-			syncRole(ctx, curriculumManagerGroups, Constants.GROUP_CURRICULUM_MANAGER, dnToIdentityKeyMap, errors);
+			syncRole(ctx, curriculumManagerGroups, organisation, OrganisationRoles.curriculummanager, dnToIdentityKeyMap, errors);
 		}
 		//learning resource manager
 		if(syncConfiguration.getLearningResourceManagersGroupBase() != null && !syncConfiguration.getLearningResourceManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> resourceManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getLearningResourceManagersGroupBase());
-			syncRole(ctx, resourceManagerGroups, Constants.GROUP_INST_ORES_MANAGER, dnToIdentityKeyMap, errors);
+			syncRole(ctx, resourceManagerGroups, organisation, OrganisationRoles.learnresourcemanager, dnToIdentityKeyMap, errors);
 		}
 
 		int count = 0;
@@ -1015,27 +1009,27 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 
 		for(LDAPUser ldapUser:ldapUsers) {
 			if(syncAuthor && ldapUser.isAuthor()) {
-				syncRole(ldapUser, Constants.GROUP_AUTHORS);
+				syncRole(ldapUser, organisation, OrganisationRoles.author);
 				count++;
 			}
 			if(syncUserManager && ldapUser.isUserManager()) {
-				syncRole(ldapUser, Constants.GROUP_USERMANAGERS);
+				syncRole(ldapUser, organisation, OrganisationRoles.usermanager);
 				count++;
 			}
 			if(syncGroupManager && ldapUser.isGroupManager()) {
-				syncRole(ldapUser, Constants.GROUP_GROUPMANAGERS);
+				syncRole(ldapUser, organisation, OrganisationRoles.groupmanager);
 				count++;
 			}
 			if(syncQpoolManager && ldapUser.isQpoolManager()) {
-				syncRole(ldapUser, Constants.GROUP_POOL_MANAGER);
+				syncRole(ldapUser,organisation,  OrganisationRoles.poolmanager);
 				count++;
 			}
 			if(syncCurriculumManager && ldapUser.isCurriculumManager()) {
-				syncRole(ldapUser, Constants.GROUP_CURRICULUM_MANAGER);
+				syncRole(ldapUser, organisation, OrganisationRoles.curriculummanager);
 				count++;
 			}
 			if(syncLearningResourceManager && ldapUser.isLearningResourceManager()) {
-				syncRole(ldapUser, Constants.GROUP_INST_ORES_MANAGER);
+				syncRole(ldapUser, organisation, OrganisationRoles.learnresourcemanager);
 				count++;
 			}
 
@@ -1048,17 +1042,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		dbInstance.commitAndCloseSession();
 	}
 	
-	private void syncRole(LdapContext ctx, List<LDAPGroup> groups, String role,
+	private void syncRole(LdapContext ctx, List<LDAPGroup> groups, Organisation organisation, OrganisationRoles role,
 			Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
 		if(groups == null || groups.isEmpty()) return;
 		
 		for(LDAPGroup group:groups) {
 			List<String> members = group.getMembers();
-			if(members != null && members.size() > 0) {
+			if(members != null && !members.isEmpty()) {
 				for(String member:members) {
 					LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors);
 					if(ldapUser != null && ldapUser.getCachedIdentity() != null) {
-						syncRole(ldapUser, role);
+						syncRole(ldapUser, organisation, role);
 					}
 				}
 			}
@@ -1066,42 +1060,42 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}	
 	}
 
-	private void syncRole(LDAPUser ldapUser, String role) {
+	private void syncRole(LDAPUser ldapUser, Organisation organisation, OrganisationRoles role) {
 		IdentityRef identityRef = ldapUser.getCachedIdentity();
 		List<String> roleList = securityManager.getRolesAsString(identityRef);
-		if(!roleList.contains(role)) {
+		if(!roleList.contains(role.name())) {
 			Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
 			Roles roles = securityManager.getRoles(identity);
 			switch(role) {
-				case Constants.GROUP_AUTHORS:
+				case author:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), true,
 									false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
-					securityManager.updateRoles(null, identity, roles);
+					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
-				case Constants.GROUP_USERMANAGERS:
+				case usermanager:
 					roles = new Roles(roles.isOLATAdmin(), true, roles.isGroupManager(), roles.isAuthor(),
 							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
-					securityManager.updateRoles(null, identity, roles);
+					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
-				case Constants.GROUP_GROUPMANAGERS:
+				case groupmanager:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), true, roles.isAuthor(),
 							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
-					securityManager.updateRoles(null, identity, roles);
+					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
-				case Constants.GROUP_POOL_MANAGER:
+				case poolmanager:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
 							false, roles.isInstitutionalResourceManager(), true, roles.isCurriculumManager(), false);
-					securityManager.updateRoles(null, identity, roles);
+					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
-				case Constants.GROUP_CURRICULUM_MANAGER:
+				case curriculummanager:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
 							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), true, false);
-					securityManager.updateRoles(null, identity, roles);
+					securityManager.updateRoles(null, identity, organisation, roles);
 					break;	
-				case Constants.GROUP_INST_ORES_MANAGER:
+				case learnresourcemanager:
 					roles = new Roles(roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
 							false, true, roles.isPoolAdmin(), roles.isCurriculumManager(), false);
-					securityManager.updateRoles(null, identity, roles);
+					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
 			}
 		}
@@ -1111,7 +1105,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		// create User to Delete List
 		List<Identity> deletedUserList = getIdentitysDeletedInLdap(ctx);
 		// delete old users
-		if (deletedUserList == null || deletedUserList.size() == 0) {
+		if (deletedUserList == null || deletedUserList.isEmpty()) {
 			log.info("LDAP batch sync: no users to delete" + sinceSentence);
 		} else {
 			if (ldapLoginModule.isDeleteRemovedLDAPUsersOnSync()) {
@@ -1119,8 +1113,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				// users managed in LDAP should be deleted
 				// if they are over the percentage, they will not be deleted
 				// by the sync job
-				SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-				List<Identity> olatListIdentity = securityManager.getIdentitiesOfSecurityGroup(ldapGroup);
+				List<Identity> olatListIdentity = authenticationDao.getIdentitiesWithAuthentication(LDAPAuthenticationController.PROVIDER_LDAP);
 				if (olatListIdentity.isEmpty())
 					log.info("No users managed by LDAP, can't delete users");
 				else {
@@ -1134,9 +1127,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 					} else {
 						// delete users
 						deletIdentities(deletedUserList);
-						log.info("LDAP batch sync: "
-								+ deletedUserList.size() + " users deleted"
-								+ sinceSentence);
+						log.info("LDAP batch sync: " + deletedUserList.size() + " users deleted" + sinceSentence);
 					}
 				}
 			} else {
@@ -1162,7 +1153,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		List<LDAPUser> ldapUserList = ldapDao.getUserAttributesModifiedSince(lastSyncDate, ctx);
 		
 		// Check for new and modified users
-		List<LDAPUser> newLdapUserList = new ArrayList<LDAPUser>();
+		List<LDAPUser> newLdapUserList = new ArrayList<>();
 		Map<IdentityRef, Map<String, String>> changedMapIdentityMap = new HashMap<>();
 		for (LDAPUser ldapUser: ldapUserList) {
 			String user = null;
@@ -1584,16 +1575,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	/**
 	 * remove all cached authentications for fallback-login. useful if users logged in first with a default pw and changed it outside in AD/LDAP, but OLAT doesn't know about.
 	 * removing fallback-auths means login is only possible by AD/LDAP and if server is reachable!
-	 * see FXOLAT-284
 	 */
 	@Override
 	public void removeFallBackAuthentications() {
 		if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
-			SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-			if (ldapGroup == null) {
-				log.error("Cannot get user from OLAT security group '" + LDAPConstants.SECURITY_GROUP_LDAP + "' : group does not exist", null);
-			}
-			List<Identity> ldapIdents = securityManager.getIdentitiesOfSecurityGroup(ldapGroup);
+			List<Identity> ldapIdents = authenticationDao.getIdentitiesWithAuthentication(LDAPAuthenticationController.PROVIDER_LDAP);
 			log.info("found " + ldapIdents.size() + " identies in ldap security group");
 			int count=0;
 			for (Identity identity : ldapIdents) {
@@ -1612,7 +1598,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 
 	@Override
 	public boolean isIdentityInLDAPSecGroup(Identity ident) {
-		SecurityGroup ldapSecurityGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-		return ldapSecurityGroup != null && securityManager.isIdentityInSecurityGroup(ident, ldapSecurityGroup);
+		return authenticationDao.hasAuthentication(ident, LDAPAuthenticationController.PROVIDER_LDAP);
 	}
 }

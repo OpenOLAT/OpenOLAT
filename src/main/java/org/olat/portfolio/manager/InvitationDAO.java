@@ -29,13 +29,13 @@ import javax.persistence.TypedQuery;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -66,6 +66,8 @@ public class InvitationDAO {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationDAO organisationDao;
 	
 	public Invitation createInvitation() {
 		InvitationImpl invitation = new InvitationImpl();
@@ -325,14 +327,13 @@ public class InvitationDAO {
 			return;
 		}
 	  
-		SecurityGroup olatUserSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		for(Invitation invitation:oldInvitations) {
 			List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
 			//normally only one identity
 			for(Identity identity:identities) {
 				if(identity.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
 					//already deleted
-				} else if(securityManager.isIdentityInSecurityGroup(identity, olatUserSecGroup)) {
+				} else if(organisationDao.hasRole(identity, OrganisationRoles.user.name())) {//TODO roles perhaps an other role
 					//out of scope
 				} else {
 					//delete user

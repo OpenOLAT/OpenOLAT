@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
@@ -45,6 +45,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -56,6 +57,9 @@ import org.olat.core.id.UserConstants;
  * @author refactored to use GenericMainController by Roman Haag, frentix GmbH
  */
 public class GUIDemoMainController extends GenericMainController {
+	
+	@Autowired
+	private BaseSecurity securityManager;
 		
 	public GUIDemoMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);
@@ -76,13 +80,14 @@ public class GUIDemoMainController extends GenericMainController {
 			// for a demo of autocompletion, do a user search
 			ListProvider provider = new ListProvider() {
 				public void getResult(String searchValue, ListReceiver receiver) {
-					Map<String, String> userProperties = new HashMap<String, String>();
+					Map<String, String> userProperties = new HashMap<>();
 					// We can only search in mandatory User-Properties due to problems
 					// with hibernate query with join and not existing rows
 					userProperties.put(UserConstants.FIRSTNAME, searchValue);
 					userProperties.put(UserConstants.LASTNAME, searchValue);
 					userProperties.put(UserConstants.EMAIL, searchValue);
-					List<Identity> res = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(searchValue, userProperties, false, null, null, null, null, null);
+					List<Identity> res = securityManager
+							.getVisibleIdentitiesByPowerSearch(searchValue, userProperties, false, null, null, null, null);
 					int maxEntries = 15;
 					boolean hasMore = false;
 					for (Iterator<Identity> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {

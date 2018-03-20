@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
 *  Description:<br>
@@ -72,6 +72,9 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 	private Identity identity = null;
 	
 	private CloseableModalController cmc;
+	
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * @param name
@@ -107,8 +110,7 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 		
 		if (userName.getValue().length()>0) {
 			c++;
-			BaseSecurity secMgr = BaseSecurityManager.getInstance();
-			identity = secMgr.findIdentityByName(userName.getValue());
+			identity = securityManager.findIdentityByName(userName.getValue());
 	 		if (identity == null){
 	 					userName.setErrorKey ("error.search.form.nousername", null);
 	 					return false;
@@ -131,7 +133,6 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("header.advancedsearchform");
-		//setFormDescription("xx");
 		
 		horizontalLayout = FormLayoutContainer.createHorizontalFormLayout("userChooser", getTranslator());
 		formLayout.add(horizontalLayout);
@@ -184,7 +185,7 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 	
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub	
+		//
 	}
 
 	public String getPropertyName() {
@@ -207,6 +208,7 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 		return userName.getValue();
 	}
 	
+	@Override
 	protected Identity getIdentity() {
 		return identity;
 	}

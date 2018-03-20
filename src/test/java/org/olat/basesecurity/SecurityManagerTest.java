@@ -75,12 +75,12 @@ public class SecurityManagerTest extends OlatTestCase {
 	@Test
 	public void testGetIdentitiesByPowerSearch() {
 		// test using visibility search
-		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null);
+		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null);
 		Assert.assertEquals(1,userList.size());
 		Identity identity = userList.get(0);
 		Assert.assertEquals(testLogin,identity.getName());
 		// test using powser search
-		userList = securityManager.getIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(testLogin, null, true, null, null, null, null, null, null, null);
 		Assert.assertEquals(1,userList.size());
 		identity = userList.get(0);
 		Assert.assertEquals(testLogin,identity.getName());
@@ -92,12 +92,12 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, "first"+ testLogin);
 		userProperties.put(UserConstants.LASTNAME, "last"+ testLogin);
 		// test using visibility search
-		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null);
+		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null);
 		Assert.assertEquals(1,userList.size());
 		Identity identity = userList.get(0);
 		Assert.assertEquals("first" + testLogin,identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		// test using powser search
-		userList = securityManager.getIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(testLogin, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertEquals(1,userList.size());
 		identity = userList.get(0);
 		Assert.assertEquals("first" + testLogin,identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
@@ -110,10 +110,10 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, s2.getUser().getProperty(UserConstants.LASTNAME, null));
 		// with AND search (conjunction) no identity is found
-		List<Identity> userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
+		List<Identity> userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertEquals(0, userList.size());
 		// with OR search both identities are found
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
 		Assert.assertEquals(2, userList.size());
 
 		// 2) two fields wheras only one matches to one single user
@@ -121,10 +121,10 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
 		// with AND search (conjunction) no identity is found
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertEquals(0, userList.size());
 		// with OR search first identity ist found
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
 		Assert.assertEquals(1, userList.size());
 	}
 	
@@ -135,7 +135,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		for (int i = 0; i < authProviders.length; i++) {
 			Assert.assertTrue("Provider name.length must be <= 8", authProviders[i].length() <= 8);
 		}
-		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, authProviders, null, null);
+		List<Identity> userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, authProviders, null, null);
 		Assert.assertEquals(1,userList.size());
 		Identity identity =  userList.get(0);
 		Assert.assertEquals(testLogin,identity.getName());
@@ -143,7 +143,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		for (int i = 0; i < nonAuthProviders.length; i++) {
 			assertTrue("Provider name.length must be <= 8", nonAuthProviders[i].length() <= 8);
 		}
-		userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, null, nonAuthProviders, null, null);
+		userList = securityManager.getVisibleIdentitiesByPowerSearch(testLogin, null, true, null, nonAuthProviders, null, null);
 	  	Assert.assertEquals(0,userList.size());
 		
 		// 2) two fields wheras only one matches to one single user
@@ -151,10 +151,10 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
 		// with AND search (conjunction) no identity is found
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, authProviders, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, authProviders, null, null, null, null, null);
 		Assert.assertEquals(0, userList.size());
 		// with OR search first identity ist found
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, authProviders, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, authProviders, null, null, null, null, null);
 		Assert.assertEquals(1, userList.size());
 
 		// 3) two fields wheras only one matches to one single user
@@ -167,31 +167,11 @@ public class SecurityManagerTest extends OlatTestCase {
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
 		// with AND search (conjunction) no identity is found
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, myProviders, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, myProviders, null, null, null, null, null);
 		Assert.assertEquals(0, userList.size());
 		// with OR search identity is found via auth provider and via first name
-		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, myProviders, null, null, null, null, null);
+		userList = securityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, myProviders, null, null, null, null, null);
 		Assert.assertEquals(1, userList.size());
-	}
-	
-	@Test
-	public void testRemoveIdentityFromSecurityGroup() {
-		SecurityGroup olatUsersGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		Assert.assertTrue(securityManager.isIdentityInSecurityGroup(s1, olatUsersGroup));
-		securityManager.removeIdentityFromSecurityGroup(s1, olatUsersGroup);
-		Assert.assertFalse(securityManager.isIdentityInSecurityGroup(s1, olatUsersGroup));
-		securityManager.addIdentityToSecurityGroup(s1, olatUsersGroup);
-		Assert.assertTrue(securityManager.isIdentityInSecurityGroup(s1, olatUsersGroup));
-	}
-	
-	@Test
-	public void testGetIdentitiesAndDateOfSecurityGroup() {
-		SecurityGroup olatUsersGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		List<Object[]> identities = securityManager.getIdentitiesAndDateOfSecurityGroup(olatUsersGroup);// not sortedByAddDate
-		Assert.assertTrue("Found no users", identities.size() > 0);
-		Object[] firstIdentity = identities.get(0);
-		Assert.assertTrue("Wrong type, Identity[0] must be an Identity", firstIdentity[0] instanceof Identity);
-		Assert.assertTrue("Wrong type, Identity[1] must be a Date", firstIdentity[1] instanceof Date);
 	}
 	
 	@Test

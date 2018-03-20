@@ -56,9 +56,6 @@ public class ImportStep02 extends BasicStep {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getInitialPrevNextFinishConfig()
-	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		boolean next = !mandatoryEmail;
@@ -66,12 +63,8 @@ public class ImportStep02 extends BasicStep {
 		return new PrevNextFinishConfig(true, next, finish);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getStepController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.control.generic.wizard.StepsRunContext, org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext, mandatoryEmail);
-		return stepI;
+		return new GroupSearchController(ureq, windowControl, form, stepsRunContext, null, mandatoryEmail);
 	}
 }

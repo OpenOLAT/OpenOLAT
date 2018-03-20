@@ -26,21 +26,19 @@
 package org.olat.admin.quota;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
@@ -54,6 +52,9 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * <h3>Description:</h3>
@@ -64,23 +65,21 @@ import org.olat.resource.OLATResourceManager;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class QuotaManagerImpl extends QuotaManager {
+@Service("org.olat.core.util.vfs.QuotaManager")
+public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	private static final OLog log = Tracing.createLoggerFor(QuotaManagerImpl.class);
 
 	private static final String QUOTA_CATEGORY = "quot";
 	private OLATResource quotaResource;
-	private OLATResourceManager resourceManager;
-	private PropertyManager propertyManager;
-	private static Map<String,Quota> defaultQuotas;
+	private final Map<String,Quota> defaultQuotas = new ConcurrentHashMap<>();
 	
-	/**
-	 * [used by spring]
-	 */
-	private QuotaManagerImpl(OLATResourceManager resourceManager, PropertyManager propertyManager) {
-		this.resourceManager = resourceManager;
-		this.propertyManager = propertyManager;
-		INSTANCE = this;
-	}
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private PropertyManager propertyManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	
 
 	/**
 	 * @see org.olat.core.util.vfs.QuotaManager#createQuota(java.lang.String, java.lang.Long, java.lang.Long)
@@ -90,20 +89,15 @@ public class QuotaManagerImpl extends QuotaManager {
 		return new QuotaImpl(path, quotaKB, ulLimitKB);
 	}
 
-	/**
-	 * [called by spring]
-	 *
-	 */
 	@Override
-	public void init() {
+	public void afterPropertiesSet() throws Exception {
 		quotaResource = resourceManager.findOrPersistResourceable(OresHelper.lookupType(Quota.class));
 		initDefaultQuotas(); // initialize default quotas
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		log.info("Successfully initialized Quota Manager");
 	}
 
 	private void initDefaultQuotas() {
-		defaultQuotas = new HashMap<>();
 		Quota defaultQuotaUsers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_USERS, defaultQuotaUsers);
 		Quota defaultQuotaPowerusers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
@@ -129,16 +123,20 @@ public class QuotaManagerImpl extends QuotaManager {
 	private Quota initDefaultQuota(String quotaIdentifier) {
 		Quota q = null;
 		Property p = propertyManager.findProperty(null, null, quotaResource, QUOTA_CATEGORY, quotaIdentifier);
-		if (p != null) q = parseQuota(p);
-		if (q != null) return q;
+		if (p != null) {
+			q = parseQuota(p);
+		}
+		if (q != null) {
+			return q;
+		}
 		// initialize default quota
-		q = createQuota(quotaIdentifier, new Long(FolderConfig.getDefaultQuotaKB()), new Long(FolderConfig.getLimitULKB()));
+		q = createQuota(quotaIdentifier, Long.valueOf(FolderConfig.getDefaultQuotaKB()), Long.valueOf(FolderConfig.getLimitULKB()));
 		setCustomQuotaKB(q);
 		return q;
 	}
 
 	/**
-	 * Get the identifyers for the default quotas
+	 * Get the identifiers for the default quotas
 	 * @return
 	 */
 	@Override
@@ -185,7 +183,7 @@ public class QuotaManagerImpl extends QuotaManager {
 		     .append(" and prop.name=:name")
 		     .append(" and prop.identity is null and prop.grp is null");
 		
-		List<Object[]> props = DBFactory.getInstance().getCurrentEntityManager()
+		List<Object[]> props = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Object[].class)
 				.setParameter("name", path)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
@@ -253,10 +251,10 @@ public class QuotaManagerImpl extends QuotaManager {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
 		}
-		List<Quota> results = new ArrayList<Quota>();
+		List<Quota> results = new ArrayList<>();
 		PropertyManager pm = PropertyManager.getInstance();
 		List<Property> props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
-		if (props == null || props.size() == 0) return results;
+		if (props == null || props.isEmpty()) return results;
 		for (Iterator<Property> iter = props.iterator(); iter.hasNext();) {
 			Property prop = iter.next();
 			results.add(parseQuota(prop));
@@ -305,9 +303,10 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @return
 	 */
 	@Override
-	public Quota getDefaultQuotaDependingOnRole(Identity identity) {
-		if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)) { return getDefaultQuotaPowerUsers(); }
-		if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) { return getDefaultQuotaPowerUsers(); }
+	public Quota getDefaultQuotaDependingOnRole(Identity identity, Roles roles) {
+		if (roles.isOLATAdmin() || roles.isAuthor()) {
+			return getDefaultQuotaPowerUsers();
+		}
 		return getDefaultQuotaUsers();
 	}
 
@@ -319,13 +318,10 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @return custom quota or quota depending on role
 	 */
 	@Override
-	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, String relPath) {
+	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, Roles roles, String relPath) {
 		Quota quota = getCustomQuota(relPath);
 		if (quota == null) { // no custom quota
-			if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)) {
-				return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
-			}
-			if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) {
+			if (roles.isAuthor() || roles.isOLATAdmin()) {
 				return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
 			}
 			return createQuota(relPath, getDefaultQuotaUsers().getQuotaKB(), getDefaultQuotaUsers().getUlLimitKB());
@@ -428,13 +424,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	}
 
 	@Override
-	public boolean hasQuotaEditRights(Identity identity) {
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		boolean hasQuoaRights = mgr.isIdentityPermittedOnResourceable(
-				identity, 
-				Constants.PERMISSION_ACCESS, 
-				OresHelper.lookupType(GenericQuotaEditController.class));
-		return hasQuoaRights;
+	public boolean hasQuotaEditRights(Identity identity, Roles roles) {
+		return roles.isOLATAdmin() || roles.isUserManager() || roles.isInstitutionalResourceManager();
 	}
-
 }

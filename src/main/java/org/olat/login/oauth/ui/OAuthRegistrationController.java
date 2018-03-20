@@ -26,8 +26,8 @@ import java.util.Map;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -83,6 +83,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -219,9 +221,8 @@ public class OAuthRegistrationController extends FormBasicController {
 			id = username;
 		}
 		authenticatedIdentity = securityManager.createAndPersistIdentityAndUser(username, null, newUser, registration.getAuthProvider(), id, null);
-		// Add user to system users group
-		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		securityManager.addIdentityToSecurityGroup(authenticatedIdentity, olatuserGroup);
+		// Add user to default organization as user
+		organisationService.addMember(authenticatedIdentity, OrganisationRoles.user);
 		
 		//open disclaimer
 		removeAsListenerAndDispose(disclaimerController);

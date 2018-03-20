@@ -128,7 +128,7 @@ public class CourseRights {
     }
     
     public static List<String> getAvailableRights() {
-    		return new ArrayList<String>(rights);
+    		return new ArrayList<>(rights);
     }
 
     /**

@@ -30,7 +30,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
@@ -74,7 +73,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		if (reSecurity.isEntryAdmin()) {
 			settingsDropdown.addComponent(new Spacer(""));
 			
-			if (quotaManager.hasQuotaEditRights(getIdentity())) {
+			if (quotaManager.hasQuotaEditRights(getIdentity(), roles)) {
 				quotaLink = LinkFactory.createToolLink("quota", translate("tab.quota.edit"), this, "o_sel_repo_quota");
 				quotaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota");
 				settingsDropdown.addComponent(quotaLink);
@@ -124,7 +123,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	private void doQuota(UserRequest ureq) {
-		if (quotaManager.hasQuotaEditRights(ureq.getIdentity())) {
+		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles)) {
 			RepositoryEntry entry = getRepositoryEntry();
 			OLATResource resource = entry.getOlatResource();
 			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
@@ -143,20 +142,16 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		WindowControl bwControl = getSubWindowControl("Layout");
 		final DeliveryOptionsConfigurationController deliveryOptionsCtrl
 			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config, "Knowledge Transfer#_cp_layout");
-		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
-
-			@Override
-			public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
-				if(source == deliveryOptionsCtrl
-						&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
-					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
-					CPPackageConfig cConfig = cpManager.getCPPackageConfig(resource);
-					if(cConfig == null) {
-						cConfig = new CPPackageConfig();
-					}
-					cConfig.setDeliveryOptions(newConfig);
-					cpManager.setCPPackageConfig(resource, cConfig);
+		deliveryOptionsCtrl.addControllerListener((uureq, source, event) -> {
+			if(source == deliveryOptionsCtrl
+					&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
+				DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
+				CPPackageConfig cConfig = cpManager.getCPPackageConfig(resource);
+				if(cConfig == null) {
+					cConfig = new CPPackageConfig();
 				}
+				cConfig.setDeliveryOptions(newConfig);
+				cpManager.setCPPackageConfig(resource, cConfig);
 			}
 		});
 		

@@ -26,14 +26,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.TypedQuery;
+
 import org.apache.commons.io.FileUtils;
 import org.olat.admin.layout.LayoutModule;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -63,6 +64,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_10_0_0 extends OLATUpgrade {
+
+	private static final String PERMISSION_READ = "read";
 	
 	private static final int BATCH_SIZE = 50;
 	private static final String TASK_BUSINESS_GROUPS = "Upgrade business groups";
@@ -74,16 +77,14 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_10.0.0";
 	
 
-	private static String PROPERTY_CATEGORY = "_o3_";
-	private static String PNAME_LOGOURI = "customizing.img.uri";
-	private static String PNAME_LOGOALT = "customizing.img.alt";
-	private static String PNAME_LINKURI = "customizing.link.uri";
-	private static String PNAME_FOOTERLINE = "customizing.footer.text";
+	private static final String PROPERTY_CATEGORY = "_o3_";
+	private static final String PNAME_LOGOURI = "customizing.img.uri";
+	private static final String PNAME_LOGOALT = "customizing.img.alt";
+	private static final String PNAME_LINKURI = "customizing.link.uri";
+	private static final String PNAME_FOOTERLINE = "customizing.footer.text";
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -418,9 +419,9 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			}
 			
 			//create policy -> relation
-			List<Policy> policies = securityManager.getPoliciesOfResource(map.getOlatResource(), null);
+			List<Policy> policies = getPoliciesOfResource(map.getOlatResource(), null);
 			for(Policy policy:policies) {
-				if(policy.getPermission().contains(Constants.PERMISSION_READ)) {
+				if(policy.getPermission().contains(PERMISSION_READ)) {
 					EPMapUpgradeToGroupRelation policyRelation = processMapPolicy(policy, map);
 					if(policyRelation != null) {
 						relations.add(policyRelation);
@@ -432,6 +433,23 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 				dbInstance.getCurrentEntityManager().persist(relation);
 			}
 		}
+	}
+	
+	private List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup secGroup) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" poi where ")
+			.append(" poi.olatResource.key=:resourceKey ");
+		if(secGroup != null) {
+			sb.append(" and poi.securityGroup.key=:secGroupKey");
+		}
+		
+		TypedQuery<Policy> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Policy.class)
+				.setParameter("resourceKey", resource.getKey());
+		if(secGroup != null) {
+			query.setParameter("secGroupKey", secGroup.getKey());
+		}
+		return query.getResultList();
 	}
 	
 	private boolean hasGroupsRelations(EPMapUpgrade map) {

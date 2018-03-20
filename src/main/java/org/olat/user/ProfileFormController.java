@@ -503,7 +503,7 @@ public class ProfileFormController extends FormBasicController {
 				if (!um.updateUserFromIdentity(identityToModify)) {
 					getWindowControl().setInfo(translate("profile.unsuccessful"));
 					// reload user data from db
-					identityToModify = BaseSecurityManager.getInstance().loadIdentityByKey(identityToModify.getKey());
+					identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
 				}
 				
 				OLATResourceable modRes = OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey());

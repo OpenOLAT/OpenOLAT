@@ -432,7 +432,7 @@ public class MergedCourseContainer extends MergeSource {
 		@Override
 		public Quota getQuota() {
 			if(overridenQuota == null) {
-				QuotaManager qm = QuotaManager.getInstance();
+				QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 				overridenQuota = qm.getCustomQuota(relPath);
 				if (overridenQuota == null) {
 					Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);

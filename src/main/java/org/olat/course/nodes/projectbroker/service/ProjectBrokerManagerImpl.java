@@ -37,6 +37,7 @@ import java.util.StringTokenizer;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -83,6 +84,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private SecurityGroupDAO securityGroupDao;
+	@Autowired
 	private ProjectGroupManager projectGroupManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -110,12 +113,9 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			rstart = System.currentTimeMillis();
 		}
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
-		List<Project> projectList = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, new SyncerCallback<List<Project>>() {
-			public List<Project> execute() {
-				ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
-				return projectBroker.getProjects();			
-			}
-
+		List<Project> projectList = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, () -> {
+			ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
+			return projectBroker.getProjects();			
 		});
 	
 		if(debug){
@@ -125,24 +125,25 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		return projectList;
 	}
 
+	@Override
 	public ProjectBroker createAndSaveProjectBroker() {
 		ProjectBroker projectBroker = new ProjectBrokerImpl();
 		dbInstance.saveObject(projectBroker);
 		return projectBroker;
 	}
 
+	@Override
 	public Project createAndSaveProjectFor(String title, String description, final Long projectBrokerId, BusinessGroup projectGroup) {
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
-		final Project project = new ProjectImpl(title, description, projectGroup, getProjectBroker(projectBrokerId));
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, new SyncerExecutor() {
-			public void execute() {
-				dbInstance.saveObject(project);
-				ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
-				if(!projectBroker.getProjects().contains(project)) {
-					projectBroker.getProjects().add(project);
-				}
-				projectCache.update(projectBrokerId.toString(), projectBroker);
+		SecurityGroup candidateGroup = securityGroupDao.createAndPersistSecurityGroup();
+		final Project project = new ProjectImpl(title, description, projectGroup, getProjectBroker(projectBrokerId), candidateGroup);
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, () -> {
+			dbInstance.saveObject(project);
+			ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
+			if(!projectBroker.getProjects().contains(project)) {
+				projectBroker.getProjects().add(project);
 			}
+			projectCache.update(projectBrokerId.toString(), projectBroker);
 		});	
 		return project;
 	}
@@ -151,11 +152,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	public void updateProject(final Project project) {
 		final Long projectBrokerId = project.getProjectBroker().getKey();
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, new SyncerExecutor() {
-			@Override
-			public void execute() {
-				updateProjectAndInvalidateCache(project);
-			}
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, () -> {
+			updateProjectAndInvalidateCache(project);
 		});	
 	}
 	

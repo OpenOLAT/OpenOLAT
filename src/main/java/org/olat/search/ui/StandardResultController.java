@@ -23,7 +23,7 @@ package org.olat.search.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -60,6 +60,10 @@ public class StandardResultController extends FormBasicController implements Res
 	private boolean highlight;
 	
 	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private LicenseService licenseService;
 	
 	public StandardResultController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document) {
@@ -83,9 +87,9 @@ public class StandardResultController extends FormBasicController implements Res
 			
 			String author = document.getAuthor();
 			if(StringHelper.containsNonWhitespace(author)) {
-				List<IdentityShort> identities = BaseSecurityManager.getInstance().findShortIdentitiesByName(Collections.singleton(author));
-				if(identities.size() > 0) {
-					author = UserManager.getInstance().getUserDisplayName(identities.get(0));
+				List<IdentityShort> identities = securityManager.findShortIdentitiesByName(Collections.singleton(author));
+				if(!identities.isEmpty()) {
+					author = userManager.getUserDisplayName(identities.get(0));
 				}
 			}
 			formLayoutCont.contextPut("author", author);

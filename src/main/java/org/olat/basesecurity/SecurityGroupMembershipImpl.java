@@ -47,13 +47,6 @@ public class SecurityGroupMembershipImpl extends PersistentObject implements Mod
 	private Date lastModified;
 
 	/**
-	 * package local
-	 */
-	protected SecurityGroupMembershipImpl() {
-	//
-	}
-
-	/**
 	 * @return Identity
 	 */
 	public Identity getIdentity() {

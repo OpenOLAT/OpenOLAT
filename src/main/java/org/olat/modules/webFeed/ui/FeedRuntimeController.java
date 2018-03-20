@@ -64,7 +64,7 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	protected void initSettingsTools(Dropdown settingsDropdown) {
 		super.initSettingsTools(settingsDropdown);
 		if (reSecurity.isEntryAdmin()) {
-			if (quotaManager.hasQuotaEditRights(getIdentity())) {
+			if (quotaManager.hasQuotaEditRights(getIdentity(), roles)) {
 				settingsDropdown.addComponent(new Spacer(""));
 				quotaLink = LinkFactory.createToolLink("quota", translate("tab.quota.edit"), this, "o_sel_repo_quota");
 				quotaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota");
@@ -95,7 +95,7 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	private void doQuota(UserRequest ureq) {
-		if (quotaManager.hasQuotaEditRights(ureq.getIdentity())) {
+		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles)) {
 			RepositoryEntry entry = getRepositoryEntry();
 			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
 			WindowControl bwControl = getSubWindowControl("Quota");

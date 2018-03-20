@@ -42,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.lock.pessimistic.PLock;
 import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
@@ -65,6 +66,8 @@ public class PLockTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private SecurityGroupDAO securityGroupDao;
 	@Autowired
 	private PessimisticLockManager pessimisticLockManager;
 
@@ -504,9 +507,10 @@ public class PLockTest extends OlatTestCase {
 		}
 	}
 	
-	@Test public void testSync() {
+	@Test
+	public void testSync() {
 		log.info("testing enrollment");
-    //	 ------------------ now check with lock -------------------
+		//	 ------------------ now check with lock -------------------
 		// create a group
 		//	 create users
 		final List<Identity> identities = new ArrayList<Identity>();
@@ -517,7 +521,7 @@ public class PLockTest extends OlatTestCase {
 		}
 		dbInstance.closeSession();
 
-		final SecurityGroup group2 = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
+		final SecurityGroup group2 = securityGroupDao.createAndPersistSecurityGroup();
 		// make sure the lock has been written to the disk (tests for createOrFind see other methods)
 		dbInstance.closeSession();
 		

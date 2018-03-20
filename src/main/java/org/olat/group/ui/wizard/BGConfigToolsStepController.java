@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,16 +54,16 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 	private String[] enableKeys = new String[]{"on", "off" };
 	private String[] enableValues = new String[]{"on", "off" };
 
-	private final List<SingleSelection> enableList = new ArrayList<SingleSelection>();
-	private final List<MultipleSelectionElement> toolList = new ArrayList<MultipleSelectionElement>();
+	private final List<SingleSelection> enableList = new ArrayList<>();
+	private final List<MultipleSelectionElement> toolList = new ArrayList<>();
 	
-	private final QuotaManager quotaManager;
+	@Autowired
+	private QuotaManager quotaManager;
 	
 	public BGConfigToolsStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(Util.createPackageTranslator(CollaborationToolsSettingsController.class, getLocale(), getTranslator()));
-		this.quotaManager = QuotaManager.getInstance();
 		
 		enableValues = new String[]{
 				translate("config.tools.on"), translate("config.tools.off")

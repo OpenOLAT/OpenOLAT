@@ -22,7 +22,7 @@ package org.olat.repository.ui.catalog;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -61,6 +61,8 @@ public class CatalogEntryAddController extends BasicController {
 	private RepositoryEntry toBeAddedEntry;
 	
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	protected CatalogManager catalogManager;
 
 	/**
@@ -80,7 +82,7 @@ public class CatalogEntryAddController extends BasicController {
 		Collections.sort(catEntryList, new CatalogEntryNodeComparator(getLocale()));
 
 		mainVC = createVelocityContainer("catMove");
-		mainVC.contextPut("withTitle", new Boolean(title));
+		mainVC.contextPut("withTitle", Boolean.valueOf(title));
 		selectionTree = new MenuTree("catSelection");
 		selectionTree.setExpandSelectedNode(true);
 		selectionTree.setUnselectNodes(true);
@@ -132,7 +134,6 @@ public class CatalogEntryAddController extends BasicController {
 		newEntry.setName(toBeAddedEntry.getDisplayname());
 		newEntry.setDescription(toBeAddedEntry.getDescription());
 		newEntry.setType(CatalogEntry.TYPE_LEAF);
-		newEntry.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 		// save entry
 		catalogManager.addCatalogEntry(newParent, newEntry);
 		fireEvent(ureq, Event.DONE_EVENT);

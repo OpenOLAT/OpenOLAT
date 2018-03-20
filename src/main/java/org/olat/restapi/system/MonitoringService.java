@@ -22,7 +22,7 @@ package org.olat.restapi.system;
 import org.olat.admin.sysinfo.manager.DatabaseStatsManager;
 import org.olat.admin.sysinfo.model.DatabaseConnectionVO;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
+import org.olat.core.id.Identity;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryManager;
@@ -47,9 +47,9 @@ public class MonitoringService {
 	private static final int RENEW_RATE = 60 * 60 * 1000;// once an hour
 	
 	private long start;
-	private long activeUserCount;
-	private long totalGroupCount;
-	private long publishedCourses;
+	private long activeUserCountCached;
+	private long totalGroupCountCached;
+	private long publishedCoursesCached;
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -76,13 +76,13 @@ public class MonitoringService {
 		// activeUserCount="88" // registered and activated identities, same as in GUI
 		if(start < 1 || (System.currentTimeMillis() - start) > RENEW_RATE) {
 			start = System.currentTimeMillis();
-			activeUserCount = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, Constants.USERSTATUS_ACTIVE);
-			totalGroupCount = businessGroupService.countBusinessGroups(null, null);
-			publishedCourses = repositoryManager.countPublished(CourseModule.ORES_TYPE_COURSE);
+			activeUserCountCached = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, Identity.STATUS_ACTIV);
+			totalGroupCountCached = businessGroupService.countBusinessGroups(null, null);
+			publishedCoursesCached = repositoryManager.countPublished(CourseModule.ORES_TYPE_COURSE);
 		}
-		statistics.setActiveUserCount(activeUserCount);
-		statistics.setTotalGroupCount(totalGroupCount);
-		statistics.setPublishedCourses(publishedCourses);
+		statistics.setActiveUserCount(activeUserCountCached);
+		statistics.setTotalGroupCount(totalGroupCountCached);
+		statistics.setPublishedCourses(publishedCoursesCached);
 		
 		
 		DatabaseConnectionVO connections = databaseStatsManager.getConnectionInfos();

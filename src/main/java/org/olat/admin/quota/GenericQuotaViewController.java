@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,6 +46,9 @@ public class GenericQuotaViewController extends BasicController {
 	private VelocityContainer myContent;
 	private QuotaForm quotaForm;
 	private Quota currentQuota;
+	
+	@Autowired
+	private QuotaManager quotaManager;
 
 
 	/**
@@ -61,12 +65,11 @@ public class GenericQuotaViewController extends BasicController {
 		super(ureq, wControl);
 		
 		// check if quota foqf.cannot.del.defaultr this path already exists
-		QuotaManager qm = QuotaManager.getInstance();
-		currentQuota = qm.getCustomQuota(relPath);
+		currentQuota = quotaManager.getCustomQuota(relPath);
 		// init velocity context
 		initMyContent();
 		if (currentQuota == null) {
-			currentQuota = qm.createQuota(relPath, null, null);		
+			currentQuota = quotaManager.createQuota(relPath, null, null);		
 		} else {
 			initQuotaForm(ureq, currentQuota);			
 		}
@@ -79,16 +82,15 @@ public class GenericQuotaViewController extends BasicController {
 	}
 
 	private void initMyContent() {
-		QuotaManager qm = QuotaManager.getInstance();
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("notEnoughPrivilege", Boolean.FALSE);
-		myContent.contextPut("users",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
-		myContent.contextPut("powerusers",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
-		myContent.contextPut("groups",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS));
-		myContent.contextPut("repository",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO));
-		myContent.contextPut("coursefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE));
-		myContent.contextPut("nodefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES));
-		myContent.contextPut("feeds",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS));
+		myContent.contextPut("users", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
+		myContent.contextPut("powerusers", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
+		myContent.contextPut("groups", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS));
+		myContent.contextPut("repository", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO));
+		myContent.contextPut("coursefolder", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE));
+		myContent.contextPut("nodefolder", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES));
+		myContent.contextPut("feeds", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS));
 	}
 	
 	private void initQuotaForm(UserRequest ureq, Quota quota) {

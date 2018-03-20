@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -74,14 +73,14 @@ public class DeletableUserSearchController extends UserSearchController {
 	 */
 	@Override
 	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
-	  List<Identity> users = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(
+	  List<Identity> users = securityManager.getVisibleIdentitiesByPowerSearch(
 			(login.equals("") ? null : login),
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-			null, null, null, null, null);
-	  List<Identity> notDeletable = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(
+			null, null, null, null);
+	  List<Identity> notDeletable = securityManager.getIdentitiesByPowerSearch(
 				(login.equals("") ? null : login),
 				userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-				null, null, null, null, null, null, null,Identity.STATUS_PERMANENT);
+				null, null, null, null, null, null,Identity.STATUS_PERMANENT);
 	  users.removeAll(notDeletable);
 	  return users;
 	}

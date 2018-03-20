@@ -19,6 +19,7 @@
  */
 package org.olat.core.util.vfs.callbacks;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -49,11 +50,11 @@ public class FullAccessWithLazyQuotaCallback extends FullAccessWithQuotaCallback
 	@Override
 	public Quota getQuota() {
 		if(super.getQuota() == null) {
-			QuotaManager qm = QuotaManager.getInstance();
+			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 			Quota q = qm.getCustomQuota(folderPath);
 			if (q == null) {
 				Quota defQuota = qm.getDefaultQuota(defaultQuota);
-				q = QuotaManager.getInstance().createQuota(folderPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+				q = qm.createQuota(folderPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 			}
 			super.setQuota(q);
 		}

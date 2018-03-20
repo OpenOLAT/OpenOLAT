@@ -38,9 +38,8 @@ import org.olat.admin.user.delete.TabbedPaneController;
 import org.olat.admin.user.imp.UserImportController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.extensions.ExtManager;
@@ -238,7 +237,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		if (uobject instanceof GenericActionExtension) {
 			GenericActionExtension ae = (GenericActionExtension) uobject;
 			TreeNode node = ((GenericTreeModel)olatMenuTree.getTreeModel()).findNodeByUserObject(uobject);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AE", new Long(node.getPosition()));
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AE", Long.valueOf(node.getPosition()));
 			WindowControl bwControl = addToHistory(ureq, ores, null);
 			contentCtr = ae.createController(ureq, bwControl, null);
 			listenTo(contentCtr);
@@ -327,16 +326,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("admingroup")) {
 			activatePaneInDetailView = null;
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			OrganisationRoles[] secGroup = { OrganisationRoles.administrator };
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, secGroup, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("authorgroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			OrganisationRoles[] secGroup = { OrganisationRoles.author };
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, secGroup, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -347,9 +346,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			List<Identity> resourceOwners = repositoryService.getIdentitiesWithRole(GroupRoles.owner.name());
 			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl, resourceOwners, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
-			// now subtract users that are in the author group to get the co-authors
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-			List<Identity> identitiesFromAuthorGroup = securityManager.getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
+			List<Identity> identitiesFromAuthorGroup = securityManager
+					.getVisibleIdentitiesByPowerSearch(null, null, true, new OrganisationRoles[] { OrganisationRoles.author}, null, null, null);
 			myCtr.removeIdentitiesFromSearchResult(ureq, identitiesFromAuthorGroup);
 			contentCtr = myCtr;
 			listenTo(contentCtr);
@@ -361,8 +359,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			List<Identity> resourceOwners = repositoryService.getIdentitiesWithRole(GroupRoles.owner.name());
 			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl, resourceOwners, Identity.STATUS_VISIBLE_LIMIT, true);
 			// ... now add users that are in the author group but don't own a resource yet
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-			List<Identity> identitiesFromAuthorGroup = securityManager.getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
+			List<Identity> identitiesFromAuthorGroup = securityManager
+					.getVisibleIdentitiesByPowerSearch(null, null, true, new OrganisationRoles[] { OrganisationRoles.author }, null, null, null);
 			myCtr.addIdentitiesToSearchResult(ureq, identitiesFromAuthorGroup);
 			contentCtr = myCtr;
 			addToHistory(ureq, bwControl);
@@ -379,8 +377,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("groupmanagergroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			OrganisationRoles[] secGroup = { OrganisationRoles.groupmanager };
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, secGroup, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -403,24 +401,24 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("usermanagergroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			OrganisationRoles[] secGroup = { OrganisationRoles.usermanager };
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, secGroup, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("usergroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			OrganisationRoles[] secGroup = { OrganisationRoles.user };
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, secGroup, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}		
 		else if (uobject.equals("anonymousgroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			OrganisationRoles[] secGroup = new OrganisationRoles[] { OrganisationRoles.guest };
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, secGroup, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -451,14 +449,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("logondeniedgroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, null, null, null, null, Identity.STATUS_LOGIN_DENIED, true);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, null, Identity.STATUS_LOGIN_DENIED, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}		
 		else if (uobject.equals("deletedusers")) {
 			activatePaneInDetailView = "list.deletedusers";
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, null, null, null, null, Identity.STATUS_DELETED, false);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, null, null, null, Identity.STATUS_DELETED, false);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -468,7 +466,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.DAY_OF_MONTH, -7);
 			Date time = cal.getTime();
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -478,7 +476,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.MONTH, -1);
 			Date time = cal.getTime();
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -488,7 +486,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.MONTH, -6);
 			Date time = cal.getTime();
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -503,7 +501,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		else if (uobject.equals("noauthentication")) {
 			activatePaneInDetailView = null;
 			String[] auth = {null};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, auth, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, auth, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();

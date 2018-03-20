@@ -34,22 +34,12 @@ import org.olat.core.logging.AssertException;
  */
 public class SecurityGroupImpl extends PersistentObject implements SecurityGroup {
 
-	/**
-	 * package local
-	 */
-	protected SecurityGroupImpl() {
-	// defined for hibernate
-	}
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
+	@Override
 	public String getResourceableTypeName() {
 		return "SecGroup";
 	}
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
+
+	@Override
 	public Long getResourceableId() {
 		Long key = getKey();
 		if (key == null) throw new AssertException("not persisted yet");

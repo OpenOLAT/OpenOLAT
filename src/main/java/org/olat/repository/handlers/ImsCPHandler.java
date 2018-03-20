@@ -225,10 +225,11 @@ public class ImsCPHandler extends FileHandler {
 		// only unzips, if not already unzipped
 		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(re.getOlatResource());
 
-		Quota quota = QuotaManager.getInstance().getCustomQuota(cpRoot.getRelPath());
+		QuotaManager quotaManager = CoreSpringFactory.getImpl(QuotaManager.class);
+		Quota quota = quotaManager.getCustomQuota(cpRoot.getRelPath());
 		if (quota == null) {
-			Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
-			quota = QuotaManager.getInstance().createQuota(cpRoot.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
+			quota = quotaManager.createQuota(cpRoot.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
 		cpRoot.setLocalSecurityCallback(secCallback);

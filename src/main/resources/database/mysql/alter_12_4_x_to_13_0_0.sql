@@ -122,6 +122,9 @@ alter table o_cur_element_type_to_type ENGINE = InnoDB;
 alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
 
+-- drop policy
+alter table o_bs_policy drop foreign key FK9A1C5101E2E76DB;
+
 
 
 

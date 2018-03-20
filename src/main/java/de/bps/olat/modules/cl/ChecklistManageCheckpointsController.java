@@ -26,10 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -70,6 +68,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -82,8 +81,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class ChecklistManageCheckpointsController extends BasicController {
 	
-	protected final static String EDIT_ACTION = "cl.edit.identity";
-	protected final static String DETAILS_ACTION = "cl.user.details";
+	protected static final String EDIT_ACTION = "cl.edit.identity";
+	protected static final String DETAILS_ACTION = "cl.user.details";
 	protected static final String USER_PROPS_ID = ChecklistManageCheckpointsController.class.getCanonicalName();
 	
 	private Identity selectedIdentity;
@@ -103,10 +102,14 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	private List<BusinessGroup> lstGroups;
 	private List<Identity> allIdentities, notInGroupIdentities;
 	private CourseGroupManager cgm;
-	private final UserManager userManager;
-	private final BaseSecurity securityManager;
-	private final BaseSecurityModule securityModule;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	private CloseableModalController cmcUserInfo;
 	private UserInfoMainController uimc;
@@ -117,18 +120,13 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
 		this.checklist = checklist;
 		this.course = course;
-		this.allIdentities = new ArrayList<Identity>();
-		this.notInGroupIdentities = new ArrayList<Identity>();
-		this.lstGroups = new ArrayList<BusinessGroup>();
+		this.allIdentities = new ArrayList<>();
+		this.notInGroupIdentities = new ArrayList<>();
+		this.lstGroups = new ArrayList<>();
 		this.readOnly = readOnly;
 		
-		securityManager = BaseSecurityManager.getInstance();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		loadData();
-		
-		
+	
 		cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin() || cgm.isIdentityCourseAdministrator(identity);
@@ -214,7 +212,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 		loadData();
 		
 		// load participants
-		List<Identity> lstIdents = new ArrayList<Identity>();
+		List<Identity> lstIdents = new ArrayList<>();
 		if(groupForm.getSelection().equals(GroupChoiceForm.CHOICE_ALL)) {
 			lstIdents.addAll(allIdentities);
 		} else if(groupForm.getSelection().equals(GroupChoiceForm.CHOICE_OTHERS)) {
@@ -448,9 +446,9 @@ public class ChecklistManageCheckpointsController extends BasicController {
 
 class GroupChoiceForm extends FormBasicController {
 
-	protected final static String CHOICE_ALL = "cl.choice.all";
-	protected final static String CHOICE_OTHERS = "cl.choice.others";
-	protected final static String EXPORT_TABLE = "cl.export";
+	protected static final String CHOICE_ALL = "cl.choice.all";
+	protected static final String CHOICE_OTHERS = "cl.choice.others";
+	protected static final String EXPORT_TABLE = "cl.export";
 
 	private List<BusinessGroup> lstGroups;
 	private SingleSelection groupChoice;

@@ -67,7 +67,10 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -100,7 +103,7 @@ public class UserWebService {
 	
 	public static final String PROPERTY_HANDLER_IDENTIFIER = UserWebService.class.getName();
 	
-	public static CacheControl cc = new CacheControl();
+	public static final CacheControl cc = new CacheControl();
 	
 	static {
 		cc.setMaxAge(-1);
@@ -198,7 +201,7 @@ public class UserWebService {
 			if(isAdministrativeUser && "all".equalsIgnoreCase(statusVisibleLimit)) {
 				status = null;
 			}
-			identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, userProps, true, null, null, authProviders, null, null, null, null, status);
+			identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, userProps, true, null, authProviders, null, null, null, null, status);
 		}
 		
 		int count = 0;
@@ -330,22 +333,23 @@ public class UserWebService {
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateRoles(@PathParam("identityKey") Long identityKey, RolesVO roles, @Context HttpServletRequest request) {
-		try {
-			boolean isUserManager = isUserManager(request);
-			if(!isUserManager) {
-				return Response.serverError().status(Status.FORBIDDEN).build();
-			}
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			Roles modRoles = roles.toRoles();
-			Identity actingIdentity = getIdentity(request);
-			BaseSecurityManager.getInstance().updateRoles(actingIdentity, identity, modRoles);
-			return Response.ok(new RolesVO(modRoles)).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		
+		boolean isUserManager = isUserManager(request);
+		if(!isUserManager) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Roles modRoles = roles.toRoles();
+		Identity actingIdentity = getIdentity(request);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		securityManager.updateRoles(actingIdentity, identity, defOrganisation, modRoles);
+		return Response.ok(new RolesVO(modRoles)).build();
 	}
 	
 	/**
@@ -632,26 +636,22 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityKey") Long identityKey, @Context Request request) {
-		try {
-			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
-			if(portrait == null || !portrait.exists()) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			Date lastModified = new Date(portrait.lastModified());
-			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-			if(response == null) {
-				response = Response.ok(portrait).lastModified(lastModified).cacheControl(cc);
-			}
-			return response.build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		
+		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+		if(portrait == null || !portrait.exists()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		Date lastModified = new Date(portrait.lastModified());
+		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+		if(response == null) {
+			response = Response.ok(portrait).lastModified(lastModified).cacheControl(cc);
+		}
+		return response.build();
 	}
 	
 	/**
@@ -687,7 +687,7 @@ public class UserWebService {
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
-		}	finally {
+		} finally {
 			MultipartReader.closeQuietly(partsReader);
 		}
 	}

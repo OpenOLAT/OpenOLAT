@@ -51,8 +51,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseModule;
@@ -82,7 +81,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private CatalogManager catalogManager;
+	@Autowired
+	private OLATResourceManager orm;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -97,7 +104,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-catalog-one");
 		JunitTestHelper.createAndPersistIdentityAsUser("rest-catalog-two");
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		admin = securityManager.findIdentityByName("administrator");
 
 		//create a catalog
@@ -107,10 +113,9 @@ public class CatalogTest extends OlatJerseyTestCase {
 		entry1.setType(CatalogEntry.TYPE_NODE);
 		entry1.setName("Entry-1");
 		entry1.setDescription("Entry-description-1");
-		entry1.setOwnerGroup(securityManager.createAndPersistSecurityGroup());
 		catalogManager.addCatalogEntry(root1, entry1);
 		
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		entry1 = catalogManager.loadCatalogEntry(entry1);
 		securityManager.addIdentityToSecurityGroup(admin, entry1.getOwnerGroup());
 		
@@ -150,7 +155,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		subEntry13move.setDescription("Sub-entry-description-13-move target");
 		catalogManager.addCatalogEntry(root1, subEntry13move);
 		
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 	}
 
 	@Test
@@ -539,7 +544,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertNotNull(voes);
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
+		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		assertNotNull(identities);
 		assertEquals(identities.size(), voes.size());
 
@@ -585,7 +590,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
+		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		boolean found = false;
 		for(Identity identity:identities) {
 			if(identity.getKey().equals(id1.getKey())) {
@@ -610,7 +615,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
-		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
+		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		boolean found = false;
 		for(Identity identity:identities) {
 			if(identity.getKey().equals(id1.getKey())) {
@@ -670,6 +675,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 			return null;
 		}
 	}
+
 	
 	private RepositoryEntry createRepository(String displayName, final Long resourceableId) {
 		OLATResourceable resourceable = new OLATResourceable() {
@@ -677,22 +683,21 @@ public class CatalogTest extends OlatJerseyTestCase {
 			public Long getResourceableId() {return resourceableId;}
 		};
 
-		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 
-		OLATResource r = rm.findResourceable(resourceable);
+		OLATResource r = orm.findResourceable(resourceable);
 		if(r == null) {
-			r = rm.createOLATResourceInstance(resourceable);
+			r = orm.createOLATResourceInstance(resourceable);
 		}
-		DBFactory.getInstance().saveObject(r);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.saveObject(r);
+		dbInstance.intermediateCommit();
 		
-		RepositoryEntry d = RepositoryManager.getInstance().lookupRepositoryEntry(resourceable, false);
+		RepositoryEntry d = repositoryManager.lookupRepositoryEntry(resourceable, false);
 		if(d == null) {
 			d = repositoryService.create("Rei Ayanami", "-", displayName, "Repo entry", r);
-			DBFactory.getInstance().saveObject(d);
+			dbInstance.saveObject(d);
 		}
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		return d;
 	}
 }

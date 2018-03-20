@@ -33,6 +33,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
@@ -63,6 +64,8 @@ public class QuestionItemDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private SecurityGroupDAO securityGroupDao;
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
@@ -106,7 +109,7 @@ public class QuestionItemDAO {
 	
 	public void persist(Identity owner, QuestionItemImpl item) {
 		if(item.getOwnerGroup() == null) {
-			SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
+			SecurityGroup ownerGroup = securityGroupDao.createAndPersistSecurityGroup();
 			item.setOwnerGroup(ownerGroup);
 		}
 		dbInstance.getCurrentEntityManager().persist(item);

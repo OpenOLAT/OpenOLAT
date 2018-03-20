@@ -37,12 +37,10 @@ import java.util.UUID;
 import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardStep00;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -79,8 +77,8 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.session.UserSessionManager;
@@ -93,6 +91,7 @@ import org.olat.instantMessaging.model.Presence;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
@@ -149,11 +148,19 @@ public class GroupController extends BasicController {
 	protected boolean mandatoryEmail;
 	protected boolean chatEnabled;
 
+	@Autowired
 	protected BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	protected UserManager userManager;
+	@Autowired
 	private InstantMessagingModule imModule;
+	@Autowired
 	private InstantMessagingService imService;
+	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
 	private MailManager mailManager;
 	
 	public Object userObject;
@@ -181,15 +188,8 @@ public class GroupController extends BasicController {
 		this.mayModifyMembers = mayModifyMembers;
 		this.keepAtLeastOne = keepAtLeastOne;
 		this.mandatoryEmail = mandatoryEmail;
-		securityManager = BaseSecurityManager.getInstance();
-		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 
@@ -357,7 +357,7 @@ public class GroupController extends BasicController {
 						showError("msg.selectionempty");
 						return;
 					}
-					toAdd = new ArrayList<Identity>();
+					toAdd = new ArrayList<>();
 					toAdd.add(choosenIdentity);
 				} else if (event instanceof MultiIdentityChosenEvent) {
 					MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent) event;
@@ -655,10 +655,10 @@ public class GroupController extends BasicController {
 	public void reloadData() {
 		// refresh view		
 		List<Object[]> combo = securityManager.getIdentitiesAndDateOfSecurityGroup(securityGroup); 
-		List<GroupMemberView> views = new ArrayList<GroupMemberView>(combo.size());
-		Map<Long,GroupMemberView> idToViews = new HashMap<Long,GroupMemberView>();
+		List<GroupMemberView> views = new ArrayList<>(combo.size());
+		Map<Long,GroupMemberView> idToViews = new HashMap<>();
 
-		Set<Long> loadStatus = new HashSet<Long>();
+		Set<Long> loadStatus = new HashSet<>();
 		for(Object[] co:combo) {
 			Identity identity = (Identity)co[0];
 			Date addedAt = (Date)co[1];
@@ -678,7 +678,7 @@ public class GroupController extends BasicController {
 		}
 		
 		if(loadStatus.size() > 0) {
-			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
 			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
 				String status = statusMap.get(toLoad);

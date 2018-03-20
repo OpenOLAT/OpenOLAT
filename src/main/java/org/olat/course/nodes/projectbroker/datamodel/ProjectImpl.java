@@ -93,7 +93,7 @@ public class ProjectImpl extends PersistentObject implements Project {
 	 * @param attachmentFileName
 	 * @param projectBroker
 	 */
-	public ProjectImpl(String title, String description, BusinessGroup projectGroup, ProjectBroker projectBroker) {
+	public ProjectImpl(String title, String description, BusinessGroup projectGroup, ProjectBroker projectBroker, SecurityGroup candidateGroup) {
 		this.title = title;
 		this.description = description;
 		this.state = Project.STATE_NOT_ASSIGNED;
@@ -102,7 +102,7 @@ public class ProjectImpl extends PersistentObject implements Project {
 		this.attachmentFileName = "";
 		this.mailNotificationEnabled = true;
 		this.projectBroker = projectBroker;
-		this.candidateGroup = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
+		this.candidateGroup = candidateGroup;
 	}
 
 

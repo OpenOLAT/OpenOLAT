@@ -120,11 +120,11 @@ public class CourseGroupWebService {
 		}
 		
 		String relPath = collabTools.getFolderRelPath();
-		QuotaManager qm = QuotaManager.getInstance();
+		QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 		Quota folderQuota = qm.getCustomQuota(relPath);
 		if (folderQuota == null) {
 			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
-			folderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			folderQuota = qm.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 		SubscriptionContext subsContext = null;
 		VFSWebServiceSecurityCallback secCallback = new VFSWebServiceSecurityCallback(true, true, true, folderQuota, subsContext);

@@ -26,7 +26,6 @@
 package org.olat.collaboration;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,8 +34,6 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.manager.ImportToCalendarManager;
@@ -56,7 +53,7 @@ import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
@@ -151,55 +148,55 @@ public class CollaborationTools implements Serializable {
 
 	private static final long serialVersionUID = -155629068939748789L;
 	boolean dirty = false;
-	private final static String TRUE = "true";
-	private final static String FALSE = "false";
-	public final static String KEY_FORUM = "forumKey";
-	public final static String KEY_PORTFOLIO = "portfolioMapKey";
-	public final static String KEY_OPENMEETINGS = "openMeetingsKey";
+	private static final String TRUE = "true";
+	private static final String FALSE = "false";
+	public static final String KEY_FORUM = "forumKey";
+	public static final String KEY_PORTFOLIO = "portfolioMapKey";
+	public static final String KEY_OPENMEETINGS = "openMeetingsKey";
 
 	/**
 	 * <code>PROP_CAT_BG_COLLABTOOLS</code> identifies properties concerning
 	 * Collaboration Tools
 	 */
-	public final static String PROP_CAT_BG_COLLABTOOLS = "collabtools";
+	public static final String PROP_CAT_BG_COLLABTOOLS = "collabtools";
 	/**
 	 * constant used to identify the calendar for a BuddyGroup
 	 */
-	public final static String TOOL_CALENDAR = "hasCalendar";
+	public static final String TOOL_CALENDAR = "hasCalendar";
 	/**
 	 * constant used to identify the forum for a BuddyGroup
 	 */
-	public final static String TOOL_FORUM = "hasForum";
+	public static final String TOOL_FORUM = "hasForum";
 	/**
 	 * constant used to identify the folder for a BuddyGroup
 	 */
-	public final static String TOOL_FOLDER = "hasFolder";
+	public static final String TOOL_FOLDER = "hasFolder";
 	/**
 	 * constant used to identify the chat for a BuddyGroup
 	 */
-	public final static String TOOL_CHAT = "hasChat";
+	public static final String TOOL_CHAT = "hasChat";
 	/**
 	 * constant used to identify the contact form for a BuddyGroup
 	 */
-	public final static String TOOL_CONTACT = "hasContactForm";
+	public static final String TOOL_CONTACT = "hasContactForm";
 	/**
 	 * constant used to identify the contact form for a BuddyGroup
 	 */
-	public final static String TOOL_NEWS = "hasNews";
+	public static final String TOOL_NEWS = "hasNews";
 	/**
 	 * constant used to identify the wiki for a BuddyGroup
 	 */
-	public final static String TOOL_WIKI = "hasWiki";
+	public static final String TOOL_WIKI = "hasWiki";
 	
 	/**
 	 * constant used to identify the portfolio for a BuddyGroup
 	 */
-	public final static String TOOL_PORTFOLIO = "hasPortfolio";
+	public static final String TOOL_PORTFOLIO = "hasPortfolio";
 	
 	/**
 	 * constant used to identify the open meetings for a group
 	 */
-	public final static String TOOL_OPENMEETINGS = "hasOpenMeetings";
+	public static final String TOOL_OPENMEETINGS = "hasOpenMeetings";
 	
 	/**
 	 * Only owners have write access to the calendar.
@@ -222,10 +219,10 @@ public class CollaborationTools implements Serializable {
 	/**
 	 * cache for Boolean Objects representing the State
 	 */
-	private final static String KEY_NEWS = "news";
-	private final static String KEY_NEWS_ACCESS = "newsAccess";
-	public final static String KEY_CALENDAR_ACCESS = "cal";
-	public final static String KEY_FOLDER_ACCESS = "folder";
+	private static final String KEY_NEWS = "news";
+	private static final String KEY_NEWS_ACCESS = "newsAccess";
+	public static final String KEY_CALENDAR_ACCESS = "cal";
+	public static final String KEY_FOLDER_ACCESS = "folder";
 
 	//o_clusterOK by guido
 	private Hashtable<String, Boolean> cacheToolStates;
@@ -242,7 +239,7 @@ public class CollaborationTools implements Serializable {
 	CollaborationTools(CoordinatorManager coordinatorManager, BusinessGroup ores) {
 		this.coordinatorManager = coordinatorManager;
 		this.ores = ores;
-		this.cacheToolStates = new Hashtable<String, Boolean>();
+		this.cacheToolStates = new Hashtable<>();
 	}
 
 	/**
@@ -279,8 +276,7 @@ public class CollaborationTools implements Serializable {
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		TitleInfo titleInfo = new TitleInfo(null, trans.translate("collabtools.named.hasForum"));
 		titleInfo.setSeparatorEnabled(true);
-		Controller forumController = ForumUIFactory.getTitledForumController(ureq, wControl, forum, new ForumCallback() {
-
+		return ForumUIFactory.getTitledForumController(ureq, wControl, forum, new ForumCallback() {
 			@Override
 			public boolean mayUsePseudonym() {
 				return false;
@@ -331,7 +327,6 @@ public class CollaborationTools implements Serializable {
 				return subsContext;
 			}
 		}, titleInfo);
-		return forumController;
 	}
 	
 	public Forum getForum() {
@@ -396,9 +391,7 @@ public class CollaborationTools implements Serializable {
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		OlatRootFolderImpl rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin);
 		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(trans.translate("folder"), rootContainer);
-		
-		FolderRunController frc = new FolderRunController(namedContainer, true, true, true, ureq, wControl);
-		return frc;
+		return new FolderRunController(namedContainer, true, true, true, ureq, wControl);
 	}
 	
 	/**
@@ -473,8 +466,7 @@ public class CollaborationTools implements Serializable {
 	 * @return a contact form controller
 	 */
 	public ContactFormController createContactFormController(UserRequest ureq, WindowControl wControl, ContactMessage cmsg) {
-		ContactFormController cfc = new ContactFormController(ureq, wControl, true, false, false, cmsg);
-		return cfc;
+		return new ContactFormController(ureq, wControl, true, false, false, cmsg);
 	}
 
 	
@@ -500,25 +492,21 @@ public class CollaborationTools implements Serializable {
 	 */
 	public Controller createWikiController(UserRequest ureq, WindowControl wControl) {
 		// Check for jumping to certain wiki page
-		BusinessControl bc = wControl.getBusinessControl();
-		ContextEntry ce = bc.popLauncherContextEntry();
-		
+		ContextEntry ce = wControl.getBusinessControl().popLauncherContextEntry();
+
+		Roles roles = ureq.getUserSession().getRoles();
 		SubscriptionContext subContext = new SubscriptionContext(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		boolean isResourceOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(ureq.getIdentity(), Constants.PERMISSION_ACCESS, ores);
-		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOlatAdmin, isGuestOnly, true, isResourceOwner, subContext);
-		if ( ce != null ) { //jump to a certain context
+		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, roles.isOLATAdmin(), roles.isGuestOnly(), true, false, subContext);
+		String initialPage = null;
+		if (ce != null) { //jump to a certain context
 			OLATResourceable ceOres = ce.getOLATResourceable();
 			String typeName = ceOres.getResourceableTypeName();
-			String page = typeName.substring("page=".length());
-			if(page != null && page.endsWith(":0")) {
-				page = page.substring(0, page.length() - 2);
+			initialPage = typeName.substring("page=".length());
+			if(initialPage != null && initialPage.endsWith(":0")) {
+				initialPage = initialPage.substring(0, initialPage.length() - 2);
 			}
-			return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, callback, page);
-		} else {
-			return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, callback, null);
 		}
+		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, callback, initialPage);
 	}
 	
 	/**
@@ -534,42 +522,39 @@ public class CollaborationTools implements Serializable {
 		if(mapProperty != null) {
 			return createPortfolioController(ureq, wControl, stackPanel, mapProperty);
 		} else {
-			return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Controller>() {
-				@Override
-				public Controller execute() {
-					Controller ctrl;
-					Property mapKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
-					if (mapKeyProperty == null) {
-						PortfolioV2Module moduleV2 = CoreSpringFactory.getImpl(PortfolioV2Module.class);
-						if(moduleV2.isEnabled()) {
-							PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-							Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
-							CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
-							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
-							BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-							BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
-							List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
-							binderCtrl.activate(ureq, entries, null);
-							ctrl = binderCtrl;
+			return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, () -> {
+				Controller ctrl;
+				Property mapKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
+				if (mapKeyProperty == null) {
+					PortfolioV2Module moduleV2 = CoreSpringFactory.getImpl(PortfolioV2Module.class);
+					if(moduleV2.isEnabled()) {
+						PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+						Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
+						CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
+						mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
+						BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
+						BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
+						List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+						binderCtrl.activate(ureq, entries, null);
+						ctrl = binderCtrl;
 
-							ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
-							ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
-						} else {
-							EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-							PortfolioStructureMap map = ePFMgr.createAndPersistPortfolioDefaultMap(group.getName(), group.getDescription());					
-							Translator pT = Util.createPackageTranslator(EPCreateMapController.class, ureq.getLocale());					
-							// add a page, as each map should have at least one per default!
-							ePFMgr.createAndPersistPortfolioPage(map, pT.translate("new.page.title"), pT.translate("new.page.desc"));
-							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, map.getKey(), null, null);
-							EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
-							ctrl = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
-						}
-						npm.saveProperty(mapKeyProperty);
+						ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+						ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
 					} else {
-						ctrl = createPortfolioController(ureq, wControl, stackPanel, mapProperty);
+						EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+						PortfolioStructureMap map = ePFMgr.createAndPersistPortfolioDefaultMap(group.getName(), group.getDescription());					
+						Translator pT = Util.createPackageTranslator(EPCreateMapController.class, ureq.getLocale());					
+						// add a page, as each map should have at least one per default!
+						ePFMgr.createAndPersistPortfolioPage(map, pT.translate("new.page.title"), pT.translate("new.page.desc"));
+						mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, map.getKey(), null, null);
+						EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
+						ctrl = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
 					}
-					return ctrl;
+					npm.saveProperty(mapKeyProperty);
+				} else {
+					ctrl = createPortfolioController(ureq, wControl, stackPanel, mapProperty);
 				}
+				return ctrl;
 			});
 		}
 	}
@@ -604,8 +589,7 @@ public class CollaborationTools implements Serializable {
 	}
 	
 	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
-		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin, false);
-		return runController;
+		return new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin, false);
 	}
 
 	/**
@@ -745,7 +729,6 @@ public class CollaborationTools implements Serializable {
 		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
 			@Override
 			public void execute() {				
-				//was: synchronized (CollaborationTools.class) {
 				Property property = getPropertyOf(selectedTool);
 				if (property == null) {
 					// not existing -> create it
@@ -802,8 +785,7 @@ public class CollaborationTools implements Serializable {
 			return null;
 		}
 		// read the text value of the existing property
-		String text = property.getStringValue();
-		return text;
+		return property.getStringValue();
 	}
 	
 	/**
@@ -831,8 +813,7 @@ public class CollaborationTools implements Serializable {
 			return null;
 		}
 		// read the text value of the existing property
-		String text = property.getTextValue();
-		return text;
+		return property.getTextValue();
 	}
 	
 	public Property lookupNewsDBEntry() {
@@ -840,7 +821,8 @@ public class CollaborationTools implements Serializable {
 		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_NEWS);
 		if (property == null) { // no entry
 			return null;
-		} else return property;
+		}
+		return property;
 	}
 
 	/**
@@ -861,15 +843,15 @@ public class CollaborationTools implements Serializable {
 	public void setToolAccess(String tool, Integer access) {
 		if (TOOL_FOLDER.equals(tool) && access != null) {
 			if (FOLDER_ACCESS_ALL == access.intValue()) {
-				saveFolderAccess(new Long(FOLDER_ACCESS_ALL));
+				saveFolderAccess(Long.valueOf(FOLDER_ACCESS_ALL));
 			} else if (FOLDER_ACCESS_OWNERS == access.intValue()) {
-				saveFolderAccess(new Long(FOLDER_ACCESS_OWNERS));
+				saveFolderAccess(Long.valueOf(FOLDER_ACCESS_OWNERS));
 			} 			
 		} else if (TOOL_CALENDAR.equals(tool) && access != null) {
 			if (CALENDAR_ACCESS_ALL == access.intValue()) {
-				saveCalendarAccess(new Long(CALENDAR_ACCESS_ALL));
+				saveCalendarAccess(Long.valueOf(CALENDAR_ACCESS_ALL));
 			} else if (CALENDAR_ACCESS_OWNERS == access.intValue()) {
-				saveCalendarAccess(new Long(CALENDAR_ACCESS_OWNERS));
+				saveCalendarAccess(Long.valueOf(CALENDAR_ACCESS_OWNERS));
 			} 						
 		}
 	}
@@ -932,11 +914,11 @@ public class CollaborationTools implements Serializable {
 		}
 
 		private void initFolderQuota(String relPath) {
-			QuotaManager qm = QuotaManager.getInstance();
+			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 			folderQuota = qm.getCustomQuota(relPath);
 			if (folderQuota == null) {
 				Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
-				folderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+				folderQuota = qm.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 			}
 		}
 
@@ -1031,8 +1013,6 @@ public class CollaborationTools implements Serializable {
 		
 		try {
 			FileUtils.bcopy(wikiZip.getInputStream(), new File(fullFilePath), "archive wiki");
-		} catch (FileNotFoundException e) {
-			log.warn("Can not archive wiki repoEntry=" + ores.getResourceableId());
 		} catch (IOException ioe) {
 			log.warn("Can not archive wiki repoEntry=" + ores.getResourceableId());
 		}		

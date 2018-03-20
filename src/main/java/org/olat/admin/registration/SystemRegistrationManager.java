@@ -36,7 +36,6 @@ import java.util.Map;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -48,9 +47,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.PermissionOnResourceable;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
@@ -135,8 +132,7 @@ public class SystemRegistrationManager implements InitializingBean {
 		int min = RandomUtils.nextInt(59);
 		int hour = RandomUtils.nextInt(23);
 		int day = RandomUtils.nextInt(6) + 1;
-		String cronExpression = "0 " + min + " " + hour + " ? * "+ day;
-		return cronExpression;
+		return "0 " + min + " " + hour + " ? * "+ day;
 	}
 
 	public String getLocationCoordinates(String textLocation){
@@ -145,11 +141,9 @@ public class SystemRegistrationManager implements InitializingBean {
 		}
 		
 		String csvCoordinates = null;
-		CloseableHttpClient client = null;
-		try {
-			client = HttpClientFactory.getHttpClientInstance(true);
+		try(CloseableHttpClient client = HttpClientFactory.getHttpClientInstance(true)) {
 			URIBuilder uriBuilder = new URIBuilder("http://maps.google.com/maps/geo");
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>(5);
+			List<NameValuePair> nvps = new ArrayList<>(5);
 			nvps.add(new BasicNameValuePair("q",textLocation));
 			nvps.add(new BasicNameValuePair("output","csv"));
 			nvps.add(new BasicNameValuePair("oe","utf8"));
@@ -167,8 +161,6 @@ public class SystemRegistrationManager implements InitializingBean {
 			}
 		} catch (Exception e) {
 			//
-		} finally {
-			IOUtils.closeQuietly(client);
 		}
 		return csvCoordinates;
 	}
@@ -187,8 +179,8 @@ public class SystemRegistrationManager implements InitializingBean {
 	 */
 	protected void sendRegistrationData() {
 		HttpPut method = null;
-		CloseableHttpClient client = null;
-		try {
+
+		try(CloseableHttpClient client = HttpClientFactory.getHttpClientInstance(true)) {
 			// Do it optimistic and try to generate the XML message. If the message
 			// doesn't contain anything, the user does not want to register this
 			// instance
@@ -210,7 +202,6 @@ public class SystemRegistrationManager implements InitializingBean {
 			}
 			builder.queryParam("product", PRODUCT);
 
-			client = HttpClientFactory.getHttpClientInstance(true);
 			String url = builder.build().toString();
 			method = new HttpPut(url);
 			HttpResponse response = client.execute(method);
@@ -235,12 +226,11 @@ public class SystemRegistrationManager implements InitializingBean {
 			if(method != null) {
 				method.releaseConnection();
 			}
-			IOUtils.closeQuietly(client);
 		}
 	}
 
 	public Map<String,String> getRegistrationPropertiesMessage() {
-		Map<String,String> msgProperties = new HashMap<String,String>();
+		Map<String,String> msgProperties = new HashMap<>();
 		
 		boolean website = registrationModule.isPublishWebsite();
 		boolean notify = registrationModule.isNotifyReleases();
@@ -265,13 +255,12 @@ public class SystemRegistrationManager implements InitializingBean {
 		msgProperties.put("coursesPublished", String.valueOf(publishedCourses));
 		
 		// User counts
-		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		int users = securityManager.countIdentitiesOfSecurityGroup(olatuserGroup);
-		long disabled = securityManager.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED);
-		msgProperties.put("usersEnabled", String.valueOf(users - disabled));
-				
-		PermissionOnResourceable[] permissions = { new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR) };
-		long authors = securityManager.countIdentitiesByPowerSearch(null, null, true, null, permissions, null, null, null, null, null, null);
+		long visible = securityManager.countIdentitiesByPowerSearch(null, null, true, new OrganisationRoles[] { OrganisationRoles.user },
+				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		msgProperties.put("usersEnabled", String.valueOf(visible));
+
+		long authors = securityManager.countIdentitiesByPowerSearch(null, null, true, new OrganisationRoles[] { OrganisationRoles.author },
+				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		msgProperties.put("authors", String.valueOf(authors));
 		
 		// Activity

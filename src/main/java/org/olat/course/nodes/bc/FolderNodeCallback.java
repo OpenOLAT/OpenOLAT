@@ -26,6 +26,7 @@
 package org.olat.course.nodes.bc;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -62,25 +63,16 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 		this.nodefolderSubContext = nodefolderSubContext;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canList(org.olat.modules.bc.Path)
-	 */
 	@Override
 	public boolean canList() {
 		return isOlatAdmin || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canRead(org.olat.modules.bc.Path)
-	 */
 	@Override
 	public boolean canRead() {
 		return isOlatAdmin || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canWrite(org.olat.modules.bc.Path)
-	 */
 	@Override
 	public boolean canWrite() {
 	    if (isGuestOnly) return false;
@@ -92,18 +84,12 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 		return canWrite();
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
-	 */
 	@Override
 	public boolean canDelete() {
 	    if (isGuestOnly) return false;
 		return isOlatAdmin || ne.isCapabilityAccessible("upload");
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canCopy()
-	 */
 	@Override
 	public boolean canCopy() {
 		return canRead() && canWrite();
@@ -114,13 +100,10 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 		return isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getQuotaKB(org.olat.modules.bc.Path)
-	 */
 	@Override
 	public Quota getQuota() {
 		if(nodeFolderQuota == null) {
-			QuotaManager qm = QuotaManager.getInstance();
+			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 			nodeFolderQuota = qm.getCustomQuota(relPath);
 			if (nodeFolderQuota == null) {
 				Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
@@ -130,17 +113,11 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 		return nodeFolderQuota;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#setQuota(org.olat.admin.quota.Quota)
-	 */
 	@Override
 	public void setQuota(Quota quota) {
 		nodeFolderQuota = quota;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getSubscriptionContext()
-	 */
 	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return nodefolderSubContext;

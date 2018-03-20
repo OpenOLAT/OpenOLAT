@@ -35,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
@@ -107,10 +106,6 @@ public class EPStructureManagerTest extends OlatTestCase {
 		PortfolioStructure el = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "users-test-map", "a-map-to-test-get-afterwards");
 		Assert.assertNotNull(el);
 		dbInstance.commitAndCloseSession();
-		
-		List<SecurityGroup> secGroups = securityManager.getSecurityGroupsForIdentity(user);
-		Assert.assertNotNull(secGroups);
-		Assert.assertTrue(secGroups.size() >= 1);
 		
 		List<PortfolioStructure> elRes = epStructureManager.getStructureElementsForUser(user, ElementType.DEFAULT_MAP);
 		Assert.assertNotNull(elRes);

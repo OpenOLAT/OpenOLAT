@@ -36,8 +36,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -50,6 +50,7 @@ import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -68,14 +69,19 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	
 	private RestConnection conn;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
 		conn = new RestConnection();
 		
-		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		admin = securityManager.findIdentityByName("administrator");
 		course1 = CoursesWebService.createEmptyCourse(admin, "Course forum 1", "Course forum 1 long name", null);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		
 		//create a folder
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
@@ -87,7 +93,7 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		
 		CourseFactory.publishCourse(course1, RepositoryEntry.ACC_USERS, false, admin, Locale.ENGLISH);
 		
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 	}
 	
   @After

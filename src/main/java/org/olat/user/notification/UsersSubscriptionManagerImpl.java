@@ -26,8 +26,7 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.PermissionOnResourceable;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -151,9 +150,9 @@ public class UsersSubscriptionManagerImpl extends UsersSubscriptionManager imple
 			return Collections.emptyList();
 		
 		BaseSecurity manager = BaseSecurityManager.getInstance();
-		PermissionOnResourceable[] permissions = {new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)};
-		List<Identity> guests = manager.getIdentitiesByPowerSearch(null, null, true, null, permissions, null, from, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		List<Identity> identities = manager.getIdentitiesByPowerSearch(null, null, true, null, null, null, from, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		OrganisationRoles[] guestRoles = { OrganisationRoles.guest };
+		List<Identity> guests = manager.getIdentitiesByPowerSearch(null, null, true, guestRoles, null, from, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		List<Identity> identities = manager.getIdentitiesByPowerSearch(null, null, true, null, null, from, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		if(!identities.isEmpty() && !guests.isEmpty()) {
 			identities.removeAll(guests);
 		}

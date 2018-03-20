@@ -29,6 +29,7 @@ package org.olat.core.commons.modules.bc;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
 /**
  * 
@@ -42,9 +43,9 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 		return MOUNTPOINT;
 	}
 	
-	public VFSContainer getContainer(Identity identity) {
+	public VFSContainer getContainer(Identity identity, Roles roles) {
 		// merge /public and /private
-		return new BriefcaseWebDAVMergeSource(identity);
+		return new BriefcaseWebDAVMergeSource(identity, roles);
 	}
 
 	@Override
@@ -58,7 +59,7 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
 		// merge /public and /private
-		return getContainer(identityEnv.getIdentity());
+		return getContainer(identityEnv.getIdentity(), identityEnv.getRoles());
 	}
 	
 	protected String getRootPathFor(Identity identity) {

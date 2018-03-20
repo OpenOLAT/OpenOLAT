@@ -42,9 +42,9 @@ import org.hibernate.LazyInitializationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
@@ -92,6 +92,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -705,8 +707,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		//promote id to institution resource manager
 		id.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "openolat.org");
 		userManager.updateUserFromIdentity(id);
-		SecurityGroup institutionalResourceManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
-		securityManager.addIdentityToSecurityGroup(id, institutionalResourceManagerGroup);
+		organisationService.addMember(id, OrganisationRoles.learnresourcemanager);
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -761,11 +762,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			}
 			// save the repository entry
 			repositoryService.update(re);
-			
-			// Create course admin policy for owner group of repository entry
-			// -> All owners of repository entries are course admins
-			//securityManager.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());	
-			
+
 			// flush database and hibernate session cache after 10 records to improve performance
 			// without this optimization, the first entries will be fast but then the adding new 
 			// entries will slow down due to the fact that hibernate needs to adjust the size of
@@ -949,9 +946,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void isInstitutionalRessourceManagerFor() {
-		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
-		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
-		Identity part3 = JunitTestHelper.createAndPersistIdentityAsUser("instit-" + UUID.randomUUID().toString());
+		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-1");
+		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-2");
+		Identity part3 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-3");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryEntryRelationDao.addRole(owner1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(owner2, re, GroupRoles.owner.name());
@@ -968,8 +965,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//promote owner1 to institution resource manager
-		SecurityGroup institutionalResourceManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
-		securityManager.addIdentityToSecurityGroup(owner1, institutionalResourceManagerGroup);
+		organisationService.addMember(owner1, OrganisationRoles.learnresourcemanager);
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -988,7 +984,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void testCountByTypeLimitAccess() {
 		String TYPE = UUID.randomUUID().toString().replace("-", "");
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("re-gen-1");
 		
 		int count = repositoryManager.countByTypeLimitAccess("unkown", RepositoryEntry.ACC_OWNERS_AUTHORS);
 		assertEquals("Unkown type must return 0 elements", 0,count);

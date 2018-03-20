@@ -35,9 +35,7 @@ public enum GroupRoles {
 	coach,
 	participant,
 	invitee,
-	waiting,
-	
-	usermanager;
+	waiting;
 	
 	
 	public static List<String> toList(String... roles) {

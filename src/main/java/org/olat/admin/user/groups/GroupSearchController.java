@@ -81,11 +81,14 @@ public class GroupSearchController extends StepFormBasicController {
 
 	private TextElement search;
 	private FormSubmit searchButton;
-	private FormLink saveLink, searchLink;
+	private FormLink saveLink;
+	private FormLink searchLink;
 	private FormItem errorComp;
 	private FlexiTableElement table;
 	private FormLayoutContainer tableCont;
 	private GroupTableDataModel tableDataModel;
+	
+	private GroupChanges groupChanges;
 	
 	private String lastSearchValue;
 	@Autowired
@@ -102,10 +105,11 @@ public class GroupSearchController extends StepFormBasicController {
 	}	
 	
 	// constructor for use in steps-wizzard
-	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, boolean finishByFinish) {
+	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, GroupChanges groupChanges, boolean finishByFinish) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_VERTICAL, "resulttable");
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		this.finishByFinish = finishByFinish;
+		this.groupChanges = groupChanges;
 		flc.setTranslator(pT);
 		initForm(ureq);
 	}
@@ -214,14 +218,14 @@ public class GroupSearchController extends StepFormBasicController {
 			List<BusinessGroup> group2s = businessGroupService.findBusinessGroups(param2s, null, 0, -1);
 			filterGroups(group2s, dedupGroups);
 			
-			List<BusinessGroup> groups = new ArrayList<BusinessGroup>(group1s.size() + group2s.size());
+			List<BusinessGroup> groups = new ArrayList<>(group1s.size() + group2s.size());
 			groups.addAll(group1s);
 			groups.addAll(group2s);
 			
 			List<Long> groupKeysWithRelations = PersistenceHelper.toKeys(groups);
 			List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groupKeysWithRelations, 0, -1);
 
-			List<GroupWrapper> groupWrappers = new ArrayList<GroupWrapper>();
+			List<GroupWrapper> groupWrappers = new ArrayList<>();
 			for(BusinessGroup group:groups) {
 				StringBuilder sb = new StringBuilder();
 				for(BGRepositoryEntryRelation resource:resources) {
@@ -279,10 +283,10 @@ public class GroupSearchController extends StepFormBasicController {
 			return false;
 		}
 		errorComp.clearError();
-		boolean result = false;
+	
 		List<Long> ownerGroups = getCheckedTutorKeys();
 		List<Long> partGroups = getCheckedParticipantKeys();
-		result = (ownerGroups.size() > 0 || partGroups.size() > 0);
+		boolean result = !ownerGroups.isEmpty() || !partGroups.isEmpty();
 		if (!result) {
 			errorComp.setErrorKey("error.choose.one", null);
 		}
@@ -293,18 +297,28 @@ public class GroupSearchController extends StepFormBasicController {
 		List<Long> ownerGroups = getCheckedTutorKeys();
 		List<Long> partGroups = getCheckedParticipantKeys();
 		
-		if (isUsedInStepWizzard()){
+		if (isUsedInStepWizzard()) {
+			boolean groupsChoosen = !ownerGroups.isEmpty() || !partGroups.isEmpty();
 			// might be used in wizzard during user import or user bulk change. allow next/finish according to previous steps.
-			addToRunContext("ownerGroups", ownerGroups);
-			addToRunContext("partGroups", partGroups);
-			boolean groupsChoosen = (ownerGroups.size() !=0 || partGroups.size() != 0);
-			boolean validImport = getFromRunContext("validImport") != null && ((Boolean) getFromRunContext("validImport"));
-			boolean validBulkChange = getFromRunContext("validChange") != null && ((Boolean) getFromRunContext("validChange"));
-		
-			boolean isValid = groupsChoosen || (validImport || validBulkChange) ;
-			addToRunContext("validGroupAdd",isValid );
-			//fxdiff: FXOLAT-245 notify userbulkchange-wizard about valid change
-			addToRunContext("validChange",isValid );
+			if(groupChanges != null) {
+				groupChanges.setOwnerGroups(ownerGroups);
+				groupChanges.setParticipantGroups(partGroups);
+				
+				boolean validImport = getFromRunContext("validImport") != null && ((Boolean) getFromRunContext("validImport"));
+				boolean isValid = groupsChoosen || (validImport || groupChanges.isValidChange()) ;
+				addToRunContext("validGroupAdd",isValid );
+				groupChanges.setValidChange(isValid);	
+			} else {
+				addToRunContext("ownerGroups", ownerGroups);
+				addToRunContext("partGroups", partGroups);
+				
+				boolean validImport = getFromRunContext("validImport") != null && ((Boolean) getFromRunContext("validImport"));
+				boolean validBulkChange = getFromRunContext("validChange") != null && ((Boolean) getFromRunContext("validChange"));
+			
+				boolean isValid = groupsChoosen || (validImport || validBulkChange) ;
+				addToRunContext("validGroupAdd",isValid );
+				addToRunContext("validChange",isValid );
+			}
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			fireEvent(ureq, new AddToGroupsEvent(ownerGroups, partGroups));
@@ -312,7 +326,7 @@ public class GroupSearchController extends StepFormBasicController {
 	}
 
 	private List<Long> getCheckedTutorKeys() {
-		List<Long> selected = new ArrayList<Long>();
+		List<Long> selected = new ArrayList<>();
 		for(GroupWrapper wrapper:tableDataModel.getObjects()) {
 			if(wrapper.getTutor().isSelected(0)) {
 				selected.add(wrapper.getGroupKey());
@@ -322,7 +336,7 @@ public class GroupSearchController extends StepFormBasicController {
 	}
 	
 	private List<Long> getCheckedParticipantKeys() {
-		List<Long> selected = new ArrayList<Long>();
+		List<Long> selected = new ArrayList<>();
 		for(GroupWrapper wrapper:tableDataModel.getObjects()) {
 			if(wrapper.getParticipant().isSelected(0)) {
 				selected.add(wrapper.getGroupKey());

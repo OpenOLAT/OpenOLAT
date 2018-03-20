@@ -49,9 +49,9 @@ import org.apache.http.client.methods.HttpPut;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -67,6 +67,7 @@ import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesFoldersTest extends OlatJerseyTestCase {
 
@@ -76,15 +77,20 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 
 	private RestConnection conn;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
 		conn = new RestConnection();
 		
-		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		admin = securityManager.findIdentityByName("administrator");
 		user = JunitTestHelper.createAndPersistIdentityAsUser("rest-cf-one");
 		course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		
 		//create a folder
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
@@ -96,7 +102,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 
 		CourseFactory.publishCourse(course1, RepositoryEntry.ACC_USERS, false, admin, Locale.ENGLISH);
 		
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 	}
 	
   @After

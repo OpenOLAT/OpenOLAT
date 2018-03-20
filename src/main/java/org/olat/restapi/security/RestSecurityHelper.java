@@ -29,12 +29,10 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -42,13 +40,12 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.dispatcher.LocaleNegotiator;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 
 /**
  * 
- * Description:<br>
- * TODO: srosse Class Description for RestSecurityHelper
  * 
- * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
@@ -118,15 +115,15 @@ public class RestSecurityHelper {
 		}
 	}
 	
-	public static boolean isAuthorEditor(OLATResourceable resourceable, HttpServletRequest request) {
+	public static boolean isAuthorEditor(RepositoryEntry entry, HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
 			if(roles.isOLATAdmin()) return true;
 			if(roles.isAuthor()) {
 				UserRequest ureq = getUserRequest(request);
 				Identity identity = ureq.getIdentity();
-				BaseSecurity secMgr = BaseSecurityManager.getInstance();
-				return secMgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ADMIN, resourceable);
+				RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
+				return rm.isOwnerOfRepositoryEntry(identity, entry) || rm.isInstitutionalRessourceManagerFor(identity, roles, entry);
 			}
 			return false;
 		} catch (Exception e) {
@@ -142,8 +139,7 @@ public class RestSecurityHelper {
 				UserRequest ureq = getUserRequest(request);
 				Identity identity = ureq.getIdentity();
 				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-				boolean editor = cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
-				return editor;
+				return cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
 			}
 			return false;
 		} catch (Exception e) {
