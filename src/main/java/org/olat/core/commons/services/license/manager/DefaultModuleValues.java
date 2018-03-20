@@ -68,8 +68,8 @@ public class DefaultModuleValues {
 		}
 	}
 	
-	public boolean isEnabled() {
-		return true;
+	public Boolean isEnabled() {
+		return Boolean.TRUE;
 	}
 	
 	public void activateLicenseTypes(LicenseHandler handler) {

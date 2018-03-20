@@ -56,6 +56,7 @@ public class LicenseModule extends AbstractSpringModule {
 	private Map<String, String> defaultLicenseTypeKeys = new HashMap<>();
 	private Map<String, String> licensorCreatorTypes = new HashMap<>();
 	private Map<String, String> licensorConstantValues = new HashMap<>();
+	private boolean handlerInitialized = false;
 
 
 	public LicenseModule(CoordinatorManager coordinatorManager) {
@@ -92,17 +93,26 @@ public class LicenseModule extends AbstractSpringModule {
 				licensorConstantValues.put(handlerType, licensorCreatorConstant);
 			}
 		}
+		if (handlerInitialized) {
+			savePropertiesAndFireChangedEvent();
+		}
 
 		handlers.sort((LicenseHandler h1, LicenseHandler h2) -> h1.getType().compareTo(h2.getType()));
 	}
 	
 	private void initLicenseHandler(LicenseHandler handler) {
-		setEnabled(handler.getType(), defaultModuleValues.isEnabled());
+		String handlerType = handler.getType();
+		
+		enabledHandlers.put(handlerType, defaultModuleValues.isEnabled());
+		setStringProperty(ENABLED_HANDLERS + handlerType, String.valueOf(defaultModuleValues.isEnabled()), false);
 
 		defaultModuleValues.activateLicenseTypes(handler);
 		
-		LicenseType licenseType = defaultModuleValues.getLicenseType();
-		setDefaultLicenseTypeKey(handler, String.valueOf(licenseType.getKey()));
+		String licenseTypeKey = String.valueOf(defaultModuleValues.getLicenseType().getKey());
+		defaultLicenseTypeKeys.put(handlerType, licenseTypeKey);
+		setStringProperty(DEFAULT_LICENSE_TYPE + handlerType, licenseTypeKey, false);
+		
+		handlerInitialized = true;
 	}
 
 	@Override
