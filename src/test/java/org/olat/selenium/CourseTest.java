@@ -64,6 +64,7 @@ import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -885,6 +886,16 @@ public class CourseTest extends Deployments {
 	@RunAsClient
 	public void courseReminders(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		//configure at least a license
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		new NavigationPage(browser)
+			.openAdministration()
+			.openLicenses()
+			.enableForResources("all rights reserved");
+		new UserToolsPage(browser)
+			.logout();
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -909,6 +920,7 @@ public class CourseTest extends Deployments {
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
 			.assertOnGeneralTab()
+			.setLicense()
 			.setLifecycle(validFrom, validTo, Locale.GERMAN)
 			.save()
 			.clickToolbarBack();
