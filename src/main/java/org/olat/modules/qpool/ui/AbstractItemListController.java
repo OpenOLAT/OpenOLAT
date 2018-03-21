@@ -148,7 +148,8 @@ public abstract class AbstractItemListController extends FormBasicController
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
 		
-		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key, mainForm, searchAllTaxonomyLevels);
+		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), getSecurityCallback(), key,
+				mainForm, searchAllTaxonomyLevels);
 		extendedSearchCtrl.setEnabled(false);
 		
 		initForm(ureq);
@@ -183,8 +184,10 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.keywords.i18nKey(), Cols.keywords.ordinal(), true, OrderBy.keywords.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage.i18nKey(), Cols.coverage.ordinal(), true, OrderBy.coverage.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInfos.i18nKey(), Cols.additionalInfos.ordinal(), true,  OrderBy.additionalInformations.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, OrderBy.taxonomyLevel.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyPath.i18nKey(), Cols.taxnonomyPath.ordinal(), true, OrderBy.taxonomyPath.name()));
+		if (getSecurityCallback().canUseTaxonomy()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, OrderBy.taxonomyLevel.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyPath.i18nKey(), Cols.taxnonomyPath.ordinal(), true, OrderBy.taxonomyPath.name()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty.i18nKey(), Cols.difficulty.ordinal(), true, OrderBy.difficulty.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty.i18nKey(), Cols.stdevDifficulty.ordinal(), true, OrderBy.stdevDifficulty.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation.i18nKey(), Cols.differentiation.ordinal(), true, OrderBy.differentiation.name()));

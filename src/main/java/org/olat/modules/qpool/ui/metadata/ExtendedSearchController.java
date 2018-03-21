@@ -46,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QItemDocument;
@@ -65,7 +66,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	
 	private FormLink searchButton;
 	
-	private final SearchAttributes searchAttributes = new SearchAttributes();
+	private final SearchAttributes searchAttributes;
 	private final List<ConditionalQuery> uiQueries = new ArrayList<>();
 	private final List<String> condQueries = new ArrayList<>();
 	
@@ -73,7 +74,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private ExtendedSearchPrefs prefs;
 	private final boolean allTaxonomyLevels;
 	private boolean enabled = true;
-	
+	private final QPoolSecurityCallback qPoolSecurityCallback;
 	
 	@Autowired
 	private QPoolService qpoolService;
@@ -84,10 +85,13 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	@Autowired
 	private QuestionPoolLicenseHandler licenseHandler;
 
-	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm, boolean allTaxonomyLevels) {
+	public ExtendedSearchController(UserRequest ureq, WindowControl wControl,
+			QPoolSecurityCallback qPoolSecurityCallback, String prefsKey, Form mainForm, boolean allTaxonomyLevels) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
+		this.qPoolSecurityCallback = qPoolSecurityCallback;
 		this.allTaxonomyLevels = allTaxonomyLevels;
+		searchAttributes = new SearchAttributes();
 		
 		this.prefsKey = prefsKey;
 		prefs = (ExtendedSearchPrefs) ureq.getUserSession().getGuiPreferences()
@@ -101,7 +105,6 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		} else {
 			uiQueries.add(new ConditionalQuery());
 		}
-		
 		
 		initForm(ureq);
 	}
@@ -338,10 +341,14 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			attributes.add(new SearchAttribute("general.coverage", new StringQueryParameter(QItemDocument.COVERAGE_FIELD)));
 			attributes.add(new SearchAttribute("general.additional.informations", new StringQueryParameter(QItemDocument.ADD_INFOS_FIELD)));
 			attributes.add(new SearchAttribute("general.language", new StringQueryParameter(QItemDocument.LANGUAGE_FIELD)));
-			attributes.add(new SearchAttribute("classification.taxonomy.level", new TaxonomicFieldQueryParameter()));
-			attributes.add(new SearchAttribute("classification.taxonomic.path.incl", new TaxonomicPathQueryParameter()));
+			if (qPoolSecurityCallback.canUseTaxonomy()) {
+				attributes.add(new SearchAttribute("classification.taxonomy.level", new TaxonomicFieldQueryParameter()));
+				attributes.add(new SearchAttribute("classification.taxonomic.path.incl", new TaxonomicPathQueryParameter()));
+			}
 			//educational
-			attributes.add(new SearchAttribute("educational.context", new ContextQueryParameter()));
+			if (qPoolSecurityCallback.canUseEducationalContext()) {
+				attributes.add(new SearchAttribute("educational.context", new ContextQueryParameter()));
+			}
 			//question
 			attributes.add(new SearchAttribute("question.type", new TypeQueryParameter()));
 			attributes.add(new SearchAttribute("question.assessmentType", new AssessmentQueryParameter()));

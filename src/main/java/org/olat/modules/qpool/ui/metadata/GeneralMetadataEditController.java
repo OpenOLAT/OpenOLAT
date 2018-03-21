@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.MetadataSecurityCallback;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
@@ -65,6 +66,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	private SingleSelection assessmentTypeEl;
 	private FormLayoutContainer buttonsCont;
 
+	private final QPoolSecurityCallback qPoolSecurityCallback;
 	private QuestionItem item;
 	private MetadataSecurityCallback securityCallback;
 	private final boolean ignoreCompetences;
@@ -74,11 +76,13 @@ public class GeneralMetadataEditController extends FormBasicController {
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	
-	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			MetadataSecurityCallback securityCallback, boolean ignoreCompetences) {
+	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl,
+			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item, MetadataSecurityCallback securityCallback,
+			boolean ignoreCompetences) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
+		this.qPoolSecurityCallback = qPoolSecurityCallback;
 		this.item = item;
 		this.securityCallback = securityCallback;
 		this.ignoreCompetences = ignoreCompetences;
@@ -95,6 +99,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("general.taxonomy.level", formLayout, new String[0],
 				new String[0]);
 		buildTaxonomyLevelEl();
+		taxonomyLevelEl.setVisible(qPoolSecurityCallback.canUseTaxonomy());
 		
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
@@ -104,6 +109,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		if (StringHelper.containsNonWhitespace(item.getEducationalContextLevel())) {
 			contextEl.select(item.getEducationalContextLevel(), true);
 		}
+		contextEl.setVisible(qPoolSecurityCallback.canUseEducationalContext());
 		
 		String keywords = item.getKeywords();
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, keywords, formLayout);

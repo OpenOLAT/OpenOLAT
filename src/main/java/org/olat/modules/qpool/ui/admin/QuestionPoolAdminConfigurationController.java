@@ -74,6 +74,8 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	private MultipleSelectionElement collectionsEnabledEl;
 	private MultipleSelectionElement poolsEnabledEl;
 	private MultipleSelectionElement sharesEnabledEl;
+	private MultipleSelectionElement taxonomyEnabledEl;
+	private MultipleSelectionElement educationalContextEnabledEl;
 	private MultipleSelectionElement deleteQuestionsWithoutAuthorEl;
 	private MultipleSelectionElement poolManagerRightsEl;
 	private SingleSelection taxonomyTreeEl;
@@ -127,11 +129,11 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 			sharesEnabledEl.select(onKeys[0], true);
 		}
 		
-		deleteQuestionsWithoutAuthorEl = uifactory.addCheckboxesHorizontal("delete.qustions.without.author", moduleCont, onKeys, onValues);
-		deleteQuestionsWithoutAuthorEl.setHelpTextKey("delete.qustions.without.author.info", null);
-		if (qpoolModule.isDeleteQuestionsWithoutAuthor()) {
-			deleteQuestionsWithoutAuthorEl.select(onKeys[0], true);
+		taxonomyEnabledEl = uifactory.addCheckboxesHorizontal("taxonomy.enabled", moduleCont, onKeys, onValues);
+		if (qpoolModule.isTaxonomyEnabled()) {
+			taxonomyEnabledEl.select(onKeys[0], true);
 		}
+		taxonomyEnabledEl.addActionListener(FormEvent.ONCHANGE);
 
 		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
 		String[] taxonomyKeys = new String[taxonomyList.size() + 1];
@@ -164,6 +166,18 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		importCreateTaxonomyLevelEl = uifactory.addCheckboxesHorizontal("import.create.subject", moduleCont, onKeys, onValues);
 		if (qpoolModule.isImportCreateTaxonomyLevel()) {
 			importCreateTaxonomyLevelEl.select(onKeys[0], true);
+		}
+
+		educationalContextEnabledEl = uifactory.addCheckboxesHorizontal("educational.context.enabled", moduleCont, onKeys, onValues);
+		if (qpoolModule.isEducationalContextEnabled()) {
+			educationalContextEnabledEl.select(onKeys[0], true);
+		}
+		educationalContextEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		deleteQuestionsWithoutAuthorEl = uifactory.addCheckboxesHorizontal("delete.qustions.without.author", moduleCont, onKeys, onValues);
+		deleteQuestionsWithoutAuthorEl.setHelpTextKey("delete.qustions.without.author.info", null);
+		if (qpoolModule.isDeleteQuestionsWithoutAuthor()) {
+			deleteQuestionsWithoutAuthorEl.select(onKeys[0], true);
 		}
 		
 		FormLayoutContainer poolManagerRightsCont = FormLayoutContainer.createDefaultFormLayout("poolManagerRights", getTranslator());
@@ -200,6 +214,10 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		if (reviewProcessEnabledEl == source) {
 			boolean enable = reviewProcessEnabledEl.isAtLeastSelected(1);
 			doConfirmEnabled(ureq, enable);
+		} else if (taxonomyEnabledEl == source) {
+			doEnableTaxonomyLevel();
+		} else if (educationalContextEnabledEl == source) {
+			showInfo("admin.start.indexer");
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -210,6 +228,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		if (reviewProcessActivationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				resetQuestionStates = reviewProcessActivationCtrl.isResetStatesSelected();
+				taxonomyEnabledEl.select(onKeys[0], true);
 			} else {
 				reviewProcessEnabledEl.select(onKeys[0], false);
 			}
@@ -255,8 +274,8 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		boolean sharesEnabled = sharesEnabledEl.isAtLeastSelected(1);
 		qpoolModule.setSharesEnabled(sharesEnabled);
 		
-		boolean deleteQuestionsWithoutAuthor = deleteQuestionsWithoutAuthorEl.isAtLeastSelected(1);
-		qpoolModule.setDeleteQuestionsWithoutAuthor(deleteQuestionsWithoutAuthor);
+		boolean taxonomyEnabled = taxonomyEnabledEl.isAtLeastSelected(1);
+		qpoolModule.setTaxonomyEnabled(taxonomyEnabled);
 		
 		String selectedTaxonomyQPoolKey = taxonomyTreeEl.getSelectedKey();
 		qpoolModule.setTaxonomyQPoolKey(selectedTaxonomyQPoolKey);
@@ -270,6 +289,12 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		
 		boolean importCreateTaxonomyLevel = importCreateTaxonomyLevelEl.isAtLeastSelected(1);
 		qpoolModule.setImportCreateTaxonomyLevel(importCreateTaxonomyLevel);
+		
+		boolean educationalContextEnabled = educationalContextEnabledEl.isAtLeastSelected(1);
+		qpoolModule.setEducationalContextEnabled(educationalContextEnabled);
+		
+		boolean deleteQuestionsWithoutAuthor = deleteQuestionsWithoutAuthorEl.isAtLeastSelected(1);
+		qpoolModule.setDeleteQuestionsWithoutAuthor(deleteQuestionsWithoutAuthor);
 		
 		Collection<String> selectedPoolManagerRights = poolManagerRightsEl.getSelectedKeys();
 		boolean poolAdminAllowedToEditMetadata = selectedPoolManagerRights.contains(POOL_MANAGER_EDIT_METADATA);
@@ -311,4 +336,15 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		}
 	}
 	
+	private void doEnableTaxonomyLevel() {
+		boolean taxonomyEnabledSelected = taxonomyEnabledEl.isAtLeastSelected(1);
+		boolean reviewProcessEnabledSelected = reviewProcessEnabledEl.isAtLeastSelected(1);
+		if (reviewProcessEnabledSelected && !taxonomyEnabledSelected) {
+			showWarning("taxonomy.can.not.be.deactivated");
+			taxonomyEnabledEl.select(onKeys[0], true);
+		} else {
+			showInfo("admin.start.indexer");
+		}
+	}
+
 }

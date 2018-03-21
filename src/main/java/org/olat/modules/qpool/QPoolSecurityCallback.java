@@ -36,8 +36,12 @@ public interface QPoolSecurityCallback {
 	boolean canUsePools();
 
 	boolean canUseGroups();
-
+	
 	boolean canUseReviewProcess();
+
+	boolean canUseTaxonomy();
+	
+	boolean canUseEducationalContext();
 	
 	boolean canCreateTest();
 
