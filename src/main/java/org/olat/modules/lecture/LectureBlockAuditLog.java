@@ -65,6 +65,9 @@ public interface LectureBlockAuditLog {
 		updateRollCall,
 		adaptRollCall,
 		
+		updateSummary,
+		removeCustomRate,
+		
 		sendAppeal
 	}
 
