@@ -164,7 +164,7 @@ public class RepositoryEntryRelationDAO {
 		}
 		
 		List<Long> first = query.getResultList();
-		return first != null && first.size() > 0 && first.get(0) != null && first.get(0).longValue() >= 0l;
+		return first != null && !first.isEmpty() && first.get(0) != null && first.get(0).longValue() >= 0l;
 	}
 	
 	public void addRole(Identity identity, RepositoryEntryRef re, String role) {
@@ -174,12 +174,18 @@ public class RepositoryEntryRelationDAO {
 	
 	public int removeRole(IdentityRef identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
-		return groupDao.removeMembership(group, identity, role);
+		if(group != null) {
+			return groupDao.removeMembership(group, identity, role);
+		}
+		return 0;
 	}
 	
 	public int removeRole(RepositoryEntry re, String role) {
 		Group group = getDefaultGroup(re);
-		return groupDao.removeMemberships(group, role);
+		if(group != null) {
+			return groupDao.removeMemberships(group, role);
+		}
+		return 0;
 	}
 
 	/**
@@ -197,9 +203,10 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" where v.key=:repoKey");
 
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
+		List<Group> groups = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
 				.setParameter("repoKey", re.getKey())
-				.getSingleResult();
+				.getResultList();
+		return groups == null || groups.isEmpty() ? null : groups.get(0);
 	}
 	
 	/**
@@ -489,8 +496,10 @@ public class RepositoryEntryRelationDAO {
 	
 	public boolean removeMembers(RepositoryEntry re, List<Identity> members) {
 		Group group = getDefaultGroup(re);
-		for(Identity member:members) {
-			groupDao.removeMembership(group, member);
+		if(group != null) {
+			for(Identity member:members) {
+				groupDao.removeMembership(group, member);
+			}
 		}
 		return true;
 	}
