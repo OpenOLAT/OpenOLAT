@@ -122,6 +122,10 @@ public interface LectureService {
 	
 	public LectureBlockRollCall toAuditLectureBlockRollCall(String xml);
 
+	public String toAuditXml(LectureParticipantSummary summary);
+	
+	public LectureParticipantSummary toAuditLectureParticipantSummary(String xml);
+
 	
 	/**
 	 * Append content to the log saved on the lecture block.

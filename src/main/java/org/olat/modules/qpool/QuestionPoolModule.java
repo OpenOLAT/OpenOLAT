@@ -54,6 +54,8 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String COLLECTIONS_ENABLED = "collections.enabled";
 	private static final String POOLS_ENABLED = "pools.enabled";
 	private static final String SHARES_ENABLED = "shares.enabled";
+	private static final String TAXONOMY_ENABLED = "taxonomy.enabled";
+	private static final String EDUCATIONAL_CONTEXT_ENABLED = "educational.context.enabled";
 	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	private static final String DELETE_QUESTIONS_WITHOUT_AUTHOR = "delete.questions.without.author";
@@ -77,6 +79,8 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private boolean collectionsEnabled = true;
 	private boolean poolsEnabled = true;
 	private boolean sharesEnabled = true;
+	private boolean taxonomyEnabled = true;
+	private boolean educationalContextEnabled = true;
 	private String taxonomyQPoolKey;
 	private boolean deleteQuestionsWithoutAuthor = false;
 	private boolean ignoreCompetences = true;
@@ -152,6 +156,16 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		String reviewProcessEnabledObj = getStringPropertyValue(REVIEW_PROCESS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(reviewProcessEnabledObj)) {
 			reviewProcessEnabled = "true".equals(reviewProcessEnabledObj);
+		}
+		
+		String taxonomyEnabledObj = getStringPropertyValue(TAXONOMY_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(taxonomyEnabledObj)) {
+			taxonomyEnabled = "true".equals(taxonomyEnabledObj);
+		}
+		
+		String educationalContextEnabledObj = getStringPropertyValue(EDUCATIONAL_CONTEXT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(educationalContextEnabledObj)) {
+			educationalContextEnabled = "true".equals(educationalContextEnabledObj);
 		}
 		
 		String deleteQuestionsWithoutAuthorObj = getStringPropertyValue(DELETE_QUESTIONS_WITHOUT_AUTHOR, true);
@@ -288,6 +302,24 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	public void setSharesEnabled(boolean sharesEnabled) {
 		this.sharesEnabled = sharesEnabled;
 		setStringProperty(SHARES_ENABLED, Boolean.toString(sharesEnabled), true);
+	}
+	
+	public boolean isTaxonomyEnabled() {
+		return taxonomyEnabled;
+	}
+
+	public void setTaxonomyEnabled(boolean taxonomyEnabled) {
+		this.taxonomyEnabled = taxonomyEnabled;
+		setStringProperty(TAXONOMY_ENABLED, Boolean.toString(taxonomyEnabled), true);
+	}
+
+	public boolean isEducationalContextEnabled() {
+		return educationalContextEnabled;
+	}
+
+	public void setEducationalContextEnabled(boolean educationalContextEnabled) {
+		this.educationalContextEnabled = educationalContextEnabled;
+		setStringProperty(EDUCATIONAL_CONTEXT_ENABLED, Boolean.toString(educationalContextEnabled), true);
 	}
 
 	public boolean isDeleteQuestionsWithoutAuthor() {

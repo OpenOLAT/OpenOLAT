@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
@@ -137,6 +138,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String before = lectureService.toAuditXml(participantSummary);
 		String customRate = rateEl.getValue();
 		if(StringHelper.containsNonWhitespace(customRate)) {
 			double val = Long.parseLong(customRate) / 100.0d;
@@ -147,6 +149,9 @@ public class EditParticipantSummaryController extends FormBasicController {
 		participantSummary.setFirstAdmissionDate(firstAdmissionEl.getDate());
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
 		lectureService.recalculateSummary(entry, assessedIdentity);
+		lectureService.auditLog(LectureBlockAuditLog.Action.updateSummary, before, lectureService.toAuditXml(participantSummary),
+				"", null, null, entry, assessedIdentity, getIdentity());
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -156,8 +161,11 @@ public class EditParticipantSummaryController extends FormBasicController {
 	}
 	
 	private void doRemoveCustomRate(UserRequest ureq) {
+		String before = lectureService.toAuditXml(participantSummary);
 		participantSummary.setRequiredAttendanceRate(null);
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
+		lectureService.auditLog(LectureBlockAuditLog.Action.removeCustomRate, before, lectureService.toAuditXml(participantSummary),
+				"", null, null, entry, assessedIdentity, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Encoder;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -44,6 +45,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * 
@@ -1016,6 +1018,38 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		List<AssessmentMode> afterDeleteModes = assessmentModeMgr.getAssessmentModeFor(participant);
 		Assert.assertNotNull(afterDeleteModes);
 		Assert.assertEquals(0, afterDeleteModes.size());
+	}
+	
+	@Test
+	public void isSafelyAllowed() {
+		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";
+		String url = "http://localhost";
+		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setServerName("localhost");
+		request.setScheme("http");
+		request.addHeader("x-safeexambrowser-requesthash", hash);
+		request.setRequestURI("");
+		
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		Assert.assertTrue(allowed);
+	}
+	
+	@Test
+	public void isSafelyAllowed_fail() {
+		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";
+		String url = "http://localhost";
+		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setServerName("localhost");
+		request.setScheme("http");
+		request.addHeader("x-safeexambrowser-requesthash", hash);
+		request.setRequestURI("/unauthorized/url");
+		
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		Assert.assertFalse(allowed);
 	}
 
 	/**

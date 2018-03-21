@@ -64,7 +64,8 @@ public class MetadatasController extends BasicController {
 		this.item = item;
 
 		mainVC = createVelocityContainer("item_metadatas");
-		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, metadataScurityCallback, ignoreCompetences);
+		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, qPoolSecurityCallback, item,
+				metadataScurityCallback, ignoreCompetences);
 		listenTo(generalEditCtrl);
 		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
 

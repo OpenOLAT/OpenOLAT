@@ -128,9 +128,11 @@ public class QuestionItemDocumentFactory {
 		addTextField(document, QItemDocument.TOPIC_FIELD, item.getTopic(), 2.0f);
 		
 		//educational
-		if(item.getEducationalContext() != null) {
-			String context = item.getEducationalContext().getLevel();
-			addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  context, 1.0f);
+		if (qpoolModule.isEducationalContextEnabled()) {
+			if(item.getEducationalContext() != null) {
+				String context = item.getEducationalContext().getLevel();
+				addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  context, 1.0f);
+			}
 		}
 		
 		//question
@@ -176,18 +178,20 @@ public class QuestionItemDocumentFactory {
 		}
 
 		//need path
-		String path = item.getTaxonomicPath();
-		if(StringHelper.containsNonWhitespace(path)) {
-			for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
-				String nextToken = tokenizer.nextToken();
-				document.add(new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, nextToken, Field.Store.NO));
-			}
-			if(item instanceof QuestionItemImpl) {
-				Long key = ((QuestionItemImpl)item).getTaxonomyLevel().getKey();
+		if (qpoolModule.isTaxonomyEnabled()) {
+			String path = item.getTaxonomicPath();
+			if(StringHelper.containsNonWhitespace(path)) {
+				for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
+					String nextToken = tokenizer.nextToken();
+					document.add(new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, nextToken, Field.Store.NO));
+				}
+				if(item instanceof QuestionItemImpl) {
+					Long key = ((QuestionItemImpl)item).getTaxonomyLevel().getKey();
 
-				TextField field = new TextField(QItemDocument.TAXONOMIC_FIELD, key.toString(), Field.Store.YES);
-				field.setBoost(3.0f);
-				document.add(field);
+					TextField field = new TextField(QItemDocument.TAXONOMIC_FIELD, key.toString(), Field.Store.YES);
+					field.setBoost(3.0f);
+					document.add(field);
+				}
 			}
 		}
 		return document;

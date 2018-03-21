@@ -44,6 +44,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -65,6 +66,7 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 	private final Translator translator;
 	
 	private final QPoolService qpoolService;
+	private final QuestionPoolModule qpoolModule;
 	private final UserManager userManager;
 	private final LicenseService licenseService;
 	private final LicenseModule licenseModule;
@@ -76,6 +78,7 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 		this.auditLog = auditLog;
 		this.translator = translator;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
@@ -118,8 +121,12 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("export.log.header.log.action"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.title"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.topic"));
-		headerRow.addCell(pos++, translator.translate("export.log.header.taxonomic.path"));
-		headerRow.addCell(pos++, translator.translate("export.log.header.context"));
+		if (qpoolModule.isTaxonomyEnabled()) {
+			headerRow.addCell(pos++, translator.translate("export.log.header.taxonomic.path"));
+		}
+		if (qpoolModule.isEducationalContextEnabled()) {
+			headerRow.addCell(pos++, translator.translate("export.log.header.context"));
+		}
 		headerRow.addCell(pos++, translator.translate("export.log.header.keywords"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.additional.informations"));
 		headerRow.addCell(pos++, translator.translate("export.log.header.coverage"));
@@ -158,8 +165,12 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 			if (item != null) {
 				row.addCell(pos++, item.getTitle());
 				row.addCell(pos++, item.getTopic());
-				row.addCell(pos++, item.getTaxonomicPath());
-				row.addCell(pos++, getTranslatedContext(item.getEducationalContext()));
+				if (qpoolModule.isTaxonomyEnabled()) {
+					row.addCell(pos++, item.getTaxonomicPath());
+				}
+				if (qpoolModule.isEducationalContextEnabled()) {
+					row.addCell(pos++, getTranslatedContext(item.getEducationalContext()));
+				}
 				row.addCell(pos++, item.getKeywords());
 				row.addCell(pos++, item.getAdditionalInformations());
 				row.addCell(pos++, item.getCoverage());
@@ -175,7 +186,13 @@ public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 				row.addCell(pos++, item.getItemVersion());
 				row.addCell(pos++, getTranslatedStatus(item.getQuestionStatus()));
 			} else {
-				pos += 18;
+				pos += 16;
+				if (qpoolModule.isTaxonomyEnabled()) {
+					pos ++;
+				}
+				if (qpoolModule.isEducationalContextEnabled()) {
+					pos++;
+				}
 			}
 			
 			if (licenseModule.isEnabled(licenseHandler)) {

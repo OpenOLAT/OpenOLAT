@@ -31,6 +31,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
@@ -40,6 +41,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -58,6 +60,7 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 	private static final OLog log = Tracing.createLoggerFor(LectureBlockAuditLogExport.class);
 	
 	protected final Translator translator;
+	protected final Formatter formatter;
 
 	private final boolean authorizedAbsenceEnabled;
 	private final List<LectureBlockAuditLog> auditLog;
@@ -74,6 +77,7 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 		this.auditLog = auditLog;
 		this.translator = translator;
 		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
+		formatter = Formatter.getInstance(translator.getLocale());
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -152,11 +156,16 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 			//planned / effective
 			LectureBlock auditBlock = null;
 			LectureBlockRollCall auditRollCall = null;
+			LectureParticipantSummary auditSummary = null;
 			if(logEntry.getRollCallKey() != null) {
 				auditRollCall = getAuditRollCall(logEntry.getAfter());
 			}
 			if(auditRollCall == null) {
-				auditBlock = getAuditLectureBlock(logEntry.getAfter());
+				if(logEntry.getLectureBlockKey() != null) {
+					auditBlock = getAuditLectureBlock(logEntry.getAfter());
+				} else {
+					auditSummary = getAuditLectureParticipantSummary(logEntry.getAfter());
+				}
 			}
 			
 			if(auditBlock != null) {
@@ -187,6 +196,16 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 					row.addCell(pos++, auditRollCall.getAbsenceReason(), null);
 				}
 				row.addCell(pos++, auditRollCall.getComment(), null);
+			} else if(auditSummary != null) {
+				Long assessedIdentityKey = logEntry.getIdentityKey();
+				String fullname = userManager.getUserDisplayName(assessedIdentityKey);
+				row.addCell(pos++, fullname);
+				pos += 2;
+				if(authorizedAbsenceEnabled) {
+					pos += 2;
+				}
+				String summaryComment = getSummaryComment(getAuditLectureParticipantSummary(logEntry.getBefore()), auditSummary);
+				row.addCell(pos++, summaryComment, null);
 			} else {
 				pos += 4;
 				if(authorizedAbsenceEnabled) {
@@ -202,12 +221,50 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 		}
 	}
 	
+	private String getSummaryComment(LectureParticipantSummary beforeSummary, LectureParticipantSummary afterSummary) {
+		StringBuilder sb = new StringBuilder();
+		
+		Date beforeDate = beforeSummary == null ? null : beforeSummary.getFirstAdmissionDate();
+		Date afterDate = afterSummary.getFirstAdmissionDate();
+		if(beforeDate == null && afterDate != null) {
+			sb.append(translator.translate("log.add.admission.date", new String[]{ formatter.formatDate(afterDate) }));
+		} else if(beforeDate != null && afterDate == null) {
+			sb.append(translator.translate("log.remove.admission.date"));
+		} else if(beforeDate != null && afterDate != null && !beforeDate.equals(afterDate) ) {
+			sb.append(translator.translate("log.change.admission.date", new String[]{ formatter.formatDate(afterDate) }));
+		}
+		
+		Double beforeRate = beforeSummary == null ? null : beforeSummary.getAttendanceRate();
+		Double afterRate = afterSummary.getAttendanceRate();
+		if(beforeRate == null && afterRate != null) {
+			sb.append(translator.translate("log.add.rate", new String[]{ toPercent(afterRate) }));
+		} else if(beforeRate != null && afterRate == null) {
+			sb.append(translator.translate("log.remove.rate"));
+		} else if(beforeRate != null && afterRate != null && !beforeRate.equals(afterRate)) {
+			sb.append(translator.translate("log.change.rate", new String[]{ toPercent(afterRate) }));
+		}
+
+		return sb.toString();
+	}
+	
+	private String toPercent(Double value) {
+		if(value == null) return "";
+		
+		double percent = value.doubleValue() * 100.0d;
+		long rounded = Math.round(percent);
+		return Long.toString(rounded).concat("%");
+	}
+	
 	private LectureBlockRollCall getAuditRollCall(String xml) {
 		return lectureService.toAuditLectureBlockRollCall(xml);
 	}
 	
 	private LectureBlock getAuditLectureBlock(String xml) {
 		return lectureService.toAuditLectureBlock(xml);
+	}
+	
+	private LectureParticipantSummary getAuditLectureParticipantSummary(String xml) {
+		return lectureService.toAuditLectureParticipantSummary(xml);
 	}
 	
 	protected void cacheRepositoryEntry(RepositoryEntry entry) {
@@ -236,6 +293,8 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 	}
 	
 	private String getLectureBlockTitle(Long lectureBlockKey) {
+		if(lectureBlockKey == null) return null;
+		
 		String title = lectureBlockTitles.get(lectureBlockKey);
 		if(title == null) {
 			LectureBlock block = lectureService.getLectureBlock(new LectureBlockRefForLog(lectureBlockKey));

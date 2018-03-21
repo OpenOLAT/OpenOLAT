@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
@@ -96,6 +97,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
+	private final QPoolSecurityCallback qpoolSecurityCallback;
 	private List<QuestionItem> updatedItems;
 	private final List<ItemRow> items;
 	private final boolean ignoreCompetences;
@@ -113,9 +115,10 @@ public class MetadataBulkChangeController extends FormBasicController {
 	@Autowired
 	private QuestionPoolLicenseHandler licenseHandler;
 
-	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<ItemRow> items, boolean ignoreCompetences) {
+	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qpoolSecurityCallback, List<ItemRow> items, boolean ignoreCompetences) {
 		super(ureq, wControl, "bulk_change");
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
+		this.qpoolSecurityCallback = qpoolSecurityCallback;
 		this.items = items;
 		this.ignoreCompetences = ignoreCompetences;
 		initForm(ureq);
@@ -149,16 +152,20 @@ public class MetadataBulkChangeController extends FormBasicController {
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, null, generalCont);
 		decorate(topicEl, generalCont);
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), canRemoveTaxonomies(), ignoreCompetences);
-		taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
-				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
-		decorate(taxonomyLevelEl, generalCont);
-		
-		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
-		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", generalCont,
-				contexts.getKeys(), contexts.getValues(), null);
-		contextEl.setAllowNoSelection(true);
-		decorate(contextEl, generalCont);
+		if (qpoolSecurityCallback.canUseTaxonomy()) {
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), canRemoveTaxonomies(), ignoreCompetences);
+			taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
+					qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
+			decorate(taxonomyLevelEl, generalCont);
+		}
+	
+		if (qpoolSecurityCallback.canUseEducationalContext()) {
+			KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
+			contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", generalCont,
+					contexts.getKeys(), contexts.getValues(), null);
+			contextEl.setAllowNoSelection(true);
+			decorate(contextEl, generalCont);
+		}
 		
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, null, generalCont);
 		decorate(keywordsEl, generalCont);
@@ -349,6 +356,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 	}
 	
 	private boolean isEnabled(FormItem item) {
+		if (item == null) return false;
+		
 		return ((MultipleSelectionElement)item.getUserObject()).isAtLeastSelected(1);
 	}
 

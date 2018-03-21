@@ -736,7 +736,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 	private void doBulkChange(UserRequest ureq, List<ItemRow> items) {
 		removeAsListenerAndDispose(bulkChangeCtrl);
-		bulkChangeCtrl = new MetadataBulkChangeController(ureq, getWindowControl(), items,
+		bulkChangeCtrl = new MetadataBulkChangeController(ureq, getWindowControl(), getSecurityCallback(), items,
 				getSource().isAdminItemSource());
 		listenTo(bulkChangeCtrl);
 		
@@ -750,10 +750,11 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(newItemOptionsCtrl);
 		if (getSource() instanceof TaxonomyLevelItemsSource) {
 			TaxonomyLevelItemsSource tliSource = (TaxonomyLevelItemsSource) getSource();
-			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), tliSource.getTaxonomyLevel(),
-					getSource().isAdminItemSource());
+			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), getSecurityCallback(),
+					tliSource.getTaxonomyLevel(), getSource().isAdminItemSource());
 		} else {
-			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), getSource().isAdminItemSource());
+			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), getSecurityCallback(),
+					getSource().isAdminItemSource());
 		}
 		listenTo(newItemOptionsCtrl);
 		

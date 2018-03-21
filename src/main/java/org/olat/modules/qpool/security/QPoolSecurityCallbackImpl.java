@@ -71,6 +71,16 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 	}
 
 	@Override
+	public boolean canUseTaxonomy() {
+		return qpoolModule.isTaxonomyEnabled();
+	}
+
+	@Override
+	public boolean canUseEducationalContext() {
+		return qpoolModule.isEducationalContextEnabled();
+	}
+
+	@Override
 	public boolean canCreateTest() {
 		return admin || olatAuthor;
 	}

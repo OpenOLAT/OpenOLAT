@@ -60,7 +60,7 @@
 					<td>$assessment.duration</td>
 					<td>$assessment.score</td>
 					<td>$assessment.passed</td>	
-					<td><span class="btn btn-default btn-sm">$t.translate("button.show")</span></td>								
+					<td>#if($assessment.link == "null") Missing data #else<span class="btn btn-default btn-sm">$t.translate("button.show")</span>#end</td>								
 				</tr>
 				#end
 			</tbody>
