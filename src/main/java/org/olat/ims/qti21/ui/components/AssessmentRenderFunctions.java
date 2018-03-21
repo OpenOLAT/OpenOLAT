@@ -628,9 +628,14 @@ public class AssessmentRenderFunctions {
 			return uri;
 		}
 		
-		String filename = getLinkFilename(uri);
+		if(!StringHelper.containsNonWhitespace(uri)) {
+			uri = "file";
+		}
 		String relativePath = component.relativePathTo(resolvedAssessmentItem);
-		return component.getMapperUri() + "/" + filename + "?href=" + relativePath + (uri == null ? "" : uri);
+		if(uri != null) {
+			relativePath += uri;
+		}
+		return component.getMapperUri() + "/" + relativePath + "?href=" + relativePath;
 	}
 	
 	public static final String convertSubmissionLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {

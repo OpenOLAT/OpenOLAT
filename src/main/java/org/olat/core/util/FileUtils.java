@@ -784,6 +784,22 @@ public class FileUtils {
 	}
 	
 	/**
+	 * 
+	 * @param dir
+	 * @param file
+	 * @return
+	 */
+	public static boolean isInSubDirectory(File dir, File file) {
+	    if (file == null) {
+	        return false;
+	    }
+	    if (file.equals(dir)) {
+	        return true;
+	    }
+	    return isInSubDirectory(dir, file.getParentFile());
+	}
+	
+	/**
 	 * @param is the inputstream to close, may also be null
 	 */
 	public static void closeSafely(InputStream is) {
