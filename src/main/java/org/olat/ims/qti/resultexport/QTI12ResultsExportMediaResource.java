@@ -190,7 +190,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private List<AssessedMember> createAssessedMembersDetail (ZipOutputStream zout) throws IOException {
-		List<AssessedMember> assessedMembers = new ArrayList<AssessedMember>();		
+		List<AssessedMember> assessedMembers = new ArrayList<>();		
 		for (Identity identity : identities) {
 			
 			String idDir = exportFolderName + "/" + DATA + identity.getName();
@@ -313,22 +313,27 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	private String createHTMLfromQTIResultSet(String idPath, String idDir, ZipOutputStream zout,
 			Identity assessedIdentity, QTIResultSet resultSet) throws IOException {
 
-		Document doc = FilePersister.retreiveResultsReporting(assessedIdentity,
-				AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, resultSet.getAssessmentID());
-		if (doc == null) {
+		try {
+			Document doc = FilePersister.retreiveResultsReporting(assessedIdentity,
+					AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, resultSet.getAssessmentID());
+			if (doc == null) {
+				return "null";
+			}
+			
+			File resourceXML = retrieveXML(assessedIdentity, resultSet.getAssessmentID());			
+			String resultsHTML = LocalizedXSLTransformer.getInstance(locale).renderResults(doc);		
+			resultsHTML = createResultHTML(resultsHTML);
+			
+			String html = idPath + resultSet.getAssessmentID() + ".html";
+			String xml = html.replace(".html", ".xml");
+			convertToZipEntry(zout, html, resultsHTML);		
+			convertToZipEntry(zout, xml, resourceXML);
+			
+			return idPath.replace(idDir, "") + resultSet.getAssessmentID() + ".html";
+		} catch (Exception e) {
+			log.error("", e);
 			return "null";
 		}
-		
-		File resourceXML = retrieveXML(assessedIdentity, resultSet.getAssessmentID());			
-		String resultsHTML = LocalizedXSLTransformer.getInstance(locale).renderResults(doc);		
-		resultsHTML = createResultHTML(resultsHTML);
-		
-		String html = idPath + resultSet.getAssessmentID() + ".html";
-		String xml = html.replace(".html", ".xml");
-		convertToZipEntry(zout, html, resultsHTML);		
-		convertToZipEntry(zout, xml, resourceXML);
-		
-		return idPath.replace(idDir, "") + resultSet.getAssessmentID() + ".html";
 	}
 	
 	private void fsToZip(ZipOutputStream zout, final Path sourceFolder, final String targetPath) throws IOException {
