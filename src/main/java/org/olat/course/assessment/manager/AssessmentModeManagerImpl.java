@@ -320,7 +320,11 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 					safe = true;
 				}
 				if(debug) {
-					log.debug((safeExamHash.equals(hash) ? "Success" : "Failed") + " : " + safeExamHash +" (Header) " + hash + " (Calculated)");
+					if(safeExamHash == null) {
+						log.debug("Failed safeexambrowser request hash is null for URL: " + url + " and key: " + safeExamBrowserKey);
+					} else {
+						log.debug((safeExamHash.equals(hash) ? "Success" : "Failed") + " : " + safeExamHash +" (Header) " + hash + " (Calculated) for URL: " + url + " and key: " + safeExamBrowserKey);
+					}
 				}
 			}
 		} else {
