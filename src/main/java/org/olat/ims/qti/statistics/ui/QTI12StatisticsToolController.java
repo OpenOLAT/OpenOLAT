@@ -28,6 +28,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -56,7 +57,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12StatisticsToolController extends BasicController implements Activateable2 {
+public class QTI12StatisticsToolController extends BasicController implements Activateable2, TooledController {
 
 	private MenuTree courseTree;
 	private Controller currentCtrl;
@@ -105,6 +106,7 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 		courseTree.addListener(this);
 		
 		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, new Panel("empty"), null);
+		listenTo(layoutCtr);
 		putInitialPanel(layoutCtr.getInitialComponent());
 		doSelectNode(ureq, courseTree.getTreeModel().getRootNode());
 	}
@@ -112,6 +114,13 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void initTools() {
+		if(currentCtrl instanceof TooledController) {
+			((TooledController)currentCtrl).initTools();
+		}
 	}
 
 	@Override

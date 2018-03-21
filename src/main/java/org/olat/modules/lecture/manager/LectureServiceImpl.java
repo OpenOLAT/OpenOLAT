@@ -266,6 +266,16 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public String toAuditXml(LectureParticipantSummary summary) {
+		return auditLogDao.toXml(summary);
+	}
+
+	@Override
+	public LectureParticipantSummary toAuditLectureParticipantSummary(String xml) {
+		return auditLogDao.summaryFromXml(xml);
+	}
+
+	@Override
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
 			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
 			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author) {

@@ -32,9 +32,11 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.model.LectureBlockAuditLogImpl;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
+import org.olat.modules.lecture.model.LectureParticipantSummaryImpl;
 import org.olat.modules.lecture.model.ReasonImpl;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +81,14 @@ public class LectureBlockAuditLogDAO {
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "identity");
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "lectureBlock");
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "lastModified");
+	}
+	
+	private static final XStream summaryXStream = XStreamHelper.createXStreamInstanceForDBObjects();
+	static {
+		summaryXStream.alias("summary", LectureParticipantSummaryImpl.class);
+		summaryXStream.ignoreUnknownElements();
+		summaryXStream.omitField(LectureParticipantSummaryImpl.class, "identity");
+		summaryXStream.omitField(LectureParticipantSummaryImpl.class, "entry");
 	}
 
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
@@ -177,6 +187,26 @@ public class LectureBlockAuditLogDAO {
 				Object obj = rollCallXStream.fromXML(xml);
 				if(obj instanceof LectureBlockRollCall) {
 					return (LectureBlockRollCall)obj;
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				return null;
+			}
+		}
+		return null;
+	}
+	
+	public String toXml(LectureParticipantSummary summary) {
+		if(summary == null) return null;
+		return summaryXStream.toXML(summary);
+	}
+	
+	public LectureParticipantSummary summaryFromXml(String xml) {
+		if(StringHelper.containsNonWhitespace(xml)) {
+			try {
+				Object obj = summaryXStream.fromXML(xml);
+				if(obj instanceof LectureParticipantSummary) {
+					return (LectureParticipantSummary)obj;
 				}
 			} catch (Exception e) {
 				log.error("", e);

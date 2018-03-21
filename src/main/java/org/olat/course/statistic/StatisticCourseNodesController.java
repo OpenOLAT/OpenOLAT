@@ -202,12 +202,17 @@ public class StatisticCourseNodesController extends BasicController implements A
 			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);
 		} else {
 			StatisticResourceNode node = getStatisticNodeInParentLine(selectedNode);
-			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
+			if(node != null) {
+				currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
+			}
 		}
 		
 		if(currentCtrl != null) {
 			listenTo(currentCtrl);
 			layoutCtr.setCol3(currentCtrl.getInitialComponent());
+			if(currentCtrl instanceof TooledController) {
+				((TooledController)currentCtrl).initTools();
+			}
 		} else {
 			layoutCtr.setCol3(new Panel("empty"));
 		}

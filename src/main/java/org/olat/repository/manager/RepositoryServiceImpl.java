@@ -29,8 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.NoResultException;
-
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -470,12 +468,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 				.getReference(RepositoryEntry.class, entry.getKey());
 		Long resourceKey = reloadedEntry.getOlatResource().getKey();
 
-		Group defaultGroup = null;
-		try {
-			defaultGroup = reToGroupDao.getDefaultGroup(reloadedEntry);
+		Group defaultGroup = reToGroupDao.getDefaultGroup(reloadedEntry);
+		if(defaultGroup != null) {
 			groupDao.removeMemberships(defaultGroup);
-		} catch (NoResultException e) {
-			log.error("", e);
 		}
 		reToGroupDao.removeRelations(reloadedEntry);
 		dbInstance.commit();
