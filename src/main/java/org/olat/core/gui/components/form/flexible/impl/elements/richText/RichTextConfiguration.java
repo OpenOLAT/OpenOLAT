@@ -131,9 +131,9 @@ public class RichTextConfiguration implements Disposable {
 	private static final String URLCONVERTER_CALLBACK = "urlconverter_callback";
 	private static final String URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER = "BTinyHelper.linkConverter";
 
-	private Map<String, String> quotedConfigValues = new HashMap<String, String>();
-	private Map<String, String> nonQuotedConfigValues = new HashMap<String, String>();
-	private List<String> oninit = new ArrayList<String>();
+	private Map<String, String> quotedConfigValues = new HashMap<>();
+	private Map<String, String> nonQuotedConfigValues = new HashMap<>();
+	private List<String> oninit = new ArrayList<>();
 
 	// Supported image and media suffixes
 	private static final String[] IMAGE_SUFFIXES_VALUES = { "jpg", "gif", "jpeg", "png" };
@@ -160,6 +160,7 @@ public class RichTextConfiguration implements Disposable {
 	// DOM ID of the flexi form element
 	private String domID;
 	
+	private String mapperUri;
 	private MapperKey contentMapperKey;
 	
 	private final Locale locale;
@@ -759,6 +760,13 @@ public class RichTextConfiguration implements Disposable {
 	public void setFileBrowserUploadRelPath(String linkBrowserUploadRelPath) {
 		this.linkBrowserUploadRelPath = linkBrowserUploadRelPath;
 	}
+	
+	/**
+	 * @return The URI to the mapper or null if there isn't any mapper.
+	 */
+	public String getMapperURI() {
+		return mapperUri;
+	}
 
 	/**
 	 * Set the documents media base that is used to deliver media files
@@ -814,8 +822,8 @@ public class RichTextConfiguration implements Disposable {
 			// set empty relative file path to prevent nullpointers later on
 			linkBrowserRelativeFilePath = relFilePath;
 		}
-		String fulluri = contentMapperKey.getUrl() + "/" + relFilePath;
-		setQuotedConfigValue(DOCUMENT_BASE_URL, fulluri);
+		mapperUri = contentMapperKey.getUrl() + "/" + relFilePath;
+		setQuotedConfigValue(DOCUMENT_BASE_URL, mapperUri);
 	}
 	
 	/**

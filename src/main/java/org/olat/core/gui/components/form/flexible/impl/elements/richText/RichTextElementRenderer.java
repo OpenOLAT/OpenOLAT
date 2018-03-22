@@ -37,6 +37,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * 
@@ -51,43 +52,17 @@ import org.olat.core.util.StringHelper;
  */
 class RichTextElementRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		RichTextElementComponent teC = (RichTextElementComponent) source;
 		RichTextElementImpl te = teC.getRichTextElementImpl();
-		int rows = teC.getRows();
 		// DOM ID used to identify the rich text element in the browser DOM
 		String domID = teC.getFormDispatchId();
-		
-        // Use an empty string as default value
-		String value = te.getRawValue();
-		if (value == null) {
-			value = "";
-		}
 
 		if (!source.isEnabled()) {
-			// Read only view
-			sb.append("<div ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()));
-			sb.append(" id=\"");
-			sb.append(domID);
-			sb.append("_disabled\" class='form-control-static o_disabled' style=\"");
-			if (rows != -1) {
-				sb.append(" min-height:").append(rows).append("em;");
-			}
-			sb.append("\" >");
-			sb.append(Formatter.formatLatexFormulas(value));
-			sb.append("</div>");
+			renderDisabled(sb, domID, teC);
 		} else {
 			sb.append("<div id='").append(domID).append("_diw' class='o_richtext_mce");
 			if(!te.getEditorConfiguration().isPathInStatusBar()) {
@@ -130,6 +105,32 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</div>");
 		}
+	}
+	
+	private void renderDisabled(StringOutput sb, String domID, RichTextElementComponent teC) {
+		int rows = teC.getRows();
+		RichTextElementImpl te = teC.getRichTextElementImpl();
+
+		// Read only view
+		sb.append("<div ")
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()))
+		  .append(" id=\"")
+		  .append(domID)
+		  .append("_disabled\" class='form-control-static o_disabled' style=\"");
+		if (rows != -1) {
+			sb.append(" min-height:").append(rows).append("em;");
+		}
+		sb.append("\" >");
+
+		String value = te.getRawValue();
+		if(StringHelper.containsNonWhitespace(value)) {
+			String mapperUri = te.getEditorConfiguration().getMapperURI();
+			if(StringHelper.containsNonWhitespace(mapperUri)) {
+				value = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperUri).filter(value);
+			}
+			sb.append(Formatter.formatLatexFormulas(value));
+		}
+		sb.append("</div>");
 	}
 	
 	private void renderOneLine(StringOutput sb, String domID, RichTextElementComponent teC) {
