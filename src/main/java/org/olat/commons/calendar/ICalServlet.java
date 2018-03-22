@@ -339,12 +339,12 @@ public class ICalServlet extends HttpServlet {
 		String userAgent = request.getHeader("User-Agent");
 		if(userAgent == null) {
 			return Agent.unkown;
-		} else if(userAgent != null &&
-				(userAgent.indexOf("Microsoft Outlook") >= 0 || userAgent.indexOf("Microsoft Office") >= 0)) {
+		} else if(userAgent.indexOf("Microsoft Outlook") >= 0 || userAgent.indexOf("Microsoft Office") >= 0
+				|| userAgent.equals("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)")) {// <- this is the user agent of Outlook live
 			return Agent.outlook;
-		} else if(userAgent != null && userAgent.indexOf("Google") >= 0 && userAgent.indexOf("Calendar") >= 0) {
+		} else if(userAgent.indexOf("Google") >= 0 && userAgent.indexOf("Calendar") >= 0) {
 			return Agent.googleCalendar;
-		} else if(userAgent != null && userAgent.startsWith("Java/1.")) {
+		} else if(userAgent.startsWith("Java/1.")) {
 			return Agent.java;
 		}
 		return Agent.unkown;
