@@ -39,9 +39,9 @@
 
 <div class="o_qti_metainfo o_block_large">
 	#if(${testResults.hasPass()} && $testResults.metadataVisible)
-		#if(${testResults.getPass().booleanValue()})
+		#if(${testResults.getCalculatedPassed().booleanValue()})
 		<h3 class="text-success">$r.translate("results.title.passed")</h3>
-		#elseif(!${testResults.getPass().booleanValue()})
+		#elseif(!${testResults.getCalculatedPassed().booleanValue()})
 		<h3 class="text-danger">$r.translate("results.title.failed")</h3>
 		#else
 		<h3>$r.translate("results.title.generic")</h3>
@@ -102,13 +102,13 @@
 		</tr>
 		#end
 		#if(${testResults.hasPass()})
-		<tr class="o_qti_stateinfo #if(${testResults.getPass().booleanValue()}) o_passed #elseif(!${testResults.getPass().booleanValue()}) o_failed #else o_unknown #end">
+		<tr class="o_qti_stateinfo #if(${testResults.getCalculatedPassed().booleanValue()}) o_passed #elseif(!${testResults.getCalculatedPassed().booleanValue()}) o_failed #else o_unknown #end">
 			<th>$r.translate("passed.yourpassed")</th>
 			<td> 
-				#if(${testResults.getPass().booleanValue()})	
+				#if(${testResults.getCalculatedPassed().booleanValue()})	
 					<i class="o_icon o_icon_passed"></i> 
 					$r.translate("passed.yes")
-				#elseif(!${testResults.getPass().booleanValue()})		
+				#elseif(!${testResults.getCalculatedPassed().booleanValue()})		
 					<i class="o_icon o_icon_failed"></i> 
 					$r.translate("passed.no")
 				#else
@@ -155,7 +155,7 @@
 	#if(${testResults.hasScore()} && ${testResults.hasMaxScore()})			
 	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-4 col-lg-3"> ## START right column
 	<div class="o_block_centered_wrapper"><div class="o_block_centered_content">
-		<div class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getPass().booleanValue()}) radial-progress-success #elseif(!${testResults.getPass().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
+		<div class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getCalculatedPassed().booleanValue()}) radial-progress-success #elseif(!${testResults.getCalculatedPassed().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
 			<div class="circle">
 				<div class="mask full">
 					<div class="fill"></div>
@@ -168,9 +168,9 @@
 			</div>
 			<div class="inset">
 				#if(${testResults.hasPass()})
-					#if(${testResults.getPass().booleanValue()})	
+					#if(${testResults.getCalculatedPassed().booleanValue()})	
 					<i class="bgIcon o_icon o_icon-fw o_icon_progress_success"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.yes")" > </i>	
-					#elseif(!${testResults.getPass().booleanValue()})
+					#elseif(!${testResults.getCalculatedPassed().booleanValue()})
 					<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
 					#end
 				#end
@@ -250,11 +250,11 @@
 							<div class="addon">
 								<div class="o_score">
 									$r.translate("table.header.score"): 
-									<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
+									<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score XX</span>
 								</div>
 								#if(${itemResult.hasMaxScore()})
 								<div class="o_score_max">
-									$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
+									$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore XX</span>
 								</div>
 								#end
 							</div>						

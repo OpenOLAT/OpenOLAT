@@ -70,6 +70,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
@@ -375,6 +376,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 			}
 		}
 		
-		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, AssessmentEntryStatus.done));
+		AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
+		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, assessmentTest, AssessmentEntryStatus.done));
 	}
 }
