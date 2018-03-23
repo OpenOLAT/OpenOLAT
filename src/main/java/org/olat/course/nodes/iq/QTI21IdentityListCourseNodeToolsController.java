@@ -22,7 +22,9 @@ package org.olat.course.nodes.iq;
 import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -186,6 +188,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			if(event instanceof CompleteAssessmentTestSessionEvent || event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(correctionCtrl);
 				cleanUp();
+				fireEvent(ureq, event);
+			} else if(event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(correctionCtrl);
+				cleanUp();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(resetDataCtrl == source || extraTimeCtrl == source || reopenCtrl == source) {
@@ -224,8 +230,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		TestSessionState testSessionState = qtiService.loadTestSessionState(lastSession);
+		Map<Identity, AssessmentTestSession> lastSessionMap = new HashMap<>();
+		lastSessionMap.put(assessedIdentity, lastSession);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode.getIdent(), testEntry,
-				resolvedAssessmentTest, Collections.singletonMap(assessedIdentity, lastSession),
+				resolvedAssessmentTest, lastSessionMap,
 				Collections.singletonMap(assessedIdentity, testSessionState));
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, lastSession, assessedIdentity);
 		listenTo(correctionCtrl);

@@ -66,6 +66,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
@@ -84,6 +85,7 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bps.onyx.plugin.OnyxModule;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 
 /**
  * 
@@ -283,11 +285,18 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				stackPanel.popController(correctionIdentitiesCtrl);
 				loadModel(ureq);				
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			}else if(event instanceof CompleteAssessmentTestSessionEvent) {
+			} else if(event instanceof CompleteAssessmentTestSessionEvent) {
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
-				doUpdateCourseNode(catse.getTestSessions(), catse.getStatus());
+				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
 				loadModel(ureq);	
 				stackPanel.popController(correctionIdentitiesCtrl);		
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(source instanceof QTI21IdentityListCourseNodeToolsController) {
+			if(event instanceof CompleteAssessmentTestSessionEvent) {
+				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
+				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
+				loadModel(ureq);	
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
@@ -392,8 +401,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 	}
 	
-	private void doUpdateCourseNode(List<AssessmentTestSession> testSessionsToComplete, AssessmentEntryStatus status) {
+	private void doUpdateCourseNode(List<AssessmentTestSession> testSessionsToComplete, AssessmentTest assessmentTest, AssessmentEntryStatus status) {
 		if(testSessionsToComplete == null || testSessionsToComplete.isEmpty()) return;
+		
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
@@ -402,8 +413,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
+			Boolean passed = scoreEval.getPassed();
+			if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
+				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+				passed = Boolean.valueOf(calculated);
+			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 					finalStatus, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
 			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);

@@ -69,6 +69,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
@@ -84,6 +85,7 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
@@ -280,8 +282,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			cleanUp();
 		} else if(correctionCtrl == source) {
 			if(event instanceof CompleteAssessmentTestSessionEvent) {
+				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
 				if(courseNode != null) {
-					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession());
+					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession(), catse.getAssessmentTest());
 				} else {
 					doUpdateEntry(correctionCtrl.getAssessmentTestSession());
 				}
@@ -363,11 +366,18 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}
 	
-	private void doUpdateCourseNode(AssessmentTestSession session) {
+	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest) {
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		
 		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
-		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
+		Boolean passed = scoreEval.getPassed();
+		if(session.getManualScore() != null && finalScore != null && cutValue != null) {
+			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+			passed = Boolean.valueOf(calculated);
+		}
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), 
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);

@@ -75,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -281,7 +282,8 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 			}
 		} else if(saveButton == source) {
 			List<AssessmentTestSession> sessions = Collections.singletonList(candidateSession);
-			fireEvent(ureq, new CompleteAssessmentTestSessionEvent(sessions, AssessmentEntryStatus.done));
+			AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
+			fireEvent(ureq, new CompleteAssessmentTestSessionEvent(sessions, assessmentTest, AssessmentEntryStatus.done));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

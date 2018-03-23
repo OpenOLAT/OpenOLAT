@@ -488,7 +488,7 @@ public class AssessmentResultController extends FormBasicController {
 		private Date endTime;
 		private Long duration;
 		
-		private Double score;
+		private BigDecimal score;
 		private Double manualScore;
 		private Double autoScore;
 		
@@ -595,28 +595,30 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setScore(BigDecimal score) {
 			if(score != null) {
-				this.score = score.doubleValue();
+				this.score = score;
 			}
 		}
 		
 		public void setScore(Double score) {
-			this.score = score;
+			if(score != null) {
+				this.score = BigDecimal.valueOf(score);
+			}
 		}
 		
 		public void addScore(Results results) {
 			if(results.hasScore()) {
 				if(score == null) {
-					score = 0.0d;
+					score = BigDecimal.valueOf(0.0d);
 				}
-				score = score.doubleValue() + results.score.doubleValue();
+				score = score.add(results.score);
 			}
 		}
 		
 		public void addScore(BigDecimal additionalScore) {
 			if(score == null) {
-				score = 0.0d;
+				score = BigDecimal.valueOf(0.0d);
 			}
-			score = score.doubleValue() + additionalScore.doubleValue();
+			score = score.add(additionalScore);
 		}
 		
 		public String getAutoScore() {
@@ -681,9 +683,11 @@ public class AssessmentResultController extends FormBasicController {
 			if(maxScore == null) {
 				return null;
 			}
-			if(score == null) return "0";
+			if(score == null) {
+				return "0";
+			}
 			
-			double percent = (score / maxScore) * 100.0d;
+			double percent = (score.doubleValue() / maxScore) * 100.0d;
 			long percentLong = Math.round(percent);	
 			return Long.toString(percentLong);
 		}
@@ -698,6 +702,15 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setPass(Boolean pass) {
 			this.pass = pass;
+		}
+		
+		public Boolean getCalculatedPassed() {
+			Boolean passed = pass;
+			if(score != null && manualScore != null && cutValue != null) {
+				boolean calculated = score.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+				passed = Boolean.valueOf(calculated);
+			}
+			return passed;
 		}
 
 		public String getComment() {

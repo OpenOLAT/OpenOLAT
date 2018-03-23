@@ -80,6 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -484,7 +485,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	
 	private void doSaveTests(UserRequest ureq) {
 		List<AssessmentTestSession> rows = new ArrayList<>(model.getLastSessions().values());
-		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, AssessmentEntryStatus.done));
+		AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
+		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, assessmentTest, AssessmentEntryStatus.done));
 	}
 	
 	private final class ResponsedPredicate implements Predicate<AssessmentItemListEntry> {
