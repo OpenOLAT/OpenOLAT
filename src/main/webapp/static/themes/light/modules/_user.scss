@@ -17,6 +17,10 @@
 	}
 }
 
+.o_useradmin .o_user_infos .o_user_infos_inner {
+	margin-right: 45px;
+}
+
 div.o_skype_button {
 	display:inline-block;
 	p {
@@ -26,4 +30,8 @@ div.o_skype_button {
 			vertical-align:middle !important;
 		}
 	}
+}
+
+.o_useradmin div#o_main_toolbar.o_toolbar {
+	margin-top: 0px;
 }

@@ -55,6 +55,13 @@ public interface OrganisationService {
 	
 	public List<Organisation> getOrganisations();
 	
+	/**
+	 * @param member The user (mandatory)
+	 * @param role The roles (mandatory)
+	 * @return A list of organization where the user has the specified roles
+	 */
+	public List<Organisation> getOrganisations(IdentityRef member, OrganisationRoles... role);
+	
 	public Organisation getDefaultOrganisation();
 
 	public void addMember(Organisation organisation, Identity member, OrganisationRoles role);

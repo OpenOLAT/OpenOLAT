@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,7 +59,6 @@ import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.portfolio.manager.InvitationDAO;
@@ -92,9 +90,11 @@ public class BaseSecurityManager implements BaseSecurity {
 	private InvitationDAO invitationDao;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private IdentityPowerSearchQueries identityPowerSearchQueries;
 	
 	private static BaseSecurityManager INSTANCE;
-	private static String GUEST_USERNAME_PREFIX = "guest_";
+	private static final String GUEST_USERNAME_PREFIX = "guest_";
 	public static final OLATResourceable IDENTITY_EVENT_CHANNEL = OresHelper.lookupType(Identity.class);
 	
 	/**
@@ -476,8 +476,8 @@ public class BaseSecurityManager implements BaseSecurity {
 
 		int count = 0;
 		int batch = 500;
-		List<String> names = new ArrayList<String>(identityNames);
-		List<IdentityShort> shortIdentities = new ArrayList<IdentityShort>(names.size());
+		List<String> names = new ArrayList<>(identityNames);
+		List<IdentityShort> shortIdentities = new ArrayList<>(names.size());
 		do {
 			int toIndex = Math.min(count + batch, names.size());
 			List<String> toLoad = names.subList(count, toIndex);
@@ -689,10 +689,6 @@ public class BaseSecurityManager implements BaseSecurity {
 				.getResultList();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.basesecurity.Manager#countUniqueUserLoginsSince(java.util.Date)
-	 */
 	@Override
 	public Long countUniqueUserLoginsSince (Date lastLoginLimit){
 		String queryStr ="Select count(ident) from org.olat.core.id.Identity as ident where " 
@@ -703,10 +699,7 @@ public class BaseSecurityManager implements BaseSecurity {
 				.getResultList();
 		return res.get(0);
 	}	
-	
-	/**
-	 * @see org.olat.basesecurity.Manager#getAuthentications(org.olat.core.id.Identity)
-	 */
+
 	@Override
 	public List<Authentication> getAuthentications(Identity identity) {
 		StringBuilder sb = new StringBuilder();
@@ -719,22 +712,16 @@ public class BaseSecurityManager implements BaseSecurity {
 				.getResultList();
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#createAndPersistAuthentication(org.olat.core.id.Identity, java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String authUserName,
 			final String credentials, final Encoder.Algorithm algorithm) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstanceWithoutCheck(provider, ident.getKey());
-		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, new SyncerCallback<Authentication>() {
-			@Override
-			public Authentication execute() {
-				Authentication auth = findAuthentication(ident, provider);
-				if(auth == null) {
-					auth = createAndPersistAuthenticationIntern(ident, provider,  authUserName, credentials, algorithm);
-				}
-				return auth;
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, () -> {
+			Authentication auth = findAuthentication(ident, provider);
+			if(auth == null) {
+				auth = createAndPersistAuthenticationIntern(ident, provider,  authUserName, credentials, algorithm);
 			}
+			return auth;
 		});
 	}
 	
@@ -976,304 +963,49 @@ public class BaseSecurityManager implements BaseSecurity {
 	public List<Identity> getVisibleIdentitiesByPowerSearch(String login,
 			Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			OrganisationRoles[] roles, String[] authProviders, Date createdAfter, Date createdBefore) {
-		return getIdentitiesByPowerSearch(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, roles, 
-				                              authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT), 0, -1); 
+		return identityPowerSearchQueries.getIdentitiesByPowerSearch(new SearchIdentityParams(login,
+				userproperties, userPropertiesAsIntersectionSearch, roles, 
+				authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT),
+				0, -1); 
 	}
 	
   @Override
 	public List<Identity> getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userProperties,
-			boolean userPropertiesAsIntersectionSearch, OrganisationRoles[] groups,
+			boolean userPropertiesAsIntersectionSearch, OrganisationRoles[] roles,
 			String[] authProviders, Date createdAfter, Date createdBefore, int firstResult, int maxResults) {
-		return getIdentitiesByPowerSearch(new SearchIdentityParams(login, userProperties, userPropertiesAsIntersectionSearch, groups, 
-        authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT), firstResult, maxResults); 
+		return identityPowerSearchQueries.getIdentitiesByPowerSearch(new SearchIdentityParams(login,
+				userProperties, userPropertiesAsIntersectionSearch, roles, 
+				authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT),
+				firstResult, maxResults); 
 	}
 
   @Override
 	public long countIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			OrganisationRoles[] roles, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
-	  	Number count = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, roles, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), Number.class).getSingleResult();
-		return count.longValue();
+	  	return identityPowerSearchQueries.countIdentitiesByPowerSearch(new SearchIdentityParams(login,
+	  			userproperties, userPropertiesAsIntersectionSearch, roles, authProviders,
+	  			createdAfter, createdBefore, userLoginAfter, userLoginBefore, status));
 	}
 
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			OrganisationRoles[] roles,
 			String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
-		return createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch,
+		return identityPowerSearchQueries.getIdentitiesByPowerSearch(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch,
 				roles, authProviders, createdAfter, createdBefore,
-				userLoginAfter, userLoginBefore, status), Identity.class)
-				.getResultList();
+				userLoginAfter, userLoginBefore, status), 0, -1);
 	}
   
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
-		Number count = createIdentitiesByPowerQuery(params, Number.class).getSingleResult();
-		return count.intValue();
+		return identityPowerSearchQueries.countIdentitiesByPowerSearch(params);
 	}
 	
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {
-		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, Identity.class);
-		if(firstResult >= 0) {
-			dbq.setFirstResult(firstResult);
-		}
-		if(maxResults > 0) {
-			dbq.setMaxResults(maxResults);
-		}
-		return dbq.getResultList();
+		return identityPowerSearchQueries.getIdentitiesByPowerSearch(params, firstResult, maxResults);
 	}
 
-	private <U> TypedQuery<U> createIdentitiesByPowerQuery(SearchIdentityParams params, Class<U> resultClass) {
-		boolean hasRoles = (params.getRoles() != null && params.getRoles().length > 0);
-		boolean hasAuthProviders = (params.getAuthProviders() != null && params.getAuthProviders().length > 0);
-
-		boolean count = Number.class.equals(resultClass);
-		// select identity and inner join with user to optimize query
-		StringBuilder sb = new StringBuilder(5000);
-		if(count) {
-			sb.append("select count(distinct ident.key) from org.olat.core.id.Identity as ident ")
-			  .append(" inner join ident.user as user ");
-		} else {
-			sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
-			  .append(" inner join fetch ident.user as user ");
-		}
-		
-		if (hasAuthProviders) {
-			sb.append(" left join org.olat.basesecurity.AuthenticationImpl as auth on (auth.identity.key=ident.key)");
-		}
-
-		if (hasRoles) {
-			sb.append(" inner join bgroupmember as membership on (membership.identity.key=ident.key and membership.role in (:roles))");
-		}	
-		
-		String login = params.getLogin();
-		Map<String,String> userproperties = params.getUserProperties();
-		Date createdAfter = params.getCreatedAfter();
-		Date createdBefore = params.getCreatedBefore();
-		Integer status = params.getStatus();
-		Collection<Long> identityKeys = params.getIdentityKeys();
-		Boolean managed = params.getManaged();
-		
-		// complex where clause only when values are available
-		if (login != null || (userproperties != null && !userproperties.isEmpty())
-				|| (identityKeys != null && !identityKeys.isEmpty()) || createdAfter != null	|| createdBefore != null
-				|| hasAuthProviders || status != null || managed != null) {
-			
-			sb.append(" where ");		
-			boolean needsAnd = false;
-			boolean needsUserPropertiesJoin = false;
-			
-			// treat login and userProperties as one element in this query
-			if (login != null && (userproperties != null && !userproperties.isEmpty())) {
-				sb.append(" ( ");			
-			}
-			// append query for login
-			if (login != null) {
-				login = makeFuzzyQueryString(login);
-				if (login.contains("_") && dbInstance.isOracle()) {
-					//oracle needs special ESCAPE sequence to search for escaped strings
-					sb.append(" lower(ident.name) like :login ESCAPE '\\'");
-				} else if (dbInstance.isMySQL()) {
-					sb.append(" ident.name like :login");
-				} else {
-					sb.append(" lower(ident.name) like :login");
-				}
-				// if user fields follow a join element is needed
-				needsUserPropertiesJoin = true;
-				// at least one user field used, after this and is required
-				needsAnd = true;
-			}
-
-			// append queries for user fields
-			if (userproperties != null && !userproperties.isEmpty()) {
-				Map<String, String> emailProperties = new HashMap<>();
-				Map<String, String> otherProperties = new HashMap<>();
-	
-				// split the user fields into two groups
-				for (Map.Entry<String, String> entry : userproperties.entrySet()) {
-					String key = entry.getKey();
-					if (key.toLowerCase().contains("email")) {
-						emailProperties.put(key, entry.getValue());
-					} else {
-						otherProperties.put(key, entry.getValue());
-					}
-				}
-	
-				// handle email fields special: search in all email fields
-				if (!emailProperties.isEmpty()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
-					boolean moreThanOne = emailProperties.size() > 1;
-					if (moreThanOne) sb.append("(");
-					boolean needsOr = false;
-					for (String key : emailProperties.keySet()) {
-						if (needsOr) sb.append(" or ");
-						if(dbInstance.isMySQL()) {
-							sb.append(" user.").append(key).append(" like :").append(key).append("_value ");
-						} else {
-							sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value ");
-						}
-						if(dbInstance.isOracle()) {
-							sb.append(" escape '\\'");
-						}
-						needsOr = true;
-					}
-					if (moreThanOne) sb.append(")");
-					// cleanup
-					emailProperties.clear();
-				}
-	
-				// add other fields
-				for (String key : otherProperties.keySet()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
-					
-					if(dbInstance.isMySQL()) {
-						sb.append(" user.").append(key).append(" like :").append(key).append("_value ");
-					} else {
-						sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value ");
-					}
-					if(dbInstance.isOracle()) {
-						sb.append(" escape '\\'");
-					}
-					needsAnd = true;
-				}
-				// cleanup
-				otherProperties.clear();
-				// at least one user field used, after this and is required
-				needsAnd = true;
-			}
-			// end of user fields and login part
-			if (login != null && (userproperties != null && !userproperties.isEmpty())) {
-				sb.append(" ) ");
-			}
-			// now continue with the other elements. They are joined with an AND connection
-	
-			// append query for identity primary keys
-			if(identityKeys != null && !identityKeys.isEmpty()) {
-				needsAnd = checkAnd(sb, needsAnd);
-				sb.append("ident.key in (:identityKeys)");
-			}
-			
-			if(managed != null) {
-				needsAnd = checkAnd(sb, needsAnd);
-				if(managed.booleanValue()) {
-					sb.append("ident.externalId is not null");
-				} else {
-					sb.append("ident.externalId is null");
-				}	
-			}
-	    
-			// append query for authentication providers
-			if (hasAuthProviders) {
-				needsAnd = checkAnd(sb, needsAnd);
-				sb.append(" (");
-				String[] authProviders = params.getAuthProviders();
-				for (int i = 0; i < authProviders.length; i++) {
-					// special case for null auth provider
-					if (authProviders[i] == null) {
-						sb.append(" auth is null ");
-					} else {
-						sb.append(" auth.provider=:authProvider_").append(i);
-					}
-					if (i < (authProviders.length - 1)) sb.append(" or ");
-				}
-				sb.append(") ");
-			}
-	
-			// append query for creation date restrictions
-			if (createdAfter != null) {
-				needsAnd = checkAnd(sb, needsAnd);
-				sb.append(" ident.creationDate >= :createdAfter ");
-			}
-			if (createdBefore != null) {
-				needsAnd = checkAnd(sb, needsAnd);
-				sb.append(" ident.creationDate <= :createdBefore ");
-			}
-			if(params.getUserLoginAfter() != null){
-				needsAnd = checkAnd(sb, needsAnd);
-				sb.append(" ident.lastLogin >= :lastloginAfter ");
-			}
-			if(params.getUserLoginBefore() != null){
-				needsAnd = checkAnd(sb, needsAnd);
-				sb.append(" ident.lastLogin <= :lastloginBefore ");
-			}
-			
-			if (status != null) {
-				if (status.equals(Identity.STATUS_VISIBLE_LIMIT)) {
-					// search for all status smaller than visible limit 
-					needsAnd = checkAnd(sb, needsAnd);
-					sb.append(" ident.status < :status ");
-				} else {
-					// search for certain status
-					needsAnd = checkAnd(sb, needsAnd);
-					sb.append(" ident.status = :status ");
-				}
-			} 
-		}
-			
-		// create query object now from string
-		String query = sb.toString();
-		TypedQuery<U> dbq = dbInstance.getCurrentEntityManager().createQuery(query, resultClass);
-		
-		// add user attributes
-		if (login != null) {
-			dbq.setParameter("login", login.toLowerCase());
-		}
-		
-		if(identityKeys != null && !identityKeys.isEmpty()) {
-			dbq.setParameter("identityKeys", identityKeys);
-		}
-
-		//	 add user properties attributes
-		if (userproperties != null && !userproperties.isEmpty()) {
-			for (Map.Entry<String, String> entry : userproperties.entrySet()) {
-				String value = entry.getValue();
-				value = makeFuzzyQueryString(value);
-				dbq.setParameter(entry.getKey() + "_value", value.toLowerCase());
-			}
-		}
-		
-		// add policies
-		if (hasRoles) {
-			OrganisationRoles[] roles = params.getRoles();
-			List<String> roleList = new ArrayList<>(roles.length);
-			for(OrganisationRoles role:roles) {
-				roleList.add(role.name());
-			}
-			dbq.setParameter("roles", roleList);
-		}
-
-		// add authentication providers
-		if (hasAuthProviders) {
-			String[] authProviders = params.getAuthProviders();
-			for (int i = 0; i < authProviders.length; i++) {
-				String authProvider = authProviders[i];
-				if (authProvider != null) {
-					dbq.setParameter("authProvider_" + i, authProvider);
-				}
-				// ignore null auth provider, already set to null in query
-			}
-		}
-		
-		// add date restrictions
-		if (createdAfter != null) {
-			dbq.setParameter("createdAfter", createdAfter, TemporalType.TIMESTAMP);
-		}
-		if (createdBefore != null) {
-			dbq.setParameter("createdBefore", createdBefore, TemporalType.TIMESTAMP);
-		}
-		if(params.getUserLoginAfter() != null){
-			dbq.setParameter("lastloginAfter", params.getUserLoginAfter(), TemporalType.TIMESTAMP);
-		}
-		if(params.getUserLoginBefore() != null){
-			dbq.setParameter("lastloginBefore", params.getUserLoginBefore(), TemporalType.TIMESTAMP);
-		}
-		
-		if (status != null) {
-			dbq.setParameter("status", status);
-		}
-		// execute query
-		return dbq;
-	}
 
 	@Override
 	public boolean isIdentityVisible(Identity identity) {
@@ -1282,55 +1014,16 @@ public class BaseSecurityManager implements BaseSecurity {
 		return (status != null && status.intValue() < Identity.STATUS_VISIBLE_LIMIT);
 	}
 
-	private boolean checkAnd(StringBuilder sb, boolean needsAnd) {
-		if (needsAnd) 	sb.append(" and ");
-		return true;
-	}
-
-	
-	private boolean checkIntersectionInUserProperties(StringBuilder sb, boolean needsJoin, boolean userPropertiesAsIntersectionSearch) {
-		if (needsJoin) 	{
-			if (userPropertiesAsIntersectionSearch) {
-				sb.append(" and ");								
-			} else {
-				sb.append(" or ");				
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Helper method that replaces * with % and appends and
-	 * prepends % to the string to make fuzzy SQL match when using like 
-	 * @param email
-	 * @return fuzzized string
-	 */
-	private String makeFuzzyQueryString(String string) {
-		// By default only fuzzyfy at the end. Usually it makes no sense to do a
-		// fuzzy search with % at the beginning, but it makes the query very very
-		// slow since it can not use any index and must perform a fulltext search.
-		// User can always use * to make it a really fuzzy search query
-		// fxdiff FXOLAT-252: use "" to disable this feature and use exact match
-		if (string.length() > 1 && string.startsWith("\"") && string.endsWith("\"")) {			
-			string = string.substring(1, string.length()-1);
-		} else {
-			string = string + "%";
-			string = string.replace('*', '%');
-		}
-		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
-		// To test for literal instances of '_', we have to escape it.
-		string = string.replace("_", "\\_");
-		return string;
-	}
-
 	/**
 	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
 	 */
 	@Override
 	public Identity saveIdentityStatus(Identity identity, Integer status) {
-		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setStatus(status);
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		IdentityImpl reloadedIdentity = loadForUpdate(identity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setStatus(status);
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		}
 		dbInstance.commit();
 		return reloadedIdentity;
 	}
@@ -1348,9 +1041,11 @@ public class BaseSecurityManager implements BaseSecurity {
 	@Override
 	public Identity saveIdentityName(Identity identity, String newName, String newExternalId) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setName(newName);
-		reloadedIdentity.setExternalId(newExternalId);
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setName(newName);
+			reloadedIdentity.setExternalId(newExternalId);
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		}
 		dbInstance.commit();
 		return reloadedIdentity;
 	}
@@ -1358,8 +1053,10 @@ public class BaseSecurityManager implements BaseSecurity {
 	@Override
 	public Identity setExternalId(Identity identity, String externalId) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setExternalId(externalId);
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setExternalId(externalId);
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		}
 		dbInstance.commit();
 		return reloadedIdentity;
 	}

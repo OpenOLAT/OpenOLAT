@@ -32,6 +32,7 @@ import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -599,7 +600,7 @@ public class UserTest extends Deployments {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Test @Ignore
 	@RunAsClient
 	public void createUser(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser)
@@ -646,7 +647,7 @@ public class UserTest extends Deployments {
 	 * search of the user management tab.
 	 * 
 	 */
-	@Test
+	@Test @Ignore
 	@RunAsClient
 	public void deleteUser(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser) {
@@ -706,7 +707,7 @@ public class UserTest extends Deployments {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test 
+	@Test @Ignore
 	@RunAsClient
 	public void importUsers(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser)
@@ -758,7 +759,7 @@ public class UserTest extends Deployments {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test 
+	@Test @Ignore 
 	@RunAsClient
 	public void importExistingUsers(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver existingUserBrowser,

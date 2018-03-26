@@ -212,6 +212,19 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
+	public List<Organisation> getOrganisations(IdentityRef identity, List<String> roleList) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", roleList)
+				.getResultList();
+	}
+	
 	public boolean hasRole(IdentityRef identity, String organisationIdentifier, String... role) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select membership.key from organisation org")

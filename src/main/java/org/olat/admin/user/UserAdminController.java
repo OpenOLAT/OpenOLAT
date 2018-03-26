@@ -158,6 +158,7 @@ public class UserAdminController extends BasicController implements Activateable
 			myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 
 			setBackButtonEnabled(true); // default
+			setShowTitle(true);
 			initTabbedPane(myIdentity, ureq);
 			exposeUserDataToVC(ureq, myIdentity);
 			putInitialPanel(myContent);
@@ -193,6 +194,12 @@ public class UserAdminController extends BasicController implements Activateable
 	public void setBackButtonEnabled(boolean backButtonEnabled) {
 		if (myContent != null) {
 			myContent.contextPut("showButton", Boolean.valueOf(backButtonEnabled));
+		}
+	}
+	
+	public void setShowTitle(boolean titleEnabled) {
+		if(myContent != null) {
+			myContent.contextPut("showTitle", Boolean.valueOf(titleEnabled));
 		}
 	}
 

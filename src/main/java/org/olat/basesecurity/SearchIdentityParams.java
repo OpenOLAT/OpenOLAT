@@ -21,7 +21,10 @@ package org.olat.basesecurity;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -31,7 +34,13 @@ public class SearchIdentityParams {
 	private String login;
 	private Map<String, String> userProperties;
 	private boolean userPropertiesAsIntersectionSearch;
+	
 	private OrganisationRoles[] roles;
+	private OrganisationRoles[] excludedRoles;
+	private GroupRoles repositoryEntryRole;
+	private GroupRoles businessGroupRole;
+	private boolean authorAndCoAuthor;
+	
 	private String[] authProviders;
 	private Date createdAfter;
 	private Date createdBefore;
@@ -41,8 +50,16 @@ public class SearchIdentityParams {
 	private Collection<Long> identityKeys;
 	private Boolean managed;
 	
+	private OrganisationRef organisation;
+	private List<Organisation> organisationParents;
+	
 	public SearchIdentityParams() {
 		//
+	}
+	
+	public SearchIdentityParams(OrganisationRoles[] roles, Integer status) {
+		this.roles = roles;
+		this.status = status;
 	}
 	
 	public SearchIdentityParams(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
@@ -60,12 +77,77 @@ public class SearchIdentityParams {
 		this.status = status;
 	}
 	
+	public static SearchIdentityParams params(Date createdAfter, Date createdBefore, Integer status) {
+		return new SearchIdentityParams(null, null, true, null, null, createdAfter, createdBefore, null, null, status);
+	}
+	
+	public static SearchIdentityParams params(OrganisationRoles[] roles, Integer status) {
+		return new SearchIdentityParams(null, null, true, roles, null, null, null, null, null, status);
+	}
+	
+	public static SearchIdentityParams authenticationProviders(String[] authProviders, Integer status) {
+		return new SearchIdentityParams(null, null, true, null, authProviders, null, null, null, null, status);
+	}
+	
+	public static SearchIdentityParams resources(GroupRoles repositoryEntryRole, GroupRoles businessGroupRole,
+			OrganisationRoles[] roles, OrganisationRoles[] excludedRoles, Integer status) {
+		SearchIdentityParams params = new SearchIdentityParams(null, null, true, null, null, null, null, null, null, status);
+		params.setRepositoryEntryRole(repositoryEntryRole);
+		params.setBusinessGroupRole(businessGroupRole);
+		params.setRoles(roles);
+		params.setExcludedRoles(excludedRoles);
+		return params;
+	}
+	
+	public static SearchIdentityParams organisation(Organisation organisation, Integer status) {
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setOrganisation(organisation);
+		params.setStatus(status);
+		return params;
+	}
+	
+	/**
+	 * 
+	 * @return A set of parameters to search authors along co-authors
+	 */
+	public static SearchIdentityParams authorsAndCoAuthors() {
+		SearchIdentityParams params = new SearchIdentityParams(null, null, true, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		params.setRepositoryEntryRole(GroupRoles.owner);
+		params.setRoles(new OrganisationRoles[] { OrganisationRoles.author } );
+		params.setAuthorAndCoAuthor(true);
+		return params;
+	}
+	
+	public boolean hasOrganisationParents() {
+		return organisationParents != null && !organisationParents.isEmpty();
+	}
+	
+	public List<Organisation> getOrganisationParents() {
+		return organisationParents;
+	}
+
+	public void setOrganisationParents(List<Organisation> organisationParents) {
+		this.organisationParents = organisationParents;
+	}
+
+	public OrganisationRef getOrganisation() {
+		return organisation;
+	}
+
+	public void setOrganisation(OrganisationRef organisation) {
+		this.organisation = organisation;
+	}
+
 	public String getLogin() {
 		return login;
 	}
 	
 	public void setLogin(String login) {
 		this.login = login;
+	}
+	
+	public boolean hasUserProperties() {
+		return userProperties != null && !userProperties.isEmpty();  
 	}
 	
 	public Map<String, String> getUserProperties() {
@@ -84,12 +166,48 @@ public class SearchIdentityParams {
 		this.userPropertiesAsIntersectionSearch = userPropertiesAsIntersectionSearch;
 	}
 	
+	public boolean hasRoles() {
+		return roles != null && roles.length > 0;
+	}
+	
 	public OrganisationRoles[] getRoles() {
 		return roles;
 	}
 
 	public void setRoles(OrganisationRoles[] roles) {
 		this.roles = roles;
+	}
+	
+	public boolean hasExcludedRoles() {
+		return excludedRoles != null && excludedRoles.length > 0;
+	}
+	
+	public OrganisationRoles[] getExcludedRoles() {
+		return excludedRoles;
+	}
+
+	public void setExcludedRoles(OrganisationRoles[] excludedRoles) {
+		this.excludedRoles = excludedRoles;
+	}
+
+	public GroupRoles getRepositoryEntryRole() {
+		return repositoryEntryRole;
+	}
+
+	public void setRepositoryEntryRole(GroupRoles repositoryEntryRole) {
+		this.repositoryEntryRole = repositoryEntryRole;
+	}
+
+	public GroupRoles getBusinessGroupRole() {
+		return businessGroupRole;
+	}
+
+	public void setBusinessGroupRole(GroupRoles businessGroupRole) {
+		this.businessGroupRole = businessGroupRole;
+	}
+
+	public boolean hasAuthProviders() {
+		return authProviders != null && authProviders.length > 0;
 	}
 	
 	public String[] getAuthProviders() {
@@ -100,6 +218,14 @@ public class SearchIdentityParams {
 		this.authProviders = authProviders;
 	}
 	
+	public boolean isAuthorAndCoAuthor() {
+		return authorAndCoAuthor;
+	}
+
+	private void setAuthorAndCoAuthor(boolean authorAndCoAuthor) {
+		this.authorAndCoAuthor = authorAndCoAuthor;
+	}
+
 	public Boolean getManaged() {
 		return managed;
 	}
@@ -146,6 +272,10 @@ public class SearchIdentityParams {
 	
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+	
+	public boolean hasIdentityKeys() {
+		return identityKeys != null && !identityKeys.isEmpty();
 	}
 	
 	public Collection<Long> getIdentityKeys() {

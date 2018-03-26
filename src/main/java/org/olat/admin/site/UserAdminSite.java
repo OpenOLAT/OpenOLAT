@@ -27,7 +27,6 @@ package org.olat.admin.site;
 
 import java.util.Locale;
 
-import org.olat.admin.UserAdminMainController;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -44,6 +43,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.user.ui.admin.UserAdminMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * Initial Date:  Jan 16, 2006

@@ -22,13 +22,9 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-
 package org.olat.admin.user;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,31 +35,19 @@ import org.olat.admin.user.bulkChange.UserBulkChangeStep00;
 import org.olat.admin.user.bulkChange.UserBulkChanges;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.commons.services.webdav.WebDAVModule;
-import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.table.TableMultiSelectEvent;
@@ -84,19 +68,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateMapped;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.login.LoginModule;
-import org.olat.login.auth.AuthenticationProvider;
-import org.olat.login.oauth.OAuthLoginModule;
-import org.olat.login.oauth.OAuthSPI;
 import org.olat.modules.co.ContactFormController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.EmailProperty;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.admin.UserSearchTableController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,10 +97,12 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private static final String CMD_BULKEDIT = "bulkEditUsers";
 
 	private VelocityContainer userListVC, userSearchVC, mailVC;
-	private StackedPanel panel;
+	private StackedPanel panel2;
 
-	private UsermanagerUserSearchForm searchform;
-	private TableController tableCtr;
+	private TooledStackedPanel stackedPanel;
+
+	private UsermanagerUserSearchForm searchFormCtrl;
+	private UserSearchTableController tableCtr;
 	private List<Identity> identitiesList, selectedIdentities;
 	private List<String> notUpdatedIdentities = new ArrayList<>();
 	private ExtendedIdentitiesTableDataModel tdm;
@@ -131,7 +111,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private Link backFromList;
 	private boolean showEmailButton = true;
 	private StepsMainRunController userBulkChangeStepsController;
+	
+	
 	private final boolean isAdministrativeUser;
+	private List<Organisation> parentOrganisations;
+	private SearchIdentityParams identityQueryParams;
 	
 	@Autowired
 	private UserManager userManager;
@@ -148,9 +132,13 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param ureq
 	 * @param wControl
 	 */
-	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl) {
+	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
+			List<Organisation> parentOrganisations) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		this.stackedPanel = stackedPanel;
+		this.parentOrganisations = parentOrganisations;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
@@ -167,14 +155,14 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.contextPut("emptyList", Boolean.FALSE);
 		userListVC.contextPut("showTitle", Boolean.TRUE);
 
-		searchform = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser);
-		listenTo(searchform);
+		searchFormCtrl = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser);
+		listenTo(searchFormCtrl);
 		
-		userSearchVC.put("usersearch", searchform.getInitialComponent());
+		userSearchVC.put("usersearch", searchFormCtrl.getInitialComponent());
 
-		panel = putInitialPanel(userSearchVC);
+		putInitialPanel(userSearchVC);
 	}
-
+	
 	/**
 	 * Constructor to trigger the user search workflow using the given attributes.
 	 * The user has no possibility to manually search, the search will be
@@ -188,64 +176,25 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param searchCreatedAfter
 	 * @param searchCreatedBefore
 	 */
-	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, OrganisationRoles[] roles,
-			String[] searchAuthProviders, Date searchCreatedAfter,
-			Date searchCreatedBefore, Integer status, boolean showEmailButton) {
+	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
+			SearchIdentityParams predefinedQuery, boolean showEmailButton) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.stackedPanel = stackedPanel;
 
+		identityQueryParams = predefinedQuery;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		mailVC = createVelocityContainer("usermanagerMail");
-
 		backFromMail = LinkFactory.createLinkBack(mailVC, this);
 
 		userListVC = createVelocityContainer("usermanagerUserlist");
 		this.showEmailButton = showEmailButton;
-
-		userListVC.contextPut("showBackButton", Boolean.FALSE);
-		userListVC.contextPut("showTitle", Boolean.TRUE);
-
-		identitiesList = securityManager.getIdentitiesByPowerSearch(null, null, true, roles, searchAuthProviders,
-				searchCreatedAfter, searchCreatedBefore, null, null, status);
-
-		initUserListCtr(ureq, identitiesList, status);
-		userListVC.put("userlist", tableCtr.getInitialComponent());
-		userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
-
-		panel = putInitialPanel(userListVC);
-	}
-	
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param identitiesList
-	 * @param status
-	 * @param showEmailButton
-	 */
-	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, List<Identity> identitiesList, Integer status, boolean showEmailButton) {
-		super(ureq, wControl);
-		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-
-		mailVC = createVelocityContainer("usermanagerMail");
-
-		backFromMail = LinkFactory.createLinkBack(mailVC, this);
-
-		userListVC = createVelocityContainer("usermanagerUserlist");
-		this.showEmailButton = showEmailButton;
-
-		userListVC.contextPut("showBackButton", Boolean.FALSE);
-		userListVC.contextPut("showTitle", Boolean.TRUE);
-
-		this.identitiesList = identitiesList;
-		initUserListCtr(ureq, identitiesList, status);
-		userListVC.put("userlist", tableCtr.getInitialComponent());
-		userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
-
-		panel = putInitialPanel(userListVC);
+		
+		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel, true);
+		listenTo(tableCtr);
+		tableCtr.loadModel(identityQueryParams);
+		putInitialPanel(tableCtr.getInitialComponent());
 	}
 	
 	/**
@@ -275,11 +224,10 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.contextPut("showBackButton", Boolean.FALSE);
 		userListVC.contextPut("showTitle", Boolean.valueOf(showTitle));
 
-		initUserListCtr(ureq, identitiesList, status);
-		userListVC.put("userlist", tableCtr.getInitialComponent());
-		userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
-
-		panel = putInitialPanel(userListVC);
+		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel, true);
+		listenTo(tableCtr);
+		tableCtr.loadModel(identitiesList);
+		putInitialPanel(tableCtr.getInitialComponent());
 	}
 	
 	public WindowControl getTableControl() {
@@ -290,13 +238,13 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof StateMapped) {
 			StateMapped searchState = (StateMapped)state;
-			searchform.setStateEntry(searchState);
+			searchFormCtrl.setStateEntry(searchState);
 			
 			if(entries != null && entries.size() > 0) {
 				String table = entries.get(0).getOLATResourceable().getResourceableTypeName();
 				if("table".equals(table)) {
 					entries.remove(0);
-					event(ureq, searchform, Event.DONE_EVENT);
+					event(ureq, searchFormCtrl, Event.DONE_EVENT);
 				}
 			}
 		}
@@ -363,20 +311,9 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.put("userlist", tableCtr.getInitialComponent());		
 	}
 
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-
-		if (source == backFromMail) {
-			panel.setContent(userListVC);
-		} else if (source == backFromList) {
-			panel.setContent(userSearchVC);
-		}
+		//
 	}
 
 	/**
@@ -403,11 +340,10 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		tableCtr = new TableController(tableConfig, ureq, bwControl, getTranslator());
-		tdm.addColumnDescriptors(tableCtr, getTranslator());
-		tableCtr.setTableDataModel(tdm);
-
+		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel, true);
 		listenTo(tableCtr);
+		
+		/*
 		
 		if (showEmailButton) {
 			tableCtr.addMultiSelectAction("command.mail", CMD_MAIL);
@@ -418,81 +354,35 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		if (showEmailButton || actionEnabled){
 			tableCtr.setMultiSelect(true);
 		}
+		*/
 	}
+	
+	private void doPushSearch(UserRequest ureq) {
+		identityQueryParams = searchFormCtrl.getSearchIdentityParams();
+		identityQueryParams.setOrganisationParents(parentOrganisations);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel, true);
+		listenTo(tableCtr);
+		tableCtr.loadModel(identityQueryParams);
+		stackedPanel.pushController("Results", tableCtr);
 
-	/**
-	 * @return List of identities that match the criterias from the search form
-	 */
-	private List<Identity> findIdentitiesFromSearchForm() {
-		// get user attributes from form
-		String login = searchform.getStringValue("login");
-		// when searching for deleted users, add wildcard to match with backup prefix
-		if (searchform.getStatus().equals(Identity.STATUS_DELETED)) {
-			login = "*" + login;
-		}
-		login = (login.equals("") ? null : login);
-
-		// get user fields from form
-		// build user fields search map
-		Map<String, String> userPropertiesSearch = new HashMap<>();
-		for (UserPropertyHandler userPropertyHandler : searchform.getPropertyHandlers()) {
-			if (userPropertyHandler == null) continue;
-			
-			FormItem ui = searchform.getItem(userPropertyHandler.getName());
-			String uiValue = userPropertyHandler.getStringValue(ui);
-			if(userPropertyHandler.getName().startsWith("genericCheckboxProperty") && ui instanceof MultipleSelectionElement) {
-				if(!"false".equals(uiValue)) {//ignore false for the search
-					userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
-				}	
-			} else if (StringHelper.containsNonWhitespace(uiValue)) {
-				// when searching for deleted users, add wildcard to match with backup prefix
-				if (userPropertyHandler instanceof EmailProperty && searchform.getStatus().equals(Identity.STATUS_DELETED)) {
-					uiValue = "*" + uiValue;
-				}
-				userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
+		if(searchFormCtrl != null) {
+			ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
+			if(currentEntry != null) {
+				currentEntry.setTransientState(searchFormCtrl.getStateEntry());
 			}
 		}
-		if (userPropertiesSearch.isEmpty()) {
-			userPropertiesSearch = null;
-		}
-		
-		Integer status = searchform.getStatus();
-		String[] authProviders = searchform.getAuthProviders();
-		OrganisationRoles[] roles = searchform.getRoles().toArray(new OrganisationRoles[0]);
-		// get date constraints from form
-		Date createdBefore = searchform.getBeforeDate();
-		Date createdAfter = searchform.getAfterDate();
-		Date userLoginBefore = searchform.getUserLoginBefore();
-		Date userLoginAfter = searchform.getUserLoginAfter();
-		
-		SearchIdentityParams params = new SearchIdentityParams(login, userPropertiesSearch, true,
-				roles, authProviders, createdAfter, createdBefore,
-				userLoginAfter, userLoginBefore, status);
-		// now perform power search
-		return securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		addToHistory(ureq, tableCtr);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == searchform) {
+		if (source == searchFormCtrl) {
 			if (event == Event.DONE_EVENT) {
-				// form validation was ok
-				identitiesList = findIdentitiesFromSearchForm();
-				initUserListCtr(ureq, identitiesList, null);
-				userListVC.put("userlist", tableCtr.getInitialComponent());
-				userListVC.contextPut("emptyList", Boolean.valueOf(identitiesList.isEmpty()));
-				panel.setContent(userListVC);
-
-				//fxdiff BAKS-7 Resume function
-				ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
-				if(currentEntry != null) {
-					currentEntry.setTransientState(searchform.getStateEntry());
-				}
-				addToHistory(ureq, tableCtr);
+				doPushSearch(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
@@ -587,12 +477,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 					listenTo(contactCtr);
 
 					mailVC.put("mailform", contactCtr.getInitialComponent());
-					panel.setContent(mailVC);
+					//panel.setContent(mailVC);
 				}
 			}
 		} else if (source == contactCtr) {
-			// in any case go back to list (events: done, failed or cancel)
-			panel.setContent(userListVC);
+
 		} else if (source == userBulkChangeStepsController) {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
@@ -664,326 +553,4 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		//
 	}
 
-}
-
-/** 
- * Initial Date: Jan 31, 2006
- * 
- * @author gnaegi
- * 
- * Description: Search form for the usermanager power search. Should only be
- * used by the UserManagerSearchController
- */
-class UsermanagerUserSearchForm extends FormBasicController {
-	private static final String formIdentifyer = UsermanagerUserSearchForm.class.getCanonicalName();
-	private TextElement login;
-	private MultipleSelectionElement roles;
-	private SingleSelection status;
-	private SelectionElement auth;
-	private DateChooser beforeDate;
-	private DateChooser afterDate;
-	private DateChooser userLoginBefore;
-	private DateChooser userLoginAfter;
-	private FormLink searchButton;
-	
-	
-	private List<UserPropertyHandler> userPropertyHandlers;
-	
-	private String[] statusKeys;
-	private String[] statusValues;
-	private String[] roleKeys;
-	private String[] roleValues;
-	private String[] authKeys;
-	private String[] authValues;
-	
-	private Map <String,FormItem>items;
-	private final boolean isAdministrativeUser;
-	
-	@Autowired
-	private LoginModule loginModule;
-	@Autowired
-	private OAuthLoginModule oauthLoginModule;
-	
-	/**
-	 * @param binderName
-	 * @param cancelbutton
-	 */
-	public UsermanagerUserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdministrativeUser) {
-		super(ureq, wControl);
-		this.isAdministrativeUser = isAdministrativeUser;
-
-		UserManager um = UserManager.getInstance();
-		setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
-		
-		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
-		
-		items = new HashMap<>(); 
-		
-		roleKeys = new String[] {
-				OrganisationRoles.administrator.name(),
-				OrganisationRoles.author.name(),
-				OrganisationRoles.groupmanager.name(),
-				OrganisationRoles.usermanager.name(),
-				OrganisationRoles.learnresourcemanager.name(),
-				OrganisationRoles.poolmanager.name(),
-				OrganisationRoles.curriculummanager.name()
-		};
-		
-		roleValues = new String[]{
-				translate("search.form.constraint.admin"),
-				translate("search.form.constraint.author"),
-				translate("search.form.constraint.groupmanager"),
-				translate("search.form.constraint.usermanager"),
-				translate("search.form.constraint.oresmanager"),
-				translate("search.form.constraint.poolmanager"),
-				translate("search.form.constraint.curriculummanager")
-		};
-		
-		statusKeys = new String[] { 
-				Integer.toString(Identity.STATUS_VISIBLE_LIMIT),
-				Integer.toString(Identity.STATUS_ACTIV),
-				Integer.toString(Identity.STATUS_PERMANENT),
-				Integer.toString(Identity.STATUS_LOGIN_DENIED),
-				Integer.toString(Identity.STATUS_DELETED)
-		};
-		statusValues = new String[] {
-				translate("rightsForm.status.any.visible"),
-				translate("rightsForm.status.activ"),
-				translate("rightsForm.status.permanent"),
-				translate("rightsForm.status.login_denied"),
-				translate("rightsForm.status.deleted")
-		};
-		
-		// take all providers from the config file
-		// convention is that a translation key "search.form.constraint.auth." +
-		// providerName
-		// must exist. the element is stored using the name "auth." + providerName
-		List <String>authKeyList = new ArrayList<>();
-		List <String>authValueList = new ArrayList<>();
-		
-		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
-		for (AuthenticationProvider provider:providers) {
-			if (provider.isEnabled()) {
-				authKeyList.add(provider.getName());
-				authValueList.add(translate(
-						"search.form.constraint.auth." +provider.getName()
-				));
-			}
-		}
-		if(CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled()) {
-			authKeyList.add(WebDAVAuthManager.PROVIDER_WEBDAV);
-			authValueList.add(translate("search.form.constraint.auth.WEBDAV"));
-		}
-		
-		// add additional no authentication element
-		authKeyList.add("noAuth");
-		authValueList.add(translate("search.form.constraint.auth.none"));
-		
-		authKeys   = authKeyList.toArray(new String[authKeyList.size()]);
-		authValues = authValueList.toArray(new String[authValueList.size()]);
-		
-
-		initForm(ureq);
-	}
-
-	public List<UserPropertyHandler> getPropertyHandlers() {
-		return userPropertyHandlers;
-	}
-
-	protected Date getBeforeDate() {
-		return beforeDate.getDate();
-	}
-	protected Date getAfterDate() {
-		return afterDate.getDate();
-	}
-	
-	protected Date getUserLoginBefore() {
-		return userLoginBefore.getDate();
-	}
-
-	protected Date getUserLoginAfter() {
-		return userLoginAfter.getDate();
-	}
-
-	protected FormItem getItem(String name) {
-		return items.get(name);
-	}
-
-	protected String getStringValue(String key) {
-		FormItem f = items.get(key);
-		if (f == null) return null;
-		if (f instanceof TextElement) {
-			return ((TextElement) f).getValue();
-		}
-		return null;
-	}
-
-	protected void setStringValue(String key, String value) {
-		FormItem f = items.get(key);
-		if (f == null) return;
-		if (f instanceof TextElement) {
-			((TextElement) f).setValue(value);
-		}
-	}
-	
-	protected List<OrganisationRoles> getRoles() {
-		List<OrganisationRoles> selectedRoles = new ArrayList<>();
-		for(String selectedKey:roles.getSelectedKeys()) {
-			if(StringHelper.containsNonWhitespace(selectedKey)) {
-				selectedRoles.add(OrganisationRoles.valueOf(selectedKey));
-			}
-		}
-		return selectedRoles;
-	}
-	
-	protected Integer getStatus () {
-		return new Integer(status.getSelectedKey());
-	}
-	
-	protected String[] getAuthProviders () {
-		List<String> apl = new ArrayList<>();
-		for (int i=0; i<authKeys.length; i++) {
-			if (auth.isSelected(i)) {
-				String authKey = authKeys[i];
-				if("noAuth".equals(authKey)) {
-					apl.add(null);//special case
-				} else if("OAuth".equals(authKey)) {
-					List<OAuthSPI> spis = oauthLoginModule.getAllSPIs();
-					for(OAuthSPI spi:spis) {
-						apl.add(spi.getProviderName());
-					}
-				} else {
-					apl.add(authKey);
-				}
-			}
-		}
-		return apl.toArray(new String[apl.size()]);
-	}
-
-	protected StateMapped getStateEntry() {
-		StateMapped state = new StateMapped();
-		if(items != null) {
-			for(Map.Entry<String, FormItem> itemEntry : items.entrySet()) {
-				String key = itemEntry.getKey();
-				FormItem f = itemEntry.getValue();
-				if (f instanceof TextElement) {
-					state.getDelegate().put(key, ((TextElement) f).getValue());
-				}	
-			}	
-		}
-		
-		if(auth.isMultiselect()) {
-			//auth.
-		}
-		if(roles.isMultiselect()) {
-			//
-		}
-		if(status.isOneSelected()) {
-			//
-		}
-		
-		return state;
-	}
-
-	protected void setStateEntry(StateMapped state) {
-		for(Map.Entry<String, String> entry:state.getDelegate().entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-			setStringValue(key, value);
-		}	
-	}
-	
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
-	}
-	
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_user_search_form");
-	
-		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
-		login.setVisible(isAdministrativeUser);
-		login.setElementCssClass("o_sel_user_search_username");
-		items.put("login", login);
-
-		String currentGroup = null;
-		// Add all available user fields to this form
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) continue;
-			
-			String group = userPropertyHandler.getGroup();
-			if (!group.equals(currentGroup)) {
-				if (currentGroup != null) {
-					uifactory.addSpacerElement("spacer_" + group, formLayout, false);
-				}
-				currentGroup = group;
-			}
-
-			FormItem fi = userPropertyHandler.addFormItem(
-					getLocale(), null, getClass().getCanonicalName(), false, formLayout
-			);
-			// Do not validate items, this is a search form!
-			if (fi instanceof TextElement) {
-				TextElement textElement = (TextElement) fi;
-				textElement.setItemValidatorProvider(null);
-			}
-
-			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
-			fi.setTranslator(getTranslator());
-			items.put(fi.getName(), fi);
-		}
-
-		uifactory.addSpacerElement("space1", formLayout, false);
-		roles = uifactory.addCheckboxesVertical(
-				"roles", "search.form.title.roles", formLayout, roleKeys, roleValues, 1);
-
-		uifactory.addSpacerElement("space2", formLayout, false);
-		auth = uifactory.addCheckboxesVertical(
-				"auth", "search.form.title.authentications",
-				formLayout, authKeys, authValues, 1);
-		
-		uifactory.addSpacerElement("space3", formLayout, false);
-		status = uifactory.addRadiosVertical(
-				"status", "search.form.title.status", formLayout, statusKeys, statusValues
-		);
-		status.select(statusKeys[0], true);		
-		
-		uifactory.addSpacerElement("space4", formLayout, false);
-		afterDate  = uifactory.addDateChooser("search.form.afterDate", null, formLayout);
-		afterDate.setValidDateCheck("error.search.form.no.valid.datechooser");
-		beforeDate = uifactory.addDateChooser("search.form.beforeDate", null, formLayout);
-		beforeDate.setValidDateCheck("error.search.form.no.valid.datechooser");
-		
-		uifactory.addSpacerElement("space5", formLayout, false);
-		userLoginAfter = uifactory.addDateChooser("search.form.userLoginAfterDate", null, formLayout);
-		userLoginAfter.setValidDateCheck("error.search.form.no.valid.datechooser");
-		userLoginBefore = uifactory.addDateChooser("search.form.userLoginBeforeDate", null, formLayout);
-		userLoginBefore.setValidDateCheck("error.search.form.no.valid.datechooser");
-		
-		uifactory.addSpacerElement("spaceBottom", formLayout, false);
-		
-		// Don't use submit button, form should not be marked as dirty since this is
-		// not a configuration form but only a search form (OLAT-5626)
-		searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON);
-		searchButton.addActionListener(FormEvent.ONCLICK);
-		
-	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == searchButton) {
-			source.getRootForm().submit(ureq);			
-		}
-	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

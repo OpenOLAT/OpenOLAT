@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -111,8 +110,6 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
@@ -192,7 +189,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());
 			resource = resourceManager.createAndPersistOLATResourceInstance(ores);
-		} else if(resource != null && resource.getKey() == null) {
+		} else if(resource.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(resource);
 		}
 		re.setOlatResource(resource);
@@ -646,7 +643,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public List<Identity> getIdentitiesWithRole(String role) {
-		return reToGroupDao.getIdentitiesWithRole(role);
+		long start = System.nanoTime();
+		List<Identity> ids = reToGroupDao.getIdentitiesWithRole(role);
+		CodeHelper.printNanoTime(start, "Repository ids with role");
+		return ids;
 	}
 
 	@Override
