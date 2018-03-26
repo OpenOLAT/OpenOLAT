@@ -104,6 +104,7 @@ public class AssessmentResultController extends FormBasicController {
 	private final boolean anonym;
 	private final boolean withPrint;
 	private final boolean withTitle;
+	private final boolean toggleSolution;
 	private final Identity assessedIdentity;
 	private final TestSessionState testSessionState;
 	private final AssessmentResult assessmentResult;
@@ -127,13 +128,14 @@ public class AssessmentResultController extends FormBasicController {
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
-			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle) {
-		this(ureq, wControl, assessedIdentity, anonym, candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, withPrint, withTitle, null);
+			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle, boolean toggleSolution) {
+		this(ureq, wControl, assessedIdentity, anonym, candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri,
+				options, withPrint, withTitle, toggleSolution, null);
 	}
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
-			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle, String exportUri) {
+			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle, boolean toggleSolution, String exportUri) {
 		super(ureq, wControl, "assessment_results");
 		
 		this.anonym = anonym;
@@ -141,6 +143,7 @@ public class AssessmentResultController extends FormBasicController {
 		this.mapperUri = mapperUri;
 		this.withPrint = withPrint;
 		this.withTitle = withTitle;
+		this.toggleSolution = toggleSolution;
 		this.assessedIdentity = assessedIdentity;
 		this.candidateSession = candidateSession;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
@@ -203,6 +206,7 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("title", Boolean.valueOf(withTitle));
 				layoutCont.contextPut("print", Boolean.valueOf(withPrint));
 				layoutCont.contextPut("printCommand", Boolean.FALSE);
+				layoutCont.contextPut("toggleSolution", Boolean.valueOf(toggleSolution));
 				if(withPrint) {
 					layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
 					layoutCont.getFormItemComponent().addListener(this);
@@ -456,7 +460,7 @@ public class AssessmentResultController extends FormBasicController {
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator creator = (uureq, wwControl) -> {
 			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
-					candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, false, true);
+					candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, false, true, false);
 			printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
 			listenTo(printViewCtrl);
 			return printViewCtrl;
