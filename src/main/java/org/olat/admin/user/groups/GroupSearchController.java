@@ -34,8 +34,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -55,8 +55,10 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
@@ -413,7 +415,11 @@ public class GroupSearchController extends StepFormBasicController {
 			GroupWrapper option = getObject(row);
 			switch(Cols.values()[col]) {
 				case groupName: return option.getGroupName();
-				case description: return option.getDescription();
+				case description: 
+					String description = option.getDescription();
+					description = FilterFactory.getHtmlTagsFilter().filter(description);
+					description = Formatter.truncate(description, 256);
+					return description;
 				case courses: return option.getCourses();
 				case tutor: return option.getTutor();
 				case participant: return option.getParticipant();
