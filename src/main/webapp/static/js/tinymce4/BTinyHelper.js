@@ -40,8 +40,13 @@ var BTinyHelper = {
 	// Write link from media chooser back to tiny and trigger media preview generation
 	writeLinkSelectionToTiny : function (link, width, height) {
 		if (link != "") {
-			var infos = { "link" : link, "width": width, "height": height };
-			BTinyHelper.currentWindow.tinymce.activeEditor.execCommand('updateOOMovie', false, infos);
+			try {
+				jQuery('#' + BTinyHelper.currentFieldId).val(link);
+				var infos = { "link" : link, "width": width, "height": height };
+				BTinyHelper.currentWindow.tinymce.activeEditor.execCommand('updateOOMovie', false, infos);
+			} catch(e) {
+				if(window.console) console.log(e);
+			}
 		}
 	},
 	
