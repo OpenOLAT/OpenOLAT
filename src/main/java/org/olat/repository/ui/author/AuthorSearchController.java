@@ -204,7 +204,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		}
 		Set<String> selectedTypes = se.getTypes();
 		if(selectedTypes != null && selectedTypes.size() > 0) {
-			for(String typeKey:typeKeys) {
+			for(String typeKey: selectedTypes) {
 				types.select(typeKey, true);
 			}
 		}
@@ -259,7 +259,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	 */
 	public Set<String> getRestrictedTypes() {
 		if(types.isAtLeastSelected(1)) {
-			Set<String> selectedTypes = new HashSet<String>(types.getSelectedKeys());
+			Set<String> selectedTypes = new HashSet<>(types.getSelectedKeys());
 			return selectedTypes;
 		}
 		return null;
