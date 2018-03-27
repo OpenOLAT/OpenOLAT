@@ -249,9 +249,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	@Override
 	protected void doDispose() {
 		stackPanel.removeListener(this);
-		if(lockResult != null && lockResult.isSuccess()) {
-			doUnlock();
-		}
+		doUnlock();
 	}
 	
 	private void doUnlock() {
@@ -413,6 +411,9 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	}
 	
 	private void doSelect(UserRequest ureq, AssessmentItemListEntry listEntry, List<? extends AssessmentItemListEntry> selectedItemSessions) {
+		removeAsListenerAndDispose(identityItemCtrl);
+		doUnlock();
+		
 		AssessmentItemRef itemRef = listEntry.getItemRef();
 		AssessmentItemSession reloadItemSession = null;
 		if(listEntry.getItemSession() != null) {
@@ -422,7 +423,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		// lock on item, need to check the lock on identity / test
 		String lockSubKey = "item-" + listEntry.getAssessedIdentity().getKey() + "-" + listEntry.getItemRef().getIdentifier().toString();
 		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
-		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(testOres, getIdentity(), lockSubKey);
+		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey);
 		if(lockResult.isSuccess()) {
 			Identity assessedIdentity = listEntry.getAssessedIdentity();
 			AssessmentTestSession candidateSession = listEntry.getTestSession();

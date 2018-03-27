@@ -294,6 +294,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	
 	private void doSelect(UserRequest ureq, CorrectionIdentityAssessmentItemRow row) {
 		removeAsListenerAndDispose(identityItemCtrl);
+		doUnlock();
 
 		AssessmentItemRef itemRef = row.getItemRef();
 		TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
@@ -312,7 +313,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		// lock on item, need to check the lock on identity / test
 		String lockSubKey = "item-" + reloadItemSession.getKey();
 		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
-		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(testOres, getIdentity(), lockSubKey);
+		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey);
 		if(lockResult.isSuccess()) {
 			if(nodes.size() == 1) {
 				TestPlanNode itemNode = nodes.get(0);
