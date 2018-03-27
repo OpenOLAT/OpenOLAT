@@ -40,19 +40,8 @@ var BTinyHelper = {
 	// Write link from media chooser back to tiny and trigger media preview generation
 	writeLinkSelectionToTiny : function (link, width, height) {
 		if (link != "") {
-			jQuery('#' + BTinyHelper.currentFieldId).val(link);
-			try {
-				if(width != null && width > 0) {
-					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#width')[0].value(width);
-					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#width')[0].fire('change');
-				}
-				if(height != null && height > 0) {
-					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#height')[0].value(height);
-					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#height')[0].fire('change');
-				}
-			} catch(e) {
-				if(window.console) console.log(e);
-			}
+			var infos = { "link" : link, "width": width, "height": height };
+			BTinyHelper.currentWindow.tinymce.activeEditor.execCommand('updateOOMovie', false, infos);
 		}
 	},
 	

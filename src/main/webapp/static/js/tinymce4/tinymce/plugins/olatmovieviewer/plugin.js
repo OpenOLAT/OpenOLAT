@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.3.5'
+				version : '2.4.0'
 			};
 		},
 
@@ -222,7 +222,8 @@
 				}
 				
 				if(p.address != undefined && p.address != null && p.address.length > 0) {
-					BPlayer.insertPlayer(videoUrl,'prev_container',playerWidth,playerHeight,start,0,provider,streamer,autostart,repeat,controlbar);
+					jQuery('#prev_container').width(playerWidth + 'px').height(playerHeight + 'px');
+					BPlayer.insertPlayer(videoUrl,'prev_container', playerWidth, playerHeight, start, 0, provider, streamer, autostart, repeat, controlbar);
 				}
 			}
 			
@@ -296,7 +297,7 @@
 									]
 								},
 					    	    { name: 'preview', type: 'panel', label: '', minHeight: 320,
-								  html:'<div id="prev" name="prev"><div id="prev_container" name="prev_container">&nbsp;</div></div>'
+								  html:'<div id="prev" name="prev"><div id="prev_container" name="prev_container"></div></div>'
 							    },
 						    	{ name: 'domIdentity', type: 'textbox', hidden:true }
 					    	]
@@ -412,6 +413,35 @@
 				text : translator().translate('olatmovieviewer.desc'),
 				icon : 'movie',
 				onclick: showDialog,
+			});
+			
+			ed.addCommand('updateOOMovie', function (ui, value) {
+				var link = value['link'];
+				var width = value['width'];
+				var height = value['height'];
+				var hasWidth = !(typeof width === "undefined");
+				var hasHeight = !(typeof height === "undefined");
+				if(hasWidth) {
+					win.find('#width')[0].value(width);
+				}
+				if(hasHeight) {
+					win.find('#height')[0].value(height);
+				}
+				
+				var extension = link.split('.').pop().toLowerCase().split('&').shift();
+				if(!hasHeight && !hasWidth) {
+					if(extension == "mp3" || extension == "aac") {
+						win.find('#width')[0].value("250");
+						win.find('#height')[0].value("50");
+					}
+				}
+				if(extension == "mp3") {
+					win.find('#provider')[0].value("sound");
+				} else {
+					win.find('#provider')[0].value("video");
+				}
+				win.find('#address')[0].value(link);
+				win.find('#height')[0].fire('change');
 			});
 
 			// Load Content CSS upon initialization
