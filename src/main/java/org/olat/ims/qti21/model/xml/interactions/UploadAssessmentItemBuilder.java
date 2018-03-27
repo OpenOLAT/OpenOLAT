@@ -89,6 +89,10 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		return QTI21QuestionType.upload;
 	}
 	
+	/**
+	 * @return A copy of the list of blocks which make the question.
+	 * 		The list is a copy and modification will not be persisted.
+	 */
 	public List<Block> getQuestionBlocks() {
 		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 		List<Block> questionBlocks = new ArrayList<>(blocks.size());

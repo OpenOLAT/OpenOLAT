@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMod
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
@@ -50,7 +52,11 @@ import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder.ModalFeedbackType;
 import org.olat.ims.qti21.model.xml.ModalFeedbackCondition;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback.Answer;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+
+import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 
 /**
  * 
@@ -69,8 +75,11 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 	private SimpleFeedbackForm answeredForm, emptyForm;
 	private List<RuledFeedbackForm> additionalForms = new ArrayList<>();
 	
+	private final File itemFile;
 	private final VFSContainer itemContainer;
-	private final boolean restrictedEdit, readOnly;
+	private final String mapperUri;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
 	private final FeedbacksEnabler enable;
 	private final AssessmentItemBuilder itemBuilder;
 	private final AtomicInteger counter = new AtomicInteger();
@@ -80,9 +89,13 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, "feedbacks");
 		this.enable = enable;
+		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
+		
+		mapperUri = registerCacheableMapper(null, "DrawingEditorController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(itemFile.toURI()));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		initForm(ureq);
@@ -316,16 +329,27 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			titleEl.setUserObject(feedbackBuilder);
 			titleEl.setEnabled(!restrictedEdit && !readOnly);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_title");
+			
 			String text = feedbackBuilder == null ? "" : feedbackBuilder.getText();
 			textEl = uifactory.addRichTextElementForQTI21("text_".concat(id), "form.imd.feedback.text", text, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			textEl.setEnabled(!restrictedEdit && !readOnly);
+			textEl.setVisible(!restrictedEdit && !readOnly);
 			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
 			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+			
+			if(restrictedEdit || readOnly) {
+				List<FlowStatic> textFlow = feedbackBuilder == null ? Collections.emptyList() : feedbackBuilder.getTextFlowStatic();
+				FlowFormItem textReadOnlyEl = new FlowFormItem("textro_".concat(id), itemFile);
+				textReadOnlyEl.setLabel("form.imd.feedback.text", null);
+				textReadOnlyEl.setFlowStatics(textFlow);
+				textReadOnlyEl.setMapperUri(mapperUri);
+				formLayout.add(textReadOnlyEl);
+			}
 		}
 
 		public boolean isEmpty() {
@@ -415,11 +439,21 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			textEl.setEnabled(!restrictedEdit && !readOnly);
+			textEl.setVisible(!restrictedEdit && !readOnly);
 			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
 			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+			
+			if(restrictedEdit || readOnly) {
+				List<FlowStatic> textFlow = feedbackBuilder == null ? Collections.emptyList() : feedbackBuilder.getTextFlowStatic();
+				FlowFormItem textReadOnlyEl = new FlowFormItem("textro_".concat(id), itemFile);
+				textReadOnlyEl.setLabel("form.imd.feedback.text", null);
+				textReadOnlyEl.setFlowStatics(textFlow);
+				textReadOnlyEl.setMapperUri(mapperUri);
+				formLayout.add(textReadOnlyEl);
+			}
 			
 			updateDeleteButtons();
 		}
