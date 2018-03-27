@@ -32,6 +32,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -56,6 +58,7 @@ public class CorrectionOverviewModel {
 	private final RepositoryEntry testEntry;
 	private final RepositoryEntry courseEntry;
 	private final List<Identity> assessedIdentities;
+	private final ManifestBuilder manifestBuilder;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final Map<Identity, TestSessionState> testSessionStates;
 	private final Map<String,Boolean> manualCorrections = new ConcurrentHashMap<>();
@@ -66,12 +69,13 @@ public class CorrectionOverviewModel {
 	private final QTI21Service qtiService;
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry,
-			ResolvedAssessmentTest resolvedAssessmentTest, Map<Identity,AssessmentTestSession> lastSessions,
-			Map<Identity, TestSessionState> testSessionStates) {
+			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
+			Map<Identity,AssessmentTestSession> lastSessions, Map<Identity, TestSessionState> testSessionStates) {
 		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		this.courseEntry = courseEntry;
 		this.subIdent = subIdent;
 		this.testEntry = testEntry;
+		this.manifestBuilder = manifestBuilder;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.lastSessions = lastSessions;
 		this.testSessionStates = testSessionStates;
@@ -83,11 +87,13 @@ public class CorrectionOverviewModel {
 	}
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry,
-			ResolvedAssessmentTest resolvedAssessmentTest, List<Identity> assessedIdentities) {
+			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
+			List<Identity> assessedIdentities) {
 		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		this.courseEntry = courseEntry;
 		this.subIdent = subIdent;
 		this.testEntry = testEntry;
+		this.manifestBuilder = manifestBuilder;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.assessedIdentities = new ArrayList<>(assessedIdentities);
 		lastSessions = loadLastSessions();
@@ -202,5 +208,9 @@ public class CorrectionOverviewModel {
 			}
 			return false;
 		});
+	}
+	
+	public ManifestMetadataBuilder getMetadata(AssessmentItemRef itemRef) {
+		return manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
 	}
 }

@@ -43,6 +43,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
@@ -229,11 +230,12 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private void doOpenCorrection(UserRequest ureq) {
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		TestSessionState testSessionState = qtiService.loadTestSessionState(lastSession);
 		Map<Identity, AssessmentTestSession> lastSessionMap = new HashMap<>();
 		lastSessionMap.put(assessedIdentity, lastSession);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode.getIdent(), testEntry,
-				resolvedAssessmentTest, lastSessionMap,
+				resolvedAssessmentTest, manifestBuilder, lastSessionMap,
 				Collections.singletonMap(assessedIdentity, testSessionState));
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, lastSession, assessedIdentity);
 		listenTo(correctionCtrl);

@@ -64,6 +64,7 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 		switch(ItemCols.values()[col]) {
 			case section: return row.getSectionTitle();
 			case itemTitle: return row.getItemTitle();
+			case itemKeywords: return row.getKeywords();
 			case itemType: return row.getItemType();
 			case answered: return row.getNumAnswered();
 			case notAnswered: return row.getNumNotAnswered();
@@ -84,6 +85,7 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 	public enum ItemCols implements FlexiSortableColumnDef {
 		section("table.header.section"),
 		itemTitle("table.header.item.title"),
+		itemKeywords("table.header.item.keywords"),
 		itemType("table.header.item.type"),
 		answered("table.header.answered"),
 		notAnswered("table.header.notAnswered"),

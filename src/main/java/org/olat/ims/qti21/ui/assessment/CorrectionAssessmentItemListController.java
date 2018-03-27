@@ -61,6 +61,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemTableModel.ItemCols;
 import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
@@ -141,6 +142,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.section));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemTitle, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ItemCols.itemKeywords, "select"));
 		Translator qti21Translator = Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemType, new QuestionTypeFlexiCellRenderer(qti21Translator)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.answered, "answered"));
@@ -149,11 +151,14 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notCorrected, "notCorrected", new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.toReview, "toReview", new ToReviewFlexiCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.tools));
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(ItemCols.tools);
+		toolsCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new CorrectionAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "corr-assessment-item-list");
 		
 		saveTestsButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
 	}
@@ -170,10 +175,11 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		for(AssessmentItemRef itemRef:itemRefs) {
 			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			ManifestMetadataBuilder metadata = model.getMetadata(itemRef);
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-			CorrectionAssessmentItemRow itemRow = new CorrectionAssessmentItemRow(itemRef, assessmentItem, toolsLink);
+			CorrectionAssessmentItemRow itemRow = new CorrectionAssessmentItemRow(itemRef, assessmentItem, metadata, toolsLink);
 			toolsLink.setUserObject(itemRow);
 			itemRows.add(itemRow);
 			itemRefIdToRows.put(itemRef.getIdentifier().toString(), itemRow);

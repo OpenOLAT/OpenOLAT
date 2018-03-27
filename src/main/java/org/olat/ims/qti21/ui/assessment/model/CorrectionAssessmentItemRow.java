@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.assessment.model;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -36,12 +37,14 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 	private final AssessmentItem item;
 	private final AssessmentItemRef itemRef;
 	private final QTI21QuestionType itemType;
+	private final ManifestMetadataBuilder metadata;
 	
 	private final FormLink toolsLink;
 	
-	public CorrectionAssessmentItemRow(AssessmentItemRef itemRef, AssessmentItem item, FormLink toolsLink) {
+	public CorrectionAssessmentItemRow(AssessmentItemRef itemRef, AssessmentItem item, ManifestMetadataBuilder metadata, FormLink toolsLink) {
 		this.item = item;
 		this.itemRef = itemRef;
+		this.metadata = metadata;
 		this.toolsLink = toolsLink;
 		itemType = QTI21QuestionType.getTypeRelax(item);
 	}
@@ -68,6 +71,17 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 	
 	public FormLink getToolsLink() {
 		return toolsLink;
+	}
+	
+	/**
+	 * @return The metadata or null
+	 */
+	public ManifestMetadataBuilder getMetadata() {
+		return metadata;
+	}
+	
+	public String getKeywords() {
+		return metadata == null ? null : metadata.getGeneralKeywords();
 	}
 
 	@Override

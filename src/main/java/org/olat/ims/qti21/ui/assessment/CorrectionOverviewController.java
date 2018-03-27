@@ -49,6 +49,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
@@ -99,15 +100,16 @@ public class CorrectionOverviewController extends BasicController implements Too
 		File fUnzippedDirRoot = FileResourceManager.getInstance()
 				.unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(fUnzippedDirRoot, "imsmanifest.xml"));
 
 		Map<Identifier, AssessmentItemRef> identifierToRefs = new HashMap<>();
 		for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
 			identifierToRefs.put(itemRef.getIdentifier(), itemRef);
 		}
-		
+
 		List<Identity> assessedIdentities = getAssessedIdentities();
 		model = new CorrectionOverviewModel(courseEntry, courseNode.getIdent(), testEntry,
-				resolvedAssessmentTest, assessedIdentities);
+				resolvedAssessmentTest, manifestBuilder, assessedIdentities);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		assessmentItemsLink = LinkFactory.createLink("correction.assessment.items", getTranslator(), this);

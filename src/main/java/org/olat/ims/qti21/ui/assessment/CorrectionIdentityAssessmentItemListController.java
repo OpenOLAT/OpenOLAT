@@ -56,6 +56,7 @@ import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemTableModel.IdentityItemCols;
 import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
@@ -159,6 +160,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.section));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemTitle, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityItemCols.itemKeywords, "select"));
 		Translator qti21Translator = Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemType, new QuestionTypeFlexiCellRenderer(qti21Translator)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.score, new ScoreCellRenderer()));
@@ -171,6 +173,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		tableModel = new CorrectionIdentityAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "corr-identity-assessment-item-list");
 		
 		if(saveEnabled) {
 			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -201,11 +204,12 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				AssessmentItemRef itemRef = identifierToRefs.get(key.getIdentifier());
 				AssessmentItemSession itemSession = identifierToItemSessions.get(key.getIdentifier().toString());
 				ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+				ManifestMetadataBuilder metadata = model.getMetadata(itemRef);
 				AssessmentItem item = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(key);
 				boolean manualCorrection = model.isManualCorrection(itemRef);
 				CorrectionIdentityAssessmentItemRow row = new CorrectionIdentityAssessmentItemRow(assessedIdentity, item, itemRef,
-						candidateSession, itemSession, itemSessionState, manualCorrection);
+						metadata, candidateSession, itemSession, itemSessionState, manualCorrection);
 				row.setTitle(title);
 				row.setTitleCssClass("o_icon_user");
 				rows.add(row);

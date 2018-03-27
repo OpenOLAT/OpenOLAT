@@ -23,6 +23,7 @@ import org.olat.core.id.Identity;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -39,16 +40,18 @@ public class CorrectionIdentityAssessmentItemRow extends AssessmentItemListEntry
 	private final AssessmentItem item;
 	private final AssessmentItemRef itemRef;
 	private final QTI21QuestionType itemType;
+	private final ManifestMetadataBuilder metadata;
 	private AssessmentItemSession itemSession;
 	private final ItemSessionState itemSessionState;
 	private final boolean manualCorrection;
 	
 	public CorrectionIdentityAssessmentItemRow(Identity assessedIdentity, AssessmentItem item, AssessmentItemRef itemRef,
-			AssessmentTestSession testSession, AssessmentItemSession itemSession, ItemSessionState itemSessionState,
-			boolean manualCorrection) {
+			ManifestMetadataBuilder metadata, AssessmentTestSession testSession, AssessmentItemSession itemSession,
+			ItemSessionState itemSessionState, boolean manualCorrection) {
 		super(assessedIdentity, testSession, itemSession, itemRef, item.getTitle(), null);
 		this.item = item;
 		this.itemRef = itemRef;
+		this.metadata = metadata;
 		itemType = QTI21QuestionType.getTypeRelax(item);
 		this.itemSession = itemSession;
 		this.itemSessionState = itemSessionState;
@@ -72,6 +75,17 @@ public class CorrectionIdentityAssessmentItemRow extends AssessmentItemListEntry
 
 	public QTI21QuestionType getItemType() {
 		return itemType;
+	}
+	
+	/**
+	 * @return The metadata or null
+	 */
+	public ManifestMetadataBuilder getMetadata() {
+		return metadata;
+	}
+	
+	public String getKeywords() {
+		return metadata == null ? null : metadata.getGeneralKeywords();
 	}
 	
 	public boolean isManualCorrection() {
