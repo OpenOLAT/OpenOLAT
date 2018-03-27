@@ -25,15 +25,17 @@
 */
 package org.olat.core.gui.components.form.flexible.impl;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -44,6 +46,8 @@ import org.olat.core.logging.OLATRuntimeException;
  * @author patrickb
  */
 public class FormJSHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(FormJSHelper.class);
 
 	private static final String[] EXTJSACTIONS = { "dblclick", "click", "change" };
 
@@ -126,47 +130,53 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, boolean submit, NameValuePair... pairs) {
-		StringOutput sb = new StringOutput(128);
-		sb.append("o_ffXHREvent('")
-		  .append(form.getFormName()).append("','")
-		  .append(form.getDispatchFieldId()).append("','")
-		  .append(id).append("','")
-		  .append(form.getEventFieldId()).append("','")
-		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
-		  .append("',").append(dirtyCheck)
-		  .append(",").append(pushState)
-		  .append(",").append(submit);
-
-		if(pairs != null && pairs.length > 0) {
-			for(NameValuePair pair:pairs) {
-				sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+		try(StringOutput sb = new StringOutput(128)) {
+			sb.append("o_ffXHREvent('")
+			  .append(form.getFormName()).append("','")
+			  .append(form.getDispatchFieldId()).append("','")
+			  .append(id).append("','")
+			  .append(form.getEventFieldId()).append("','")
+			  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
+			  .append("',").append(dirtyCheck)
+			  .append(",").append(pushState)
+			  .append(",").append(submit);
+	
+			if(pairs != null && pairs.length > 0) {
+				for(NameValuePair pair:pairs) {
+					sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+				}
 			}
+	
+			sb.append(")");
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
 		}
-
-		sb.append(")");
-		IOUtils.closeQuietly(sb);
-		return sb.toString();
 	}
 	
 	public static String getXHRNFFnCallFor(Form form, String id, int actionIndex, NameValuePair... pairs) {
-		StringOutput sb = new StringOutput(128);
-		sb.append("o_ffXHRNFEvent('")
-		  .append(form.getFormName()).append("','")
-		  .append(form.getDispatchFieldId()).append("','")
-		  .append(id).append("','")
-		  .append(form.getEventFieldId()).append("','")
-		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
-		  .append("'");
-
-		if(pairs != null && pairs.length > 0) {
-			for(NameValuePair pair:pairs) {
-				sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+		try(StringOutput sb = new StringOutput(128)) {
+			sb.append("o_ffXHRNFEvent('")
+			  .append(form.getFormName()).append("','")
+			  .append(form.getDispatchFieldId()).append("','")
+			  .append(id).append("','")
+			  .append(form.getEventFieldId()).append("','")
+			  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
+			  .append("'");
+	
+			if(pairs != null && pairs.length > 0) {
+				for(NameValuePair pair:pairs) {
+					sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+				}
 			}
-		}
-
-		sb.append(")");
-		IOUtils.closeQuietly(sb);
+	
+			sb.append(")");
 		return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
+		}
 	}
 	
 	public static String generateXHRFnCallVariables(Form form, String id, int actionIndex) {
@@ -180,17 +190,20 @@ public class FormJSHelper {
 	}
 	
 	public static String getXHRSubmit(Form form, NameValuePair... pairs) {
-		StringOutput sb = new StringOutput(128);
-		sb.append("o_ffXHRNFEvent('")
-		   .append(form.getFormName()).append("'");
-		if(pairs != null && pairs.length > 0) {
-			for(NameValuePair pair:pairs) {
-				sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+		try(StringOutput sb = new StringOutput(128)) {
+			sb.append("o_ffXHRNFEvent('")
+			   .append(form.getFormName()).append("'");
+			if(pairs != null && pairs.length > 0) {
+				for(NameValuePair pair:pairs) {
+					sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+				}
 			}
+			sb.append(")");
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
 		}
-		sb.append(")");
-		IOUtils.closeQuietly(sb);
-		return sb.toString();
 	}
 
 	/**
@@ -298,6 +311,12 @@ public class FormJSHelper {
 		  .append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);")
 		  .append("\n/* ]]> */ \n</script>");
 		return sb;
+	}
+	
+	public static String setFlexiFormDirtyOnLoad(Form form) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);");
+		return sb.toString();
 	}
 	
 	public static String getSetFlexiFormDirtyFnCallOnly(Form form){

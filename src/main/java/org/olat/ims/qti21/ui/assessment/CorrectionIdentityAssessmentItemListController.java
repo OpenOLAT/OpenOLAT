@@ -100,7 +100,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private final TooledStackedPanel stackPanel;
 	private CorrectionIdentityAssessmentItemTableModel tableModel;
 	
-	private CorrectionIdentityAssessmentItemController identityItemCtrl;
+	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
 
 	private final String title;
 	private LockResult lockResult;
@@ -320,7 +320,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				
 				ResolvedAssessmentItem resolvedAssessmentItem = model.getResolvedAssessmentTest().getResolvedAssessmentItem(itemRef);
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-				identityItemCtrl = new CorrectionIdentityAssessmentItemController(ureq, getWindowControl(),
+				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
 						tableModel.getObjects(), model);
 				listenTo(identityItemCtrl);

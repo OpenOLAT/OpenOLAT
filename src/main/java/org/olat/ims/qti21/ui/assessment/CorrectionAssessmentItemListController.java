@@ -110,7 +110,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private CloseableModalController cmc;
 	private ConfirmSaveTestsController confirmSaveTestCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private CorrectionIdentityAssessmentItemController identityItemCtrl;
+	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
 
 	private int counter = 0;
 	private LockResult lockResult;
@@ -431,7 +431,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 						itemRef, itemNode);
 				itemCorrection.setItemSession(reloadItemSession);
 
-				identityItemCtrl = new CorrectionIdentityAssessmentItemController(ureq, getWindowControl(),
+				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
 						selectedItemSessions, model);
 				listenTo(identityItemCtrl);
