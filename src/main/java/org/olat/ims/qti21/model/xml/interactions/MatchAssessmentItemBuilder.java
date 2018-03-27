@@ -322,6 +322,19 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	public String getQuestion() {
 		return question;
 	}
+	
+	public List<Block> getQuestionBlocks() {
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		List<Block> questionBlocks = new ArrayList<>(blocks.size());
+		for(Block block:blocks) {
+			if(block instanceof MatchInteraction) {
+				break;
+			} else {
+				questionBlocks.add(block);
+			}
+		}
+		return questionBlocks;
+	}
 
 	@Override
 	public void setQuestion(String question) {

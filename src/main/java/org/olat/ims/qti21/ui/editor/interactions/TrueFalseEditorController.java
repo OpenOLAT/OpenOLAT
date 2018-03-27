@@ -41,13 +41,17 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -66,9 +70,12 @@ public class TrueFalseEditorController extends FormBasicController {
 	private FormLayoutContainer answersCont;
 	
 	private int count = 0;
-	private VFSContainer itemContainer;
+	private final File itemFile;
+	private final VFSContainer itemContainer;
 	
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
+	private final String mapperUri;
 	private MatchAssessmentItemBuilder itemBuilder;
 	private final List<SourceWrapper> sourceWrappers = new ArrayList<>();
 	private final Map<String,List<String>> temporaryAssociations = new HashMap<>();
@@ -90,8 +97,11 @@ public class TrueFalseEditorController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.readOnly = readOnly;
+		this.itemFile = itemFile;
 		this.restrictedEdit = restrictedEdit;
 		
+		mapperUri = registerCacheableMapper(null, "TrueFalseEditorController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(itemFile.toURI()));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
@@ -119,6 +129,14 @@ public class TrueFalseEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
 		textEl.setEnabled(!readOnly);
+		textEl.setVisible(!readOnly);
+		if(readOnly) {
+			FlowFormItem textReadOnlyEl = new FlowFormItem("descro", itemFile);
+			textReadOnlyEl.setLabel("form.imd.descr", null);
+			textReadOnlyEl.setBlocks(itemBuilder.getQuestionBlocks());
+			textReadOnlyEl.setMapperUri(mapperUri);
+			metadata.add(textReadOnlyEl);
+		}
 
 		//responses
 		String page = velocity_root + "/match_truefalse.html";
@@ -158,20 +176,28 @@ public class TrueFalseEditorController extends FormBasicController {
 	}
 	
 	private void wrapSource(UserRequest ureq, SimpleAssociableChoice choice, List<SourceWrapper> wrappers) {
-		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
+		List<FlowStatic> choiceFlow = choice.getFlowStatics();
+		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choiceFlow);
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21Match(choiceId, "form.imd.answer", choiceContent, 4, -1, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
 		choiceEl.setEnabled(!readOnly);
+		choiceEl.setVisible(!readOnly);
 		answersCont.add("choiceId", choiceEl);
+		
+		String choiceRoId = "answerro" + count++;
+		FlowFormItem choiceReadOnlyEl = new FlowFormItem(choiceRoId, itemFile);
+		choiceReadOnlyEl.setFlowStatics(choiceFlow);
+		choiceReadOnlyEl.setMapperUri(mapperUri);
+		answersCont.add(choiceRoId, choiceReadOnlyEl);
 		
 		FormLink deleteButton = uifactory.addFormLink("del_" + (count++), "delete", "delete", null, answersCont, Link.NONTRANSLATED);
 		deleteButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		deleteButton.setVisible(!restrictedEdit && !readOnly);
 		deleteButton.setI18nKey("");
 		
-		SourceWrapper wrapper = new SourceWrapper(choice, choiceEl, deleteButton);
+		SourceWrapper wrapper = new SourceWrapper(choice, choiceEl, choiceReadOnlyEl, deleteButton);
 		deleteButton.setUserObject(wrapper);
 		wrappers.add(wrapper);
 	}
@@ -309,15 +335,17 @@ public class TrueFalseEditorController extends FormBasicController {
 	public class SourceWrapper {
 		
 		private FormLink deleteButton;
-		private RichTextElement choiceTextEl;
+		private final FlowFormItem choiceReadOnlyEl;
+		private final RichTextElement choiceTextEl;
 		private final Identifier choiceIdentifier;
 		private final SimpleAssociableChoice choice;
 		
 		private boolean errorSingleChoice;
 		
-		public SourceWrapper(SimpleAssociableChoice choice, RichTextElement choiceTextEl, FormLink deleteButton) {
+		public SourceWrapper(SimpleAssociableChoice choice, RichTextElement choiceTextEl, FlowFormItem choiceReadOnlyEl, FormLink deleteButton) {
 			this.choice = choice;
 			this.choiceTextEl = choiceTextEl;
+			this.choiceReadOnlyEl = choiceReadOnlyEl;
 			this.choiceIdentifier = choice.getIdentifier();
 			this.deleteButton = deleteButton;
 		}
@@ -340,6 +368,10 @@ public class TrueFalseEditorController extends FormBasicController {
 		
 		public RichTextElement getText() {
 			return choiceTextEl;
+		}
+		
+		public FlowFormItem getTextReadOnly() {
+			return choiceReadOnlyEl;
 		}
 		
 		public boolean isCorrect(Identifier targetChoiceId) {

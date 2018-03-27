@@ -234,6 +234,19 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 		associations.put(choiceId, correctOrWrongId);
 	}
 	
+	public List<Block> getQuestionBlocks() {
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		List<Block> questionBlocks = new ArrayList<>(blocks.size());
+		for(Block block:blocks) {
+			if(block instanceof MatchInteraction) {
+				break;
+			} else {
+				questionBlocks.add(block);
+			}
+		}
+		return questionBlocks;
+	}
+	
 	/**
 	 * Return the HTML block before the choice interaction as a string.
 	 * 

@@ -26,6 +26,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createDrawingRe
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.render.StringOutput;
@@ -87,6 +88,19 @@ public class DrawingAssessmentItemBuilder extends LobAssessmentItemBuilder {
 	@Override
 	public QTI21QuestionType getQuestionType() {
 		return QTI21QuestionType.drawing;
+	}
+	
+	public List<Block> getQuestionBlocks() {
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		List<Block> questionBlocks = new ArrayList<>(blocks.size());
+		for(Block block:blocks) {
+			if(block instanceof DrawingInteraction) {
+				break;
+			} else {
+				questionBlocks.add(block);
+			}
+		}
+		return questionBlocks;
 	}
 	
 	@Override

@@ -49,7 +49,7 @@ public class FlowComponentRenderer extends AssessmentObjectComponentRenderer {
 		AssessmentRenderer aRenderer = new AssessmentRenderer(renderer);
 		if(avc.getFlowStatics() != null) {
 			try {
-				avc.getFlowStatics().forEach((flow)
+				avc.getFlowStatics().forEach(flow
 					-> avc.getHTMLRendererSingleton().renderFlow(aRenderer, target, avc, (ResolvedAssessmentItem)null, (ItemSessionState)null, flow, ubu, translator));
 			} catch (Exception e) {
 				log.error("", e);
@@ -57,8 +57,16 @@ public class FlowComponentRenderer extends AssessmentObjectComponentRenderer {
 		}
 		if(avc.getInlineStatics() != null) {
 			try {
-				avc.getInlineStatics().forEach((inline)
+				avc.getInlineStatics().forEach(inline
 						-> avc.getHTMLRendererSingleton().renderInline(aRenderer, target, avc, (ResolvedAssessmentItem)null, (ItemSessionState)null, inline, ubu, translator));
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+		if(avc.getBlocks() != null) {
+			try {
+				avc.getBlocks().forEach(block
+						-> avc.getHTMLRendererSingleton().renderBlock(aRenderer, target, avc, (ResolvedAssessmentItem)null, (ItemSessionState)null, block, ubu, translator));
 			} catch (Exception e) {
 				log.error("", e);
 			}

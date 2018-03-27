@@ -26,6 +26,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseP
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createUploadResponseDeclaration;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.render.StringOutput;
@@ -86,6 +87,19 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 	@Override
 	public QTI21QuestionType getQuestionType() {
 		return QTI21QuestionType.upload;
+	}
+	
+	public List<Block> getQuestionBlocks() {
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		List<Block> questionBlocks = new ArrayList<>(blocks.size());
+		for(Block block:blocks) {
+			if(block instanceof UploadInteraction) {
+				break;
+			} else {
+				questionBlocks.add(block);
+			}
+		}
+		return questionBlocks;
 	}
 	
 	@Override

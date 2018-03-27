@@ -24,7 +24,11 @@
 		$f.appendFlexiFormDirtyForCheckbox("oo_correct-${foreach.count}")</label>
 	</div>
 	<div class="col-sm-10">
-		$r.render(${choice.getAnswer().getComponent().getComponentName()})
+		#if($r.visible($choice.answer))
+			$r.render(${choice.getAnswer().getComponent().getComponentName()})
+		#else
+			$r.render(${choice.getAnswerReadOnly().getComponent().getComponentName()})
+		#end
 		#if($f.hasError($item))
 			<span class="o_icon o_icon_error form-control-feedback"></span>
 		#end

@@ -15,7 +15,12 @@
 			#end
 			</th>
 			#foreach($targetChoice in $targetChoices)
-				<th class="o_sel_match_target_${foreach.index}" style="border-top: none;">$r.render(${targetChoice.getText()})
+				<th class="o_sel_match_target_${foreach.index}" style="border-top: none;">
+				#if($r.visible($targetChoice.text))
+					$r.render(${targetChoice.getText()})
+				#else
+					$r.render(${targetChoice.getTextReadOnly()})
+				#end
 				#if($f.hasError($item))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
 				#end #if(!$restrictedEdit) <div class="pull-right">$r.render(${targetChoice.getDeleteButton()})</div> #end</th>
@@ -26,7 +31,12 @@
 	#foreach($sourceChoice in $sourceChoices)
 		#set($set1Identifier = $sourceChoice.getIdentifierString())
 		<tr>
-			<th class="o_sel_match_source_${foreach.index}">$r.render(${sourceChoice.getText()})
+			<th class="o_sel_match_source_${foreach.index}">
+				#if($r.visible($sourceChoice.text))
+					$r.render(${sourceChoice.getText()})
+				#else
+					$r.render(${sourceChoice.getTextReadOnly()})
+				#end
 				#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 				#end

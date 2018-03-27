@@ -52,6 +52,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -64,6 +65,8 @@ import org.olat.ims.qti21.QTI21Constants.HotspotLayouts;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +105,8 @@ public class HotspotEditorController extends FormBasicController {
 	private SingleSelection layoutEl;
 	private MultipleSelectionElement shadowEl;
 	
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
 	private final HotspotAssessmentItemBuilder itemBuilder;
 	
 	private File itemFile;
@@ -114,6 +118,7 @@ public class HotspotEditorController extends FormBasicController {
 	
 	private List<HotspotWrapper> choiceWrappers = new ArrayList<>();
 	
+	private final String mapperUri;
 	private final String backgroundMapperUri;
 	
 	@Autowired
@@ -129,6 +134,9 @@ public class HotspotEditorController extends FormBasicController {
 		this.rootContainer = rootContainer;
 		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
+		
+		mapperUri = registerCacheableMapper(null, "HotspotEditorController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(itemFile.toURI()));
 		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		initForm(ureq);
 	}
@@ -150,6 +158,14 @@ public class HotspotEditorController extends FormBasicController {
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		textEl.setEnabled(!readOnly);
+		textEl.setVisible(!readOnly);
+		if(readOnly) {
+			FlowFormItem textReadOnlyEl = new FlowFormItem("descro", itemFile);
+			textReadOnlyEl.setLabel("form.imd.descr", null);
+			textReadOnlyEl.setBlocks(itemBuilder.getQuestionBlocks());
+			textReadOnlyEl.setMapperUri(mapperUri);
+			formLayout.add(textReadOnlyEl);
+		}
 		
 		String[] cardinalityKeys = new String[] { Cardinality.SINGLE.name(), Cardinality.MULTIPLE.name() };
 		String[] cardinalityValues = new String[] { translate(Cardinality.SINGLE.name()), translate(Cardinality.MULTIPLE.name()) };

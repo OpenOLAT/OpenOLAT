@@ -24,6 +24,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.InlineStatic;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -45,6 +46,8 @@ public class FlowComponent extends AssessmentObjectComponent {
 	private final File assessmentItemFile;
 	
 	private final FlowFormItem qtiItem;
+	
+	private List<Block> blocks;
 	private List<FlowStatic> flowStatics;
 	private List<InlineStatic> inlineStatics;
 	
@@ -55,6 +58,14 @@ public class FlowComponent extends AssessmentObjectComponent {
 		setDomReplacementWrapperRequired(false);
 	}
 	
+	public List<Block> getBlocks() {
+		return blocks;
+	}
+
+	public void setBlocks(List<Block> blocks) {
+		this.blocks = blocks;
+	}
+
 	public List<FlowStatic> getFlowStatics() {
 		return flowStatics;
 	}

@@ -25,7 +25,12 @@
 					#end
 				</td>
 			#end
-			<th class="o_sel_match_source_${foreach.index}">$r.render(${sourceChoice.getText()})
+			<th class="o_sel_match_source_${foreach.index}">
+				#if($r.visible($sourceChoice.text))
+					$r.render(${sourceChoice.getText()})
+				#else
+					$r.render(${sourceChoice.getTextReadOnly()})
+				#end
 				#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 				#end
