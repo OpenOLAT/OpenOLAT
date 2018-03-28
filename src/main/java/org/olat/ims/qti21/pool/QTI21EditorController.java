@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
@@ -64,23 +65,26 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	
 	public QTI21EditorController(UserRequest ureq, WindowControl wControl, QuestionItem questionItem,
 			boolean readonly) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemEditorController.class, ureq.getLocale()));
 		this.questionItem = questionItem;
-		mainVC = createVelocityContainer("pool_editor");
 		
 		File resourceDirectory = qpoolService.getRootDirectory(questionItem);
 		VFSContainer resourceContainer = qpoolService.getRootContainer(questionItem);
 		resourceFile = qpoolService.getRootFile(questionItem);
-		URI assessmentItemUri = resourceFile.toURI();
-		
-		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
-				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
-		
-		editorCtrl = new AssessmentItemEditorController(ureq, wControl, resolvedAssessmentItem, resourceDirectory,
-				resourceContainer, resourceFile, false, readonly);
-		listenTo(editorCtrl);
-		mainVC.put("editor", editorCtrl.getInitialComponent());
-		
+		if(resourceFile == null) {
+			mainVC = createVelocityContainer("missing_resource");
+			mainVC.contextPut("uri", questionItem == null ? null : questionItem.getKey());
+		} else {
+			URI assessmentItemUri = resourceFile.toURI();
+			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+			
+			editorCtrl = new AssessmentItemEditorController(ureq, wControl, resolvedAssessmentItem, resourceDirectory,
+					resourceContainer, resourceFile, false, readonly);
+			listenTo(editorCtrl);
+			mainVC = createVelocityContainer("pool_editor");
+			mainVC.put("editor", editorCtrl.getInitialComponent());
+		}
 		putInitialPanel(mainVC);
 	}
 	
