@@ -37,6 +37,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestConnection;
 import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
@@ -51,6 +53,7 @@ import org.olat.user.restapi.UserVO;
  */
 public class UserRestClient {
 	
+	private static final OLog log = Tracing.createLoggerFor(UserRestClient.class);
 	private static final AtomicInteger counter = new AtomicInteger();
 	
 	private final URL deploymentUrl;
@@ -136,12 +139,15 @@ public class UserRestClient {
 		HttpResponse response = restConnection.execute(method);
 		int responseCode = response.getStatusLine().getStatusCode();
 		assertTrue(responseCode == 200 || responseCode == 201);
-		InputStream body = response.getEntity().getContent();
-		UserVO current = restConnection.parse(body, UserVO.class);
-		Assert.assertNotNull(current);
-		
-		current.setPassword(vo.getPassword());
-		return current;
+		try(InputStream body = response.getEntity().getContent()) {
+			UserVO current = restConnection.parse(body, UserVO.class);
+			Assert.assertNotNull(current);
+			current.setPassword(vo.getPassword());
+			return current;
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	private UriBuilder getUsersURIBuilder()
