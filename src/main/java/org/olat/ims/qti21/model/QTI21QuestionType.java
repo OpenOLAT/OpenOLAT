@@ -58,7 +58,7 @@ public enum QTI21QuestionType {
 	upload(true, "upload", "o_mi_qtiupload", QuestionType.UPLOAD),
 	drawing(true, "drawing", "o_mi_qtidrawing", QuestionType.DRAWING),
 	hottext(true, "hottext", "o_mi_qtihottext", QuestionType.HOTTEXT),
-	unkown(false, null, "o_mi_qtiunkown", null);
+	unkown(false, "unkown", "o_mi_qtiunkown", null);
 	
 	private final String prefix;
 	private final boolean editor;

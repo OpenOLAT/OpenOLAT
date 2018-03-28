@@ -1228,12 +1228,16 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRefToCopy);
 		AssessmentItem originalAssessmentItem = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
+		if(originalAssessmentItem == null) {
+			showError("error.assessment.item");
+			return;
+		}
 		QTI21QuestionType type = QTI21QuestionType.getType(originalAssessmentItem);
 
 		File itemFile = null;
 		try {
 			AssessmentItemRef itemRef = new AssessmentItemRef(section);
-			String itemId = IdentifierGenerator.newAsString(type.getPrefix());
+			String itemId = IdentifierGenerator.newAsString(getTypePrefix(type));
 			itemRef.setIdentifier(Identifier.parseString(itemId));
 			itemFile = new File(unzippedDirRoot, itemId + ".xml");
 			itemRef.setHref(new URI(itemFile.getName()));
@@ -1245,7 +1249,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				//change identifier and title
 				ResolvedAssessmentItem resolvedCopyItem = qtiService.loadAndResolveAssessmentItemForCopy(itemFile.toURI(), unzippedDirRoot);
 				AssessmentItem copiedAssessmentItem = resolvedCopyItem.getRootNodeLookup().extractIfSuccessful();
-				copiedAssessmentItem.setIdentifier(IdentifierGenerator.newAsString(type.getPrefix()));
+				copiedAssessmentItem.setIdentifier(IdentifierGenerator.newAsString(getTypePrefix(type)));
 				copiedAssessmentItem.setTitle(originalAssessmentItem.getTitle() + " (Copy)");
 				qtiService.updateAssesmentObject(itemFile, resolvedCopyItem);
 				
@@ -1269,6 +1273,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} catch (URISyntaxException e) {
 			logError("", e);
 		}
+	}
+	
+	private String getTypePrefix(QTI21QuestionType type) {
+		return type == null ? QTI21QuestionType.unkown.getPrefix() : type.getPrefix();
 	}
 	
 	private void doForceReloadFiles(UserRequest ureq) {
