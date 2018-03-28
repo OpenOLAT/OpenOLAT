@@ -775,7 +775,15 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			
 			if(data != null && !data.startsWith("http://") && !data.startsWith("https://")) {
 				String relativePath = component.relativePathTo(resolvedAssessmentItem);
-				String src = Settings.createServerURI() + component.getMapperUri() + relativePath + "/" + data;
+				String src = Settings.createServerURI() + component.getMapperUri();
+				if(!src.endsWith("/") && !relativePath.startsWith("/")) {
+					src += "/";
+				}
+				src += relativePath;
+				if(!src.endsWith("/") && !data.startsWith("/")) {
+					src += "/";
+				}
+				src += data;
 				dataMovie = dataMovie.replace(data, src);
 			}
 			
