@@ -80,6 +80,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean disclaimerEnabled;	
 	@Value("${registration.disclaimerAdditionalCheckbox}")
 	private boolean additionalCheckbox;
+	@Value("${registration.disclaimerAdditionalCheckbox2}")
+	private boolean additionalCheckbox2;
 	@Value("${registration.disclaimerAdditionaLinkText}	")
 	private boolean additionaLinkText;
 	
@@ -200,6 +202,13 @@ public class RegistrationModule extends AbstractSpringModule {
 	 */
 	public boolean isDisclaimerAdditionalCheckbox() {
 		return additionalCheckbox;
+	}
+
+	/**
+	 * @return true to add a third checkbox to the disclaimer
+	 */
+	public boolean isDisclaimerAdditionalCheckbox2() {
+		return additionalCheckbox2;
 	}
 
 	/**
