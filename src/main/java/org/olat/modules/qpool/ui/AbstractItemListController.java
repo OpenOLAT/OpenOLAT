@@ -394,7 +394,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 	
 	public ItemRow getRowByItemKey(Long itemKey) {
-		for(ItemRow row : model.getObjects()) {
+		List<ItemRow> rows = model.getObjects();
+		for(ItemRow row : rows) {
 			if(row != null && row.getKey().equals(itemKey)) {
 				return row;
 			}

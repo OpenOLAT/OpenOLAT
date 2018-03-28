@@ -666,13 +666,13 @@ public class QuestionListController extends AbstractItemListController implement
 
 	private void doNext(UserRequest ureq, QuestionItem item) {
 		ItemRow row = getRowByItemKey(item.getKey());
-		ItemRow nextRow = getModel().getNextObject(row);
+		ItemRow nextRow = getModel().getNextObject(row, getItemsTable());
 		doSelectOrReset(ureq, nextRow);
 	}
 	
 	private void doPrevious(UserRequest ureq, QuestionItem item) {
 		ItemRow row = getRowByItemKey(item.getKey());
-		ItemRow previousRow = getModel().getPreviousObject(row);
+		ItemRow previousRow = getModel().getPreviousObject(row, getItemsTable());
 		doSelectOrReset(ureq, previousRow);
 	}
 	
@@ -1341,8 +1341,8 @@ public class QuestionListController extends AbstractItemListController implement
 		doOpenDetails(ureq, row, index, count);
 	}
 
-	private void doOpenDetails(UserRequest ureq, QuestionItem newItem) {
-		ItemRow row = wrapNewItem(newItem);
+	private void doOpenDetails(UserRequest ureq, QuestionItem newQuestionItem) {
+		ItemRow row = wrapNewItem(newQuestionItem);
 		itemCollectionDirty = true;
 		doOpenDetails(ureq, row, 0, 1);
 	}

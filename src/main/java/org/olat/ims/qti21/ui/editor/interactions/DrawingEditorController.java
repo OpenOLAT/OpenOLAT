@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -49,6 +50,8 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +83,9 @@ public class DrawingEditorController extends FormBasicController {
 	private File backgroundImage;
 	private File initialBackgroundImage;
 	
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
+	private final String mapperUri;
 	private final DrawingAssessmentItemBuilder itemBuilder;
 
 	@Autowired
@@ -96,6 +101,9 @@ public class DrawingEditorController extends FormBasicController {
 		this.rootContainer = rootContainer;
 		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
+		
+		mapperUri = registerCacheableMapper(null, "DrawingEditorController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(itemFile.toURI()));
 		initForm(ureq);
 	}
 
@@ -116,6 +124,14 @@ public class DrawingEditorController extends FormBasicController {
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_assessment_item_question");
 		textEl.setEnabled(!readOnly);
+		textEl.setVisible(!readOnly);
+		if(readOnly) {
+			FlowFormItem textReadOnlyEl = new FlowFormItem("descro", itemFile);
+			textReadOnlyEl.setLabel("form.imd.descr", null);
+			textReadOnlyEl.setBlocks(itemBuilder.getQuestionBlocks());
+			textReadOnlyEl.setMapperUri(mapperUri);
+			formLayout.add(textReadOnlyEl);
+		}
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);

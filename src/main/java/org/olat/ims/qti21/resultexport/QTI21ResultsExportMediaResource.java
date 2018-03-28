@@ -251,7 +251,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			String submissionMapperUri = ".";
 			String exportUri = "../" + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1);			
 			Controller assessmentResultController = new AssessmentResultController(ureq, mockwControl, identity, false, session,
-					fUnzippedDirRoot, mapperUri, submissionMapperUri, QTI21AssessmentResultsOptions.allOptions(), false, true, exportUri);
+					fUnzippedDirRoot, mapperUri, submissionMapperUri,
+					QTI21AssessmentResultsOptions.allOptions(), false, true, false, exportUri);
 
 			Component component = assessmentResultController.getInitialComponent();
 			String componentHTML = createResultHTML(component); 

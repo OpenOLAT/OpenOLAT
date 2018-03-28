@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.EdubaseCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edubase.BookSection;
@@ -85,7 +84,7 @@ public class EdubaseRunController extends BasicController {
 
 		for (BookSection bookSection : bookSections) {
 			Link nodeLink = LinkFactory.createLink("startReader_" + bookSection.getPosition(), container, this);
-			nodeLink.setCustomDisplayText(StringHelper.escapeHtml("Dokument öffen"));
+			nodeLink.setCustomDisplayText(getTranslator().translate("open.document"));
 			nodeLink.setIconRightCSS("o_icon o_icon_start");
 			nodeLink.setUserObject(bookSection);
 		}

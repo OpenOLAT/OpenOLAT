@@ -30,7 +30,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -47,7 +46,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.ui.ResourcesMapper;
-import org.olat.ims.qti21.ui.assessment.event.SelectAssessmentItemEvent;
+import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
 import org.olat.repository.RepositoryEntry;
@@ -65,11 +64,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  */
 public class CorrectionIdentityAssessmentItemController extends FormBasicController {
 	
-	private FormLink backButton;
-	private FormLink nextQuestionButton;
-	private FormLink previousQuestionButton;
 	private FormLink saveNextQuestionButton;
-	private SingleSelection assessmentEntryListEl;
 
 	private final String mapperUri;
 	private final URI assessmentObjectUri;
@@ -132,31 +127,6 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 				layoutCont.contextPut("titleCssClass", assessmentEntry.getTitleCssClass());
 			}
 		}
-		
-		backButton = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
-		backButton.setElementCssClass("o_correction_navigation_back");
-		
-		nextQuestionButton = uifactory.addFormLink("next.item", formLayout, Link.BUTTON);
-		nextQuestionButton.setElementCssClass("o_correction_navigation_next");
-		nextQuestionButton.setIconRightCSS("o_icon o_icon_next");
-		
-		String[] identityKeys = new String[assessmentEntryList.size()];
-		String[] identityValues = new String[assessmentEntryList.size()];
-		for(int i=assessmentEntryList.size(); i-->0; ) {
-			identityKeys[i] = Integer.toString(i);
-			identityValues[i] = assessmentEntryList.get(i).getLabel();
-		}
-		assessmentEntryListEl = uifactory.addDropdownSingleselect("to.assess", formLayout, identityKeys, identityValues);
-		assessmentEntryListEl.setDomReplacementWrapperRequired(false);
-		assessmentEntryListEl.addActionListener(FormEvent.ONCHANGE);
-		int index = assessmentEntryList.indexOf(getAssessmentItemSession());
-		if(index >= 0) {
-			assessmentEntryListEl.select(Integer.toString(index), true);
-		}
-
-		previousQuestionButton = uifactory.addFormLink("previous.item", formLayout, Link.BUTTON);
-		previousQuestionButton.setElementCssClass("o_correction_navigation_previous");
-		previousQuestionButton.setIconLeftCSS("o_icon o_icon_previous");
 
 		identityInteractionsCtrl = new CorrectionIdentityInteractionsController(ureq, getWindowControl(), 
 				testEntry, resolvedAssessmentTest, itemCorrection, submissionDirectoryMaps, mapperUri,
@@ -169,11 +139,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		saveNextQuestionButton = uifactory.addFormLink("save.next", formLayout, Link.BUTTON);
 	}
 	
-	protected void updatePreviousNext(String previousText, boolean previousEnable, String nextText, boolean nextEnable) {
-		previousQuestionButton.getComponent().setCustomDisplayText(previousText);
-		previousQuestionButton.setEnabled(previousEnable);
-		nextQuestionButton.getComponent().setCustomDisplayText(nextText);
-		nextQuestionButton.setEnabled(nextEnable);
+	protected void updateNext(boolean nextEnable) {
 		saveNextQuestionButton.setEnabled(nextEnable);
 	}
 	
@@ -197,49 +163,12 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveNextQuestionButton == source) {
 			doSave();
-			doNext(ureq);
-		} else if(assessmentEntryListEl == source) {
-			String selectEntry = assessmentEntryListEl.getSelectedKey();
-			if(StringHelper.isLong(selectEntry)) {
-				int selectedIndex = Integer.parseInt(selectEntry);
-				if(selectedIndex >= 0 && selectedIndex < this.assessmentEntryList.size()) {
-					AssessmentItemListEntry nextEntry = assessmentEntryList.get(selectedIndex);
-					fireEvent(ureq, new SelectAssessmentItemEvent(nextEntry));
-				}
-			}
-		} else if(nextQuestionButton == source) {
-			doNext(ureq);
-		} else if(previousQuestionButton == source) {
-			doPrevious(ureq);
-		} else if(backButton == source) {
-			fireEvent(ureq, Event.BACK_EVENT);
+			fireEvent(ureq, new NextAssessmentItemEvent());
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
 	}
-	
-	private void doNext(UserRequest ureq) {
-		AssessmentItemListEntry currentEntry = getAssessmentItemSession();
-		int index = assessmentEntryList.indexOf(currentEntry) + 1;
-		if(index >= 0 && index < assessmentEntryList.size()) {
-			AssessmentItemListEntry nextEntry = assessmentEntryList.get(index);
-			fireEvent(ureq, new SelectAssessmentItemEvent(nextEntry));
-		} else {
-			nextQuestionButton.setEnabled(false);
-		}
-	}
-	
-	private void doPrevious(UserRequest ureq) {
-		AssessmentItemListEntry currentEntry = getAssessmentItemSession();
-		int index = assessmentEntryList.indexOf(currentEntry) - 1;
-		if(index >= 0 && index < assessmentEntryList.size()) {
-			AssessmentItemListEntry nextEntry = assessmentEntryList.get(index);
-			fireEvent(ureq, new SelectAssessmentItemEvent(nextEntry));
-		} else {
-			previousQuestionButton.setEnabled(false);
-		}
-	}
-	
+
 	private void doSave() {
 		TestSessionState testSessionState = itemCorrection.getTestSessionState();
 		AssessmentTestSession candidateSession = itemCorrection.getTestSession();

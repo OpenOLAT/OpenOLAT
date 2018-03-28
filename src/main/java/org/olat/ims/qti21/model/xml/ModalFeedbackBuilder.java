@@ -22,12 +22,14 @@ package org.olat.ims.qti21.model.xml;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.findBaseValueInExpression;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringAttribute;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
@@ -292,6 +294,13 @@ public class ModalFeedbackBuilder {
 	
 	public void setText(String text) {
 		this.text = text;
+	}
+	
+	/**
+	 * @return A copy of the list of elements or an empty list. The list is mean as read only.
+	 */
+	public List<FlowStatic> getTextFlowStatic() {
+		return modalFeedback == null ? Collections.emptyList() : new ArrayList<>(modalFeedback.getFlowStatics());
 	}
 	
 	public Identifier getIdentifier() {

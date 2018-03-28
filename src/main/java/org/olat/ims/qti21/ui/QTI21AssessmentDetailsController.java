@@ -69,6 +69,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
@@ -357,9 +358,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doCorrection(UserRequest ureq, AssessmentTestSession session) {
 		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		TestSessionState testSessionState = qtiService.loadTestSessionState(session);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, subIdent, testEntry,
-				resolvedAssessmentTest, Collections.singletonMap(assessedIdentity, session),
+				resolvedAssessmentTest, manifestBuilder, Collections.singletonMap(assessedIdentity, session),
 				Collections.singletonMap(assessedIdentity, testSessionState));
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, session, assessedIdentity);
 		listenTo(correctionCtrl);
@@ -468,7 +470,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new ResourcesMapper(assessmentObjectUri, submissionDir));
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
-				fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), true, true);
+				fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), true, true, true);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
 				true, translate("results.report"));

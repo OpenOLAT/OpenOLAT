@@ -1,14 +1,3 @@
-#if($r.isNotEmpty($title))
-	<h3><i class="o_icon $titleCssClass"> </i> $r.escapeHtml($title)</h3>
-#end
-<div class="o_block o_correction_navigation clearfix">
-	$r.render("back")
-	$r.render("previous.item")
-	<div id="o_cocurrent_item_SELBOX">
-		$r.render("to.assess")
-	</div>
-	$r.render("next.item")
-</div>
 <div class="o_assessmentitem_wrapper clearfix">
 	<h4 class="itemTitle"><i class="o_icon $labelCssClass"> </i> $r.escapeHtml($label)</h4>
 	$r.render("interactions")

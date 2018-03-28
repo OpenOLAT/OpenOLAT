@@ -250,11 +250,11 @@
 							<div class="addon">
 								<div class="o_score">
 									$r.translate("table.header.score"): 
-									<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score XX</span>
+									<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
 								</div>
 								#if(${itemResult.hasMaxScore()})
 								<div class="o_score_max">
-									$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore XX</span>
+									$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
 								</div>
 								#end
 							</div>						
@@ -457,8 +457,8 @@
 			#end
 			#if($r.isNotNull($itemResult.interactionResults.solutionFormItem.name))
 				<h4 data-toggle="collapse" data-target="#collapse_${itemResult.interactionResults.solutionFormItem.name}">
-					#if(!$printCommand)<i id="collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>#end $r.translate("solution")</h4>
-				<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="panel-collapse #if(!$printCommand) collapse #end">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
+					#if($toggleSolution)<i id="collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>#end $r.translate("solution")</h4>
+				<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="panel-collapse #if($toggleSolution) collapse #end">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
 				<script type="text/javascript">
 					/* <![CDATA[ */
 						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').on('hide.bs.collapse', function () {

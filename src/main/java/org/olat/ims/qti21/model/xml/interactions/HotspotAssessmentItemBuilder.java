@@ -328,6 +328,23 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 	public QTI21QuestionType getQuestionType() {
 		return QTI21QuestionType.hotspot;
 	}
+	
+	/**
+	 * @return A copy of the list of blocks which make the question.
+	 * 		The list is a copy and modification will not be persisted.
+	 */
+	public List<Block> getQuestionBlocks() {
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		List<Block> questionBlocks = new ArrayList<>(blocks.size());
+		for(Block block:blocks) {
+			if(block instanceof HotspotInteraction) {
+				break;
+			} else {
+				questionBlocks.add(block);
+			}
+		}
+		return questionBlocks;
+	}
 
 	@Override
 	public String getQuestion() {

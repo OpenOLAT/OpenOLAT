@@ -56,6 +56,7 @@ import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemTableModel.IdentityItemCols;
 import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
@@ -100,7 +101,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private final TooledStackedPanel stackPanel;
 	private CorrectionIdentityAssessmentItemTableModel tableModel;
 	
-	private CorrectionIdentityAssessmentItemController identityItemCtrl;
+	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
 
 	private final String title;
 	private LockResult lockResult;
@@ -159,6 +160,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.section));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemTitle, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityItemCols.itemKeywords, "select"));
 		Translator qti21Translator = Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemType, new QuestionTypeFlexiCellRenderer(qti21Translator)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.score, new ScoreCellRenderer()));
@@ -171,6 +173,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		tableModel = new CorrectionIdentityAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "corr-identity-assessment-item-list");
 		
 		if(saveEnabled) {
 			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -201,11 +204,12 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				AssessmentItemRef itemRef = identifierToRefs.get(key.getIdentifier());
 				AssessmentItemSession itemSession = identifierToItemSessions.get(key.getIdentifier().toString());
 				ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+				ManifestMetadataBuilder metadata = model.getMetadata(itemRef);
 				AssessmentItem item = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(key);
 				boolean manualCorrection = model.isManualCorrection(itemRef);
 				CorrectionIdentityAssessmentItemRow row = new CorrectionIdentityAssessmentItemRow(assessedIdentity, item, itemRef,
-						candidateSession, itemSession, itemSessionState, manualCorrection);
+						metadata, candidateSession, itemSession, itemSessionState, manualCorrection);
 				row.setTitle(title);
 				row.setTitleCssClass("o_icon_user");
 				rows.add(row);
@@ -290,6 +294,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	
 	private void doSelect(UserRequest ureq, CorrectionIdentityAssessmentItemRow row) {
 		removeAsListenerAndDispose(identityItemCtrl);
+		doUnlock();
 
 		AssessmentItemRef itemRef = row.getItemRef();
 		TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
@@ -308,7 +313,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		// lock on item, need to check the lock on identity / test
 		String lockSubKey = "item-" + reloadItemSession.getKey();
 		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
-		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(testOres, getIdentity(), lockSubKey);
+		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey);
 		if(lockResult.isSuccess()) {
 			if(nodes.size() == 1) {
 				TestPlanNode itemNode = nodes.get(0);
@@ -320,7 +325,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				
 				ResolvedAssessmentItem resolvedAssessmentItem = model.getResolvedAssessmentTest().getResolvedAssessmentItem(itemRef);
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-				identityItemCtrl = new CorrectionIdentityAssessmentItemController(ureq, getWindowControl(),
+				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
 						tableModel.getObjects(), model);
 				listenTo(identityItemCtrl);

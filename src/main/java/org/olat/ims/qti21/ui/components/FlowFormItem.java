@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.InlineStatic;
 
@@ -40,6 +41,14 @@ public class FlowFormItem extends AssessmentObjectFormItem {
 	public FlowFormItem(String name, File assessmentItemFile) {
 		super(name, null);
 		component = new FlowComponent(name, assessmentItemFile, this);
+	}
+	
+	public List<Block> getBlocks() {
+		return component.getBlocks();
+	}
+
+	public void setBlocks(List<Block> blocks) {
+		component.setBlocks(blocks);
 	}
 	
 	public List<FlowStatic> getFlowStatics() {

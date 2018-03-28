@@ -209,6 +209,23 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	}
 	
 	/**
+	 * @return A copy of the list of blocks which make the question.
+	 * 		The list is a copy and modification will not be persisted.
+	 */
+	public List<Block> getQuestionBlocks() {
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		List<Block> questionBlocks = new ArrayList<>(blocks.size());
+		for(Block block:blocks) {
+			if(block instanceof ChoiceInteraction) {
+				break;
+			} else if(block != null) {
+				questionBlocks.add(block);
+			}
+		}
+		return questionBlocks;
+	}
+	
+	/**
 	 * Return the HTML block before the choice interaction as a string.
 	 * 
 	 * @return

@@ -2164,7 +2164,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				// show results in anonym mode to hide the user info table - user knows who he is (same as on test start page)
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, true,
 						AssessmentTestDisplayController.this.getCandidateSession(),
-						fUnzippedDirRoot, mapperUri, null, deliveryOptions.getAssessmentResultsOptions(), false, true);
+						fUnzippedDirRoot, mapperUri, null, deliveryOptions.getAssessmentResultsOptions(), false, true, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
 				resultsVisible = true;

@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMod
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -44,9 +45,12 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -67,8 +71,11 @@ public class SingleChoiceEditorController extends FormBasicController {
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
 	private int count = 0;
+	private final File itemFile;
 	private final VFSContainer itemContainer;
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
+	private final String mapperUri;
 	private final SingleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
@@ -83,8 +90,11 @@ public class SingleChoiceEditorController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.readOnly = readOnly;
+		this.itemFile = itemFile;
 		this.restrictedEdit = restrictedEdit;
-		
+
+		mapperUri = registerCacheableMapper(null, "SingleChoiceEditorController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(itemFile.toURI()));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
@@ -107,7 +117,15 @@ public class SingleChoiceEditorController extends FormBasicController {
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
+		textEl.setVisible(!readOnly);
 		textEl.setEnabled(!readOnly);
+		if(readOnly) {
+			FlowFormItem textReadOnlyEl = new FlowFormItem("descro", itemFile);
+			textReadOnlyEl.setLabel("form.imd.descr", null);
+			textReadOnlyEl.setBlocks(itemBuilder.getQuestionBlocks());
+			textReadOnlyEl.setMapperUri(mapperUri);
+			metadata.add(textReadOnlyEl);
+		}
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
@@ -170,14 +188,22 @@ public class SingleChoiceEditorController extends FormBasicController {
 	}
 
 	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
-		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
+		List<FlowStatic> choiceFlow = choice.getFlowStatics();
+		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choiceFlow);
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21(choiceId, "form.imd.answer", choiceContent, 8, -1, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setEnabled(!readOnly);
+		choiceEl.setVisible(!readOnly);
 		choiceEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
+		
+		String choiceRoId = "answerro" + count++;
+		FlowFormItem choiceReadOnlyEl = new FlowFormItem(choiceRoId, itemFile);
+		choiceReadOnlyEl.setFlowStatics(choiceFlow);
+		choiceReadOnlyEl.setMapperUri(mapperUri);
+		answersCont.add(choiceRoId, choiceReadOnlyEl);
 		
 		FormLink removeLink = uifactory.addFormLink("rm-".concat(choiceId), "rm", "", null, answersCont, Link.NONTRANSLATED);
 		removeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
@@ -203,7 +229,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
-		choiceWrappers.add(new SimpleChoiceWrapper(choice, choiceEl, removeLink, addLink, upLink, downLink));
+		choiceWrappers.add(new SimpleChoiceWrapper(choice, choiceEl, choiceReadOnlyEl, removeLink, addLink, upLink, downLink));
 	}
 
 	@Override
@@ -350,15 +376,17 @@ public class SingleChoiceEditorController extends FormBasicController {
 		
 		private final SimpleChoice choice;
 		private final RichTextElement answerEl;
+		private final FlowFormItem answerReadOnlyEl;
 		private final FormLink removeLink, addLink, upLink, downLink;
 		
 		private final Identifier choiceIdentifier;
 		
-		public SimpleChoiceWrapper(SimpleChoice choice, RichTextElement answerEl,
+		public SimpleChoiceWrapper(SimpleChoice choice, RichTextElement answerEl, FlowFormItem answerReadOnlyEl,
 				FormLink removeLink, FormLink addLink, FormLink upLink, FormLink downLink) {
 			this.choice = choice;
 			this.choiceIdentifier = choice.getIdentifier();
 			this.answerEl = answerEl;
+			this.answerReadOnlyEl = answerReadOnlyEl;
 			answerEl.setUserObject(this);
 			this.removeLink = removeLink;
 			removeLink.setUserObject(this);
@@ -388,6 +416,10 @@ public class SingleChoiceEditorController extends FormBasicController {
 		
 		public RichTextElement getAnswer() {
 			return answerEl;
+		}
+		
+		public FlowFormItem getAnswerReadOnly() {
+			return answerReadOnlyEl;
 		}
 
 		public FormLink getRemove() {

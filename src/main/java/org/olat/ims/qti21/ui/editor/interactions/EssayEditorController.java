@@ -29,11 +29,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
@@ -54,7 +57,9 @@ public class EssayEditorController extends FormBasicController {
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
 	
-	private final boolean restrictedEdit, readOnly;
+	private final boolean readOnly;
+	private final boolean restrictedEdit;
+	private final String mapperUri;
 	private final EssayAssessmentItemBuilder itemBuilder;
 	
 	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
@@ -67,6 +72,9 @@ public class EssayEditorController extends FormBasicController {
 		this.rootContainer = rootContainer;
 		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
+		
+		mapperUri = registerCacheableMapper(null, "EssayEditorController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(itemFile.toURI()));
 		initForm(ureq);
 	}
 
@@ -87,6 +95,14 @@ public class EssayEditorController extends FormBasicController {
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_assessment_item_question");
 		textEl.setEnabled(!readOnly);
+		textEl.setVisible(!readOnly);
+		if(readOnly) {
+			FlowFormItem textReadOnlyEl = new FlowFormItem("descro", itemFile);
+			textReadOnlyEl.setLabel("form.imd.descr", null);
+			textReadOnlyEl.setBlocks(itemBuilder.getQuestionBlocks());
+			textReadOnlyEl.setMapperUri(mapperUri);
+			formLayout.add(textReadOnlyEl);
+		}
 		
 		String placeholder = itemBuilder.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("placeholder", "fib.placeholder", 256, placeholder, formLayout);
