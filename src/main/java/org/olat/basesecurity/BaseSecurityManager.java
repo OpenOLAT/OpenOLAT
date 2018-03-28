@@ -542,25 +542,33 @@ public class BaseSecurityManager implements BaseSecurity {
 	public void deleteSecurityGroup(SecurityGroup secGroup) {
 		// we do not use hibernate cascade="delete", but implement our own (to be
 		// sure to understand our code)
-		secGroup = dbInstance.getCurrentEntityManager()
-				.getReference(SecurityGroupImpl.class, secGroup.getKey());
-
-		// 1) delete associated users (need to do it manually, hibernate knows
-		// nothing about
-		// the membership, modeled manually via many-to-one and not via set)
-		dbInstance.getCurrentEntityManager()
-			.createQuery("delete from org.olat.basesecurity.SecurityGroupMembershipImpl where securityGroup=:securityGroup")
-			.setParameter("securityGroup", secGroup)
-			.executeUpdate();
-		// 2) delete all policies
-
-		dbInstance.getCurrentEntityManager()
-			.createQuery("delete from org.olat.basesecurity.PolicyImpl where securityGroup=:securityGroup")
-			.setParameter("securityGroup", secGroup)
-			.executeUpdate();
-		// 3) delete security group
-		dbInstance.getCurrentEntityManager()
-			.remove(secGroup);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select secGroup from ").append(SecurityGroupImpl.class.getName()).append(" as secGroup ")
+		  .append("where secGroup.key=:securityGroupKey");
+		List<SecurityGroup> reloadedSecGroups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), SecurityGroup.class)
+				.setParameter("securityGroupKey", secGroup.getKey())
+				.getResultList();
+		if(reloadedSecGroups.size() == 1) {
+			secGroup = reloadedSecGroups.get(0);
+			
+			// 1) delete associated users (need to do it manually, hibernate knows
+			// nothing about
+			// the membership, modeled manually via many-to-one and not via set)
+			dbInstance.getCurrentEntityManager()
+				.createQuery("delete from org.olat.basesecurity.SecurityGroupMembershipImpl where securityGroup=:securityGroup")
+				.setParameter("securityGroup", secGroup)
+				.executeUpdate();
+			// 2) delete all policies
+	
+			dbInstance.getCurrentEntityManager()
+				.createQuery("delete from org.olat.basesecurity.PolicyImpl where securityGroup=:securityGroup")
+				.setParameter("securityGroup", secGroup)
+				.executeUpdate();
+			// 3) delete security group
+			dbInstance.getCurrentEntityManager()
+				.remove(secGroup);
+		}
 	}
 
 	/**
