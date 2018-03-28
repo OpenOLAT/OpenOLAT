@@ -51,11 +51,13 @@ public class PFEditController extends ActivateableTabbableDefaultController impl
 	private PFEditFormController modConfigCtr;
 	private TabbedPane myTabbedPane;
 	private ConditionEditController accessibilityCondCtr;
+	private PFCourseNode pfNode;
 
 	
 	public PFEditController(UserRequest ureq, WindowControl wControl, 
 			PFCourseNode pfNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
+		this.pfNode = pfNode;
 		
 		configVC = createVelocityContainer("edit");
 		// Accessibility precondition
@@ -96,7 +98,13 @@ public class PFEditController extends ActivateableTabbableDefaultController impl
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == modConfigCtr) {
+		if (source == accessibilityCondCtr) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondCtr.getCondition();
+				pfNode.setPreConditionAccess(cond);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else 	if (source == modConfigCtr) {
 			if (Event.DONE_EVENT.equals(event)) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);	
 				}
