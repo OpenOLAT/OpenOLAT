@@ -80,7 +80,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -1566,7 +1565,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 
 		XsltStylesheetManager stylesheetManager = CoreSpringFactory.getImpl(QTI21Service.class).getXsltStylesheetManager();
-    	final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
+		final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
 
         try {
             mathmlTransformerHandler.setResult(new StreamResult(sb));
@@ -1578,7 +1577,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
             xmlReader.parse(assessmentSaxSource);
         } catch (final Exception e) {
             log.error("Rendering XSLT pipeline failed for request {}", e);
-            throw new OLATRuntimeException("Unexpected Exception running rendering XML pipeline", e);
+            sb.append("<span class='o_error'>ERROR MATHML</span>");
         }
 	}
 	
