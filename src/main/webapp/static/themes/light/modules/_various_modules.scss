@@ -721,3 +721,14 @@ ul.o_assessment_docs>li:last-child {
     max-height: 300px;
     overflow-x: hidden;
 }
+
+
+/* disclaimer formatting */
+.o_disclaimer .o_disclaimer_content {
+	max-height: 50vh;
+	overflow: auto;
+	font-family: $font-family-monospace;
+	background: #fbfbfb;
+	padding: 10px;
+	border: 1px solid #c2c2c2;
+}
