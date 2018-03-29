@@ -12,7 +12,6 @@
 	<bean id="org.olat.course.nodes.ta.ReturnboxFileUploadNotificationHandler" class="org.olat.course.nodes.ta.ReturnboxFileUploadNotificationHandler"/>
 	<bean id="org.olat.course.nodes.ta.SolutionFileUploadNotificationHandler" class="org.olat.course.nodes.ta.SolutionFileUploadNotificationHandler"/>
 	<bean id="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" class="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" />
-	<bean id="org.olat.user.notification.NewUsersNotificationHandler" class="org.olat.user.notification.NewUsersNotificationHandler" />
 	
 	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl" >
 		<property name="dbInstance" ref="database"/>
@@ -40,15 +39,6 @@
 		-->
 		<property name="defaultNotificationInterval">
 			<value>${notification.interval.default}</value>
-		</property>
-	</bean>
-	
-	<bean
-		id="org.olat.user.notification.UsersSubscriptionManager" class="org.olat.user.notification.UsersSubscriptionManagerImpl"
-		 depends-on="coordinatorManager">
-		<property name="autoSubscribe" value="false" />
-		<property name="coordinator">
-			<ref bean="coordinatorManager" />
 		</property>
 	</bean>
 	

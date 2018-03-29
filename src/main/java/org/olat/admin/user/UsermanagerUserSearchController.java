@@ -45,7 +45,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableEvent;
@@ -97,7 +96,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private static final String CMD_BULKEDIT = "bulkEditUsers";
 
 	private VelocityContainer userListVC, userSearchVC, mailVC;
-	private StackedPanel panel2;
 
 	private TooledStackedPanel stackedPanel;
 
@@ -207,10 +205,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param status
 	 * @param showEmailButton
 	 */
-	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, List<Identity> identitiesList,
-			Integer status, boolean showEmailButton, boolean showTitle) {
+	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
+			List<Identity> identitiesList, Integer status, boolean showEmailButton, boolean showTitle) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.stackedPanel = stackedPanel;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 

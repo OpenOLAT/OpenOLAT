@@ -49,6 +49,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -56,6 +57,8 @@ import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.organisation.OrganisationUserManagementTableModel.MemberCols;
+import org.olat.user.ui.organisation.component.RoleFlexiCellRenderer;
+import org.olat.user.ui.organisation.event.RoleEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,13 +73,16 @@ public class OrganisationUserManagementController extends FormBasicController {
 	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
 	private FlexiTableElement tableEl;
-	private FormLink addUserManagerButton;
+	private FormLink addMemberButton;
 	private FormLink removeMembershipButton;
 	private OrganisationUserManagementTableModel tableModel;
 	
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
 	private DialogBoxController confirmRemoveCtrl;
+	
+	private RoleListController roleListCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private Organisation organisation;
 	private final boolean membersManaged;
@@ -108,8 +114,9 @@ public class OrganisationUserManagementController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!membersManaged) {
-			addUserManagerButton = uifactory.addFormLink("add.user.manager", formLayout, Link.BUTTON);
-			addUserManagerButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
+			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
 		
 			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
 		}
@@ -127,7 +134,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 			colIndex++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new RoleFlexiCellRenderer(getTranslator())));
 
 		tableModel = new OrganisationUserManagementTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -175,7 +182,14 @@ public class OrganisationUserManagementController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(roleListCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();
+			if(event instanceof RoleEvent) {
+				RoleEvent re = (RoleEvent)event;
+				doSearchMember(ureq, re.getSelectedRole());
+			}
+		} else if(cmc == source || calloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -184,9 +198,11 @@ public class OrganisationUserManagementController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmRemoveCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmRemoveCtrl = null;
 		userSearchCtrl = null;
+		calloutCtrl = null;
 		cmc = null;
 	}
 
@@ -197,8 +213,8 @@ public class OrganisationUserManagementController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addUserManagerButton == source) {
-			doSearchMember(ureq, OrganisationRoles.usermanager);
+		if(addMemberButton == source) {
+			doRolleCallout(ureq);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
 		}
@@ -227,6 +243,19 @@ public class OrganisationUserManagementController extends FormBasicController {
 		loadModel(true);
 	}
 	
+	private void doRolleCallout(UserRequest ureq) {
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(roleListCtrl);
+		
+		String title = translate("add.member");
+		roleListCtrl = new RoleListController(ureq, getWindowControl(), OrganisationRoles.values());
+		listenTo(roleListCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();	
+	}
+	
 	private void doSearchMember(UserRequest ureq, OrganisationRoles role) {
 		if(userSearchCtrl != null) return;
 
@@ -234,8 +263,8 @@ public class OrganisationUserManagementController extends FormBasicController {
 		userSearchCtrl.setUserObject(role);
 		listenTo(userSearchCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(),
-				true, translate("add.role." + role));
+		String title = translate("add.member.role", new String[] { translate(role.name()) });
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

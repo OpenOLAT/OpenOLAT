@@ -222,10 +222,12 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		if(createOrganisationButton == source) {
 			doCreateOrganisation(ureq);
 		} else if(tableEl == source) {
-			SelectionEvent se = (SelectionEvent)event;
-			if("select".equals(se.getCommand())) {
-				OrganisationRow row = model.getObject(se.getIndex());
-				doSelectOrganisation(ureq, row);
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("select".equals(event.getCommand())) {
+					OrganisationRow row = model.getObject(se.getIndex());
+					doSelectOrganisation(ureq, row);
+				}
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;

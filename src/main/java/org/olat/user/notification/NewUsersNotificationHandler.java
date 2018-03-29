@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -34,10 +35,13 @@ import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -49,9 +53,17 @@ import org.olat.core.util.Util;
  * 
  * @author srosse, stephane.rosse@frentix.com
  */
+@Service
 public class NewUsersNotificationHandler implements NotificationsHandler {
 	private static final OLog log = Tracing.createLoggerFor(NewUsersNotificationHandler.class);
 
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
+	private UsersSubscriptionManager usersSubscriptionManager;
+	
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		Publisher p = subscriber.getPublisher();
@@ -61,10 +73,12 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
 		// there could be news for me, investigate deeper
 		try {
-			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
-				List<Identity> identities = UsersSubscriptionManager.getInstance().getNewIdentityCreated(compareDate);
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
+				Identity identity = subscriber.getIdentity();
+				Roles roles = securityManager.getRoles(identity);
+				List<Identity> identities = usersSubscriptionManager.getNewIdentityCreated(compareDate, subscriber.getIdentity(), roles);
 				if (identities.isEmpty()) {
-					si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+					si = notificationsManager.getNoSubscriptionInfo();
 				} else {
 					translator = Util.createPackageTranslator(this.getClass(), locale);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(getItemTitle(identities, translator), CSSHelper.CSS_CLASS_GROUP), null);
@@ -79,11 +93,11 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 					}
 				}
 			} else {
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
 			log.error("Error creating new identity's notifications for subscriber: " + subscriber.getKey(), e);
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}

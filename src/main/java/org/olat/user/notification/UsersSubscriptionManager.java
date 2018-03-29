@@ -22,12 +22,11 @@ package org.olat.user.notification;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.id.Roles;
 
 
 /**
@@ -41,23 +40,19 @@ import org.olat.core.manager.BasicManager;
  *
  * @author srosse
  */
-public abstract class UsersSubscriptionManager extends BasicManager {
+public interface UsersSubscriptionManager {
 	
-	public static final UsersSubscriptionManager getInstance() {
-		return (UsersSubscriptionManager) CoreSpringFactory.getBean(UsersSubscriptionManager.class.getCanonicalName());
-	}
+	public SubscriptionContext getNewUsersSubscriptionContext();
 	
-	public abstract SubscriptionContext getNewUsersSubscriptionContext();
+	public PublisherData getNewUsersPublisherData();
 	
-	public abstract PublisherData getNewUsersPublisherData();
+	public Subscriber getNewUsersSubscriber(Identity identity);
 	
-	public abstract Subscriber getNewUsersSubscriber(Identity identity);
+	public void subscribe(Identity identity);
 	
-	public abstract void subscribe(Identity identity);
+	public void unsubscribe(Identity identity);
 	
-	public abstract void unsubscribe(Identity identity);
+	public void markPublisherNews();
 	
-	public abstract void markPublisherNews();
-	
-	public abstract List<Identity> getNewIdentityCreated(Date From);
+	public List<Identity> getNewIdentityCreated(Date from, Identity actingIdentity, Roles roles);
 }

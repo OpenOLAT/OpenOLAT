@@ -17,28 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
+package org.olat.user.ui.organisation.event;
 
-import java.util.List;
-import java.util.Locale;
-
-import org.olat.core.id.Identity;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 20 mars 2018<br>
+ * Initial date: 29 mars 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface IdentityPowerSearchQueries {
-	
-	public int countIdentitiesByPowerSearch(SearchIdentityParams params);
-	
-	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults);
-	
-	public List<UserPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale, int firstResult, int maxResults);
+public class RoleEvent extends Event {
 
+	private static final long serialVersionUID = -8941881101301854057L;
+	public static final String SELECT_ROLE = "select-role";
+	
+	private final OrganisationRoles selectedRole;
+	
+	public RoleEvent(OrganisationRoles selectedRole) {
+		super(SELECT_ROLE);
+		this.selectedRole = selectedRole;
+	}
+
+	public OrganisationRoles getSelectedRole() {
+		return selectedRole;
+	}
 }

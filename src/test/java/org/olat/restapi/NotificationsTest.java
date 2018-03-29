@@ -54,6 +54,8 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -65,6 +67,8 @@ import org.olat.core.commons.services.notifications.restapi.vo.PublisherVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionInfoVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -96,6 +100,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class NotificationsTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(NotificationsTest.class);
 
 	private static Identity userSubscriberId;
 	private static Identity userAndForumSubscriberId;
@@ -106,11 +112,15 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private NotificationsManager notificationManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private UsersSubscriptionManager usersSubscriptionManager;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -119,9 +129,11 @@ public class NotificationsTest extends OlatJerseyTestCase {
 			userSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-1");
 			userAndForumSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-2");
 			JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-3");
+			//for the news
+			organisationService.addMember(userSubscriberId, OrganisationRoles.usermanager);
 			
-			SubscriptionContext subContext = UsersSubscriptionManager.getInstance().getNewUsersSubscriptionContext();
-			PublisherData publisherData = UsersSubscriptionManager.getInstance().getNewUsersPublisherData();
+			SubscriptionContext subContext = usersSubscriptionManager.getNewUsersSubscriptionContext();
+			PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();
 			if(!notificationManager.isSubscribed(userSubscriberId, subContext)) {
 				notificationManager.subscribe(userSubscriberId, subContext, publisherData);
 			}
@@ -487,11 +499,12 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	private String addFile(VFSContainer folder) throws IOException {
 		String filename = UUID.randomUUID().toString();
 		VFSLeaf file = folder.createChildLeaf(filename + ".jpg");
-		OutputStream out = file.getOutputStream(true);
-		InputStream in = UserMgmtTest.class.getResourceAsStream("portrait.jpg");
-		IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
-		IOUtils.closeQuietly(out);
+		try(OutputStream out = file.getOutputStream(true);
+			InputStream in = UserMgmtTest.class.getResourceAsStream("portrait.jpg")) {
+			IOUtils.copy(in, out);
+		} catch(IOException e) {
+			log.error("", e);
+		}
 		return file.getName();
 	}
 	

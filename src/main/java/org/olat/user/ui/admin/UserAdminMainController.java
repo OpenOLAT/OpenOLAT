@@ -303,7 +303,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
 			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
 			case "created.sixmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -6);
-			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl);
+			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl, content);
 			// repository entry owners - authors
 			case "coauthors": return createUserSearchController(ureq, bwControl,
 					SearchIdentityParams.resources(GroupRoles.owner, null, null, new OrganisationRoles[] { OrganisationRoles.author }, Identity.STATUS_VISIBLE_LIMIT));
@@ -318,27 +318,18 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 					SearchIdentityParams.resources(null, GroupRoles.coach, null, null, Identity.STATUS_VISIBLE_LIMIT));
 			case "noauthentication": return createUserSearchController(ureq, bwControl,
 					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT));
-			default: return getControllerFromMenuCommand(ureq, bwControl, uobject);		
+			case "userswithoutgroup":
+				List<Identity> usersWithoutGroup = securityManager.findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutGroup, null, true, true);
+			case "userswithoutemail":
+				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, null, true, true);
+			case "usersemailduplicates":
+				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, null, true, true);
+			default: return null;		
 		}
 	}
-
-	private Controller getControllerFromMenuCommand(UserRequest ureq, WindowControl bwControl, Object uobject) {
-		UsermanagerUserSearchController ctrl;
-		if (uobject.equals("userswithoutgroup")) {
-			List<Identity> usersWithoutGroup = securityManager.findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
-			ctrl = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutGroup, null, true, true);
-		} else if (uobject.equals("userswithoutemail")) {
-			List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
-			ctrl = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutEmail, null, true, true);
-		} else if (uobject.equals("usersemailduplicates")) {
-			List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
-			ctrl = new UsermanagerUserSearchController(ureq, bwControl, usersEmailDuplicates, null, true, true);
-		} else {
-			ctrl = null;
-		}
-		return ctrl;
-	}
-	
 
 	private Controller getController(UserRequest ureq, Organisation organisation) {
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.organisation(organisation, Identity.STATUS_VISIBLE_LIMIT);
@@ -468,7 +459,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private void buildTreeOrganisationSubMenu(GenericTreeNode accessNode) {
 		List<Organisation> organisations;
 		if(userManagerOrganisations != null) {
-			organisations = new ArrayList<>(userManagerOrganisations);
+			organisations = new ArrayList<>();
+			List<Organisation> allOrganisations = organisationService.getOrganisations();
+			for(Organisation organisation:allOrganisations) {
+				String path = organisation.getMaterializedPathKeys();
+				for(Organisation userManagerOrganisation:userManagerOrganisations) {
+					if(path.startsWith(userManagerOrganisation.getMaterializedPathKeys())) {
+						organisations.add(organisation);
+					}
+				}
+			}
 		} else {
 			organisations = organisationService.getOrganisations();
 		}
@@ -484,8 +484,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			});
 
 			Organisation parentOrganisation = organisation.getParent();
-			if(parentOrganisation == null) {
-				//this is a root
+			if(parentOrganisation == null || !keytoOrganisations.containsKey(parentOrganisation.getKey())) {
+				//this is a root, or the user has not access to parent
 				accessNode.addChild(node);
 			} else {
 				Long parentKey = parentOrganisation.getKey();
@@ -532,8 +532,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 	private void buildTreeQueriesSubMenu(GenericTreeNode queriesNode) {
 		appendNode("menu.userswithoutgroup", "menu.userswithoutgroup.alt", "userswithoutgroup", "o_sel_useradmin_userswithoutgroup", queriesNode);
-		appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
-		appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
+		if(isOlatAdmin) {
+			appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
+			appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
+		}
 		appendNode("menu.created.lastweek", "menu.created.lastweek.alt", "created.lastweek", "o_sel_useradmin_createdlastweek", queriesNode);
 		appendNode("menu.created.lastmonth", "menu.created.lastmonth.alt", "created.lastmonth", "o_sel_useradmin_createdlastmonth", queriesNode);
 		appendNode("menu.created.sixmonth", "menu.created.sixmonth.alt", "created.sixmonth", "o_sel_useradmin_createdsixmonth", queriesNode);

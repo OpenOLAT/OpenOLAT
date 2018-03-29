@@ -212,13 +212,13 @@ public class NotificationsWebService {
 			compareDate = man.getCompareDateFromInterval(man.getUserIntervalOrDefault(identity));
 		}
 		
-		List<String> types = new ArrayList<String>(1);
+		List<String> types = new ArrayList<>(1);
 		if(StringHelper.containsNonWhitespace(type)) {
 			types.add(type);
 		}
 		
 		Map<Subscriber,SubscriptionInfo> subsInfoMap = NotificationHelper.getSubscriptionMap(identity, locale, true, compareDate, types);
-		List<SubscriptionInfoVO> voes = new ArrayList<SubscriptionInfoVO>();
+		List<SubscriptionInfoVO> voes = new ArrayList<>();
 		for(Map.Entry<Subscriber, SubscriptionInfo> entry: subsInfoMap.entrySet()) {
 			SubscriptionInfo info = entry.getValue();
 			if(info.hasNews()) {
@@ -234,7 +234,7 @@ public class NotificationsWebService {
 	private SubscriptionInfoVO createSubscriptionInfoVO(Publisher publisher, SubscriptionInfo info) {
 		SubscriptionInfoVO infoVO  = new SubscriptionInfoVO(info);
 		if(info.getSubscriptionListItems() != null && !info.getSubscriptionListItems().isEmpty()) {
-			List<SubscriptionListItemVO> itemVOes = new ArrayList<SubscriptionListItemVO>(info.getSubscriptionListItems().size());
+			List<SubscriptionListItemVO> itemVOes = new ArrayList<>(info.getSubscriptionListItems().size());
 			
 			String publisherType = publisher.getType();
 			String resourceType = publisher.getResName();

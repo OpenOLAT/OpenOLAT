@@ -30,6 +30,7 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.commons.services.notifications.ui.DateChooserController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.user.notification.UsersSubscriptionManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,20 +53,25 @@ import org.olat.user.notification.UsersSubscriptionManager;
  */
 public class NewUsersNotificationsController extends BasicController {
 
-	private DateChooserController dateChooserController;
+	private final DateChooserController dateChooserController;
 	private UsermanagerUserSearchController searchController;
-	private ContextualSubscriptionController subscriptionController;
+	private final ContextualSubscriptionController subscriptionController;
 	
-	private VelocityContainer mainVC;
+	private final VelocityContainer mainVC;
+	private TooledStackedPanel stackedPanel;
 	
-	public NewUsersNotificationsController(UserRequest ureq, WindowControl wControl) {
+	@Autowired
+	private UsersSubscriptionManager usersSubscriptionManager;
+	
+	public NewUsersNotificationsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl);
+		this.stackedPanel = stackedPanel;
 		
 		mainVC = createVelocityContainer("newusersNotifications");
 		
 		// subscribe/unsubscribe
-		SubscriptionContext subContext = UsersSubscriptionManager.getInstance().getNewUsersSubscriptionContext();
-		PublisherData publisherData = UsersSubscriptionManager.getInstance().getNewUsersPublisherData();
+		SubscriptionContext subContext = usersSubscriptionManager.getNewUsersSubscriptionContext();
+		PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();
 		
 		subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, publisherData);
 		listenTo(subscriptionController);
@@ -84,15 +91,16 @@ public class NewUsersNotificationsController extends BasicController {
 		if(searchController != null) {
 			removeAsListenerAndDispose(searchController);
 		}
-		List<Identity> identities = UsersSubscriptionManager.getInstance().getNewIdentityCreated(compareDate);
-		searchController = new UsermanagerUserSearchController(ureq, getWindowControl(), identities, Identity.STATUS_VISIBLE_LIMIT, true, false);
+		
+		List<Identity> identities = usersSubscriptionManager.getNewIdentityCreated(compareDate, getIdentity(), ureq.getUserSession().getRoles());
+		searchController = new UsermanagerUserSearchController(ureq, getWindowControl(), stackedPanel, identities, Identity.STATUS_VISIBLE_LIMIT, true, false);
 		listenTo(searchController);
 		mainVC.put("notificationsList", searchController.getInitialComponent());
 
 		if(identities.isEmpty()) {
-			mainVC.contextPut("hasNews", "false");
+			mainVC.contextPut("hasNews", Boolean.FALSE);
 		} else {
-			mainVC.contextPut("hasNews", "true");
+			mainVC.contextPut("hasNews", Boolean.TRUE);
 		}
 	}
 

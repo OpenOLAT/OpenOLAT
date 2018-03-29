@@ -21,13 +21,14 @@ package org.olat.user.notification;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
+import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -36,12 +37,15 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -54,47 +58,41 @@ import org.olat.core.util.resource.OresHelper;
  *
  * @author srosse
  */
-public class UsersSubscriptionManagerImpl extends UsersSubscriptionManager implements GenericEventListener {
+@Service
+public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, GenericEventListener {
 	public static final String NEW = "NewIdentityCreated";
-	public static final Long RES_ID = new Long(0);
+	public static final Long RES_ID = Long.valueOf(0);
 	public static final String RES_NAME = OresHelper.calculateTypeName(User.class);
 	public static final OLATResourceable IDENTITY_EVENT_CHANNEL = OresHelper.lookupType(Identity.class);
 	
-	private boolean autoSubscribe;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationDAO organisationDao;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
-	public UsersSubscriptionManagerImpl() {
-		//
-	}
-	
-	public void setCoordinator(CoordinatorManager coordinatorManager) {
+	@Autowired
+	public UsersSubscriptionManagerImpl(CoordinatorManager coordinatorManager) {
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, IDENTITY_EVENT_CHANNEL);
-	}
-	
-	public void setAutoSubscribe(boolean autoSubscribe) {
-		this.autoSubscribe = autoSubscribe;
 	}
 	
 	/**
 	 * Receive the event after the creation of new identities
 	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof NewIdentityCreatedEvent) {
 			markPublisherNews();
-			if(autoSubscribe) {
-				NewIdentityCreatedEvent e = (NewIdentityCreatedEvent)event;
-				Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(e.getIdentityId());
-				subscribe(identity);
-			}
 		}
 	}
 
-	/**
-	 * 
-	 */
+	@Override
 	public SubscriptionContext getNewUsersSubscriptionContext() {
 		return new SubscriptionContext(RES_NAME, RES_ID, NEW);
 	}
-	
+
+	@Override
 	public PublisherData getNewUsersPublisherData() {
 		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(new OLATResourceable() {
 			@Override
@@ -102,42 +100,45 @@ public class UsersSubscriptionManagerImpl extends UsersSubscriptionManager imple
 			@Override
 			public String getResourceableTypeName() { return "NewIdentityCreated"; }
 		});
-		PublisherData publisherData = new PublisherData(RES_NAME, NEW, ce.toString());
-		return publisherData;
+		return new PublisherData(RES_NAME, NEW, ce.toString());
 	}
-	
+
+	@Override
 	public Subscriber getNewUsersSubscriber(Identity identity) {
 		SubscriptionContext context = getNewUsersSubscriptionContext();
-		Publisher publisher = NotificationsManager.getInstance().getPublisher(context);
+		Publisher publisher = notificationsManager.getPublisher(context);
 		if(publisher == null) {
 			return null;
 		}
-		return NotificationsManager.getInstance().getSubscriber(identity, publisher);
+		return notificationsManager.getSubscriber(identity, publisher);
 	}
 	
 	/**
 	 * Subscribe to notifications of new identity created
 	 */
+	@Override
 	public void subscribe(Identity identity) {
 		PublisherData data = getNewUsersPublisherData();
 		SubscriptionContext context = getNewUsersSubscriptionContext();
-		NotificationsManager.getInstance().subscribe(identity, context, data);
+		notificationsManager.subscribe(identity, context, data);
 	}
 	
 	/**
 	 * Unsubscribe to notifications of new identity created
 	 */
+	@Override
 	public void unsubscribe(Identity identity) {
 		SubscriptionContext context = getNewUsersSubscriptionContext();
-		NotificationsManager.getInstance().unsubscribe(identity, context);	
+		notificationsManager.unsubscribe(identity, context);	
 	}
 	
 	/**
 	 * Call this method if there is new identities
 	 */
+	@Override
 	public void markPublisherNews() {
 		SubscriptionContext context = getNewUsersSubscriptionContext();
-		NotificationsManager.getInstance().markPublisherNews(context, null, true);
+		notificationsManager.markPublisherNews(context, null, true);
 	}
 
 	/**
@@ -145,25 +146,23 @@ public class UsersSubscriptionManagerImpl extends UsersSubscriptionManager imple
 	 * The guest are also removed from the list.
 	 */
 	@Override
-	public List<Identity> getNewIdentityCreated(Date from) {
-		if(from == null)
-			return Collections.emptyList();
-		
-		BaseSecurity manager = BaseSecurityManager.getInstance();
-		OrganisationRoles[] guestRoles = { OrganisationRoles.guest };
-		List<Identity> guests = manager.getIdentitiesByPowerSearch(null, null, true, guestRoles, null, from, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		List<Identity> identities = manager.getIdentitiesByPowerSearch(null, null, true, null, null, from, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		if(!identities.isEmpty() && !guests.isEmpty()) {
-			identities.removeAll(guests);
-		}
-		
-		for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
-			Identity identity = identityIt.next();
-			if(identity.getCreationDate().before(from)) {
-				identityIt.remove();
+	public List<Identity> getNewIdentityCreated(Date from, Identity actingIdentity, Roles roles) {
+		if(from == null || (!roles.isUserManager() && !roles.isOLATAdmin())) return Collections.emptyList();
+
+		List<Organisation> userManagerOrganisations = null;
+		if(!roles.isOLATAdmin()) {
+			userManagerOrganisations = organisationDao
+					.getOrganisations(actingIdentity, Collections.singletonList(OrganisationRoles.usermanager.name()));
+			if(userManagerOrganisations.isEmpty()) {
+				return Collections.emptyList();
 			}
 		}
 		
-		return identities;
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setExcludedRoles(new OrganisationRoles[]{ OrganisationRoles.guest });
+		params.setCreatedAfter(from);
+		params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+		params.setOrganisationParents(userManagerOrganisations);
+		return securityManager.getIdentitiesByPowerSearch(params, 0, -1);
 	}
 }

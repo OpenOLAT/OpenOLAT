@@ -3,8 +3,8 @@ $r.render("newUsersSubscription")
 <div class="o_notifications_news_datechooser">
 $r.render("dateChooser")
 </div>
-#if ($hasNews == "false")
-	<p>$r.translate("notification.noNews")</p>
+#if ($r.isFalse($hasNews))
+	<div class="o_info">$r.translate("notification.noNews")</div>
 #else
 	$r.render("notificationsList")
 #end

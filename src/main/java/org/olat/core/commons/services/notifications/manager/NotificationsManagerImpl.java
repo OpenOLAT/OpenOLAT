@@ -103,7 +103,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private static final int PUB_STATE_NOT_OK = 1;
 	private static final int BATCH_SIZE = 500;
 	private static final String LATEST_EMAIL_USER_PROP = "noti_latest_email";
-	private final SubscriptionInfo NOSUBSINFO = new NoSubscriptionInfo();
+	private static final SubscriptionInfo NOSUBSINFO = new NoSubscriptionInfo();
 
 	private final OLATResourceable oresMyself = OresHelper.lookupType(NotificationsManagerImpl.class);
 
@@ -810,10 +810,6 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				.getResultList();
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getSubscriberIdentities(org.olat.core.commons.services.notifications.Publisher)
-	 */
 	@Override
 	public List<Identity> getSubscriberIdentities(Publisher publisher) {
 		return dbInstance.getCurrentEntityManager()
@@ -825,12 +821,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	/**
 	 * @return the handler for the type
 	 */
+	@Override
 	public NotificationsHandler getNotificationsHandler(Publisher publisher) {
 		String type = publisher.getType();
 		if (notificationHandlers == null) {
 			synchronized(lockObject) {
 				if (notificationHandlers == null) { // check again in synchronized-block, only one may create list
-					notificationHandlers = new HashMap<String,NotificationsHandler>();
+					notificationHandlers = new HashMap<>();
 					Map<String, NotificationsHandler> notificationsHandlerMap = CoreSpringFactory.getBeansOfType(NotificationsHandler.class);
 					Collection<NotificationsHandler> notificationsHandlerValues = notificationsHandlerMap.values();
 					for (NotificationsHandler notificationsHandler : notificationsHandlerValues) {
@@ -849,7 +846,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private void deleteSubscriber(Subscriber subscriber) {
 		dbInstance.deleteObject(subscriber);
 	}
-	
+
+	@Override
 	public boolean deleteSubscriber(Long subscriberKey) {
 		String sb = "delete from notisub sub where sub.key=:subscriberKey";
 		int rows = dbInstance.getCurrentEntityManager()
