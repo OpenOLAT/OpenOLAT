@@ -38,6 +38,6 @@ public class SerializableIFrameDeliveryMapper extends IFrameDeliveryMapper imple
 	
 	public SerializableIFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, boolean adjusteightAutomatically,
 			String frameId, String customCssURL, String themeBaseUri, String customHeaderContent) {
-		super(rootDir, rawContent, enableTextmarking, adjusteightAutomatically, frameId, customCssURL, themeBaseUri, customHeaderContent);
+		super(rootDir, rawContent, enableTextmarking, frameId, customCssURL, themeBaseUri, customHeaderContent);
 	}
 }

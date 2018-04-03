@@ -91,7 +91,7 @@ public class Card2BrainRunController extends BasicController {
 		String mapperUri = registerMapper(ureq, contentMapper);
 		container.contextPut("mapperUri", mapperUri + "/");
 		
-		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/iframeResizer/iframeResizer.min.js" }, null);
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
 		container.put("js", js);
 		
 		main.setContent(container);

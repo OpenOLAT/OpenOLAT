@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -47,6 +48,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
@@ -58,15 +61,17 @@ import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * Class that loads a resource (html) in an Iframe and tries to adjust the size of the Iframe to hide the scrollbars.
- * This is done by injecting some javascript into the head part of the loaded html file which then resizes the iframe itself.
- * See package documentation for details.
+ * This is done by the usage of the JavaScript library iFrameResizer.
+ *
  * Initial Date: Dec 9, 2004
  * 
  * @author Felix Jost<br>
- *         
  * @author guido
  */
 public class IFrameDisplayController extends BasicController implements GenericEventListener, Activateable2 {
+
+	private static final OLog log = Tracing.createLoggerFor(IFrameDisplayController.class);
+
 	private static final String NEW_URI_EVENT = "newUriEvent";
 	protected static final String FILE_SUFFIX_HTM = "htm";
 	protected static final String FILE_SUFFIX_JS = ".js";
@@ -90,6 +95,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	//download link
 	private Link downloadLink;
 	private boolean allowDownload = false;
+	
+	private String iFrameId;
 	
 	/**
 	 * 
@@ -155,7 +162,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		// Set correct user content theme
 		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 		if (frameId == null) {
-			frameId = "ifdc" + hashCode();
+			iFrameId = "ifdc" + hashCode();
+		} else {
+			iFrameId = frameId;
 		}
 		
 		boolean adjusteightAutomatically = true;
@@ -166,13 +175,16 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		//therefore the browser can not reuse the cached elements
 		if(persistMapper) {
 			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
-					frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+					iFrameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
 		} else {
-			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
-					frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId,
+					null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
 		}
 
 		contentMapper.setDeliveryOptions(options);
+		
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
+		myContent.put("js", js);
 
 		String mapperID = VFSManager.getRealPath(rootDir);
 		if (mapperID == null) {
@@ -185,7 +197,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			if(randomizeMapper) {
 				mapperID += CodeHelper.getRAMUniqueID();
 			}
-			baseURI = registerCacheableMapper(ureq, mapperID, contentMapper);				
+			baseURI = registerCacheableMapper(ureq, mapperID, contentMapper);
 		}
 		myContent.contextPut("baseURI", baseURI);
 		newUriEventPanel = new Panel("newUriEvent");
@@ -194,7 +206,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		main = new Panel("iframemain");
 		
 		main.setContent(myContent);
-		myContent.contextPut("frameId", frameId);
+		myContent.contextPut("frameId", iFrameId);
 		myContent.put("newUriEvent", newUriEventPanel);
 		// add default iframe height
 		if(options == null || DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(options.getHeight())
@@ -205,6 +217,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			myContent.contextPut("iframeHeight", options.getHeight());
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);
 		}
+		
+		boolean a = log.isDebug();
+		myContent.contextPut("debug", Boolean.valueOf(log.isDebug()));
 
 		// Add us as cycle listener to be notified when current dispatch cycle is
 		// finished. we then need to add the css which is not yet defined at this
@@ -234,24 +249,21 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	
 	/**
 	 * Configuration method to use an explicit height for the iframe instead of
-	 * the default automatic sizeing code. If you don't call this method, OLAT
+	 * the default automatic sizing code. If you don't call this method, OLAT
 	 * will try to size the iframe so that no scrollbars appear. In most cases
 	 * this works. If it does not work, use this method to set an explicit height.
 	 * <br />
-	 * Set 0 to reset to automatic behaviour.
+	 * Set 0 to reset to automatic behavior.
 	 * 
 	 * @param height
 	 */
 	public void setHeightPX(int height) {
-		if (height == 0) {			
+		if (height == 0) {
 			myContent.contextPut("iframeHeight", 600);
-			contentMapper.setAdjusteightAutomatically(true);
-			myContent.contextPut("adjustAutoHeight", Boolean.TRUE);			
-			
+			myContent.contextPut("adjustAutoHeight", Boolean.TRUE);
 		} else {
 			myContent.contextPut("iframeHeight", height);
-			contentMapper.setAdjusteightAutomatically(false);
-			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);			
+			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);	
 		}
 	}
 	
@@ -392,7 +404,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 						if (StringHelper.containsNonWhitespace(hash)) {
 							// force iframe reload to fix truncated page problem
 							changeCurrentURI(newUri + '#' + hash, true);
-							fireEvent(ureq, new NewIframeUriEvent(newUri));													
+							fireEvent(ureq, new NewIframeUriEvent(newUri));
 						}
 						if (newUri.startsWith("/")) {
 							// clean newUri to make equals check work
@@ -400,7 +412,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 						}
 						if (! newUri.equals(this.currentUri)) {
 							changeCurrentURI(newUri, false);
-							fireEvent(ureq, new NewIframeUriEvent(currentUri));													
+							fireEvent(ureq, new NewIframeUriEvent(currentUri));
 						}
 						// else probably a reload, no need to propagate new uri event
 					}
@@ -425,7 +437,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 
 	@Override
 	protected void doDispose() {
-		//contentMapper get's unregistered automatically with basic controller
+		// contentMapper get's unregistered automatically with basic controller
 		// remove us as listener if not already done
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 	}

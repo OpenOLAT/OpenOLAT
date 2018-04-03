@@ -69,7 +69,6 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	private boolean rawContent;
 	private boolean enableTextmarking;
-	private boolean adjusteightAutomatically;
 	
 	private String jsEncoding;
 	private String contentEncoding;
@@ -91,14 +90,13 @@ public class IFrameDeliveryMapper implements Mapper {
 		//for XStream
 	}
 	
-	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, boolean adjusteightAutomatically,
-			String frameId, String customCssURL, String themeBaseUri, String customHeaderContent) {
+	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, String frameId,
+			String customCssURL, String themeBaseUri, String customHeaderContent) {
 		
 		this.rootDir = rootDir;
 		
 		this.rawContent = rawContent;
 		this.enableTextmarking = enableTextmarking;
-		this.adjusteightAutomatically = adjusteightAutomatically;
 		
 		this.frameId = frameId;
 		this.customCssURL = customCssURL;
@@ -115,7 +113,6 @@ public class IFrameDeliveryMapper implements Mapper {
 				jQueryEnabled = false;
 				prototypeEnabled = false;
 				enableTextmarking = false;
-				adjusteightAutomatically = false;
 			} else {
 				jQueryEnabled = config.getjQueryEnabled();
 				prototypeEnabled = config.getPrototypeEnabled();
@@ -123,12 +120,6 @@ public class IFrameDeliveryMapper implements Mapper {
 					enableTextmarking = config.getGlossaryEnabled().booleanValue();
 				}
 				openolatCss = config.getOpenolatCss();
-
-				if(DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(config.getHeight())) {
-					adjusteightAutomatically = true;
-				} else if(StringHelper.containsNonWhitespace(config.getHeight())) {
-					adjusteightAutomatically = false;
-				}
 			}
 			
 			if(config.getContentEncoding() != null) {
@@ -144,10 +135,6 @@ public class IFrameDeliveryMapper implements Mapper {
 		this.checkForInlineEvent = checkForInlineEvent;
 	}
 
-	public void setAdjusteightAutomatically(boolean adjusteightAutomatically) {
-		this.adjusteightAutomatically = adjusteightAutomatically;
-	}
-	
 	public void setEnableTextmarking(boolean enableTextmarking) {
 		this.enableTextmarking = enableTextmarking;
 	}
@@ -359,23 +346,15 @@ public class IFrameDeliveryMapper implements Mapper {
 		
 		// Load some iframe.js helper code
 		sb.append("\n<script type=\"text/javascript\">\n/* <![CDATA[ */\n");
-		// Set the iframe id, used by the resize function. Important to set before iframe.js is loaded
+		// Set the iframe id. Important to set before iframe.js is loaded.
 		sb.append("b_iframeid=\"").append(frameId).append("\";");
 		sb.append("b_isInlineUri=").append(Boolean.valueOf(addCheckForInlineEvents).toString()).append(";");
 		sb.append("\n/* ]]> */\n</script>");
 		sb.appendStaticJs("js/openolat/iframe.js");
+		sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
 
-		// Resize frame to fit height of html page. 
-		// Do this only when there is some content available. This can be false when
-		// the content is written all dynamically via javascript. In this cases, the
-		// resizeing is meaningless anyway. 
 		if (parser.getHtmlContent().length() > 0) {
 			sb.append("\n<script type=\"text/javascript\">\n/* <![CDATA[ */\n");
-			// register the resize code to be executed on document load and click events
-			if (adjusteightAutomatically) {
-				sb.append("b_addOnloadEvent(b_sizeIframe);");		
-				sb.append("b_addOnclickEvent(b_sizeIframe);");		
-			}
 			// register the tooltips enabling on document load event
 			sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
 			if (addCheckForInlineEvents) {
@@ -394,6 +373,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(anchorFirefoxWorkaround) {
 				sb.append("b_addOnloadEvent(b_anchorFirefoxWorkaround);");
 			}
+			
 			sb.append("\n/* ]]> */\n</script>");
 		}		
 

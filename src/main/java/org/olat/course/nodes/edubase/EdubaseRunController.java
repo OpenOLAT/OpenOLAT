@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -92,6 +93,9 @@ public class EdubaseRunController extends BasicController {
 		EdubaseViewHelper edubaseViewHelper = new EdubaseViewHelper(getTranslator());
 		container.contextPut("helper", edubaseViewHelper);
 		container.contextPut("run", EVENT_RUN);
+		
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
+		container.put("js", js);
 
 		return container;
 	}

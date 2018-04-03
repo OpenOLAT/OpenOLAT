@@ -3,20 +3,19 @@
 		$r.render("command.download")
 	#end
 	
+	## NOTE:  allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" is necessary for the mediaelement video player to play videos in fullscreen
 	#if ($isAbsoluteURI)
-		## NOTE:  allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  is necessary for the mediaelement video player to play videos in fullscreen
 		<iframe name="$frameId" id="$frameId" src="${currentURI}" frameborder="0" title="$r.translateInAttribute("iframe.content")" height="$iframeHeight" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-		#if($adjustAutoHeight)
+	#else
+		<iframe name="$frameId" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+	#end
+	
+	#if($adjustAutoHeight)
 		<script type="text/javascript">
 		/* <![CDATA[ */
-			## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
-				jQuery(function() {b_resizeIframeToMainMaxHeight("$frameId");});		
-		/* ]]> */ 
+			registerIFrameAndObserve("$frameId", $debug);
+		/* ]]> */
 		</script>
-		#end
-	#else
-		## NOTE:  allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  is necessary for the mediaelement video player to play videos in fullscreen
-		<iframe name="$frameId" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" ></iframe>
 	#end
 	$r.render("newUriEvent")
 </div>
