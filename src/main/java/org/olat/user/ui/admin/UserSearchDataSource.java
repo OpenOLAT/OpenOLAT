@@ -25,13 +25,13 @@ import java.util.Locale;
 
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -40,7 +40,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSearchDataSource implements FlexiTableDataSourceDelegate<UserPropertiesRow> {
+public class UserSearchDataSource implements FlexiTableDataSourceDelegate<IdentityPropertiesRow> {
 	
 	private final SearchIdentityParams searchParams;
 	private final IdentityPowerSearchQueries searchQuery;
@@ -61,14 +61,19 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<UserPr
 	}
 
 	@Override
-	public List<UserPropertiesRow> reload(List<UserPropertiesRow> rows) {
+	public List<IdentityPropertiesRow> reload(List<IdentityPropertiesRow> rows) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public ResultInfos<UserPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
+	public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		List<UserPropertiesRow> rows = searchQuery.getIdentitiesByPowerSearch(searchParams, userPropertyHandlers, locale, firstResult, maxResults);
+		SortKey sortKey = null;
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			sortKey = orderBy[0];
+		}
+		List<IdentityPropertiesRow> rows = searchQuery
+				.getIdentitiesByPowerSearch(searchParams, userPropertyHandlers, locale, sortKey, firstResult, maxResults);
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 	}
 }

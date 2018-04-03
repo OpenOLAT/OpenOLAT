@@ -19,12 +19,12 @@
  */
 package org.olat.user.ui.admin;
 
+import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
-import org.olat.user.UserPropertiesRow;
 
 /**
  * 
@@ -32,19 +32,21 @@ import org.olat.user.UserPropertiesRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<UserPropertiesRow> {
+public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> {
 	
-	public UserSearchTableModel(FlexiTableDataSourceDelegate<UserPropertiesRow> source, FlexiTableColumnModel columnModel) {
+	public UserSearchTableModel(FlexiTableDataSourceDelegate<IdentityPropertiesRow> source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		UserPropertiesRow userRow = getObject(row);
+		IdentityPropertiesRow userRow = getObject(row);
 		if(col < UserSearchTableController.USER_PROPS_OFFSET) {
 			switch(UserCols.values()[col]) {
 				case id: return userRow.getIdentityKey();
 				case username: return userRow.getIdentityName();
+				case creationDate: return userRow.getCreationDate();
+				case lastLogin: return userRow.getLastLogin();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -55,13 +57,15 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<UserP
 	}
 	
 	@Override
-	public DefaultFlexiTableDataSourceModel<UserPropertiesRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> createCopyWithEmptyList() {
 		return new UserSearchTableModel(null, getTableColumnModel());
 	}
 	
 	public enum UserCols implements FlexiSortableColumnDef {
 		id("table.identity.id"),
 		username("table.identity.name"),
+		creationDate("table.identity.creationdate"),
+		lastLogin("table.identity.lastlogin"),
 		action("table.header.action");
 		
 		private final String i18nKey;

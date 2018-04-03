@@ -49,7 +49,8 @@ public class BinderPublicationPage {
 	public BinderMemberWizardPage addMember() {
 		By memberBy = By.cssSelector("a.o_sel_pf_access_member");
 		browser.findElement(memberBy).click();
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalWizard(browser);
 		return new BinderMemberWizardPage(browser);
 	}
 	

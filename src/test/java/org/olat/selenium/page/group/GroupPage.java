@@ -268,8 +268,7 @@ public class GroupPage {
 	
 	private GroupPage enableTool(Tool tool) {
 		By checkToolsBy = tool.getCheckboxBy();
-		WebElement checkToolEl = browser.findElement(checkToolsBy);
-		checkToolEl.click();
+		browser.findElement(checkToolsBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(tool.getMenuItemBy(), 2, browser);
 		return this;
@@ -277,9 +276,9 @@ public class GroupPage {
 	
 	public MembersWizardPage addMember() {
 		By addMemberBy = By.className("o_sel_group_add_member");
-		WebElement addMemberButton = browser.findElement(addMemberBy);
-		addMemberButton.click();
+		browser.findElement(addMemberBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalWizard(browser);
 		return new MembersWizardPage(browser);
 	}
 	

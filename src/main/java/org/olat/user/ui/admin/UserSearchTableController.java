@@ -28,6 +28,7 @@ import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
@@ -106,7 +107,7 @@ public class UserSearchTableController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.id, "select"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.id));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.username, "select"));
 		}
 		
@@ -120,6 +121,8 @@ public class UserSearchTableController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.creationDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.lastLogin));
 		
 		if(vCard) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.vcard", translate("table.identity.vcard"), "vcard"));
@@ -187,7 +190,7 @@ public class UserSearchTableController extends FormBasicController {
 		stackPanel.pushController(fullName, userAdminCtr);
 	}
 	
-	private final class EmptyDataSource implements FlexiTableDataSourceDelegate<UserPropertiesRow> {
+	private final class EmptyDataSource implements FlexiTableDataSourceDelegate<IdentityPropertiesRow> {
 
 		@Override
 		public int getRowCount() {
@@ -195,12 +198,12 @@ public class UserSearchTableController extends FormBasicController {
 		}
 
 		@Override
-		public List<UserPropertiesRow> reload(List<UserPropertiesRow> rows) {
+		public List<IdentityPropertiesRow> reload(List<IdentityPropertiesRow> rows) {
 			return Collections.emptyList();
 		}
 
 		@Override
-		public ResultInfos<UserPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
+		public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
 				List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 			return new DefaultResultInfos<>();
 		}

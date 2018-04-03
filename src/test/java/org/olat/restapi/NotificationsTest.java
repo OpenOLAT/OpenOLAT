@@ -131,6 +131,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 			JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-3");
 			//for the news
 			organisationService.addMember(userSubscriberId, OrganisationRoles.usermanager);
+			organisationService.addMember(userAndForumSubscriberId, OrganisationRoles.usermanager);
 			
 			SubscriptionContext subContext = usersSubscriptionManager.getNewUsersSubscriptionContext();
 			PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();

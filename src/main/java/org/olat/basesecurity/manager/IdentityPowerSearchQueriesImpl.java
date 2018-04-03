@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +34,11 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
-import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,7 +61,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		StringBuilder sb = new StringBuilder(5000);
 		sb.append("select count(ident.key) from org.olat.core.id.Identity as ident ")
 		  .append(" inner join ident.user as user ");
-		Number count = createIdentitiesByPowerQuery(params, sb, Number.class).getSingleResult();
+		Number count = createIdentitiesByPowerQuery(params, null, sb, Number.class).getSingleResult();
 		CodeHelper.printNanoTime(start, "Count identity");
 		return count.intValue();
 	}
@@ -71,7 +73,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		StringBuilder sb = new StringBuilder(5000);
 		sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
 		  .append(" inner join fetch ident.user as user ");
-		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, sb, Identity.class);
+		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, null, sb, Identity.class);
 		if(firstResult >= 0) {
 			dbq.setFirstResult(firstResult);
 		}
@@ -84,19 +86,21 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	}
 
 	@Override
-	public List<UserPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale, int firstResult, int maxResults) {
+	public List<IdentityPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale, SortKey orderBy, int firstResult, int maxResults) {
 		long start = System.nanoTime();
 		StringBuilder sb = new StringBuilder(5000);
 		sb.append("select")
 		  .append(" ident.id as ident_id,")
-		  .append(" ident.name as ident_name,");
+		  .append(" ident.name as ident_name,")
+		  .append(" ident.creationDate as ident_cDate,")
+		  .append(" ident.lastLogin as ident_lDate,");
 		writeUserProperties("user", sb, userPropertyHandlers);
 		sb.append(" user.key as ident_user_id")
 		  .append(" from ").append(IdentityImpl.class.getCanonicalName()).append(" as ident ")
 		  .append(" inner join ident.user as user ");
 		
-		TypedQuery<Object[]> dbq = createIdentitiesByPowerQuery(params, sb, Object[].class);
+		TypedQuery<Object[]> dbq = createIdentitiesByPowerQuery(params, orderBy, sb, Object[].class);
 		if(firstResult >= 0) {
 			dbq.setFirstResult(firstResult);
 		}
@@ -104,7 +108,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			dbq.setMaxResults(maxResults);
 		}
 		List<Object[]> rawList = dbq.getResultList();
-		List<UserPropertiesRow> rows = new  ArrayList<>(rawList.size());
+		List<IdentityPropertiesRow> rows = new  ArrayList<>(rawList.size());
 		int numOfProperties = userPropertyHandlers.size();
 		for(Object rawObject:rawList) {
 			Object[] rawStat = (Object[])rawObject;
@@ -112,14 +116,15 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			
 			Long identityKey = ((Number)rawStat[pos++]).longValue();
 			String identityName = (String)rawStat[pos++];
+			Date creationDate = (Date)rawStat[pos++];
+			Date lastLogin = (Date)rawStat[pos++];
 
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
 			}
-			
-			UserPropertiesRow row = new UserPropertiesRow(identityKey, identityName, userProperties);
-			rows.add(row);
+
+			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, userProperties));
 		}
 		CodeHelper.printNanoTime(start, "Get user properties");
 		return rows;
@@ -132,13 +137,17 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}	
 	}
 
-	private <U> TypedQuery<U> createIdentitiesByPowerQuery(SearchIdentityParams params, StringBuilder sb, Class<U> resultClass) {
+	private <U> TypedQuery<U> createIdentitiesByPowerQuery(SearchIdentityParams params, SortKey orderBy, StringBuilder sb, Class<U> resultClass) {
 		if (hasWhereClause(params)) {
 			sb.append(" where ");
 			boolean needsAnd = createUserPropertiesQueryPart(params, sb);
 			needsAnd = createQueryPart(params, sb, needsAnd);
 			needsAnd = createAuthenticationProviderQueryPart(params, sb, needsAnd);
 			createDatesQueryPart(params, sb, needsAnd);
+		}
+		
+		if(orderBy != null) {
+			orderBy(sb, orderBy);
 		}
 		
 		// create query object now from string
@@ -181,9 +190,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			
 		if(params.hasOrganisationParents()) {
 			needsAnd = checkAnd(sb, needsAnd);
-			sb.append(" exists (select orgmember.key from bgroupmember as orgmember ")
+			sb.append(" ident.key in (select orgmember.identity.key from bgroupmember as orgmember ")
 			  .append("  inner join organisation as org on (org.group.key=orgmember.group.key)")
-			  .append("  where orgmember.identity.key=ident.key and ");
+			  .append("  where ");
 			sb.append("(");
 			for(int i=0; i<params.getOrganisationParents().size(); i++) {
 				if(i > 0) sb.append(" or ");
@@ -229,8 +238,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				sb.append("ident.externalId is null");
 			}	
 		}
-    
-		
 		
 		if (params.getStatus() != null) {
 			if (params.getStatus().equals(Identity.STATUS_VISIBLE_LIMIT)) {
@@ -246,7 +253,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
-
 	private boolean createAuthenticationProviderQueryPart(SearchIdentityParams params, StringBuilder sb, boolean needsAnd) {	
 		// append query for authentication providers
 		if (params.hasAuthProviders()) {
@@ -388,6 +394,30 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			sb.append(" ident.lastLogin <= :lastloginBefore ");
 		}
 		return needsAnd;
+	}
+	
+	private void orderBy(StringBuilder sb, SortKey orderBy) {
+		if(orderBy == null) return;
+		
+		switch(orderBy.getKey()) {
+			case "id":
+			case "key":
+				sb.append(" order by ident.key ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
+			case "creationDate":
+				sb.append(" order by ident.creationDate ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
+			case "lastLogin":
+				sb.append(" order by ident.lastLogin ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
+			case "name":
+			case "username":
+				sb.append(" order by lower(ident.name) ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
+			default:
+				sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
+		}
 	}
 	
 	private void fillParameters(SearchIdentityParams params, TypedQuery<?> dbq) {

@@ -22,8 +22,9 @@ package org.olat.basesecurity;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
-import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -38,7 +39,7 @@ public interface IdentityPowerSearchQueries {
 	
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults);
 	
-	public List<UserPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale, int firstResult, int maxResults);
+	public List<IdentityPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale, SortKey orderBy, int firstResult, int maxResults);
 
 }

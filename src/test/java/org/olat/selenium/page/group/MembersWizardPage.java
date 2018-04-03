@@ -95,8 +95,9 @@ public class MembersWizardPage {
 		OOGraphene.clickAndWait(searchBy, browser);
 		
 		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]");
-		OOGraphene.waitElement(selectAll, 5, browser);
+		OOGraphene.waitElement(selectAll, browser);
 		browser.findElement(selectAll).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

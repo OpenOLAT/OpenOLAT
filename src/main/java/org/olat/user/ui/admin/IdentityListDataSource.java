@@ -24,13 +24,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.id.Identity;
-import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -39,14 +39,14 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityListDataSource implements FlexiTableDataSourceDelegate<UserPropertiesRow> {
+public class IdentityListDataSource implements FlexiTableDataSourceDelegate<IdentityPropertiesRow> {
 	
-	private final List<UserPropertiesRow> userRows;
+	private final List<IdentityPropertiesRow> userRows;
 	
 	public IdentityListDataSource(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		userRows = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
-			userRows.add(new UserPropertiesRow(identity, userPropertyHandlers, locale));
+			userRows.add(new IdentityPropertiesRow(identity, userPropertyHandlers, locale));
 		}
 	}
 
@@ -56,12 +56,12 @@ public class IdentityListDataSource implements FlexiTableDataSourceDelegate<User
 	}
 
 	@Override
-	public List<UserPropertiesRow> reload(List<UserPropertiesRow> rows) {
+	public List<IdentityPropertiesRow> reload(List<IdentityPropertiesRow> rows) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public ResultInfos<UserPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
+	public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		return new DefaultResultInfos<>(userRows.size(), -1, userRows);
 	}
