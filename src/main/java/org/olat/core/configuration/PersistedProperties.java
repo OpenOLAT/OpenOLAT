@@ -366,7 +366,11 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		synchronized (configuredProperties) { // make read/write save in VM
 			String oldValue = configuredProperties.getProperty(propertyName);
 			if (oldValue == null || !oldValue.equals(value)) {
-				configuredProperties.setProperty(propertyName, value);
+				if(value == null) {
+					configuredProperties.remove(propertyName);
+				} else {
+					configuredProperties.setProperty(propertyName, value);
+				}
 				propertiesDirty = true;
 				if (saveConfiguration) savePropertiesAndFireChangedEvent();
 			}
