@@ -104,6 +104,7 @@ public class FolderPage {
 	
 	public FolderPage uploadFile(File file) {
 		By newFileBy = By.className("o_bc_upload");
+		OOGraphene.waitElement(newFileBy, browser);
 		browser.findElement(newFileBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
