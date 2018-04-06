@@ -231,8 +231,10 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null);
 		Assert.assertFalse(results.isEmpty()); 
 
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_DELETED);
-		Assert.assertFalse(results.isEmpty());
+		List<Identity> deletedIdentities = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_DELETED);
+		for(Identity deletedIdentity:deletedIdentities) {
+			Assert.assertEquals(Identity.STATUS_DELETED, deletedIdentity.getStatus());
+		}
 
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, groups1, null, null, null, null, null, null);
 		Assert.assertFalse(results.isEmpty());
@@ -596,9 +598,11 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		assertTrue(results.size()>0); 
 		int numberOfAllUsers = results.size();
 
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_DELETED);
-		assertTrue(results.size() >0);
-		int numberOfDeletedUsers = results.size();
+		List<Identity> deletedIdentities = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_DELETED);
+		for(Identity deletedIdentity:deletedIdentities) {
+			Assert.assertEquals(Identity.STATUS_DELETED, deletedIdentity.getStatus());
+		}
+		int numberOfDeletedUsers = deletedIdentities.size();
 
 		Date createdAfter = before;
 		Date createdBefore = after;
