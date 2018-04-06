@@ -27,17 +27,16 @@ package org.olat.core.gui.dev.controller;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.util.FileUtils;
@@ -59,90 +58,70 @@ import de.java2html.options.JavaSourceConversionOptions;
 public class SourceViewController extends BasicController {
 	
 	private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=utf-8";
-	private VelocityContainer content;
-	private Link viewJSource, viewVeloctiySource;
-	private Class<?> clazz;
-	private VelocityContainer vc, sourceview;
-	private CloseableModalController view;
-	private final static String HTML_START = "<html><body>";
-	private final static String HTML_STOP = "</body></html>";
+	
+	private Link viewJSource;
+	private Link viewVelocitySource;
+	private final Class<?> clazz;
+	private final VelocityContainer vc;
+	private final VelocityContainer content;
+	private static final String HTML_START = "<html><head><title>Code</title></head><body>";
+	private static final String HTML_STOP = "</body></html>";
 
 	public SourceViewController(UserRequest ureq, WindowControl control, Class<?> clazz, VelocityContainer vc) {
 		super(ureq, control);
 		this.clazz = clazz;
 		this.vc = vc;
-		sourceview = createVelocityContainer("sourceview");
+		
 		content = createVelocityContainer("sourcecontrols");
-
 		viewJSource = LinkFactory.createLink("jsource", content, this);
 		viewJSource.setTarget("_blank");
-		
-		viewVeloctiySource = LinkFactory.createLink("vsource", content, this);
+		viewVelocitySource = LinkFactory.createLink("vsource", content, this);
+		viewVelocitySource.setTarget("_blank");
 		
 		putInitialPanel(content);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == viewVeloctiySource) {
-			String velocityTemplatePath  = WebappHelper.getSourcePath()+"/"+vc.getPage();
-			String vcContent = FileUtils.load(new File(velocityTemplatePath), "utf-8");
-			sourceview.contextPut("content", vcContent);
-			sourceview.contextPut("vcname", vc.getPage());
-			view = new CloseableModalController(getWindowControl(),"close...", sourceview);
-			listenTo(view);
-			view.activate();
-			
+		if (source == viewVelocitySource) {
+			try {
+				String velocityTemplatePath  = WebappHelper.getSourcePath() + "/" + vc.getPage();
+				MediaResource mr = showVelocitySource(velocityTemplatePath);
+				ureq.getDispatchResult().setResultingMediaResource(mr);
+			} catch (IOException e) {
+				logError("", e);
+			}
 		} else if (source == viewJSource) {
-			
-			//Parse the raw text to a JavaSource object
-			JavaSource jsource = null;
 			try {
 				String className = clazz.getCanonicalName();
-				className = className.replace('.', '/');
-				String sourcePath = WebappHelper.getSourcePath()+"/"+className +".java";
-				jsource = new JavaSourceParser().parse(new File(sourcePath));
+				MediaResource mr = showjavaSource(className);
+				ureq.getDispatchResult().setResultingMediaResource(mr);
 			} catch (IOException e) {
-			  showInfo("todo");
+				logError("", e);
 			}
-	
-			//Create a converter and write the JavaSource object as Html
-			JavaSource2HTMLConverter converter = new JavaSource2HTMLConverter();
-			StringWriter writer = new StringWriter(); 
-			writer.append(HTML_START);
-			try {
-				 JavaSourceConversionOptions options = JavaSourceConversionOptions.getDefault();
-				 options.setShowLineNumbers(true);
-			  converter.convert(jsource, options, writer);
-			} catch (IOException e) {
-				//
-			}
-			StringMediaResource mr = new StringMediaResource();
-			mr.setContentType(TEXT_HTML_CHARSET_UTF_8);
-			writer.append(HTML_STOP);
-			mr.setData(writer.toString());
-			ureq.getDispatchResult().setResultingMediaResource(mr);
 		}
-
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == view) {
-			
+	public static MediaResource showVelocitySource(String velocityTemplatePath) throws IOException {
+		File file = new File(velocityTemplatePath);
+		StringWriter writer = new StringWriter(); 
+		writer.append(HTML_START);
+		if (file.exists()) {
+			writer.append(FileUtils.load(file, "UTF-8"));
+		} else {
+			appendError(writer, velocityTemplatePath);
 		}
+		writer.append(HTML_STOP);
+		
+		StringMediaResource mr = new StringMediaResource();
+		mr.setContentType(TEXT_HTML_CHARSET_UTF_8);
+		mr.setData(writer.toString());
+		return mr;
 	}
 	
 	/**
@@ -152,27 +131,31 @@ public class SourceViewController extends BasicController {
 	 * @throws IOException
 	 */
 	public static MediaResource showjavaSource(String cl) throws IOException {
-		JavaSource jsource = null;
 		cl = cl.replace('.', '/');
-		String javaSourcePath  = WebappHelper.getSourcePath()+"/"+cl+".java";
+		String javaSourcePath  = WebappHelper.getSourcePath() + "/" + cl + ".java";
 		File file = new File(javaSourcePath);
 		StringWriter writer = new StringWriter(); 
 		writer.append(HTML_START);
 		if (file.exists()) {
-			jsource = new JavaSourceParser().parse(file);
+			JavaSource jsource = new JavaSourceParser().parse(file);
 			//Create a converter and write the JavaSource object as Html
 			JavaSource2HTMLConverter converter = new JavaSource2HTMLConverter();
 			converter.convert(jsource, JavaSourceConversionOptions.getDefault(), writer);
 		} else {
-			writer.append("<html><body><h3>The source file could not be found in the following path:<br>"+javaSourcePath+"<br>Check if configured source path in brasatoconfig.xml is correct.</h3></body></html>");
+			appendError(writer, javaSourcePath);
 		}
+		writer.append(HTML_STOP);
 		
 		StringMediaResource mr = new StringMediaResource();
 		mr.setContentType(TEXT_HTML_CHARSET_UTF_8);
-		writer.append(HTML_STOP);
 		mr.setData(writer.toString());
 		return mr;
-		
+	}
+	
+	private static void  appendError(Writer writer, String sourcePath) throws IOException {
+		writer.append("<h3>The source file could not be found in the following path:<br>");
+		writer.append(sourcePath);
+		writer.append("<br>Check if configured source path in olat.local.properties is correct.</h3>");
 	}
 
 }

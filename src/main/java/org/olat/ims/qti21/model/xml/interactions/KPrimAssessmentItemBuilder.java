@@ -273,6 +273,12 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	public List<SimpleAssociableChoice> getKprimChoices() {
 		return matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices();
 	}
+	
+	public void setKprimChoices(List<SimpleAssociableChoice> choices) {
+		SimpleMatchSet matchSet = matchInteraction.getSimpleMatchSets().get(0);
+		matchSet.getSimpleAssociableChoices().clear();
+		matchSet.getSimpleAssociableChoices().addAll(new ArrayList<>(choices));
+	}
 
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {

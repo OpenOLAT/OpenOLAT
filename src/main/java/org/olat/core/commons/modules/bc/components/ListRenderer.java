@@ -373,7 +373,7 @@ public class ListRenderer {
 			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 			License license = metaInfoFactory.getLicense(metaInfo);
 			LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
-			licenseRenderer.render(sb, license);
+			licenseRenderer.render(sb, license, true);
 			sb.append("</td><td>");
 		}
 

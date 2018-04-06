@@ -25,7 +25,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -360,9 +362,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		TestSessionState testSessionState = qtiService.loadTestSessionState(session);
+		// use mutable maps to allow updates
+		Map<Identity,AssessmentTestSession> lastSessions = new HashMap<>();
+		lastSessions.put(assessedIdentity, session);
+		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
+		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, subIdent, testEntry,
-				resolvedAssessmentTest, manifestBuilder, Collections.singletonMap(assessedIdentity, session),
-				Collections.singletonMap(assessedIdentity, testSessionState));
+				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, session, assessedIdentity);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("correction"), correctionCtrl);

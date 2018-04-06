@@ -295,7 +295,11 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		if(scoreEl == null) {
 			return overrideAutoScore;
 		} else if (StringHelper.containsNonWhitespace(scoreEl.getValue())) {
-			return new BigDecimal(scoreEl.getValue());
+			String mScore = scoreEl.getValue();
+			if(mScore.indexOf(',') >= 0) {
+				mScore = mScore.replace(",", ".");
+			}
+			return new BigDecimal(mScore);
 		}
 		return null;
 	}
@@ -371,24 +375,42 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
 			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
 			
-			double score = Double.parseDouble(el.getValue());
-			boolean boundariesOk = true;
-			if(minScore != null && score < minScore.doubleValue()) {
-				boundariesOk &= false;
+			try {
+				double score = parseDouble(el);
+				boolean boundariesOk = true;
+				if(minScore != null && score < minScore.doubleValue()) {
+					boundariesOk &= false;
+				}
+				if(maxScore != null && score > maxScore.doubleValue()) {
+					boundariesOk &= false;
+				}
+				
+				if(!boundariesOk) {
+					el.setErrorKey("correction.min.max.score", new String[]{
+						AssessmentHelper.getRoundedScore(minScore),  AssessmentHelper.getRoundedScore(maxScore)
+					});
+				}
+				allOk &= boundariesOk;
+			} catch (NumberFormatException e) {
+				el.setErrorKey("error.double.format", null);
+				allOk &= false;
 			}
-			if(maxScore != null && score > maxScore.doubleValue()) {
-				boundariesOk &= false;
-			}
-			
-			if(!boundariesOk) {
-				el.setErrorKey("correction.min.max.score", new String[]{
-					AssessmentHelper.getRoundedScore(minScore),  AssessmentHelper.getRoundedScore(maxScore)
-				});
-			}
-			allOk &= boundariesOk;
 		}
 		
 		return allOk;
+	}
+	
+	private double parseDouble(TextElement textEl) throws NumberFormatException {
+		String scoreStr = textEl.getValue();
+		if(!StringHelper.containsNonWhitespace(scoreStr)) {
+			throw new NumberFormatException();
+		}
+		int index = scoreStr.indexOf(',');
+		if(index >= 0) {
+			scoreStr = scoreStr.replace(',', '.');
+			return Double.parseDouble(scoreStr);
+		}
+		return Double.parseDouble(scoreStr);
 	}
 	
 	private void doToggleSolution() {
@@ -439,6 +461,9 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		public BigDecimal getNewScore() {
 			String mScore = newScoreEl.getValue();
 			if(StringHelper.containsNonWhitespace(mScore)) {
+				if(mScore.indexOf(',') >= 0) {
+					mScore = mScore.replace(",", ".");
+				}
 				return new BigDecimal(mScore);
 			}
 			return null;

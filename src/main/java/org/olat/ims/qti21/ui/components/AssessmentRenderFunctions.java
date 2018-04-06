@@ -632,7 +632,7 @@ public class AssessmentRenderFunctions {
   <xsl:function name="qw:convert-link" as="xs:string">
     <xsl:param name="uri" as="xs:string"/>
     <xsl:choose>
-      <xsl:when test="starts-with($uri, 'http:') or starts-with($uri, 'https:') or starts-with($uri, 'mailto:')">
+      <xsl:when test="starts-with($uri, 'http:') or starts-with($uri, 'https:') or starts-with($uri, 'mailto:') or starts-with($uri, 'data:')">
         <xsl:sequence select="$uri"/>
       </xsl:when>
       <xsl:otherwise>
@@ -644,7 +644,7 @@ public class AssessmentRenderFunctions {
 	 */
 	
 	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
-		if(uri != null && (uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:"))) {
+		if(uri != null && (uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:") || uri.startsWith("data:"))) {
 			return uri;
 		}
 		

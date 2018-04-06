@@ -955,27 +955,21 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				logError("CANNOT_FINISH_LINEAR_TEST_ITEM", null);
                 return;
             }
-		} catch (QtiCandidateStateException e) {
-            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_FINISH_LINEAR_TEST_ITEM, e);
-         	logError("CANNOT_FINISH_LINEAR_TEST_ITEM", e);
-         	return;
 		} catch (RuntimeException e) {
 			candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_FINISH_LINEAR_TEST_ITEM, e);
          	logError("CANNOT_FINISH_LINEAR_TEST_ITEM", e);
-			return;// handleExplosion(e, candidateSession);
+			return;
 		}
 		 
 		// Update state
 		final Date requestTimestamp = ureq.getRequestTimestamp();
 	    final TestPlanNode nextItemNode = testSessionController.advanceItemLinear(requestTimestamp);
 	    
-	    //boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null; 
-
+	    boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null;
 	    // Record current result state
-	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(requestTimestamp, testSessionState, false);
-
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(requestTimestamp, testSessionState, terminated);
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
-	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
+	    if (terminated) {
 	    		candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
 	    			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
 	    }
