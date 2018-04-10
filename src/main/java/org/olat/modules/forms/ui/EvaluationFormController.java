@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -88,6 +89,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EvaluationFormController extends FormBasicController implements ValidatingController {
 	
 	private static final OLog log = Tracing.createLoggerFor(EvaluationFormController.class);
+	
+	private static final String NO_RESPONSE_KEY = "enabled";
+	private static final String[] NO_RESPONSE_KEYS = new String[] { NO_RESPONSE_KEY };
 
 	private int count = 0;
 	private final Form form;
@@ -325,8 +329,21 @@ public class EvaluationFormController extends FormBasicController implements Val
 		}
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl);
+		MultipleSelectionElement noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+					getNoResponseValue());
+			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
+			if (response != null && response.isNoResponse()) {
+				noResponseEl.select(NO_RESPONSE_KEY, true);
+				sliderEl.setEnabled(false);
+			}
+		}
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) noResponseEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
 	
@@ -342,8 +359,21 @@ public class EvaluationFormController extends FormBasicController implements Val
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
 		sliderEl.setStep(1);
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl);
+		MultipleSelectionElement noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+					getNoResponseValue());
+			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
+			if (response != null && response.isNoResponse()) {
+				noResponseEl.select(NO_RESPONSE_KEY, true);
+				sliderEl.setEnabled(false);
+			}
+		}
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) noResponseEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
 
@@ -381,8 +411,21 @@ public class EvaluationFormController extends FormBasicController implements Val
 				}
 			}
 		}
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl);
+		MultipleSelectionElement noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+					getNoResponseValue());
+			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
+			if (response != null && response.isNoResponse()) {
+				noResponseEl.select(NO_RESPONSE_KEY, true);
+				radioEl.setEnabled(false);
+			}
+		}
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
 		radioEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) noResponseEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
 	
@@ -467,17 +510,29 @@ public class EvaluationFormController extends FormBasicController implements Val
 			SingleSelection radioEl = (SingleSelection)source;
 			Object uobject = radioEl.getUserObject();
 			if(uobject instanceof SliderWrapper) {
-				String selectedKey = radioEl.getSelectedKey();
 				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
-				saveNumericalResponse(new BigDecimal(selectedKey), selectedKey, sliderWrapper.getId());
+				saveSliderResponse(sliderWrapper);
 			}
 		} else if(source instanceof SliderElement) {
 			SliderElement slider = (SliderElement)source;
 			Object uobject = slider.getUserObject();
 			if(uobject instanceof SliderWrapper) {
-				double value = slider.getValue();
 				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
-				saveNumericalResponse(BigDecimal.valueOf(value), Double.toString(value), sliderWrapper.getId());
+				saveSliderResponse(sliderWrapper);
+			}
+		} else if (source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement noResponseEl = (MultipleSelectionElement)source;
+			Object uobject = noResponseEl.getUserObject();
+			if(uobject instanceof SliderWrapper) {
+				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
+				boolean noAnswer = noResponseEl.isAtLeastSelected(1);
+				if (noAnswer) {
+					saveNoResponse(sliderWrapper.getId());
+				} else {
+					saveSliderResponse(sliderWrapper);
+				}
+				sliderWrapper.getFormItem().setEnabled(!noAnswer);
+				flc.setDirty(true);
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -509,6 +564,29 @@ public class EvaluationFormController extends FormBasicController implements Val
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void saveSliderResponse(SliderWrapper sliderWrapper) {
+		BigDecimal value = null;
+		SliderElement slider = sliderWrapper.getSliderEl();
+		if (slider != null) {
+			value = BigDecimal.valueOf(slider.getValue());
+		} else {
+			SingleSelection radioEl = sliderWrapper.getRadioEl();
+			if (radioEl != null && radioEl.isOneSelected()) {
+				String selectedKey = radioEl.getSelectedKey();
+				if (StringHelper.containsNonWhitespace(selectedKey)) {
+					value = new BigDecimal(selectedKey);
+				}
+			}
+		}
+		if (value != null) {
+			saveNumericalResponse(value, value.toPlainString(), sliderWrapper.getId());
+		} else {
+			EvaluationFormResponse response = identifierToResponses.get(sliderWrapper.getId());
+			evaluationFormManager.deleteResponse(response.getKey());
+			identifierToResponses.remove(sliderWrapper.getId());
+		}
 	}
 	
 	private void saveNumericalResponse(BigDecimal numericalValue, String stringuifiedReponse, String responseIdentifier) {
@@ -543,6 +621,18 @@ public class EvaluationFormController extends FormBasicController implements Val
 		updateCache(responseIdentifier, response);
 	}
 	
+	private void saveNoResponse(String responseIdentifier) {
+		if(evaluator == null || readOnly) return;
+		
+		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
+		if(response == null) {
+			response = evaluationFormManager.createNoResponse(responseIdentifier, session);
+		} else {
+			response = evaluationFormManager.updateNoResponse(response);
+		}
+		updateCache(responseIdentifier, response);
+	}
+
 	private void updateCache(String responseIdentifier, EvaluationFormResponse response) {
 		if(response != null) {
 			identifierToResponses.put(responseIdentifier, response);
@@ -588,5 +678,9 @@ public class EvaluationFormController extends FormBasicController implements Val
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private String[] getNoResponseValue() {
+		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>" + getTranslator().translate("no.response") + "</span>"};
 	}
 }

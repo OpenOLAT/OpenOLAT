@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,7 +70,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	
 	
 	@Test
-	public void createResponseforPortfolio() {
+	public void createResponseForPortfolio() {
 		//prepare a test case with the binder up to the page body
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("eva-1");
 		BinderImpl binder = binderDao.createAndPersist("Binder evaluation 1", "A binder with an evaluation", null, null);
@@ -96,11 +98,76 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		Assert.assertNotNull(response.getKey());
 		Assert.assertNotNull(response.getCreationDate());
 		Assert.assertNotNull(response.getLastModified());
+		Assert.assertFalse(response.isNoResponse());
 		Assert.assertEquals(session, response.getSession());
 		Assert.assertEquals(numericalValue, response.getNumericalResponse());
 		Assert.assertEquals(stringuifiedResponse, response.getStringuifiedResponse());
 		Assert.assertEquals(fileResponse, response.getFileResponse());
 		Assert.assertEquals(responseIdentifier, response.getResponseIdentifier());
+	}
+	
+	@Test
+	public void shouldUpdateResponse() {
+		EvaluationFormSession session = createSession();
+		EvaluationFormResponse response = createResponse(session);
+		dbInstance.commit();
+		
+		BigDecimal numericalValue = new BigDecimal("3.3");
+		String stringuifiedResponse = numericalValue.toPlainString();
+		Path fileResponse = Paths.get("a", "b", "a", "c");
+		EvaluationFormResponse updatedResponse = evaluationFormResponseDao.updateResponse(numericalValue, stringuifiedResponse, fileResponse, response);
+		
+		assertThat(updatedResponse.getNumericalResponse()).isEqualTo(numericalValue);
+		assertThat(updatedResponse.getStringuifiedResponse()).isEqualTo(stringuifiedResponse);
+		assertThat(updatedResponse.getFileResponse()).isEqualTo(fileResponse);
+		assertThat(updatedResponse.isNoResponse()).isFalse();
+	}
+
+	@Test
+	public void shouldCreateNoResponse() {
+		EvaluationFormSession session = createSession();
+		String responseIdentifier = UUID.randomUUID().toString();
+		EvaluationFormResponse response = evaluationFormResponseDao.createNoResponse(responseIdentifier, session);
+		dbInstance.commit();
+		
+		assertThat(response.getCreationDate()).isNotNull();
+		assertThat(response.getLastModified()).isNotNull();
+		assertThat(response.getResponseIdentifier()).isEqualTo(responseIdentifier);
+		assertThat(response.getSession()).isEqualTo(session);
+		assertThat(response.isNoResponse()).isTrue();
+		assertThat(response.getNumericalResponse()).isNull();
+		assertThat(response.getStringuifiedResponse()).isNull();
+		assertThat(response.getFileResponse()).isNull();
+	}
+	
+	@Test
+	public void shouldUpdateNoResponse() {
+		EvaluationFormSession session = createSession();
+		EvaluationFormResponse initialResponse = createResponse(session);
+		dbInstance.commit();
+
+		EvaluationFormResponse response = evaluationFormResponseDao.updateNoResponse(initialResponse);
+
+		assertThat(response.isNoResponse()).isTrue();
+		assertThat(response.getNumericalResponse()).isNull();
+		assertThat(response.getStringuifiedResponse()).isNull();
+		assertThat(response.getFileResponse()).isNull();
+	}
+
+	private EvaluationFormResponse createResponse(EvaluationFormSession session) {
+		String responseIdentifier = UUID.randomUUID().toString();
+		BigDecimal numericalValue = new BigDecimal("2.2");
+		String stringuifiedResponse = numericalValue.toPlainString();
+		Path fileResponse = Paths.get("this", "is", "a", "path");
+		return evaluationFormResponseDao.createResponse(responseIdentifier, numericalValue, stringuifiedResponse,
+				fileResponse, session);
+	}
+
+	private EvaluationFormSession createSession() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("eva-resp");
+		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
+		EvaluationFormSession session = evaluationFormSessionDao.createSessionForPortfolio(id, null, formEntry);
+		return session;
 	}
 	
 	private RepositoryEntry createFormEntry(String displayname) {

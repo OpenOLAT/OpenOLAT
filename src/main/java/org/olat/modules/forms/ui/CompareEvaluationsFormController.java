@@ -150,12 +150,14 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		List<Identity> evaluatorIdentities = evaluators.stream().map(evaluator -> evaluator.getIdentity()).collect(Collectors.toList());
 		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluatorIdentities, anchor, EvaluationFormSessionStatus.done);
 		for(EvaluationFormResponse response:responses) {
-			List<EvaluationFormResponse> responseList = identifierToResponses.get(response.getResponseIdentifier());
-			if(responseList == null) {
-				responseList = new ArrayList<>();
-				identifierToResponses.put(response.getResponseIdentifier(), responseList);
+			if (!response.isNoResponse()) {
+				List<EvaluationFormResponse> responseList = identifierToResponses.get(response.getResponseIdentifier());
+				if(responseList == null) {
+					responseList = new ArrayList<>();
+					identifierToResponses.put(response.getResponseIdentifier(), responseList);
+				}
+				responseList.add(response);
 			}
-			responseList.add(response);
 		}
 	}
 	

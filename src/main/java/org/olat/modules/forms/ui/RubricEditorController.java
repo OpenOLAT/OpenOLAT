@@ -20,10 +20,8 @@
 package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -43,6 +42,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
+import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
@@ -65,14 +65,17 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_slider.name(), SliderType.continuous.name() };
 	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+	private final String[] showRespomseKey = new String[] { "show.no.response" };
 	
-	private List<StepLabelColumn> stepLabels;
+	private List<StepLabelColumn> stepLabels = new ArrayList<>();
 	private List<SliderRow> sliders = new ArrayList<>();
-	private Map<Integer,StepLabelColumn> stepToColumns = new HashMap<>();
 	
 	private FormLink saveButton;
-	private SingleSelection typeEl;
+	private SingleSelection sliderTypeEl;
+	private SingleSelection scaleTypeEl;
+	private TextElement nameEl;
 	private SingleSelection stepsEl;
+	private MultipleSelectionElement noAnswerEl;
 	private FormLink addSliderButton;
 	private FormLayoutContainer settingsLayout;
 	
@@ -95,21 +98,23 @@ public class RubricEditorController extends FormBasicController implements PageE
 		settingsLayout.setRootForm(mainForm);
 		formLayout.add("settings", settingsLayout);
 
+		nameEl = uifactory.addTextElement("rubric.name", 128, rubric.getName(), settingsLayout);
+		
 		String[] sliderTypeValues = new String[] { translate("slider.discrete"), translate("slider.discrete.slider"), translate("slider.continuous") };
-		typeEl = uifactory.addDropdownSingleselect("slider.type." + count.incrementAndGet(), "slider.type", settingsLayout, sliderTypeKeys, sliderTypeValues, null);
-		typeEl.addActionListener(FormEvent.ONCHANGE);
-		typeEl.setEnabled(!restrictedEdit);
+		sliderTypeEl = uifactory.addDropdownSingleselect("slider.type." + count.incrementAndGet(), "slider.type", settingsLayout, sliderTypeKeys, sliderTypeValues, null);
+		sliderTypeEl.addActionListener(FormEvent.ONCHANGE);
+		sliderTypeEl.setEnabled(!restrictedEdit);
 		boolean typeSelected = false;
 		if(rubric != null && rubric.getSliderType() != null) {
 			for(String sliderTypeKey:sliderTypeKeys) {
 				if(sliderTypeKey.equals(rubric.getSliderType().name())) {
-					typeEl.select(sliderTypeKey, true);
+					sliderTypeEl.select(sliderTypeKey, true);
 					typeSelected = true;
 				}
 			}
 		}
 		if(!typeSelected) {
-			typeEl.select(sliderTypeKeys[0], true);
+			sliderTypeEl.select(sliderTypeKeys[0], true);
 		}
 		
 		stepsEl = uifactory.addDropdownSingleselect("slider.steps." + count.incrementAndGet(), "slider.steps", settingsLayout, sliderStepKeys, sliderStepKeys, null);
@@ -128,6 +133,29 @@ public class RubricEditorController extends FormBasicController implements PageE
 		if(!stepSelected) {
 			stepsEl.select(sliderStepKeys[4], true);
 		}
+		
+		scaleTypeEl = uifactory.addDropdownSingleselect("scale.type." + count.incrementAndGet(), "rubric.scale.type",
+				settingsLayout, ScaleType.getKeys(), ScaleType.getValues(getTranslator()), null);
+		scaleTypeEl.addActionListener(FormEvent.ONCHANGE);
+		scaleTypeEl.setEnabled(!restrictedEdit);
+		boolean scaleSelected = false;
+		if(rubric != null && rubric.getScaleType() != null) {
+			for(String scaleTypeKey: ScaleType.getKeys()) {
+				if(scaleTypeKey.equals(rubric.getScaleType().getKey())) {
+					scaleTypeEl.select(scaleTypeKey, true);
+					scaleSelected = true;
+				}
+			}
+		}
+		if(!scaleSelected) {
+			scaleTypeEl.select(ScaleType.getKeys()[0], true);
+		}
+		
+		noAnswerEl = uifactory.addCheckboxesVertical("no.response." + count.incrementAndGet(),
+				"rubric.no.response.enabled", settingsLayout, showRespomseKey,
+				new String[] { translate("rubric.no.response.enabled.show") }, 1);
+		noAnswerEl.select(showRespomseKey[0], rubric.isNoResponseEnabled());
+		
 		updateTypeSettings();
 		updateSteps();
 		
@@ -155,12 +183,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private void updateSteps() {
 		List<StepLabelColumn> stepLabelColumns = new ArrayList<>();
-		if(stepsEl.isVisible() && stepsEl.isOneSelected()
-				&& (typeEl.isSelected(0) || typeEl.isSelected(1))) {
+		if (stepsEl.isVisible() && stepsEl.isOneSelected()
+				&& (sliderTypeEl.isSelected(0) || sliderTypeEl.isSelected(1))) {
 			int steps = Integer.parseInt(stepsEl.getSelectedKey());
 			for(int i=0; i<steps; i++) {
 				Integer step = new Integer(i);
-				StepLabelColumn col = stepToColumns.get(step);
+				StepLabelColumn col = stepLabels.size() > step? stepLabels.get(step): null;
 				if(col == null) {
 					String label = "";
 					if(rubric.getStepLabels() != null && i<rubric.getStepLabels().size()) {
@@ -172,7 +200,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 					textEl.setDisplaySize(4);
 					col = new StepLabelColumn(i, textEl);
 				}
-				
+				if (scaleTypeEl.isVisible() && scaleTypeEl.isOneSelected()) {
+					String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
+					ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
+					double stepValue = scaleType.getStepValue(steps, i + 1);
+					col.setExampleText(String.valueOf(stepValue));
+				} else {
+					col.removeExampleText();
+				}
 				stepLabelColumns.add(col);
 			}
 			
@@ -184,9 +219,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 	
 	private void updateTypeSettings() {
-		if(!typeEl.isOneSelected()) return;
+		if(!sliderTypeEl.isOneSelected()) return;
 		
-		SliderType selectedType = SliderType.valueOf(typeEl.getSelectedKey());
+		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
 		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider) {
 			stepsEl.setVisible(true);
 		} else if(selectedType == SliderType.continuous) {
@@ -234,10 +269,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addSliderButton == source) {
 			doAddSlider();
-		} else if(typeEl == source) {
+		} else if(sliderTypeEl == source) {
 			updateTypeSettings();
 			updateSteps();
 		} else if(stepsEl == source) {
+			updateSteps();
+		} else if (scaleTypeEl == source) {
 			updateSteps();
 		} else if(saveButton == source) {
 			if(validateFormLogic(ureq)) {
@@ -272,9 +309,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		typeEl.clearError();
-		if(!typeEl.isOneSelected()) {
-			typeEl.setErrorKey("form.legende.mandatory", null);
+		sliderTypeEl.clearError();
+		if(!sliderTypeEl.isOneSelected()) {
+			sliderTypeEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 
@@ -285,11 +322,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 	protected void formOK(UserRequest ureq) {
 		commitFields();
 		commitStepLabels();
+		
+		rubric.setName(nameEl.getValue());
 
-		String selectedType = typeEl.getSelectedKey();
-		SliderType type =  SliderType.valueOf(selectedType);
-		rubric.setSliderType(type);
-		if(type == SliderType.continuous) {
+		String selectedSliderType = sliderTypeEl.getSelectedKey();
+		SliderType sliderType =  SliderType.valueOf(selectedSliderType);
+		rubric.setSliderType(sliderType);
+		if(sliderType == SliderType.continuous) {
 			rubric.setStart(1);
 			rubric.setEnd(100);
 			rubric.setSteps(100);
@@ -300,12 +339,19 @@ public class RubricEditorController extends FormBasicController implements PageE
 			rubric.setSteps(steps);
 		}
 		
+		String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
+		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
+		rubric.setScaleType(scaleType);
+		
 		for(Iterator<Slider> sliderIt=rubric.getSliders().iterator(); sliderIt.hasNext(); ) {
 			Slider slider = sliderIt.next();
 			if(!StringHelper.containsNonWhitespace(slider.getStartLabel()) && !StringHelper.containsNonWhitespace(slider.getEndLabel())) {
 				sliderIt.remove();
 			}
 		}
+		
+		boolean noResonse = noAnswerEl.isAtLeastSelected(1);
+		rubric.setNoResponseEnabled(noResonse);
 		
 		rubricCtrl.updateForm();
 		
@@ -314,9 +360,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 	
 	private void commitStepLabels() {
-		if(!typeEl.isOneSelected()) return;
+		if(!sliderTypeEl.isOneSelected()) return;
 		
-		SliderType selectedType = SliderType.valueOf(typeEl.getSelectedKey());
+		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
 		if(selectedType == SliderType.discrete || selectedType == SliderType.discrete_slider) {
 			if(rubric.getStepLabels() == null) {
 				rubric.setStepLabels(new ArrayList<>());
@@ -378,6 +424,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 		public TextElement getStepLabelEl() {
 			return stepLabelEl;
+		}
+		
+		public void setExampleText(String example) {
+			stepLabelEl.setExampleKey("rubic.scale.example.value", new String[] {example});
+		}
+
+		public void removeExampleText() {
+			stepLabelEl.setExampleKey(null, null);
 		}
 	}
 	

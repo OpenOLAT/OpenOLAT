@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -34,8 +35,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
-import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
+import org.olat.modules.forms.ui.model.SliderWrapper;
 
 /**
  * 
@@ -44,6 +45,8 @@ import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
  *
  */
 public class RubricController extends FormBasicController {
+	
+	private static final String[] NO_RESPONSE_KEYS = new String[] { "enabled" };
 	
 	private int count = 0;
 	private final Rubric rubric;
@@ -94,7 +97,13 @@ public class RubricController extends FormBasicController {
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl);
+		MultipleSelectionElement noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+					getNoResponseValue());
+			noResponseEl.setEscapeHtml(false);
+		}
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
@@ -106,7 +115,13 @@ public class RubricController extends FormBasicController {
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
 		sliderEl.setStep(1);
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl);
+		MultipleSelectionElement noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+					getNoResponseValue());
+			noResponseEl.setEscapeHtml(false);
+		}
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
@@ -133,7 +148,14 @@ public class RubricController extends FormBasicController {
 		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
 		radioEl.setWidthInPercent(widthInPercent, true);
 
-		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl);
+		MultipleSelectionElement noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addCheckboxesVertical("no_resp_" + (count++),  flc, NO_RESPONSE_KEYS,
+					getNoResponseValue(), 0);
+			noResponseEl.setEscapeHtml(false);
+		}
+		
+		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
 		radioEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
@@ -148,6 +170,8 @@ public class RubricController extends FormBasicController {
 		//
 	}
 	
-	
+	private String[] getNoResponseValue() {
+		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>" + getTranslator().translate("no.response") + "</span>"};
+	}	
 
 }

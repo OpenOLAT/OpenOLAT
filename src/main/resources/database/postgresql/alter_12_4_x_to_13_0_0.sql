@@ -130,13 +130,6 @@ create index idx_cur_type_to_sub_type_idx on o_cur_element_type_to_type (fk_allo
 alter table o_bs_policy drop constraint FK9A1C5101E2E76DB;
 
 
-
-
-
-
-
-
-
-
-
+-- evaluation forms
+alter table o_eva_form_response add column e_no_response bool default false;
 

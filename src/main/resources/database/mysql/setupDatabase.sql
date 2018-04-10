@@ -1851,6 +1851,7 @@ create table o_eva_form_response (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   e_no_response bit default 0,
    e_responseidentifier varchar(64) not null,
    e_numericalresponse decimal default null,
    e_stringuifiedresponse mediumtext,

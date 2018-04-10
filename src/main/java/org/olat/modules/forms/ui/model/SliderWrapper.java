@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui.model;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.modules.forms.model.xml.Slider;
@@ -36,24 +37,27 @@ public class SliderWrapper {
 	private final Slider slider;
 	private final SliderElement sliderEl;
 	private final SingleSelection radioEl;
+	private final MultipleSelectionElement noResponseEl;
 	private final SliderOverviewElement overviewEl;
 	
-	public SliderWrapper(Slider slider, SingleSelection radioEl) {
-		this(slider, radioEl, null, null);
+	public SliderWrapper(Slider slider, SingleSelection radioEl, MultipleSelectionElement noResponseEl) {
+		this(slider, radioEl, null, noResponseEl, null);
 	}
 	
-	public SliderWrapper(Slider slider, SliderElement sliderEl) {
-		this(slider, null, sliderEl, null);
+	public SliderWrapper(Slider slider, SliderElement sliderEl, MultipleSelectionElement noResponseEl) {
+		this(slider, null, sliderEl, noResponseEl, null);
 	}
 	
 	public SliderWrapper(Slider slider, SliderOverviewElement overviewEl) {
-		this(slider, null, null, overviewEl);
+		this(slider, null, null, null, overviewEl);
 	}
 	
-	private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl, SliderOverviewElement overviewEl) {
+	private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl,
+			MultipleSelectionElement noResponseEl, SliderOverviewElement overviewEl) {
 		this.slider = slider;
 		this.radioEl = radioEl;
 		this.sliderEl = sliderEl;
+		this.noResponseEl = noResponseEl;
 		this.overviewEl = overviewEl;
 	}
 	
@@ -87,6 +91,10 @@ public class SliderWrapper {
 		return sliderEl;
 	}
 	
+	public MultipleSelectionElement getNoResponseEl() {
+		return noResponseEl;
+	}
+
 	public SliderOverviewElement getOverviewEl() {
 		return overviewEl;
 	}

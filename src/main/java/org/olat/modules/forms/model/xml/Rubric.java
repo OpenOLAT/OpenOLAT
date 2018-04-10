@@ -33,12 +33,15 @@ public class Rubric extends AbstractElement {
 	private static final long serialVersionUID = -8486210445435845568L;
 	
 	private SliderType sliderType;
+	private ScaleType scaleType;
 	private List<Slider> sliders = new ArrayList<>();
 	private List<StepLabel> stepLabels = new ArrayList<>();
 	
+	private String name;
 	private int start;
 	private int end;
 	private int steps;
+	private boolean noResponseEnabled;
 	
 	@Override
 	public String getType() {
@@ -51,6 +54,22 @@ public class Rubric extends AbstractElement {
 
 	public void setSliderType(SliderType sliderType) {
 		this.sliderType = sliderType;
+	}
+
+	public ScaleType getScaleType() {
+		return scaleType;
+	}
+
+	public void setScaleType(ScaleType scaleType) {
+		this.scaleType = scaleType;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public int getStart() {
@@ -75,6 +94,14 @@ public class Rubric extends AbstractElement {
 
 	public void setSteps(int steps) {
 		this.steps = steps;
+	}
+
+	public boolean isNoResponseEnabled() {
+		return noResponseEnabled;
+	}
+
+	public void setNoResponseEnabled(boolean noResponseEnabled) {
+		this.noResponseEnabled = noResponseEnabled;
 	}
 
 	public List<StepLabel> getStepLabels() {

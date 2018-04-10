@@ -1715,6 +1715,7 @@ create table o_eva_form_response (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   e_no_response bool default false,
    e_responseidentifier varchar(64) not null,
    e_numericalresponse decimal default null,
    e_stringuifiedresponse text,

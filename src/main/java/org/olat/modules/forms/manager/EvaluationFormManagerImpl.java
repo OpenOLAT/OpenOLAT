@@ -128,9 +128,23 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session) {
+		return evaluationFormResponseDao.createNoResponse(responseIdentifier, session);
+	}
+
+	@Override
+	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response) {
+		return evaluationFormResponseDao.updateNoResponse(response);
+	}
+
+	@Override
+	public void deleteResponse(Long key) {
+		evaluationFormResponseDao.deleteResponse(key);
+	}
+
+	@Override
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry) {
 		return evaluationFormSessionDao.isInUse(formEntry);
 	}
-	
-	
+
 }

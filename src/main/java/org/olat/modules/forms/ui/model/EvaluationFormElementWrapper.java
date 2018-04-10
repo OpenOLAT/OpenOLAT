@@ -100,6 +100,14 @@ public class EvaluationFormElementWrapper {
 		return false;
 	}
 	
+	public boolean isNoResponseEnabled() {
+		if (element instanceof Rubric) {
+			Rubric rubric = (Rubric) element;
+			return rubric.isNoResponseEnabled();
+		}
+		return false;
+	}
+	
 	public boolean isTextInput() {
 		return element instanceof TextInput;
 	}

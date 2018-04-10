@@ -4,10 +4,19 @@
 	
 	#if($r.isNotEmpty($stepLabels))
 	<div class="row">
-		<div class="col-sm-3"></div>
+		<div class="form-horizontal">
+			<label class="control-label col-sm-3">$r.translate("rubic.column.label")</label>
+		</div>
 		<div class="col-sm-6"><div class="form-inline">
 		#foreach($stepLabel in $stepLabels)
-			<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">$r.render($stepLabel.stepLabelEl)</div>
+			<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">
+				$r.render($stepLabel.stepLabelEl)
+				#if($f.hasExample($stepLabel.stepLabelEl.getComponent().getComponentName()))
+					<div class="help-block o_evaluation_example">
+						$r.render("${stepLabel.stepLabelEl.getComponent().getComponentName()}_EXAMPLE")
+					</div>
+				#end
+			</div>
 		#end
 		</div></div>
 		<div class="col-sm-3"></div>

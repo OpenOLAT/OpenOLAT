@@ -43,6 +43,13 @@ public interface EvaluationFormResponse extends CreateInfo, ModifiedInfo {
 	 */
 	public String getResponseIdentifier();
 	
+	/**
+	 * A response is present but the user did explicitly not answer the question.
+	 *
+	 * @return
+	 */
+	public boolean isNoResponse();
+	
 	public BigDecimal getNumericalResponse();
 	
 	public String getStringuifiedResponse();

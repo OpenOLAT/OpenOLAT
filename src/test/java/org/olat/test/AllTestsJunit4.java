@@ -361,6 +361,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
+	org.olat.modules.forms.model.xml.ScaleTypeTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceImplTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolUserDataDeletableTest.class,
 	org.olat.modules.qpool.manager.review.LowerLimitProviderTest.class,

@@ -52,18 +52,31 @@ public class EvaluationFormResponseDAO {
 	
 	public EvaluationFormResponse createResponse(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
 			Path fileResponse, EvaluationFormSession session) {
-		EvaluationFormResponseImpl response = new EvaluationFormResponseImpl();
-		response.setCreationDate(new Date());
-		response.setLastModified(response.getCreationDate());
-		response.setSession(session);
-		response.setResponseIdentifier(responseIdentifier);
+		EvaluationFormResponseImpl response = createResponse(responseIdentifier, session);
+		response.setNoResponse(false);
 		response.setFileResponse(fileResponse);
 		response.setNumericalResponse(numericalValue);
 		response.setStringuifiedResponse(stringuifiedResponse);
 		dbInstance.getCurrentEntityManager().persist(response);
 		return response;
 	}
+
+	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session) {
+		EvaluationFormResponseImpl response = createResponse(responseIdentifier, session);
+		response.setNoResponse(true);
+		dbInstance.getCurrentEntityManager().persist(response);
+		return response;
+	}
 	
+	private EvaluationFormResponseImpl createResponse(String responseIdentifier, EvaluationFormSession session) {
+		EvaluationFormResponseImpl response = new EvaluationFormResponseImpl();
+		response.setCreationDate(new Date());
+		response.setLastModified(response.getCreationDate());
+		response.setSession(session);
+		response.setResponseIdentifier(responseIdentifier);
+		return response;
+	}
+
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from evaluationformresponse as response")
@@ -101,9 +114,29 @@ public class EvaluationFormResponseDAO {
 			Path fileResponse, EvaluationFormResponse response) {
 		EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
 		evalResponse.setLastModified(new Date());
+		evalResponse.setNoResponse(false);
 		evalResponse.setNumericalResponse(numericalValue);
 		evalResponse.setStringuifiedResponse(stringuifiedResponse);
 		evalResponse.setFileResponse(fileResponse);
 		return dbInstance.getCurrentEntityManager().merge(response);
 	}
+
+	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response) {
+		EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
+		evalResponse.setLastModified(new Date());
+		evalResponse.setNoResponse(true);
+		evalResponse.setNumericalResponse(null);
+		evalResponse.setStringuifiedResponse(null);
+		evalResponse.setFileResponse(null);
+		return dbInstance.getCurrentEntityManager().merge(response);
+	}
+
+	public void deleteResponse(Long key) {
+		String query = "delete from evaluationformresponse response where response.key=:key";
+
+		dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("key", key)
+				.executeUpdate();
+	}
+
 }

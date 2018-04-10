@@ -1742,6 +1742,7 @@ create table o_eva_form_response (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
+   e_no_response number default 0,
    e_responseidentifier varchar2(64 char) not null,
    e_numericalresponse decimal default null,
    e_stringuifiedresponse clob,

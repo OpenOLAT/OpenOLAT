@@ -73,6 +73,12 @@ public interface EvaluationFormManager {
 	
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
 	
+	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session);
+	
+	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
+	
+	public void deleteResponse(Long key);
+
 	/**
 	 * Is there some sessions using this repository entry.
 	 * 
