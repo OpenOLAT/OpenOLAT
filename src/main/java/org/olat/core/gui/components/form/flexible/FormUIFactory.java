@@ -404,9 +404,13 @@ public class FormUIFactory {
 		formLayout.add(ss);
 		return ss;
 	}
-
+	
 	public SingleSelection addDropdownSingleselect(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
 		return addDropdownSingleselect(name, name, name, formLayout, theKeys, theValues, null);
+	}
+
+	public SingleSelection addDropdownSingleselect(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
+		return addDropdownSingleselect(name, name, i18nLabel, formLayout, theKeys, theValues, null);
 	}
 
 	/**

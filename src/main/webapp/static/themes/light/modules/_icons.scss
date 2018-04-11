@@ -653,6 +653,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_link:before { content: $fa-var-link;}
 .o_icon_yahoo:before { content: $fa-var-yahoo;}
 
+/* evaluation form */
+.o_icon_eva_sc:before { content: $fa-var-dot-circle-o; }
+
 /* Licenses */
 .o_icon_lic_add:before { content: $fa-var-plus-circle;}
 .o_icon_lic_public_domain:before, %o_icon_lic_public_domain { content:"\E810"; font-family: openolat; font-size: 120%; }

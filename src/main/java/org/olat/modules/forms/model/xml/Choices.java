@@ -19,34 +19,37 @@
  */
 package org.olat.modules.forms.model.xml;
 
-import org.olat.core.util.xml.XStreamHelper;
-
-import com.thoughtworks.xstream.XStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
- * Initial date: 7 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 11.04.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class FormXStream {
-	
-	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+public class Choices {
 
-	static {
-		xstream.alias("form", Form.class);
-		xstream.alias("spacer", Spacer.class);
-		xstream.alias("title", Title.class);
-		xstream.alias("rubric", Rubric.class);
-		xstream.alias("slider", Slider.class);
-		xstream.alias("fileupload", FileUpload.class);
-		xstream.alias("choice", Choice.class);
-		xstream.alias("choices", Choices.class);
-		xstream.alias("singlechoice", SingleChoice.class);
+	private List<Choice> choices = new ArrayList<>();
+	
+	public List<Choice> asList() {
+		return new ArrayList<>(choices);
+	}
+
+	public void addNotPresent(Choice choice) {
+		if (!choices.contains(choice)) {
+			choices.add(choice);
+		}
 	}
 	
-	public static XStream getXStream() {
-		return xstream;
+	public void remove(Choice choice) {
+		choices.remove(choice);
+	}
+	
+	public void swap(int i, int j) {
+		Choice temp = choices.get(i);
+		choices.set(i, choices.get(j));
+		choices.set(j, temp);
 	}
 
 }

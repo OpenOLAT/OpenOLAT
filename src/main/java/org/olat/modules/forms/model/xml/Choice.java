@@ -19,34 +19,53 @@
  */
 package org.olat.modules.forms.model.xml;
 
-import org.olat.core.util.xml.XStreamHelper;
-
-import com.thoughtworks.xstream.XStream;
-
 /**
  * 
- * Initial date: 7 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 11.04.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class FormXStream {
+public class Choice {
 	
-	private static final XStream xstream = XStreamHelper.createXStreamInstance();
-
-	static {
-		xstream.alias("form", Form.class);
-		xstream.alias("spacer", Spacer.class);
-		xstream.alias("title", Title.class);
-		xstream.alias("rubric", Rubric.class);
-		xstream.alias("slider", Slider.class);
-		xstream.alias("fileupload", FileUpload.class);
-		xstream.alias("choice", Choice.class);
-		xstream.alias("choices", Choices.class);
-		xstream.alias("singlechoice", SingleChoice.class);
+	private String id;
+	private String value;
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getValue() {
+		return value;
+	}
+	public void setValue(String value) {
+		this.value = value;
 	}
 	
-	public static XStream getXStream() {
-		return xstream;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Choice other = (Choice) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
 
 }
