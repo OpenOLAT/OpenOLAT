@@ -233,6 +233,8 @@ var BPlayer = {
 				mimeType = "video/youtube";
 			} else if(extension.indexOf('mp4?') == 0) {
 				mimeType = "video/mp4";
+			} else if(config.file.indexOf('openmeetings/recording') > 0) {
+				mimeType = "video/mp4";
 			} else {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}
