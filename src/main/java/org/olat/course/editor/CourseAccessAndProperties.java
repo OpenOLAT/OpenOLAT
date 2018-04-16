@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 /**
  * 
@@ -40,7 +41,7 @@ public class CourseAccessAndProperties {
 	private Boolean confirmationEmail;
 	
 	private List<OfferAccess> offerAccess;
-	private List<OfferAccess> deletedOfferAccess;
+	private List<Offer> deletedOffer;
 	
 	public CourseAccessAndProperties(RepositoryEntry re) {
 		this.repoEntry = re;
@@ -65,12 +66,12 @@ public class CourseAccessAndProperties {
 		this.offerAccess = offerAccess;
 	}
 
-	public List<OfferAccess> getDeletedOfferAccess() {
-		return deletedOfferAccess;
+	public List<Offer> getDeletedOffer() {
+		return deletedOffer;
 	}
 
-	public void setDeletedOfferAccess(List<OfferAccess> deletedOfferAccess) {
-		this.deletedOfferAccess = deletedOfferAccess;
+	public void setDeletedOffer(List<Offer> deletedOffer) {
+		this.deletedOffer = deletedOffer;
 	}
 
 	public RepositoryEntry getRepositoryEntry() {
