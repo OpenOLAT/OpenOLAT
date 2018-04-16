@@ -110,7 +110,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	private MultipleSelectionElement confirmationEmailEl;
 	private List<FormLink> addMethods = new ArrayList<>();
 	private List<OfferAccess> offerAccess = new ArrayList<>();
-	private List<OfferAccess> deletedOfferAccess = new ArrayList<>();
+	private List<Offer> deletedOffer = new ArrayList<>();
 	private final String displayName;
 	
 	private CloseableModalController cmc;
@@ -119,7 +119,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	
 	private final List<AccessInfo> confControllers = new ArrayList<>();
 	
-	private int button_id;
+	private int buttonId;
 	private final boolean emptyConfigGrantsFullAccess;
 	private boolean allowPaymentMethod;
 	private final boolean editable;
@@ -147,7 +147,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		displayName = entry.getDisplayname();
 		resource = entry.getOlatResource();
 		emptyConfigGrantsFullAccess = true;
-		button_id = 0;
+		buttonId = 0;
 		editable = !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		
 		formatter = Formatter.getInstance(getLocale());		
@@ -173,7 +173,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 				canCopy.isSelected(0), canReference.isSelected(0), canDownload.isSelected(0));
 		
 		accessProperties.setOfferAccess(offerAccess);
-		accessProperties.setDeletedOfferAccess(deletedOfferAccess);
+		accessProperties.setDeletedOffer(deletedOffer);
 		if(confirmationEmailEl.isVisible()) {
 			accessProperties.setConfirmationEmail(confirmationEmailEl.isAtLeastSelected(1));
 		} else {
@@ -349,7 +349,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		for(Offer offer:offers) {
 			List<OfferAccess> offerAccessList = acService.getOfferAccess(offer, true);
 			for(OfferAccess access:offerAccessList) {
-				button_id++;
+				buttonId++;
 				addConfiguration(access);
 			}
 		}
@@ -358,7 +358,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	protected void addConfiguration(OfferAccess link) {
 		AccessMethodHandler methodHandler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		AccessInfo infos = new AccessInfo(methodHandler.getMethodName(getLocale()), methodHandler.isPaymentMethod(), null, link);
-		infos.setButtonId(button_id);
+		infos.setButtonId(buttonId);
 		confControllers.add(infos);
 		
 		if(editable) {
@@ -546,8 +546,8 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
 				OfferAccess deleteOffer = infos.getLink();
 				offerAccess.remove(deleteOffer);
-				if (deleteOffer.getKey() != null) {
-					deletedOfferAccess.add(deleteOffer);			
+				if (deleteOffer.getKey() != null && deleteOffer.getOffer() != null && deleteOffer.getOffer().getKey() != null) {
+					deletedOffer.add(deleteOffer.getOffer());			
 				}
 				confControllers.remove(infos);
 				updateConfirmationEmail();
@@ -564,7 +564,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		if(newMethodCtrl == source) {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess newLink = newMethodCtrl.commitChanges();
-				button_id++;
+				buttonId++;
 				if (!offerAccess.contains(newLink)) {
 					offerAccess.add(newLink);
 				}				
