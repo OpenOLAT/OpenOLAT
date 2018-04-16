@@ -165,7 +165,9 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		for(int i=0; i<maxPossibleChoices; i++) {
 			maxChoiceKeys[i] = maxChoicesValues[i] = Integer.toString(i);
 		}
-		maxChoicesValues[0] = translate("max.choices.unlimited");
+		if(maxChoicesValues.length > 0) {
+			maxChoicesValues[0] = translate("max.choices.unlimited");
+		}
 		maxChoicesEl.setKeysAndValues(maxChoiceKeys, maxChoicesValues, null);
 		maxChoicesEl.setVisible(itemBuilder.getMaxPossibleCorrectAnswers() > 1);
 		
@@ -178,7 +180,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			}
 		}
 		
-		if(!found) {
+		if(!found && maxChoiceKeys.length > 0) {
 			maxChoicesEl.select(maxChoiceKeys[0], true);
 		}
 		
@@ -187,7 +189,9 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		for(int i=0; i<maxPossibleChoices; i++) {
 			minChoiceKeys[i] = minChoicesValues[i] = Integer.toString(i);
 		}
-		minChoicesValues[0] = translate("min.choices.unlimited");
+		if(minChoicesValues.length > 0) {
+			minChoicesValues[0] = translate("min.choices.unlimited");
+		}
 		minChoicesEl.setKeysAndValues(minChoiceKeys, minChoicesValues, null);
 		minChoicesEl.setVisible(itemBuilder.getMaxPossibleCorrectAnswers() > 1);
 		boolean minFound = false;
@@ -199,8 +203,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			}
 		}
 		
-		if(!minFound) {
-			minChoicesEl.select(maxChoiceKeys[0], true);
+		if(!minFound && minChoiceKeys.length > 0) {
+			minChoicesEl.select(minChoiceKeys[0], true);
 		}
 	}
 	
