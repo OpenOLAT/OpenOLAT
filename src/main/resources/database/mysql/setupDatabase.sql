@@ -108,6 +108,7 @@ create table if not exists o_bs_authentication (
    id bigint not null,
    version mediumint unsigned not null,
    creationdate datetime,
+   lastmodified datetime not null,
    identity_fk bigint not null,
    provider varchar(8),
    authusername varchar(255),

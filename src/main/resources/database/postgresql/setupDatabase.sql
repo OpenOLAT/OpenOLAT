@@ -106,6 +106,7 @@ create table o_bs_authentication (
    id int8 not null,
    version int4 not null,
    creationdate timestamp,
+   lastmodified timestamp not null,
    identity_fk int8 not null,
    provider varchar(8),
    authusername varchar(255),

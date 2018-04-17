@@ -27,6 +27,7 @@ package org.olat.basesecurity;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
@@ -34,7 +35,7 @@ import org.olat.core.id.Persistable;
  * 
  * @author Felix Jost
  */
-public interface Authentication extends CreateInfo, Persistable {
+public interface Authentication extends CreateInfo, ModifiedInfo, Persistable {
 
 	/**
 	 * @return

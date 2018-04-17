@@ -65,8 +65,8 @@ public class UserModule extends AbstractSpringModule {
 
 	private static OLog log = Tracing.createLoggerFor(UserModule.class);
 	
-	private final static String USER_EMAIL_MANDATORY = "userEmailMandatory";
-	private final static String USER_EMAIL_UNIQUE = "userEmailUnique";
+	private static final String USER_EMAIL_MANDATORY = "userEmailMandatory";
+	private static final String USER_EMAIL_UNIQUE = "userEmailUnique";
 	
 	@Autowired @Qualifier("loginBlacklist")
 	private ArrayList<String> loginBlacklist;

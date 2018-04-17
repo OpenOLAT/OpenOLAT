@@ -1355,7 +1355,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	private Authentication createAndPersistAuthenticationIntern(final Identity ident, final String provider, final String authUserName,
 			final String credentials, final Encoder.Algorithm algorithm) {
-		Authentication auth;
+		AuthenticationImpl auth;
 		if(algorithm != null && credentials != null) {
 			String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
 			String hash = Encoder.encrypt(credentials, salt, algorithm);
@@ -1363,6 +1363,8 @@ public class BaseSecurityManager implements BaseSecurity {
 		} else {
 			auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
 		}
+		auth.setCreationDate(new Date());
+		auth.setLastModified(auth.getCreationDate());
 		dbInstance.getCurrentEntityManager().persist(auth);
 		dbInstance.commit();
 		log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
@@ -1469,6 +1471,7 @@ public class BaseSecurityManager implements BaseSecurity {
 
 	@Override
 	public Authentication updateAuthentication(Authentication authentication) {
+		((AuthenticationImpl)authentication).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(authentication);
 	}
 

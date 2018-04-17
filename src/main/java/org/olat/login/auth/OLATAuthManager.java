@@ -31,6 +31,8 @@ import java.util.Map;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -39,7 +41,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -69,7 +70,7 @@ import org.springframework.stereotype.Service;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 @Service("olatAuthenticationSpi")
-public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
+public class OLATAuthManager implements AuthenticationSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(OLATAuthManager.class);
 	
@@ -87,6 +88,8 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private LDAPLoginManager ldapLoginManager;
+	@Autowired
+	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -109,7 +112,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 					if(identities.size() == 1) {
 						ident = identities.get(0);
 					} else if(identities.size() > 1) {
-						logError("more than one identity found with email::" + login, null);
+						log.error("more than one identity found with email::" + login, null);
 					}
 					
 					if (ident == null) {
@@ -147,6 +150,17 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		}
 		log.audit("Cannot authenticate user " + login + " via provider OLAT", OLATAuthenticationController.class.getName());
 		return null;
+	}
+	
+	/**
+	 * 
+	 * @param identity The identity
+	 * @param changeOnce If the password need to be changed once
+	 * @param maxAge The max age of the password in seconds
+	 * @return
+	 */
+	public boolean hasValidAuthentication(IdentityRef identity, boolean changeOnce, int maxAge) {
+		return authenticationDao.hasValidOlatAuthentication(identity, changeOnce, maxAge);
 	}
 
 	@Override
@@ -258,10 +272,10 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	public boolean changeOlatPassword(Identity doer, Identity identity, String username, String newPwd) {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
-			auth = securityManager.createAndPersistAuthentication(identity, "OLAT", identity.getName(), newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", identity.getName(), newPwd, loginModule.getDefaultHashAlgorithm());
 			log.audit(doer.getName() + " created new authenticatin for identity: " + identity.getName());
 		} else {
-			auth = securityManager.updateCredentials(auth, newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.updateCredentials(auth, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.audit(doer.getName() + " set new password for identity: " + identity.getName());
 		}
 		
@@ -274,7 +288,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	public boolean synchronizeOlatPasswordAndUsername(Identity doer, Identity identity, String username, String newPwd) {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
-			auth = securityManager.createAndPersistAuthentication(identity, "OLAT", username, newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", username, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.audit(doer.getName() + " created new authenticatin for identity: " + identity.getName());
 		} else {
 			//update credentials
@@ -284,7 +298,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 			
 			if(!username.equals(auth.getAuthusername())) {
 				auth.setAuthusername(username);
-				auth = securityManager.updateAuthentication(auth);
+				securityManager.updateAuthentication(auth);
 			}
 
 			log.audit(doer.getName() + " set new password for identity: " + identity.getName());
