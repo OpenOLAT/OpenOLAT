@@ -656,7 +656,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
 		int flow = 0;//for beautiful ordering
-		String groupDirName = dirName + "/"
+		String groupDirName = (StringHelper.containsNonWhitespace(dirName) ? dirName + "/" : "")
 				+ StringHelper.transformDisplayNameToFileSystemName(businessGroup.getName())
 				+ "_" + businessGroup.getKey();
 		
