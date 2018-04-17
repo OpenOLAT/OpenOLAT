@@ -391,15 +391,15 @@ public class ScoreAccountingHelper {
 		
 		IOUtils.closeQuietly(workbook);
 	}
-    
+	
 	
 	/**
-	 * Load all users from all known learning groups into a list
+	 * Load all participant from all known learning groups into a list
 	 * 
 	 * @param courseEnv
-	 * @return The list of identities from this course
+	 * @return The list of participants from this course
 	 */
-	public static List<Identity> loadUsers(CourseEnvironment courseEnv) {
+	public static List<Identity> loadParticipants(CourseEnvironment courseEnv) {
 		CourseGroupManager gm = courseEnv.getCourseGroupManager();
 		List<BusinessGroup> groups = gm.getAllBusinessGroups();
 		
@@ -410,7 +410,19 @@ public class ScoreAccountingHelper {
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 			userSet.addAll(repositoryService.getMembers(re, GroupRoles.participant.name()));
 		}
-
+		return new ArrayList<>(userSet);
+	}
+    
+	
+	/**
+	 * Load all users from all known learning groups into a list
+	 * 
+	 * @param courseEnv
+	 * @return The list of identities from this course
+	 */
+	public static List<Identity> loadUsers(CourseEnvironment courseEnv) {
+		List<Identity> participants = loadParticipants(courseEnv);
+		Set<Identity> userSet = new HashSet<>(participants);
 		List<Identity> assessedList = courseEnv.getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(userSet);
 		if(!assessedList.isEmpty()) {
 			userSet.addAll(assessedList);
