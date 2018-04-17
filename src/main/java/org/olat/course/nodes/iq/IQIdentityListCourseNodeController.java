@@ -355,7 +355,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		} else if (identities != null) {
 			identities = asOptions.getIdentities();			
 		} else if (asOptions.isAdmin()){
-			identities = ScoreAccountingHelper.loadUsers(getCourseEnvironment());
+			identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
 		}
 		return identities;
 	}

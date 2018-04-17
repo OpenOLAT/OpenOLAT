@@ -307,7 +307,7 @@ public class AssessmentResultController extends FormBasicController {
 		if(sessionState != null) {
 			r.setSessionState(sessionState);
 			SessionStatus sessionStatus = sessionState.getSessionStatus();
-			if(sessionState != null) {
+			if(sessionStatus != null) {
 				r.setSessionStatus(sessionStatus);
 			}
 		}
