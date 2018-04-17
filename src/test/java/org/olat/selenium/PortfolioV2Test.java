@@ -480,7 +480,7 @@ public class PortfolioV2Test extends Deployments {
 			.users()
 			.assertOnUsers(ryomou)
 			.selectUser(ryomou)
-			.selectCourseNode(assessmentNodeTitle)
+			.selectUsersCourseNode(assessmentNodeTitle)
 			.setAssessmentScore(4.5f)
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		

@@ -830,7 +830,7 @@ public class AssessmentTest extends Deployments {
 			.users()
 			.assertOnUsers(ryomou)
 			.selectUser(ryomou)
-			.selectCourseNode(assessmentNodeTitle)
+			.selectUsersCourseNode(assessmentNodeTitle)
 			.setAssessmentScore(8.0f)
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
