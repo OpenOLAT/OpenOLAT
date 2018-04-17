@@ -192,8 +192,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			businessGroupRelationDAO.removeRole(identity, businessGroup, GroupRoles.coach.name());
 			if (businessGroupRelationDAO.countRoles(businessGroup, GroupRoles.coach.name()) == 0) {
 				Identity admin = deletionManager.getAdminUserIdentity();
-				businessGroupRelationDAO.addRole(admin, businessGroup, GroupRoles.coach.name());
-				log.info("Delete user-data, add Administrator-identity as owner of businessGroup=" + businessGroup.getName());
+				if(admin == null) {
+					log.info("Delete user-data, cannot add Administrator-identity as owner of businessGroup=" + businessGroup.getName() + ". Businesgroup is orphan");
+				} else {
+					businessGroupRelationDAO.addRole(admin, businessGroup, GroupRoles.coach.name());
+					log.info("Delete user-data, add Administrator-identity as owner of businessGroup=" + businessGroup.getName());
+				}
 			}
 		}
 		log.debug("Remove owner identity=" + identity + " from " + ownerGroups.size() + " groups");
