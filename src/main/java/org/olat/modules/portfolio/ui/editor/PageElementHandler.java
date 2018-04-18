@@ -40,6 +40,4 @@ public interface PageElementHandler {
 	
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
 	
-	
-
 }

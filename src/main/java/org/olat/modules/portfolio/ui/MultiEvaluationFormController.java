@@ -39,7 +39,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.ui.CompareEvaluationsFormController;
-import org.olat.modules.forms.ui.EvaluationFormController;
+import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
@@ -69,7 +69,7 @@ public class MultiEvaluationFormController extends BasicController {
 	private List<Evaluator> evaluators = new ArrayList<>();
 	private List<Link> otherEvaluatorLinks = new ArrayList<>();
 	
-	private EvaluationFormController currentEvalutionFormCtrl;
+	private EvaluationFormExecutionController currentEvalutionFormCtrl;
 	private CompareEvaluationsFormController compareEvaluationCtrl;
 	
 	@Autowired
@@ -152,7 +152,7 @@ public class MultiEvaluationFormController extends BasicController {
 	private Controller createEvalutationForm(UserRequest ureq, Identity evaluator) {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
-		EvaluationFormController evalutionFormCtrl =  new EvaluationFormController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
+		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
 		listenTo(evalutionFormCtrl);
 		return evalutionFormCtrl;
 	}
@@ -268,7 +268,7 @@ public class MultiEvaluationFormController extends BasicController {
 	private void doOpenEvalutationForm(UserRequest ureq, Identity evaluator) {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
-		currentEvalutionFormCtrl =  new EvaluationFormController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
+		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
 		listenTo(currentEvalutionFormCtrl);
 		mainVC.put("segmentCmp", currentEvalutionFormCtrl.getInitialComponent());
 	}

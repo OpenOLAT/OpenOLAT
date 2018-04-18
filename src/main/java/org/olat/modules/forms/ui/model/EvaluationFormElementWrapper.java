@@ -50,6 +50,7 @@ public class EvaluationFormElementWrapper {
 	private FileUploadWrapper fileUploadWrapper;
 	private FileUploadCompareWrapper fileUploadCompareWrapper;
 	private List<SliderWrapper> sliders;
+
 	
 	public EvaluationFormElementWrapper(AbstractElement element) {
 		this.element = element;
@@ -236,4 +237,5 @@ public class EvaluationFormElementWrapper {
 	public void setRadarEl(RadarChartElement radarEl) {
 		this.radarEl = radarEl;
 	}
+	
 }

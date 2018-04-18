@@ -63,8 +63,16 @@ public interface EvaluationFormManager {
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
 			String filename, EvaluationFormSession session) throws IOException;
 	
+	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session, String value);
+	
+	public EvaluationFormResponse createNumericalResponse(String responseIdentifier, EvaluationFormSession session, BigDecimal value);
+
+	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value);
+	
 	public EvaluationFormResponse updateResponseForPortfolioEvaluation(BigDecimal numericalValue,
-			String stringuifiedResponse, EvaluationFormResponse response); 
+			String stringuifiedResponse, EvaluationFormResponse response);
+	
+	public EvaluationFormResponse updateResponse(EvaluationFormResponse response, String stringValue);
 
 	public EvaluationFormResponse updateResponseForPortfolioEvaluation(File file, String filename,
 			EvaluationFormResponse response) throws IOException;
@@ -76,6 +84,8 @@ public interface EvaluationFormManager {
 	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session);
 	
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
+	
+	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session);
 	
 	public void deleteResponse(Long key);
 

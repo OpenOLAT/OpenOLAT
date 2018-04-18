@@ -163,7 +163,7 @@
 	#elseif($element.isTextInput())
 		<div class="o_evaluation_block o_evaluation_textinput clearfix o_block_large">
 		#if($r.isNotNull($element.textInputWrapper.textEl))
-			$r.render($element.textInputWrapper.textEl)
+		##	$r.render($element.textInputWrapper.textEl)
 			#if($r.visible($element.textInputWrapper.saveButton))
 			<div class="o_button_group">
 				$r.render($element.textInputWrapper.saveButton)

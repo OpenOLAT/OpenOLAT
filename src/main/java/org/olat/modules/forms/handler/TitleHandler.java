@@ -25,17 +25,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.TitleEditorController;
-import org.olat.modules.portfolio.ui.editor.PageRunComponent;
+import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
+import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
@@ -45,7 +47,7 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TitleHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 	
@@ -85,5 +87,15 @@ public class TitleHandler implements PageElementHandler, SimpleAddPageElementHan
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
+			PageElement element) {
+		PageRunElement runElement = getContent(ureq, wControl, element, null);
+		if (runElement != null) {
+			return new EvaluationFormComponentElement(runElement);
+		}
+		return null;
 	}
 }

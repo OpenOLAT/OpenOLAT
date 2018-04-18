@@ -17,20 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.forms.ui.model;
 
-import java.util.List;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 13.04.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface PageProvider {
+public interface EvaluationFormExecutionElement extends PageRunElement {
 	
-	public List<? extends PageElement> getElements();
+	public boolean hasFormItem();
 
-	public List<? extends PageElementHandler> getAvailableHandlers();
+	public FormItem getFormItem();
+	
+	public void setReadOnly(boolean readOnly);
+	
+	public boolean hasResponse();
+	
+	public void loadResponse(EvaluationFormSession session);
+	
+	public void saveResponse(EvaluationFormSession session);
 
 }

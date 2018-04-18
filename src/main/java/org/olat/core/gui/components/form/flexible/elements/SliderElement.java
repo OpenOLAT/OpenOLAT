@@ -29,11 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
  */
 public interface SliderElement extends FormItem {
 	
-	
-	public double getInitialValue();
-	
-	public void setInitialValue(double value);
-	
 	public double getMinValue();
 	
 	public void setMinValue(double min);
@@ -46,9 +41,9 @@ public interface SliderElement extends FormItem {
 
 	public void setStep(int step);
 	
+	public void setValue(double value);
 	
 	public double getValue();
-
 
 	public void setDomReplacementWrapperRequired(boolean required);
 

@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -31,9 +32,10 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.ui.HTMLRawEditorController;
+import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
+import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
@@ -45,7 +47,7 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 
 	@Override
 	public String getType() {
@@ -83,5 +85,15 @@ public class HTMLRawHandler implements PageElementHandler, SimpleAddPageElementH
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
+			PageElement element) {
+		PageRunElement runElement = getContent(ureq, wControl, element, null);
+		if (runElement != null) {
+			return new EvaluationFormComponentElement(runElement);
+		}
+		return null;
 	}
 }

@@ -1,0 +1,17 @@
+#if($messageNotDone)
+	<div class="o_warning">$r.translate("evaluation.in.progress")</div>
+#else
+<div class="o_evaluation_form o_form form-vertical">
+	#foreach($fragment in $fragments)
+		<div class="$fragment.cssClass">$r.render($fragment.componentName)</div>
+	#end
+	<div class="o_button_group">
+		#if($r.available("save.intermediate") && $r.visible("save.intermediate"))
+			$r.render("save.intermediate")
+		#end
+		#if($r.available("save.as.done") && $r.visible("save.as.done"))
+			$r.render("save.as.done")
+		#end
+	</div>
+</div>
+#end

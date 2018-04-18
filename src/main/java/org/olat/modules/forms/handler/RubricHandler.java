@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -30,10 +31,12 @@ import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.RubricController;
 import org.olat.modules.forms.ui.RubricEditorController;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
+import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
+import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
@@ -43,7 +46,7 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RubricHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 	
 	private final boolean restrictedEdit;
 	
@@ -92,5 +95,16 @@ public class RubricHandler implements PageElementHandler, SimpleAddPageElementHa
 		slider.setStartLabel("Start");
 		rubric.getSliders().add(slider);
 		return rubric;
+	}
+
+	@Override
+	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
+			PageElement element) {
+		if (element instanceof Rubric) {
+			Rubric rubric = (Rubric) element;
+			EvaluationFormResponseController ctrl = new RubricController(ureq, wControl, rubric, rootForm);
+			return new EvaluationFormResponseControllerElement(ctrl);
+		}
+		return null;
 	}
 }

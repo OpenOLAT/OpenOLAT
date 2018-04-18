@@ -17,20 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.forms.handler;
 
-import java.util.List;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 15.04.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface PageProvider {
-	
-	public List<? extends PageElement> getElements();
+public interface EvaluationFormElementHandler extends PageElementHandler {
 
-	public List<? extends PageElementHandler> getAvailableHandlers();
-
+	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl,
+			Form rootForm, PageElement element);
 }

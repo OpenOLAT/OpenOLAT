@@ -67,8 +67,8 @@ import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Title;
-import org.olat.modules.forms.ui.EvaluationFormController;
 import org.olat.modules.forms.ui.EvaluationFormEditorController;
+import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormRuntimeController;
 import org.olat.modules.forms.ui.TitleEditorController;
 import org.olat.repository.ErrorList;
@@ -267,7 +267,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 					File formFile = new File(repositoryDir, FORM_XML_FILE);
-					return new EvaluationFormController(uureq, wwControl, formFile);
+					return new EvaluationFormExecutionController(uureq, wwControl, formFile);
 				}
 			});
 	}

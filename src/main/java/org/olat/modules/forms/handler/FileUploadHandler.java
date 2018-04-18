@@ -24,15 +24,18 @@ import java.util.UUID;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.ui.FileUploadController;
 import org.olat.modules.forms.ui.FileUploadEditorController;
+import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
@@ -44,7 +47,7 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class FileUploadHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 
 	@Override
 	public String getType() {
@@ -83,5 +86,16 @@ public class FileUploadHandler implements PageElementHandler, SimpleAddPageEleme
 		part.setMaxUploadSizeKB(evaluationFormModule.getMaxFileUploadLimitKB());
 		return part;
 	}
+
+	@Override
+	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
+			PageElement element) {
+		if (element instanceof FileUpload) {
+			FileUpload fileUpload = (FileUpload) element;
+			EvaluationFormResponseController ctrl = new FileUploadController(ureq, wControl, fileUpload, rootForm);
+			return new EvaluationFormResponseControllerElement(ctrl);
+		}
+		return null;
+ 	}
 
 }

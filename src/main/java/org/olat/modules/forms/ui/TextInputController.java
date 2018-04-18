@@ -21,15 +21,19 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.TextInput;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -37,15 +41,24 @@ import org.olat.modules.forms.model.xml.TextInput;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextInputController extends FormBasicController {
+public class TextInputController extends FormBasicController implements EvaluationFormResponseController {
 	
-	private FormLink saveButton;
 	private TextAreaElement textEl;
 	
 	private final TextInput textInput;
+	private EvaluationFormResponse response;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput) {
-		super(ureq, wControl, "textinput");
+		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.textInput = textInput;
+		initForm(ureq);
+	}
+	
+	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput, Form rootForm) {
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		this.textInput = textInput;
 		initForm(ureq);
 	}
@@ -57,14 +70,7 @@ public class TextInputController extends FormBasicController {
 			rows = textInput.getRows();
 		}
 		
-		long postfix = CodeHelper.getRAMUniqueID();
-		textEl = uifactory.addTextAreaElement("textinput_" + postfix, rows, 72, "", formLayout);
-		saveButton = uifactory.addFormLink("save_" + postfix, "save", null, formLayout, Link.BUTTON);
-		saveButton.setEnabled(false);
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.getFormItemComponent().contextPut("postfix", Long.toString(postfix));
-		}
+		textEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, rows, 72, true, "", formLayout);
 	}
 	
 	public void update() {
@@ -83,5 +89,39 @@ public class TextInputController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	@Override
+	public void setReadOnly(boolean readOnly) {
+		textEl.setEnabled(!readOnly);
+	}
+
+	@Override
+	public boolean hasResponse() {
+		return response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse());
+	}
+
+	@Override
+	public void loadResponse(EvaluationFormSession session) {
+		response = evaluationFormManager.loadResponse(textInput.getId(), session);
+		if (response != null) {
+			textEl.setValue(response.getStringuifiedResponse());
+		}
+	}
+
+	@Override
+	public void saveResponse(EvaluationFormSession session) {
+		if (StringHelper.containsNonWhitespace(textEl.getValue())) {
+			String stringValue = textEl.getValue();
+			if (response == null) {
+				response = evaluationFormManager.createStringResponse(textInput.getId(), session, stringValue);
+			} else {
+				response = evaluationFormManager.updateResponse(response, stringValue);
+			}
+		} else if (response != null) {
+			// If all text is deleted by the user, the response should be deleted as well.
+			evaluationFormManager.deleteResponse(response.getKey());
+			response = null;
+		}
 	}
 }

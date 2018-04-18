@@ -53,7 +53,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#").append(sec.getFormDispatchId()).append("_slider').slider({\n")
-		  .append("  value: ").append(sec.getInitialValue()).append(",\n");
+		  .append("  value: ").append(sec.getValue()).append(",\n");
 		if(sec.getStep() > 0) {
 			sb.append("  step: ").append(sec.getStep()).append(",\n");
 		}

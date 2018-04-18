@@ -139,4 +139,19 @@ public class EvaluationFormResponseDAO {
 				.executeUpdate();
 	}
 
+	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session) {
+		String query = new StringBuilder()
+				.append("select response from evaluationformresponse as response")
+				.append(" inner join response.session as session")
+				.append(" where session.key=:sessionKey and response.responseIdentifier=:responseIdentifier")
+				.toString();
+		
+		List<EvaluationFormResponse> resultList = dbInstance.getCurrentEntityManager()
+				.createQuery(query, EvaluationFormResponse.class)
+				.setParameter("sessionKey", session.getKey())
+				.setParameter("responseIdentifier", responseIdentifier)
+				.getResultList();
+		return resultList.isEmpty()? null: resultList.get(0);
+	}
+
 }

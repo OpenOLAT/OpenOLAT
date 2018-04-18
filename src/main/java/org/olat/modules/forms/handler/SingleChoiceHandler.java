@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -33,10 +34,11 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
 import org.olat.modules.forms.ui.SingleChoiceController;
 import org.olat.modules.forms.ui.SingleChoiceEditorController;
+import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
@@ -47,7 +49,7 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class SingleChoiceHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 
 	@Override
 	public String getType() {
@@ -64,8 +66,8 @@ public class SingleChoiceHandler implements PageElementHandler, SimpleAddPageEle
 			PageElementRenderingHints options) {
 		if (element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
-			Controller ctrl = new SingleChoiceController(ureq, wControl, singleChoice);
-			return new PageRunControllerElement(ctrl);
+			EvaluationFormResponseController ctrl = new SingleChoiceController(ureq, wControl, singleChoice);
+			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;
 	}
@@ -96,5 +98,15 @@ public class SingleChoiceHandler implements PageElementHandler, SimpleAddPageEle
 		return singleChoice;
 	}
 
+	@Override
+	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
+			PageElement element) {
+		if (element instanceof SingleChoice) {
+			SingleChoice singleChoice = (SingleChoice) element;
+			EvaluationFormResponseController ctrl = new SingleChoiceController(ureq, wControl, singleChoice, rootForm);
+			return new EvaluationFormResponseControllerElement(ctrl);
+		}
+		return null;
+	}
 
 }

@@ -47,16 +47,6 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	}
 
 	@Override
-	public double getInitialValue() {
-		return component.getInitialValue();
-	}
-
-	@Override
-	public void setInitialValue(double value) {
-		component.setInitialValue(value);
-	}
-
-	@Override
 	public double getMinValue() {
 		return component.getMinValue();
 	}
@@ -91,8 +81,10 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 		return value;
 	}
 
+	@Override
 	public void setValue(double value) {
 		this.value = value;
+		component.setValue(value);
 	}
 
 	@Override

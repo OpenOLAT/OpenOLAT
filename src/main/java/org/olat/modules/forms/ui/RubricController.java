@@ -19,10 +19,14 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -32,11 +36,18 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.SliderWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,13 +55,18 @@ import org.olat.modules.forms.ui.model.SliderWrapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RubricController extends FormBasicController {
+public class RubricController extends FormBasicController implements EvaluationFormResponseController {
 	
-	private static final String[] NO_RESPONSE_KEYS = new String[] { "enabled" };
+	private static final String NO_RESPONSE_KEY = "enabled";
+	private static final String[] NO_RESPONSE_KEYS = new String[] { NO_RESPONSE_KEY };
 	
-	private int count = 0;
 	private final Rubric rubric;
+	private List<SliderWrapper> sliderWrappers;
+	private Map<String, EvaluationFormResponse> responses = new HashMap<>();
 	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+
 	public RubricController(UserRequest ureq, WindowControl wControl, Rubric rubric) {
 		super(ureq, wControl, "rubric");
 		this.rubric = rubric;
@@ -71,7 +87,7 @@ public class RubricController extends FormBasicController {
 	protected void updateForm() {
 		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(rubric);
 		List<Slider> sliders = rubric.getSliders();
-		List<SliderWrapper> sliderWrappers = new ArrayList<>(sliders.size());
+		sliderWrappers = new ArrayList<>(sliders.size());
 		for(Slider slider:sliders) {
 			SliderType type = rubric.getSliderType();
 			SliderWrapper sliderWrapper = null;
@@ -92,37 +108,45 @@ public class RubricController extends FormBasicController {
 	}
 
 	private SliderWrapper forgeContinuousSlider(Slider slider, Rubric element) {
-		SliderElement sliderEl = uifactory.addSliderElement("slider_" + (count++), null, flc);
+		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
-		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
 		MultipleSelectionElement noResponseEl = null;
 		if (element.isNoResponseEnabled()) {
-			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + CodeHelper.getRAMUniqueID(), null, flc, NO_RESPONSE_KEYS,
 					getNoResponseValue());
 			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) {
+			noResponseEl.setUserObject(sliderWrapper);
+		}
 		return sliderWrapper;
 	}
 	
 	private SliderWrapper forgeDiscreteSlider(Slider slider, Rubric element) {
-		SliderElement sliderEl = uifactory.addSliderElement("slider_" + (count++), null, flc);
+		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
-		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
 		sliderEl.setStep(1);
 		MultipleSelectionElement noResponseEl = null;
 		if (element.isNoResponseEnabled()) {
-			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + (count++), null, flc, NO_RESPONSE_KEYS,
+			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + CodeHelper.getRAMUniqueID(), null, flc, NO_RESPONSE_KEYS,
 					getNoResponseValue());
 			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) {
+			noResponseEl.setUserObject(sliderWrapper);
+		}
 		return sliderWrapper;
 	}
 
@@ -142,22 +166,31 @@ public class RubricController extends FormBasicController {
 			theValues[i] = "";
 		}
 
-		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + (count++), null, flc, theKeys, theValues);
+		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
+		radioEl.setAllowNoSelection(true);
 		radioEl.setDomReplacementWrapperRequired(false);
-		radioEl.addActionListener(FormEvent.ONCHANGE);
 		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
 		radioEl.setWidthInPercent(widthInPercent, true);
 
 		MultipleSelectionElement noResponseEl = null;
 		if (element.isNoResponseEnabled()) {
-			noResponseEl = uifactory.addCheckboxesVertical("no_resp_" + (count++),  flc, NO_RESPONSE_KEYS,
+			noResponseEl = uifactory.addCheckboxesVertical("no_resp_" + CodeHelper.getRAMUniqueID(), flc, NO_RESPONSE_KEYS,
 					getNoResponseValue(), 0);
 			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
 		radioEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null) {
+			noResponseEl.setUserObject(sliderWrapper);
+		}
 		return sliderWrapper;
+	}
+	
+	private String[] getNoResponseValue() {
+		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>" + getTranslator().translate("no.response") + "</span>"};
 	}
 
 	@Override
@@ -169,9 +202,164 @@ public class RubricController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement noResponseEl = (MultipleSelectionElement) source;
+			Object uobject = noResponseEl.getUserObject();
+			if (uobject instanceof SliderWrapper) {
+				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
+				boolean noAnswer = noResponseEl.isAtLeastSelected(1);
+				sliderWrapper.getFormItem().setEnabled(!noAnswer);
+				flc.setDirty(true);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void setReadOnly(boolean readOnly) {
+		for (SliderWrapper sliderWrapper: sliderWrappers) {
+			sliderWrapper.getFormItem().setEnabled(!readOnly);
+			if (sliderWrapper.getNoResponseEl() != null) {
+				sliderWrapper.getNoResponseEl().setEnabled(!readOnly);
+			}
+			if (!readOnly) {
+				disableSliderIfNoResponse(sliderWrapper);
+			}
+		}
+	}
+
+	@Override
+	public boolean hasResponse() {
+		for (SliderWrapper sliderWrapper: sliderWrappers) {
+			if (!responses.containsKey(sliderWrapper.getId())) {
+				return false;
+			}
+			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+			if (response == null || (!response.isNoResponse()) && response.getNumericalResponse() == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public void loadResponse(EvaluationFormSession session) {
+		for (SliderWrapper sliderWrapper: sliderWrappers) {
+			EvaluationFormResponse response = evaluationFormManager.loadResponse(sliderWrapper.getId(), session);
+			if (response != null) {
+				responses.put(sliderWrapper.getId(), response);
+				if (response.getNumericalResponse() != null) {
+					BigDecimal numericalResponse = response.getNumericalResponse();
+					setValue(sliderWrapper, numericalResponse);
+				}
+				disableSliderIfNoResponse(sliderWrapper);
+			}
+		}
+	}
+
+	private void disableSliderIfNoResponse(SliderWrapper sliderWrapper) {
+		EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+		if (response != null && response.isNoResponse()) {
+			MultipleSelectionElement noResponseEl = sliderWrapper.getNoResponseEl();
+			if (noResponseEl != null) {
+				noResponseEl.select(NO_RESPONSE_KEY, true);
+			}
+			sliderWrapper.getFormItem().setEnabled(false);
+		}
+	}
+
+	private void setValue(SliderWrapper sliderWrapper, BigDecimal numericalResponse) {
+		if (sliderWrapper.getRadioEl() != null) {
+			setValue(sliderWrapper.getRadioEl(), numericalResponse);
+		} else if (sliderWrapper.getSliderEl() != null) {
+			setValue(sliderWrapper.getSliderEl(), numericalResponse);
+		}
+	}
+
+	private void setValue(SingleSelection radioEl, BigDecimal numericalResponse) {
+		int start = rubric.getStart();
+		int end = rubric.getEnd();
+		int steps = rubric.getSteps();
+		
+		double[] theSteps = new double[steps];
+		String[] theKeys = new String[steps];
+		
+		double step = (end - start + 1) / (double) steps;
+		for(int i=0; i<steps; i++) {
+			theSteps[i] = start + (i * step);
+			theKeys[i] = Double.toString(theSteps[i]);
+		}
+		
+		double val = numericalResponse.doubleValue();
+		double error = step / 10.0d;
+		for (int i = 0; i < theSteps.length; i++) {
+			double theStep = theSteps[i];
+			double margin = Math.abs(theStep - val);
+			if (margin < error) {
+				radioEl.select(theKeys[i], true);
+			}
+		}
+	}
+
+	private void setValue(SliderElement sliderEl, BigDecimal numericalResponse) {
+		double val = numericalResponse.doubleValue();
+		sliderEl.setValue(val);
+	}
+
+	@Override
+	public void saveResponse(EvaluationFormSession session) {
+		for (SliderWrapper sliderWrapper: sliderWrappers) {
+			boolean noResponseSelected = sliderWrapper.getNoResponseEl() != null && sliderWrapper.getNoResponseEl().isAtLeastSelected(1);
+			if (noResponseSelected) {
+				saveNoResponse(session, sliderWrapper);
+			} else {
+				saveSliderResponse(session, sliderWrapper);
+			}
+		}
+	}
 	
-	private String[] getNoResponseValue() {
-		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>" + getTranslator().translate("no.response") + "</span>"};
-	}	
+	private void saveNoResponse(EvaluationFormSession session, SliderWrapper sliderWrapper) {
+		EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+		if (response == null) {
+			response = evaluationFormManager.createNoResponse(sliderWrapper.getId(), session);
+		} else {
+			response = evaluationFormManager.updateNoResponse(response);
+		}
+		responses.put(sliderWrapper.getId(), response);
+	}
+	
+	private void saveSliderResponse(EvaluationFormSession session, SliderWrapper sliderWrapper) {
+		BigDecimal value = null;
+		SliderElement slider = sliderWrapper.getSliderEl();
+		if (slider != null) {
+			value = BigDecimal.valueOf(slider.getValue());
+		} else {
+			SingleSelection radioEl = sliderWrapper.getRadioEl();
+			if (radioEl != null && radioEl.isOneSelected()) {
+				String selectedKey = radioEl.getSelectedKey();
+				if (StringHelper.containsNonWhitespace(selectedKey)) {
+					value = new BigDecimal(selectedKey);
+				}
+			}
+		}
+		if (value != null) {
+			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+			if (response == null) {
+				response = evaluationFormManager.createNumericalResponse(sliderWrapper.getId(), session, value);
+			} else {
+				response = evaluationFormManager.updateNumericalResponse(response, value);
+			}
+			responses.put(sliderWrapper.getId(), response);
+		} else {
+			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+			if (response != null) {
+				evaluationFormManager.deleteResponse(response.getKey());
+				responses.remove(sliderWrapper.getId());
+			}
+		}
+	}
 
 }

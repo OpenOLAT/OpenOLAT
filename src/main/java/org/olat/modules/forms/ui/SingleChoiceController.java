@@ -24,12 +24,19 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -37,14 +44,25 @@ import org.olat.modules.forms.model.xml.SingleChoice;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceController extends FormBasicController  {
+public class SingleChoiceController extends FormBasicController implements EvaluationFormResponseController {
 
 	private SingleSelection singleChoiceEl;
 	
 	private final SingleChoice singleChoice;
+	private EvaluationFormResponse response;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+
 	
 	public SingleChoiceController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.singleChoice = singleChoice;
+		initForm(ureq);
+	}
+	
+	public SingleChoiceController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, Form rootForm) {
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		this.singleChoice = singleChoice;
 		initForm(ureq);
 	}
@@ -77,6 +95,7 @@ public class SingleChoiceController extends FormBasicController  {
 			default:
 				singleChoiceEl = uifactory.addDropdownSingleselect(name, null, flc, keys, values);
 		}
+		singleChoiceEl.setAllowNoSelection(true);
 	}
 
 	@Override
@@ -87,5 +106,42 @@ public class SingleChoiceController extends FormBasicController  {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	public void setReadOnly(boolean readOnly) {
+		singleChoiceEl.setEnabled(!readOnly);
+	}
+
+	@Override
+	public boolean hasResponse() {
+		return response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse());
+	}
+
+	@Override
+	public void loadResponse(EvaluationFormSession session) {
+		response = evaluationFormManager.loadResponse(singleChoice.getId(), session);
+		if (response != null) {
+			for (Choice choice: singleChoice.getChoices().asList()) {
+				if (choice.getId().equals(response.getStringuifiedResponse())) {
+					singleChoiceEl.select(choice.getId(), true);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void saveResponse(EvaluationFormSession session) {
+		if (singleChoiceEl.isOneSelected()) {
+			String stringValue = singleChoiceEl.getSelectedKey();
+			if (response == null) {
+				response = evaluationFormManager.createStringResponse(singleChoice.getId(), session, stringValue);
+			} else {
+				response = evaluationFormManager.updateResponse(response, stringValue);
+			}
+		} else if (response != null) {
+			evaluationFormManager.deleteResponse(response.getKey());
+			response = null;
+		}
 	}
 }

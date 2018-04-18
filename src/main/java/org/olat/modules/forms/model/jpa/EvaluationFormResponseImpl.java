@@ -64,10 +64,10 @@ public class EvaluationFormResponseImpl implements EvaluationFormResponse, Persi
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="e_no_response", nullable=false, insertable=true, updatable=true)
-	private boolean noResponse;
 	@Column(name="e_responseidentifier", nullable=false, insertable=true, updatable=false)
 	private String responseIdentifier;
+	@Column(name="e_no_response", nullable=false, insertable=true, updatable=true)
+	private boolean noResponse;
 	@Column(name="e_numericalresponse", nullable=true, insertable=true, updatable=true)
 	private BigDecimal numericalResponse;
 	@Column(name="e_stringuifiedresponse", nullable=true, insertable=true, updatable=true)

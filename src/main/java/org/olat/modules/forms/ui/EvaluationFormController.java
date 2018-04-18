@@ -83,13 +83,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 6 déc. 2016<br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class EvaluationFormController extends FormBasicController implements ValidatingController {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(EvaluationFormController.class);
-	
+
 	private static final String NO_RESPONSE_KEY = "enabled";
 	private static final String[] NO_RESPONSE_KEYS = new String[] { NO_RESPONSE_KEY };
 
@@ -100,31 +101,33 @@ public class EvaluationFormController extends FormBasicController implements Val
 	private final boolean doneButton;
 	private final Identity evaluator;
 	private final RepositoryEntry formEntry;
-	
+
 	private EvaluationFormSession session;
 	private List<EvaluationFormElementWrapper> elementWrapperList = new ArrayList<>();
 	private final Map<String, EvaluationFormResponse> identifierToResponses = new HashMap<>();
-	
+
 	private FormSubmit saveAsDoneButton;
-	
+
 	private DialogBoxController confirmDoneCtrl;
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
-	
+
 	/**
-	 * The responses are saved, it's aimed at the binder where the assignment was deleted.
+	 * The responses are saved, it's aimed at the binder where the assignment was
+	 * deleted.
 	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param xmlForm
 	 */
-	public EvaluationFormController(UserRequest ureq, WindowControl wControl, Identity evaluator, PageBody pageBody, String xmlForm, boolean readOnly) {
+	public EvaluationFormController(UserRequest ureq, WindowControl wControl, Identity evaluator, PageBody pageBody,
+			String xmlForm, boolean readOnly) {
 		super(ureq, wControl, "run");
-		
-		form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), xmlForm);
+
+		form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), xmlForm);
 		this.evaluator = evaluator;
 		this.readOnly = readOnly;
 		this.anchor = pageBody;
@@ -133,7 +136,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 		loadResponses();
 		initForm(ureq);
 	}
-	
+
 	/**
 	 * The responses are not saved, it's only a preview.
 	 * 
@@ -143,39 +146,42 @@ public class EvaluationFormController extends FormBasicController implements Val
 	 */
 	public EvaluationFormController(UserRequest ureq, WindowControl wControl, File formFile) {
 		super(ureq, wControl, "run");
-		form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+		form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		evaluator = null;
 		readOnly = false;
 		formEntry = null;
 		doneButton = false;
 		initForm(ureq);
 	}
-	
+
 	/**
 	 * The responses are saved and linked to the anchor.
 	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param form
-	 * @param anchor The database object which hold the evaluation.
+	 * @param anchor
+	 *            The database object which hold the evaluation.
 	 */
-	public EvaluationFormController(UserRequest ureq, WindowControl wControl,
-			Identity evaluator, PageBody anchor, RepositoryEntry formEntry, boolean readOnly, boolean doneButton) {
+	public EvaluationFormController(UserRequest ureq, WindowControl wControl, Identity evaluator, PageBody anchor,
+			RepositoryEntry formEntry, boolean readOnly, boolean doneButton) {
 		super(ureq, wControl, "run");
 		this.anchor = anchor;
 		this.readOnly = readOnly;
 		this.evaluator = evaluator;
 		this.formEntry = formEntry;
 		this.doneButton = doneButton;
-		
-		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
+
+		File repositoryDir = new File(
+				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
+				FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
-		
+		form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+
 		loadResponses();
 		initForm(ureq);
 	}
-	
+
 	public EvaluationFormSession getSession() {
 		return session;
 	}
@@ -183,69 +189,73 @@ public class EvaluationFormController extends FormBasicController implements Val
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		updateElements(ureq);
-		
-		if(doneButton && !readOnly) {
+
+		if (doneButton && !readOnly) {
+			uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 			saveAsDoneButton = uifactory.addFormSubmitButton("save.as.done", formLayout);
 		}
 	}
-	
+
 	private void updateElements(UserRequest ureq) {
 		List<EvaluationFormElementWrapper> elementWrappers = new ArrayList<>();
-		for(AbstractElement element:form.getElements()) {
+		for (AbstractElement element : form.getElements()) {
 			EvaluationFormElementWrapper wrapper = forgeElement(ureq, element);
-			if(wrapper != null) {
+			if (wrapper != null) {
 				elementWrappers.add(wrapper);
 			}
 		}
 		elementWrapperList = elementWrappers;
 		flc.contextPut("elements", elementWrappers);
 	}
-	
+
 	private void loadResponses() {
-		if(evaluator == null) return;
+		if (evaluator == null)
+			return;
 
 		flc.contextPut("messageNotDone", Boolean.FALSE);
 		session = evaluationFormManager.getSessionForPortfolioEvaluation(evaluator, anchor);
-		if(session == null) {
+		if (session == null) {
 			session = evaluationFormManager.createSessionForPortfolioEvaluation(evaluator, anchor, formEntry);
 		}
-		if(session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			readOnly = true;
-		} else if(!evaluator.equals(getIdentity())) {
+		} else if (!evaluator.equals(getIdentity())) {
 			flc.contextPut("messageNotDone", Boolean.TRUE);
 		}
-		
-		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluator, anchor);
-		for(EvaluationFormResponse response:responses) {
+
+		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluator,
+				anchor);
+		for (EvaluationFormResponse response : responses) {
 			identifierToResponses.put(response.getResponseIdentifier(), response);
 		}
 	}
-	
+
 	private EvaluationFormElementWrapper forgeElement(UserRequest ureq, AbstractElement element) {
 		EvaluationFormElementWrapper wrapper = null;
-		
+
 		String type = element.getType();
-		switch(type) {
-			case "formhtitle":
-			case "formhr":
-			case "formhtmlraw":
-				wrapper = new EvaluationFormElementWrapper(element);
-				break;
-			case "formrubric":
-				wrapper = forgeRubric((Rubric)element);
-				break;
-			case "formtextinput":
-				wrapper = forgeTextInput((TextInput)element);
-				break;
-			case "formfileupload":
-				wrapper = forgeFileUpload(ureq, (FileUpload)element);
-				break;
+		switch (type) {
+		case "formhtitle":
+		case "formhr":
+		case "formhtmlraw":
+			wrapper = new EvaluationFormElementWrapper(element);
+			break;
+		case "formrubric":
+			wrapper = forgeRubric((Rubric) element);
+			break;
+		case "formtextinput":
+			wrapper = forgeTextInput((TextInput) element);
+			break;
+		case "formfileupload":
+			wrapper = forgeFileUpload(ureq, (FileUpload) element);
+			break;
 		}
 		return wrapper;
 	}
 
 	private EvaluationFormElementWrapper forgeFileUpload(UserRequest ureq, FileUpload element) {
-		FileElement fileEl = uifactory.addFileElement(getWindowControl(), "file_upload_" + CodeHelper.getRAMUniqueID(), "", flc);
+		FileElement fileEl = uifactory.addFileElement(getWindowControl(), "file_upload_" + CodeHelper.getRAMUniqueID(),
+				"", flc);
 		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setDeleteEnabled(true);
@@ -258,10 +268,10 @@ public class EvaluationFormController extends FormBasicController implements Val
 			fileEl.setInitialFile(responseFile);
 		}
 		fileEl.setEnabled(!readOnly);
-		
+
 		FileUploadWrapper fileUploadWrapper = new FileUploadWrapper(fileEl, element);
 		fileEl.setUserObject(fileUploadWrapper);
-		
+
 		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
 		wrapper.setFileUploadWrapper(fileUploadWrapper);
 		return wrapper;
@@ -270,19 +280,20 @@ public class EvaluationFormController extends FormBasicController implements Val
 	private EvaluationFormElementWrapper forgeTextInput(TextInput element) {
 		String initialValue = "";
 		EvaluationFormResponse response = identifierToResponses.get(element.getId());
-		if(response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse())) {
+		if (response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse())) {
 			initialValue = response.getStringuifiedResponse();
 		}
-		
+
 		int rows = 12;
-		if(element.getRows() > 0) {
+		if (element.getRows() > 0) {
 			rows = element.getRows();
 		}
-		TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), null, Integer.MAX_VALUE, rows, 72, false, initialValue, flc);
+		TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), null, Integer.MAX_VALUE, rows, 72,
+				false, initialValue, flc);
 		textEl.setEnabled(!readOnly);
 		FormLink saveButton = uifactory.addFormLink("save_" + (count++), "save", null, flc, Link.BUTTON);
 		saveButton.setVisible(!readOnly);
-		
+
 		TextInputWrapper textInputWrapper = new TextInputWrapper(element, textEl, saveButton);
 		saveButton.setUserObject(textInputWrapper);
 		textEl.setUserObject(textInputWrapper);
@@ -290,42 +301,41 @@ public class EvaluationFormController extends FormBasicController implements Val
 		wrapper.setTextInputWrapper(textInputWrapper);
 		return wrapper;
 	}
-	
+
 	private EvaluationFormElementWrapper forgeRubric(Rubric element) {
 		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
 		List<Slider> sliders = element.getSliders();
 		List<SliderWrapper> sliderWrappers = new ArrayList<>(sliders.size());
-		for(Slider slider:sliders) {
+		for (Slider slider : sliders) {
 			String responseIdentifier = slider.getId();
 			EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
-			
+
 			SliderType type = element.getSliderType();
 			SliderWrapper sliderWrapper = null;
-			if(type == SliderType.discrete) {
+			if (type == SliderType.discrete) {
 				sliderWrapper = forgeDiscreteRadioButtons(slider, element, response);
-			} else if(type == SliderType.discrete_slider) {
+			} else if (type == SliderType.discrete_slider) {
 				sliderWrapper = forgeDiscreteSlider(slider, element, response);
-			} else if(type == SliderType.continuous) {
+			} else if (type == SliderType.continuous) {
 				sliderWrapper = forgeContinuousSlider(slider, element, response);
 			}
-			
-			if(sliderWrapper != null) {
+
+			if (sliderWrapper != null) {
 				sliderWrappers.add(sliderWrapper);
 			}
 		}
 		wrapper.setSliders(sliderWrappers);
 		return wrapper;
 	}
-	
 
 	private SliderWrapper forgeContinuousSlider(Slider slider, Rubric element, EvaluationFormResponse response) {
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + (count++), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		sliderEl.setEnabled(!readOnly);
-		if(response != null && response.getNumericalResponse() != null) {
+		if (response != null && response.getNumericalResponse() != null) {
 			double val = response.getNumericalResponse().doubleValue();
-			sliderEl.setInitialValue(val);
+			sliderEl.setValue(val);
 		}
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
@@ -343,18 +353,19 @@ public class EvaluationFormController extends FormBasicController implements Val
 		}
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
-		if (noResponseEl != null) noResponseEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null)
+			noResponseEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
-	
+
 	private SliderWrapper forgeDiscreteSlider(Slider slider, Rubric element, EvaluationFormResponse response) {
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + (count++), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		sliderEl.setEnabled(!readOnly);
-		if(response != null && response.getNumericalResponse() != null) {
+		if (response != null && response.getNumericalResponse() != null) {
 			double val = response.getNumericalResponse().doubleValue();
-			sliderEl.setInitialValue(val);
+			sliderEl.setValue(val);
 		}
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
@@ -373,7 +384,8 @@ public class EvaluationFormController extends FormBasicController implements Val
 		}
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
-		if (noResponseEl != null) noResponseEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null)
+			noResponseEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
 
@@ -381,13 +393,13 @@ public class EvaluationFormController extends FormBasicController implements Val
 		int start = element.getStart();
 		int end = element.getEnd();
 		int steps = element.getSteps();
-		
+
 		double[] theSteps = new double[steps];
 		String[] theKeys = new String[steps];
 		String[] theValues = new String[steps];
-		
-		double step = (end - start + 1) / (double)steps;
-		for(int i=0; i<steps; i++) {
+
+		double step = (end - start + 1) / (double) steps;
+		for (int i = 0; i < steps; i++) {
 			theSteps[i] = start + (i * step);
 			theKeys[i] = Double.toString(theSteps[i]);
 			theValues[i] = "";
@@ -400,13 +412,13 @@ public class EvaluationFormController extends FormBasicController implements Val
 		radioEl.setAllowNoSelection(true);
 		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
 		radioEl.setWidthInPercent(widthInPercent, true);
-		if(response != null && response.getNumericalResponse() != null) {
+		if (response != null && response.getNumericalResponse() != null) {
 			double val = response.getNumericalResponse().doubleValue();
 			double error = step / 10.0d;
-			for(int i=0; i<theSteps.length; i++) {
+			for (int i = 0; i < theSteps.length; i++) {
 				double theStep = theSteps[i];
 				double margin = Math.abs(theStep - val);
-				if(margin < error) {
+				if (margin < error) {
 					radioEl.select(theKeys[i], true);
 				}
 			}
@@ -425,56 +437,57 @@ public class EvaluationFormController extends FormBasicController implements Val
 		}
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
 		radioEl.setUserObject(sliderWrapper);
-		if (noResponseEl != null) noResponseEl.setUserObject(sliderWrapper);
+		if (noResponseEl != null)
+			noResponseEl.setUserObject(sliderWrapper);
 		return sliderWrapper;
 	}
-	
+
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		//super.propagateDirtinessToContainer(fiSrc, fe);
+		// super.propagateDirtinessToContainer(fiSrc, fe);
 	}
 
 	@Override
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
 		boolean allFiled = true;
-		for(EvaluationFormElementWrapper elementWrapper:elementWrapperList) {
-			if(elementWrapper.isTextInput()) {
+		for (EvaluationFormElementWrapper elementWrapper : elementWrapperList) {
+			if (elementWrapper.isTextInput()) {
 				TextInputWrapper wrapper = elementWrapper.getTextInputWrapper();
-				if(wrapper != null && !hasResponse(wrapper.getId())) {
+				if (wrapper != null && !hasResponse(wrapper.getId())) {
 					allFiled &= false;
 				}
-			} else if(elementWrapper.isFileUpload()) {
+			} else if (elementWrapper.isFileUpload()) {
 				FileUploadWrapper wrapper = elementWrapper.getFileUploadWrapper();
-				if(wrapper != null && !hasResponse(wrapper.getId())) {
+				if (wrapper != null && !hasResponse(wrapper.getId())) {
 					allFiled &= false;
 				}
-			} else if(elementWrapper.getSliders() != null && elementWrapper.getSliders().size() > 0) {
-				for(SliderWrapper slider:elementWrapper.getSliders()) {
-					if(slider != null && !hasResponse(slider.getId())) {
+			} else if (elementWrapper.getSliders() != null && elementWrapper.getSliders().size() > 0) {
+				for (SliderWrapper slider : elementWrapper.getSliders()) {
+					if (slider != null && !hasResponse(slider.getId())) {
 						allFiled &= false;
 					}
 				}
 			}
 		}
-		
-		if(!allFiled) {
+
+		if (!allFiled) {
 			String msg = translate("warning.form.not.completed");
 			messages.add(new ValidationMessage(Level.warning, msg));
 		}
 		return validateFormLogic(ureq);
 	}
-	
+
 	private boolean hasResponse(String id) {
-		if(id == null) return true;//not a field
-		
-		if(!identifierToResponses.containsKey(id)) {
+		if (id == null)
+			return true;// not a field
+
+		if (!identifierToResponses.containsKey(id)) {
 			return false;
 		}
 		EvaluationFormResponse response = identifierToResponses.get(id);
-		if(response == null ||
-				(response.getNumericalResponse() == null
-					&& !StringHelper.containsNonWhitespace(response.getStringuifiedResponse())
-					&& response.getFileResponse() == null)) {
+		if (response == null || (response.getNumericalResponse() == null
+				&& !StringHelper.containsNonWhitespace(response.getStringuifiedResponse())
+				&& response.getFileResponse() == null)) {
 			return false;
 		}
 		return true;
@@ -483,14 +496,14 @@ public class EvaluationFormController extends FormBasicController implements Val
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
+
 		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(confirmDoneCtrl == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
+		if (confirmDoneCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
 				saveAsDone(ureq);
 			}
 		}
@@ -504,27 +517,27 @@ public class EvaluationFormController extends FormBasicController implements Val
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveAsDoneButton == source) {
+		if (saveAsDoneButton == source) {
 			doConfirmDone(ureq);
-		} else if(source instanceof SingleSelection) {
-			SingleSelection radioEl = (SingleSelection)source;
+		} else if (source instanceof SingleSelection) {
+			SingleSelection radioEl = (SingleSelection) source;
 			Object uobject = radioEl.getUserObject();
-			if(uobject instanceof SliderWrapper) {
-				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
+			if (uobject instanceof SliderWrapper) {
+				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
 				saveSliderResponse(sliderWrapper);
 			}
-		} else if(source instanceof SliderElement) {
-			SliderElement slider = (SliderElement)source;
+		} else if (source instanceof SliderElement) {
+			SliderElement slider = (SliderElement) source;
 			Object uobject = slider.getUserObject();
-			if(uobject instanceof SliderWrapper) {
-				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
+			if (uobject instanceof SliderWrapper) {
+				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
 				saveSliderResponse(sliderWrapper);
 			}
 		} else if (source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement noResponseEl = (MultipleSelectionElement)source;
+			MultipleSelectionElement noResponseEl = (MultipleSelectionElement) source;
 			Object uobject = noResponseEl.getUserObject();
-			if(uobject instanceof SliderWrapper) {
-				SliderWrapper sliderWrapper = (SliderWrapper)uobject;
+			if (uobject instanceof SliderWrapper) {
+				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
 				boolean noAnswer = noResponseEl.isAtLeastSelected(1);
 				if (noAnswer) {
 					saveNoResponse(sliderWrapper.getId());
@@ -534,24 +547,24 @@ public class EvaluationFormController extends FormBasicController implements Val
 				sliderWrapper.getFormItem().setEnabled(!noAnswer);
 				flc.setDirty(true);
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink) source;
 			Object uobject = link.getUserObject();
-			if(uobject instanceof TextInputWrapper) {
-				TextInputWrapper wrapper = (TextInputWrapper)uobject;
+			if (uobject instanceof TextInputWrapper) {
+				TextInputWrapper wrapper = (TextInputWrapper) uobject;
 				String value = wrapper.getTextEl().getValue();
 				saveNumericalResponse(null, value, wrapper.getId());
 			}
 		} else if (source instanceof FileElement) {
-			FileElement fileElement = (FileElement)source;
+			FileElement fileElement = (FileElement) source;
 			Object uobject = fileElement.getUserObject();
 			if (uobject instanceof FileUploadWrapper) {
-				FileUploadWrapper wrapper = (FileUploadWrapper)uobject;
-				if(event instanceof FileElementEvent) {
-					if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				FileUploadWrapper wrapper = (FileUploadWrapper) uobject;
+				if (event instanceof FileElementEvent) {
+					if (FileElementEvent.DELETE.equals(event.getCommand())) {
 						saveFileResponse(null, null, wrapper.getId());
 						fileElement.setInitialFile(null);
-						if(fileElement.getUploadFile() != null) {
+						if (fileElement.getUploadFile() != null) {
 							fileElement.reset();
 						}
 						flc.setDirty(true);
@@ -588,28 +601,32 @@ public class EvaluationFormController extends FormBasicController implements Val
 			identifierToResponses.remove(sliderWrapper.getId());
 		}
 	}
-	
-	private void saveNumericalResponse(BigDecimal numericalValue, String stringuifiedReponse, String responseIdentifier) {
-		if(evaluator == null || readOnly) return;
-		
+
+	private void saveNumericalResponse(BigDecimal numericalValue, String stringuifiedReponse,
+			String responseIdentifier) {
+		if (evaluator == null || readOnly)
+			return;
+
 		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
-		if(response == null) {
-			response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier,
-					numericalValue, stringuifiedReponse, session);
+		if (response == null) {
+			response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier, numericalValue,
+					stringuifiedReponse, session);
 		} else {
-			response = evaluationFormManager.updateResponseForPortfolioEvaluation(numericalValue, stringuifiedReponse, response);
+			response = evaluationFormManager.updateResponseForPortfolioEvaluation(numericalValue, stringuifiedReponse,
+					response);
 		}
 		updateCache(responseIdentifier, response);
 	}
-	
+
 	private void saveFileResponse(File file, String filename, String responseIdentifier) {
-		if(evaluator == null || readOnly) return;
-		
+		if (evaluator == null || readOnly)
+			return;
+
 		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
 		try {
 			if (response == null) {
-				response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier, file, filename,
-						session);
+				response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier, file,
+						filename, session);
 			} else {
 				response = evaluationFormManager.updateResponseForPortfolioEvaluation(file, filename, response);
 			}
@@ -620,12 +637,13 @@ public class EvaluationFormController extends FormBasicController implements Val
 
 		updateCache(responseIdentifier, response);
 	}
-	
+
 	private void saveNoResponse(String responseIdentifier) {
-		if(evaluator == null || readOnly) return;
-		
+		if (evaluator == null || readOnly)
+			return;
+
 		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
-		if(response == null) {
+		if (response == null) {
 			response = evaluationFormManager.createNoResponse(responseIdentifier, session);
 		} else {
 			response = evaluationFormManager.updateNoResponse(response);
@@ -634,42 +652,42 @@ public class EvaluationFormController extends FormBasicController implements Val
 	}
 
 	private void updateCache(String responseIdentifier, EvaluationFormResponse response) {
-		if(response != null) {
+		if (response != null) {
 			identifierToResponses.put(responseIdentifier, response);
 		}
 	}
-	
+
 	private void doConfirmDone(UserRequest ureq) {
-		for(EvaluationFormElementWrapper elementWrapper:elementWrapperList) {
-			if(elementWrapper.isTextInput()) {
+		for (EvaluationFormElementWrapper elementWrapper : elementWrapperList) {
+			if (elementWrapper.isTextInput()) {
 				TextInputWrapper wrapper = elementWrapper.getTextInputWrapper();
 				String value = wrapper.getTextEl().getValue();
 				saveNumericalResponse(null, value, wrapper.getId());
-			}	
+			}
 		}
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("<p>").append(translate("confirm.done")).append("</p>");
-		
+
 		List<ValidationMessage> messages = new ArrayList<>();
 		validate(ureq, messages);
-		if(messages.size() > 0) {
-			for(ValidationMessage message:messages) {
+		if (messages.size() > 0) {
+			for (ValidationMessage message : messages) {
 				sb.append("<p class='o_warning'>").append(message.getMessage()).append("</p>");
 			}
 		}
 		confirmDoneCtrl = activateYesNoDialog(ureq, null, sb.toString(), confirmDoneCtrl);
 	}
-	
+
 	private void saveAsDone(UserRequest ureq) {
-		//save text inputs
+		// save text inputs
 		session = evaluationFormManager.changeSessionStatus(session, EvaluationFormSessionStatus.done);
 		readOnly = true;
 		dbInstance.commit();
 		loadResponses();
 		updateElements(ureq);
 		if (saveAsDoneButton != null) {
-			saveAsDoneButton.setVisible(false);			
+			saveAsDoneButton.setVisible(false);
 		}
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -679,8 +697,9 @@ public class EvaluationFormController extends FormBasicController implements Val
 	protected void doDispose() {
 		//
 	}
-	
+
 	private String[] getNoResponseValue() {
-		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>" + getTranslator().translate("no.response") + "</span>"};
+		return new String[] { "&nbsp;<span class='o_evaluation_no_resp_value'>"
+				+ getTranslator().translate("no.response") + "</span>" };
 	}
 }
