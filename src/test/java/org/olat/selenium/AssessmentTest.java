@@ -364,7 +364,7 @@ public class AssessmentTest extends Deployments {
 		courseEditor
 				.autoPublish()
 				.accessConfiguration()
-				.setUserAccess(UserAccess.registred)
+				.setUserAccess(UserAccess.membersOnly)
 				.clickToolbarBack();
 		
 		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
@@ -703,7 +703,7 @@ public class AssessmentTest extends Deployments {
 			.enableRootScoreByNodes()
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.setUserAccess(UserAccess.membersOnly)
 			.clickToolbarBack();
 		
 		//add a participant to the course
@@ -1266,7 +1266,7 @@ public class AssessmentTest extends Deployments {
 			.enableRootScoreByNodes()
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.membersOnly);
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();

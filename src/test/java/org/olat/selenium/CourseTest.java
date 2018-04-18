@@ -933,7 +933,7 @@ public class CourseTest extends Deployments {
 			.createNode("info")
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.setUserAccess(UserAccess.membersOnly)
 			.clickToolbarBack();
 		// add a participant
 		course

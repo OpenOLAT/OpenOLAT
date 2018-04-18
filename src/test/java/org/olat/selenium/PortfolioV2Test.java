@@ -458,7 +458,7 @@ public class PortfolioV2Test extends Deployments {
 			.enableRootScoreByNodes()
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.membersOnly);
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
