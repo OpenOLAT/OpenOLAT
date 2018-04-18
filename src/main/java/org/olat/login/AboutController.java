@@ -20,8 +20,6 @@
 
 package org.olat.login;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
@@ -38,7 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 
@@ -62,20 +59,10 @@ public class AboutController extends BasicController {
 		VelocityContainer aboutVC = createVelocityContainer("about");
 		// add license text
 		String licenses = "Not found";
-		InputStream licensesStream = AboutController.class.getResourceAsStream("../../../NOTICE.TXT");
-		try {
-			// try from source if debug enabled
-			if(licensesStream == null && Settings.isDebuging()) {
-				File noticeFile = new File(WebappHelper.getSourcePath() + "/../../../NOTICE.TXT");
-				licensesStream = new FileInputStream(noticeFile);			
-			}
-			if(licensesStream != null) {
-				licenses = IOUtils.toString(licensesStream, "UTF-8");
-			}
+		try(InputStream licensesStream = AboutController.class.getResourceAsStream("../../../NOTICE.TXT")) {
+			licenses = IOUtils.toString(licensesStream, "UTF-8");
 		} catch (IOException e) {
 			logError("Error while reading NOTICE.TXT", e);
-		} finally {
-			IOUtils.closeQuietly(licensesStream);
 		}
 		aboutVC.contextPut("licenses", licenses);
 		// close link after about text

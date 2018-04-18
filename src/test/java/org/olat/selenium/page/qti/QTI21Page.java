@@ -50,7 +50,7 @@ public class QTI21Page {
 		this.browser = browser;
 	}
 	
-	public static QTI21Page getQTI12Page(WebDriver browser) {
+	public static QTI21Page getQTI21Page(WebDriver browser) {
 		By mainBy = By.id("o_main_wrapper");
 		OOGraphene.waitElement(mainBy, 5, browser);
 		WebElement main = browser.findElement(mainBy);
@@ -865,7 +865,7 @@ public class QTI21Page {
 		OOGraphene.closeBlueMessageWindow(browser);
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
-		return QTI21Page.getQTI12Page(browser);
+		return QTI21Page.getQTI21Page(browser);
 	}
 	
 	public enum TrueFalse {

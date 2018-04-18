@@ -118,6 +118,7 @@ CREATE TABLE o_bs_authentication (
   id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
+  lastmodified date NOT NULL,
   identity_fk number(20) NOT NULL,
   provider varchar2(8 char),
   authusername varchar2(255 char),
