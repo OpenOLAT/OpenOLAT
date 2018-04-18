@@ -1496,7 +1496,7 @@ create table o_qti_assessment_response (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   q_responseidentifier varchar(64) not null,
+   q_responseidentifier varchar(255) not null,
    q_responsedatatype varchar(16) not null,
    q_responselegality varchar(16) not null,
    q_stringuifiedresponse mediumtext,

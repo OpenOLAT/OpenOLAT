@@ -1523,7 +1523,7 @@ create table o_qti_assessment_response (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
-   q_responseidentifier varchar2(64 char) not null,
+   q_responseidentifier varchar2(255 char) not null,
    q_responsedatatype varchar2(16 char) not null,
    q_responselegality varchar2(16 char) not null,
    q_stringuifiedresponse clob,

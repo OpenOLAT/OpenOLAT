@@ -1495,7 +1495,7 @@ create table o_qti_assessment_response (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   q_responseidentifier varchar(64) not null,
+   q_responseidentifier varchar(255) not null,
    q_responsedatatype varchar(16) not null,
    q_responselegality varchar(16) not null,
    q_stringuifiedresponse text,
