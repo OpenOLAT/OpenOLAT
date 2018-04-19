@@ -116,6 +116,17 @@ create table o_bs_authentication (
    primary key (id),
    unique (provider, authusername)
 );
+create table o_bs_authentication_history (
+   id bigserial not null,
+   creationdate timestamp,
+   provider varchar(8),
+   authusername varchar(255),
+   credential varchar(255),
+   salt varchar(255) default null,
+   hashalgorithm varchar(16) default null,
+   fk_identity int8 not null,
+   primary key (id)
+);
 create table o_noti_pub (
    publisher_id int8 not null,
    version int4 not null,
@@ -2602,6 +2613,9 @@ create index idx_auth_ident_idx on o_bs_authentication (identity_fk);
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
+
+alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);
 
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);

@@ -25,7 +25,6 @@
 
 package org.olat.user;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
@@ -114,8 +113,7 @@ public class ChangePasswordController extends BasicController implements Support
 			myContent = createVelocityContainer("pwd");
 			//adds "provider_..." variables to myContent
 			exposePwdProviders(ureq.getIdentity());
-
-			chPwdForm = new ChangePasswordForm(ureq, wControl);
+			chPwdForm = new ChangePasswordForm(ureq, wControl, getIdentity());
 			listenTo(chPwdForm);
 			myContent.put("chpwdform", chPwdForm.getInitialComponent());
 			putInitialPanel(myContent);
@@ -173,7 +171,7 @@ public class ChangePasswordController extends BasicController implements Support
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(chPwdForm);
-				chPwdForm = new ChangePasswordForm(ureq, getWindowControl());
+				chPwdForm = new ChangePasswordForm(ureq, getWindowControl(), getIdentity());
 				listenTo(chPwdForm);
 				myContent.put("chpwdform", chPwdForm.getInitialComponent());
 			}
@@ -183,9 +181,8 @@ public class ChangePasswordController extends BasicController implements Support
 	private void exposePwdProviders(Identity identity) {
 		// check if user has OLAT provider
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
-		Iterator<Authentication> iter = authentications.iterator();
-		while (iter.hasNext()) {
-			myContent.contextPut("provider_" + (iter.next()).getProvider(), Boolean.TRUE);
+		for(Authentication auth: authentications) {
+			myContent.contextPut("provider_" + auth.getProvider(), Boolean.TRUE);
 		}
 		
 		//LDAP Module propagate changes to password
@@ -194,9 +191,7 @@ public class ChangePasswordController extends BasicController implements Support
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}	

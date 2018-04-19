@@ -1,8 +1,28 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.login.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -23,6 +43,7 @@ public class PasswordPolicyController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
 	
+	private SingleSelection historyEl;
 	private MultipleSelectionElement changeOnceEl;
 	
 	private TextElement maxAgeEl;
@@ -37,7 +58,7 @@ public class PasswordPolicyController extends FormBasicController {
 	private LoginModule loginModule;
 	
 	public PasswordPolicyController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(LoginModule.class, ureq.getLocale(), getTranslator()));
 		initForm(ureq);
 	}
@@ -45,52 +66,69 @@ public class PasswordPolicyController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		FormLayoutContainer policyCont = FormLayoutContainer.createDefaultFormLayout("passwordPolicy", getTranslator());
-		policyCont.setFormTitle(translate("password.policy.title"));
-		formLayout.add(policyCont);
-		
+		setFormTitle("password.policy.title");
+		setFormDescription("max.age.description");
+
 		String[] onValues = new String[] { "" };
-		changeOnceEl = uifactory.addCheckboxesHorizontal("change.once", "change.once", policyCont, onKeys, onValues);
+		changeOnceEl = uifactory.addCheckboxesHorizontal("change.once", "change.once", formLayout, onKeys, onValues);
 		if(loginModule.isPasswordChangeOnce()) {
 			changeOnceEl.select(onKeys[0], true);
 		}
-
-		FormLayoutContainer ageCont = FormLayoutContainer.createDefaultFormLayout("passwordAges", getTranslator());
-		ageCont.setFormTitle(translate("max.age.title"));
-		ageCont.setFormDescription(translate("max.age.description"));
-		formLayout.add(ageCont);
+		
+		String selectedVal = Integer.toString(loginModule.getPasswordHistory());
+		boolean hasVal = false;
+		String[] historyKeys = new String[] { "0", "1", "2", "5", "10", "15" };
+		for(String historyKey:historyKeys) {
+			if(selectedVal.equals(historyKey)) {
+				hasVal = true;
+			}
+		}
+		String[] historyValues = new String[] { translate("disable.history"), "1", "2", "5", "10", "15" };
+		if(!hasVal) {
+			historyKeys = append(historyKeys, selectedVal);
+			historyValues = append(historyValues, selectedVal);
+		}
+		historyEl = uifactory.addDropdownSingleselect("password.history", "password.history", formLayout, historyKeys, historyValues, null);
+		historyEl.select(selectedVal, true);
 
 		String maxAge = toMaxAgeAsString(loginModule.getPasswordMaxAge());
-		maxAgeEl = uifactory.addTextElement("max.age", "max.age", 5, maxAge, ageCont);
+		maxAgeEl = uifactory.addTextElement("max.age", "max.age", 5, maxAge, formLayout);
 		maxAgeEl.setExampleKey("max.age.hint", null);
 		
 		String maxAgeAuthor = toMaxAgeAsString(loginModule.getPasswordMaxAgeAuthor());
-		maxAgeAuthorEl = uifactory.addTextElement("max.age.author", "max.age.author", 5, maxAgeAuthor, ageCont);
+		maxAgeAuthorEl = uifactory.addTextElement("max.age.author", "max.age.author", 5, maxAgeAuthor, formLayout);
 		maxAgeAuthorEl.setExampleKey("max.age.hint", null);
 		
 		String maxAgeGroupManager = toMaxAgeAsString(loginModule.getPasswordMaxAgeGroupManager());
-		maxAgeGroupManagerEl = uifactory.addTextElement("max.age.groupmanager", "max.age.groupmanager", 5, maxAgeGroupManager, ageCont);
+		maxAgeGroupManagerEl = uifactory.addTextElement("max.age.groupmanager", "max.age.groupmanager", 5, maxAgeGroupManager, formLayout);
 		maxAgeGroupManagerEl.setExampleKey("max.age.hint", null);
 		
 		String maxAgePoolManager = toMaxAgeAsString(loginModule.getPasswordMaxAgePoolManager());
-		maxAgePoolManagerEl = uifactory.addTextElement("max.age.poolmanager", "max.age.poolmanager", 5, maxAgePoolManager, ageCont);
+		maxAgePoolManagerEl = uifactory.addTextElement("max.age.poolmanager", "max.age.poolmanager", 5, maxAgePoolManager, formLayout);
 		maxAgePoolManagerEl.setExampleKey("max.age.hint", null);
 
 		String maxAgeUserManager = toMaxAgeAsString(loginModule.getPasswordMaxAgeUserManager());
-		maxAgeUserManagerEl = uifactory.addTextElement("max.age.usermanager", "max.age.usermanager", 5, maxAgeUserManager, ageCont);
+		maxAgeUserManagerEl = uifactory.addTextElement("max.age.usermanager", "max.age.usermanager", 5, maxAgeUserManager, formLayout);
 		maxAgeUserManagerEl.setExampleKey("max.age.hint", null);
 
 		String maxAgeLearnResourceManager = toMaxAgeAsString(loginModule.getPasswordMaxAgeLearnResourceManager());
-		maxAgeLearnResourceManagerEl = uifactory.addTextElement("max.age.learnresourcemanager", "max.age.learnresourcemanager", 5, maxAgeLearnResourceManager, ageCont);
+		maxAgeLearnResourceManagerEl = uifactory.addTextElement("max.age.learnresourcemanager", "max.age.learnresourcemanager", 5, maxAgeLearnResourceManager, formLayout);
 		maxAgeLearnResourceManagerEl.setExampleKey("max.age.hint", null);
 
 		String maxAgeAdministrator = toMaxAgeAsString(loginModule.getPasswordMaxAgeAdministrator());
-		maxAgeAdministratorEl = uifactory.addTextElement("max.age.administrator", "max.age.administrator", 5, maxAgeAdministrator, ageCont);
+		maxAgeAdministratorEl = uifactory.addTextElement("max.age.administrator", "max.age.administrator", 5, maxAgeAdministrator, formLayout);
 		maxAgeAdministratorEl.setExampleKey("max.age.hint", null);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		ageCont.add(buttonsCont);
+		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private String[] append(String[] array, String val) {
+		String[] newArray = new String[array.length + 1];
+		System.arraycopy(array, 0, newArray, 0, array.length);
+		newArray[array.length] = val;
+		return newArray;
 	}
 	
 	private String toMaxAgeAsString(int maxAge) {
@@ -119,6 +157,13 @@ public class PasswordPolicyController extends FormBasicController {
 		allOk &= validateMaxAgeEl(maxAgeUserManagerEl);
 		allOk &= validateMaxAgeEl(maxAgeLearnResourceManagerEl);
 		allOk &= validateMaxAgeEl(maxAgeAdministratorEl);
+		
+		historyEl.clearError();
+		if(!historyEl.isOneSelected()) {
+			historyEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
@@ -128,7 +173,7 @@ public class PasswordPolicyController extends FormBasicController {
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue())
 				&& !StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("", null);
+			el.setErrorKey("form.error.nointeger", null);
 			allOk &= false;
 		}
 		
@@ -138,6 +183,9 @@ public class PasswordPolicyController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		loginModule.setPasswordChangeOnce(changeOnceEl.isAtLeastSelected(1));
+		
+		int history = Integer.parseInt(historyEl.getSelectedKey());
+		loginModule.setPasswordHistory(history);
 		
 		loginModule.setPasswordMaxAge(getMaxAge(maxAgeEl));
 		loginModule.setPasswordMaxAgeAuthor(getMaxAge(maxAgeAuthorEl));

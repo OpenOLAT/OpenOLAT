@@ -120,6 +120,8 @@ import org.junit.runners.Suite;
 	org.olat.resource.lock.pessimistic.PLockTest.class,
 	org.olat.resource.references.ReferenceManagerTest.class,
 	org.olat.resource.OLATResourceManagerTest.class,
+	org.olat.basesecurity.manager.AuthenticationDAOTest.class,
+	org.olat.basesecurity.manager.AuthenticationHistoryDAOTest.class,
 	org.olat.basesecurity.manager.GroupDAOTest.class,
 	org.olat.basesecurity.SecurityManagerTest.class,
 	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,

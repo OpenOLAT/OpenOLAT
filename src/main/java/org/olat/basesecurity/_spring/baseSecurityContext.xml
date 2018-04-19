@@ -15,6 +15,7 @@
 		<property name="loginModule" ref="loginModule"/>
 		<property name="dbInstance" ref="database"/>
 		<property name="invitationDao" ref="invitationDao" />
+		<property name="authenticationHistoryDao" ref="authenticationHistoryDao" />
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
 </beans>

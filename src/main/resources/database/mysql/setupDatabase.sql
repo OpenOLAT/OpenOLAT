@@ -118,6 +118,17 @@ create table if not exists o_bs_authentication (
    primary key (id),
    unique (provider, authusername)
 );
+create table if not exists o_bs_authentication_history (
+   id bigint not null,
+   creationdate datetime,
+   provider varchar(8),
+   authusername varchar(255),
+   credential varchar(255),
+   salt varchar(255) default null,
+   hashalgorithm varchar(16) default null,
+   fk_identity bigint not null,
+   primary key (id)
+);
 create table if not exists o_noti_pub (
    publisher_id bigint not null,
    version mediumint unsigned not null,
@@ -2541,6 +2552,7 @@ alter table o_userproperty ENGINE = InnoDB;
 alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;
 alter table o_bs_authentication ENGINE = InnoDB;
+alter table o_bs_authentication_history ENGINE = InnoDB;
 alter table o_qtiresult ENGINE = InnoDB;
 alter table o_qtiresultset ENGINE = InnoDB;
 alter table o_bs_identity ENGINE = InnoDB;
@@ -2738,6 +2750,8 @@ alter table o_bs_authentication add constraint FKC6A5445652595FE6 foreign key (i
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
+
+alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 create index name_idx on o_bs_identity (name);
 create index identstatus_idx on o_bs_identity (status);

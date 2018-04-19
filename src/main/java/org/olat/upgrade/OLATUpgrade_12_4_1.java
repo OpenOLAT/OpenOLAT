@@ -22,7 +22,10 @@ package org.olat.upgrade;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +40,14 @@ public class OLATUpgrade_12_4_1 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_12.4.1";
 	private static final String MIGRATE_AGE_POLICY = "MIGRATE CHANGE PASSWORD";
+	private static final String MIGRATE_HISTORY = "MIGRATE PASSWORD HISTORY";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private AuthenticationHistoryDAO authenticationHistoryDao;
 	
 	public OLATUpgrade_12_4_1() {
 		super();
@@ -69,6 +75,7 @@ public class OLATUpgrade_12_4_1 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migratePasswordChanges(upgradeManager, uhd);
+		allOk &= migratePasswordHistory(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -80,7 +87,6 @@ public class OLATUpgrade_12_4_1 extends OLATUpgrade {
 		return allOk;
 	}
 
-	
 	private boolean migratePasswordChanges(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MIGRATE_AGE_POLICY)) {
@@ -122,5 +128,45 @@ public class OLATUpgrade_12_4_1 extends OLATUpgrade {
 				.setParameter("val", "true")
 				.getResultList();	
 	}
+	
+	private boolean migratePasswordHistory(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_HISTORY)) {
+			try {
+				int count = 0;
+				String olatProvider = BaseSecurityModule.getDefaultAuthProviderIdentifier();
+				List<Authentication> authentications = getOlatAuthentications();
+				dbInstance.commitAndCloseSession();
+				for(Authentication authentication:authentications) {
+					if(authenticationHistoryDao.historyLength(authentication.getIdentity(), olatProvider) == 0) {
+						authenticationHistoryDao.createHistory(authentication, authentication.getIdentity());
+					}
+					if(count++ % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					}
+					if(count % 100 == 0) {
+						log.info("Add " + count + " password in password history");
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
 
+			uhd.setBooleanDataValue(MIGRATE_HISTORY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<Authentication> getOlatAuthentications() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity as ident")
+		  .append(" where auth.provider=:provider");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("provider", BaseSecurityModule.getDefaultAuthProviderIdentifier())
+				.getResultList();	
+	}
 }

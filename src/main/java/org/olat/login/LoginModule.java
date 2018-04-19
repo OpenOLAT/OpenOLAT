@@ -64,6 +64,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String MAX_AGE_USERMANAGER = "password.max.age.usermanager";
 	private static final String MAX_AGE_LEARNRESOURCEMANAGER = "password.max.age.learnresourcemanager";
 	private static final String MAX_AGE_ADMINISTRATOR = "password.max.age.administrator";
+	private static final String HISTORY = "password.history";
 
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
@@ -92,6 +93,9 @@ public class LoginModule extends AbstractSpringModule {
 	private int passwordMaxAgeLearnResourceManager;
 	@Value("${password.max.age.administrator}")
 	private int passwordMaxAgeAdministrator;
+	
+	@Value("${password.history:0}")
+	private int passwordHistory;
 
 	@Value("${invitation.login:enabled}")
 	private String invitationEnabled;
@@ -235,6 +239,10 @@ public class LoginModule extends AbstractSpringModule {
 		String maxAgeAdministrator = getStringPropertyValue(MAX_AGE_ADMINISTRATOR, true);
 		if(StringHelper.containsNonWhitespace(maxAgeAdministrator)) {
 			passwordMaxAgeAdministrator = Integer.parseInt(maxAgeAdministrator);
+		}
+		String history = getStringPropertyValue(HISTORY, true);
+		if(StringHelper.containsNonWhitespace(history)) {
+			passwordHistory = Integer.parseInt(history);
 		}
 	}
 
@@ -526,7 +534,18 @@ public class LoginModule extends AbstractSpringModule {
 	}
 
 	public void setPasswordMaxAgeAdministrator(int maxAge) {
-		this.passwordMaxAgeAdministrator = maxAge;
+		passwordMaxAgeAdministrator = maxAge;
 		setStringProperty(MAX_AGE_ADMINISTRATOR, Integer.toString(maxAge), true);
 	}
+
+	public int getPasswordHistory() {
+		return passwordHistory;
+	}
+
+	public void setPasswordHistory(int history) {
+		passwordHistory = history;
+		setStringProperty(HISTORY, Integer.toString(history), true);
+	}
+	
+	
 }

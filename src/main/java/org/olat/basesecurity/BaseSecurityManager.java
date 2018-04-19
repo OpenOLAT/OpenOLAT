@@ -48,6 +48,7 @@ import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UserChangePasswordController;
 import org.olat.admin.user.UserCreateController;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
+import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -95,6 +96,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	private LoginModule loginModule;
 	private OLATResourceManager orm;
 	private InvitationDAO invitationDao;
+	private AuthenticationHistoryDAO authenticationHistoryDao;
 	private String dbVendor = "";
 	private static BaseSecurityManager INSTANCE;
 	private static String GUEST_USERNAME_PREFIX = "guest_";
@@ -141,6 +143,14 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	public void setInvitationDao(InvitationDAO invitationDao) {
 		this.invitationDao = invitationDao;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param authenticationHistoryDao
+	 */
+	public void setAuthenticationHistoryDao(AuthenticationHistoryDAO authenticationHistoryDao) {
+		this.authenticationHistoryDao = authenticationHistoryDao;
 	}
 
 	/**
@@ -1366,9 +1376,29 @@ public class BaseSecurityManager implements BaseSecurity {
 		auth.setCreationDate(new Date());
 		auth.setLastModified(auth.getCreationDate());
 		dbInstance.getCurrentEntityManager().persist(auth);
+		updateAuthenticationHistory(auth, ident);
 		dbInstance.commit();
 		log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
 		return auth;
+	}
+	
+	/**
+	 * Archive the password and clean the history. The method
+	 * will let at least one entry per authentication.
+	 * 
+	 * @param auth The new authentication to archive
+	 * @param ident The identity
+	 */
+	private void updateAuthenticationHistory(Authentication auth, Identity ident) {
+		if(BaseSecurityModule.getDefaultAuthProviderIdentifier().equals(auth.getProvider())) {
+			authenticationHistoryDao.createHistory(auth, ident);
+			int historyLength = loginModule.getPasswordHistory() < 1 ? 1 : loginModule.getPasswordHistory();
+			List<AuthenticationHistory> historyToDelete = authenticationHistoryDao
+					.loadHistory(ident, auth.getProvider(), historyLength, 5000);
+			for(AuthenticationHistory historyPoint:historyToDelete) {
+				authenticationHistoryDao.deleteAuthenticationHistory(historyPoint);
+			}
+		}
 	}
 
 	/**
@@ -1472,7 +1502,28 @@ public class BaseSecurityManager implements BaseSecurity {
 	@Override
 	public Authentication updateAuthentication(Authentication authentication) {
 		((AuthenticationImpl)authentication).setLastModified(new Date());
-		return dbInstance.getCurrentEntityManager().merge(authentication);
+		authentication = dbInstance.getCurrentEntityManager().merge(authentication);
+		updateAuthenticationHistory(authentication, authentication.getIdentity());
+		return authentication;
+	}
+
+	@Override
+	public boolean checkCredentialHistory(Identity identity, String provider, String password) {
+		boolean ok = true;
+		int historyLength = loginModule.getPasswordHistory();
+		if(historyLength > 0) {
+			List<AuthenticationHistory> credentialHistory = authenticationHistoryDao
+					.loadHistory(identity, provider, 0, historyLength);
+			for(AuthenticationHistory oldCredential:credentialHistory) {
+				Algorithm algorithm = Algorithm.find(oldCredential.getAlgorithm());
+				String hash = Encoder.encrypt(password, oldCredential.getSalt(), algorithm);
+				if(oldCredential.getCredential().equals(hash)) {
+					ok = false;
+					break;
+				}
+			}
+		}
+		return ok;
 	}
 
 	@Override

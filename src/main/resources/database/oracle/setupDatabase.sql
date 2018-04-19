@@ -130,6 +130,19 @@ CREATE TABLE o_bs_authentication (
 );
 
 
+CREATE TABLE o_bs_authentication_history (
+   id number(20) generated always as identity,
+   creationdate date,
+   provider varchar(8),
+   authusername varchar(255),
+   credential varchar(255),
+   salt varchar(255) default null,
+   hashalgorithm varchar(16) default null,
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
+
 CREATE TABLE o_noti_pub (
   publisher_id number(20) NOT NULL,
   version number(20) NOT NULL,
@@ -2757,6 +2770,9 @@ create index FKC6A5445652595FE6 on o_bs_authentication (identity_fk);
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
+
+alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);
 
 -- index created by unique constraint
 create index identstatus_idx on o_bs_identity (status);
