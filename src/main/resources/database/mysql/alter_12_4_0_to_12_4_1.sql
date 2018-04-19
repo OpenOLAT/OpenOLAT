@@ -7,7 +7,7 @@ update o_bs_authentication set lastmodified=creationdate;
 alter table o_bs_authentication modify lastmodified datetime not null;
 
 create table o_bs_authentication_history (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime,
    provider varchar(8),
    authusername varchar(255),

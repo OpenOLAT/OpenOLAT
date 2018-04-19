@@ -119,7 +119,7 @@ create table if not exists o_bs_authentication (
    unique (provider, authusername)
 );
 create table if not exists o_bs_authentication_history (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime,
    provider varchar(8),
    authusername varchar(255),
