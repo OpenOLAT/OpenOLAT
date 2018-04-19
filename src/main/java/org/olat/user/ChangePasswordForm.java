@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.login.auth.OLATAuthManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -47,21 +49,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ChangePasswordForm extends FormBasicController {
 
-	private TextElement oldpass;
-	private TextElement newpass1;
-	private TextElement newpass2; // confirm
+	private TextElement oldCredEl;
+	private TextElement newCredEl;
+	private TextElement newCredConfirmationEl;
 	
-	private String _oldpass = "";
-	private String _newpass = "";
+	private String oldCred = "";
+	private String newCred = "";
+	
+	private final Identity identityToChange;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
 
 	/**
 	 * @param name
 	 */
-	public ChangePasswordForm(UserRequest ureq, WindowControl wControl) {
+	public ChangePasswordForm(UserRequest ureq, WindowControl wControl, Identity identityToChange) {
 		super(ureq, wControl);
+		this.identityToChange = identityToChange;
 		initForm(ureq);
 	}
 
@@ -69,25 +76,24 @@ public class ChangePasswordForm extends FormBasicController {
 	 * @return Old password field value.
 	 */
 	public String getOldPasswordValue() {
-		return _oldpass;
+		return oldCred;
 	}
 	
 	/**
 	 * @return New password field value.
 	 */
 	public String getNewPasswordValue() {
-		return _newpass;
+		return newCred;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		oldCred = oldCredEl.getValue(); 
+		newCred = newCredEl.getValue();
 		
-		_oldpass = oldpass.getValue(); 
-		_newpass = newpass1.getValue();
-		
-		oldpass.setValue("");
-		newpass1.setValue("");
-		newpass2.setValue("");
+		oldCredEl.setValue("");
+		newCredEl.setValue("");
+		newCredConfirmationEl.setValue("");
 		
 		fireEvent (ureq, Event.DONE_EVENT); 
 	}
@@ -99,35 +105,46 @@ public class ChangePasswordForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
-		boolean allOk = true;
-		newpass1.clearError();
-		newpass2.clearError();
+		boolean allOk = super.validateFormLogic(ureq);
 		
-		if (!userManager.syntaxCheckOlatPassword(newpass1.getValue())) {
-			newpass1.setErrorKey("form.checkPassword", null);
+		newCredEl.clearError();
+		if (!userManager.syntaxCheckOlatPassword(newCredEl.getValue())) {
+			newCredEl.setErrorKey("form.checkPassword", null);
+			allOk &= false;
+		} else if(!olatAuthenticationSpi.checkCredentialHistory(identityToChange, newCredEl.getValue())) {
+			newCredEl.setErrorKey("form.checkPassword.history", null);
+			allOk &= false;
+		}
+
+		newCredConfirmationEl.clearError();
+		if (!newCredEl.getValue().equals(newCredConfirmationEl.getValue())) {
+			newCredEl.setValue("");
+			newCredConfirmationEl.setValue("");
+			newCredConfirmationEl.setErrorKey("error.password.nomatch", null);
 			allOk &= false;
 		}
 		
-		if (!newpass1.getValue().equals(newpass2.getValue())) {
-			newpass1.setValue("");
-			newpass2.setValue("");
-			newpass2.setErrorKey("error.password.nomatch", null);
-			allOk &= false;
-		}
-		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		oldpass = uifactory.addPasswordElement("oldpass", "form.password.old", 128, "", formLayout);
-		oldpass.setElementCssClass("o_sel_home_pwd_old");
-		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 128, "", formLayout);
-		newpass1.setElementCssClass("o_sel_home_pwd_new_1");
-		newpass1.setAutocomplete("new-password");
-		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 128, "", formLayout);
-		newpass2.setElementCssClass("o_sel_home_pwd_new_2");
-		newpass2.setAutocomplete("new-password");
+		oldCredEl = uifactory.addPasswordElement("oldpass", "form.password.old", 128, "", formLayout);
+		oldCredEl.setElementCssClass("o_sel_home_pwd_old");
+		oldCredEl.setNotEmptyCheck("form.please.enter.old");
+		oldCredEl.setMandatory(true);
+		
+		newCredEl = uifactory.addPasswordElement("newpass1",  "form.password.new1", 128, "", formLayout);
+		newCredEl.setNotEmptyCheck("form.please.enter.new");
+		newCredEl.setElementCssClass("o_sel_home_pwd_new_1");
+		newCredEl.setAutocomplete("new-password");
+		newCredEl.setMandatory(true);
+		
+		newCredConfirmationEl = uifactory.addPasswordElement("newpass2",  "form.password.new2", 128, "", formLayout);
+		newCredConfirmationEl.setNotEmptyCheck("form.please.enter.new");
+		newCredConfirmationEl.setElementCssClass("o_sel_home_pwd_new_2");
+		newCredConfirmationEl.setAutocomplete("new-password");
+		newCredConfirmationEl.setMandatory(true);
 		
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -135,14 +152,6 @@ public class ChangePasswordForm extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());	
-		
-		oldpass.setMandatory(true);
-		newpass1.setMandatory(true);
-		newpass2.setMandatory(true);
-		
-		oldpass.setNotEmptyCheck("form.please.enter.old");
-		newpass1.setNotEmptyCheck("form.please.enter.new");
-		newpass2.setNotEmptyCheck("form.please.enter.new");
 	}
 
 	@Override

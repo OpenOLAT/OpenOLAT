@@ -326,6 +326,15 @@ public interface BaseSecurity {
 	public Authentication updateAuthentication(Authentication authentication);
 	
 	/**
+	 * Check if the password is allowed.
+	 * 
+	 * @param identity
+	 * @param password
+	 * @return
+	 */
+	public boolean checkCredentialHistory(Identity identity, String provider, String password);
+	
+	/**
 	 * 
 	 * @param authentication
 	 * @param password

@@ -136,8 +136,7 @@ public class LoginPage {
 	/**
 	 * Login and accept the disclaimer if there is one.
 	 * 
-	 * @param username
-	 * @param password
+	 * @param user
 	 */
 	public LoginPage loginAs(UserVO user) {
 		return loginAs(user.getLogin(), user.getPassword());

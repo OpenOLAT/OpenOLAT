@@ -20,6 +20,7 @@
 package org.olat.basesecurity.manager;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
@@ -88,17 +89,18 @@ public class AuthenticationDAO {
 	 */
 	public void updateCredential(Authentication auth, String token) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("update ").append(AuthenticationImpl.class.getName()).append(" set credential=:token where key=:authKey");
+		sb.append("update ").append(AuthenticationImpl.class.getName()).append(" set credential=:token,lastModified=:now where key=:authKey");
 		dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString())
 			.setParameter("authKey", auth.getKey())
 			.setParameter("token", token)
+			.setParameter("now", new Date())
 			.executeUpdate();
 		dbInstance.commit();
 	}
 	
 	/**
-	 * The query return as valid OLAT authentication fallback for LDAP.
+	 * The query return as valid OLAT authentication a fallback for LDAP.
 	 * 
 	 * @param identity The identity to check
 	 * @param changeOnce If the identity need to change its password at least once
@@ -128,6 +130,7 @@ public class AuthenticationDAO {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND, -maxAge);
 			query.setParameter("maxDate", cal.getTime());
+			System.out.println(cal.getTime());
 		}
 		
 		List<Long> keys = query

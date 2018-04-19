@@ -61,6 +61,9 @@
 				<entry key="/oauthcallback">
 					<ref bean="oauthcallback" />
 				</entry>
+				<entry key="/csp/">
+					<ref bean="cspDispatcher" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -212,5 +215,5 @@
 
 	<!-- blog media dispatcher -->
 	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
-
+	
 </beans>

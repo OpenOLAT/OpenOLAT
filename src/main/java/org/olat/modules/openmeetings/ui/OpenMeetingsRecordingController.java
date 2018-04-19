@@ -63,8 +63,8 @@ public class OpenMeetingsRecordingController extends BasicController {
 			long width = recording.getWidth();
 			long height = recording.getHeight();
 			mainVC.contextPut("recordingUrl", url);
-			mainVC.contextPut("width", new Long(width));
-			mainVC.contextPut("height", new Long(height));
+			mainVC.contextPut("width", Long.valueOf(width));
+			mainVC.contextPut("height", Long.valueOf(height));
 		} catch (OpenMeetingsException e) {
 			logError("", e);
 		}

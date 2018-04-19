@@ -852,7 +852,7 @@ public class ImsQTI21Test extends Deployments {
 		courseEditor
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.membersOnly);
 		
 		//add a participant
 		CoursePageFragment courseRuntime = courseEditor

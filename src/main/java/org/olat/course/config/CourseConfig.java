@@ -72,7 +72,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	transient private final static int CURRENTVERSION = 12;
+	transient private final static int CURRENTVERSION = 13;
 	/**
 	 * Log levels
 	 */
@@ -108,6 +108,10 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * The toolbar is enabled by default
 	 */
 	transient public static final String TOOLBAR_ENABLED = "TOOLBAR_ENABLED";
+	/**
+	 * The bread crumb is enabled by default
+	 */
+	transient public static final String BREADCRUMB_ENABLED = "BREADCRUMB_ENABLED";
 	/**
 	 * The course search is enabled by default
 	 */
@@ -274,6 +278,12 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(COURSESEARCH_ENABLED)) configuration.put(COURSESEARCH_ENABLED, Boolean.FALSE);
 				this.version = 12;
 			}
+
+			if (version == 12) {
+				if (!configuration.containsKey(BREADCRUMB_ENABLED)) configuration.put(BREADCRUMB_ENABLED, Boolean.TRUE);
+				this.version = 13;
+			}
+
 			
 			/*
 			 * after resolving the issues, the version number is merged to the
@@ -555,6 +565,15 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(TOOLBAR_ENABLED, new Boolean(b));
 	}
 
+	public boolean isBreadCrumbEnabled() {
+		Boolean bool = (Boolean) configuration.get(BREADCRUMB_ENABLED);
+		return bool == null ? true : bool.booleanValue();
+	}
+	
+	public void setBreadCrumbEnabled(boolean b) {
+		configuration.put(BREADCRUMB_ENABLED, new Boolean(b));
+	}
+
 	/**
 	 * Creates a deep clone for the current object.
 	 * 
@@ -578,6 +597,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
 		clone.setMenuEnabled(isMenuEnabled());
 		clone.setToolbarEnabled(isToolbarEnabled());
+		clone.setBreadCrumbEnabled(isBreadCrumbEnabled());
 		clone.setCourseSearchEnabled(isCourseSearchEnabled());
 		return clone;
 	}
