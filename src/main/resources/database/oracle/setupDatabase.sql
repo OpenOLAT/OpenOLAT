@@ -190,6 +190,25 @@ CREATE TABLE o_bs_identity (
   PRIMARY KEY (id)
 );
 
+CREATE TABLE o_csp_log (
+  id number(20) generated always as identity,
+  creationdate date,
+  l_blocked_uri varchar(1024),
+  l_disposition varchar(32),
+  l_document_uri varchar(1024),
+  l_effective_directive CLOB,
+  l_original_policy CLOB,
+  l_referrer varchar(1024),
+  l_script_sample CLOB,
+  l_status_code varchar(1024),
+  l_violated_directive varchar(1024),
+  l_source_file varchar(1024),
+  l_line_number number(20),
+  l_column_number number(20),
+  fk_identity number(20),
+  PRIMARY KEY (id)
+);
+
 
 CREATE TABLE o_olatresource (
   resource_id number(20) NOT NULL,
@@ -2806,6 +2825,9 @@ create index propvalue_idx on o_userproperty (propvalue);
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- csp
+create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);
 
 -- temporary key
 create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);
