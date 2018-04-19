@@ -55,7 +55,7 @@
 
 	  	background-color: $o-toolbar-bg-color;
     	@include border-bottom-radius($o-toolbar-border-radius); // don't hide background
-		border-top: 1px solid $o-toolbar-border-color;
+		
 		@media (max-width: $screen-sm-max) { 
 			min-height: $o-toolbar-height-sm;
 		}
@@ -104,7 +104,11 @@
 		    }
 	    }
 	}
-
+	// add border when directly after a breadcrumb as a separator
+	.o_breadcrumb + .o_tools_container {
+		border-top: 1px solid $o-toolbar-border-color;
+	}
+	
 	.o_tools {
 		margin-top: $o-toolbar-tools-margin-top-md;
 		margin-bottom: $o-toolbar-tools-margin-bottom-md;
