@@ -64,9 +64,9 @@ public class AuthenticationHistoryImpl implements CreateInfo, AuthenticationHist
 	private String authusername;
 	@Column(name="credential", nullable=false, insertable=true, updatable=false)
 	private String credential;
-	@Column(name="salt", nullable=false, insertable=true, updatable=false)
+	@Column(name="salt", nullable=true, insertable=true, updatable=false)
 	private String salt;
-	@Column(name="hashalgorithm", nullable=false, insertable=true, updatable=false)
+	@Column(name="hashalgorithm", nullable=true, insertable=true, updatable=false)
 	private String algorithm;
 	
 	@OneToOne(targetEntity=IdentityImpl.class)
