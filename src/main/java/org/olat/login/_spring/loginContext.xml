@@ -90,7 +90,7 @@
 	</bean>
 	
 	<!-- Password change -->
-	<bean id="reservation.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean id="changePassword.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject" ref="afterLoginInterceptionManager" />
 		<property name="targetMethod" value="addAfterLoginControllerConfig" />
 		<property name="arguments">

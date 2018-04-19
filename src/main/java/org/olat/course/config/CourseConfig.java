@@ -567,7 +567,7 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public boolean isBreadCrumbEnabled() {
 		Boolean bool = (Boolean) configuration.get(BREADCRUMB_ENABLED);
-		return bool.booleanValue();
+		return bool == null ? true : bool.booleanValue();
 	}
 	
 	public void setBreadCrumbEnabled(boolean b) {
