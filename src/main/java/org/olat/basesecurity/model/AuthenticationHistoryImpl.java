@@ -24,6 +24,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -31,8 +32,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.AuthenticationHistory;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.CreateInfo;
@@ -52,18 +51,9 @@ public class AuthenticationHistoryImpl implements CreateInfo, AuthenticationHist
 	private static final long serialVersionUID = 298718878316926796L;
 
 	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
-		@Parameter(name="sequence_name", value="hibernate_unique_key"),
-		@Parameter(name="force_table_use", value="true"),
-		@Parameter(name="optimizer", value="legacy-hilo"),
-		@Parameter(name="value_column", value="next_hi"),
-		@Parameter(name="increment_size", value="32767"),
-		@Parameter(name="initial_value", value="32767")
-	})
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
