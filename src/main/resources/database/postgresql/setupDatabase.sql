@@ -168,6 +168,24 @@ create table o_bs_identity (
    status integer,
    primary key (id)
 );
+create table o_csp_log (
+   id bigserial not null,
+   creationdate timestamp,
+   l_blocked_uri varchar(1024),
+   l_disposition varchar(32),
+   l_document_uri varchar(1024),
+   l_effective_directive text,
+   l_original_policy text,
+   l_referrer varchar(1024),
+   l_script_sample text,
+   l_status_code varchar(1024),
+   l_violated_directive varchar(1024),
+   l_source_file varchar(1024),
+   l_line_number int8,
+   l_column_number int8,
+   fk_identity int8,
+   primary key (id)
+);
 create table o_olatresource (
    resource_id int8 not null,
    version int4 not null,
@@ -2655,6 +2673,9 @@ create index propvalue_idx on o_userproperty (propvalue);
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- csp
+create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);
 
 -- temporary key
 create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);

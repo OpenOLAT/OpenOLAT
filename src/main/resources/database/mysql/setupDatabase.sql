@@ -170,6 +170,24 @@ create table if not exists o_bs_identity (
    status integer,
    primary key (id)
 );
+create table o_csp_log (
+   id bigint not null auto_increment,
+   creationdate datetime,
+   l_blocked_uri varchar(1024),
+   l_disposition varchar(32),
+   l_document_uri varchar(1024),
+   l_effective_directive mediumtext,
+   l_original_policy mediumtext,
+   l_referrer varchar(1024),
+   l_script_sample mediumtext,
+   l_status_code varchar(1024),
+   l_violated_directive varchar(1024),
+   l_source_file varchar(1024),
+   l_line_number bigint,
+   l_column_number bigint,
+   fk_identity bigint,
+   primary key (id)
+);
 create table if not exists o_olatresource (
    resource_id bigint not null,
    version mediumint unsigned not null,
@@ -2556,6 +2574,7 @@ alter table o_bs_authentication_history ENGINE = InnoDB;
 alter table o_qtiresult ENGINE = InnoDB;
 alter table o_qtiresultset ENGINE = InnoDB;
 alter table o_bs_identity ENGINE = InnoDB;
+alter table o_csp_log ENGINE = InnoDB;
 alter table o_olatresource ENGINE = InnoDB;
 alter table o_bs_policy ENGINE = InnoDB;
 alter table o_bs_namedgroup ENGINE = InnoDB;
@@ -2778,6 +2797,9 @@ create index idx_user_creationdate_idx on o_user (creationdate);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- csp
+create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);
 
 -- temporary key
 create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);
