@@ -43,10 +43,10 @@ public class MediaTypeVariants {
 	private static final Variant VARIANT_XML;
 	private static final Variant VARIANT_XML_PAGED;
 	
-	private static final List<Variant> variants = new ArrayList<Variant>();
+	private static final List<Variant> variants = new ArrayList<>();
 	
 	static {
-		Map<String, String> pagingSpec = new HashMap<String, String>();
+		Map<String, String> pagingSpec = new HashMap<>();
 		pagingSpec.put("pagingspec","1.0");
 		VARIANT_JSON = new Variant(APPLICATION_JSON, null, null);
 		APPLICATION_JSON_PAGED = new MediaType("application","json", pagingSpec);
@@ -62,8 +62,12 @@ public class MediaTypeVariants {
 		variants.add(VARIANT_XML_PAGED);
 	}
 	
+	private MediaTypeVariants() {
+		//
+	}
+	
 	public static List<Variant> getVariants() {
-		return new ArrayList<Variant>(variants);
+		return new ArrayList<>(variants);
 	}
 	
 	public static boolean isPaged(HttpServletRequest httpRequest, Request request) {
@@ -79,6 +83,6 @@ public class MediaTypeVariants {
 			}
 		}
 		Variant variant = request.selectVariant(variants);
-		return (variant != null && (variant.equals(APPLICATION_JSON_PAGED) || variant.equals(APPLICATION_XML_PAGED)));
+		return (variant != null && (variant.getMediaType().equals(APPLICATION_JSON_PAGED) || variant.getMediaType().equals(APPLICATION_XML_PAGED)));
 	}
 }

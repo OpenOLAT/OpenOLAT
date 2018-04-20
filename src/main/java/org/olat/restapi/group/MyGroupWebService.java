@@ -19,6 +19,10 @@
  */
 package org.olat.restapi.group;
 
+import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
+import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -138,6 +142,10 @@ public class MyGroupWebService {
 	private Response getGroupList(Integer start, Integer limit, String externalId, Boolean managed,
 			boolean owner, boolean participant, HttpServletRequest httpRequest, Request request) {
 		
+		if(!hasAccess(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, owner, participant);
@@ -170,7 +178,6 @@ public class MyGroupWebService {
 			}
 			return Response.ok(groupVOs).build();
 		}
-		
 	}
 	
 	
@@ -196,9 +203,12 @@ public class MyGroupWebService {
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
 			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
+		
+		if(!hasAccess(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			params.setExternalId(externalId);
@@ -222,5 +232,10 @@ public class MyGroupWebService {
 		} else {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
+	}
+	
+	private boolean hasAccess(@Context HttpServletRequest httpRequest) {
+		return isUserManager(httpRequest) || isGroupManager(httpRequest)
+				|| getIdentity(httpRequest).getKey().equals(retrievedUser.getKey());
 	}
 }
