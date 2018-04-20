@@ -39,6 +39,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.ui.CompareEvaluationsFormController;
+import org.olat.modules.forms.ui.EvaluationFormCompareController;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.portfolio.PageBody;
@@ -70,7 +71,6 @@ public class MultiEvaluationFormController extends BasicController {
 	private List<Link> otherEvaluatorLinks = new ArrayList<>();
 	
 	private EvaluationFormExecutionController currentEvalutionFormCtrl;
-	private CompareEvaluationsFormController compareEvaluationCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -138,10 +138,7 @@ public class MultiEvaluationFormController extends BasicController {
 		}
 		
 		if(viewOthers && (owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
-			removeAsListenerAndDispose(compareEvaluationCtrl);
 			CompareEvaluationsFormController ctrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
-			listenTo(ctrl);
-
 			Evaluator eval = new Evaluator(null, translate("compare.evaluations"));
 			String componentName = "panel_" + (++count);
 			panels.add(new EvaluatorPanel(eval, componentName, ctrl.getInitialComponent()));
@@ -274,10 +271,8 @@ public class MultiEvaluationFormController extends BasicController {
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
-		removeAsListenerAndDispose(compareEvaluationCtrl);
-		compareEvaluationCtrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
-		listenTo(compareEvaluationCtrl);
-		mainVC.put("segmentCmp", compareEvaluationCtrl.getInitialComponent());
+		Controller ctrl = new EvaluationFormCompareController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+		mainVC.put("segmentCmp", ctrl.getInitialComponent());
 	}
 	
 	public static class EvaluatorPanel {

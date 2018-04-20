@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.handler;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -32,6 +34,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.ui.HTMLRawEditorController;
+import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
@@ -61,11 +64,7 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
-		String content = "";
-		if(element instanceof HTMLRaw) {
-			content = ((HTMLRaw)element).getContent();
-		}
-		Component cmp = TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		Component cmp = getComponent(element);
 		return new PageRunComponent(cmp);
 	}
 
@@ -95,5 +94,25 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 			return new EvaluationFormComponentElement(runElement);
 		}
 		return null;
+	}
+
+	@Override
+	public List<String> getCompareResponseIdentifiers(PageElement element) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+			List<CompareResponse> compareResponses) {
+		return getComponent(element);
+	}
+
+	private Component getComponent(PageElement element) {
+		String content = "";
+		if(element instanceof HTMLRaw) {
+			content = ((HTMLRaw)element).getContent();
+		}
+		Component cmp = TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		return cmp;
 	}
 }

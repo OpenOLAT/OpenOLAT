@@ -3,7 +3,9 @@
 #else
 <div class="o_evaluation_form o_form form-vertical">
 	#foreach($fragment in $fragments)
-		<div class="$fragment.cssClass">$r.render($fragment.componentName)</div>
+		<div class="o_evaluation_block">
+			<div class="$fragment.cssClass">$r.render($fragment.componentName)</div>
+		</div>
 	#end
 	<div class="o_button_group">
 		#if($r.available("save.intermediate") && $r.visible("save.intermediate"))

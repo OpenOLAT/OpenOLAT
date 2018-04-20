@@ -17,52 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.model.xml;
+package org.olat.modules.forms.ui.model;
+
+import java.util.List;
+
+import org.olat.modules.forms.EvaluationFormResponse;
 
 /**
  * 
- * Initial date: 02.02.2018<br>
+ * Initial date: 18.04.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class FileUpload extends AbstractElement {
-
-	private static final long serialVersionUID = 7057962558556618266L;
+public class CompareResponse {
 	
-	private long maxUploadSizeKB;
-	private String mimeTypeSetKey;
+	private final List<EvaluationFormResponse> responses;
+	private final String legendName;
+	private final String color;
+	
+	public CompareResponse(List<EvaluationFormResponse> responses, String legendName, String color) {
+		this.responses = responses;
+		this.legendName = legendName;
+		this.color = color;
+	}
 
-	@Override
-	public String getType() {
-		return "formfileupload";
+	public List<EvaluationFormResponse> getResponses() {
+		return responses;
+	}
+
+	public String getLegendName() {
+		return legendName;
+	}
+
+	public String getColor() {
+		return color;
 	}
 	
-	public Long getMaxUploadSizeKB() {
-		return maxUploadSizeKB;
-	}
-
-	public void setMaxUploadSizeKB(long maxUploadSizeKB) {
-		this.maxUploadSizeKB = maxUploadSizeKB;
-	}
-
-	public String getMimeTypeSetKey() {
-		return mimeTypeSetKey;
-	}
-
-	public void setMimeTypeSetKey(String mimeTypeSetKey) {
-		this.mimeTypeSetKey = mimeTypeSetKey;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof FileUpload) {
-			FileUpload fileUpload = (FileUpload)obj;
-			return getId() != null && getId().equals(fileUpload.getId());
-		}
-		return super.equals(obj);
-	}
-
 }

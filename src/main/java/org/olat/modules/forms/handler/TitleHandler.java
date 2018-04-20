@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.handler;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,6 +34,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.TitleEditorController;
+import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
@@ -63,11 +66,7 @@ public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPage
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
-		String content = "";
-		if(element instanceof Title) {
-			content = ((Title)element).getContent();
-		}
-		Component cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		Component cmp = getComponent(element);
 		return new PageRunComponent(cmp);
 	}
 
@@ -98,4 +97,25 @@ public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPage
 		}
 		return null;
 	}
+
+	@Override
+	public List<String> getCompareResponseIdentifiers(PageElement element) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+			List<CompareResponse> compareResponses) {
+		return getComponent(element);
+	}
+	
+	private Component getComponent(PageElement element) {
+		String content = "";
+		if(element instanceof Title) {
+			content = ((Title)element).getContent();
+		}
+		Component cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		return cmp;
+	}
+
 }

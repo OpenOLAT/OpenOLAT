@@ -19,14 +19,20 @@
  */
 package org.olat.modules.forms.handler;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
@@ -34,6 +40,7 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
 import org.olat.modules.forms.ui.SingleChoiceController;
 import org.olat.modules.forms.ui.SingleChoiceEditorController;
+import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -107,6 +114,21 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;
+	}
+
+	@Override
+	public List<String> getCompareResponseIdentifiers(PageElement element) {
+		if (element instanceof SingleChoice) {
+			SingleChoice singleChoice = (SingleChoice) element;
+			return Arrays.asList(singleChoice.getId());
+		}
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+			List<CompareResponse> compareResponses) {
+		return TextFactory.createTextComponentFromString("title_" + CodeHelper.getRAMUniqueID(), "Implement SC Compare Diagramm", null, false, null);
 	}
 
 }

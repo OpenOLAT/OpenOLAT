@@ -47,21 +47,13 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.handler.AllHandlerPageProvider;
 import org.olat.modules.forms.handler.EvaluationFormElementHandler;
-import org.olat.modules.forms.handler.FileUploadHandler;
-import org.olat.modules.forms.handler.HTMLRawHandler;
-import org.olat.modules.forms.handler.RubricHandler;
-import org.olat.modules.forms.handler.SingleChoiceHandler;
-import org.olat.modules.forms.handler.SpacerHandler;
-import org.olat.modules.forms.handler.TextInputHandler;
-import org.olat.modules.forms.handler.TitleHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.PageBody;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageProvider;
 import org.olat.modules.portfolio.ui.editor.ValidatingController;
 import org.olat.modules.portfolio.ui.editor.ValidationMessage;
 import org.olat.modules.portfolio.ui.editor.ValidationMessage.Level;
@@ -150,7 +142,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		EvaluationFormExecutionProvider provider = new EvaluationFormExecutionProvider();
+		AllHandlerPageProvider provider = new AllHandlerPageProvider(form);
 		for(EvaluationFormElementHandler handler: provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
 		}
@@ -310,6 +302,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		propagateReadOnly();
 		showDoneButton = false;
 		showHideButtons();
+		flc.setDirty(true);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -353,37 +346,4 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			executionElement.saveResponse(session);
 		}
 	}
-	
-	private class EvaluationFormExecutionProvider implements PageProvider {
-		
-		private final List<EvaluationFormElementHandler> handlers = new ArrayList<>();
-		
-		EvaluationFormExecutionProvider() {
-			TitleHandler titleRawHandler = new TitleHandler();
-			handlers.add(titleRawHandler);
-			SpacerHandler hrHandler = new SpacerHandler();
-			handlers.add(hrHandler);
-			HTMLRawHandler htmlHandler = new HTMLRawHandler();
-			handlers.add(htmlHandler);
-			RubricHandler rubricHandler = new RubricHandler(true);
-			handlers.add(rubricHandler);
-			TextInputHandler textInputHandler = new TextInputHandler();
-			handlers.add(textInputHandler);
-			FileUploadHandler fileUploadhandler = new FileUploadHandler();
-			handlers.add(fileUploadhandler);
-			SingleChoiceHandler singleChoiceHandler = new SingleChoiceHandler();
-			handlers.add(singleChoiceHandler);
-		}
-
-		@Override
-		public List<? extends PageElement> getElements() {
-			return form.getElements();
-		}
-
-		@Override
-		public List<EvaluationFormElementHandler> getAvailableHandlers() {
-			return handlers;
-		}
-	}
-
 }

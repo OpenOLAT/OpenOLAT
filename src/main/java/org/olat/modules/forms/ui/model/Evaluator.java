@@ -29,19 +29,23 @@ import org.olat.core.id.Identity;
  */
 public class Evaluator {
 	
-	private final String fullName;
 	private final Identity identity;
+	private String fullName;
 	
 	public Evaluator(Identity identity, String fullName) {
 		this.identity = identity;
 		this.fullName = fullName;
 	}
 
+	public Identity getIdentity() {
+		return identity;
+	}
+
 	public String getFullName() {
 		return fullName;
 	}
 
-	public Identity getIdentity() {
-		return identity;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 }

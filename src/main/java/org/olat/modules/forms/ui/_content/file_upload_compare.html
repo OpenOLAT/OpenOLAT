@@ -1,0 +1,18 @@
+#foreach($wrapper in $wrappers)
+<div class="o_clearfix o_block_large o_evaluation_fileupload">
+	<div class="o_evaluation_legend" style="border-left: 3px solid $wrapper.color">
+		<h6>$r.escapeHtml($wrapper.evaluator)</h6>
+	</div>
+	#if($r.isNotNull($wrapper.thumbUri))
+		<div class="o_evaluation_thumb">
+			<img src="$wrapper.thumbUri/$wrapper.filename"/>
+		</div>
+	#end
+	<div class="o_evaluation_filename">
+		<a href="$wrapper.mapperUri/$wrapper.filename" target="_blank">
+			<i class="o_icon $wrapper.iconCss"></i> $wrapper.filename
+		</a>
+		<span class="o_size">($wrapper.filesize)</span>
+	</div>
+</div>
+#end
