@@ -81,6 +81,15 @@ public class AuthenticationHistoryDAO {
 		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
 	}
 	
+	public int deleteAuthenticationHistory(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("delete from authenticationhistory where identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString())
+			.setParameter("identityKey", identity.getKey())
+			.executeUpdate();
+	}
+	
 	public void deleteAuthenticationHistory(AuthenticationHistory history) {
 		dbInstance.getCurrentEntityManager().remove(history);
 	}

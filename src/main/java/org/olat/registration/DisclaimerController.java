@@ -66,8 +66,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class DisclaimerController extends BasicController {
 
-	private final String SR_ERROR_DISCLAIMER_CHECKBOX = "sr.error.disclaimer.checkbox";
-	private final String SR_ERROR_DISCLAIMER_CHECKBOXES = "sr.error.disclaimer.checkboxes";
+	private static final String SR_ERROR_DISCLAIMER_CHECKBOX = "sr.error.disclaimer.checkbox";
+	private static final String SR_ERROR_DISCLAIMER_CHECKBOXES = "sr.error.disclaimer.checkboxes";
 
 	private VelocityContainer main;
 	private DisclaimerFormController disclaimerFormController;

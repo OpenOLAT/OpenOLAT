@@ -65,15 +65,15 @@ public class CSPModule extends AbstractSpringModule {
 	private static final String CONTENT_SECURITY_POLICY_OBJECT_SRC = "base.security.contentSecurityPolicy.objectSrc";
 	private static final String CONTENT_SECURITY_POLICY_PLUGIN_TYPE = "base.security.contentSecurityPolicy.pluginType";
 
-	@Value("${base.security.frameOptionsSameOrigine:disabled}")
+	@Value("${base.security.frameOptionsSameOrigine:enabled}")
 	private String xFrameOptionsSameorigin;
-	@Value("${base.security.strictTransportSecurity:disabled}")
+	@Value("${base.security.strictTransportSecurity:enabled}")
 	private String strictTransportSecurity;
-	@Value("${base.security.xContentTypeOptions:disabled}")
+	@Value("${base.security.xContentTypeOptions:enabled}")
 	private String xContentTypeOptions;
-	@Value("${base.security.contentSecurityPolicy:disabled}")
+	@Value("${base.security.contentSecurityPolicy:enabled}")
 	private String contentSecurityPolicy;
-	@Value("${base.security.contentSecurityPolicy.reportOnly:disabled}")
+	@Value("${base.security.contentSecurityPolicy.reportOnly:enabled}")
 	private String contentSecurityPolicyReportOnly;
 	
 	@Value("${base.security.contentSecurityPolicy.defaultSrc:}")

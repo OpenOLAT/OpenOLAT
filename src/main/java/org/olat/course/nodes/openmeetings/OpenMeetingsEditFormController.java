@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.openmeetings;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,6 +41,7 @@ import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.RoomType;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,7 +59,8 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	
 	private final OLATResourceable course;
 	private final OpenMeetingsCourseNode courseNode;
-	private final OpenMeetingsManager openMeetingsManager;
+	@Autowired
+	private OpenMeetingsManager openMeetingsManager;
 	
 	private boolean serverDown = false;
 	private String errorKey;
@@ -76,7 +77,6 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		if(defaultSettings != null) {
 			defaultSettings.setName(courseNode.getShortTitle());
 		}
-		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		try {
 			room = openMeetingsManager.getRoom(null, course, courseNode.getIdent());

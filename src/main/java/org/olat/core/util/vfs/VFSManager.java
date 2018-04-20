@@ -604,6 +604,12 @@ public class VFSManager {
 					relFilePath = relFilePath.substring(stop);
 					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
 				}
+				//very< special case for share folder in merged source
+				if(item instanceof OlatRootFolderImpl && "_sharedfolder_".equals(item.getName())) {
+					rootDir = (OlatRootFolderImpl)item;
+					relFilePath = relFilePath.substring(stop);
+					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
+				}
 			}
 
 			VFSContainer rootWriteContainer = mergedDir.getRootWriteContainer();

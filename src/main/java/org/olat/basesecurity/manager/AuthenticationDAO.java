@@ -31,7 +31,6 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -107,7 +106,8 @@ public class AuthenticationDAO {
 	 * @param maxAge The max. age of the authentication in seconds
 	 * @return
 	 */
-	public boolean hasValidOlatAuthentication(IdentityRef identity, boolean changeOnce, int maxAge) {
+	public boolean hasValidOlatAuthentication(IdentityRef identity, boolean changeOnce, int maxAge,
+			List<String> exceptionProviders) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select auth.key from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" where auth.identity.key=:identityKey and ((auth.provider=:olatProvider");
@@ -118,19 +118,18 @@ public class AuthenticationDAO {
 		if(maxAge > 0) {
 			sb.append(" and auth.lastModified>=:maxDate");
 		}
-		sb.append(") or auth.provider=:ldapProvider) ");
+		sb.append(") or auth.provider in (:providers))");
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("olatProvider", BaseSecurityModule.getDefaultAuthProviderIdentifier())
-			.setParameter("ldapProvider", LDAPAuthenticationController.PROVIDER_LDAP);
+			.setParameter("providers", exceptionProviders);
 		
 		if(maxAge > 0) {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND, -maxAge);
 			query.setParameter("maxDate", cal.getTime());
-			System.out.println(cal.getTime());
 		}
 		
 		List<Long> keys = query

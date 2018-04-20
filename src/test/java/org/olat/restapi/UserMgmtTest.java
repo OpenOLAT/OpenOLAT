@@ -1488,6 +1488,46 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testUserGroup_checkRefusedAccess() throws IOException, URISyntaxException {
+		Identity alien = JunitTestHelper.createAndPersistIdentityAsRndUser("user-group-alien-");
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(alien.getName(), JunitTestHelper.PWD));
+		
+		//retrieve all groups
+		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
+			.queryParam("start", 0).queryParam("limit", 1).build();
+
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(401, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserGroup_checkAllowedAccess() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), JunitTestHelper.PWD));
+		
+		//retrieve all groups
+		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
+			.queryParam("start", 0).queryParam("limit", 1).build();
+
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		GroupVOes groups = conn.parse(response, GroupVOes.class);
+		
+		assertNotNull(groups);
+		assertNotNull(groups.getGroups());
+
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testUserGroup_owner() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));

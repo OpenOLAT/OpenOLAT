@@ -98,8 +98,7 @@ public class HeadersFilter implements Filter {
 		
 		//policy
 		appendDirective(sb, "default-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_DEFAULT_SRC);
-		appendDirective(sb, "connect-src", securityModule.getContentSecurityPolicyConnectSrc(),
-				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC);
+		appendConnectSrcDirective(sb, false);
 		appendScriptSrcDirective(sb, false);
 		appendDirective(sb, "style-src", securityModule.getContentSecurityPolicyStyleSrc(),
 				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC);
@@ -131,9 +130,7 @@ public class HeadersFilter implements Filter {
 			case "font-src":
 				appendDirective(sb, "font-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC);
 				break;
-			case "connect-src":
-				appendDirective(sb, "connect-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC);
-				break;
+			case "connect-src":appendConnectSrcDirective(sb, true); break;
 			case "frame-src": appendFrameSrcDirective(sb, true); break;
 			case "media-src": appendMediaSrcDirective(sb, true); break;
 			case "object-src":
@@ -144,6 +141,17 @@ public class HeadersFilter implements Filter {
 		
 		return sb.toString();
 		
+	}
+	
+	private void appendConnectSrcDirective(StringBuilder sb, boolean standard) {
+		sb.append("connect-src ")
+		  .append(CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC);
+		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyConnectSrc())) {
+			sb.append(" ").append(securityModule.getContentSecurityPolicyConnectSrc());
+		}
+		
+		appendGoogleAnalyticsUrl(sb);
+		sb.append(";");
 	}
 	
 	private void appendScriptSrcDirective(StringBuilder sb, boolean standard) {
