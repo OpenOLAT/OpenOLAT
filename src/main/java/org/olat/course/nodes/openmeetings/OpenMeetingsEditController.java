@@ -119,12 +119,13 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 				if(room != null) {
 					ModuleConfiguration moduleConfiguration = courseNode.getModuleConfiguration();
 					moduleConfiguration.set(CONFIG_ROOM_NAME, room.getName());
-					moduleConfiguration.set(CONFIG_ROOM_SIZE, new Long(room.getSize()));
-					moduleConfiguration.set(CONFIG_ROOM_MODERATION, new Boolean(room.isModerated()));
-					moduleConfiguration.set(CONFIG_ROOM_AUDIO_ONLY, new Boolean(room.isAudioOnly()));
+					moduleConfiguration.set(CONFIG_ROOM_SIZE, Long.valueOf(room.getSize()));
+					moduleConfiguration.set(CONFIG_ROOM_MODERATION, Boolean.valueOf(room.isModerated()));
+					moduleConfiguration.set(CONFIG_ROOM_AUDIO_ONLY, Boolean.valueOf(room.isAudioOnly()));
 					moduleConfiguration.set(CONFIG_ROOM_COMMENT, room.getComment());
-					moduleConfiguration.set(CONFIG_ROOM_TYPE, new Long(room.getType()));
+					moduleConfiguration.set(CONFIG_ROOM_TYPE, Long.valueOf(room.getType()));
 				}
+				editVc.setDirty(true);
 			}
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -132,6 +133,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),

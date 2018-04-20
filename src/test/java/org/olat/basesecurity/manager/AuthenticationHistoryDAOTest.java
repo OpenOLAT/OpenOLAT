@@ -21,7 +21,9 @@ package org.olat.basesecurity.manager;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationHistory;
@@ -43,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	
+	private int historySetting;
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -52,6 +56,16 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	@Autowired
 	private AuthenticationHistoryDAO authenticationHistoryDao;
 	
+	@Before
+	public void setUp() {
+		historySetting = loginModule.getPasswordHistory();
+	}
+	
+	@After
+	public void unsetUp() {
+		loginModule.setPasswordHistory(historySetting);
+	}
+
 	@Test
 	public void createAuthenticationHistory() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
@@ -64,8 +78,6 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadHistory() {
-		int historySetting = loginModule.getPasswordHistory();
-		loginModule.setPasswordHistory(2);
 		
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
 		Authentication auth = securityManager
@@ -80,14 +92,10 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(history);
 		Assert.assertEquals(1, history.size());
 		
-		loginModule.setPasswordHistory(historySetting);
 	}
 	
 	@Test
 	public void updateCredential() {
-		int historySetting = loginModule.getPasswordHistory();
-		loginModule.setPasswordHistory(2);
-		
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
 		Authentication auth = securityManager
 				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ident.getName(),
@@ -99,8 +107,21 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 		int historyLength = authenticationHistoryDao.historyLength(ident,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		Assert.assertEquals(1, historyLength);
+	}
+	
+	@Test
+	public void deleteAuthenticationHistory_identity() {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-3-");
+		Authentication auth = securityManager
+				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ident.getName(),
+						"secret", Encoder.Algorithm.sha512);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
 		
-		loginModule.setPasswordHistory(historySetting);
+		//check if the new token was saved
+		int historyLength = authenticationHistoryDao.deleteAuthenticationHistory(ident);
+		Assert.assertEquals(1, historyLength);
+		dbInstance.commit();
 	}
 
 }
