@@ -27,10 +27,10 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.model.xml.TextInput;
+import org.olat.modules.forms.model.xml.Choice;
+import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.model.CompareResponse;
 
 /**
@@ -39,15 +39,15 @@ import org.olat.modules.forms.ui.model.CompareResponse;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TextInputCompareController extends FormBasicController implements Controller {
+public class SingleChoiceCompareController extends FormBasicController implements Controller {
 
-	private final TextInput textInput;
+	private final SingleChoice singleChoice;
 	private final List<CompareResponse> compareResponses;
-	
-	public TextInputCompareController(UserRequest ureq, WindowControl wControl, TextInput textInput,
+
+	public SingleChoiceCompareController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice,
 			List<CompareResponse> compareResponses) {
-		super(ureq, wControl, "textinput_compare");
-		this.textInput = textInput;
+		super(ureq, wControl, "single_choice_compare");
+		this.singleChoice = singleChoice;
 		this.compareResponses = compareResponses;
 		initForm(ureq);
 	}
@@ -57,11 +57,11 @@ public class TextInputCompareController extends FormBasicController implements C
 		flc.contextPut("wrappers", createWrappers(ureq));
 	}
 
-	private List<TextInputCompareWrapper> createWrappers(UserRequest ureq) {
-		List<TextInputCompareWrapper> wrappers = new ArrayList<>();
+	private List<SingleChoiceCompareWrapper> createWrappers(UserRequest ureq) {
+		List<SingleChoiceCompareWrapper> wrappers = new ArrayList<>();
 		for (CompareResponse compareResponse: compareResponses) {
 			if (isValid(compareResponse)) {
-				TextInputCompareWrapper wrapper = createWrapper(compareResponse);
+				SingleChoiceCompareWrapper wrapper = createWrapper(compareResponse);
 				wrappers.add(wrapper);
 			}	
 		}
@@ -77,18 +77,27 @@ public class TextInputCompareController extends FormBasicController implements C
 		EvaluationFormResponse response = responses.get(0);
 		if (response.getResponseIdentifier() == null)
 			return false;
-		if (!response.getResponseIdentifier().equals(textInput.getId()))
+		if (!response.getResponseIdentifier().equals(singleChoice.getId()))
 			return false;
 		if (!StringHelper.containsNonWhitespace(response.getStringuifiedResponse()))
 			return false;
 		return true;
 	}
 
-	private TextInputCompareWrapper createWrapper(CompareResponse compareResponse) {
+	private SingleChoiceCompareWrapper createWrapper(CompareResponse compareResponse) {
 		EvaluationFormResponse response = compareResponse.getResponses().get(0);
-		String initialValue = response.getStringuifiedResponse();
-		String content = Formatter.stripTabsAndReturns(initialValue).toString();
-		return new TextInputCompareWrapper(compareResponse.getLegendName(), compareResponse.getColor(), content);
+		String choiceKey = response.getStringuifiedResponse();
+		String choice = getChoice(choiceKey);
+		return new SingleChoiceCompareWrapper(compareResponse.getLegendName(), compareResponse.getColor(), choice);
+	}
+
+	private String getChoice(String choiceKey) {
+		for (Choice choice: singleChoice.getChoices().asList()) {
+			if (choiceKey.equals(choice.getId())) {
+				return choice.getValue();
+			}
+		}
+		return "";
 	}
 
 	@Override
@@ -101,16 +110,16 @@ public class TextInputCompareController extends FormBasicController implements C
 		//
 	}
 	
-	public final static class TextInputCompareWrapper {
+	public final static class SingleChoiceCompareWrapper {
 		
 		private final String name;
 		private final String color;
-		private final String content;
+		private final String choice;
 		
-		public TextInputCompareWrapper(String name, String color, String content) {
+		public SingleChoiceCompareWrapper(String name, String color, String choice) {
 			this.name = name;
 			this.color = color;
-			this.content = content;
+			this.choice = choice;
 		}
 		
 		public String getName() {
@@ -121,8 +130,8 @@ public class TextInputCompareController extends FormBasicController implements C
 			return color;
 		}
 
-		public String getContent() {
-			return content;
+		public String getChoice() {
+			return choice;
 		}
 	}
 
