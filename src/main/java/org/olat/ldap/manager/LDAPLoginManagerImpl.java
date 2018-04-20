@@ -432,6 +432,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		
 		for (Identity identity:  identityList) {
+			if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
+				log.audit(identity.getKey() + " was not deleted because is status is permanent.");
+				continue;
+			}
+			
 			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
 			userDeletionManager.deleteIdentity(identity);
 			dbInstance.intermediateCommit();
