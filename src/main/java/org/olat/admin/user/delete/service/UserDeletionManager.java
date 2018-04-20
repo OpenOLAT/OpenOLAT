@@ -44,6 +44,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
@@ -111,6 +112,8 @@ public class UserDeletionManager extends BasicManager {
 	private MailManager mailManager;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
+	@Autowired
+	private AuthenticationHistoryDAO suthenticationHistoryDao;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -286,6 +289,8 @@ public class UserDeletionManager extends BasicManager {
 			securityManager.deleteAuthentication(auth);
 			logDebug("Delete auth=" + auth + "  of identity="  + identity);
 		}
+		// delete the authentication history
+		suthenticationHistoryDao.deleteAuthenticationHistory(identity);
 
 		//remove identity from its security groups
 		List<SecurityGroup> securityGroups = securityManager.getSecurityGroupsForIdentity(identity);
