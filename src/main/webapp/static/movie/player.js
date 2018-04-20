@@ -215,7 +215,7 @@ var BPlayer = {
 			} else if(extension == 'mp4') {
 				mimeType = "video/mp4";
 			} else if(extension == 'm4v') {
-				mimeType = "video/m4v";
+				mimeType = "video/mp4";
 			} else if(extension == 'm3u8') {
 				mimeType = "application/x-mpegURL";
 			} else if(extension == 'aac') {
