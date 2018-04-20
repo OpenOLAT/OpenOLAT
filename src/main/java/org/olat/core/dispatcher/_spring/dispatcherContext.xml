@@ -140,6 +140,14 @@
 						</property>
 					</bean>
 				</entry>
+				<!-- triggers oauth registration workflow -->
+				<entry key="/oauthdisclaimer/">
+					<bean class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<bean class="org.olat.login.oauth.ui.OAuthDisclaimerCreator" />
+						</property>
+					</bean>
+				</entry>
 				
 				<!-- triggers email change workflow -->
 				<entry key="/emchange/">
