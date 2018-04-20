@@ -19,7 +19,9 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -29,6 +31,7 @@ import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -86,16 +89,18 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Authentication auth = securityManager.createAndPersistAuthentication(ident, "OLAT", ident.getName(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
-		System.out.println(auth.getLastModified());
+		
+		List<String> fullProviders = new ArrayList<>();
+		fullProviders.add(LDAPAuthenticationController.PROVIDER_LDAP);
 
 		//check nothing at the end
-		boolean valid = authenticationDao.hasValidOlatAuthentication(ident, false, 0);
+		boolean valid = authenticationDao.hasValidOlatAuthentication(ident, false, 0, fullProviders);
 		Assert.assertTrue(valid);
 		//check if the authentication is new
-		boolean brandNew = authenticationDao.hasValidOlatAuthentication(ident, true, 0);
+		boolean brandNew = authenticationDao.hasValidOlatAuthentication(ident, true, 0, fullProviders);
 		Assert.assertFalse(brandNew);
 		//check if the authentication is new
-		boolean fresh = authenticationDao.hasValidOlatAuthentication(ident, false, 60);
+		boolean fresh = authenticationDao.hasValidOlatAuthentication(ident, false, 60, fullProviders);
 		Assert.assertTrue(fresh);
 	}
 	
@@ -115,7 +120,9 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check if the authentication is new
-		boolean tooOld = authenticationDao.hasValidOlatAuthentication(ident, false, 60);
+		List<String> fullProviders = new ArrayList<>();
+		fullProviders.add(LDAPAuthenticationController.PROVIDER_LDAP);
+		boolean tooOld = authenticationDao.hasValidOlatAuthentication(ident, false, 60, fullProviders);
 		Assert.assertFalse(tooOld);
 	}
 }

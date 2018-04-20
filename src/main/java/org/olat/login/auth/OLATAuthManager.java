@@ -24,6 +24,7 @@
 */
 package org.olat.login.auth;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -60,8 +61,11 @@ import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.LoginModule;
 import org.olat.login.OLATAuthenticationController;
+import org.olat.login.oauth.OAuthLoginModule;
+import org.olat.login.oauth.OAuthSPI;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
+import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,6 +79,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(OLATAuthManager.class);
 	
+	@Autowired
+	private OAuthLoginModule oauthModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -161,7 +167,13 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @return
 	 */
 	public boolean hasValidAuthentication(IdentityRef identity, boolean changeOnce, int maxAge) {
-		return authenticationDao.hasValidOlatAuthentication(identity, changeOnce, maxAge);
+		List<String> fullProviders = new ArrayList<>();
+		fullProviders.add(LDAPAuthenticationController.PROVIDER_LDAP);
+		fullProviders.add(ShibbolethDispatcher.PROVIDER_SHIB);
+		for(OAuthSPI spi:oauthModule.getAllSPIs()) {
+			fullProviders.add(spi.getProviderName());
+		}
+		return authenticationDao.hasValidOlatAuthentication(identity, changeOnce, maxAge, fullProviders);
 	}
 
 	@Override
