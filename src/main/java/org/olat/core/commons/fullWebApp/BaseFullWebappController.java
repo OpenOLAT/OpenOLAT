@@ -57,7 +57,6 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
-import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.OncePanel;
@@ -84,7 +83,6 @@ import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.JSCommand;
-import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -362,8 +360,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// out the correct value
 		mainVc.contextPut("theme", w.getGuiTheme());
 		mainVc.contextPut("globalSettings", winman.getGlobalSettings());
-		// also add the optional theme javascript 
-		addThemeJS();
 		
 		// Add JS analytics code, e.g. for google analytics
 		if (analyticsModule.isAnalyticsEnabled()) {
@@ -602,22 +598,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				footerCtr.getInitialComponent().setVisible(wSettings == null || !wSettings.isHideFooter());
 			}
 			mainVc.setDirty(true);
-		}
-	}
-
-	/**
-	 * adds the theme custom js-code to the mainVc
-	 */
-	private void addThemeJS() {
-		Theme currentTheme = getWindowControl().getWindowBackOffice().getWindow().getGuiTheme();
-		if (currentTheme.hasCustomJS()) {
-			String relPath = currentTheme.getRelPathToCustomJS();
-			CustomJSComponent customJS = new CustomJSComponent("customThemejs", new String[] { relPath });
-			if (isLogDebugEnabled()) {
-				logDebug("injecting custom javascript from current OLAT-Theme", relPath);
-			}
-			// no need to wrap in panel, will never change
-			mainVc.put(customJS.getComponentName(), customJS);
 		}
 	}
 	

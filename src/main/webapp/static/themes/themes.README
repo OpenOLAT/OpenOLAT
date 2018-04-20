@@ -78,7 +78,15 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
 - Open mytheme/_mytheme_content.scss and override or extend styles from the light theme. 
 
 Optional:
-- Place your own favicon.ico file to mytheme/favicon.ico
+- Place your own favicon.ico file to mytheme/favicon.ico (legacy support)
+- Place your own favicon (new style) and app icons to 
+  mytheme/meta/favicon.16.png  				-> optional, to add a 16x16 bookmark icon
+  mytheme/meta/favicon.32.png  				-> optional, to add a 32x32 bookmark icon
+  mytheme/meta/favicon.64.png  				-> optional, to add a 64x64 bookmark icon
+  mytheme/meta/appicon180.png  				-> optional, to add iOS homescreen icons
+  mytheme/meta/manifest.json  				-> optional, to add Android homescreen icons
+  mytheme/meta/msapplication-config.xml		-> optional, to add Windows tiles icons 
+
 - Create a file mytheme/theme.js and add your theme specific JavaScript. Best is to create a JQuery module 
   for it. Make sure you check for necessary changes after each DOM replacement cycle. See the theme.js file
   in the openolat theme for an example.
