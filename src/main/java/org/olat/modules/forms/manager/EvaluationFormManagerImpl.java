@@ -106,6 +106,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session) {
+		return evaluationFormResponseDao.createNoResponse(responseIdentifier, session);
+	}
+
+	@Override
 	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value) {
 		return evaluationFormResponseDao.updateResponse(value, value.toPlainString(), null, response);
 	}
@@ -136,6 +141,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response) {
+		return evaluationFormResponseDao.updateNoResponse(response);
+	}
+
+	@Override
 	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session) {
 		return evaluationFormResponseDao.loadResponse(responseIdentifier, session);
 	}
@@ -152,16 +162,6 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		if (response == null || response.getFileResponse() == null) return null;
 		
 		return evaluationFormStorage.resolve(response.getFileResponse());
-	}
-
-	@Override
-	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session) {
-		return evaluationFormResponseDao.createNoResponse(responseIdentifier, session);
-	}
-
-	@Override
-	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response) {
-		return evaluationFormResponseDao.updateNoResponse(response);
 	}
 
 	@Override

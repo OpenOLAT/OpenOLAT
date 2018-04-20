@@ -39,19 +39,12 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface EvaluationFormManager {
 	
-	
 	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry); 
 	
 	public EvaluationFormSession getSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor);
 	
 	public EvaluationFormSession changeSessionStatus(EvaluationFormSession session, EvaluationFormSessionStatus status);
 	
-	/**
-	 * 
-	 * @param identity
-	 * @param anchor
-	 * @return
-	 */
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor);
 	
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status);
@@ -66,6 +59,8 @@ public interface EvaluationFormManager {
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session, String value);
 	
 	public EvaluationFormResponse createNumericalResponse(String responseIdentifier, EvaluationFormSession session, BigDecimal value);
+	
+	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session);
 
 	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value);
 	
@@ -77,15 +72,13 @@ public interface EvaluationFormManager {
 	public EvaluationFormResponse updateResponseForPortfolioEvaluation(File file, String filename,
 			EvaluationFormResponse response) throws IOException;
 	
-	public File loadResponseFile(EvaluationFormResponse response);
-	
-	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
-	
-	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session);
-	
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
 	
 	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session);
+	
+	public File loadResponseFile(EvaluationFormResponse response);
+	
+	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
 	
 	public void deleteResponse(Long key);
 

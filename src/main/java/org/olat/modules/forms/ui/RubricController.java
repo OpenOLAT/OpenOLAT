@@ -44,9 +44,8 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
-import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
+import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
-import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,7 +84,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 	
 	protected void updateForm() {
-		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(rubric);
+		RubricWrapper wrapper = new RubricWrapper(rubric);
 		List<Slider> sliders = rubric.getSliders();
 		sliderWrappers = new ArrayList<>(sliders.size());
 		for(Slider slider:sliders) {
@@ -169,7 +168,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
 		radioEl.setAllowNoSelection(true);
 		radioEl.setDomReplacementWrapperRequired(false);
-		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
+		int widthInPercent = RubricWrapper.getWidthInPercent(element);
 		radioEl.setWidthInPercent(widthInPercent, true);
 
 		MultipleSelectionElement noResponseEl = null;
@@ -359,6 +358,157 @@ public class RubricController extends FormBasicController implements EvaluationF
 				evaluationFormManager.deleteResponse(response.getKey());
 				responses.remove(sliderWrapper.getId());
 			}
+		}
+	}
+	
+	public final static class RubricWrapper {
+
+		private final Rubric rubric;
+		private List<SliderWrapper> sliders;
+
+		public RubricWrapper(Rubric rubric) {
+			this.rubric = rubric;
+		}
+		
+		public boolean isDiscreteRubric() {
+			return rubric.getSliderType() == SliderType.discrete;
+		}
+		
+		public boolean isDiscreteSliderRubric() {
+			return rubric.getSliderType() == SliderType.discrete_slider;
+		}
+		
+		public boolean isNoResponseEnabled() {
+			return rubric.isNoResponseEnabled();
+		}
+		
+
+		public static int getWidthInPercent(Rubric theRubric) {
+			if(theRubric.getSliderType() == SliderType.discrete) {
+				int steps = theRubric.getSteps();
+				int stepInPercent = Math.round(100.0f / steps) - 1;
+				return stepInPercent;
+			}
+			return 0;
+		}
+		
+		public int getStepInPercent() {
+			return getWidthInPercent(rubric);
+		}
+		
+		public boolean isStepLabels() {
+			if(rubric.getStepLabels() == null || rubric.getStepLabels().isEmpty()) {
+				return false;
+			}
+			
+			List<StepLabel> stepLabels = rubric.getStepLabels();
+			for(StepLabel stepLabel:stepLabels) {
+				if(stepLabel != null && StringHelper.containsNonWhitespace(stepLabel.getLabel())) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean isLeftLabels() {
+			List<Slider> rubricSliders = rubric.getSliders();
+			if(rubricSliders != null && rubricSliders.size() > 0) {
+				for(Slider slider:rubricSliders) {
+					if(slider != null && StringHelper.containsNonWhitespace(slider.getStartLabel())) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		public boolean isRightLabels() {
+			List<Slider> rubricSliders = rubric.getSliders();
+			if(rubricSliders != null && rubricSliders.size() > 0) {
+				for(Slider slider:rubricSliders) {
+					if(slider != null && StringHelper.containsNonWhitespace(slider.getEndLabel())) {
+						return true;
+					}
+				}
+			}	
+			return false;
+		}
+		
+		public List<String> getStepLabels() {
+			if(rubric.getStepLabels() != null && rubric.getStepLabels().size() > 0) {
+				List<String> stepLabels = new ArrayList<>(rubric.getStepLabels().size());
+				for(StepLabel stepLabel:rubric.getStepLabels()) {
+					stepLabels.add(stepLabel.getLabel());
+				}
+				return stepLabels;
+			}
+			return new ArrayList<>(1);
+		}
+
+		public List<SliderWrapper> getSliders() {
+			return sliders;
+		}
+
+		public void setSliders(List<SliderWrapper> sliders) {
+			this.sliders = sliders;
+		}
+	}
+	
+	public final static class SliderWrapper {
+
+		private final Slider slider;
+		private final SliderElement sliderEl;
+		private final SingleSelection radioEl;
+		private final MultipleSelectionElement noResponseEl;
+		
+		public SliderWrapper(Slider slider, SingleSelection radioEl, MultipleSelectionElement noResponseEl) {
+			this(slider, radioEl, null, noResponseEl);
+		}
+		
+		public SliderWrapper(Slider slider, SliderElement sliderEl, MultipleSelectionElement noResponseEl) {
+			this(slider, null, sliderEl, noResponseEl);
+		}
+		
+		private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl,
+				MultipleSelectionElement noResponseEl) {
+			this.slider = slider;
+			this.radioEl = radioEl;
+			this.sliderEl = sliderEl;
+			this.noResponseEl = noResponseEl;
+		}
+		
+		public String getId() {
+			return slider.getId();
+		}
+		
+		public String getStartLabel() {
+			String start = slider.getStartLabel();
+			return start == null ? "" : start;
+		}
+		
+		public String getEndLabel() {
+			String end = slider.getEndLabel();
+			return end == null ? "" : end;
+		}
+		
+		public Slider getSlider() {
+			return slider;
+		}
+		
+		public FormItem getFormItem() {
+			return radioEl == null ? sliderEl : radioEl;
+		}
+		
+		public SingleSelection getRadioEl() {
+			return radioEl;
+		}
+		
+		public SliderElement getSliderEl() {
+			return sliderEl;
+		}
+		
+		public MultipleSelectionElement getNoResponseEl() {
+			return noResponseEl;
 		}
 	}
 

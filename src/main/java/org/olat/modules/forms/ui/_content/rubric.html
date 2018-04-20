@@ -45,30 +45,7 @@
 	#set($colRight = "col-sm-0")
 #end
 
-#if($element.isSliderOverview())
-	<div class="o_evaluation_block o_evaluation_slider_overview">
-		#if($element.isStepLabels()) 
-		<div class="clearfix">
-			<div class="$colLeft"></div>
-			<div class="$colMiddle o_evaluation_step_labels">
-			#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>#end
-			</div>
-			<div class="$colRight"></div>
-		</div>
-		#end
-		#foreach($slider in $element.getSliders())
-		<div class="o_slider clearfix">
-			<div class="$colLeft #if($hasRightLabels) o_evaluation_left_label #else o_evaluation_left_label_la #end">$slider.startLabel</div>
-			<div class="$colMiddle">$r.render($slider.overviewEl)</div>
-			<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
-		</div>
-		#end
-	</div>
-#elseif($element.isRadarOverview())	
-	<div class="o_evaluation_block o_evaluation_radar_overview clearfix">
-		$r.render($element.radarEl)
-	</div>
-#elseif($element.isDiscreteRubric())
+#if($element.isDiscreteRubric())
 <div class="o_evaluation_block o_evaluation_discrete_radio">
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">

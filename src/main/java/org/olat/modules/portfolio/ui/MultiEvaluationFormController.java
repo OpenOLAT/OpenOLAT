@@ -38,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
-import org.olat.modules.forms.ui.CompareEvaluationsFormController;
 import org.olat.modules.forms.ui.EvaluationFormCompareController;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.model.Evaluator;
@@ -138,7 +137,7 @@ public class MultiEvaluationFormController extends BasicController {
 		}
 		
 		if(viewOthers && (owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
-			CompareEvaluationsFormController ctrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+			Controller ctrl = new EvaluationFormCompareController(ureq, getWindowControl(), evaluators, anchor, formEntry);
 			Evaluator eval = new Evaluator(null, translate("compare.evaluations"));
 			String componentName = "panel_" + (++count);
 			panels.add(new EvaluatorPanel(eval, componentName, ctrl.getInitialComponent()));
