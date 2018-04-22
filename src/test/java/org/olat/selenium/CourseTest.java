@@ -871,6 +871,91 @@ public class CourseTest extends Deployments {
 			.assertFirstNameInList(ryomou);
 	}
 	
+
+	/**
+	 * An author creates a course, make it visible for
+	 * members and add an access control by free booking
+	 * with the auto booking enabled.<br/>
+	 * The user search for the course and enters it.<br/>
+	 * The author checks in the list of orders if the booking
+	 * of the user is there and after it checks if the user is
+	 * in the member list too.
+	 * 
+	 * @param loginPage
+	 * @param userBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseFreeBooking(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver userBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "AutoBooking-" + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+
+		//open course editor
+		CoursePageFragment course = new CoursePageFragment(browser);
+		RepositoryAccessPage courseAccess = course
+			.openToolsMenu()
+			.edit()
+			.createNode("info")
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		//add booking by secret token
+		courseAccess
+			.boooking()
+			.openAddDropMenu()
+			.addFreeBooking()
+			.configureFreeBooking("It's free");
+		courseAccess
+			.clickToolbarBack();
+		
+		//a user search the course
+		LoginPage userLoginPage = LoginPage.getLoginPage(userBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(userBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(title)
+			.book(title);//book the course
+		//check the course
+		CoursePageFragment bookedCourse = CoursePageFragment.getCourse(userBrowser);
+		bookedCourse
+			.assertOnTitle(title);
+		
+		//Author go in the list of bookings of the course
+		BookingPage bookingList = course
+			.openToolsMenu()
+			.bookingTool();
+		bookingList
+			.assertFirstNameInListIsOk(user);
+		
+		//Author go to members list
+		course
+			.members()
+			.assertFirstNameInList(user);
+	}
+	
 	/**
 	 * An author create a course, set a start and end date for life-cycle.
 	 * It add a participant to the course. It creates a reminder
