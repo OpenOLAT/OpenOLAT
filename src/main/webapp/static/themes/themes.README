@@ -83,9 +83,18 @@ Optional:
   mytheme/meta/favicon.16.png  				-> optional, to add a 16x16 bookmark icon
   mytheme/meta/favicon.32.png  				-> optional, to add a 32x32 bookmark icon
   mytheme/meta/favicon.64.png  				-> optional, to add a 64x64 bookmark icon
+- Place your own application icons for older iOS to
   mytheme/meta/appicon180.png  				-> optional, to add iOS homescreen icons
-  mytheme/meta/manifest.json  				-> optional, to add Android homescreen icons
+- Place your own manifest and application icons for modern Safari and Android to
+  mytheme/meta/manifest.json  				-> optional, to add Android homescreen icons (and add the appicons linked from within manifest.json)
+- Place your own Windows Tile icons to
+  mytheme/meta/tileicon70png
+  mytheme/meta/tileicon150png
+  mytheme/meta/tileicon310png
+- OR alternatively add a browser config file to the location below. 
   mytheme/meta/msapplication-config.xml		-> optional, to add Windows tiles icons 
+  Note, when the browser config is there, the tile icons above will not be included. In the browser config the 
+  links to the tile icons must be absolute path to work despite the MS doku tells otherwise
 
 - Create a file mytheme/theme.js and add your theme specific JavaScript. Best is to create a JQuery module 
   for it. Make sure you check for necessary changes after each DOM replacement cycle. See the theme.js file
