@@ -133,5 +133,32 @@ public class FormatterTest {
 		Assert.assertEquals("532:23:45", Formatter.formatTimecode(1916625000l));
 	}
 	
+	@Test
+	public void formatLatexFormulas() {
+		Assert.assertTrue(Formatter.formatLatexFormulas("<span class='math'></span>").contains("<script"));
+		Assert.assertTrue(Formatter.formatLatexFormulas("<span class='math inline'></span>").contains("<script"));
+		Assert.assertTrue(Formatter.formatLatexFormulas("<div class = \"inline math special\"></div>").contains("<script"));
+		Assert.assertTrue(Formatter.formatLatexFormulas("<span class = math></span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class = \"nomath\"></span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='test' id='math'></span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='math\"></span>").contains("<script"));
+		//wiki
+		Assert.assertTrue(Formatter.formatLatexFormulas("<DIV CLASS=\"math\"></span>").contains("<script"));
+	}
 	
+
+	/**
+	 * This case doesn't test the result of the method but if wrong
+	 * formatted HTML code can produce an infinite loop.
+	 * 
+	 */
+	@Test
+	public void formatLatexFormulas_edgeCase() {
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='math\"''></span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='math\"'\"></span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='math></\"span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='math></'span>").contains("<script"));
+		Assert.assertFalse(Formatter.formatLatexFormulas("<span class='math").contains("<script"));
+		Assert.assertTrue(Formatter.formatLatexFormulas("<span class=math\"").contains("<script"));
+	}
 }

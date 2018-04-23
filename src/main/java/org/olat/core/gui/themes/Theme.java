@@ -44,6 +44,9 @@ public class Theme {
 	private static final String CUSTOM_FAVICON_PNG32_FILENAME = "meta/favicon32.png";
 	private static final String CUSTOM_FAVICON_PNG64_FILENAME = "meta/favicon64.png";
 	private static final String CUSTOM_APPICON_PNG180_FILENAME = "meta/appicon180.png";
+	private static final String CUSTOM_TILEICON_PNG70_FILENAME = "meta/tileicon70.png";
+	private static final String CUSTOM_TILEICON_PNG150_FILENAME = "meta/tileicon150.png";
+	private static final String CUSTOM_TILEICON_PNG310_FILENAME = "meta/tileicon310.png";
 	private static final String CUSTOM_MANIFEST_FILENAME = "meta/manifest.json";
 	private static final String CUSTOM_MS_APPLICATION_CONFIG_FILENAM = "meta/msapplication-config.xml";
 	
@@ -168,9 +171,20 @@ public class Theme {
 		if (new File(themeFolder,CUSTOM_MANIFEST_FILENAME).exists()) {
 			sb.append("<link rel='manifest' href='").append(baseURI).append(CUSTOM_MANIFEST_FILENAME).append("' />\n");
 		}
-		// Include Microsoft application config file
+		// Include Microsoft application config file (make sure any referenced image in the file has absolute path configuration
 		if (new File(themeFolder,CUSTOM_MS_APPLICATION_CONFIG_FILENAM).exists()) {
 			sb.append("<meta name='msapplication-config' content='").append(baseURI).append(CUSTOM_MS_APPLICATION_CONFIG_FILENAM).append("' />\n");
+		} else {
+			sb.append("<meta name='msapplication-TileColor' content='").append("#ffffff").append("' />\n");
+			if (new File(themeFolder,CUSTOM_TILEICON_PNG70_FILENAME).exists()) {
+				sb.append("<meta name='msapplication-square70x70logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG70_FILENAME).append("' />\n");
+			}
+			if (new File(themeFolder,CUSTOM_TILEICON_PNG150_FILENAME).exists()) {
+				sb.append("<meta name='msapplication-square150x150logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG150_FILENAME).append("' />\n");
+			}
+			if (new File(themeFolder,CUSTOM_TILEICON_PNG310_FILENAME).exists()) {
+				sb.append("<meta name='msapplication-square310x310logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG310_FILENAME).append("' />\n");
+			}
 		}
 		
 		return sb.toString();

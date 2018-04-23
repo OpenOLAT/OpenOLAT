@@ -106,7 +106,7 @@ public interface BaseSecurity {
 	 * @param secGroup
 	 * @return true if the identity is in the group
 	 */
-	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup);
+	public boolean isIdentityInSecurityGroup(IdentityRef identity, SecurityGroup secGroup);
 	
 	/**
 	 * Change the last modificaiton date of the membership

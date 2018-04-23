@@ -71,10 +71,9 @@ public class BookingPage {
 	private BookingPage addMethod(String iconClassname) {
 		//wait menu
 		By addMenuBy = By.cssSelector("fieldset.o_ac_configuration ul.dropdown-menu");
-		OOGraphene.waitElement(addMenuBy, 5, browser);
-		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[//i[contains(@class,'" + iconClassname + "')]]");
-		WebElement methodLink = browser.findElement(addMethodBy);
-		methodLink.click();
+		OOGraphene.waitElement(addMenuBy, browser);
+		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[i[contains(@class,'" + iconClassname + "')]]");
+		browser.findElement(addMethodBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -111,6 +110,33 @@ public class BookingPage {
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_form button.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
+	}
+	
+	/**
+	 * Select the free booking option
+	 * 
+	 * @return Itself
+	 */
+	public BookingPage addFreeBooking() {
+		addMethod("o_ac_free_icon");
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
+	 * Save the free booking.
+	 * 
+	 * @param description The description of the booking.
+	 * @return Itself
+	 */
+	public BookingPage configureFreeBooking(String description) {
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_free_form .o_sel_accesscontrol_description textarea");
+		browser.findElement(descriptionBy).sendKeys(description);
+		
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_free_form button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
 	public void save() {

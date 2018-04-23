@@ -501,7 +501,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#isIdentityInSecurityGroup(org.olat.core.id.Identity, org.olat.basesecurity.SecurityGroup)
 	 */
 	@Override
-	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup) {
+	public boolean isIdentityInSecurityGroup(IdentityRef identity, SecurityGroup secGroup) {
 		if (secGroup == null || identity == null) return false;
 		String queryString = "select sgmsi.key from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi where sgmsi.identity.key=:identitykey and sgmsi.securityGroup.key=:securityGroupKey";
 
@@ -513,7 +513,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return membership != null && membership.size() > 0 && membership.get(0) != null;
+		return membership != null && !membership.isEmpty() && membership.get(0) != null;
 	}
 
 	@Override

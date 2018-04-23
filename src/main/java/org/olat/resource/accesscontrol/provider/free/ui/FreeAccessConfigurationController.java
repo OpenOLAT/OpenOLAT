@@ -61,14 +61,18 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_accesscontrol_free_form");
+		
 		String desc = null;
 		if(link.getOffer() != null) {
 			desc = link.getOffer().getDescription();
 		}
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
 		String[] autoValues = new String[]{ translate("auto.booking.value") };
 		autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);
+		autoEl.setElementCssClass("o_sel_accesscontrol_auto_booking");
 		if(link.getOffer() != null && link.getOffer().getKey() != null) {
 			autoEl.select(autoKeys[0], link.getOffer().isAutoBooking());
 		} else {

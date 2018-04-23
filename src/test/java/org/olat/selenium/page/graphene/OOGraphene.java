@@ -435,6 +435,15 @@ public class OOGraphene {
 		waitModalDialogDisappears(browser);
 	}
 	
+	public static final void closeWarningBox(WebDriver browser) {
+		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-warning");
+		waitElement(errorBoxBy, 5, browser);
+		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
+		waitElement(closeButtonBy, 5, browser);
+		browser.findElement(closeButtonBy).click();
+		waitModalDialogDisappears(browser);
+	}
+	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
 			Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
