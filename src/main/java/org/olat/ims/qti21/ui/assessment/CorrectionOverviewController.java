@@ -113,8 +113,10 @@ public class CorrectionOverviewController extends BasicController implements Too
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		assessmentItemsLink = LinkFactory.createLink("correction.assessment.items", getTranslator(), this);
+		assessmentItemsLink.setElementCssClass("o_sel_correction_assessment_items");
 		segmentButtonsCmp.addButton(assessmentItemsLink, true);
 		identitiesLink = LinkFactory.createLink("correction.assessed.identities", getTranslator(), this);
+		identitiesLink.setElementCssClass("o_sel_correction_identities");
 		segmentButtonsCmp.addButton(identitiesLink, false);
 
 		mainPanel = putInitialPanel(new SimpleStackedPanel("overview"));

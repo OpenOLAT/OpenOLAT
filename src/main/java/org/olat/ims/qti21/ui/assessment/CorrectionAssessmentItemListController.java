@@ -157,10 +157,12 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		
 		tableModel = new CorrectionAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_correction_assessment_items_list");
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "corr-assessment-item-list");
 		
 		saveTestsButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
+		saveTestsButton.setElementCssClass("o_sel_correction_save_tests");
 	}
 	
 	private void loadModel(boolean reset, boolean lastSessions) {

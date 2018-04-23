@@ -41,7 +41,9 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
+import org.olat.selenium.page.qti.QTI21CorrectionPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
@@ -917,5 +919,135 @@ public class ImsQTI21Test extends Deployments {
 		assessmentTool
 			.assertStatusDone(participant)
 			.assertProgressEnded(participant);
+	}
+	
+	/**
+	 * An author create a course with a test with essay
+	 * and single choice. A user make it. The author
+	 * correct the test and the participant reload
+	 * the page to see its result.
+	 * 
+	 * @param loginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21CourseTestCorrectionWorkflow(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
+		
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		//upload a test
+		String qtiTestTitle = "Correction 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_sc_essay_mc.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Correction QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		String testNodeTitle = "QTI21Correction-1";
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle)
+			.selectTabLearnContent()
+			.chooseTest(qtiTestTitle);
+		OOGraphene.closeWarningBox(browser);//close the warning
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectConfiguration()
+			.showScoreOnHomepage(true)
+			.saveConfiguration();
+
+		//publish the course
+		courseEditor
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly);
+		
+		//add a participant
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.members()
+			.quickAdd(participant);
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle);
+		
+		// open the course and see the test
+		CoursePageFragment course = CoursePageFragment.getCourse(participantBrowser);		
+		course
+			.clickTree()
+			.selectWithTitle(testNodeTitle);
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(participantBrowser);
+		qtiPage
+			.start()
+			.assertOnAssessmentItem()
+			.answerSingleChoiceWithParagraph("Correct answer")
+			.saveAnswer()
+			.assertOnAssessmentItem("Essay")
+			.answerEssay("Bla bla bla")
+			.saveAnswer()
+			.answerMultipleChoice("Good choice", "Bad choice")
+			.saveAnswer()
+			.endTest()
+			.assertOnCourseAssessmentTestWaitingCorrection();
+		
+		//the author open the assessment tool
+		AssessmentToolPage assessmentTool = courseRuntime
+			.assessmentTool();
+		assessmentTool
+			.courseElements()
+			.selectElementsCourseNode(testNodeTitle);
+		// correction
+		QTI21CorrectionPage correction = new QTI21CorrectionPage(browser);
+		correction
+			.startTestCorrection()
+			.assertOnAssessmentItemError("Essay", 1)
+			.selectAssessmentItem("Essay")
+			.setScore("1.0")
+			.save()
+			.assertOnStatusOk()
+			.back()
+			.publishAll()
+			.confirmDialog();
+		//make all results visible
+		assessmentTool
+			.makeAllVisible();
+		
+		// the participant check its result
+		course
+			.clickTree()
+			.selectWithTitle(testNodeTitle);
+		qtiPage = QTI21Page
+			.getQTI21Page(participantBrowser)
+			.assertOnCourseAssessmentTestScore(2);
 	}
 }

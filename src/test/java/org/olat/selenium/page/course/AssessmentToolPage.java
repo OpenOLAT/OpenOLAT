@@ -211,6 +211,26 @@ public class AssessmentToolPage {
 		return new BulkAssessmentPage(browser);
 	}
 	
+	public AssessmentToolPage makeAllVisible() {
+		By selectAll = By.xpath("//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]");
+		OOGraphene.waitElement(selectAll, browser);
+		browser.findElement(selectAll).click();
+		OOGraphene.waitBusy(browser);
+		
+		By bulkBy = By.cssSelector("a.btn.o_sel_assessment_bulk_visible");
+		browser.findElement(bulkBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By visibleBy = By.xpath("//div[contains(@class,'modal-body')]//input[@name='user.visibility'][@value='visible']");
+		browser.findElement(visibleBy).click();
+		
+		By saveBy = By.cssSelector("div.modal-body button.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		return this;
+	}
+	
 	/**
 	 * Click back to the course
 	 * 
