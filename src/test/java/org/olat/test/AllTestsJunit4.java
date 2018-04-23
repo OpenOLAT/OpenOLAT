@@ -65,6 +65,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.FileUtilsTest.class,
 	org.olat.core.util.FileNameSuffixFilterTest.class,
 	org.olat.core.util.FormatterTest.class,
+	org.olat.core.util.FormatLatexFormulasTest.class,
 	org.olat.core.util.FormatterHourAndSecondsTest.class,
 	org.olat.core.util.EncoderTest.class,
 	org.olat.core.util.SimpleHtmlParserTest.class,

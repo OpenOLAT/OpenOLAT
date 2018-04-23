@@ -50,6 +50,7 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.filter.impl.NekoHTMLMathScanner;
 
 /**
  * enclosing_type Description: <br>
@@ -65,7 +66,10 @@ public class Formatter {
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private static final DateFormat shortFormatDateFileSystem = new SimpleDateFormat("yyyyMMdd");
 
-	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<Locale,Formatter>();
+	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<>();
+
+	// Pattern to find math classes
+	private static final Pattern classMathPattern = Pattern.compile(".*class[ ]*=[ ]*(math|(['\"])([a-zA-Z0-9_\\- ]* )*math( [a-zA-Z0-9_\\- ]*)*\\2).*");
 	
 	private final Locale locale;
 	private final DateFormat shortDateFormat;
@@ -651,7 +655,7 @@ public class Formatter {
 	public static String formatLatexFormulas(String htmlFragment) {
 		if (htmlFragment == null) return "";
 		// optimize, reduce jsmath calls on client
-		if (htmlFragment.contains("<math") || htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\"")) {
+		if (new NekoHTMLMathScanner().scan(htmlFragment)) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			String elem = htmlFragment.contains("<div") || htmlFragment.contains("<p") ? "div" : "span";
@@ -661,7 +665,7 @@ public class Formatter {
 			sb.append("</").append(elem).append(">");
 			sb.append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100);\n/* ]]> */\n</script>");
 			return sb.toString();
-		}			
+		}
 		return htmlFragment;
 	}
 	

@@ -709,9 +709,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected final void renderSpan(AssessmentRenderer renderer, StringOutput sb, Span span, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
-		Attribute<?> attrClass = span.getAttributes().get("class");
+		StringMultipleAttribute attrClass = span.getAttributes().getStringMultipleAttribute("class");
 
-		if(attrClass != null && attrClass.getValue() != null && attrClass.getValue().toString().equals("[math]")) {
+		if (attrClass != null && attrClass.getValue() != null && attrClass.getValue().contains("math")) {
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			sb.append("<span id=\"").append(domid).append("\">");
 			

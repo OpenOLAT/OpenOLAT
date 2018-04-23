@@ -162,14 +162,9 @@ jQuery(function() {
 ## LAYOUT
 ## 1) Dynamic component CSS included by components
 $r.render("jsCssRawHtmlHeader", "pre-theme")
-## 2) CSS theme inclusion and favicons
-<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
-<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
-<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
-<!--[if IE 9]>
-<link id="o_theme_css_ie" href="${theme.getBaseURI()}theme_ie_completions.css" rel="stylesheet" type="text/css" />
-<![endif]-->
-## 3) Insert IE specific class names
+## 2) CSS theme inclusion, theme JavaScript, favicons and appicons
+$theme.renderHTMLHeaderElements()
+ ## 3) Insert IE specific class names
 <!--[if IE 8]>
 <script type="text/javascript">
 	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie8'); });

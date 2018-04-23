@@ -132,6 +132,4 @@ public class FormatterTest {
 		Assert.assertEquals("32:23:45", Formatter.formatTimecode(116625000l));
 		Assert.assertEquals("532:23:45", Formatter.formatTimecode(1916625000l));
 	}
-	
-	
 }
