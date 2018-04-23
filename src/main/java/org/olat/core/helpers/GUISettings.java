@@ -20,6 +20,7 @@
 package org.olat.core.helpers;
 
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.gui.themes.Theme;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,8 @@ import org.springframework.stereotype.Service;
 public class GUISettings extends AbstractSpringModule {
 
 	private static final String KEY_GUI_THEME_IDENTIFYER = "layout.theme";
+	
+	private Theme guiTheme;
 	
 	/**
 	 * Set the system theme here. Make sure the directory webapp/WEB-INF/static/themes/YOURTHEME exists. 
@@ -70,6 +73,13 @@ public class GUISettings extends AbstractSpringModule {
 	public String getGuiThemeIdentifyer() {
 		return guiThemeIdentifyer;			
 	}
+	
+	public synchronized Theme getGuiTheme() {
+		if(guiTheme == null) {
+			guiTheme = new Theme(getGuiThemeIdentifyer());
+		}
+		return guiTheme;			
+	}
 
 	/**
 	 * Set the CSS theme used for this webapp. Only used by spring. Use static
@@ -80,5 +90,6 @@ public class GUISettings extends AbstractSpringModule {
 	public void setGuiThemeIdentifyer(String guiThemeIdentifyer) {
 		this.guiThemeIdentifyer = guiThemeIdentifyer;
 		setStringProperty(KEY_GUI_THEME_IDENTIFYER, guiThemeIdentifyer, true);
+		getGuiTheme().init(guiThemeIdentifyer);
 	}
 }
