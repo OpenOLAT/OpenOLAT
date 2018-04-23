@@ -50,6 +50,7 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.filter.impl.NekoHTMLMathScanner;
 
 /**
  * enclosing_type Description: <br>
@@ -654,7 +655,7 @@ public class Formatter {
 	public static String formatLatexFormulas(String htmlFragment) {
 		if (htmlFragment == null) return "";
 		// optimize, reduce jsmath calls on client
-		if (htmlFragment.contains("<math") || htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\"") || classMathPattern.matcher(htmlFragment).matches()) {
+		if (new NekoHTMLMathScanner().scan(htmlFragment)) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			String elem = htmlFragment.contains("<div") || htmlFragment.contains("<p") ? "div" : "span";
@@ -664,7 +665,7 @@ public class Formatter {
 			sb.append("</").append(elem).append(">");
 			sb.append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100);\n/* ]]> */\n</script>");
 			return sb.toString();
-		}			
+		}
 		return htmlFragment;
 	}
 	
