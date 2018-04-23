@@ -1,0 +1,6 @@
+#if($editMode)
+	<div class="o_evaluation_editor_form">$r.render("settings")</div>	
+	<div class="o_button_group">$r.render("choice.add")</div>
+#else
+	$r.render("preview")
+#end

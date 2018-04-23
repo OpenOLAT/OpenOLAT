@@ -43,6 +43,7 @@ public class FormXStream {
 		xstream.alias("choice", Choice.class);
 		xstream.alias("choices", Choices.class);
 		xstream.alias("singlechoice", SingleChoice.class);
+		xstream.alias("multiplechoice", MultipleChoice.class);
 	}
 	
 	public static XStream getXStream() {

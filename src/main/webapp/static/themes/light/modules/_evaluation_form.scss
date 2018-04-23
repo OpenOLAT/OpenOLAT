@@ -124,6 +124,11 @@
 		.o_evaluation_filename {
 		}
 	}
+	
+	.o_evaluation_mc_other {
+		margin-top: -20px;
+		margin-left: 20px;
+	}
 }
 
 @media (max-width: $screen-sm-min) {

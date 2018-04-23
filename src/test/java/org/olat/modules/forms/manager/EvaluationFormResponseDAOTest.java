@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -153,9 +155,34 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		assertThat(response.getStringuifiedResponse()).isNull();
 		assertThat(response.getFileResponse()).isNull();
 	}
+	
+	@Test
+	public void shouldDeleteResponses() {
+		EvaluationFormSession session = createSession();
+		String responseIdentifier = UUID.randomUUID().toString();
+		createResponse(session, responseIdentifier);
+		createResponse(session, responseIdentifier);
+		createResponse(session, responseIdentifier);
+		dbInstance.commit();
+		
+		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponses(responseIdentifier, session);
+		assertThat(responses).hasSize(3);
+		
+		List<Long> keys = responses.stream().map(EvaluationFormResponse::getKey).collect(Collectors.toList());
+		evaluationFormResponseDao.deleteResponses(keys);
+		dbInstance.commit();
+		
+		
+		responses = evaluationFormResponseDao.loadResponses(responseIdentifier, session);
+		assertThat(responses).hasSize(0);
+	}
 
 	private EvaluationFormResponse createResponse(EvaluationFormSession session) {
 		String responseIdentifier = UUID.randomUUID().toString();
+		return createResponse(session, responseIdentifier);
+	}
+
+	private EvaluationFormResponse createResponse(EvaluationFormSession session, String responseIdentifier) {
 		BigDecimal numericalValue = new BigDecimal("2.2");
 		String stringuifiedResponse = numericalValue.toPlainString();
 		Path fileResponse = Paths.get("this", "is", "a", "path");

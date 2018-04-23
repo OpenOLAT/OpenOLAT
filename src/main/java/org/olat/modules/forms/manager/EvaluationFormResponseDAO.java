@@ -131,27 +131,33 @@ public class EvaluationFormResponseDAO {
 		return dbInstance.getCurrentEntityManager().merge(response);
 	}
 
-	public void deleteResponse(Long key) {
-		String query = "delete from evaluationformresponse response where response.key=:key";
+	public void deleteResponses(List<Long> keys) {
+		if (keys == null || keys.isEmpty()) return;
+		
+		String query = "delete from evaluationformresponse response where response.key in (:keys)";
 
 		dbInstance.getCurrentEntityManager().createQuery(query)
-				.setParameter("key", key)
+				.setParameter("keys", keys)
 				.executeUpdate();
 	}
 
 	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session) {
+		List<EvaluationFormResponse> resultList = loadResponses(responseIdentifier, session);
+		return resultList.isEmpty()? null: resultList.get(0);
+	}
+
+	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSession session) {
 		String query = new StringBuilder()
 				.append("select response from evaluationformresponse as response")
 				.append(" inner join response.session as session")
 				.append(" where session.key=:sessionKey and response.responseIdentifier=:responseIdentifier")
 				.toString();
 		
-		List<EvaluationFormResponse> resultList = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, EvaluationFormResponse.class)
 				.setParameter("sessionKey", session.getKey())
 				.setParameter("responseIdentifier", responseIdentifier)
 				.getResultList();
-		return resultList.isEmpty()? null: resultList.get(0);
 	}
 
 }

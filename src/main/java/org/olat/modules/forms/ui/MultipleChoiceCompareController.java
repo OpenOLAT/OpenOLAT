@@ -27,27 +27,27 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.model.xml.Choice;
-import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.model.CompareResponse;
 
 /**
  * 
- * Initial date: 20.04.2018<br>
+ * Initial date: 23.04.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceCompareController extends FormBasicController {
+public class MultipleChoiceCompareController extends FormBasicController {
+	
 
-	private final SingleChoice singleChoice;
+	private final MultipleChoice multipleChoice;
 	private final List<CompareResponse> compareResponses;
 
-	public SingleChoiceCompareController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice,
+	public MultipleChoiceCompareController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice,
 			List<CompareResponse> compareResponses) {
-		super(ureq, wControl, "single_choice_compare");
-		this.singleChoice = singleChoice;
+		super(ureq, wControl, "multiple_choice_compare");
+		this.multipleChoice = multipleChoice;
 		this.compareResponses = compareResponses;
 		initForm(ureq);
 	}
@@ -57,11 +57,11 @@ public class SingleChoiceCompareController extends FormBasicController {
 		flc.contextPut("wrappers", createWrappers(ureq));
 	}
 
-	private List<SingleChoiceCompareWrapper> createWrappers(UserRequest ureq) {
-		List<SingleChoiceCompareWrapper> wrappers = new ArrayList<>();
+	private List<MultipleChoiceCompareWrapper> createWrappers(UserRequest ureq) {
+		List<MultipleChoiceCompareWrapper> wrappers = new ArrayList<>();
 		for (CompareResponse compareResponse: compareResponses) {
 			if (isValid(compareResponse)) {
-				SingleChoiceCompareWrapper wrapper = createWrapper(compareResponse);
+				MultipleChoiceCompareWrapper wrapper = createWrapper(compareResponse);
 				wrappers.add(wrapper);
 			}	
 		}
@@ -74,30 +74,36 @@ public class SingleChoiceCompareController extends FormBasicController {
 			return false;
 		if (responses.isEmpty())
 			return false;
-		EvaluationFormResponse response = responses.get(0);
-		if (response.getResponseIdentifier() == null)
-			return false;
-		if (!response.getResponseIdentifier().equals(singleChoice.getId()))
-			return false;
-		if (!StringHelper.containsNonWhitespace(response.getStringuifiedResponse()))
-			return false;
 		return true;
 	}
 
-	private SingleChoiceCompareWrapper createWrapper(CompareResponse compareResponse) {
-		EvaluationFormResponse response = compareResponse.getResponses().get(0);
-		String choiceKey = response.getStringuifiedResponse();
-		String choice = getChoice(choiceKey);
-		return new SingleChoiceCompareWrapper(compareResponse.getLegendName(), compareResponse.getColor(), choice);
+	private MultipleChoiceCompareWrapper createWrapper(CompareResponse compareResponse) {
+		String choice = concatResponses(compareResponse);
+		return new MultipleChoiceCompareWrapper(compareResponse.getLegendName(), compareResponse.getColor(), choice);
+	}
+
+	private String concatResponses(CompareResponse compareResponse) {
+		StringBuilder choices = new StringBuilder();
+		for (EvaluationFormResponse response: compareResponse.getResponses()) {
+			String choiceKey = response.getStringuifiedResponse();
+			String choice = getChoice(choiceKey);
+			if (choice == null && multipleChoice.isWithOthers()) {
+				choice = choiceKey;
+			}
+			if (choice != null) {
+				choices.append(choice).append("<br/>");
+			}
+		}
+		return choices.toString();
 	}
 
 	private String getChoice(String choiceKey) {
-		for (Choice choice: singleChoice.getChoices().asList()) {
+		for (Choice choice: multipleChoice.getChoices().asList()) {
 			if (choiceKey.equals(choice.getId())) {
 				return choice.getValue();
 			}
 		}
-		return "";
+		return null;
 	}
 
 	@Override
@@ -110,13 +116,13 @@ public class SingleChoiceCompareController extends FormBasicController {
 		//
 	}
 	
-	public final static class SingleChoiceCompareWrapper {
+	public final static class MultipleChoiceCompareWrapper {
 		
 		private final String name;
 		private final String color;
 		private final String choice;
 		
-		public SingleChoiceCompareWrapper(String name, String color, String choice) {
+		public MultipleChoiceCompareWrapper(String name, String color, String choice) {
 			this.name = name;
 			this.color = color;
 			this.choice = choice;

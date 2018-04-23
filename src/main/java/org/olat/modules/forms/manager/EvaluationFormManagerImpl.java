@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -151,6 +152,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSession session) {
+		return evaluationFormResponseDao.loadResponses(responseIdentifier, session);
+	}
+
+	@Override
 	public File loadResponseFile(EvaluationFormResponse response) {
 		if (response == null || response.getFileResponse() == null) return null;
 		
@@ -166,7 +172,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public void deleteResponse(Long key) {
-		evaluationFormResponseDao.deleteResponse(key);
+		evaluationFormResponseDao.deleteResponses(Collections.singletonList(key));
+	}
+
+	@Override
+	public void deleteResponses(List<Long> keys) {
+		evaluationFormResponseDao.deleteResponses(keys);
 	}
 
 	@Override

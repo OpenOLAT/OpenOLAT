@@ -40,20 +40,14 @@ public class AllHandlerPageProvider implements PageProvider {
 	public AllHandlerPageProvider(Form form) {
 		this.form = form;
 		
-		TitleHandler titleRawHandler = new TitleHandler();
-		handlers.add(titleRawHandler);
-		SpacerHandler hrHandler = new SpacerHandler();
-		handlers.add(hrHandler);
-		HTMLRawHandler htmlHandler = new HTMLRawHandler();
-		handlers.add(htmlHandler);
-		RubricHandler rubricHandler = new RubricHandler(true);
-		handlers.add(rubricHandler);
-		TextInputHandler textInputHandler = new TextInputHandler();
-		handlers.add(textInputHandler);
-		FileUploadHandler fileUploadhandler = new FileUploadHandler();
-		handlers.add(fileUploadhandler);
-		SingleChoiceHandler singleChoiceHandler = new SingleChoiceHandler();
-		handlers.add(singleChoiceHandler);
+		handlers.add(new TitleHandler());
+		handlers.add(new SpacerHandler());
+		handlers.add(new HTMLRawHandler());
+		handlers.add(new RubricHandler(true));
+		handlers.add(new TextInputHandler());
+		handlers.add(new FileUploadHandler());
+		handlers.add(new SingleChoiceHandler());
+		handlers.add(new MultipleChoiceHandler());
 	}
 
 	@Override

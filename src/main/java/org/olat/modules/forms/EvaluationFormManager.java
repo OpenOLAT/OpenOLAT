@@ -76,11 +76,15 @@ public interface EvaluationFormManager {
 	
 	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session);
 	
+	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSession session);
+	
 	public File loadResponseFile(EvaluationFormResponse response);
 	
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
 	
 	public void deleteResponse(Long key);
+	
+	public void deleteResponses(List<Long> keys);
 
 	/**
 	 * Is there some sessions using this repository entry.

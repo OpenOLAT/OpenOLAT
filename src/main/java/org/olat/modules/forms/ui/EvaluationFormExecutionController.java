@@ -41,6 +41,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -67,6 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EvaluationFormExecutionController extends FormBasicController implements ValidatingController {
+
+	private static final OLog log = Tracing.createLoggerFor(EvaluationFormExecutionController.class);
 	
 	private final Map<String, EvaluationFormElementHandler> handlerMap = new HashMap<>();
 	private final List<ExecutionFragment> fragments = new ArrayList<>();
@@ -272,6 +276,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			try {
 				fragment.save(session);
 			} catch (Exception e) {
+				log.error("Saving evaluation form response failed!", e);
 				allSaved = false;
 			}
 		}
