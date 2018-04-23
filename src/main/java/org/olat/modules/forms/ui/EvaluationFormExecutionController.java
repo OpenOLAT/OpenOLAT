@@ -166,6 +166,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 		if(session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			readOnly = true;
+			showDoneButton = false;
 		} else if(!evaluator.equals(getIdentity())) {
 			flc.contextPut("messageNotDone", Boolean.TRUE);
 		}
