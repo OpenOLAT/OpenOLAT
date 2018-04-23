@@ -63,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LayoutAdminController extends FormBasicController {
 	
-	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	private static final Set<String> imageMimeTypes = new HashSet<>();
 	static {
 		imageMimeTypes.add("image/gif");
 		imageMimeTypes.add("image/jpg");
@@ -198,10 +198,10 @@ public class LayoutAdminController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateUrl(logoUrlEl);
 		allOk &= validateUrl(footerUrl);
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateUrl(TextElement el) {
@@ -248,7 +248,6 @@ public class LayoutAdminController extends FormBasicController {
 			String newThemeIdentifyer = themeSelection.getSelectedKey();
 			guiSettings.setGuiThemeIdentifyer(newThemeIdentifyer);
 			// use new theme in current window
-			getWindowControl().getWindowBackOffice().getWindow().getGuiTheme().init(newThemeIdentifyer);
 			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
 			logAudit("GUI theme changed", newThemeIdentifyer);
 			fireEvent(ureq, Event.CHANGED_EVENT);

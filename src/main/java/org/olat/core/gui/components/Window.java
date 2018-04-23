@@ -193,7 +193,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		this.wbackofficeImpl = wbackoffice;
 		jsAndCssAdder = wbackoffice.createJSAndCSSAdder();
 		// set default theme
-		Theme myTheme = new Theme(CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer());
+		Theme myTheme = CoreSpringFactory.getImpl(GUISettings.class).getGuiTheme();
 		setGuiTheme(myTheme);
 		// add analytics service provider if configured
 		AnalyticsModule analyticsModule = CoreSpringFactory.getImpl(AnalyticsModule.class);

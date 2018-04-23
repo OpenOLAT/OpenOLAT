@@ -56,6 +56,8 @@ public class Theme {
 	private String htmlHeaderElements;
 
 	/**
+	 * Theme is cached and shared with all sessions.
+	 * 
 	 * @param name
 	 *            The unique theme identifyer
 	 */
