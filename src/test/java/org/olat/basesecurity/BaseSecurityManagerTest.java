@@ -315,7 +315,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Roles modifiedRoles = new Roles(true, true, true, true, false, true, true, true, false);
+		Roles modifiedRoles = new Roles(false, true, true, true, true, false, true, true, true, false);
 		securityManager.updateRoles(id2, id1, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -346,7 +346,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Roles modifiedRoles = new Roles(false, true, false, true, false, false, false, true, false);
+		Roles modifiedRoles = new Roles(false, false, true, false, true, false, false, false, true, false);
 		securityManager.updateRoles(id2, id1, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		

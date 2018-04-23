@@ -332,8 +332,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		}
 		
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Roles updatedRoles = new Roles(admin, usermanager, groupManager, author, isAnonymous,
-				learnresourcemanager, poolmanager, curriculummanager, false);
+		Roles updatedRoles = new Roles(false, admin, usermanager, groupManager, author, isAnonymous,
+				learnresourcemanager, poolmanager, curriculummanager, false);//TODO roles
 		securityManager.updateRoles(getIdentity(), editedIdentity, defOrganisation, updatedRoles);
 		
 		if ((iAmOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_STATUS.booleanValue()) &&  !editedIdentity.getStatus().equals(getStatus()) ) {			

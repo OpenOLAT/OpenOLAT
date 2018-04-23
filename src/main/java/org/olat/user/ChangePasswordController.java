@@ -116,6 +116,9 @@ public class ChangePasswordController extends BasicController implements Support
 		if(usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
 			return false;
 		}
+		if(usess.getRoles().isSystemAdmin()) {
+			return false;
+		}
 		
 		if(loginModule.isPasswordChangeOnce() || loginModule.isPasswordAgePolicyConfigured()) {
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());

@@ -312,7 +312,6 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final AssessableCourseNode courseNode = getCourseNode();
-		final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false, false);
 		
 		final boolean hasUserComment = courseNode.hasCommentConfigured();
 		final boolean hasScore = courseNode.hasScoreConfigured();
@@ -353,7 +352,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			}
 
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
-			IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
+			IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 			
 			//update comment, empty string will reset comment

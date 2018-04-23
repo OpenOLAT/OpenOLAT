@@ -34,6 +34,7 @@ import java.io.Serializable;
 */
 public class Roles implements Serializable {
 	private static final long serialVersionUID = 4726449291059674346L;
+	private boolean isSystemAdmin;
 	private boolean isOLATAdmin;
 	private boolean isUserManager;
 	private boolean isGroupManager;
@@ -54,11 +55,12 @@ public class Roles implements Serializable {
 	 */
 	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
 			boolean isInstitutionalResourceManager, boolean isInvitee) {
-		this(isOLATAdmin, isGroupManager, isUserManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, false,  false, isInvitee);
+		this(false, isOLATAdmin, isGroupManager, isUserManager, isAuthor, isGuestOnly, isInstitutionalResourceManager, false,  false, isInvitee);
 	}
 	
-	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
+	public Roles(boolean isSystemAdmin, boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
 			boolean isInstitutionalResourceManager, boolean isPoolAdmin, boolean isCurriculumManager, boolean isInvitee) {
+		this.isSystemAdmin = isSystemAdmin;
 		this.isOLATAdmin = isOLATAdmin;
 		this.isGroupManager = isGroupManager;
 		this.isUserManager = isUserManager;
@@ -68,6 +70,19 @@ public class Roles implements Serializable {
 		this.isPoolAdmin = isPoolAdmin;
 		this.isCurriculumManager = isCurriculumManager;
 		this.isInvitee = isInvitee;
+	}
+	
+	/**
+	 * The roles of a standard user without special permissions.
+	 * 
+	 * @return The roles object
+	 */
+	public static final Roles userRoles() {
+		return new Roles(false, false, false, false, false, false, false, false, false, false);
+	}
+	
+	public boolean isSystemAdmin() {
+		return isSystemAdmin;
 	}
 
 	/**

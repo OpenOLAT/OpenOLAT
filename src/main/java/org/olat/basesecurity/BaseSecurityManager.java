@@ -138,7 +138,8 @@ public class BaseSecurityManager implements BaseSecurity {
 		boolean isInvitee = false;
 
 		List<String> rolesStr = getRolesAsString(identity);
-		boolean admin = rolesStr.contains(OrganisationRoles.administrator.name());
+		boolean sysAdmin = rolesStr.contains(OrganisationRoles.sysadmin.name());
+		boolean admin = sysAdmin || rolesStr.contains(OrganisationRoles.administrator.name());
 		boolean author = admin || rolesStr.contains(OrganisationRoles.author.name());
 		boolean groupManager = admin || rolesStr.contains(OrganisationRoles.groupmanager.name());
 		boolean userManager = admin || rolesStr.contains(OrganisationRoles.usermanager.name());
@@ -150,7 +151,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			isInvitee = invitationDao.isInvitee(identity);
 			isGuestOnly = rolesStr.contains(OrganisationRoles.guest.name());
 		}
-		return new Roles(admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, curriculumnManager, isInvitee);
+		return new Roles(sysAdmin, admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, curriculumnManager, isInvitee);
 	}
 
 	@Override

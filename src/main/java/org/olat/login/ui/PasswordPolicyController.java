@@ -52,6 +52,7 @@ public class PasswordPolicyController extends FormBasicController {
 	private TextElement maxAgePoolManagerEl;
 	private TextElement maxAgeUserManagerEl;
 	private TextElement maxAgeLearnResourceManagerEl;
+	private TextElement maxAgeCurriculumnManagerManagerEl;
 	private TextElement maxAgeAdministratorEl;
 	
 	@Autowired
@@ -109,7 +110,10 @@ public class PasswordPolicyController extends FormBasicController {
 
 		String maxAgeLearnResourceManager = toMaxAgeAsString(loginModule.getPasswordMaxAgeLearnResourceManager());
 		maxAgeLearnResourceManagerEl = uifactory.addTextElement("max.age.learnresourcemanager", "max.age.learnresourcemanager", 5, maxAgeLearnResourceManager, formLayout);
-
+		
+		String maxAgeCurriculumManager = toMaxAgeAsString(loginModule.getPasswordMaxAgeCurriculumManager());
+		maxAgeCurriculumnManagerManagerEl = uifactory.addTextElement("max.age.curriculummanager", "max.age.curriculummanager", 5, maxAgeCurriculumManager, formLayout);
+		
 		String maxAgeAdministrator = toMaxAgeAsString(loginModule.getPasswordMaxAgeAdministrator());
 		maxAgeAdministratorEl = uifactory.addTextElement("max.age.administrator", "max.age.administrator", 5, maxAgeAdministrator, formLayout);
 		
@@ -150,6 +154,7 @@ public class PasswordPolicyController extends FormBasicController {
 		allOk &= validateMaxAgeEl(maxAgePoolManagerEl);
 		allOk &= validateMaxAgeEl(maxAgeUserManagerEl);
 		allOk &= validateMaxAgeEl(maxAgeLearnResourceManagerEl);
+		allOk &= validateMaxAgeEl(maxAgeCurriculumnManagerManagerEl);
 		allOk &= validateMaxAgeEl(maxAgeAdministratorEl);
 		
 		historyEl.clearError();
@@ -187,6 +192,7 @@ public class PasswordPolicyController extends FormBasicController {
 		loginModule.setPasswordMaxAgePoolManager(getMaxAge(maxAgePoolManagerEl));
 		loginModule.setPasswordMaxAgeUserManager(getMaxAge(maxAgeUserManagerEl));
 		loginModule.setPasswordMaxAgeLearnResourceManager(getMaxAge(maxAgeLearnResourceManagerEl));
+		loginModule.setPasswordMaxAgeCurriculumManager(getMaxAge(maxAgeCurriculumnManagerManagerEl));
 		loginModule.setPasswordMaxAgeAdministrator(getMaxAge(maxAgeAdministratorEl));
 	}
 	

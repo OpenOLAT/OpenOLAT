@@ -35,6 +35,7 @@ import org.olat.core.id.Roles;
 @XmlRootElement(name = "rolesVO")
 public class RolesVO {
 	
+	private boolean systemAdmin = false;
 	private boolean olatAdmin = false;
 	private boolean userManager = false;
 	private boolean groupManager = false;
@@ -50,6 +51,7 @@ public class RolesVO {
 	}
 
 	public RolesVO(Roles roles) {
+		systemAdmin = roles.isSystemAdmin();
 		olatAdmin = roles.isOLATAdmin();
 		groupManager = roles.isGroupManager();
 		userManager = roles.isUserManager();
@@ -62,7 +64,15 @@ public class RolesVO {
 	}
 	
 	public Roles toRoles() {
-		return new Roles(olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, curriculumManager, invitee);
+		return new Roles(systemAdmin, olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, curriculumManager, invitee);
+	}
+
+	public boolean isSystemAdmin() {
+		return systemAdmin;
+	}
+
+	public void setSystemAdmin(boolean systemAdmin) {
+		this.systemAdmin = systemAdmin;
 	}
 
 	public boolean isOlatAdmin() {

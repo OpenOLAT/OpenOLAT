@@ -67,6 +67,18 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Authentication updatedAuth = securityManager.findAuthentication(ident, RestSecurityBeanImpl.REST_AUTH_PROVIDER);
 		Assert.assertEquals(newToken, updatedAuth.getCredential());
 	}
+	
+	@Test
+	public void getIdentitiesWithAuthentication() {
+		String token = UUID.randomUUID().toString();
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-6-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident, "SPECAUTH", ident.getName(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		List<Identity> identities = authenticationDao.getIdentitiesWithAuthentication("SPECAUTH");
+		Assert.assertTrue(identities.contains(ident));
+	}
 
 	@Test
 	public void hasAuthentication() {

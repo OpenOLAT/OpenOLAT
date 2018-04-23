@@ -63,6 +63,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String MAX_AGE_POOLMANAGER = "password.max.age.poolmanager";
 	private static final String MAX_AGE_USERMANAGER = "password.max.age.usermanager";
 	private static final String MAX_AGE_LEARNRESOURCEMANAGER = "password.max.age.learnresourcemanager";
+	private static final String MAX_AGE_CURRICULUMMANAGER = "password.max.age.curriculummanager";
 	private static final String MAX_AGE_ADMINISTRATOR = "password.max.age.administrator";
 	private static final String HISTORY = "password.history";
 
@@ -91,6 +92,8 @@ public class LoginModule extends AbstractSpringModule {
 	private int passwordMaxAgeUserManager;
 	@Value("${password.max.age.learnresourcemanager}")
 	private int passwordMaxAgeLearnResourceManager;
+	@Value("${password.max.age.curriculummanager}")
+	private int passwordMaxAgeCurriculumManager;
 	@Value("${password.max.age.administrator}")
 	private int passwordMaxAgeAdministrator;
 	
@@ -235,6 +238,10 @@ public class LoginModule extends AbstractSpringModule {
 		String maxAgeLearnResourceManager = getStringPropertyValue(MAX_AGE_LEARNRESOURCEMANAGER, true);
 		if(StringHelper.containsNonWhitespace(maxAgeLearnResourceManager)) {
 			passwordMaxAgeLearnResourceManager = Integer.parseInt(maxAgeLearnResourceManager);
+		}
+		String maxAgeCurriculumManager = getStringPropertyValue(MAX_AGE_CURRICULUMMANAGER, true);
+		if(StringHelper.containsNonWhitespace(maxAgeCurriculumManager)) {
+			passwordMaxAgeCurriculumManager = Integer.parseInt(maxAgeCurriculumManager);
 		}
 		String maxAgeAdministrator = getStringPropertyValue(MAX_AGE_ADMINISTRATOR, true);
 		if(StringHelper.containsNonWhitespace(maxAgeAdministrator)) {
@@ -422,7 +429,7 @@ public class LoginModule extends AbstractSpringModule {
 		return passwordMaxAge > 0 || passwordMaxAgeAuthor > 0
 				|| passwordMaxAgeGroupManager > 0 || passwordMaxAgePoolManager > 0
 				|| passwordMaxAgeUserManager > 0 || passwordMaxAgeLearnResourceManager > 0
-				|| passwordMaxAgeAdministrator > 0;
+				|| passwordMaxAgeCurriculumManager > 0 || passwordMaxAgeAdministrator > 0;
 	}
 	
 	/**
@@ -527,6 +534,15 @@ public class LoginModule extends AbstractSpringModule {
 	public void setPasswordMaxAgeLearnResourceManager(int maxAge) {
 		passwordMaxAgeLearnResourceManager = maxAge;
 		setStringProperty(MAX_AGE_LEARNRESOURCEMANAGER, Integer.toString(maxAge), true);
+	}
+	
+	public int getPasswordMaxAgeCurriculumManager() {
+		return passwordMaxAgeCurriculumManager;
+	}
+
+	public void setPasswordMaxAgeCurriculumManager(int maxAge) {
+		passwordMaxAgeCurriculumManager = maxAge;
+		setStringProperty(MAX_AGE_CURRICULUMMANAGER, Integer.toString(maxAge), true);
 	}
 
 	public int getPasswordMaxAgeAdministrator() {

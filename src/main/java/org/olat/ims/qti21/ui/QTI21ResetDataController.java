@@ -73,8 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class QTI21ResetDataController extends FormBasicController {
-	
-	private final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false, false);
 
 	private final String[] onKeys = new String[]{ "on" };
 
@@ -206,7 +204,7 @@ public class QTI21ResetDataController extends FormBasicController {
 			qtiService.deleteAssessmentTestSession(identities, testEntry, courseEntry, courseNode.getIdent());
 			for(Identity identity:identities) {
 				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, Boolean.FALSE, 0.0d, AssessmentRunStatus.notStarted, null);
-				IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
+				IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 				testCourseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false, Role.coach);
 				testCourseNode.updateCurrentCompletion(uce, getIdentity(), null, AssessmentRunStatus.notStarted, Role.coach);
