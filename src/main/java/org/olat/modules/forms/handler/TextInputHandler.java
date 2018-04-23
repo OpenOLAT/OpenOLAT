@@ -84,6 +84,8 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 	public PageElement createPageElement(Locale locale) {
 		TextInput part = new TextInput();
 		part.setId(UUID.randomUUID().toString());
+		part.setNumeric(false);
+		part.setSingleRow(false);
 		part.setRows(12);
 		return part;
 	}

@@ -19,9 +19,12 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
@@ -43,14 +46,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TextInputController extends FormBasicController implements EvaluationFormResponseController {
 	
-	private TextAreaElement textEl;
+	private TextElement singleRowEl;
+	private TextAreaElement multiRowEl;
 	
 	private final TextInput textInput;
+	private boolean singleRow;
 	private EvaluationFormResponse response;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
-	
+
 	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.textInput = textInput;
@@ -65,20 +70,28 @@ public class TextInputController extends FormBasicController implements Evaluati
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		int rows = 12;
-		if(textInput.getRows() > 0) {
-			rows = textInput.getRows();
-		}
+		singleRowEl = uifactory.addTextElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 1000, null, formLayout);
+
+		multiRowEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, 12, 72, true, "", formLayout);
 		
-		textEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, rows, 72, true, "", formLayout);
+		update();
 	}
 	
 	public void update() {
+		singleRow = textInput.isNumeric() || textInput.isSingleRow();
+		
 		int rows = 12;
 		if(textInput.getRows() > 0) {
 			rows = textInput.getRows();
 		}
-		textEl.setRows(rows);
+		multiRowEl.setRows(rows);
+		
+		updateUI();
+	}
+	
+	private void updateUI() {
+		singleRowEl.setVisible(singleRow);
+		multiRowEl.setVisible(!singleRow);
 	}
 
 	@Override
@@ -92,8 +105,27 @@ public class TextInputController extends FormBasicController implements Evaluati
 	}
 	
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		if (textInput.isNumeric()) {
+			String val = singleRowEl.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				try {
+					Double.parseDouble(val);
+				} catch (NumberFormatException e) {
+					singleRowEl.setErrorKey("error.no.number", null);
+					allOk = false;
+				}
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	public void setReadOnly(boolean readOnly) {
-		textEl.setEnabled(!readOnly);
+		multiRowEl.setEnabled(!readOnly);
 	}
 
 	@Override
@@ -105,23 +137,43 @@ public class TextInputController extends FormBasicController implements Evaluati
 	public void loadResponse(EvaluationFormSession session) {
 		response = evaluationFormManager.loadResponse(textInput.getId(), session);
 		if (response != null) {
-			textEl.setValue(response.getStringuifiedResponse());
+			if (singleRow) {
+				singleRowEl.setValue(response.getStringuifiedResponse());
+			} else {
+				multiRowEl.setValue(response.getStringuifiedResponse());
+			}
 		}
 	}
 
 	@Override
 	public void saveResponse(EvaluationFormSession session) {
-		if (StringHelper.containsNonWhitespace(textEl.getValue())) {
-			String stringValue = textEl.getValue();
-			if (response == null) {
-				response = evaluationFormManager.createStringResponse(textInput.getId(), session, stringValue);
+		String valueToSave = getValueToSave();
+		if (StringHelper.containsNonWhitespace(valueToSave)) {
+			if (textInput.isNumeric()) {
+				BigDecimal value = new BigDecimal(valueToSave);
+				if (response == null) {
+					response = evaluationFormManager.createNumericalResponse(textInput.getId(), session, value);
+				} else {
+					response = evaluationFormManager.updateNumericalResponse(response, value);
+				}
 			} else {
-				response = evaluationFormManager.updateResponse(response, stringValue);
+				if (response == null) {
+					response = evaluationFormManager.createStringResponse(textInput.getId(), session, valueToSave);
+				} else {
+					response = evaluationFormManager.updateResponse(response, valueToSave);
+				}
 			}
 		} else if (response != null) {
 			// If all text is deleted by the user, the response should be deleted as well.
 			evaluationFormManager.deleteResponse(response.getKey());
 			response = null;
 		}
+	}
+
+	private String getValueToSave() {
+		if (singleRow) {
+			return singleRowEl.getValue();
+		}
+		return multiRowEl.getValue();
 	}
 }

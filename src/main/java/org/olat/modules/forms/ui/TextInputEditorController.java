@@ -19,10 +19,13 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.stream.Stream;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -45,6 +48,21 @@ import org.olat.modules.portfolio.ui.editor.event.ClosePartEvent;
  */
 public class TextInputEditorController extends FormBasicController implements PageElementEditorController {
 	
+	private static final String NUMERIC_TEXT_KEY = "textinput.numeric.text";
+	private static final String NUMERIC_NUMERIC_KEY = "textinput.numeric.numeric";
+	private static final String[] NUMERIC_KEYS = new String[] {
+			NUMERIC_TEXT_KEY,
+			NUMERIC_NUMERIC_KEY
+	};
+	private static final String SINGLE_ROW_KEY = "textinput.single.row";
+	private static final String MULTIPLE_ROWS_KEY = "textinput.multiple.rows";
+	private static final String[] ROW_OPTIONS = new String[] {
+			SINGLE_ROW_KEY,
+			MULTIPLE_ROWS_KEY
+	};
+	
+	private SingleSelection numericEl;
+	private SingleSelection singleRowEl;
 	private TextElement rowsEl;
 	private FormLink saveButton;
 	private TextInputController textInputCtrl;
@@ -75,18 +93,44 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		listenTo(textInputCtrl);
 		formLayout.add("textInput", textInputCtrl.getInitialFormItem());
 
-		long postfix = CodeHelper.getRAMUniqueID();
-		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("textinput_cont_" + postfix, getTranslator());
+		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("textinput_cont_" + CodeHelper.getRAMUniqueID(), getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
+		
+		numericEl = uifactory.addDropdownSingleselect("textinput_num_" + CodeHelper.getRAMUniqueID(),
+				"textinput.numeric", settingsCont, NUMERIC_KEYS, translateKeys(NUMERIC_KEYS));
+		String selectedNumericKey = textInput.isNumeric()? NUMERIC_NUMERIC_KEY: NUMERIC_TEXT_KEY;
+		numericEl.select(selectedNumericKey, true);
+		numericEl.addActionListener(FormEvent.ONCHANGE);
+		
+		singleRowEl = uifactory.addDropdownSingleselect("textinput_row_" + CodeHelper.getRAMUniqueID(),
+				"textinput.rows.mode", settingsCont, ROW_OPTIONS, translateKeys(ROW_OPTIONS));
+		String selectedRowsKey = textInput.isSingleRow()? SINGLE_ROW_KEY: MULTIPLE_ROWS_KEY;
+		singleRowEl.select(selectedRowsKey, true);
+		singleRowEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String rows = "";
 		if(textInput.getRows() > 0) {
 			rows = Integer.toString(textInput.getRows());
 		}
+		rowsEl = uifactory.addTextElement("textinput_rows_" + CodeHelper.getRAMUniqueID(), "textinput.rows", 8, rows, settingsCont);
 		
-		rowsEl = uifactory.addTextElement("textinput_rows_" + postfix, "textinput.rows", 8, rows, settingsCont);
-		saveButton = uifactory.addFormLink("save_" + postfix, "save", null, settingsCont, Link.BUTTON);
+		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, settingsCont, Link.BUTTON);
+		
+		updateUI();
+	}
+
+	private String[] translateKeys(String[] keys) {
+		return Stream.of(keys)
+				.map(key -> getTranslator().translate(key))
+				.toArray(String[]::new);
+	}
+
+	private void updateUI() {
+		boolean isText = NUMERIC_TEXT_KEY.equals(numericEl.getSelectedKey());
+		boolean isMultipleRows = MULTIPLE_ROWS_KEY.equals(singleRowEl.getSelectedKey());
+		singleRowEl.setVisible(isText);
+		rowsEl.setVisible(isText && isMultipleRows);
 	}
 
 	@Override
@@ -99,7 +143,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		boolean allOk = true;
 		
 		rowsEl.clearError();
-		if(StringHelper.containsNonWhitespace(rowsEl.getValue())) {
+		if(rowsEl.isVisible() && StringHelper.containsNonWhitespace(rowsEl.getValue())) {
 			try {
 				Integer.parseInt(rowsEl.getValue());
 			} catch (NumberFormatException e) {
@@ -112,7 +156,11 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveButton == source) {
+		if (numericEl == source) {
+			updateUI();
+		} else if (singleRowEl == source) {
+			updateUI();
+		} else if (saveButton == source) {
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
 			}	
@@ -122,6 +170,12 @@ public class TextInputEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean numeric = NUMERIC_NUMERIC_KEY.equals(numericEl.getSelectedKey());
+		textInput.setNumeric(numeric);
+		
+		boolean singleRow = SINGLE_ROW_KEY.equals(singleRowEl.getSelectedKey());
+		textInput.setSingleRow(singleRow);
+		
 		if(StringHelper.containsNonWhitespace(rowsEl.getValue())) {
 			try {
 				int rows = Integer.parseInt(rowsEl.getValue());
@@ -130,6 +184,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 				logError("Cannot parse integer: " + rowsEl.getValue(), null);
 			}
 		}
+		
 		textInputCtrl.update();
 		fireEvent(ureq, new ChangePartEvent(textInput));
 		fireEvent(ureq, new ClosePartEvent(textInput));
