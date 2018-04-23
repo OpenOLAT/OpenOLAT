@@ -933,7 +933,7 @@ public class CourseTest extends Deployments {
 			.createNode("info")
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.setUserAccess(UserAccess.membersOnly)
 			.clickToolbarBack();
 		// add a participant
 		course
@@ -1222,7 +1222,7 @@ public class CourseTest extends Deployments {
 			.users()
 			.assertOnUsers(rei)
 			.selectUser(rei)
-			.selectCourseNode(msTitle.substring(0, 20))
+			.selectUsersCourseNode(msTitle.substring(0, 20))
 			.setAssessmentScore(5.5f)
 			.assertUserPassedCourseNode(msTitle.substring(0, 20));
 		

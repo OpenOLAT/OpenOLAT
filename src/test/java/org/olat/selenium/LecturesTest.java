@@ -125,7 +125,7 @@ public class LecturesTest extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.setUserAccess(UserAccess.membersOnly)
 			.clickToolbarBack();
 		
 		//add a coach
@@ -255,7 +255,7 @@ public class LecturesTest extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.setUserAccess(UserAccess.membersOnly)
 			.clickToolbarBack();
 		
 		//add a coach
@@ -499,7 +499,7 @@ public class LecturesTest extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
+			.setUserAccess(UserAccess.membersOnly)
 			.clickToolbarBack();
 		
 		//add a coach

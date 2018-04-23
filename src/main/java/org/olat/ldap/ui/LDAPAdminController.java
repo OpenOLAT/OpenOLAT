@@ -21,6 +21,7 @@ package org.olat.ldap.ui;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.naming.NamingException;
@@ -174,6 +175,15 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 					showError("delete.error.connection.close");
 					logError("Could not close LDAP connection on manual delete sync", e);
 				}
+
+				if (identitiesToDelete != null) {
+					for(Iterator<Identity> it=identitiesToDelete.iterator(); it.hasNext(); ) {
+						if(Identity.STATUS_PERMANENT.equals(it.next().getStatus())) {
+							it.remove();
+						}
+					}
+				}
+				
 				if (identitiesToDelete != null && identitiesToDelete.size() != 0) {
 					hasIdentitiesToDelete = true;
 					/*
@@ -184,6 +194,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 					 * wizard finish callback called after "finish" is called
 					 */
 					StepRunnerCallback finishCallback = new StepRunnerCallback() {
+						@Override
 						public Step execute(UserRequest uureq, WindowControl control, StepsRunContext runContext) {
 							hasIdentitiesToDeleteAfterRun = ((Boolean) runContext.get("hasIdentitiesToDelete")).booleanValue();
 							if (hasIdentitiesToDeleteAfterRun) {

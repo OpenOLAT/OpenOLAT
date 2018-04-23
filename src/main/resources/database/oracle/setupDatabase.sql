@@ -118,6 +118,7 @@ CREATE TABLE o_bs_authentication (
   id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
+  lastmodified date NOT NULL,
   identity_fk number(20) NOT NULL,
   provider varchar2(8 char),
   authusername varchar2(255 char),
@@ -126,6 +127,19 @@ CREATE TABLE o_bs_authentication (
   hashalgorithm varchar2(16 char),
   PRIMARY KEY (id),
   CONSTRAINT u_o_bs_authentication UNIQUE (provider, authusername)
+);
+
+
+CREATE TABLE o_bs_authentication_history (
+   id number(20) generated always as identity,
+   creationdate date,
+   provider varchar(8),
+   authusername varchar(255),
+   credential varchar(255),
+   salt varchar(255) default null,
+   hashalgorithm varchar(16) default null,
+   fk_identity number(20) not null,
+   primary key (id)
 );
 
 
@@ -173,6 +187,25 @@ CREATE TABLE o_bs_identity (
   external_id varchar2(64 char),
   status number(11),
   CONSTRAINT u_o_bs_identity UNIQUE (name),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE o_csp_log (
+  id number(20) generated always as identity,
+  creationdate date,
+  l_blocked_uri varchar(1024),
+  l_disposition varchar(32),
+  l_document_uri varchar(1024),
+  l_effective_directive CLOB,
+  l_original_policy CLOB,
+  l_referrer varchar(1024),
+  l_script_sample CLOB,
+  l_status_code varchar(1024),
+  l_violated_directive varchar(1024),
+  l_source_file varchar(1024),
+  l_line_number number(20),
+  l_column_number number(20),
+  fk_identity number(20),
   PRIMARY KEY (id)
 );
 
@@ -1522,7 +1555,7 @@ create table o_qti_assessment_response (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
-   q_responseidentifier varchar2(64 char) not null,
+   q_responseidentifier varchar2(255 char) not null,
    q_responsedatatype varchar2(16 char) not null,
    q_responselegality varchar2(16 char) not null,
    q_stringuifiedresponse clob,
@@ -2758,6 +2791,9 @@ create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
 
+alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_auth_hist_to_ident_idx on o_bs_authentication_history (fk_identity);
+
 -- index created by unique constraint
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
@@ -2790,6 +2826,9 @@ create index propvalue_idx on o_userproperty (propvalue);
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- csp
+create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);
 
 -- temporary key
 create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);

@@ -144,15 +144,13 @@ public class AuthorSearchController extends FormBasicController implements Exten
 			
 			String[] licenseTypeKeys = new String[activeLicenseTypes.size()];
 			String[] licenseTypeValues = new String[activeLicenseTypes.size()];
-			String[] licenseTypeCSS = new String[activeLicenseTypes.size()];
 			int counter = 0;
 			for (LicenseType licenseType: activeLicenseTypes) {
 				licenseTypeKeys[counter] = String.valueOf(licenseType.getKey());
 				licenseTypeValues[counter] = LicenseUIFactory.translate(licenseType, getLocale());
-				licenseTypeCSS[counter] = "o_icon o_icon-fw  o_icon_lic_small " + LicenseUIFactory.getCssOrDefault(licenseType);
 				counter++;
 			}
-			licenseEl = uifactory.addCheckboxesDropdown("cif.license", "cif.license", rightContainer, licenseTypeKeys, licenseTypeValues, null, licenseTypeCSS);
+			licenseEl = uifactory.addCheckboxesDropdown("cif.license", "cif.license", rightContainer, licenseTypeKeys, licenseTypeValues, null, null);
 			licenseEl.setNonSelectedText(translate("table.showall"));
 		}
 

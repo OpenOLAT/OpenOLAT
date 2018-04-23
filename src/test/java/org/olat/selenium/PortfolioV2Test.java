@@ -458,7 +458,7 @@ public class PortfolioV2Test extends Deployments {
 			.enableRootScoreByNodes()
 			.autoPublish()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.membersOnly);
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
@@ -480,7 +480,7 @@ public class PortfolioV2Test extends Deployments {
 			.users()
 			.assertOnUsers(ryomou)
 			.selectUser(ryomou)
-			.selectCourseNode(assessmentNodeTitle)
+			.selectUsersCourseNode(assessmentNodeTitle)
 			.setAssessmentScore(4.5f)
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		

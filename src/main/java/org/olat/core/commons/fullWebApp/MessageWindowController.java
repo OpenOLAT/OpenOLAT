@@ -26,8 +26,8 @@
 
 package org.olat.core.commons.fullWebApp;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
@@ -71,7 +71,7 @@ public class MessageWindowController extends DefaultChiefController {
 	public MessageWindowController(UserRequest ureq, String message, String supportEmail) {
 		Translator trans = Util.createPackageTranslator(MessageWindowController.class, ureq.getLocale());
 		VelocityContainer msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/message.html", trans, this);
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		CSPModule securityModule = CoreSpringFactory.getImpl(CSPModule.class);
 		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
 		msg.contextPut("buildversion", Settings.getVersion());
 		msg.contextPut("detailedmessage", message);					

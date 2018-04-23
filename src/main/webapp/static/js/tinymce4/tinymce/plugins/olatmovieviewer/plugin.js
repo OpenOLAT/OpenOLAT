@@ -12,9 +12,9 @@
 			return {
 				longname : 'OpenOLATMovieViewer',
 				author : 'frentix GmbH',
-				authorurl : 'http://www.frentix.com',
-				infourl : 'http://www.frentix.com',
-				version : '2.4.0'
+				authorurl : 'https://www.frentix.com',
+				infourl : 'https://www.frentix.com',
+				version : '2.4.1'
 			};
 		},
 
@@ -440,7 +440,6 @@
 				} else {
 					win.find('#provider')[0].value("video");
 				}
-				win.find('#address')[0].value(link);
 				win.find('#height')[0].fire('change');
 			});
 

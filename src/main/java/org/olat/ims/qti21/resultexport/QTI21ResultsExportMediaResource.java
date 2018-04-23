@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -346,7 +345,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
 			mainVC.contextPut("r", vrdec);
 			renderer.render(sb, mainVC, null);
-			vrdec.close();
 			return sb.toString();
 		} catch(Exception e) {
 			log.error("", e);
@@ -373,12 +371,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private String createMemberListingHTML(List<AssessedMember> assessedMembers) {
-		Collections.sort(assessedMembers, new Comparator<AssessedMember>() {
-			@Override
-			public int compare(AssessedMember o1, AssessedMember o2) {
-				return o1.getUsername().compareTo(o2.getUsername());
-			}
-		});
+		Collections.sort(assessedMembers, (o1, o2) ->  o1.getUsername().compareTo(o2.getUsername()));
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("t", translator);

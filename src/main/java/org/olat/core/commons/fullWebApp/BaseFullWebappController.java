@@ -37,7 +37,6 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.admin.layout.LogoInformations;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEvent;
@@ -46,6 +45,7 @@ import org.olat.core.commons.controllers.resume.ResumeSessionController;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.commons.services.analytics.AnalyticsModule;
 import org.olat.core.commons.services.analytics.AnalyticsSPI;
+import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
@@ -192,6 +192,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private final int maxTabs = 20;
 	
 	@Autowired
+	private CSPModule cspModule;
+	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
 	private I18nManager i18nManager;
@@ -317,8 +319,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// component-id of mainPanel for the window id
 		mainVc.contextPut("o_winid", mainPanel.getDispatchID());
 		
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		mainVc.contextPut("enforceTopFrame", securityModule.isForceTopFrame());
+		mainVc.contextPut("enforceTopFrame", cspModule.isForceTopFrame());
 
 		// add optional css classes
 		mainVc.contextPut("bodyCssClasses", bodyCssClasses);

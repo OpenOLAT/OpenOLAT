@@ -302,7 +302,6 @@ public class UserManagerImpl extends UserManager {
 	@Override
 	public String getUserCharset(Identity identity){
 	   String charset;
-	   charset = WebappHelper.getDefaultCharset();
 	   PropertyManager pm = PropertyManager.getInstance();
 	   Property p = pm.findProperty(identity, null, null, null, CHARSET);
 	   if(p != null){

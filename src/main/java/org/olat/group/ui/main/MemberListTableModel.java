@@ -103,7 +103,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView>
 		return new MemberListTableModel(getTableColumnModel(), onlineStatusEnabled);
 	}
 
-	public enum Cols implements FlexiSortableColumnDef{
+	public enum Cols implements FlexiSortableColumnDef {
 		username("table.header.login"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),

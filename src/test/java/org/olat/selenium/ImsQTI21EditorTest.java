@@ -102,7 +102,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 
 		QTI21Page qtiPage = QTI21Page
-			.getQTI12Page(browser);
+			.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 			.edit();
 		
@@ -180,7 +180,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 
 		QTI21Page qtiPage = QTI21Page
-			.getQTI12Page(browser);
+			.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 			.edit();
 		
@@ -260,7 +260,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -352,7 +352,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(ryomouBrowser);
+				.getQTI21Page(ryomouBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerSingleChoiceWithParagraph("Falsch")
@@ -399,7 +399,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		qtiEditor
@@ -473,7 +473,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -567,7 +567,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerMultipleChoice("Falsch")
@@ -606,7 +606,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerMultipleChoice("Correct", "OkToo")
 			.saveAnswer()
@@ -643,7 +643,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		qtiEditor
@@ -748,7 +748,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -836,7 +836,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.answerCorrectKPrim("Correct", "OkToo", "Faux")
@@ -875,7 +875,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerCorrectKPrim("Correct", "OkToo")
 			.answerIncorrectKPrim("Faux", "Falsch")
@@ -919,7 +919,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1011,7 +1011,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerHotspot("rect")
@@ -1048,7 +1048,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerHotspot("circle")
 			.saveAnswer()
@@ -1090,7 +1090,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1184,7 +1184,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerHotspot("rect")
@@ -1221,7 +1221,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerHotspot("circle")
 			.answerHotspot("rect")
@@ -1266,7 +1266,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1352,7 +1352,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// first user make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerGapTextWithPlaceholder("Log", "314")
@@ -1392,7 +1392,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test with all the correct answers
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerGapTextWithPlaceholder("Pi", "314")
 			.answerGapTextWithPlaceholder("Ln", "lognat")
@@ -1438,7 +1438,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1524,7 +1524,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// first user make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerGapTextWithPlaceholder("2", "three")
@@ -1564,7 +1564,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test with all the correct answers
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerGapTextWithPlaceholder("3", "three")
 			.answerGapTextWithPlaceholder("9", "nine")
@@ -1609,7 +1609,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1688,7 +1688,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// first user make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerGapTextWithPlaceholder("3", "pi")
@@ -1730,7 +1730,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test with all the correct answers
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerGapTextWithPlaceholder("3.2", "pi")
 			.saveAnswer()
@@ -1775,7 +1775,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1833,7 +1833,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerHottext(2)
@@ -1880,7 +1880,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -1982,7 +1982,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.answerMatch("Eclipse", "IDE", true)
@@ -2022,7 +2022,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerMatch("Eclipse", "IDE", true)
 			.answerMatch("vim", "TextEditor", true)
@@ -2072,7 +2072,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -2169,7 +2169,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.answerMatch("Eclipse", "WordProcessor", true)
@@ -2209,7 +2209,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.saveAnswer()
 			.assertFeedback("Correct feedback")
@@ -2259,7 +2259,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -2363,7 +2363,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page asukaQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		asukaQtiPage
 			.assertOnAssessmentItem()
 			.answerMatchDropSourceToTarget("Einstein", "Physicist")
@@ -2403,7 +2403,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.answerMatchDropSourceToTarget("Einstein", "Physicist")
 			.answerMatchDropSourceToTarget("Planck", "Physicist")
 			.answerMatchDropSourceToTarget("Euler", "Mathematician")
@@ -2449,7 +2449,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -2547,7 +2547,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page asukaQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		asukaQtiPage
 			.assertOnAssessmentItem()
 			.answerMatchDropSourceToTarget("Einstein", "Chemistry")
@@ -2587,7 +2587,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.saveAnswer()
 			.assertFeedback("Correct feedback")
 			.nextAnswer()
@@ -2635,7 +2635,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -2729,7 +2729,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.answerMatch("Eclipse", TrueFalse.right, true)
@@ -2769,7 +2769,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page
-			.getQTI12Page(participantBrowser)
+			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerMatch("Eclipse", TrueFalse.right, true)
 			.answerMatch("vim", TrueFalse.wrong, true)
@@ -2810,7 +2810,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -2863,7 +2863,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.saveAnswer()
@@ -2909,7 +2909,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -2962,7 +2962,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.saveAnswer()
@@ -3006,7 +3006,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//start a blank test
@@ -3063,7 +3063,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.saveAnswer()
@@ -3108,7 +3108,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//customize the section
@@ -3172,7 +3172,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.assertHiddenSection()
@@ -3216,7 +3216,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		//customize the section
@@ -3323,7 +3323,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test with all correct answers
 		QTI21Page ryomouQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.assertHiddenSection()
@@ -3356,7 +3356,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test with all correct answers
 		QTI21Page asukaQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		asukaQtiPage
 			.assertOnAssessmentItem()
 			.assertHiddenSection()
@@ -3388,7 +3388,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		// make the test with some correct answers
 		QTI21Page reiQtiPage = QTI21Page
-				.getQTI12Page(participantBrowser);
+				.getQTI21Page(participantBrowser);
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.assertHiddenSection()

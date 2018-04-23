@@ -68,6 +68,52 @@
 			</list>
 		</property>
 	</bean>
+	
+	<!-- Password admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8810" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.login.ui.PasswordPolicyController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="passwordpolicy" />
+		<property name="i18nActionKey" value="admin.password.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.password.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.login"/>
+		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Password change -->
+	<bean id="changePassword.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="changePassword.AfterLoginConfig"/>
+		</property>
+	</bean>
+	
+	<bean id="changePassword.AfterLoginConfig" class="org.olat.login.AfterLoginConfig">
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.user.ChangePasswordController"/>
+						</bean>
+					</entry>
+					<entry key="redoTimeout"><value>0</value></entry>
+					<entry key="forceUser"><value>true</value></entry>
+					<entry key="i18nIntro"><value>org.olat.user:runonce.changepw.intro</value></entry>			
+				</map>
+			</list>
+		</property>
+	</bean>
 
 	<!-- OAuth admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

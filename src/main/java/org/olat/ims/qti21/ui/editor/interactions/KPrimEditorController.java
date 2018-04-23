@@ -239,6 +239,7 @@ public class KPrimEditorController extends FormBasicController {
 		
 		//set associations
 		if(!restrictedEdit) {
+			List<SimpleAssociableChoice> choices = new ArrayList<>();
 			for(KprimWrapper choiceWrapper:choiceWrappers) {
 				SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
 				Identifier choiceIdentifier = choice.getIdentifier();
@@ -248,7 +249,9 @@ public class KPrimEditorController extends FormBasicController {
 				} else if("wrong".equals(association)) {
 					itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.WRONG_IDENTIFIER);
 				}
+				choices.add(choice);
 			}
+			itemBuilder.setKprimChoices(choices);
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.kprim));

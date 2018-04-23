@@ -67,7 +67,8 @@
 		<class>org.olat.basesecurity.model.GrantImpl</class>
 		<class>org.olat.basesecurity.model.GroupMembershipImpl</class>
 		<class>org.olat.basesecurity.model.UserProperty</class>
-		<class>org.olat.basesecurity.model.IdentityLastLoginImpl</class>
+		<class>org.olat.basesecurity.model.IdentityLastLoginImpl</class><class>org.olat.basesecurity.model.AuthenticationHistoryImpl</class>
+		<class>org.olat.basesecurity.model.AuthenticationHistoryImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationTypeImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationTypeToTypeImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationImpl</class>
@@ -76,6 +77,7 @@
 		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
 		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
 		<class>org.olat.commons.info.model.InfoMessageImpl</class>
+		<class>org.olat.core.commons.services.csp.model.CSPLogImpl</class>
 		<class>org.olat.core.commons.services.license.model.LicenseTypeActivation</class>
 		<class>org.olat.core.commons.services.license.model.LicenseTypeImpl</class>
 		<class>org.olat.core.commons.services.license.model.ResourceLicenseImpl</class>

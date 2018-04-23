@@ -35,7 +35,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -123,7 +123,8 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 		listenTo(columnLayoutCtr); // auto dispose later
 		
 		//create the stack
-		stackVC = new BreadcrumbedStackedPanel("genericStack", getTranslator(), this);
+		stackVC = new TooledStackedPanel("genericStack", getTranslator(), this);
+		((TooledStackedPanel)stackVC).setToolbarAutoEnabled(true);
 		stackVC.pushController("content", columnLayoutCtr);
 
 		putInitialPanel(stackVC);

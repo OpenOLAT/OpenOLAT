@@ -215,7 +215,7 @@ var BPlayer = {
 			} else if(extension == 'mp4') {
 				mimeType = "video/mp4";
 			} else if(extension == 'm4v') {
-				mimeType = "video/m4v";
+				mimeType = "video/mp4";
 			} else if(extension == 'm3u8') {
 				mimeType = "application/x-mpegURL";
 			} else if(extension == 'aac') {
@@ -232,6 +232,8 @@ var BPlayer = {
 			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtu.be') > -1 || config.file.indexOf('youtube.be') > -1) {
 				mimeType = "video/youtube";
 			} else if(extension.indexOf('mp4?') == 0) {
+				mimeType = "video/mp4";
+			} else if(config.file.indexOf('openmeetings/recording') > 0) {
 				mimeType = "video/mp4";
 			} else {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);

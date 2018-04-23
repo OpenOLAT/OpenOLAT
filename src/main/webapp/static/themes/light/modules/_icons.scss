@@ -670,18 +670,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_lic_freetext:before { content: $fa-var-copyright;}
 .o_icon_lic_general:before { content: $fa-var-copyright;}
 
-.o_icon_lic_small.o_icon_lic_public_domain:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_cc0:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_by:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_by_sa:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_by_nd:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_by_nc:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_by_nc_sa:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_by_nc_nd:before { content: $fa-var-creative-commons; font-family: FontAwesome; font-size: 100%; }
-.o_icon_lic_small.o_icon_lic_all_rights_reserved:before { content: $fa-var-copyright; }
-.o_icon_lic_small.o_icon_lic_freetext:before { content: $fa-var-copyright; }
-.o_icon_lic_small.o_icon_lic_general:before { content: $fa-var-copyright; }
-
 /* do not move link icons */
 a.o_icon {
 	&:hover,&:focus {

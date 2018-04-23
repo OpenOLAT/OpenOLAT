@@ -322,7 +322,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
 				true, OrderBy.references.name()));
 		if (licenseModule.isEnabled(licenseHandler)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license.i18nKey(), Cols.license.ordinal(), "license",
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
 		}
 		

@@ -61,6 +61,9 @@
 				<entry key="/oauthcallback">
 					<ref bean="oauthcallback" />
 				</entry>
+				<entry key="/csp/">
+					<ref bean="cspDispatcher" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -134,6 +137,14 @@
 					<bean class="org.olat.core.gui.control.ChiefControllerCreator">
 						<property name="contentControllerCreator">
 							<bean class="org.olat.login.oauth.ui.OAuthRegistrationCreator" />
+						</property>
+					</bean>
+				</entry>
+				<!-- triggers oauth registration workflow -->
+				<entry key="/oauthdisclaimer/">
+					<bean class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<bean class="org.olat.login.oauth.ui.OAuthDisclaimerCreator" />
 						</property>
 					</bean>
 				</entry>
@@ -212,5 +223,5 @@
 
 	<!-- blog media dispatcher -->
 	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
-
+	
 </beans>

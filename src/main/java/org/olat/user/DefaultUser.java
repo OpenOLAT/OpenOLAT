@@ -52,7 +52,7 @@ public class DefaultUser {
 	 * @param firstName
 	 * @param lastName
 	 * @param email
-	 * @param password
+	 * @param cred
 	 * @param language
 	 * @param isGuest
 	 * @param isAuthor

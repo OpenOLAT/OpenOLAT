@@ -356,8 +356,11 @@ public class LicenseAdminConfigController extends FormBasicController {
 				doSetLicensorCreator(source, singleSelection);
 			}
 		} else if (source instanceof FormLink) {
-			LicenseHandler handler = (LicenseHandler) source.getUserObject();
-			doEditLicensorConstant(ureq, handler);
+			Object userObject = source.getUserObject();
+			if (userObject instanceof LicenseHandler) {
+				LicenseHandler handler = (LicenseHandler) userObject;
+				doEditLicensorConstant(ureq, handler);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

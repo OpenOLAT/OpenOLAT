@@ -55,7 +55,7 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		String mainCssClass = panel.getCssClass();
 		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='").append(mainCssClass, mainCssClass != null).append("'>");
 		
-		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0) {
+		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0 && panel.isToolbarEnabled()) {
 			sb.append("<div id='o_main_toolbar' class='o_toolbar'>");
 
 			if(breadCrumbs.size() > panel.getInvisibleCrumb()) {

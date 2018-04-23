@@ -90,8 +90,7 @@ public class OAuthDispatcher implements Dispatcher {
 			throw new AssertException("UTF-8 encoding not supported!!!!");
 		}
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-		uri = uri.substring(uriPrefix.length());
-
+		
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
@@ -155,19 +154,16 @@ public class OAuthDispatcher implements Dispatcher {
 			login(infos, registration);
 
 			if(provider instanceof OAuthUserCreator) {
-				Identity newIdentity;
 				OAuthUserCreator userCreator = (OAuthUserCreator)provider;
-				if(registration.getIdentity() == null) {
-					newIdentity = userCreator.createUser(infos);
-				} else {
-					newIdentity = userCreator.updateUser(infos, registration.getIdentity());			
-				}
-				if(newIdentity != null) {
-					registration.setIdentity(newIdentity);
+				if(registration.getIdentity() != null) {
+					Identity newIdentity = userCreator.updateUser(infos, registration.getIdentity());
+					registration.setIdentity(newIdentity);		
 				}
 			}
 			
-			if(registration.getIdentity() == null) {
+			if(provider instanceof OAuthUserCreator && registration.getIdentity() == null) {
+				disclaimer(request, response, infos, (OAuthUserCreator)provider);
+			} else if(registration.getIdentity() == null) {
 				if(CoreSpringFactory.getImpl(OAuthLoginModule.class).isAllowUserCreation()) {
 					register(request, response, registration);
 				} else {
@@ -268,6 +264,16 @@ public class OAuthDispatcher implements Dispatcher {
 		sb.append("</p>");
 		ChiefController msgcc = new MessageWindowController(ureq, sb.toString());
 		msgcc.getWindow().dispatchRequest(ureq, true);
+	}
+	
+	private void disclaimer(HttpServletRequest request, HttpServletResponse response, OAuthUser user, OAuthUserCreator userCreator) {
+		try {
+			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_CREATOR_ATTR, userCreator);
+			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_ATTR, user);
+			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_DISCLAIMER_PATH + "/");
+		} catch (IOException e) {
+			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
+		}
 	}
 	
 	private void register(HttpServletRequest request, HttpServletResponse response, OAuthRegistration registration) {

@@ -882,7 +882,7 @@ public class CourseElementTest extends Deployments {
 		//publish
 		editor
 			.publish()
-			.quickPublish(UserAccess.registred);
+			.quickPublish(UserAccess.membersOnly);
 		editor
 			.clickToolbarBack();
 		

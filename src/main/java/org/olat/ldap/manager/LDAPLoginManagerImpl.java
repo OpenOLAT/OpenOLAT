@@ -437,8 +437,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 */
 	@Override
 	public void deletIdentities(List<Identity> identityList) {
-
 		for (Identity identity:  identityList) {
+			if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
+				log.audit(identity.getKey() + " was not deleted because is status is permanent.");
+				continue;
+			}
+			
 			userDeletionManager.deleteIdentity(identity);
 		}
 	}

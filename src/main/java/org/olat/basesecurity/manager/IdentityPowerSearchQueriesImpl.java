@@ -436,7 +436,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			for (Map.Entry<String, String> entry : params.getUserProperties().entrySet()) {
 				String value = entry.getValue();
 				value = makeFuzzyQueryString(value);
-				dbq.setParameter(entry.getKey() + "_value", value);
+				dbq.setParameter(entry.getKey() + "_value", value.toLowerCase());
 			}
 		}
 		

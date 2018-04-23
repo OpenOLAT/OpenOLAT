@@ -77,5 +77,16 @@
 			</list>
 		</property>
 	</bean>
+	
+	<!-- Cleaning job for CSP reports -->
+	<bean id="cspCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+	    		<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+					<property name="jobClass" value="org.olat.core.commons.services.csp.manager.CSPLogCleanup" />
+				</bean>
+	    	</property>
+	    	<property name="cronExpression" value="0 0 4 * * ?"/><!-- 2am, daily -->
+	    	<property name="startDelay" value="45000" />
+	</bean>
 
 </beans>

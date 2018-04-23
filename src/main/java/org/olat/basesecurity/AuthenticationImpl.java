@@ -25,6 +25,8 @@
 
 package org.olat.basesecurity;
 
+import java.util.Date;
+
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -37,6 +39,7 @@ import org.olat.core.logging.AssertException;
 public class AuthenticationImpl extends PersistentObject implements Authentication {
 
 	private static final long serialVersionUID = 7969409958077836798L;
+	private Date lastModified;
 	private Identity identity;
 	private String provider;
 	private String authusername;
@@ -76,6 +79,16 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 		this.credential = credential;
 		this.salt = salt;
 		this.algorithm = algorithm;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 
 	/**

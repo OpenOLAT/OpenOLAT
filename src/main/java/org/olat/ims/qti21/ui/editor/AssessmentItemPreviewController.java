@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -74,7 +75,14 @@ public class AssessmentItemPreviewController extends BasicController {
 		mainVC = createVelocityContainer("assessment_item_preview");
 		mainVC.contextPut("outcomes", new ArrayList<>());
 		mainVC.contextPut("responses", new ArrayList<>());
-		mainVC.contextPut("showOutcomes", new Boolean(showOutcomes));
+		mainVC.contextPut("showOutcomes", Boolean.valueOf(showOutcomes));
+		
+		String[] jss = new String[] {
+				"js/jquery/qti/jquery.qtiAutosave.js"
+		};
+		JSAndCSSComponent js = new JSAndCSSComponent("js", jss, null);
+		mainVC.put("js", js);
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -110,10 +118,10 @@ public class AssessmentItemPreviewController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if("show".equals(event.getCommand())) {
 			showOutcomes = true; 
-			ureq.getUserSession().putEntryInNonClearedStore(DEBUG_OUTCOMES, new Boolean(showOutcomes));
+			ureq.getUserSession().putEntryInNonClearedStore(DEBUG_OUTCOMES, Boolean.valueOf(showOutcomes));
 		} else if("hide".equals(event.getCommand())) {
 			showOutcomes = false;
-			ureq.getUserSession().putEntryInNonClearedStore(DEBUG_OUTCOMES, new Boolean(showOutcomes));
+			ureq.getUserSession().putEntryInNonClearedStore(DEBUG_OUTCOMES, Boolean.valueOf(showOutcomes));
 		}
 	}
 	
@@ -129,7 +137,7 @@ public class AssessmentItemPreviewController extends BasicController {
 			}
 			Collections.sort(responses);
 			mainVC.contextPut("responses", responses);
-			mainVC.contextPut("showOutcomes", new Boolean(showOutcomes));
+			mainVC.contextPut("showOutcomes", Boolean.valueOf(showOutcomes));
 			mainVC.setDirty(true);
 		}
 
@@ -143,7 +151,7 @@ public class AssessmentItemPreviewController extends BasicController {
 			}
 			Collections.sort(outcomes);
 			mainVC.contextPut("outcomes", outcomes);
-			mainVC.contextPut("showOutcomes", new Boolean(showOutcomes));
+			mainVC.contextPut("showOutcomes", Boolean.valueOf(showOutcomes));
 			mainVC.setDirty(true);
 		}
 	}

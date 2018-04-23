@@ -108,6 +108,7 @@ create table if not exists o_bs_authentication (
    id bigint not null,
    version mediumint unsigned not null,
    creationdate datetime,
+   lastmodified datetime not null,
    identity_fk bigint not null,
    provider varchar(8),
    authusername varchar(255),
@@ -116,6 +117,17 @@ create table if not exists o_bs_authentication (
    hashalgorithm varchar(16) default null,
    primary key (id),
    unique (provider, authusername)
+);
+create table if not exists o_bs_authentication_history (
+   id bigint not null auto_increment,
+   creationdate datetime,
+   provider varchar(8),
+   authusername varchar(255),
+   credential varchar(255),
+   salt varchar(255) default null,
+   hashalgorithm varchar(16) default null,
+   fk_identity bigint not null,
+   primary key (id)
 );
 create table if not exists o_noti_pub (
    publisher_id bigint not null,
@@ -156,6 +168,24 @@ create table if not exists o_bs_identity (
    name varchar(128) not null unique,
    external_id varchar(64),
    status integer,
+   primary key (id)
+);
+create table o_csp_log (
+   id bigint not null auto_increment,
+   creationdate datetime,
+   l_blocked_uri varchar(1024),
+   l_disposition varchar(32),
+   l_document_uri varchar(1024),
+   l_effective_directive mediumtext,
+   l_original_policy mediumtext,
+   l_referrer varchar(1024),
+   l_script_sample mediumtext,
+   l_status_code varchar(1024),
+   l_violated_directive varchar(1024),
+   l_source_file varchar(1024),
+   l_line_number bigint,
+   l_column_number bigint,
+   fk_identity bigint,
    primary key (id)
 );
 create table if not exists o_olatresource (
@@ -1495,7 +1525,7 @@ create table o_qti_assessment_response (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   q_responseidentifier varchar(64) not null,
+   q_responseidentifier varchar(255) not null,
    q_responsedatatype varchar(16) not null,
    q_responselegality varchar(16) not null,
    q_stringuifiedresponse mediumtext,
@@ -2637,9 +2667,11 @@ alter table o_userproperty ENGINE = InnoDB;
 alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;
 alter table o_bs_authentication ENGINE = InnoDB;
+alter table o_bs_authentication_history ENGINE = InnoDB;
 alter table o_qtiresult ENGINE = InnoDB;
 alter table o_qtiresultset ENGINE = InnoDB;
 alter table o_bs_identity ENGINE = InnoDB;
+alter table o_csp_log ENGINE = InnoDB;
 alter table o_olatresource ENGINE = InnoDB;
 alter table o_bs_policy ENGINE = InnoDB;
 alter table o_bs_namedgroup ENGINE = InnoDB;
@@ -2841,6 +2873,8 @@ create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
 
+alter table o_bs_authentication_history add constraint auth_hist_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
 create index name_idx on o_bs_identity (name);
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
@@ -2865,6 +2899,9 @@ create index idx_user_creationdate_idx on o_user (creationdate);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- csp
+create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);
 
 -- temporary key
 create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);

@@ -25,8 +25,8 @@
 		<property name="dimensions">1024x800</property>
 		<!--
 		<property name="downloadBinaries">no</property>
-		<property name="chromeDriverBinary">target/drone/75928443ebcccdfe49dffa924c1ee935/chromedriver</property>
-		<property name="firefoxDriverBinary">target/drone/30f3fdc84d76c53de2916008a889d26f/geckodriver</property>
+		<property name="chromeDriverBinary">target/drone/ad96636f9647ce73b56f11e618ebd14b/chromedriver</property>
+		<property name="firefoxDriverBinary">target/drone/e32f354dad08248119d224094e712c43/geckodriver</property>
 		-->
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
 		<property name="chromeExperimentalOption">{

@@ -28,7 +28,6 @@ package org.olat.registration;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -43,6 +42,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  10.08.2004
@@ -66,13 +66,16 @@ import org.olat.core.util.vfs.VFSMediaResource;
 
 public class DisclaimerController extends BasicController {
 
-	private final String SR_ERROR_DISCLAIMER_CHECKBOX = "sr.error.disclaimer.checkbox";
-	private final String SR_ERROR_DISCLAIMER_CHECKBOXES = "sr.error.disclaimer.checkboxes";
+	private static final String SR_ERROR_DISCLAIMER_CHECKBOX = "sr.error.disclaimer.checkbox";
+	private static final String SR_ERROR_DISCLAIMER_CHECKBOXES = "sr.error.disclaimer.checkboxes";
 
 	private VelocityContainer main;
 	private DisclaimerFormController disclaimerFormController;
 	private Link downloadLink;
 	private VFSLeaf downloadFile;
+
+	@Autowired
+	private RegistrationModule registrationModule;
 
 	/**
 	 * Display a disclaimer which can be accepted or denied.
@@ -100,7 +103,7 @@ public class DisclaimerController extends BasicController {
 		
 		// add optinal download link, see class comments in DisclaimerFormController
 		// Add the additional link to the form (depending on the configuration)
-		if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerAdditionaLinkText()) {
+		if (registrationModule.isDisclaimerAdditionaLinkText()) {
 			File disclaimerDir = new File(WebappHelper.getUserDataRoot() + "/customizing/disclaimer/");
 			disclaimerDir.mkdirs();
 			VFSContainer disclaimerContainer = new LocalFolderImpl(disclaimerDir);
@@ -141,22 +144,22 @@ public class DisclaimerController extends BasicController {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			} else if (event == Event.DONE_EVENT) {
 				// Verify that, if the additional checkbox is configured to be visible, it is checked as well
-				boolean acceptCheckboxChecked = (disclaimerFormController.acceptCheckbox != null) ? (disclaimerFormController.acceptCheckbox.isSelected(0)) : false;
+				boolean accepted = (disclaimerFormController.acceptCheckbox != null) ? (disclaimerFormController.acceptCheckbox.isSelected(0)) : false;
 				// configure additional checkbox, see class comments in DisclaimerFormController
-				boolean additionalCheckboxConfigured = CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerAdditionalCheckbox();
-				boolean additionalCheckboxChecked = (disclaimerFormController.additionalCheckbox != null) ? (disclaimerFormController.additionalCheckbox.isSelected(0)) : false;
-				if (!additionalCheckboxConfigured) {
-					if (acceptCheckboxChecked) {
-						fireEvent(ureq, Event.DONE_EVENT);
-					} else {
-						showError(SR_ERROR_DISCLAIMER_CHECKBOX);
+				if (accepted && registrationModule.isDisclaimerAdditionalCheckbox()) {
+					accepted = (disclaimerFormController.additionalCheckbox != null) ? (disclaimerFormController.additionalCheckbox.isSelected(0)) : false;
+					if (accepted && registrationModule.isDisclaimerAdditionalCheckbox2()) {
+						accepted = (disclaimerFormController.additionalCheckbox2 != null) ? (disclaimerFormController.additionalCheckbox2.isSelected(0)) : false;
 					}
+				}
+				if (accepted) {
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else if (registrationModule.isDisclaimerAdditionalCheckbox()) {
+					// error handling case multiple checkboxes enabled
+					showError(SR_ERROR_DISCLAIMER_CHECKBOXES);									
 				} else {
-					if (acceptCheckboxChecked && additionalCheckboxChecked) {
-						fireEvent(ureq, Event.DONE_EVENT);
-					} else {
-						showError(SR_ERROR_DISCLAIMER_CHECKBOXES);
-					}
+					// error handling case single checkboxe enabled
+					showError(SR_ERROR_DISCLAIMER_CHECKBOX);
 				}
 			}
 		}

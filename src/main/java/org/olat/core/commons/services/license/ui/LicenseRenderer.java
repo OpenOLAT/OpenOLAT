@@ -57,29 +57,33 @@ public class LicenseRenderer implements FlexiCellRenderer {
 				// render for export
 				target.append(LicenseUIFactory.translate(license.getLicenseType(), locale));
 			} else {
-				renderLicense(target, license);	
+				renderLicense(target, license, false);	
 			}
 		} else if (renderer != null) {
 			renderMissingLicense(target);
 		}
 	}
 	
-	public void render(StringOutput sb, License license) {
+	public void render(StringOutput sb, License license, boolean small) {
 		if (license != null) {
-			renderLicense(sb, license);
+			renderLicense(sb, license, small);
 		} else {
 			renderMissingLicense(sb);
 		}
 	}
 
-	private void renderLicense(StringOutput sb, License license) {
+	private void renderLicense(StringOutput sb, License license, boolean small) {
 		LicenseType licenseType = license.getLicenseType();
 		long id = CodeHelper.getRAMUniqueID();
 		
-		// license icon
-		sb.append("<a id='o_lic_").append(id).append("' href='javascript:;'><i class='o_icon o_icon-fw o_icon_lic_small ");
-		sb.append(LicenseUIFactory.getCssOrDefault(licenseType));
-		sb.append("'></i></a>");
+		// license text link
+		sb.append("<a id='o_lic_").append(id).append("' href='javascript:;'><span");
+		if (small) {
+			sb.append(" class='small'");
+		}
+		sb.append(">");
+		sb.append(LicenseUIFactory.translate(licenseType, locale));
+		sb.append("</span></a>");
 		
 		// popup with license informations
 		sb.append("<div id='o_lic_pop_").append(id).append("' style='display:none;' class='o_lic_popup'><div>");
@@ -118,7 +122,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 	}
 
 	private void renderMissingLicense(StringOutput sb) {
-		sb.append("<i class='o_icon o_icon_lic_small o_icon_lic_missing'> </i>");
+		sb.append("<i class='o_icon o_icon_lic_missing'> </i>");
 	}
 
 }

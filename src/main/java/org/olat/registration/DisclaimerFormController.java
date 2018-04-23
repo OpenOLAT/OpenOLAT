@@ -19,15 +19,16 @@
  */
 package org.olat.registration;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -42,15 +43,20 @@ public class DisclaimerFormController extends FormBasicController {
 	
 	public  static final String DCL_CHECKBOX_KEY = "dclchkbox";
 	public  static final String DCL_CHECKBOX_KEY2 = "dclchkbox2";
+	public  static final String DCL_CHECKBOX_KEY3 = "dclchkbox3";
 	public  static final String DCL_ACCEPT = "dcl.accept";
 	private static final String NLS_DISCLAIMER_ACKNOWLEDGED = "disclaimer.acknowledged";
 	private static final String NLS_DISCLAIMER_OK = "disclaimer.ok";
 	private static final String NLS_DISCLAIMER_NOK = "disclaimer.nok";
 	private static final String ACKNOWLEDGE_CHECKBOX_NAME = "acknowledge_checkbox";
 	private static final String ADDITIONAL_CHECKBOX_NAME = "additional_checkbox";
+	private static final String ADDITIONAL_CHECKBOX_2_NAME = "additional_checkbox_2";
 	protected MultipleSelectionElement acceptCheckbox;
-	protected MultipleSelectionElement additionalCheckbox;
+	protected MultipleSelectionElement additionalCheckbox, additionalCheckbox2;
 	private boolean readOnly;
+
+	@Autowired
+	private RegistrationModule registrationModule;
 	
 	public DisclaimerFormController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
@@ -87,12 +93,20 @@ public class DisclaimerFormController extends FormBasicController {
 		acceptCheckbox.select(DCL_CHECKBOX_KEY, readOnly);
 		
 		// Add the additional checkbox to the form (depending on the configuration)
-		if(CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerAdditionalCheckbox()) {
+		if(registrationModule.isDisclaimerAdditionalCheckbox()) {
 			String additionalCheckboxText = translate("disclaimer.additionalcheckbox");
 			if (additionalCheckboxText != null) {
 				additionalCheckbox = uifactory.addCheckboxesVertical(ADDITIONAL_CHECKBOX_NAME, null, formLayout, new String[] {DCL_CHECKBOX_KEY2}, new String[] {additionalCheckboxText}, 1);
 				additionalCheckbox.setEscapeHtml(false);
 				additionalCheckbox.select(DCL_CHECKBOX_KEY2, readOnly);
+			}
+			if(registrationModule.isDisclaimerAdditionalCheckbox2()) {
+				String additionalCheckbox2Text = translate("disclaimer.additionalcheckbox2");
+				if (additionalCheckbox2Text != null) {
+					additionalCheckbox2 = uifactory.addCheckboxesVertical(ADDITIONAL_CHECKBOX_2_NAME, null, formLayout, new String[] {DCL_CHECKBOX_KEY3}, new String[] {additionalCheckbox2Text}, 1);
+					additionalCheckbox2.setEscapeHtml(false);
+					additionalCheckbox2.select(DCL_CHECKBOX_KEY3, readOnly);
+				}
 			}
 		}
 				
@@ -105,7 +119,8 @@ public class DisclaimerFormController extends FormBasicController {
 			formLayout.add(buttonLayout);
 			buttonLayout.setElementCssClass("o_sel_disclaimer_buttons");
 			uifactory.addFormSubmitButton(DCL_ACCEPT, NLS_DISCLAIMER_OK, buttonLayout);
-			uifactory.addFormCancelButton(NLS_DISCLAIMER_NOK, buttonLayout, ureq, getWindowControl());			
+			FormCancel cancelButton = uifactory.addFormCancelButton(NLS_DISCLAIMER_NOK, buttonLayout, ureq, getWindowControl());	
+			cancelButton.setI18nKey(NLS_DISCLAIMER_NOK);
 		}
 	}
 }

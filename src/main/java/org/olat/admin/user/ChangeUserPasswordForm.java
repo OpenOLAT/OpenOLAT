@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  Initial Date:  Jul 14, 2003
@@ -46,13 +47,15 @@ import org.olat.user.UserManager;
  */
 public class ChangeUserPasswordForm extends FormBasicController {
 	
-	TextElement pass1;
-	TextElement pass2;
-	TextElement username;
+	private TextElement pass1;
+	private TextElement pass2;
 	
-	String password = "";
+	private String cred = "";
 
 	private Identity userIdentity;
+	
+	@Autowired
+	private UserManager userManager;
 
 	/**
 	 * Constructor for user pwd forms.
@@ -70,7 +73,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	@Override
 	public boolean validateFormLogic (UserRequest ureq) {
 		
-		boolean newIsValid = UserManager.getInstance().syntaxCheckOlatPassword(pass1.getValue());
+		boolean newIsValid = userManager.syntaxCheckOlatPassword(pass1.getValue());
 		if (!newIsValid) pass1.setErrorKey("form.checkPassword", null);
 		
 		boolean newDoesMatch = pass1.getValue().equals(pass2.getValue());
@@ -86,14 +89,14 @@ public class ChangeUserPasswordForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		password = pass1.getValue();
+		cred = pass1.getValue();
 		pass1.setValue("");
 		pass2.setValue("");
 		fireEvent (ureq, Event.DONE_EVENT);
 	}
 	
 	protected String getNewPassword () {
-		return password;
+		return cred;
 	}
 
 	@Override
@@ -101,7 +104,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		setFormTitle("form.password.new1");
 		setFormDescription("form.please.enter.new");
 		
-		username = uifactory.addTextElement("username", "form.username", 255, userIdentity.getName(), formLayout);
+		TextElement username = uifactory.addTextElement("username", "form.username", 255, userIdentity.getName(), formLayout);
 		username.setEnabled(false);		
 		
 		pass1 = uifactory.addPasswordElement("pass1", "form.password.new1", 255, "", formLayout);

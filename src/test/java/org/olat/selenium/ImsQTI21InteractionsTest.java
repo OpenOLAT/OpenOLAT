@@ -100,7 +100,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -144,7 +144,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -192,7 +192,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -238,7 +238,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -286,7 +286,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -332,7 +332,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -393,7 +393,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -439,7 +439,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -483,7 +483,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -530,7 +530,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -576,7 +576,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -620,7 +620,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -664,7 +664,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -709,7 +709,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI12Page(browser);
+				.getQTI21Page(browser);
 		qtiPage
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())

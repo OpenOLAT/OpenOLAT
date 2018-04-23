@@ -729,9 +729,9 @@ public class PublishProcess {
 			acService.saveOfferAccess(newLink);
 		}
 		// 2: remove offerings not available anymore
-		List<OfferAccess> deletedOfferAccess = accessAndProps.getDeletedOfferAccess();
-		for (OfferAccess deletedLink : deletedOfferAccess) {
-			acService.deletedLinkToMethod(deletedLink);
+		List<Offer> deletedOffers = accessAndProps.getDeletedOffer();
+		for (Offer deletedOffer : deletedOffers) {
+			acService.deleteOffer(deletedOffer);
 		}
 		
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");

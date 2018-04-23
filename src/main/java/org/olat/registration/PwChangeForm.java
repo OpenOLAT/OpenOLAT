@@ -50,7 +50,7 @@ public class PwChangeForm extends FormBasicController {
 	private TextElement newpass1;
 	private TextElement newpass2; // confirm
 	
-	private TemporaryKey tempKey;
+	private final TemporaryKey tempKey;
 	private Identity identityToChange;
 	
 	@Autowired
@@ -77,16 +77,25 @@ public class PwChangeForm extends FormBasicController {
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
-		boolean newIsValid = userManager.syntaxCheckOlatPassword(newpass1.getValue());
-		if (!newIsValid) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		newpass1.clearError();
+		if (!userManager.syntaxCheckOlatPassword(newpass1.getValue())) {
 			newpass1.setErrorKey("form.checkPassword", null);
+			allOk &= false;
+		} else if(!olatAuthenticationSpi.checkCredentialHistory(getIdentityToChange(), newpass1.getValue())) {
+			newpass1.setErrorKey("form.checkPassword.history", null);
+			allOk &= false;
 		}
+		
 		// validate that both passwords are the same
-		boolean newDoesMatch = newpass1.getValue().equals(newpass2.getValue());
-		if (!newDoesMatch) {
+		newpass2.clearError();
+		if (!newpass1.getValue().equals(newpass2.getValue())) {
 			newpass2.setErrorKey("form.password.error.nomatch", null);
+			allOk &= false;
 		}
-		return newIsValid && newDoesMatch;
+		
+		return allOk;
 	}
 
 	@Override

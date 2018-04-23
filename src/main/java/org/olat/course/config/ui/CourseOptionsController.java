@@ -92,9 +92,9 @@ public class CourseOptionsController extends FormBasicController {
 	private static final String COMMAND_ADD = "command.glossary.add";
 	
 	private static final String[] onKeys = new String[] {"xx"};
-	private static final String[] onValues = new String[] {""};
+	private final String[] onValues;
 
-	private SelectionElement menuEl, toolbarEl, calendarEl, searchEl, chatEl;
+	private SelectionElement menuEl, toolbarEl, breadCrumbEl, calendarEl, searchEl, chatEl;
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
 	private FormLink saveButton;
@@ -134,6 +134,7 @@ public class CourseOptionsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		this.courseConfig = courseConfig;
 		this.entry = entry;
+		this.onValues = new String[] {translate("on")};
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
@@ -218,6 +219,10 @@ public class CourseOptionsController extends FormBasicController {
 		toolbarEl.select(onKeys[0], courseConfig.isToolbarEnabled());
 		toolbarEl.addActionListener(FormEvent.ONCHANGE);
 
+		breadCrumbEl = uifactory.addCheckboxesHorizontal("breadCrumbIsOn", "chkbx.breadcrumb.onoff", menuCont, onKeys, onValues);
+		breadCrumbEl.select(onKeys[0], courseConfig.isBreadCrumbEnabled());
+		breadCrumbEl.addActionListener(FormEvent.ONCHANGE);
+
 		boolean canHideToolbar = true;
 		if(calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			//calendar
@@ -290,6 +295,7 @@ public class CourseOptionsController extends FormBasicController {
 			canHideToolbar &= false;
 		}
 		toolbarEl.setEnabled(editable && canHideToolbar);
+		breadCrumbEl.setEnabled(editable && canHideToolbar); //same rule as for toolbar
 		
 		//shared folder
 		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
@@ -404,6 +410,8 @@ public class CourseOptionsController extends FormBasicController {
 			}
 			updateToolbar();
 			setSaveButtonDirty();
+		} else if(breadCrumbEl == source) {
+			setSaveButtonDirty();
 		} else if (source instanceof SelectionElement || source == folderReadOnlyEl || source == menuEl) {
 			setSaveButtonDirty();
 		}  else if(saveButton == source) {
@@ -491,6 +499,8 @@ public class CourseOptionsController extends FormBasicController {
 		courseConfig.setMenuEnabled(menuEnabled);
 		boolean toolbarEnabled = toolbarEl.isSelected(0);
 		courseConfig.setToolbarEnabled(toolbarEnabled);
+		boolean breadCrumbEnabled = breadCrumbEl.isSelected(0);
+		courseConfig.setBreadCrumbEnabled(breadCrumbEnabled);
 		
 		boolean enableSearch = searchEl.isSelected(0);
 		boolean updateSearch = courseConfig.isCourseSearchEnabled() != enableSearch;
