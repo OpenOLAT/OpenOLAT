@@ -163,12 +163,13 @@ public class LecturesTest extends Deployments {
 		Calendar cal = Calendar.getInstance();
 		int today = cal.get(Calendar.DATE);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int endHour = hour < 23 ? hour + 1 : hour;
 		String lectureTitle = "1. Lecture";
 		lectureList
 			.newLectureBlock()
 			.setTitle(lectureTitle)
 			.setTeacher(coach)
-			.setDate(today, hour, 0, hour, 59)
+			.setDate(today, hour, 0, endHour, 59)
 			.save();
 		
 		//coach at work
@@ -293,12 +294,13 @@ public class LecturesTest extends Deployments {
 		Calendar cal = Calendar.getInstance();
 		int today = cal.get(Calendar.DATE);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int endHour = hour < 23 ? hour + 1 : hour;
 		String lectureTitle = "2.Lecture";
 		lectureList
 			.newLectureBlock()
 			.setTitle(lectureTitle)
 			.setTeacher(coach)
-			.setDate(today, hour, 0, hour, 59)
+			.setDate(today, hour, 0, endHour, 59)
 			.save();
 		
 		//coach at work
@@ -537,12 +539,13 @@ public class LecturesTest extends Deployments {
 		Calendar cal = Calendar.getInstance();
 		int today = cal.get(Calendar.DATE);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int endHour = hour < 23 ? hour + 1 : hour;
 		String lectureTitle = "1. Lecture";
 		lectureList
 			.newLectureBlock()
 			.setTitle(lectureTitle)
 			.setTeacher(author)
-			.setDate(today, hour, 0, hour, 59)
+			.setDate(today, hour, 0, endHour, 59)
 			.save();
 		
 		//coach at work
