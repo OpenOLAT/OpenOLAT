@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 
 /**
  * 
@@ -61,6 +62,14 @@ public interface OrganisationService {
 	 * @return A list of organization where the user has the specified roles
 	 */
 	public List<Organisation> getOrganisations(IdentityRef member, OrganisationRoles... role);
+	
+	/**
+	 * 
+	 * @param member
+	 * @param roles
+	 * @return
+	 */
+	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles);
 	
 	public Organisation getDefaultOrganisation();
 

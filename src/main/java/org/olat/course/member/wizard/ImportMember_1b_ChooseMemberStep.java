@@ -48,7 +48,6 @@ public class ImportMember_1b_ChooseMemberStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		ImportMemberBySearchController controller = new ImportMemberBySearchController(ureq, wControl, form, runContext);
-		return controller;
+		return new ImportMemberBySearchController(ureq, wControl, form, runContext);
 	}
 }

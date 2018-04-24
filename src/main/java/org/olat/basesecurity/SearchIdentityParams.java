@@ -19,7 +19,9 @@
  */
 package org.olat.basesecurity;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +52,8 @@ public class SearchIdentityParams {
 	private Collection<Long> identityKeys;
 	private Boolean managed;
 	
-	private OrganisationRef organisation;
 	private List<Organisation> organisationParents;
+	private List<OrganisationRef> organisations;
 	
 	public SearchIdentityParams() {
 		//
@@ -101,7 +103,7 @@ public class SearchIdentityParams {
 	
 	public static SearchIdentityParams organisation(Organisation organisation, Integer status) {
 		SearchIdentityParams params = new SearchIdentityParams();
-		params.setOrganisation(organisation);
+		params.setOrganisations(Collections.singletonList(organisation));
 		params.setStatus(status);
 		return params;
 	}
@@ -129,13 +131,21 @@ public class SearchIdentityParams {
 	public void setOrganisationParents(List<Organisation> organisationParents) {
 		this.organisationParents = organisationParents;
 	}
-
-	public OrganisationRef getOrganisation() {
-		return organisation;
+	
+	public boolean hasOrganisations() {
+		return organisations != null && !organisations.isEmpty();
 	}
 
-	public void setOrganisation(OrganisationRef organisation) {
-		this.organisation = organisation;
+	public List<OrganisationRef> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(List<? extends OrganisationRef> organisations) {
+		if(organisations == null) {
+			this.organisations = null;
+		} else {
+			this.organisations = new ArrayList<>(organisations);
+		}
 	}
 
 	public String getLogin() {

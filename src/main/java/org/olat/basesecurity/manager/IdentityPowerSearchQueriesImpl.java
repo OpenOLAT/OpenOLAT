@@ -19,12 +19,13 @@
  */
 package org.olat.basesecurity.manager;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -32,6 +33,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
+import org.olat.basesecurity.OrganisationRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
@@ -165,7 +167,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				|| params.hasAuthProviders() || params.getStatus() != null || params.getManaged() != null
 				|| params.hasRoles() || params.hasExcludedRoles() || params.isAuthorAndCoAuthor()
 				|| params.getRepositoryEntryRole() != null || params.getBusinessGroupRole() != null
-				|| params.getOrganisation() != null || params.hasOrganisationParents();
+				|| params.hasOrganisations() || params.hasOrganisationParents();
 	}
 	
 	private boolean createQueryPart(SearchIdentityParams params, StringBuilder sb, boolean needsAnd) {	
@@ -201,11 +203,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			sb.append("))");
 		}
 		
-		if(params.getOrganisation() != null) {
+		if(params.hasOrganisations()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-			  .append("  where orgtomember.identity.key=ident.key and org.key=:organisationKey)");
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
 		}
 		
 		if(params.getBusinessGroupRole() != null) {
@@ -490,8 +492,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}
 		}
 		
-		if(params.getOrganisation() != null) {
-			dbq.setParameter("organisationKey", params.getOrganisation().getKey());
+		if(params.hasOrganisations()) {
+			List<Long> organisationKeys = params.getOrganisations()
+					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+			dbq.setParameter("organisationKey", organisationKeys);
 		}
 		
 		// add date restrictions

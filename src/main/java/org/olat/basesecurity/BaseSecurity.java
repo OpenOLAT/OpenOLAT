@@ -154,10 +154,17 @@ public interface BaseSecurity {
 	
 	/**
 	 * 
-	 * @param search
+	 * @param search The search
 	 * @return
 	 */
 	public List<IdentityShort> searchIdentityShort(String search, int maxResults);
+	
+	/**
+	 * 
+	 * @param search The search
+	 * @return
+	 */
+	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searchableOrganisations, int maxResults);
 
 	public IdentityShort loadIdentityShortByKey(Long identityKey);
 	

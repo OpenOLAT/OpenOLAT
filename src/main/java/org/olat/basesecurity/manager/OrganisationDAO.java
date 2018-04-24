@@ -217,11 +217,11 @@ public class OrganisationDAO {
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
-		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("role", roleList)
+				.setParameter("roles", roleList)
 				.getResultList();
 	}
 	

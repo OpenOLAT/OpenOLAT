@@ -601,9 +601,15 @@ public class BaseSecurityManager implements BaseSecurity {
 				.getResultList();
 		return identities.size() == 1 ? identities.get(0) : null;
 	}
+	
 
 	@Override
 	public List<IdentityShort> searchIdentityShort(String search, int maxResults) {
+		return searchIdentityShort(search, null, maxResults);
+	}
+
+	@Override
+	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searcheableOrgnisations, int maxResults) {
 		String[] searchArr = search.split(" ");
 		String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
 		
@@ -631,11 +637,22 @@ public class BaseSecurityManager implements BaseSecurity {
 			}
 		}
 		sb.append(")");
+		if(searcheableOrgnisations != null && !searcheableOrgnisations.isEmpty()) {
+			sb.append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
+			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+		}
 		
 		TypedQuery<IdentityShort> searchQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
 		for(int i=searchArr.length; i-->0; ) {
 			searchQuery.setParameter("search" + i, PersistenceHelper.makeFuzzyQueryString(searchArr[i]));
+		}
+		
+		if(searcheableOrgnisations != null && !searcheableOrgnisations.isEmpty()) {
+			List<Long> organisationKeys = searcheableOrgnisations.stream()
+					.map(OrganisationRef::getKey).collect(Collectors.toList());
+			searchQuery.setParameter("organisationKey", organisationKeys);
 		}
 
 		return searchQuery

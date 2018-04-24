@@ -33,6 +33,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.InitializingBean;
@@ -112,6 +113,19 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			roleList.add(r.name());
 		}
 		return organisationDao.getOrganisations(member, roleList);
+	}
+
+	@Override
+	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles) {
+		List<String> roleList = new ArrayList<>();// if user manager, descent organization tree
+		for(OrganisationRoles r:OrganisationRoles.values()) {
+			if(r !=  OrganisationRoles.guest) {
+				roleList.add(r.name());
+			}
+		}
+		List<Organisation> organisations = organisationDao.getOrganisations(member, roleList);
+		
+		return organisations;
 	}
 
 	@Override

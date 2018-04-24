@@ -27,10 +27,12 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
@@ -55,6 +57,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -99,6 +102,9 @@ public class UserSearchController extends BasicController {
 	private static final String ACTION_SINGLESELECT_CHOOSE = "ssc";
 	private static final String ACTION_MULTISELECT_CHOOSE = "msc";
 	
+	public static final String ACTION_KEY_CHOOSE = "action.choose";
+	public static final String ACTION_KEY_CHOOSE_FINISH = "action.choose.finish";
+	
 	private VelocityContainer myContent;
 	private StackedPanel searchPanel;
 	private UserSearchForm searchform;
@@ -108,6 +114,7 @@ public class UserSearchController extends BasicController {
 	private List<Identity> foundIdentities = new ArrayList<>();
 	private boolean useMultiSelect = false;
 	private Object userObject;
+	public final List<Organisation> searchableOrganisations;
 	
 	private AutoCompleterController autocompleterC;
 	private String actionKeyChoose;
@@ -118,13 +125,10 @@ public class UserSearchController extends BasicController {
 	protected BaseSecurity securityManager;
 	@Autowired
 	protected BaseSecurityModule securityModule;
-
-	public static final String ACTION_KEY_CHOOSE = "action.choose";
-	public static final String ACTION_KEY_CHOOSE_FINISH = "action.choose.finish";
-	
+	@Autowired
+	protected OrganisationService organisationService;
 	
 	/**
-	 * fxdiff: FXOLAT-250   we need standard-constructor for use in genericMainController
 	 * 
 	 * @param ureq
 	 * @param wControl
@@ -176,13 +180,14 @@ public class UserSearchController extends BasicController {
 		searchPanel.addListener(this);
 		myContent.put("usersearchPanel", searchPanel);
 
-		if (ureq.getUserSession()==null) {
-			logError("UserSearchController<init>: session is null!", null);
-		} else if (ureq.getUserSession().getRoles()==null) {
-			logError("UserSearchController<init>: roles is null!", null);
+		UserSession usess = ureq.getUserSession();
+		if(usess.getRoles().isOLATAdmin()) {
+			searchableOrganisations = null;//null mean all
+		} else {
+			searchableOrganisations = organisationService.getSearchableOrganisations(getIdentity(), usess.getRoles());
 		}
 		
-		Roles roles = ureq.getUserSession().getRoles();
+		Roles roles = usess.getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		searchform = new UserSearchForm(ureq, wControl, isAdministrativeUser, cancelbutton, allowReturnKey);
 		listenTo(searchform);
@@ -192,10 +197,9 @@ public class UserSearchController extends BasicController {
 		myContent.contextPut("showButton","false");
 		
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
-		boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
-		if (ajax && autoCompleteAllowed) {
+		if (autoCompleteAllowed) {
 			// insert a autocompleter search
-			ListProvider provider = new UserSearchListProvider();
+			ListProvider provider = new UserSearchListProvider(searchableOrganisations);
 			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, 60, 3, null);
 			listenTo(autocompleterC);
 			myContent.put("autocompletionsearch", autocompleterC.getInitialComponent());
@@ -348,8 +352,9 @@ public class UserSearchController extends BasicController {
 	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
 		int maxResults = securityModule.getUserSearchMaxResultsValue() > 0 ? securityModule.getUserSearchMaxResultsValue() + 1 : -1;
 		login = (login.equals("") ? null : login);
-		return securityManager.getVisibleIdentitiesByPowerSearch(login ,
-			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-			null, null, null, null, 0, maxResults);
+		SearchIdentityParams params = new SearchIdentityParams(login, userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
+				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		params.setOrganisations(searchableOrganisations);
+		return securityManager.getIdentitiesByPowerSearch(params, 0, maxResults);
 	}
 }

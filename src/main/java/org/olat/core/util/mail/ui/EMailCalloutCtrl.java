@@ -24,6 +24,8 @@ import java.util.List;
 import org.olat.admin.user.UserSearchListProvider;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Organisation;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -63,6 +65,8 @@ public class EMailCalloutCtrl extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public EMailCalloutCtrl(UserRequest ureq, WindowControl wControl, boolean allowExternalAddress) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -78,7 +82,13 @@ public class EMailCalloutCtrl extends FormBasicController {
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		if (autoCompleteAllowed) {
-			ListProvider provider = new UserSearchListProvider();
+			List<Organisation> searcheableOrganisations;
+			if(roles.isOLATAdmin()) {
+				searcheableOrganisations = null;
+			} else {
+				searcheableOrganisations = organisationService.getSearchableOrganisations(getIdentity(), roles);
+			}
+			ListProvider provider = new UserSearchListProvider(searcheableOrganisations);
 			autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, allowExternalAddress, 60, 3, null, mainForm);
 			autocompleterC.setFormElement(false);
 			listenTo(autocompleterC);
