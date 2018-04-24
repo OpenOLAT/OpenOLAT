@@ -214,9 +214,10 @@ public class HeadersFilter implements Filter {
 	}
 	
 	private void appendMathJaxUrl(StringBuilder sb) {
-		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
+		String mathJaxCdn = WebappHelper.getMathJaxCdn();
+		if(StringHelper.containsNonWhitespace(mathJaxCdn)
+				&& (mathJaxCdn.startsWith("//") || mathJaxCdn.startsWith("https://") || mathJaxCdn.startsWith("http://"))) {
 			try {
-				String mathJaxCdn = WebappHelper.getMathJaxCdn();
 				if(mathJaxCdn.startsWith("//")) {
 					mathJaxCdn = "https:" + mathJaxCdn;
 				}

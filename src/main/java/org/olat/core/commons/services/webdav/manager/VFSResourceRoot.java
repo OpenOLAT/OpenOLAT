@@ -24,9 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -141,8 +139,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		VFSItem file = resolveFile(path);
 		if(file instanceof VFSContainer) {
 			VFSContainer container = (VFSContainer)file;
-			List<VFSItem> children = container.getItems();
-			return children;
+			return container.getItems();
 		} else {
 			return Collections.emptyList();
 		}
@@ -283,12 +280,10 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			}
 		}
 		// Open os
-		OutputStream os = null;
-		byte buffer[] = new byte[BUFFER_SIZE];
+		byte[] buffer = new byte[BUFFER_SIZE];
 		int len = -1;
 		boolean quotaExceeded = false;
-		try {
-			os = file.getOutputStream(false);
+		try(OutputStream os = file.getOutputStream(false)) {
 			while (true) {
 				len = is.read(buffer);
 				if (len == -1) break;
@@ -305,17 +300,12 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			}
 			
 			if(quotaExceeded) {
-				IOUtils.closeQuietly(os);
 				file.delete();
 				throw new QuotaExceededException("");
 			}
 		} catch (IOException e) {
-			IOUtils.closeQuietly(os); // close first, in order to be able to delete any reamins of the file
 			file.delete();
 			throw e;
-		} finally {
-			IOUtils.closeQuietly(os);
-			IOUtils.closeQuietly(is);
 		}
 	}
 	

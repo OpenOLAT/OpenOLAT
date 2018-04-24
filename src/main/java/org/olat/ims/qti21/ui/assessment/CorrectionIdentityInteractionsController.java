@@ -193,11 +193,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		formLayout.add("score.container", scoreCont);
 		
 		statusEl = uifactory.addStaticTextElement("status", "status", "", scoreCont);
+		statusEl.setElementCssClass("o_sel_assessment_item_status");
 		statusEl.setValue(getStatus());
 		
 		String fullname = userManager.getUserDisplayName(correction.getAssessedIdentity());
 		if(manualScore) {
 			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, mScore, scoreCont);
+			scoreEl.setElementCssClass("o_sel_assessment_item_score");
 		} else {
 			overrideAutoScore = itemSession == null ? null : itemSession.getManualScore();
 			
