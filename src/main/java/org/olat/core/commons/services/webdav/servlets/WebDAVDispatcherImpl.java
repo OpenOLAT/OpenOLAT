@@ -1753,17 +1753,20 @@ public class WebDAVDispatcherImpl
             }
 
             WebResource movedFrom = moved ? sourceResource : null; 
-            try {
-				if (!resources.write(dest, sourceResource.getInputStream(), false, movedFrom)) {
-				    errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+            try(InputStream in = sourceResource.getInputStream()) {
+				if (!resources.write(dest, in, false, movedFrom)) {
+				    errorList.put(source, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
 				    return false;
 				}
 			} catch (QuotaExceededException e) {
-				errorList.put(source, new Integer(WebdavStatus.SC_INSUFFICIENT_STORAGE));
+				errorList.put(source, Integer.valueOf(WebdavStatus.SC_INSUFFICIENT_STORAGE));
+			    return false;
+			} catch (IOException e) {
+				errorList.put(source, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
 			    return false;
 			}
         } else {
-            errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+            errorList.put(source, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
             return false;
         }
         return true;

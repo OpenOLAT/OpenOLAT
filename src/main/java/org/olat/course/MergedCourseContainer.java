@@ -347,14 +347,23 @@ public class MergedCourseContainer extends MergeSource {
 						VFSContainer courseBase = sharedFolder;
 						subpath = subpath.replaceFirst("/_sharedfolder", "");
 						rootFolder = (VFSContainer) courseBase.resolve(subpath);
-						if(rootFolder != null && (course.getCourseConfig().isSharedFolderReadOnlyMount() || courseReadOnly)) {
-							rootFolder.setLocalSecurityCallback(new ReadOnlyCallback());
+						if(rootFolder != null) {
+							if(course.getCourseConfig().isSharedFolderReadOnlyMount() || courseReadOnly) {
+								rootFolder.setLocalSecurityCallback(new ReadOnlyCallback());
+							} else if(rootFolder.getLocalSecurityCallback() != null) {
+								SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
+								rootFolder.setLocalSecurityCallback(new OverrideSubscriptionSecurityCallback(rootFolder.getLocalSecurityCallback(), subContext));
+							}
 						}
 					}
 				}
 			} else {
 				VFSContainer courseBase = course.getCourseBaseContainer();
 				rootFolder = (VFSContainer) courseBase.resolve("/coursefolder" + subpath);
+				if(rootFolder.getLocalSecurityCallback() != null) {
+					SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
+					rootFolder.setLocalSecurityCallback(new OverrideSubscriptionSecurityCallback(rootFolder.getLocalSecurityCallback(), subContext));
+				}
 			}
 		}
 		
@@ -362,11 +371,13 @@ public class MergedCourseContainer extends MergeSource {
 			String path = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), bcNode);
 			rootFolder = new OlatRootFolderImpl(path, null);
 			if(nodeEval != null) {
-				rootFolder.setLocalSecurityCallback(new FolderNodeCallback(path, nodeEval, isOlatAdmin, false, null));
+				SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
+				rootFolder.setLocalSecurityCallback(new FolderNodeCallback(path, nodeEval, isOlatAdmin, false, subContext));
 			} else {
 				VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(this);
 				if(secCallback != null) {
-					rootFolder.setLocalSecurityCallback(new OverrideQuotaSecurityCallback(path, secCallback));
+					SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
+					rootFolder.setLocalSecurityCallback(new OverrideQuotaSecurityCallback(path, secCallback, subContext));
 				}
 			}
 		}
@@ -387,10 +398,12 @@ public class MergedCourseContainer extends MergeSource {
 		
 		private final String relPath;
 		private Quota overridenQuota;
+		private final SubscriptionContext subContext;
 		private final VFSSecurityCallback secCallback;
 		
-		public OverrideQuotaSecurityCallback(String relPath, VFSSecurityCallback secCallback) {
+		public OverrideQuotaSecurityCallback(String relPath, VFSSecurityCallback secCallback, SubscriptionContext subContext) {
 			this.relPath = relPath;
+			this.subContext = subContext;
 			this.secCallback = secCallback;
 		}
 
@@ -449,7 +462,69 @@ public class MergedCourseContainer extends MergeSource {
 
 		@Override
 		public SubscriptionContext getSubscriptionContext() {
-			return secCallback.getSubscriptionContext();
+			return subContext == null ? secCallback.getSubscriptionContext() : subContext;
 		}	
+	}
+	
+
+	private static class OverrideSubscriptionSecurityCallback implements VFSSecurityCallback {
+
+		private final SubscriptionContext subContext;
+		private final VFSSecurityCallback secCallback;
+		
+		public OverrideSubscriptionSecurityCallback(VFSSecurityCallback secCallback, SubscriptionContext subContext) {
+			this.subContext = subContext;
+			this.secCallback = secCallback;
+		}
+
+		@Override
+		public boolean canRead() {
+			return secCallback.canRead();
+		}
+
+		@Override
+		public boolean canWrite() {
+			return secCallback.canWrite();
+		}
+
+		@Override
+		public boolean canCreateFolder() {
+			return secCallback.canCreateFolder();
+		}
+
+		@Override
+		public boolean canDelete() {
+			return secCallback.canDelete();
+		}
+
+		@Override
+		public boolean canList() {
+			return secCallback.canList();
+		}
+
+		@Override
+		public boolean canCopy() {
+			return secCallback.canCopy();
+		}
+
+		@Override
+		public boolean canDeleteRevisionsPermanently() {
+			return secCallback.canDeleteRevisionsPermanently();
+		}
+
+		@Override
+		public Quota getQuota() {
+			return secCallback.getQuota();
+		}
+
+		@Override
+		public void setQuota(Quota quota) {
+			//
+		}
+
+		@Override
+		public SubscriptionContext getSubscriptionContext() {
+			return subContext == null ? secCallback.getSubscriptionContext() : subContext;
+		}
 	}
 }
