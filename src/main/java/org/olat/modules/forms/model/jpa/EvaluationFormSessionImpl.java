@@ -76,17 +76,24 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	@Column(name="e_first_submission_date", nullable=true, insertable=true, updatable=true)
 	private Date firstSubmissionDate;
 	
+	@Column(name="e_resname", nullable=true, insertable=true, updatable=false)
+	private String resName;
+	@Column(name="e_resid", nullable=true, insertable=true, updatable=false)
+	private Long resId;
+	@Column(name="e_sub_ident", nullable=true, insertable=true, updatable=false)
+	private String resSubident;
+	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
-    private Identity identity;
+	private Identity identity;
 	
 	@ManyToOne(targetEntity=PageBodyImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_page_body", nullable=true, insertable=true, updatable=false)
-    private PageBody pageBody;
+	private PageBody pageBody;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=false)
-    private RepositoryEntry formEntry;
+	private RepositoryEntry formEntry;
 
 	
 	@Override
@@ -161,6 +168,30 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 		this.firstSubmissionDate = firstSubmissionDate;
 	}
 
+	public String getResName() {
+		return resName;
+	}
+
+	public void setResName(String resName) {
+		this.resName = resName;
+	}
+
+	public Long getResId() {
+		return resId;
+	}
+
+	public void setResId(Long resId) {
+		this.resId = resId;
+	}
+
+	public String getResSubident() {
+		return resSubident;
+	}
+
+	public void setResSubident(String resSubident) {
+		this.resSubident = resSubident;
+	}
+
 	@Override
 	public Identity getIdentity() {
 		return identity;
@@ -179,6 +210,7 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 		this.pageBody = pageBody;
 	}
 
+	@Override
 	public RepositoryEntry getFormEntry() {
 		return formEntry;
 	}

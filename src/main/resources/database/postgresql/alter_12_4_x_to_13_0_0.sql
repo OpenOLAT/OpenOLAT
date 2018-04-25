@@ -133,3 +133,9 @@ alter table o_bs_policy drop constraint FK9A1C5101E2E76DB;
 -- evaluation forms
 alter table o_eva_form_response add column e_no_response bool default false;
 
+alter table o_eva_form_session add column e_resname varchar(50);
+alter table o_eva_form_session add column e_resid int8;
+alter table o_eva_form_session add column e_sub_ident varchar(2048);
+
+create index idx_eva_sess_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident);
+

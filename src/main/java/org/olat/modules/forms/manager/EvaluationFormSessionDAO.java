@@ -22,9 +22,13 @@ package org.olat.modules.forms.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
@@ -46,17 +50,77 @@ public class EvaluationFormSessionDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity,
+			RepositoryEntry formEntry) {
+		EvaluationFormSessionImpl session = createSession(identity, formEntry);
+		session.setResName(ores.getResourceableTypeName());
+		session.setResId(ores.getResourceableId());
+		session.setResSubident(subIdent);
+		dbInstance.getCurrentEntityManager().persist(session);
+		return session;
+	}
 	
 	public EvaluationFormSession createSessionForPortfolio(Identity identity, PageBody body, RepositoryEntry formEntry) {
+		EvaluationFormSessionImpl session = createSession(identity, formEntry);
+		session.setPageBody(body);
+		dbInstance.getCurrentEntityManager().persist(session);
+		return session;
+	}
+
+	private EvaluationFormSessionImpl createSession(Identity identity, RepositoryEntry formEntry) {
 		EvaluationFormSessionImpl session = new EvaluationFormSessionImpl();
 		session.setCreationDate(new Date());
 		session.setLastModified(session.getCreationDate());
 		session.setIdentity(identity);
-		session.setPageBody(body);
 		session.setFormEntry(formEntry);
 		session.setEvaluationFormSessionStatus(EvaluationFormSessionStatus.inProgress);
-		dbInstance.getCurrentEntityManager().persist(session);
 		return session;
+	}
+
+	public EvaluationFormSession loadSession(OLATResourceable ores, String subIdent, IdentityRef identity) {
+		if (ores == null || identity == null) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from evaluationformsession as session");
+		sb.append(" where session.resName=:resName");
+		sb.append("   and session.resId=:resId");
+		sb.append(" and session.identity.key=:identityKey");
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and session.resSubident=:resSubident");
+		}
+		
+		TypedQuery<EvaluationFormSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSession.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("identityKey", identity.getKey());
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("resSubident", subIdent);
+		}
+		List<EvaluationFormSession> sessions = query.getResultList();
+		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
+	}
+	
+	public boolean hasSessions(OLATResourceable ores, String subIdent) {
+		if (ores == null) return false;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(session.key) from evaluationformsession as session");
+		sb.append(" where session.resName=:resName");
+		sb.append("   and session.resId=:resId");
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and session.resSubident=:resSubident");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId());
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("resSubident", subIdent);
+		}
+		Long count = query.getResultList().get(0);
+		return count > 0;
 	}
 	
 	public boolean hasSessionForPortfolioEvaluation(PageBody anchor) {

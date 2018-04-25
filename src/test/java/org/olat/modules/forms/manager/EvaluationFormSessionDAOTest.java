@@ -19,10 +19,15 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.portfolio.Page;
@@ -58,6 +63,75 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Autowired
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	
+	@Test
+	public void shouldCreateSession() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		String subIdent = "sub";
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
+		
+		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
+		
+		assertThat(session).isNotNull();
+		assertThat(session.getKey()).isNotNull();
+		assertThat(session.getCreationDate()).isNotNull();
+		assertThat(session.getLastModified()).isNotNull();
+		assertThat(session.getIdentity()).isEqualTo(identity);
+	}
+	
+	@Test
+	public void shouldCreateAndLoadSessionWithSubIdent() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		String subIdent = "sub";
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
+		
+		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormSession loadedSession = evaluationFormSessionDao.loadSession(ores, subIdent, identity);
+		
+		assertThat(loadedSession).isNotNull();
+		assertThat(loadedSession).isEqualTo(session);
+	}
+	
+	@Test
+	public void shouldCreateAndLoadSessionWithoutSubIdent() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
+		
+		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, null, identity, formEntry);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormSession loadedSession = evaluationFormSessionDao.loadSession(ores, null, identity);
+		
+		assertThat(loadedSession).isNotNull();
+		assertThat(loadedSession).isEqualTo(session);
+	}
+	
+	@Test
+	public void shouldCheckIfHasSessions() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
+		evaluationFormSessionDao.createSession(ores, null, identity, formEntry);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasSessions = evaluationFormSessionDao.hasSessions(ores, null);
+		
+		assertThat(hasSessions).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfHasNoSessions() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		
+		boolean hasSessions = evaluationFormSessionDao.hasSessions(ores, "subIdent");
+		
+		assertThat(hasSessions).isFalse();
+	}
+
 	
 	@Test
 	public void createSessionForPortfolio() {

@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
@@ -55,6 +56,23 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Autowired
 	private EvaluationFormStorage evaluationFormStorage;
 	
+
+	@Override
+	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity,
+			RepositoryEntry formEntry) {
+		return evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
+	}
+
+	@Override
+	public EvaluationFormSession loadSession(OLATResourceable ores, String subIdent, IdentityRef identity) {
+		return evaluationFormSessionDao.loadSession(ores, subIdent, identity);
+	}
+
+	@Override
+	public boolean hasSessions(OLATResourceable ores, String subIdent) {
+		return evaluationFormSessionDao.hasSessions(ores, subIdent);
+	}
+
 	@Override
 	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry) {
 		return evaluationFormSessionDao.createSessionForPortfolio(identity, body, formEntry);

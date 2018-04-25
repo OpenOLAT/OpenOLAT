@@ -127,6 +127,11 @@
 		<property name="order" value="170" />
 	</bean>
 	
+	<bean id="survey" class="org.olat.course.nodes.survey.SurveyCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.from.survey.enabled}" />
+		<property name="order" value="175" />
+	</bean>
+	
 	<bean id="en" class="org.olat.course.nodes.en.ENCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.en.enabled}" />
 		<property name="order" value="180" />

@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
@@ -38,6 +39,12 @@ import org.olat.repository.RepositoryEntryRef;
  *
  */
 public interface EvaluationFormManager {
+	
+	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity, RepositoryEntry formEntry);
+	
+	public EvaluationFormSession loadSession(OLATResourceable ores, String subIdent, IdentityRef identity);
+	
+	public boolean hasSessions(OLATResourceable ores, String subIdent);
 	
 	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry); 
 	

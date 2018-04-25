@@ -25,6 +25,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -57,5 +58,7 @@ public interface EvaluationFormSession extends CreateInfo, ModifiedInfo {
 	 * @return
 	 */
 	public PageBody getPageBody();
+	
+	public RepositoryEntry getFormEntry();
 
 }

@@ -1735,6 +1735,9 @@ create table o_eva_form_session (
    e_status varchar(16),
    e_submission_date timestamp,
    e_first_submission_date timestamp,
+   e_resname varchar(50),
+   e_resid int8,
+   e_sub_ident varchar(2048),
    fk_identity int8 not null,
    fk_page_body int8,
    fk_form_entry int8 not null,
@@ -2314,6 +2317,7 @@ create table o_dialog_element (
   fk_forum int8 not null,
   primary key (id)
 );
+
 -- licenses
 create table o_lic_license_type (
   id bigserial,
@@ -3231,6 +3235,7 @@ alter table o_eva_form_session add constraint eva_session_to_body_idx foreign ke
 create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
 alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);
+create index idx_eva_sess_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident);
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);

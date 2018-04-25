@@ -1765,6 +1765,9 @@ create table o_eva_form_session (
    e_status varchar2(16 char),
    e_submission_date date,
    e_first_submission_date date,
+   e_resname varchar2(50),
+   e_resid number(20),
+   e_sub_ident varchar2(2048),
    fk_identity number(20) not null,
    fk_page_body number(20) not null,
    fk_form_entry number(20) not null,
@@ -3286,6 +3289,7 @@ alter table o_eva_form_session add constraint eva_session_to_body_idx foreign ke
 create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
 alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);
+create index idx_eva_sess_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident);
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);

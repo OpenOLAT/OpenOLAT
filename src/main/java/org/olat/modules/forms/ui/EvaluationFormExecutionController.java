@@ -79,12 +79,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private DialogBoxController confirmDoneCtrl;
 	
 	private final Form form;
-	private boolean previewOnly;
 	private boolean readOnly;
 	private boolean showDoneButton;
-	private final Identity evaluator;
-	private final RepositoryEntry formEntry;
-	private final PageBody anchor;
 	
 	private boolean immediateSave = false;
 	
@@ -95,6 +91,23 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
+		super(ureq, wControl, "execute");
+
+		RepositoryEntry formEntry = session.getFormEntry();
+		File repositoryDir = new File(
+				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
+				FileResourceManager.ZIPDIR);
+		File formFile = new File(repositoryDir, FORM_XML_FILE);
+		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+		
+		this.session = session;
+		this.readOnly = false;
+		this.showDoneButton = true;
+		
+		initForm(ureq);
+	}
+	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Identity evaluator,
 			PageBody anchor, RepositoryEntry formEntry, boolean readOnly, boolean showDoneButton) {
 		super(ureq, wControl, "execute");
@@ -103,12 +116,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		
+		this.session = loadOrCreateSession(evaluator, anchor, formEntry);
 		this.readOnly = readOnly;
-		this.previewOnly = evaluator == null;
 		this.showDoneButton = showDoneButton;
-		this.evaluator = evaluator;
-		this.formEntry = formEntry;
-		this.anchor = anchor;
 		
 		initForm(ureq);
 	}
@@ -119,12 +129,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		
 		form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), xmlForm);
 		
+		this.session = loadOrCreateSession(evaluator, pageBody, null);
 		this.readOnly = readOnly;
-		this.previewOnly = evaluator == null;
 		this.showDoneButton = false;
-		this.evaluator = evaluator;
-		this.formEntry = null;
-		this.anchor = pageBody;
 		
 		initForm(ureq);
 	}
@@ -134,12 +141,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		
+		this.session = null;
 		this.readOnly = false;
-		this.previewOnly = true;
 		this.showDoneButton = false;
-		this.evaluator = null;
-		this.formEntry = null;
-		this.anchor = null;
 		
 		initForm(ureq);
 	}
@@ -151,7 +155,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			handlerMap.put(handler.getType(), handler);
 		}
 		
-		loadOrCreateSession();
+		ajustFromSession();
 		loadElements(ureq);
 		loadResponses();
 		propagateReadOnly();
@@ -161,17 +165,23 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		showHideButtons();
 	}
 	
-	private void loadOrCreateSession() {
-		if(previewOnly) return;
-
-		session = evaluationFormManager.getSessionForPortfolioEvaluation(evaluator, anchor);
-		if(session == null) {
+	private EvaluationFormSession loadOrCreateSession(Identity evaluator, PageBody anchor, RepositoryEntry formEntry) {
+		if (evaluator == null || anchor == null) return null;
+		
+		EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(evaluator, anchor);
+		if (session == null && formEntry != null) {
 			session = evaluationFormManager.createSessionForPortfolioEvaluation(evaluator, anchor, formEntry);
 		}
+		return session;
+	}
+
+	private void ajustFromSession() {
+		if (session == null) return;
+		
 		if(session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			readOnly = true;
 			showDoneButton = false;
-		} else if(!evaluator.equals(getIdentity())) {
+		} else if(session.getIdentity() != null && !session.getIdentity().equals(getIdentity())) {
 			flc.contextPut("messageNotDone", Boolean.TRUE);
 		}
 	}
@@ -195,7 +205,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 	
 	private void loadResponses() {
-		if (previewOnly) return;
+		if (session == null) return;
 		
 		for (ExecutionFragment fragment: fragments) {
 			fragment.load(session);
@@ -209,7 +219,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	private void showHideButtons() {
-		saveLink.setVisible(!readOnly && !previewOnly);
+		saveLink.setVisible(!readOnly && session != null);
 		doneLink.setVisible(showDoneButton);
 	}
 	
