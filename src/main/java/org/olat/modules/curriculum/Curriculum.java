@@ -19,9 +19,9 @@
  */
 package org.olat.modules.curriculum;
 
-import org.olat.basesecurity.Organisation;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Organisation;
 
 /**
  * 

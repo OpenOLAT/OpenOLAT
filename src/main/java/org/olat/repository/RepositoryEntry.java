@@ -26,6 +26,7 @@
 package org.olat.repository;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -61,6 +62,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
+import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 
@@ -138,6 +140,10 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
 	@JoinColumn(name="fk_entry_id")
 	private Set<RepositoryEntryToGroupRelation> groups;
+	
+	@OneToMany(targetEntity=RepositoryEntryToOrganisationImpl.class, fetch=FetchType.LAZY)
+	@JoinColumn(name="fk_entry")
+	private Set<RepositoryEntryToOrganisation> organisations;
 	
 	@Column(name="resourcename", nullable=false, insertable=true, updatable=true)
 	private String resourcename; // mandatory
@@ -388,6 +394,17 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setGroups(Set<RepositoryEntryToGroupRelation> groups) {
 		this.groups = groups;
+	}
+
+	public Set<RepositoryEntryToOrganisation> getOrganisations() {
+		if(organisations == null) {
+			organisations = new HashSet<>();
+		}
+		return organisations;
+	}
+
+	public void setOrganisations(Set<RepositoryEntryToOrganisation> organisations) {
+		this.organisations = organisations;
 	}
 
 	/**

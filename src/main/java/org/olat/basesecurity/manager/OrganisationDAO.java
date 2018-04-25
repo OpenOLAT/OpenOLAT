@@ -26,7 +26,6 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRef;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
@@ -34,6 +33,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

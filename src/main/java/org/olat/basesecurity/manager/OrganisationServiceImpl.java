@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRef;
 import org.olat.basesecurity.OrganisationRoles;
@@ -33,6 +32,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;

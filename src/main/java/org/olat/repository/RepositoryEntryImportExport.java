@@ -282,7 +282,7 @@ public class RepositoryEntryImportExport {
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
-				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null);
+				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null, null);
 	}
 
 	private void importLicense(RepositoryEntry newEntry) {

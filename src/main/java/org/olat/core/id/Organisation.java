@@ -17,34 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.core.id;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.id.Organisation;
+import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationRef;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 9 févr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumSearchParameters {
+public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef {
 	
-	private List<Organisation> organisations;
-
-	public List<Organisation> getOrganisations() {
-		if(organisations == null) {
-			organisations = new ArrayList<>();
-		}
-		return organisations;
-	}
-
-	public void setOrganisations(List<Organisation> organisations) {
-		this.organisations = organisations;
-	}
+	public String getMaterializedPathKeys();
 	
+	public String getIdentifier();
 	
+	public void setIdentifier(String identifier);
+	
+	public String getDisplayName();
+	
+	public void setDisplayName(String displayName);
+	
+	public String getDescription();
+	
+	public void setDescription(String description);
+	
+	public String getExternalId();
+	
+	public void setExternalId(String externalId);
+	
+	public OrganisationManagedFlag[] getManagedFlags();
+	
+	public void setManagedFlags(OrganisationManagedFlag[] flags);
+	
+	public Organisation getParent();
+	
+	public Organisation getRoot();
 
 }

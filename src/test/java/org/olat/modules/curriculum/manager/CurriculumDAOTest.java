@@ -24,9 +24,9 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;

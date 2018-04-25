@@ -1215,7 +1215,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		String newName = "Brand new name";
 		String newDesc = "Brand new description";
-		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null, publicCycle);
+		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null, publicCycle, null);
 		Assert.assertNotNull(re);
 		
 		dbInstance.commitAndCloseSession();
@@ -1335,7 +1335,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("New cycle 1", "New cycle soft 1", false, new Date(), new Date());
-		re = repositoryManager.setDescriptionAndName(re, "Updated repo entry", null, null, "", null, null, null, null, null, null, cycle);
+		re = repositoryManager.setDescriptionAndName(re, "Updated repo entry", null, null, "", null, null, null, null, null, null, cycle, null);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry lazyRe = repositoryManager.setAccess(re, 2, false);

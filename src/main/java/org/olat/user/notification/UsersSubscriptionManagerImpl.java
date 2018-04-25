@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
@@ -37,6 +36,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;

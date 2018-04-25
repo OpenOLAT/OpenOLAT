@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.util.Encoder;

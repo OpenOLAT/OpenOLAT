@@ -23,13 +23,13 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.NamedGroupImpl;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

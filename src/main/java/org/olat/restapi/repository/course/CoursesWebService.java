@@ -420,8 +420,6 @@ public class CoursesWebService {
 			String description, String softKey, int access, boolean membersOnly, String authors, String location, String externalId, String externalRef,
 			String managedFlags, CourseConfigVO courseConfigVO) {
 
-		//String learningObjectives = name + " (Example of creating a new course)";
-
 		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
 		RepositoryEntry src = RepositoryManager.getInstance().lookupRepositoryEntry(originalOresTrans, false);
 		if(src == null) {

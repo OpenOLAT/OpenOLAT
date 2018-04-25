@@ -22,6 +22,7 @@ package org.olat.basesecurity;
 import java.util.Arrays;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;

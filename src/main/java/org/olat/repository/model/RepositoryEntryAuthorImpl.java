@@ -56,7 +56,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final Date lastUsage;
 	
-	public int numOfReferences;
+	public final int numOfReferences;
 	
 	private final Date deletionDate;
 	private final String deletedByFullName;
@@ -122,7 +122,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 
 	@Override
 	public Long getResourceableId() {
-		return key;
+		return getKey();
 	}
 
 	@Override

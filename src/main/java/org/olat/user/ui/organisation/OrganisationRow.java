@@ -19,10 +19,10 @@
  */
 package org.olat.user.ui.organisation;
 
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationRef;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.id.Organisation;
 
 /**
  * 

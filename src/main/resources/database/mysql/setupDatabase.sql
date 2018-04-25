@@ -2393,6 +2393,16 @@ create table o_org_type_to_type (
   primary key (id)
 );
 
+create table o_re_to_organisation (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  r_master bit default 0,
+  fk_entry bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
+);
+
 -- curriculum
 create table o_cur_element_type (
   id bigint not null auto_increment,
@@ -2806,6 +2816,7 @@ alter table o_lic_license ENGINE = InnoDB;
 alter table o_org_organisation_type ENGINE = InnoDB;
 alter table o_org_organisation ENGINE = InnoDB;
 alter table o_org_type_to_type ENGINE = InnoDB;
+alter table o_re_to_organisation ENGINE = InnoDB;
 alter table o_cur_element_type ENGINE = InnoDB;
 alter table o_cur_curriculum ENGINE = InnoDB;
 alter table o_cur_curriculum_element ENGINE = InnoDB;
@@ -3362,6 +3373,9 @@ alter table o_org_organisation add constraint org_to_org_type_idx foreign key (f
 
 alter table o_org_type_to_type add constraint org_type_to_type_idx foreign key (fk_type) references o_org_organisation_type (id);
 alter table o_org_type_to_type add constraint org_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_org_organisation_type (id);
+
+alter table o_re_to_organisation add constraint rel_org_to_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_re_to_organisation add constraint rel_org_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
 -- curriculum
 alter table o_cur_curriculum add constraint cur_to_group_idx foreign key (fk_group) references o_bs_group (id);

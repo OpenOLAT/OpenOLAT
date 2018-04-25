@@ -26,10 +26,10 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.basesecurity.Organisation;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
 

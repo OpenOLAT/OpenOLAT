@@ -21,7 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.List;
 
-import org.olat.basesecurity.Organisation;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;

@@ -17,43 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
+package org.olat.repository;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Organisation;
 
 /**
+ * Map the relation between an organisation and a repository entry.
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 25 avr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef {
+public interface RepositoryEntryToOrganisation extends CreateInfo, ModifiedInfo {
 	
-	public String getMaterializedPathKeys();
+	public boolean isMaster();
 	
-	public String getIdentifier();
+	public RepositoryEntry getEntry();
 	
-	public void setIdentifier(String identifier);
-	
-	public String getDisplayName();
-	
-	public void setDisplayName(String displayName);
-	
-	public String getDescription();
-	
-	public void setDescription(String description);
-	
-	public String getExternalId();
-	
-	public void setExternalId(String externalId);
-	
-	public OrganisationManagedFlag[] getManagedFlags();
-	
-	public void setManagedFlags(OrganisationManagedFlag[] flags);
-	
-	public Organisation getParent();
-	
-	public Organisation getRoot();
+	public Organisation getOrganisation();
 
 }

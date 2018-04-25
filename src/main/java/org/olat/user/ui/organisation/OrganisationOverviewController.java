@@ -19,7 +19,6 @@
  */
 package org.olat.user.ui.organisation;
 
-import org.olat.basesecurity.Organisation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.resource.OresHelper;
 
 /**

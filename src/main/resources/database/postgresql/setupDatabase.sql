@@ -2391,6 +2391,16 @@ create table o_org_type_to_type (
   primary key (id)
 );
 
+create table o_re_to_organisation (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  r_master bool default false,
+  fk_entry int8 not null,
+  fk_organisation int8 not null,
+  primary key (id)
+);
+
 -- curriculum
 create table o_cur_element_type (
   id bigserial,
@@ -3414,6 +3424,11 @@ alter table o_org_type_to_type add constraint org_type_to_type_idx foreign key (
 create index idx_org_type_to_type_idx on o_org_type_to_type (fk_type);
 alter table o_org_type_to_type add constraint org_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_org_organisation_type (id);
 create index idx_org_type_to_sub_type_idx on o_org_type_to_type (fk_allowed_sub_type);
+
+alter table o_re_to_organisation add constraint rel_org_to_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_rel_org_to_re_idx on o_re_to_organisation (fk_entry);
+alter table o_re_to_organisation add constraint rel_org_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_rel_org_to_org_idx on o_re_to_organisation (fk_organisation);
 
 -- curriculum
 alter table o_cur_curriculum add constraint cur_to_group_idx foreign key (fk_group) references o_bs_group (id);

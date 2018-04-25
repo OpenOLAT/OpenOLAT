@@ -34,9 +34,9 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.basesecurity.Group;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Persistable;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;

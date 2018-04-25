@@ -17,34 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.basesecurity.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.id.Organisation;
+import org.olat.basesecurity.OrganisationRef;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 25 avr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumSearchParameters {
+public class OrganisationRefImpl implements OrganisationRef {
 	
-	private List<Organisation> organisations;
+	private final Long key;
+	
+	public OrganisationRefImpl(Long key) {
+		this.key = key;
+	}
 
-	public List<Organisation> getOrganisations() {
-		if(organisations == null) {
-			organisations = new ArrayList<>();
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	@Override
+	public int hashCode() {
+		return key == null ? 2678 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
 		}
-		return organisations;
+		if(obj instanceof OrganisationRefImpl) {
+			OrganisationRefImpl ref = (OrganisationRefImpl) obj;
+			return key != null && key.equals(ref.key);
+		}
+		return false;
 	}
-
-	public void setOrganisations(List<Organisation> organisations) {
-		this.organisations = organisations;
-	}
-	
-	
-
 }

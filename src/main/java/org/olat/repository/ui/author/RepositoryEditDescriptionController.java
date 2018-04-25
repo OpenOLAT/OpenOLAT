@@ -29,13 +29,18 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -47,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -59,6 +65,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -71,6 +79,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -105,6 +114,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RepositoryEntry repositoryEntry;
 	private final String repoEntryType;
 	private ResourceLicense license;
+	private List<Organisation> repositoryEntryOrganisations;
 
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
@@ -116,6 +126,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private SingleSelection dateTypesEl, publicDatesEl, licenseEl;
 	private DateChooser startDateEl, endDateEl;
 	private FormSubmit submit;
+	private MultipleSelectionElement organisationsEl;
 	private FormLayoutContainer privateDatesCont;
 	
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
@@ -136,6 +147,10 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private LicenseModule licenseModule;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -232,6 +247,10 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("cif.freetext", 4, 72, freetext, formLayout);
 			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
+		}
+		
+		if(organisationModule.isEnabled()) {
+			initFormOrganisations(formLayout, ureq);
 		}
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
@@ -394,6 +413,35 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		submit = uifactory.addFormSubmitButton("submit", buttonContainer);
 		submit.setVisible(!managed);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+	}
+
+	protected void initFormOrganisations(FormItemContainer formLayout, UserRequest ureq) {
+		List<Organisation> organisations;
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isOLATAdmin()) {
+			organisations = organisationService.getOrganisations();
+		} else {
+			organisations = organisationService.getSearchableOrganisations(getIdentity(), roles);
+		}
+		
+		List<String> keyList = new ArrayList<>();
+		List<String> valueList = new ArrayList<>();
+		for(Organisation organisation:organisations) {
+			keyList.add(organisation.getKey().toString());
+			valueList.add(organisation.getDisplayName());
+		}
+		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
+				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]),
+				null, null);
+		
+		Set<RepositoryEntryToOrganisation> reOrganisations = repositoryEntry.getOrganisations();
+		repositoryEntryOrganisations = new ArrayList<>(reOrganisations.size());
+		for(RepositoryEntryToOrganisation reOrganisation:reOrganisations) {
+			Organisation organisation = reOrganisation.getOrganisation();
+			if(keyList.contains(organisation.getKey().toString())) {
+				organisationsEl.select(organisation.getKey().toString(), true);
+			}
+		}
 	}
 
 	private void updateDatesVisibility() {
@@ -644,11 +692,37 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			repositoryEntry.setLocation(loc);
 		}
 		
+		List<Organisation> organisations = null;
+		if(organisationsEl != null) {
+			organisations = new ArrayList<>(repositoryEntryOrganisations);
+
+			Set<String> organisationKeys = organisationsEl.getKeys();
+			Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
+
+			Set<String> currentOrganisationKeys = new HashSet<>();
+			for(Iterator<Organisation> it=organisations.iterator(); it.hasNext(); ) {
+				String key = it.next().getKey().toString();
+				currentOrganisationKeys.add(key);
+				if(organisationKeys.contains(key) && !selectedOrganisationKeys.contains(key)) {
+					it.remove();
+				}
+			}
+
+			for(String selectedOrganisationKey:selectedOrganisationKeys) {
+				if(!currentOrganisationKeys.contains(selectedOrganisationKey)) {
+					Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(selectedOrganisationKey)));
+					if(organisation != null) {
+						organisations.add(organisation);
+					}
+				}
+			}
+		}
+		
 		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
 				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
 				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle());
+				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), organisations);
 		if(repositoryEntry == null) {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);

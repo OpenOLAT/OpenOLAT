@@ -29,6 +29,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -293,4 +294,19 @@ public interface RepositoryService {
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params);
 
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults);
+	
+	
+	/**
+	 * Add an organization to the repository entry.
+	 * 
+	 * @param entry The repository entry
+	 * @param organisation The organisation
+	 * @param master If the relation is "master"
+	 * @return A merged repository entry
+	 */
+	public RepositoryEntry addOrganisation(RepositoryEntry entry, Organisation organisation, boolean master);
+	
+	
+	
+	
 }

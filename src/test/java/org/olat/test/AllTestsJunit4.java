@@ -139,6 +139,7 @@ import org.junit.runners.Suite;
 	org.olat.repository.manager.RepositoryEntryAuthorQueriesTest.class,
 	org.olat.repository.manager.RepositoryEntryMyCourseQueriesTest.class,
 	org.olat.repository.manager.RepositoryEntryMembershipProcessorTest.class,
+	org.olat.repository.manager.RepositoryEntryToOrganisationDAOTest.class,
 	org.olat.repository.RepositoryManagerTest.class,
 	org.olat.repository.RepositoryManagerQueryTest.class,
 	org.olat.instantMessaging.InstantMessageDAOTest.class,

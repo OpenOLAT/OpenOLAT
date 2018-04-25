@@ -41,6 +41,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -147,6 +148,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -667,6 +670,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 				reToGroupDao.removeRole(re, role);
 			}
 		}
+	}
+
+	@Override
+	public RepositoryEntry addOrganisation(RepositoryEntry entry, Organisation organisation, boolean master) {
+		repositoryEntryToOrganisationDao.createRelation(organisation, entry, master);
+		return null;
 	}
 
 	@Override

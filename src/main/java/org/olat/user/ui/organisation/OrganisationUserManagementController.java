@@ -27,7 +27,6 @@ import java.util.Set;
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Organisation;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -54,6 +53,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.organisation.OrganisationUserManagementTableModel.MemberCols;

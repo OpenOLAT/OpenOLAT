@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 
 /**
