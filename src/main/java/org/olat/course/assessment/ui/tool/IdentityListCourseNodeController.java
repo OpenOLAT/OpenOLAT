@@ -381,9 +381,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initMultiSelectionTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
 		if(courseNode instanceof AssessableCourseNode) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
+			bulkDoneButton.setElementCssClass("o_sel_assessment_bulk_done");
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			
 			bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
+			bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
 			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}

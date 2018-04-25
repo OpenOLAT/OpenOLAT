@@ -189,7 +189,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				}
 				if(qtiService.needManualCorrection(testEntry)
 						|| IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
-					correctionButton = uifactory.addFormLink("correction.test.title", formLayout, Link.BUTTON); 
+					correctionButton = uifactory.addFormLink("correction.test.title", formLayout, Link.BUTTON);
+					correctionButton.setElementCssClass("o_sel_correction");
 					correctionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 				}
 				if(courseNode.getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, false)) {
