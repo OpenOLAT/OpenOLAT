@@ -54,10 +54,10 @@ public class TextInputCompareController extends FormBasicController implements C
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("wrappers", createWrappers(ureq));
+		flc.contextPut("wrappers", createWrappers());
 	}
 
-	private List<TextInputCompareWrapper> createWrappers(UserRequest ureq) {
+	private List<TextInputCompareWrapper> createWrappers() {
 		List<TextInputCompareWrapper> wrappers = new ArrayList<>();
 		for (CompareResponse compareResponse: compareResponses) {
 			if (isValid(compareResponse)) {

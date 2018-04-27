@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -65,7 +66,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_slider.name(), SliderType.continuous.name() };
 	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
-	private final String[] showRespomseKey = new String[] { "show.no.response" };
+	private final String[] showResponseKey = new String[] { "show.no.response" };
 	
 	private List<StepLabelColumn> stepLabels = new ArrayList<>();
 	private List<SliderRow> sliders = new ArrayList<>();
@@ -152,9 +153,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		
 		noAnswerEl = uifactory.addCheckboxesVertical("no.response." + count.incrementAndGet(),
-				"rubric.no.response.enabled", settingsLayout, showRespomseKey,
+				"rubric.no.response.enabled", settingsLayout, showResponseKey,
 				new String[] { translate("rubric.no.response.enabled.show") }, 1);
-		noAnswerEl.select(showRespomseKey[0], rubric.isNoResponseEnabled());
+		noAnswerEl.select(showResponseKey[0], rubric.isNoResponseEnabled());
+		noAnswerEl.setEnabled(!restrictedEdit);
 		
 		updateTypeSettings();
 		updateSteps();
@@ -229,6 +231,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 	}
 	
+	private void updateSliders() {
+		for (SliderRow row: sliders) {
+			row.setSliderEl(createSliderEl());
+		}
+	}
+	
 	private SliderRow forgeSliderRow(Slider slider) {
 		String startLabel = slider.getStartLabel();
 		TextElement startLabelEl = uifactory.addTextElement("start.label." + count.incrementAndGet(), "start.label", 256, startLabel, flc);
@@ -237,7 +245,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		TextElement endLabelEl = uifactory.addTextElement("end.label." + count.incrementAndGet(), "end.label", 256, endLabel, flc);
 		endLabelEl.setDomReplacementWrapperRequired(false);
 
-		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl);
+		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, createSliderEl());
 		if(!restrictedEdit) {
 			FormLink deleteButton = uifactory.addFormLink("del." + count.incrementAndGet(), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 			deleteButton.setDomReplacementWrapperRequired(false);
@@ -247,6 +255,55 @@ public class RubricEditorController extends FormBasicController implements PageE
 			flc.contextPut("deleteButtons", Boolean.TRUE);
 		}
 		return row;
+	}
+
+	private FormItem createSliderEl() {
+		SliderType selectedType = SliderType.valueOf(sliderTypeEl.getSelectedKey());
+		if (selectedType == SliderType.discrete) {
+			return createRadioEl();
+		} else if (selectedType == SliderType.discrete_slider) {
+			return createDescreteSliderEl();
+		}
+		return createContinousSliderEl();
+	}
+
+	private FormItem createRadioEl() {
+		int start = 1;
+		int steps = Integer.parseInt(stepsEl.getSelectedKey());
+		int end = 1 + steps;
+		
+		double[] theSteps = new double[steps];
+		String[] theKeys = new String[steps];
+		String[] theValues = new String[steps];
+		
+		double step = (end - start + 1) / (double)steps;
+		for(int i=0; i<steps; i++) {
+			theSteps[i] = start + (i * step);
+			theKeys[i] = Double.toString(theSteps[i]);
+			theValues[i] = "";
+		}
+
+		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
+		radioEl.setAllowNoSelection(true);
+		radioEl.setDomReplacementWrapperRequired(false);
+		int widthInPercent = Math.round(100.0f / steps) - 1;
+		radioEl.setWidthInPercent(widthInPercent, true);
+		return radioEl;
+	}
+
+	private FormItem createDescreteSliderEl() {
+		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
+		sliderEl.setDomReplacementWrapperRequired(false);
+		sliderEl.setMinValue(1);
+		sliderEl.setMaxValue( Integer.parseInt(stepsEl.getSelectedKey()));
+		sliderEl.setStep(1);
+		return sliderEl;
+	}
+
+	private FormItem createContinousSliderEl() {
+		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
+		sliderEl.setDomReplacementWrapperRequired(false);
+		return sliderEl;
 	}
 
 	@Override
@@ -272,10 +329,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 		} else if(sliderTypeEl == source) {
 			updateTypeSettings();
 			updateSteps();
+			updateSliders();
 		} else if(stepsEl == source) {
 			updateSteps();
+			updateSliders();
 		} else if (scaleTypeEl == source) {
 			updateSteps();
+			updateSliders();
 		} else if(saveButton == source) {
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
@@ -440,13 +500,15 @@ public class RubricEditorController extends FormBasicController implements PageE
 		private final TextElement startLabelEl;
 		private final TextElement endLabelEl;
 		private FormLink deleteButton;
+		private FormItem sliderEl;
 		
 		private final Slider slider;
 		
-		public SliderRow(Slider slider, TextElement startLabelEl, TextElement endLabelEl) {
+		public SliderRow(Slider slider, TextElement startLabelEl, TextElement endLabelEl, FormItem sliderEl) {
 			this.slider = slider;
 			this.startLabelEl = startLabelEl;
 			this.endLabelEl = endLabelEl;
+			this.sliderEl = sliderEl;
 		}
 		
 		public Slider getSlider() {
@@ -468,5 +530,28 @@ public class RubricEditorController extends FormBasicController implements PageE
 		public void setDeleteButton(FormLink deleteButton) {
 			this.deleteButton = deleteButton;
 		}
+		
+		public FormItem getSliderEl() {
+			return sliderEl;
+		}
+
+		public void setSliderEl(FormItem sliderEl) {
+			this.sliderEl = sliderEl;
+		}
+		
+		public String getSliderCss() {
+			if (sliderEl instanceof SingleSelection) {
+				return "o_slider_descrete_radio";
+			}
+			if (sliderEl instanceof SliderElement) {
+				SliderElement sliderElement = (SliderElement) sliderEl;
+				if (sliderElement.getStep() == 0) {
+					return "o_slider_continous";
+				}
+				return "o_slider_descrete";
+			}
+			return "";
+		}
+		
 	}
 }

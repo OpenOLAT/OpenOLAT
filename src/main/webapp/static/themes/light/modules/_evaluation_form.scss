@@ -77,11 +77,17 @@
 				}
 				div.radio {
 					background-color: $o-evaluation-step-background-color;
+					margin-top: 0px;
 					display:inline-block;
 					text-align: center;
 					&:hover {
 						background-color: $o-evaluation-slider-hover-background-color;
 					}
+				}
+			}
+			.o_evaluation_no_response {
+				div.checkbox {
+					margin-top: 0px;
 				}
 			}
 		}
@@ -201,6 +207,30 @@
 		input {
 			width: 100%;
 		}
+	}
+	
+	.o_slider_descrete_radio {
+		div.radio {
+			background-color: $o-evaluation-step-background-color;
+			padding-top: 5px;
+			padding-bottom: -5px;
+			margin-top: 0px;
+			display:inline-block;
+			text-align: center;
+			&:hover {
+				background-color: $o-evaluation-slider-hover-background-color;
+			}
+		}
+	}
+	
+	.o_slider_continous {
+		padding-top: 10px;
+		padding-bottom: -10px;
+	}
+	
+	.o_slider_descrete {
+		padding-top: 5px;
+		padding-bottom: -5px;
 	}
 	
 	.o_evaluation_example {

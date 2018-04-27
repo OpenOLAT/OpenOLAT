@@ -54,6 +54,12 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  *
  */
 public class MultipleChoiceHandler  implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+	
+	private final boolean restrictedEdit;
+	
+	public MultipleChoiceHandler(boolean restrictedEdit) {
+		this.restrictedEdit = restrictedEdit;
+	}
 
 	@Override
 	public String getType() {
@@ -80,7 +86,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MultipleChoice) {
 			MultipleChoice multipleChoice = (MultipleChoice) element;
-			return new MultipleChoiceEditorController(ureq, wControl, multipleChoice);
+			return new MultipleChoiceEditorController(ureq, wControl, multipleChoice, restrictedEdit);
 		}
 		return null;
 	}

@@ -132,16 +132,16 @@ public class EvaluationFormEditorController extends BasicController {
 			RubricHandler rubricHandler = new RubricHandler(restrictedEdit);
 			handlers.add(rubricHandler);
 			// handler for text input
-			TextInputHandler textInputHandler = new TextInputHandler();
+			TextInputHandler textInputHandler = new TextInputHandler(restrictedEdit);
 			handlers.add(textInputHandler);
 			// handler for file upload
-			FileUploadHandler fileUploadhandler = new FileUploadHandler();
+			FileUploadHandler fileUploadhandler = new FileUploadHandler(restrictedEdit);
 			handlers.add(fileUploadhandler);
 			// handler for single choice
-			SingleChoiceHandler singleChoiceHandler = new SingleChoiceHandler();
+			SingleChoiceHandler singleChoiceHandler = new SingleChoiceHandler(restrictedEdit);
 			handlers.add(singleChoiceHandler);
 			// handler for multiple choice
-			MultipleChoiceHandler multipleChoiceHandler = new MultipleChoiceHandler();
+			MultipleChoiceHandler multipleChoiceHandler = new MultipleChoiceHandler(restrictedEdit);
 			handlers.add(multipleChoiceHandler);
 			
 			if(!restrictedEdit) {

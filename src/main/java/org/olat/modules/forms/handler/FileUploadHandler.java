@@ -55,6 +55,12 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  */
 public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 
+	private final boolean restrictedEdit;
+	
+	public FileUploadHandler(boolean restrictedEdit) {
+		this.restrictedEdit = restrictedEdit;
+	}
+	
 	@Override
 	public String getType() {
 		return "formfileupload";
@@ -79,7 +85,7 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof FileUpload) {
 			FileUpload fileUpload = (FileUpload) element;
-			return new FileUploadEditorController(ureq, wControl, fileUpload);
+			return new FileUploadEditorController(ureq, wControl, fileUpload, restrictedEdit);
 		}
 		return null;
 	}

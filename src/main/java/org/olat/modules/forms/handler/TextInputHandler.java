@@ -53,6 +53,12 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  */
 public class TextInputHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 	
+	private final boolean restrictedEdit;
+	
+	public TextInputHandler(boolean restrictedEdit) {
+		this.restrictedEdit = restrictedEdit;
+	}
+	
 	@Override
 	public String getType() {
 		return "formtextinput";
@@ -75,7 +81,7 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TextInput) {
-			return new TextInputEditorController(ureq, wControl, (TextInput)element);
+			return new TextInputEditorController(ureq, wControl, (TextInput)element, restrictedEdit);
 		}
 		return null;
 	}

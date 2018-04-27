@@ -73,10 +73,12 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	private final MultipleChoice multipleChoice;
 	private boolean editMode = false;
+	private final boolean restrictedEdit;
 	
-	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice) {
+	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice, boolean restrictedEdit) {
 		super(ureq, wControl, "multiple_choice_editor");
 		this.multipleChoice = multipleChoice;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 		setEditMode(editMode);
 	}
@@ -109,6 +111,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 				settingsCont, WITH_OTHER_KEYS, new String[] { translate(WITH_OTHER_KEY) }, null, null, 1);
 		withOthersEl.select(WITH_OTHER_KEY, multipleChoice.isWithOthers());
 		withOthersEl.addActionListener(FormEvent.ONCHANGE);
+		withOthersEl.setEnabled(!restrictedEdit);
 		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -123,8 +126,10 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.value));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.edit, CMD_EDIT,
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit")));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.delete, CMD_DELETE,
-				new StaticFlexiCellRenderer("", CMD_DELETE, "o_icon o_icon-lg o_icon_delete_item")));
+		if (!restrictedEdit) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.delete, CMD_DELETE,
+					new StaticFlexiCellRenderer("", CMD_DELETE, "o_icon o_icon-lg o_icon_delete_item")));
+		}
 		
 		dataModel = new ChoiceDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "choices", dataModel, getTranslator(), settingsCont);
@@ -135,6 +140,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		
 		addChoiceEl = uifactory.addFormLink("choice.add", flc, Link.BUTTON);
 		addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
+		addChoiceEl.setVisible(!restrictedEdit);
 	}
 	
 	private void loadModel() {

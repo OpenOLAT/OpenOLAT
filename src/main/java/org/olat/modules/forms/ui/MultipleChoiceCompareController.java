@@ -54,10 +54,10 @@ public class MultipleChoiceCompareController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("wrappers", createWrappers(ureq));
+		flc.contextPut("wrappers", createWrappers());
 	}
 
-	private List<MultipleChoiceCompareWrapper> createWrappers(UserRequest ureq) {
+	private List<MultipleChoiceCompareWrapper> createWrappers() {
 		List<MultipleChoiceCompareWrapper> wrappers = new ArrayList<>();
 		for (CompareResponse compareResponse: compareResponses) {
 			if (isValid(compareResponse)) {

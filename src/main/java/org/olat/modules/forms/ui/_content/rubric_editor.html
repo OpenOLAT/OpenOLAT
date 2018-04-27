@@ -26,7 +26,7 @@
 	#foreach($slider in $sliders)
 	<div class="row o_slider_editor #if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton)) o_slider_editor_delete #end">
 		<div class="col-sm-3">$r.render($slider.startLabelEl)</div>
-		<div class="col-sm-6">.....</div>
+		<div class="col-sm-6 $slider.sliderCss">$r.render($slider.sliderEl)</div>
 		<div class="col-sm-3">$r.render($slider.endLabelEl)</div>
 		#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))<div class="o_slider_editor_delete_button">$r.render($slider.deleteButton)</div>#end
 	</div>

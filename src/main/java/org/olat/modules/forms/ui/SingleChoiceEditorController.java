@@ -73,10 +73,12 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	private final SingleChoice singleChoice;
 	private boolean editMode = false;
+	private boolean restrictedEdit;
 	
-	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice) {
+	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, boolean restrictedEdit) {
 		super(ureq, wControl, "single_choice_editor");
 		this.singleChoice = singleChoice;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 		setEditMode(editMode);
 	}
@@ -125,8 +127,10 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.value));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.edit, CMD_EDIT,
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit")));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.delete, CMD_DELETE,
-				new StaticFlexiCellRenderer("", CMD_DELETE, "o_icon o_icon-lg o_icon_delete_item")));
+		if (!restrictedEdit) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.delete, CMD_DELETE,
+					new StaticFlexiCellRenderer("", CMD_DELETE, "o_icon o_icon-lg o_icon_delete_item")));
+		}
 		
 		dataModel = new ChoiceDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "choices", dataModel, getTranslator(), settingsCont);
@@ -135,8 +139,10 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		tableEl.setLabel("choice.values", null);
 		loadModel();
 		
-		addChoiceEl = uifactory.addFormLink("choice.add", flc, Link.BUTTON);
-		addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
+		if (!restrictedEdit) {
+			addChoiceEl = uifactory.addFormLink("choice.add", flc, Link.BUTTON);
+			addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
+		}
 	}
 	
 	private void loadModel() {

@@ -69,10 +69,12 @@ public class TextInputEditorController extends FormBasicController implements Pa
 	
 	private final TextInput textInput;
 	private boolean editMode = false;
+	private boolean restrictedEdit;
 	
-	public TextInputEditorController(UserRequest ureq, WindowControl wControl, TextInput textInput) {
+	public TextInputEditorController(UserRequest ureq, WindowControl wControl, TextInput textInput, boolean restrictedEdit) {
 		super(ureq, wControl, "textinput_editor");
 		this.textInput = textInput;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 	
@@ -102,12 +104,14 @@ public class TextInputEditorController extends FormBasicController implements Pa
 		String selectedNumericKey = textInput.isNumeric()? NUMERIC_NUMERIC_KEY: NUMERIC_TEXT_KEY;
 		numericEl.select(selectedNumericKey, true);
 		numericEl.addActionListener(FormEvent.ONCHANGE);
+		numericEl.setEnabled(!restrictedEdit);
 		
 		singleRowEl = uifactory.addDropdownSingleselect("textinput_row_" + CodeHelper.getRAMUniqueID(),
 				"textinput.rows.mode", settingsCont, ROW_OPTIONS, translateKeys(ROW_OPTIONS));
 		String selectedRowsKey = textInput.isSingleRow()? SINGLE_ROW_KEY: MULTIPLE_ROWS_KEY;
 		singleRowEl.select(selectedRowsKey, true);
 		singleRowEl.addActionListener(FormEvent.ONCHANGE);
+		singleRowEl.setEnabled(!restrictedEdit);
 		
 		String rows = "";
 		if(textInput.getRows() > 0) {

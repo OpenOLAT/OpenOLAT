@@ -54,10 +54,10 @@ public class SingleChoiceCompareController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("wrappers", createWrappers(ureq));
+		flc.contextPut("wrappers", createWrappers());
 	}
 
-	private List<SingleChoiceCompareWrapper> createWrappers(UserRequest ureq) {
+	private List<SingleChoiceCompareWrapper> createWrappers() {
 		List<SingleChoiceCompareWrapper> wrappers = new ArrayList<>();
 		for (CompareResponse compareResponse: compareResponses) {
 			if (isValid(compareResponse)) {

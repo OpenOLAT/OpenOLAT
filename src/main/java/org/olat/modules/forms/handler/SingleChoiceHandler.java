@@ -56,6 +56,12 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  *
  */
 public class SingleChoiceHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+	
+	private final boolean restrictedEdit;
+	
+	public SingleChoiceHandler(boolean restrictedEdit) {
+		this.restrictedEdit = restrictedEdit;
+	}
 
 	@Override
 	public String getType() {
@@ -82,7 +88,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
-			return new SingleChoiceEditorController(ureq, wControl, singleChoice);
+			return new SingleChoiceEditorController(ureq, wControl, singleChoice, restrictedEdit);
 		}
 		return null;
 	}

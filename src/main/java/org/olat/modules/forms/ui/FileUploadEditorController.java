@@ -52,14 +52,16 @@ public class FileUploadEditorController extends FormBasicController implements P
 	
 	private final FileUpload fileUpload;
 	private boolean editMode = false;
+	private final boolean restrictedEdit;
 	
 	@Autowired
 	private EvaluationFormsModule evaluationFormsModule;
 
 
-	public FileUploadEditorController(UserRequest ureq, WindowControl wControl, FileUpload fileUpload) {
+	public FileUploadEditorController(UserRequest ureq, WindowControl wControl, FileUpload fileUpload, boolean restrictedEdit) {
 		super(ureq, wControl, "file_upload_editor");
 		this.fileUpload = fileUpload;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 		setEditMode(editMode);
 	}
@@ -100,6 +102,7 @@ public class FileUploadEditorController extends FormBasicController implements P
 				MimeTypeSetFactory.getKeys(), MimeTypeSetFactory.getValues(getTranslator()), null);
 		mimeTypesEl.select(getInitialMimeTypeSetKey(), true);
 		mimeTypesEl.addActionListener(FormEvent.ONCHANGE);
+		mimeTypesEl.setEnabled(!restrictedEdit);
 	}
 
 	private String getInitialMaxFileUploadLimitKey(String[] orderedKeys) {
