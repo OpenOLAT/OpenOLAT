@@ -295,6 +295,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				stackPanel.popController(correctionCtrl);
 				cleanUp();
+			} else if(event == Event.CHANGED_EVENT) {
+				updateModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(correctionCtrl);
 				cleanUp();
@@ -367,7 +370,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		lastSessions.put(assessedIdentity, session);
 		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 		testSessionStates.put(assessedIdentity, testSessionState);
-		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, subIdent, testEntry,
+		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
 		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity);
 		listenTo(correctionCtrl);

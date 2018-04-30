@@ -118,6 +118,8 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		if(itemCtrl == source) {
 			if(event instanceof NextAssessmentItemEvent) {
 				doNext(ureq);
+			} else if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}

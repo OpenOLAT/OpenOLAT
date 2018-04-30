@@ -256,6 +256,8 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				stackPanel.popController(identityItemCtrl);
 				SelectAssessmentItemEvent saie = (SelectAssessmentItemEvent)event;
 				doSelect(ureq, (CorrectionIdentityAssessmentItemRow)saie.getListEntry());
+			} else if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);

@@ -108,7 +108,7 @@ public class CorrectionOverviewController extends BasicController implements Too
 		}
 
 		List<Identity> assessedIdentities = getAssessedIdentities();
-		model = new CorrectionOverviewModel(courseEntry, courseNode.getIdent(), testEntry,
+		model = new CorrectionOverviewModel(courseEntry, courseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, assessedIdentities);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
@@ -155,6 +155,8 @@ public class CorrectionOverviewController extends BasicController implements Too
 		if(assessmentItemsCtrl == source || identityListCtrl == source) {
 			if(event instanceof CompleteAssessmentTestSessionEvent) {
 				fireEvent(ureq, event);
+			} else if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 	}
@@ -174,6 +176,8 @@ public class CorrectionOverviewController extends BasicController implements Too
 		if(assessmentItemsCtrl == null) {
 			assessmentItemsCtrl = new CorrectionAssessmentItemListController(ureq, getWindowControl(), stackPanel, model);
 			listenTo(assessmentItemsCtrl);
+		} else {
+			assessmentItemsCtrl.reloadModel();
 		}
 		stackPanel.popUpToController(this);
 		mainPanel.setContent(assessmentItemsCtrl.getInitialComponent());
@@ -183,6 +187,8 @@ public class CorrectionOverviewController extends BasicController implements Too
 		if(identityListCtrl == null) {
 			identityListCtrl = new CorrectionIdentityListController(ureq, getWindowControl(), stackPanel, model);
 			listenTo(identityListCtrl);
+		} else {
+			identityListCtrl.reloadModel();
 		}
 		stackPanel.popUpToController(this);
 		mainPanel.setContent(identityListCtrl.getInitialComponent());

@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.assessment;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
@@ -45,13 +51,16 @@ import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
@@ -151,6 +160,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doSave();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 		identityInteractionsCtrl.updateStatus();
 	}
 
@@ -163,6 +173,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveNextQuestionButton == source) {
 			doSave();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 			fireEvent(ureq, new NextAssessmentItemEvent());
 		} else {
 			super.formInnerEvent(ureq, source, event);
@@ -193,8 +204,36 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			candidateSession = qtiService.recalculateAssessmentTestSessionScores(candidateSession.getKey());
 			itemCorrection.setTestSession(candidateSession);
 			model.updateLastSession(itemCorrection.getAssessedIdentity(), candidateSession);
+			
+			if(model.getCourseNode() != null && model.getCourseEnvironment() != null) {
+				doUpdateCourseNode(candidateSession, model.getCourseNode(), model.getCourseEnvironment());
+			}
 		} catch(IOException e) {
 			logError("", e);
 		}
+	}
+	
+	private void doUpdateCourseNode(AssessmentTestSession testSession, IQTESTCourseNode courseNode, CourseEnvironment courseEnv) {
+		if(testSession == null) return;
+		
+		AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+
+		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+				.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
+		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		
+		BigDecimal finalScore = testSession.getFinalScore();
+		Float score = finalScore == null ? null : finalScore.floatValue();
+		Boolean passed = scoreEval.getPassed();
+		if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
+			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+			passed = Boolean.valueOf(calculated);
+		}
+		
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
+				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
+		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 	}
 }
