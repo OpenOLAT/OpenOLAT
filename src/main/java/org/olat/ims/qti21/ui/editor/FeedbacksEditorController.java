@@ -43,8 +43,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
@@ -52,6 +50,7 @@ import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder.ModalFeedbackType;
 import org.olat.ims.qti21.model.xml.ModalFeedbackCondition;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback.Answer;
+import org.olat.ims.qti21.model.xml.TestFeedbackBuilder;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -287,13 +286,13 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		for(RuledFeedbackForm additionalForm:additionalForms) {
 			allOk &= additionalForm.validateFormLogic();
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -353,8 +352,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		}
 
 		public boolean isEmpty() {
-			String val = textEl.getValue();
-			return !StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(val));
+			return TestFeedbackBuilder.isEmpty(textEl.getValue());
 		}
 		
 		public boolean isVisible() {
@@ -368,7 +366,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		public void commit() {
 			String title = titleEl.getValue();
 			String text = textEl.getRawValue();
-			if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(text))) {
+			if(!TestFeedbackBuilder.isEmpty(text) ) {
 				feedbackBuilder = itemBuilder.getFeedbackBuilder(feedbackType);
 				if(feedbackBuilder == null) {
 					feedbackBuilder = itemBuilder.createFeedbackBuilder(feedbackType);
@@ -496,7 +494,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				feedbackConditions.add(condition.commit());
 			}
 			
-			if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(text)) && feedbackConditions.size() > 0) {
+			if(!TestFeedbackBuilder.isEmpty(text) && !feedbackConditions.isEmpty()) {
 				if(feedbackBuilder == null) {
 					feedbackBuilder = itemBuilder.createFeedbackBuilder(feedbackType);
 				}
@@ -735,13 +733,11 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				textValueEl.setVisible(!responseVar);
 				dropDownValueEl.setVisible(responseVar);
 				
-				String[] answerKeys = new String[] {};
-				String[] answerValues = new String[] {};
 				if(itemBuilder instanceof ResponseIdentifierForFeedback) {
 					ResponseIdentifierForFeedback responseFeedback = (ResponseIdentifierForFeedback)itemBuilder;
 					List<Answer> answers = responseFeedback.getAnswers();
-					answerKeys = new String[answers.size()];
-					answerValues = new String[answers.size()];
+					String[] answerKeys = new String[answers.size()];
+					String[] answerValues = new String[answers.size()];
 					
 					for(int i=0; i<answers.size(); i++) {
 						Answer answer = answers.get(i);
