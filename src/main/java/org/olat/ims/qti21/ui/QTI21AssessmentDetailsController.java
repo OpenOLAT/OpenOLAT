@@ -369,7 +369,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(entry, subIdent, testEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, session, assessedIdentity);
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}

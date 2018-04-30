@@ -108,7 +108,6 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private final boolean saveEnabled;
 	private final Identity assessedIdentity;
 	private final CorrectionOverviewModel model;
-	private AssessmentTestSession candidateSession;
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -116,13 +115,12 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private UserManager userManager;
 	
 	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CorrectionOverviewModel model, AssessmentTestSession candidateSession, Identity assessedIdentity) {
+			CorrectionOverviewModel model, Identity assessedIdentity) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		
 		this.stackPanel = stackPanel;
 		this.model = model;
 		this.assessedIdentity = assessedIdentity;
-		this.candidateSession = candidateSession;
 		saveEnabled = true;
 		title = userManager.getUserDisplayName(assessedIdentity);
 		
@@ -137,7 +135,6 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.model = model;
 		this.title = title;
 		this.assessedIdentity = assessedIdentity;
-		candidateSession = model.getLastSessions().get(assessedIdentity);
 		saveEnabled = false;
 		
 		initForm(ureq);
@@ -145,7 +142,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	}
 	
 	public AssessmentTestSession getAssessmentTestSession() {
-		return candidateSession;
+		return model.getLastSessions().get(assessedIdentity);
 	}
 
 	@Override
@@ -188,6 +185,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 			identifierToRefs.put(itemRef.getIdentifier(), itemRef);
 		}
 		
+		AssessmentTestSession candidateSession = getAssessmentTestSession();
 		List<AssessmentItemSession> allItemSessions = qtiService.getAssessmentItemSessions(candidateSession);
 		Map<String, AssessmentItemSession> identifierToItemSessions = new HashMap<>();
 		for(AssessmentItemSession itemSession:allItemSessions) {
@@ -285,6 +283,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				}
 			}
 		} else if(saveButton == source) {
+			AssessmentTestSession candidateSession = getAssessmentTestSession();
 			List<AssessmentTestSession> sessions = Collections.singletonList(candidateSession);
 			AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
 			fireEvent(ureq, new CompleteAssessmentTestSessionEvent(sessions, assessmentTest, AssessmentEntryStatus.done));
@@ -297,6 +296,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		doUnlock();
 
 		AssessmentItemRef itemRef = row.getItemRef();
+		AssessmentTestSession candidateSession = getAssessmentTestSession();
 		TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
 		List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
 		
