@@ -70,13 +70,13 @@ public class BindersPage {
 		return new BinderPage(browser);
 	}
 	
-	public BindersPage switchTableView() {
-		By tableViewBy = By.xpath("//a[i[contains(@class,'o_icon o_icon_table o_icon-lg')]]");
+	public BindersPage switchDeletedBindersTableView() {
+		By tableViewBy = By.xpath("//div[contains(@class,'o_table_tools')]/div/a[contains(@class,'o_sel_table')]");
 		browser.findElement(tableViewBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		By classicViewBy = By.cssSelector(".o_rendertype_classic");
-		OOGraphene.waitElement(classicViewBy, 5, browser);
+		By classicViewBy = By.cssSelector(".o_portfolio_deleted_listing.o_rendertype_classic");
+		OOGraphene.waitElement(classicViewBy, browser);
 		return this;
 	}
 	

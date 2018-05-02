@@ -31,6 +31,7 @@ import java.util.Map;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -108,6 +110,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private ConfirmExtraTimeController extraTimeCtrl;
 	private ValidationXmlSignatureController validationCtrl;
 	private CorrectionOverviewController correctionIdentitiesCtrl;
+	
+	private boolean modelDirty = false;
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -119,6 +123,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			RepositoryEntry courseEntry, BusinessGroup group, IQTESTCourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+		if(stackPanel != null) {
+			stackPanel.addListener(this);
+		}
 	}
 	
 	@Override
@@ -241,6 +248,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			boolean enabled = isTestRunning();
 			pullButton.setEnabled(enabled);
 		}
+		
+		this.modelDirty = true;
 	}
 	
 	/**
@@ -268,7 +277,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 		return identityToExtraTime;	
 	}
-	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(modelDirty && pe.getController() == correctionIdentitiesCtrl) {
+					loadModel(ureq);
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
@@ -290,7 +311,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
 				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
 				loadModel(ureq);	
-				stackPanel.popController(correctionIdentitiesCtrl);		
+				stackPanel.popController(correctionIdentitiesCtrl);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event == Event.CHANGED_EVENT) {
+				modelDirty = true;
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(source instanceof QTI21IdentityListCourseNodeToolsController) {

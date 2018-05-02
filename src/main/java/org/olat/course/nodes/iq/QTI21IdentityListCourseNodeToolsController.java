@@ -236,9 +236,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		lastSessionMap.put(assessedIdentity, lastSession);
 		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 		testSessionStates.put(assessedIdentity, testSessionState);
-		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode.getIdent(), testEntry,
+		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates);
-		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, lastSession, assessedIdentity);
+		correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel, model, assessedIdentity);
 		listenTo(correctionCtrl);
 		stackPanel.pushController(translate("tool.correction"), correctionCtrl);
 	}

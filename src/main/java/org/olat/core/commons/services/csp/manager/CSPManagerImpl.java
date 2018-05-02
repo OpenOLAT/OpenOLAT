@@ -49,28 +49,35 @@ public class CSPManagerImpl implements CSPManager {
 	public CSPLog log(CSPReport report, Identity identity) {
 		CSPLogImpl log = new CSPLogImpl();
 		log.setCreationDate(new Date());
-		log.setBlockedUri(report.getBlockedUri());
+		log.setBlockedUri(cut(report.getBlockedUri(), 1024));
 		if(StringHelper.isLong(report.getColumnNumber())) {
 			log.setColumnNumber(Long.parseLong(report.getColumnNumber()));
 		}
 		log.setDisposition(report.getDisposition());
-		log.setDocumentUri(report.getDocumentUri());
+		log.setDocumentUri(cut(report.getDocumentUri(), 1024));
 		log.setEffectiveDirective(report.getEffectiveDirective());
 		if(StringHelper.isLong(report.getLineNumber())) {
 			log.setLineNumber(Long.parseLong(report.getLineNumber()));
 		}
 		log.setOriginalPolicy(report.getOriginalPolicy());
-		log.setReferrer(report.getReferrer());
+		log.setReferrer(cut(report.getReferrer(), 1024));
 		log.setScriptSample(report.getScriptSample());
-		log.setSourceFile(report.getSourceFile());
-		log.setStatusCode(report.getStatusCode());
-		log.setViolatedDirective(report.getViolatedDirective());
+		log.setSourceFile(cut(report.getSourceFile(), 1024));
+		log.setStatusCode(cut(report.getStatusCode(), 1024));
+		log.setViolatedDirective(cut(report.getViolatedDirective(), 1024));
 		if(identity != null) {
 			log.setIdentityKey(identity.getKey());
 		}
 		
 		dbInstance.getCurrentEntityManager().persist(log);
 		return log;
+	}
+	
+	private String cut(String value, int length) {
+		if(StringHelper.containsNonWhitespace(value) && value.length() > length) {
+			value = value.substring(0, length - 10);
+		}
+		return value;
 	}
 
 	@Override

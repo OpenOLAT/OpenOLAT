@@ -331,6 +331,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.NotificationsSubscribersTest.class,
 	org.olat.restapi.RepositoryEntryLifecycleTest.class,
 	org.olat.restapi.RepositoryEntriesTest.class,
+	org.olat.restapi.RepositoryEntryResourceTest.class,
 	org.olat.restapi.RestApiLoginFilterTest.class,
 	org.olat.restapi.UserAuthenticationMgmtTest.class,
 	org.olat.restapi.UserFoldersTest.class,

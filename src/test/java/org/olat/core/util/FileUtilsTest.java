@@ -37,7 +37,6 @@ public class FileUtilsTest {
 		
 		String normalizedAccents = FileUtils.normalizeFilename("Dépéchons-nous!");
 		Assert.assertEquals(normalizedAccents, "Depechonsnous");
-		
 	}
 	
 	@Test
@@ -46,7 +45,32 @@ public class FileUtilsTest {
 		String normalized = FileUtils.normalizeFilename(smorrebrod);
 		Assert.assertEquals(normalized, "Smorrebrod");
 	}
+	
+	@Test
+	public void cleanedFilename() {
+		assertCleanedFilename("test.xml", "test.xml");
+		assertCleanedFilename("abc/abc", "abc_abc");
+		assertCleanedFilename("abc\\abc", "abc_abc");
+		assertCleanedFilename("qwe\nqwe", "qwe_qwe");
+		assertCleanedFilename("wer\rwer", "wer_wer");
+		assertCleanedFilename("ert\tert", "ert_ert");
+		assertCleanedFilename("rtz\frtz", "rtz_rtz");
+		assertCleanedFilename("tzu'tzu", "tzu'tzu");
+		assertCleanedFilename("zui?zui", "zui_zui");
+		assertCleanedFilename("uio*uio", "uio_uio");
+		assertCleanedFilename("asd<asd", "asd_asd");
+		assertCleanedFilename("sdf>sdf", "sdf_sdf");
+		assertCleanedFilename("dfg|dfg", "dfg_dfg");
+		assertCleanedFilename("fgh\"fgh", "fgh_fgh");
+		assertCleanedFilename("fgh:ghj", "fgh_ghj");
+		assertCleanedFilename("fgh,ghj", "fgh_ghj");
+		assertCleanedFilename("fgh=ghj", "fgh_ghj");
+	}
 
+	private void assertCleanedFilename(String raw, String expected) {
+		String cleaned = FileUtils.cleanFilename(raw);
+		Assert.assertEquals(expected, cleaned);
+	}
 
 	@Test
 	public void testMetaFiles() {
@@ -64,7 +88,6 @@ public class FileUtilsTest {
 
 		Assert.assertTrue(FileUtils.isMetaFilename("._"));
 		Assert.assertTrue(FileUtils.isMetaFilename("._gugus"));
-
 	}
 
 }

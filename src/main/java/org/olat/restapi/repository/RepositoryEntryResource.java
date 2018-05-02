@@ -26,16 +26,19 @@ package org.olat.restapi.repository;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -558,42 +561,65 @@ public class RepositoryEntryResource {
    * @param request The HTTP request
    * @return
    */
-  @GET
-  @Path("file")
-  @Produces({"application/zip", MediaType.APPLICATION_OCTET_STREAM})
-  public Response getRepoFileById(@PathParam("repoEntryKey")String repoEntryKey, @Context HttpServletRequest request) {
-    RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-    if(re == null) return Response.serverError().status(Status.NOT_FOUND).build();
+	@GET
+	@Path("file")
+	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
+	public Response getRepoFileById(@PathParam("repoEntryKey") String repoEntryKey,
+			@Context HttpServletRequest request, @Context HttpServletResponse response) {
+		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+		if (re == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 
-    RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-    if(typeToDownload == null) return Response.serverError().status(Status.NOT_FOUND).build();
-    
-    OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
-    if(ores == null) return Response.serverError().status(Status.NOT_FOUND).build();
+		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+		if (typeToDownload == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 
-    Identity identity = getIdentity(request);
-    boolean isAuthor = RestSecurityHelper.isAuthor(request);
-    boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity, re);
-    if(!(isAuthor | isOwner)) return Response.serverError().status(Status.UNAUTHORIZED).build();
-    boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
-    if(!canDownload) return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
+		if (ores == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 
-    boolean isAlreadyLocked = typeToDownload.isLocked(ores);
-    LockResult lockResult = null;
-    try {
-      lockResult = typeToDownload.acquireLock(ores, identity);
-      if(lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
-        MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
-        if(mr != null) {
-        	repositoryService.incrementDownloadCounter(re);
-          return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
-        } else return Response.serverError().status(Status.NO_CONTENT).build();
-      } else return Response.serverError().status(Status.CONFLICT).build();
-    }
-    finally {
-      if((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) typeToDownload.releaseLock(lockResult);
-    }
-  }
+		Identity identity = getIdentity(request);
+		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
+		if (isAdmin(request) || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re)) {
+			canDownload = true;
+		} else if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		if (!canDownload) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
+
+		boolean isAlreadyLocked = typeToDownload.isLocked(ores);
+		LockResult lockResult = null;
+		try {
+			lockResult = typeToDownload.acquireLock(ores, identity);
+			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
+				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
+				if (mr != null) {
+					repositoryService.incrementDownloadCounter(re);
+					InputStream in = mr.getInputStream();
+					if(in == null) {
+						mr.prepare(response);
+						return null;
+					} else {
+						return Response.ok(in).cacheControl(cc).build(); // success
+					}
+				} else {
+					return Response.serverError().status(Status.NO_CONTENT).build();
+				}
+			} else {
+				return Response.serverError().status(Status.CONFLICT).build();
+			}
+		} finally {
+			if ((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				typeToDownload.releaseLock(lockResult);
+			}
+		}
+	}
   
   @POST
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

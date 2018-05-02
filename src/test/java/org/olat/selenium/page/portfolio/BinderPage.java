@@ -118,6 +118,7 @@ public class BinderPage {
 		OOGraphene.waitElement(deleteBy, 5, browser);
 		browser.findElement(deleteBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTop(browser);
 		
 		//confirm check box
 		By confirmBoxBy = By.cssSelector("div.modal-body input[type='checkbox']");
@@ -126,6 +127,7 @@ public class BinderPage {
 		
 		By deleteButtonBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
 		browser.findElement(deleteButtonBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return new BindersPage(browser);
 	}
