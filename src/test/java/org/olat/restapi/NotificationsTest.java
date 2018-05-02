@@ -65,6 +65,8 @@ import org.olat.core.commons.services.notifications.restapi.vo.PublisherVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionInfoVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -96,6 +98,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class NotificationsTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(NotificationsTest.class);
 
 	private static Identity userSubscriberId;
 	private static Identity userAndForumSubscriberId;
@@ -487,11 +491,12 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	private String addFile(VFSContainer folder) throws IOException {
 		String filename = UUID.randomUUID().toString();
 		VFSLeaf file = folder.createChildLeaf(filename + ".jpg");
-		OutputStream out = file.getOutputStream(true);
-		InputStream in = UserMgmtTest.class.getResourceAsStream("portrait.jpg");
-		IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
-		IOUtils.closeQuietly(out);
+		try(OutputStream out = file.getOutputStream(true);
+			InputStream in = UserMgmtTest.class.getResourceAsStream("portrait.jpg");) {
+			IOUtils.copy(in, out);
+		} catch(Exception e) {
+			log.error("", e);
+		}
 		return file.getName();
 	}
 	
