@@ -81,6 +81,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -287,7 +288,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(event instanceof CompleteAssessmentTestSessionEvent) {
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
 				if(courseNode != null) {
-					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession(), catse.getAssessmentTest());
+					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession(), catse.getAssessmentTest(), AssessmentEntryStatus.done);
 				} else {
 					doUpdateEntry(correctionCtrl.getAssessmentTestSession());
 				}
@@ -377,7 +378,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		stackPanel.pushController(translate("correction"), correctionCtrl);
 	}
 	
-	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest) {
+	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest, AssessmentEntryStatus entryStatus) {
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
 		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
@@ -388,8 +389,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
 			passed = Boolean.valueOf(calculated);
 		}
+		AssessmentEntryStatus finalStatus = entryStatus == null ? scoreEval.getAssessmentStatus() : entryStatus;
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), 
+				finalStatus, null, scoreEval.getFullyAssessed(), 
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 	}

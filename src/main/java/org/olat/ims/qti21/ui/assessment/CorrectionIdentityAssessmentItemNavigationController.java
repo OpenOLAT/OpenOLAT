@@ -52,6 +52,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 public class CorrectionIdentityAssessmentItemNavigationController extends BasicController {
 	
 	private final Link backLink;
+	private final Link backOverviewButton;
 	private final Link nextItemLink;
 	private final Link previousItemLink;
 	private final VelocityContainer mainVC;
@@ -74,6 +75,9 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		backLink = LinkFactory.createLinkBack(mainVC, this);
 		backLink.setElementCssClass("o_correction_navigation_back");
 		mainVC.put("back", backLink);
+		backOverviewButton = LinkFactory.createButton("back.overview", mainVC, this);
+		backOverviewButton.setElementCssClass("o_correction_navigation_next");
+		mainVC.put("back.overview", backOverviewButton);
 		
 		previousItemLink = LinkFactory.createButton("previous.item", mainVC, this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon_previous");
@@ -118,10 +122,8 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		if(itemCtrl == source) {
 			if(event instanceof NextAssessmentItemEvent) {
 				doNext(ureq);
-			} else if(event == Event.CHANGED_EVENT) {
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event == Event.CANCELLED_EVENT) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
+			} else if(event == Event.CHANGED_EVENT || event == Event.CANCELLED_EVENT || event == Event.BACK_EVENT) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -129,7 +131,7 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(backLink == source) {
+		if(backLink == source || backOverviewButton == source) {
 			fireEvent(ureq, Event.BACK_EVENT);
 		} else if(previousItemLink == source) {
 			doPrevious(ureq);
@@ -154,8 +156,10 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		previousItemLink.setCustomDisplayText(previousText);
 		previousItemLink.setEnabled(previousEnable);
 		nextItemLink.setCustomDisplayText(nextText);
-		nextItemLink.setEnabled(nextEnable);
+		nextItemLink.setVisible(nextEnable);
+		backOverviewButton.setVisible(!nextEnable);
 		itemCtrl.updateNext(nextEnable);
+		mainVC.setDirty(true);//update the whole navigation bar
 	}
 
 	private void doPrevious(UserRequest ureq) {
@@ -178,7 +182,9 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 			AssessmentItemListEntry nextEntry = assessmentEntryList.get(index);
 			fireEvent(ureq, new SelectAssessmentItemEvent(nextEntry));
 		} else {
-			nextItemLink.setEnabled(false);
+			nextItemLink.setVisible(false);
+			backOverviewButton.setVisible(true);
+			mainVC.setDirty(true);//update the whole navigation bar
 		}
 	}
 	

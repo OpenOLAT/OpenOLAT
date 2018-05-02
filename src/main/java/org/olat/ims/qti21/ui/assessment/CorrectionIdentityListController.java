@@ -367,7 +367,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
 				true, translate("save.tests"));
-		cmc.activate();
 		listenTo(cmc);
 		cmc.activate();
 	}

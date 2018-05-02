@@ -44,6 +44,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -97,10 +98,14 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class CorrectionIdentityAssessmentItemListController extends FormBasicController {
 	
 	private FormLink saveButton;
+	private FormLink backLink;
+	private FormLink backOverviewButton;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	private CorrectionIdentityAssessmentItemTableModel tableModel;
-	
+
+	private CloseableModalController cmc;
+	private ConfirmSaveTestsController confirmSaveTestCtrl;
 	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
 
 	private final String title;
@@ -172,9 +177,11 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "corr-identity-assessment-item-list");
 		
+		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		if(saveEnabled) {
-			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-			saveButton = uifactory.addFormLink("save", formLayout, Link.BUTTON);
+			saveButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
+		} else {
+			backOverviewButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
 		}
 	}
 	
@@ -259,8 +266,23 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 			} else if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}
+		} else if(confirmSaveTestCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSaveTests(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmSaveTestCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmSaveTestCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -285,12 +307,39 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				}
 			}
 		} else if(saveButton == source) {
-			AssessmentTestSession candidateSession = getAssessmentTestSession();
-			List<AssessmentTestSession> sessions = Collections.singletonList(candidateSession);
-			AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
-			fireEvent(ureq, new CompleteAssessmentTestSessionEvent(sessions, assessmentTest, AssessmentEntryStatus.done));
+			doConfirmSaveTests(ureq);
+		} else if(backLink == source || backOverviewButton == source) {
+			fireEvent(ureq, Event.BACK_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	
+	private void doConfirmSaveTests(UserRequest ureq) {
+		if(confirmSaveTestCtrl != null) return;
+		
+		int notCorrectedQuestions = 0;
+		List<CorrectionIdentityAssessmentItemRow> rows = tableModel.getObjects();
+		for(CorrectionIdentityAssessmentItemRow row:rows) {
+			if(!row.isCorrected()) {
+				notCorrectedQuestions += 1;
+			}
+		}
+		
+		confirmSaveTestCtrl = new ConfirmSaveTestsController(ureq, getWindowControl(), notCorrectedQuestions > 0);
+		listenTo(confirmSaveTestCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
+				true, translate("save.tests"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSaveTests(UserRequest ureq) {
+		AssessmentTestSession candidateSession = getAssessmentTestSession();
+		List<AssessmentTestSession> sessions = Collections.singletonList(candidateSession);
+		AssessmentTest assessmentTest = model.getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
+		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(sessions, assessmentTest, AssessmentEntryStatus.done));
 	}
 	
 	private void doSelect(UserRequest ureq, CorrectionIdentityAssessmentItemRow row) {

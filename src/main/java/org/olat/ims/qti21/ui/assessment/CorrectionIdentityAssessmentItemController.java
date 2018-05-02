@@ -74,6 +74,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 public class CorrectionIdentityAssessmentItemController extends FormBasicController {
 	
 	private FormLink saveNextQuestionButton;
+	private FormLink saveBackOverviewButton;
 
 	private final String mapperUri;
 	private final URI assessmentObjectUri;
@@ -146,10 +147,12 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", formLayout);
 		saveNextQuestionButton = uifactory.addFormLink("save.next", formLayout, Link.BUTTON);
+		saveBackOverviewButton = uifactory.addFormLink("save.back", formLayout, Link.BUTTON);
 	}
 	
 	protected void updateNext(boolean nextEnable) {
-		saveNextQuestionButton.setEnabled(nextEnable);
+		saveNextQuestionButton.setVisible(nextEnable);
+		saveBackOverviewButton.setVisible(!nextEnable);
 	}
 	
 	@Override
@@ -175,6 +178,10 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			doSave();
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			fireEvent(ureq, new NextAssessmentItemEvent());
+		} else if(saveBackOverviewButton == source) {
+			doSave();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+			fireEvent(ureq, Event.BACK_EVENT);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
