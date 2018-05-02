@@ -989,7 +989,7 @@ public class PortfolioV2Test extends Deployments {
 		portfolio
 			.clickToolbarBack()
 			.openDeletedBinders()
-			.switchTableView()
+			.switchDeletedBindersTableView()
 			.restoreBinder(binderTitle);
 		
 		// move it to the trash again

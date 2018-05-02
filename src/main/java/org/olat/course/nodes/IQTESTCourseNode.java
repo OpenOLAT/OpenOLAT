@@ -104,6 +104,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -229,11 +230,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
 				timeLimit = true;
 			} else {
-				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
-						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 					timeLimit = true;
 				}
 			}
@@ -257,16 +255,29 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
 				timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
 			} else {
-				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
-						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 					timeLimit = assessmentTest.getTimeLimits().getMaximum().intValue();
 				}
 			}
 		}
 		return timeLimit;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public AssessmentTest loadAssessmentTest(RepositoryEntry testEntry) {
+		if(testEntry == null) return null;
+		
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+				.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		if(resolvedAssessmentTest != null) {
+			return resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		}
+		return null;
 	}
 
 	/**
@@ -429,36 +440,72 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
-	 */
 	@Override
 	public Float getCutValueConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		return (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
+		Float cutValue = null;
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
+		} else {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+			if(assessmentTest != null) {
+				Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
+				if(cut != null) {
+					cutValue = Float.valueOf(cut.floatValue());
+				}
+			}
+		}
+		return cutValue;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
-	 */
 	@Override
 	public Float getMaxScoreConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		return (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
+		Float maxScore = null;
+
+		ModuleConfiguration config = getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
+		} else {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+			if(assessmentTest != null) {
+				Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
+				if(max != null) {
+					maxScore = Float.valueOf(max.floatValue());
+				}
+			}
+		}
+		
+		return maxScore;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
-	 */
 	@Override
 	public Float getMinScoreConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		return (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
+		Float minScore = null;
+		ModuleConfiguration config = getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
+		} else {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+			if(assessmentTest != null) {
+				Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
+				if(min != null) {
+					minScore = Float.valueOf(min.floatValue());
+				}
+			}
+		}
+		return minScore;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
-	 */
 	@Override
 	public boolean hasCommentConfigured() {
 		// coach should be able to add comments here, visible to users

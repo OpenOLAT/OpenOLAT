@@ -1,12 +1,16 @@
+<div class="clearfix">
+	$r.render("back")
+</div>
+
 <h4><i class="o_icon o_icon-fw o_icon_user"> </i> $r.escapeHtml($title)</h4>
 $r.render("table")
-#if($r.visible("cancel") || $r.visible("save"))
+#if($r.visible("save.tests") || $r.visible("back.overview"))
 <div class="o_button_group">
-	#if($r.visible("cancel"))
-		$r.render("cancel")
+	#if($r.visible("save.tests"))
+		$r.render("save.tests")
 	#end
-	#if($r.visible("save"))
-		$r.render("save")
+	#if($r.visible("back.overview"))
+		$r.render("back.overview")
 	#end
 </div>
 #end

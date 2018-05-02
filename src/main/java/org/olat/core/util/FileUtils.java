@@ -75,8 +75,9 @@ public class FileUtils {
 	
 	//windows: invalid characters for filenames: \ / : * ? " < > | 
 	//linux: invalid characters for file/folder names: /, but you have to escape certain chars, like ";$%&*"
+	//zip: may cause errors: =
 	//OLAT reserved char: ":"	
-	public static char[] FILE_NAME_FORBIDDEN_CHARS = { '/', '\n', '\r', '\t', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':', ',' };
+	public static char[] FILE_NAME_FORBIDDEN_CHARS = { '/', '\n', '\r', '\t', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':', ',', '=' };
   //private static char[] FILE_NAME_ACCEPTED_CHARS = { 'ä', 'Ä', 'ü', 'Ü', 'ö', 'Ö', ' '};
 	public static char[] FILE_NAME_ACCEPTED_CHARS = { '\u0228', '\u0196', '\u0252', '\u0220', '\u0246', '\u0214', ' '};
 	// known metadata files
@@ -893,7 +894,15 @@ public class FileUtils {
 		return nameSanitized;
 	}
 	
-	public static String normalizeFilenameWithSuffix(String filename) {
+	/**
+	 * Cleans the filename from invalid character to make a filename compatible for
+	 * the usual operating systems and browsers.. Suffixes are preserved. This
+	 * method is not as strict as {@link #normalizeFilename(String)}.
+	 * 
+	 * @param filename
+	 * @return the cleaned filename
+	 */
+	public static String cleanFilename(String filename) {
 		boolean hasExtension = false;
 		String name = filename;
 		String extension = getFileSuffix(filename);
@@ -902,12 +911,21 @@ public class FileUtils {
 			name = filename.substring(0, filename.length() - extension.length() - 1);
 		}
 		StringBuilder normalizedFilename = new StringBuilder();
-		normalizedFilename.append(normalizeFilename(name));
+		normalizedFilename.append(cleanFilenamePart(name));
 		if (hasExtension) {
 			normalizedFilename.append(".");
-			normalizedFilename.append(normalizeFilename(extension));
+			normalizedFilename.append(cleanFilenamePart(extension));
 		}
 		return normalizedFilename.toString();
+	}
+	
+	private static String cleanFilenamePart(String filename) {
+		String cleaned = Normalizer.normalize(filename, Normalizer.Form.NFKD);
+		cleaned = cleaned.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
+		for (char character: FILE_NAME_FORBIDDEN_CHARS) {
+			cleaned = cleaned.replace(character, '_');
+		}
+		return cleaned;
 	}
 	
 	/**

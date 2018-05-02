@@ -19,9 +19,18 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.io.StringReader;
 import java.util.List;
 
+import org.cyberneko.html.parsers.SAXParser;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.QTI21Constants;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.helpers.DefaultHandler;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
@@ -47,6 +56,8 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  *
  */
 public class TestFeedbackBuilder {
+	
+	private static final OLog log = Tracing.createLoggerFor(TestFeedbackBuilder.class);
 	
 	private final TestFeedback testFeedback;
 	private final AssessmentTest assessmentTest;
@@ -74,8 +85,7 @@ public class TestFeedbackBuilder {
 	}
 	
 	public OutcomeRule getResponseRule() {
-		OutcomeRule feedbackRule = findFeedbackRule(testFeedback.getOutcomeValue());
-		return feedbackRule;
+		return findFeedbackRule(testFeedback.getOutcomeValue());
 	}
 	
 	public boolean isPassedRule() {
@@ -209,5 +219,52 @@ public class TestFeedbackBuilder {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * 
+	 * @param value The content of the feedback.
+	 * @return
+	 */
+	public static boolean isEmpty(String value) {
+		if(!StringHelper.containsNonWhitespace(value)) {
+			return true;
+		}
+		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(value))) {
+			return false;
+		}
+		
+		try {
+			SAXParser parser = new SAXParser();
+			HTMLHandler contentHandler = new HTMLHandler();
+			parser.setContentHandler(contentHandler);
+			parser.parse(new InputSource(new StringReader(value)));
+			return !contentHandler.hasRelevantTags();
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return true;
+	}
+	
+	private static class HTMLHandler extends DefaultHandler {
+
+		private int count = 0;
+		
+		public boolean hasRelevantTags() {
+			return count > 0;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			String elem = localName.toLowerCase();
+			if("img".equals(elem)) {
+				count++;
+			} else if("span".equals(elem) ) {
+				String cssClass = attributes.getValue("class");
+				if(cssClass != null && cssClass.contains("olatFlashMovieViewer")) {
+					count++;
+				}
+			}
+		}
 	}
 }
