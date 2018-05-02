@@ -19,60 +19,24 @@
  */
 package org.olat.modules.forms;
 
-import java.util.Date;
-
 import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 12 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 29.04.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormSession extends CreateInfo, ModifiedInfo {
+public interface EvaluationFormSurvey extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
-	public Date getSubmissionDate();
-	
-	public Date getFirstSubmissionDate();
-
-	public EvaluationFormSessionStatus getEvaluationFormSessionStatus();
-	
 	/**
-	 * Returns the participation of the session. The session does not know the
-	 * participation if it is an anonymous participation.
 	 *
-	 * @return the participation or null
+	 * @return the ReositoryEntry of the evaluation form (questionnaire)
 	 */
-	public EvaluationFormParticipation getParticipation();
-	
-	public EvaluationFormSurvey getSurvey();
-	
-	//TODO uh remove
-	public void setEvaluationFormSessionStatus(EvaluationFormSessionStatus sessionStatus);
-	
-	/**
-	 * The author of the evaluation
-	 * 
-	 * @return
-	 */
-	//TODO uh remove
-	public Identity getIdentity();
-	
-	/**
-	 * The anchor for portfolio evaluation
-	 * 
-	 * @return
-	 */
-	//TODO uh remove
-	public PageBody getPageBody();
-	
-	//TODO uh remove
 	public RepositoryEntry getFormEntry();
 
 }

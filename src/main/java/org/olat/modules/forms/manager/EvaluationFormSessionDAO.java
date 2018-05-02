@@ -22,15 +22,14 @@ package org.olat.modules.forms.manager;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
-
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
@@ -49,6 +48,18 @@ public class EvaluationFormSessionDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	
+	public EvaluationFormSession createSession(EvaluationFormParticipation participation) {
+		EvaluationFormSessionImpl session = new EvaluationFormSessionImpl();
+		session.setCreationDate(new Date());
+		session.setLastModified(session.getCreationDate());
+		session.setParticipation(participation);
+		session.setSurvey(participation.getSurvey());
+		session.setEvaluationFormSessionStatus(EvaluationFormSessionStatus.inProgress);
+		dbInstance.getCurrentEntityManager().persist(session);
+		return session;
+	}
+
 	
 	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity,
 			RepositoryEntry formEntry) {
@@ -77,50 +88,34 @@ public class EvaluationFormSessionDAO {
 		return session;
 	}
 
-	public EvaluationFormSession loadSession(OLATResourceable ores, String subIdent, IdentityRef identity) {
-		if (ores == null || identity == null) return null;
+	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
+		if (participation == null) return null;
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from evaluationformsession as session");
-		sb.append(" where session.resName=:resName");
-		sb.append("   and session.resId=:resId");
-		sb.append(" and session.identity.key=:identityKey");
-		if (StringHelper.containsNonWhitespace(subIdent)) {
-			sb.append(" and session.resSubident=:resSubident");
-		}
+		sb.append(" where session.participation.key=:participationKey");
 		
-		TypedQuery<EvaluationFormSession> query = dbInstance.getCurrentEntityManager()
+		List<EvaluationFormSession> sessions = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), EvaluationFormSession.class)
-				.setParameter("resName", ores.getResourceableTypeName())
-				.setParameter("resId", ores.getResourceableId())
-				.setParameter("identityKey", identity.getKey());
-		if (StringHelper.containsNonWhitespace(subIdent)) {
-			query.setParameter("resSubident", subIdent);
-		}
-		List<EvaluationFormSession> sessions = query.getResultList();
+				.setParameter("participationKey", participation.getKey())
+				.getResultList();
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
-	public boolean hasSessions(OLATResourceable ores, String subIdent) {
-		if (ores == null) return false;
+	public boolean hasSessions(EvaluationFormSurvey survey) {
+		if (survey == null) return false;
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(session.key) from evaluationformsession as session");
-		sb.append(" where session.resName=:resName");
-		sb.append("   and session.resId=:resId");
-		if (StringHelper.containsNonWhitespace(subIdent)) {
-			sb.append(" and session.resSubident=:resSubident");
-		}
+		sb.append("select session.key from evaluationformsession as session");
+		sb.append(" where session.survey.key=:surveyKey");
 		
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+		List<Long> sessions = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
-				.setParameter("resName", ores.getResourceableTypeName())
-				.setParameter("resId", ores.getResourceableId());
-		if (StringHelper.containsNonWhitespace(subIdent)) {
-			query.setParameter("resSubident", subIdent);
-		}
-		Long count = query.getResultList().get(0);
-		return count > 0;
+				.setParameter("surveyKey", survey.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return sessions == null || sessions.isEmpty() || sessions.get(0) == null ? false : true;
 	}
 	
 	public boolean hasSessionForPortfolioEvaluation(PageBody anchor) {

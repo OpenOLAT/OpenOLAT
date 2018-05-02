@@ -1758,15 +1758,37 @@ create table o_pf_page_user_infos (
   primary key (id)
 );
 
+-- evaluation forms
+create table o_eva_form_survey (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   e_resname varchar2(50) not null,
+   e_resid number(20) not null,
+   e_sub_ident varchar2(2048),
+   fk_form_entry number(20) not null,
+   primary key (id)
+);
+
+create table o_eva_form_participation (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   e_identifier_type varchar2(50) not null,
+   e_identifier_key varchar2(50) not null,
+   e_status varchar2(20) not null,
+   e_anonymous number default 0 not null,
+   fk_executor number(20),
+   fk_survey number(20) not null,
+   primary key (id)
+);
+
 create table o_eva_form_session (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    e_status varchar2(16 char),
    e_submission_date date,
-   e_first_submission_date date,
-   e_resname varchar2(50),
-   e_resid number(20),
    e_sub_ident varchar2(2048),
    fk_identity number(20) not null,
    fk_page_body number(20) not null,
@@ -3389,6 +3411,15 @@ alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_
 create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
 
 -- evaluation form
+create unique index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident);
+
+alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create unique index idx_eva_part_ident_idx on o_eva_form_participation (e_identifier_key, e_identifier_type, fk_survey);
+create unique index idx_eva_part_executor_idx on o_eva_form_participation (fk_executor, fk_survey);
+
+alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);
+alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
 alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_eva_session_to_ident_idx on o_eva_form_session (fk_identity);
 alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);

@@ -169,6 +169,8 @@
 		<class>org.olat.modules.fo.model.ReadMessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageStatistics</class>
 		<class>org.olat.modules.fo.model.PseudonymImpl</class>
+		<class>org.olat.modules.forms.model.jpa.EvaluationFormSurveyImpl</class>
+		<class>org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl</class>
 		<class>org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl</class>
 		<class>org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>

@@ -29,6 +29,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -38,8 +39,10 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.model.PageBodyImpl;
 import org.olat.repository.RepositoryEntry;
@@ -76,6 +79,13 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	@Column(name="e_first_submission_date", nullable=true, insertable=true, updatable=true)
 	private Date firstSubmissionDate;
 	
+	@ManyToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=false)
+	private EvaluationFormSurvey survey;
+	@OneToOne(targetEntity=EvaluationFormParticipationImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_participation", nullable=true, insertable=true, updatable=false)
+	private EvaluationFormParticipation participation;
+	
 	@Column(name="e_resname", nullable=true, insertable=true, updatable=false)
 	private String resName;
 	@Column(name="e_resid", nullable=true, insertable=true, updatable=false)
@@ -91,8 +101,8 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	@JoinColumn(name="fk_page_body", nullable=true, insertable=true, updatable=false)
 	private PageBody pageBody;
 	
-	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=false)
+	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_form_entry", nullable=true, insertable=true, updatable=false)
 	private RepositoryEntry formEntry;
 
 	
@@ -166,6 +176,24 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 
 	public void setFirstSubmissionDate(Date firstSubmissionDate) {
 		this.firstSubmissionDate = firstSubmissionDate;
+	}
+
+	@Override
+	public EvaluationFormSurvey getSurvey() {
+		return survey;
+	}
+
+	public void setSurvey(EvaluationFormSurvey survey) {
+		this.survey = survey;
+	}
+
+	@Override
+	public EvaluationFormParticipation getParticipation() {
+		return participation;
+	}
+
+	public void setParticipation(EvaluationFormParticipation participation) {
+		this.participation = participation;
 	}
 
 	public String getResName() {

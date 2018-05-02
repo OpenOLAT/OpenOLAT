@@ -40,26 +40,69 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface EvaluationFormManager {
 	
-	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity, RepositoryEntry formEntry);
+	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry);
 	
-	public EvaluationFormSession loadSession(OLATResourceable ores, String subIdent, IdentityRef identity);
+	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent);
+
+	public boolean isFormUpdateable(EvaluationFormSurvey survey);
 	
-	public boolean hasSessions(OLATResourceable ores, String subIdent);
+	/**
+	 * Update the form of a survey. Use {@link isFormUpdateable(survey)} to check if
+	 * the form can be updated before using this method. If the form can not be
+	 * updated anymore, the unchanged survey is returned.
+	 *
+	 * @param survey
+	 * @param formEntry
+	 * @return the survey
+	 */
+	public EvaluationFormSurvey updateSurveyForm(EvaluationFormSurvey survey, RepositoryEntry formEntry);
+
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey);
 	
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor);
+	
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormParticipationIdentifier identifier);
+
+	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor);
+
+	/**
+	 * Load a participation by an identifier. If the identifier was inserted by
+	 * {@link createParticipation(survey, executor)}, the identifier is only unique
+	 * in combination with the survey. In all other cases the identifier is unique
+	 * across all participations. If more than one participation with the same
+	 * identifier (but other surveys) exists, this method returns null.
+	 *
+	 * @param identifier
+	 * @return the participation or null
+	 */
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
+
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier);
+	
+	public EvaluationFormSession createSession(EvaluationFormParticipation participation);
+	
+	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation);
+	
+	public EvaluationFormSession finishSession(EvaluationFormSession session);
+	
+	//TODO uh replace
 	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry); 
 	
+	//TODO uh replace
 	public EvaluationFormSession getSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor);
 	
-	public EvaluationFormSession changeSessionStatus(EvaluationFormSession session, EvaluationFormSessionStatus status);
-	
+	//TODO uh replace
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor);
 	
+	//TODO uh replace
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status);
 	
-	
+	//TODO uh replace
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier,
 			BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormSession session);
 
+	//TODO uh replace
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
 			String filename, EvaluationFormSession session) throws IOException;
 	

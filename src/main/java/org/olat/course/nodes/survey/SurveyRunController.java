@@ -22,13 +22,18 @@ package org.olat.course.nodes.survey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,6 +48,8 @@ public class SurveyRunController extends BasicController {
 	private final VelocityContainer mainVC;
 	private EvaluationFormExecutionController executionCtrl;
 	
+	private EvaluationFormSurvey survey;
+	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
@@ -52,19 +59,57 @@ public class SurveyRunController extends BasicController {
 
 		mainVC = createVelocityContainer("run");
 
-		EvaluationFormSession session = loadOrCreateSesssion(ores, courseNode);
-		executionCtrl = new EvaluationFormExecutionController(ureq, wControl, session);
-		mainVC.put("execution", executionCtrl.getInitialComponent());
+		survey = evaluationFormManager.loadSurvey(ores, courseNode.getIdent());
+		EvaluationFormParticipation participation = loadOrCreateParticipation(survey);
+		if (EvaluationFormParticipationStatus.done.equals(participation.getStatus())) {
+			doShowReporting(ureq);
+		} else {
+			doShowExecution(ureq, wControl, participation);
+		}
 		putInitialPanel(mainVC);
 	}
 
-	private EvaluationFormSession loadOrCreateSesssion(OLATResourceable ores, SurveyCourseNode courseNode) {
-		EvaluationFormSession session = evaluationFormManager.loadSession(ores, courseNode.getIdent(), getIdentity());
+	private EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey) {
+		Identity executor = getIdentity();
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
+		if (participation == null) {
+			participation = evaluationFormManager.createParticipation(survey, executor);
+		}
+		return participation;
+	}
+
+	private EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation) {
+		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
-			session = evaluationFormManager.createSession(ores, courseNode.getIdent(), getIdentity(),
-					courseNode.getReferencedRepositoryEntry());
+			session = evaluationFormManager.createSession(participation);
 		}
 		return session;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == executionCtrl && event == Event.DONE_EVENT) {
+			doHideExecution();
+			doShowReporting(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void doShowExecution(UserRequest ureq, WindowControl wControl,
+			EvaluationFormParticipation participation) {
+		EvaluationFormSession session = loadOrCreateSesssion(participation);
+		executionCtrl = new EvaluationFormExecutionController(ureq, wControl, session);
+		listenTo(executionCtrl);
+		mainVC.put("execution", executionCtrl.getInitialComponent());
+	}
+	
+	private void doHideExecution() {
+		mainVC.remove("execution");
+	}
+
+	private void doShowReporting(UserRequest ureq) {
+		Controller reportingCtrl = new SurveyReportingController(ureq, getWindowControl(), survey);
+		mainVC.put("reporting", reportingCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -74,7 +119,8 @@ public class SurveyRunController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(executionCtrl);
+		executionCtrl = null;
 	}
 
 }

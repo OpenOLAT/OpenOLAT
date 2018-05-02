@@ -1864,6 +1864,30 @@ create table o_pf_page_user_infos (
 );
 
 -- evaluation form
+create table o_eva_form_survey (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_resname varchar(50) not null,
+   e_resid bigint not null,
+   e_sub_ident varchar(2048),
+   fk_form_entry bigint not null,
+   primary key (id)
+);
+
+create table o_eva_form_participation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_identifier_type varchar(50) not null,
+   e_identifier_key varchar(50) not null,
+   e_status varchar(20) not null,
+   e_anonymous bit not null,
+   fk_executor bigint,
+   fk_survey bigint not null,
+   primary key (id)
+);
+
 create table o_eva_form_session (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -1871,12 +1895,11 @@ create table o_eva_form_session (
    e_status varchar(16),
    e_submission_date datetime,
    e_first_submission_date datetime,
-   e_resname varchar(50),
-   e_resid bigint,
-   e_sub_ident varchar(2048),
-   fk_identity bigint not null,
+   fk_survey bigint,
+   fk_participation bigint unique
+   fk_identity bigint,
    fk_page_body bigint,
-   fk_form_entry bigint not null,
+   fk_form_entry bigint,
    primary key (id)
 );
 
@@ -1890,6 +1913,17 @@ create table o_eva_form_response (
    e_stringuifiedresponse mediumtext,
    e_file_response_path varchar(4000),
    fk_session bigint not null,
+   primary key (id)
+);
+
+create table o_eva_form_survey (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_resname varchar(50),
+   e_resid bigint,
+   e_sub_ident varchar(2048),
+   fk_form_entry bigint not null,
    primary key (id)
 );
 
@@ -2792,8 +2826,11 @@ alter table o_pf_binder ENGINE = InnoDB;
 alter table o_pf_assessment_section ENGINE = InnoDB;
 alter table o_pf_assignment ENGINE = InnoDB;
 alter table o_pf_binder_user_infos ENGINE = InnoDB;
+alter table o_eva_form_survey ENGINE = InnoDB;
+alter table o_eva_form_participation ENGINE = InnoDB;
 alter table o_eva_form_session ENGINE = InnoDB;
 alter table o_eva_form_response ENGINE = InnoDB;
+alter table o_eva_form_survey ENGINE = InnoDB;
 alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;
@@ -3244,10 +3281,18 @@ alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_
 alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
 
 -- evaluation form
-alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
-alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
-alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_eva_sess_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident(255));
+create unique index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident(255));
+
+alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create unique index idx_eva_part_ident_idx on o_eva_form_participation (e_identifier_key, e_identifier_type, fk_survey);
+create unique index idx_eva_part_executor_idx on o_eva_form_participation (fk_executor, fk_survey);
+
+alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
+alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
+alter table o_eva_form_session add constraint eva_sess_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_eva_form_session add constraint eva_sess_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
+alter table o_eva_form_session add constraint eva_sess_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_eva_surv_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident(255));
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 

@@ -110,7 +110,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		OLATResourceable ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getOlatResource();
+		OLATResourceable ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		Controller runCtrl = new SurveyRunController(ureq, wControl, ores, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, SURVEY_ICON);
 		return new NodeRunConstructionResult(ctrl);

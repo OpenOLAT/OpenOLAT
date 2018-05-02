@@ -24,12 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.handler.EvaluationFormResource;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.Section;
@@ -37,9 +39,6 @@ import org.olat.modules.portfolio.manager.BinderDAO;
 import org.olat.modules.portfolio.manager.PageDAO;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,16 +58,38 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
+	@Autowired
+	private EvaluationFormTestsHelper evaTestHelper;
+	
+	@Before
+	public void cleanUp() {
+		evaTestHelper.deleteAll();
+	}
 	
 	@Test
 	public void shouldCreateSession() {
+		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
+		dbInstance.commit();
+		
+		EvaluationFormSession session = evaluationFormSessionDao.createSession(participation);
+		dbInstance.commit();
+		
+		assertThat(session).isNotNull();
+		assertThat(session.getKey()).isNotNull();
+		assertThat(session.getCreationDate()).isNotNull();
+		assertThat(session.getLastModified()).isNotNull();
+		assertThat(session.getParticipation()).isEqualTo(participation);
+		assertThat(session.getSurvey()).isEqualTo(participation.getSurvey());
+	}
+	
+	//TODO uh remove
+	@Test
+	public void shouldCreateSessionLegacy() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = "sub";
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
 		
 		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
 		
@@ -80,31 +101,12 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldCreateAndLoadSessionWithSubIdent() {
-		OLATResourceable ores = JunitTestHelper.createRandomResource();
-		String subIdent = "sub";
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
-		
-		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
+	public void shouldLoadByParticipation() {
+		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
+		EvaluationFormSession session = evaluationFormSessionDao.createSession(participation);
 		dbInstance.commitAndCloseSession();
 		
-		EvaluationFormSession loadedSession = evaluationFormSessionDao.loadSession(ores, subIdent, identity);
-		
-		assertThat(loadedSession).isNotNull();
-		assertThat(loadedSession).isEqualTo(session);
-	}
-	
-	@Test
-	public void shouldCreateAndLoadSessionWithoutSubIdent() {
-		OLATResourceable ores = JunitTestHelper.createRandomResource();
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
-		
-		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, null, identity, formEntry);
-		dbInstance.commitAndCloseSession();
-		
-		EvaluationFormSession loadedSession = evaluationFormSessionDao.loadSession(ores, null, identity);
+		EvaluationFormSession loadedSession = evaluationFormSessionDao.loadSessionByParticipation(participation);
 		
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession).isEqualTo(session);
@@ -112,22 +114,22 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCheckIfHasSessions() {
-		OLATResourceable ores = JunitTestHelper.createRandomResource();
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		RepositoryEntry formEntry = createFormEntry(UUID.randomUUID().toString());
-		evaluationFormSessionDao.createSession(ores, null, identity, formEntry);
+		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
+		EvaluationFormSurvey survey = participation.getSurvey();
+		evaluationFormSessionDao.createSession(participation);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasSessions = evaluationFormSessionDao.hasSessions(ores, null);
+		boolean hasSessions = evaluationFormSessionDao.hasSessions(survey);
 		
 		assertThat(hasSessions).isTrue();
 	}
 	
 	@Test
 	public void shouldCheckIfHasNoSessions() {
-		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		dbInstance.commit();
 		
-		boolean hasSessions = evaluationFormSessionDao.hasSessions(ores, "subIdent");
+		boolean hasSessions = evaluationFormSessionDao.hasSessions(survey);
 		
 		assertThat(hasSessions).isFalse();
 	}
@@ -143,7 +145,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
 		Page page = pageDao.createAndPersist("Page 1", "A page with an evalutation.", null, null, true, reloadedSection, null);
 		dbInstance.commit();
-		RepositoryEntry formEntry = createFormEntry("Eva. form for session");
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
 
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		EvaluationFormSession session = evaluationFormSessionDao.createSessionForPortfolio(id, reloadedBody, formEntry);
@@ -157,13 +159,4 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		Assert.assertEquals(id, session.getIdentity());	
 	}
 	
-	private RepositoryEntry createFormEntry(String displayname) {
-		EvaluationFormResource ores = new EvaluationFormResource();
-		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("eva-form-author");
-		RepositoryEntry re = repositoryService.create(author, null, "", displayname, "Description", resource, RepositoryEntry.ACC_OWNERS);
-		dbInstance.commit();
-		return re;
-	}
-
 }

@@ -41,6 +41,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryEntry;
@@ -66,9 +67,10 @@ public class SurveyConfigController extends FormBasicController {
 	private ReferencableEntriesSearchController searchCtrl;
 	private LayoutMain3ColsPreviewController previewCtr;
 	
+	private final ModuleConfiguration moduleConfiguration;
 	private final OLATResourceable ores;
 	private final String subIdent;
-	private final ModuleConfiguration moduleConfiguration;
+	private EvaluationFormSurvey survey;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -76,9 +78,10 @@ public class SurveyConfigController extends FormBasicController {
 	public SurveyConfigController(UserRequest ureq, WindowControl wControl, ICourse course,
 			SurveyCourseNode surveyCourseNode) {
 		super(ureq, wControl);
+		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.subIdent = surveyCourseNode.getIdent();
-		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
+		this.survey = evaluationFormManager.loadSurvey(ores, subIdent);
 		initForm(ureq);
 	}
 
@@ -104,29 +107,24 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		RepositoryEntry re = SurveyCourseNode.getSurvey(moduleConfiguration);
-		updateUI(re);
-	}
-
-	private void updateUI(RepositoryEntry re) {
-		boolean hasSessions = evaluationFormManager.hasSessions(ores, subIdent);
-		String repoKey = moduleConfiguration.getStringValue(SurveyCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		boolean hasRepoConfig = StringHelper.containsNonWhitespace(repoKey);
+		boolean replacePossible = evaluationFormManager.isFormUpdateable(survey);
+		boolean hasRepoConfig = survey != null;
+		RepositoryEntry formEntry = survey != null? survey.getFormEntry(): null;
 		
-		if (hasRepoConfig && re == null) {
+		if (hasRepoConfig && formEntry == null) {
 			hasRepoConfig = false;
 			showError("error.repo.entry.missing");
 		}
 		
-		if (re != null) {
-			String displayname = StringHelper.escapeHtml(re.getDisplayname());
+		if (formEntry != null) {
+			String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());
 			questionnaireLink.setI18nKey(displayname);
 			flc.setDirty(true);
 		}
 		questionnaireNotChoosen.setVisible(!hasRepoConfig);
 		chooseLink.setVisible(!hasRepoConfig);
 		questionnaireLink.setVisible(hasRepoConfig);
-		replaceLink.setVisible(hasRepoConfig && !hasSessions);
+		replaceLink.setVisible(hasRepoConfig && replacePossible);
 		editLink.setVisible(hasRepoConfig);
 	}
 
@@ -177,17 +175,27 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void doReplaceQuestionnaire(UserRequest ureq) {
-		RepositoryEntry re = searchCtrl.getSelectedEntry();
-		if (re != null) {
-			moduleConfiguration.set(SurveyCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
-			updateUI(re);
-			// fire event so the updated config is saved by the
+		RepositoryEntry formEntry = searchCtrl.getSelectedEntry();
+		if (formEntry != null) {
+			if (survey == null) {
+				survey = evaluationFormManager.createSurvey(ores, subIdent, formEntry);
+			} else {
+				boolean isFormUpdateable = evaluationFormManager.isFormUpdateable(survey);
+				if (isFormUpdateable) {
+					survey = evaluationFormManager.updateSurveyForm(survey, formEntry);
+				} else {
+					showError("error.repo.entry.not.replaceable");
+				}
+			}
+			moduleConfiguration.set(SurveyCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, survey.getFormEntry().getSoftkey());
+			// fire event so the updated config is saved
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			updateUI();
 		}
 	}
 
 	private void doEditQuestionnaire(UserRequest ureq) {
-		RepositoryEntry re = SurveyCourseNode.getSurvey(moduleConfiguration);
+		RepositoryEntry re = survey.getFormEntry();
 		if (re == null) {
 			showError("error.repo.entry.missing");
 		} else {
@@ -197,8 +205,8 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void doPreviewQuestionnaire(UserRequest ureq) {
-		RepositoryEntry re = SurveyCourseNode.getSurvey(moduleConfiguration);
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, re, false,
+		RepositoryEntry formEntry = survey.getFormEntry();
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, formEntry, false,
 				false);
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

@@ -31,9 +31,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -50,27 +54,81 @@ import org.springframework.stereotype.Service;
 public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	
 	@Autowired
+	private EvaluationFormSurveyDAO evaluationFormSurveyDao;
+	@Autowired
+	private EvaluationFormParticipationDAO evaluationFormParticipationDao;
+	@Autowired
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	@Autowired
 	private EvaluationFormResponseDAO evaluationFormResponseDao;
 	@Autowired
 	private EvaluationFormStorage evaluationFormStorage;
 	
-
 	@Override
-	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity,
-			RepositoryEntry formEntry) {
-		return evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
+	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry) {
+		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry);
 	}
 
 	@Override
-	public EvaluationFormSession loadSession(OLATResourceable ores, String subIdent, IdentityRef identity) {
-		return evaluationFormSessionDao.loadSession(ores, subIdent, identity);
+	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent) {
+		return evaluationFormSurveyDao.loadByResourceable(ores, subIdent);
 	}
 
 	@Override
-	public boolean hasSessions(OLATResourceable ores, String subIdent) {
-		return evaluationFormSessionDao.hasSessions(ores, subIdent);
+	public boolean isFormUpdateable(EvaluationFormSurvey survey) {
+		return !evaluationFormSessionDao.hasSessions(survey);
+	}
+
+	@Override
+	public EvaluationFormSurvey updateSurveyForm(EvaluationFormSurvey survey, RepositoryEntry formEntry) {
+		if (isFormUpdateable(survey)) {
+			return evaluationFormSurveyDao.updateForm(survey, formEntry);
+		}
+		return survey;
+	}
+
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey) {
+		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
+				false, null);
+	}
+
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor) {
+		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
+				false, executor);
+	}
+
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier) {
+		return evaluationFormParticipationDao.createParticipation(survey, identifier, false, null);
+	}
+
+	@Override
+	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
+		return evaluationFormParticipationDao.loadByExecutor(survey, executor);
+	}
+
+	@Override
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier) {
+		return evaluationFormParticipationDao.loadByIdentifier(identifier);
+	}
+
+	@Override
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier) {
+		return evaluationFormParticipationDao.loadByIdentifier(survey, identifier);
+	}
+
+	@Override
+	public EvaluationFormSession createSession(EvaluationFormParticipation participation) {
+		return evaluationFormSessionDao.createSession(participation);
+	}
+
+	@Override
+	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
+		return evaluationFormSessionDao.loadSessionByParticipation(participation);
 	}
 
 	@Override
@@ -84,8 +142,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormSession changeSessionStatus(EvaluationFormSession session, EvaluationFormSessionStatus status) {
-		return evaluationFormSessionDao.changeStatusOfSession(session, status);
+	public EvaluationFormSession finishSession(EvaluationFormSession session) {
+		evaluationFormParticipationDao.changeStatus(session.getParticipation(), EvaluationFormParticipationStatus.done);
+		return evaluationFormSessionDao.changeStatusOfSession(session, EvaluationFormSessionStatus.done);
 	}
 
 	@Override
@@ -202,5 +261,4 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry) {
 		return evaluationFormSessionDao.isInUse(formEntry);
 	}
-
 }

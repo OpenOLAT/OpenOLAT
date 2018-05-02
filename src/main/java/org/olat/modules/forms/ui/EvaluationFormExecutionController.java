@@ -94,7 +94,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
 		super(ureq, wControl, "execute");
 
-		RepositoryEntry formEntry = session.getFormEntry();
+		RepositoryEntry formEntry = session.getSurvey().getFormEntry();
 		File repositoryDir = new File(
 				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
 				FileResourceManager.ZIPDIR);
@@ -312,7 +312,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	private void saveAsDone(UserRequest ureq) {
-		session = evaluationFormManager.changeSessionStatus(session, EvaluationFormSessionStatus.done);
+		session = evaluationFormManager.finishSession(session);
 		dbInstance.commit();
 		readOnly = true;
 		propagateReadOnly();
