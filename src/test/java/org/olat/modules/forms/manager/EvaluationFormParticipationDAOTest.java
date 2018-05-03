@@ -96,7 +96,20 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		
 		assertThat(loadedParticipation.getStatus()).isEqualTo(newStatus);
 	}
-
+	
+	@Test
+	public void shouldUpdateParticipation() {
+		String identifierKey = UUID.randomUUID().toString();
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
+				identifierKey);
+		EvaluationFormParticipation participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
+		dbInstance.commit();
+		
+		participation.setAnonymous(true);
+		EvaluationFormParticipation updateedParticipation = sut.updateParticipation(participation);
+		
+		assertThat(updateedParticipation.isAnonymous()).isTrue();
+	}
 	
 	@Test
 	public void shouldLoadBySurveyAndExecutor() {

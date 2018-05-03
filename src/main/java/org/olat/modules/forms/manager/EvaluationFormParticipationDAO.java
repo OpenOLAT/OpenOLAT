@@ -70,7 +70,15 @@ class EvaluationFormParticipationDAO {
 		return participation;
 	}
 	
-	private EvaluationFormParticipation update(EvaluationFormParticipation participationImpl) {
+	EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation) {
+		if (participation instanceof EvaluationFormParticipationImpl) {
+			EvaluationFormParticipationImpl participationImpl = (EvaluationFormParticipationImpl) participation;
+			return update(participationImpl);
+		}
+		return participation;
+	}
+	
+	private EvaluationFormParticipation update(EvaluationFormParticipationImpl participationImpl) {
 		participationImpl.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(participationImpl);
 	}

@@ -1,6 +1,9 @@
-#if($r.available("reporting"))
-	$r.render("reporting")
+#if($r.available("message"))
+	$r.render("message")
 #end
 #if($r.available("execution"))
 	$r.render("execution")
+#end
+#if($r.available("reporting"))
+	$r.render("reporting")
 #end

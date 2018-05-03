@@ -58,6 +58,8 @@ public interface EvaluationFormParticipation extends CreateInfo, ModifiedInfo {
 	 * @return whether it is an anonymous participation or not
 	 */
 	public boolean isAnonymous();
+	
+	public void setAnonymous(boolean anonymous);
 
 	/**
 	 * The executor of the participation. A participation must not have an executor.

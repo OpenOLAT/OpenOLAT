@@ -21,14 +21,11 @@ package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.UUID;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -83,22 +80,17 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		assertThat(session.getSurvey()).isEqualTo(participation.getSurvey());
 	}
 	
-	//TODO uh remove
 	@Test
-	public void shouldCreateSessionLegacy() {
-		OLATResourceable ores = JunitTestHelper.createRandomResource();
-		String subIdent = "sub";
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+	public void shouldMakeSessionAnonymous() {
+		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
+		EvaluationFormSession session = evaluationFormSessionDao.createSession(participation);
+		dbInstance.commit();
 		
-		EvaluationFormSession session = evaluationFormSessionDao.createSession(ores, subIdent, identity, formEntry);
+		EvaluationFormSession anonymousSession = evaluationFormSessionDao.makeAnonymous(session);
 		
-		assertThat(session).isNotNull();
-		assertThat(session.getKey()).isNotNull();
-		assertThat(session.getCreationDate()).isNotNull();
-		assertThat(session.getLastModified()).isNotNull();
-		assertThat(session.getIdentity()).isEqualTo(identity);
+		assertThat(anonymousSession.getParticipation()).isNull();
 	}
+
 	
 	@Test
 	public void shouldLoadByParticipation() {

@@ -106,6 +106,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation) {
+		return evaluationFormParticipationDao.updateParticipation(participation);
+	}
+
+	@Override
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
 		return evaluationFormParticipationDao.loadByExecutor(survey, executor);
 	}
@@ -143,8 +148,16 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public EvaluationFormSession finishSession(EvaluationFormSession session) {
-		evaluationFormParticipationDao.changeStatus(session.getParticipation(), EvaluationFormParticipationStatus.done);
-		return evaluationFormSessionDao.changeStatusOfSession(session, EvaluationFormSessionStatus.done);
+		EvaluationFormSession finishedSesssion = session;
+		EvaluationFormParticipation participation = session.getParticipation();
+		if (participation != null) {
+			evaluationFormParticipationDao.changeStatus(session.getParticipation(), EvaluationFormParticipationStatus.done);
+			if (participation.isAnonymous()) {
+				finishedSesssion = evaluationFormSessionDao.makeAnonymous(session);
+			}
+		}
+		finishedSesssion = evaluationFormSessionDao.changeStatus(finishedSesssion, EvaluationFormSessionStatus.done);
+		return finishedSesssion;
 	}
 
 	@Override

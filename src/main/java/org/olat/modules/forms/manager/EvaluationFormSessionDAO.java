@@ -25,7 +25,6 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -56,17 +55,6 @@ public class EvaluationFormSessionDAO {
 		session.setParticipation(participation);
 		session.setSurvey(participation.getSurvey());
 		session.setEvaluationFormSessionStatus(EvaluationFormSessionStatus.inProgress);
-		dbInstance.getCurrentEntityManager().persist(session);
-		return session;
-	}
-
-	
-	public EvaluationFormSession createSession(OLATResourceable ores, String subIdent, Identity identity,
-			RepositoryEntry formEntry) {
-		EvaluationFormSessionImpl session = createSession(identity, formEntry);
-		session.setResName(ores.getResourceableTypeName());
-		session.setResId(ores.getResourceableId());
-		session.setResSubident(subIdent);
 		dbInstance.getCurrentEntityManager().persist(session);
 		return session;
 	}
@@ -102,7 +90,21 @@ public class EvaluationFormSessionDAO {
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
-	public boolean hasSessions(EvaluationFormSurvey survey) {
+	EvaluationFormSession makeAnonymous(EvaluationFormSession session) {
+		if (session instanceof EvaluationFormSessionImpl) {
+			EvaluationFormSessionImpl sessionImpl = (EvaluationFormSessionImpl) session;
+			sessionImpl.setParticipation(null);
+			return update(sessionImpl);
+		}
+		return session;
+	}
+	
+	private EvaluationFormSessionImpl update(EvaluationFormSessionImpl sessionImpl) {
+		sessionImpl.setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(sessionImpl);
+	}
+	
+	boolean hasSessions(EvaluationFormSurvey survey) {
 		if (survey == null) return false;
 		
 		StringBuilder sb = new StringBuilder();
@@ -143,10 +145,10 @@ public class EvaluationFormSessionDAO {
 	
 	public EvaluationFormSession changeStatusOfSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor, EvaluationFormSessionStatus status) {
 		EvaluationFormSession session = getSessionForPortfolioEvaluation(identity, anchor);
-		return changeStatusOfSession(session, status);
+		return changeStatus(session, status);
 	}
 	
-	public EvaluationFormSession changeStatusOfSession(EvaluationFormSession session, EvaluationFormSessionStatus newStatus) {
+	public EvaluationFormSession changeStatus(EvaluationFormSession session, EvaluationFormSessionStatus newStatus) {
 		if(session != null) {
 			if(newStatus == EvaluationFormSessionStatus.done && session.getEvaluationFormSessionStatus() != EvaluationFormSessionStatus.done) {
 				((EvaluationFormSessionImpl)session).setSubmissionDate(new Date());

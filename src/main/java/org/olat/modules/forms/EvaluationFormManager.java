@@ -62,6 +62,8 @@ public interface EvaluationFormManager {
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor);
 	
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormParticipationIdentifier identifier);
+	
+	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation);
 
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor);
 
@@ -82,7 +84,7 @@ public interface EvaluationFormManager {
 	
 	public EvaluationFormSession createSession(EvaluationFormParticipation participation);
 	
-	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation);
+	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation EvaluationFormParticipation);
 	
 	public EvaluationFormSession finishSession(EvaluationFormSession session);
 	

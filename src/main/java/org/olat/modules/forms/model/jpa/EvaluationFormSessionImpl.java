@@ -86,13 +86,6 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	@JoinColumn(name="fk_participation", nullable=true, insertable=true, updatable=false)
 	private EvaluationFormParticipation participation;
 	
-	@Column(name="e_resname", nullable=true, insertable=true, updatable=false)
-	private String resName;
-	@Column(name="e_resid", nullable=true, insertable=true, updatable=false)
-	private Long resId;
-	@Column(name="e_sub_ident", nullable=true, insertable=true, updatable=false)
-	private String resSubident;
-	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
 	private Identity identity;
@@ -194,30 +187,6 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 
 	public void setParticipation(EvaluationFormParticipation participation) {
 		this.participation = participation;
-	}
-
-	public String getResName() {
-		return resName;
-	}
-
-	public void setResName(String resName) {
-		this.resName = resName;
-	}
-
-	public Long getResId() {
-		return resId;
-	}
-
-	public void setResId(Long resId) {
-		this.resId = resId;
-	}
-
-	public String getResSubident() {
-		return resSubident;
-	}
-
-	public void setResSubident(String resSubident) {
-		this.resSubident = resSubident;
 	}
 
 	@Override

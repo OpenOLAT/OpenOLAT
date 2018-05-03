@@ -36,6 +36,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.survey.SurveyEditController;
 import org.olat.course.nodes.survey.SurveyRunController;
+import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -59,6 +60,14 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
+	public static final String CONFIG_KEY_EXECUTION_BY_OWNER = "execution.by.owner";
+	public static final String CONFIG_KEY_EXECUTION_BY_COACH = "execution.by.coach";
+	public static final String CONFIG_KEY_EXECUTION_BY_PARTICIPANT = "execution.by.participant";
+	public static final String CONFIG_KEY_EXECUTION_BY_GUEST = "execution.by.guest";
+	public static final String CONFIG_KEY_REPORT_FOR_OWNER = "report.for.owner";
+	public static final String CONFIG_KEY_REPORT_FOR_COACH = "report.for.coach";
+	public static final String CONFIG_KEY_REPORT_FOR_PARTICIPANT = "report.for.participant";
+	public static final String CONFIG_KEY_REPORT_FOR_GUEST = "report.for.guest";
 
 	public SurveyCourseNode() {
 		super(TYPE);
@@ -111,9 +120,15 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		OLATResourceable ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		Controller runCtrl = new SurveyRunController(ureq, wControl, ores, this);
+		SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
+		Controller runCtrl = new SurveyRunController(ureq, wControl, ores, this, secCallback);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, SURVEY_ICON);
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	@Override
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
 	}
 
 	@SuppressWarnings("deprecation")
@@ -128,7 +143,14 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
-			//
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_PARTICIPANT, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_GUEST, true);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_OWNER, true);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_PARTICIPANT, true);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_GUEST, true);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
