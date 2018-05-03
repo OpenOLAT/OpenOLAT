@@ -32,10 +32,11 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 
 /**
  * Description:<br>
- * Site fot the learn ressources
+ * Site for the learn resources
  * 
  * <P>
  * Initial Date:  12.07.2005 <br>
@@ -44,10 +45,6 @@ import org.olat.core.util.StringHelper;
  */
 public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	public RepositorySiteDef() {
-		// for classloader
-	}
-
 	/**
 	 * Site is normally only open to authors. Configured via security callback
 	 */
@@ -55,7 +52,11 @@ public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDef
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new RepositorySite(this, ureq.getLocale());
-		} else if(ureq.getUserSession().getRoles().isAuthor() || ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+		} 
+		
+		UserSession usess = ureq.getUserSession();
+		
+		if(usess.getRoles().isAuthor() || usess.getRoles().isLearnResourceManager()) {
 			// only for authors and institutional resource managers
 			return new RepositorySite(this, ureq.getLocale());
 		}

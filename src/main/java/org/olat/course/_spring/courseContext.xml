@@ -29,9 +29,7 @@
 	<bean id="courseFactory" class="org.olat.course.CourseFactory"
 		depends-on="businessGroupService,resourceManager,baseSecurityManager,glossaryManager">
 		<constructor-arg index="0" ref="coordinatorManager" />
-		<constructor-arg index="1" ref="repositoryManager" />
-		<constructor-arg index="2" ref="repositoryService" />
-		<constructor-arg index="3" ref="referenceManager" />
+		<constructor-arg index="1" ref="referenceManager" />
 	</bean>
 	
 	<!-- Three Logs are available within a course:

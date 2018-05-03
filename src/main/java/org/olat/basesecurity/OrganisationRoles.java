@@ -37,7 +37,9 @@ public enum OrganisationRoles {
 	poolmanager,
 	curriculummanager,
 	author,
+	coach,
 	user,
+	invitee,
 	guest;
 	
 	public static boolean valid(String value) {
@@ -51,7 +53,7 @@ public enum OrganisationRoles {
 		}
 	}
 	
-	public static OrganisationRoles[] valuesWithoutGuest() {
+	public static OrganisationRoles[] valuesWithoutGuestAndInvitee() {
 		return new OrganisationRoles[]{
 				sysadmin,
 				administrator,

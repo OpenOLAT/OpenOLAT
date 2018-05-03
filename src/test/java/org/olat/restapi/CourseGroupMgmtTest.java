@@ -58,13 +58,10 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -97,8 +94,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
 	
 	/**
@@ -116,28 +111,26 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-2");
 		JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-3");
 		Identity auth = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-grp-one");
-		ICourse course = CoursesWebService.createEmptyCourse(auth, "course for groups", "course with groups for REST API testing", null);
-		dbInstance.commitAndCloseSession();
-		courseRepoEntry = repositoryManager.lookupRepositoryEntry(course, true);
-
 		
-    // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, courseRepoEntry);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, courseRepoEntry);
-    // members
-    businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
-	businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
-	businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
-	businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
+		courseRepoEntry = JunitTestHelper.deployBasicCourse(auth);
+
+		// create groups without waiting list
+		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, courseRepoEntry);
+		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, courseRepoEntry);
+		// members
+		businessGroupRelationDao.addRole(id1, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
     
-    // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, courseRepoEntry);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, courseRepoEntry);
-    // members
-	businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
-	businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
+		// groups
+		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, courseRepoEntry);
+		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, courseRepoEntry);
+		// members
+		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
     
-    dbInstance.commitAndCloseSession(); // simulate user clicks
+		dbInstance.commitAndCloseSession(); // simulate user clicks
 	}
 	
   @After

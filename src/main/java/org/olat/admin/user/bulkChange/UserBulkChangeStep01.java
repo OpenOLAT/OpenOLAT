@@ -246,7 +246,7 @@ class UserBulkChangeStep01 extends BasicStep {
 			}
 			
 			// learn resource manager
-			if (roles.isOLATAdmin() || roles.isInstitutionalResourceManager()) {
+			if (roles.isOLATAdmin() || roles.isLearnResourceManager()) {
 				chkInstitutionManager = uifactory.addCheckboxesHorizontal("InsitutionManager", "table.role.institutionManager", innerFormLayout, onKeys, onValues);
 				chkInstitutionManager.select("Author", false);
 				chkInstitutionManager.addActionListener(FormEvent.ONCLICK);

@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -570,60 +571,38 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
-	 */
 	@Override
 	public boolean hasStatusConfigured() {
 		return true; // Task Course node has always a status-field
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
-	 */
 	@Override
 	public Float getMaxScoreConfiguration() {
 		if (!hasScoreConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getMaxScore not defined when hasScore set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
-		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		return max;
+		return (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
-	 */
 	@Override
 	public Float getMinScoreConfiguration() {
 		if (!hasScoreConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getMinScore not defined when hasScore set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
-		Float min = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-		return min;
+		return (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
-	 */
 	@Override
 	public Float getCutValueConfiguration() {
 		if (!hasPassedConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
-		Float cut = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		return cut;
+		return (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String coachCommentValue = am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return coachCommentValue;
+		return am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -635,29 +614,18 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		return Collections.emptyList();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		String logValue = am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return logValue;
+		return am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
-	 */
 	@Override
 	public boolean isEditableConfigured() {
 		// always true
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -667,11 +635,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserScoreEvaluation(org.olat.course.run.scoring.ScoreEvaluation,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEval, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
@@ -856,13 +819,9 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		FileUtils.copyDirContentsToDir(fSolutionDir, fSolExportDir, false, "export task course node solutions");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, boolean)
-	 */
+
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		//import tasks
 		File fNodeImportDir = new File(importDirectory, getIdent());
 		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + getTaskFolderPathRelToFolderRoot(course, this));
@@ -1044,17 +1003,14 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		return getDropBoxPathRelToFolderRoot(course.getCourseEnvironment(), cNode);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
-	 */
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<ConditionExpression>(parentsConditions);
+			retVal = new ArrayList<>(parentsConditions);
 		} else {
-			retVal = new ArrayList<ConditionExpression>();
+			retVal = new ArrayList<>();
 		}
 		//
 		String coS = getConditionDrop().getConditionExpression();
@@ -1094,17 +1050,10 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		return retVal;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	public static OlatNamedContainerImpl getNodeFolderContainer(TACourseNode node, CourseEnvironment courseEnvironment) {
 		String path = getFoldernodePathRelToFolderBase(courseEnvironment, node);
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(TACourseNode.SOLUTION_FOLDER_NAME, rootFolder);
-		return namedFolder;
+		return new OlatNamedContainerImpl(TACourseNode.SOLUTION_FOLDER_NAME, rootFolder);
 	}
 
 	/**

@@ -19,6 +19,7 @@
  */
 package org.olat.user.notification;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -149,13 +150,13 @@ public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, G
 	public List<Identity> getNewIdentityCreated(Date from, Identity actingIdentity, Roles roles) {
 		if(from == null || (!roles.isUserManager() && !roles.isOLATAdmin())) return Collections.emptyList();
 
-		List<Organisation> userManagerOrganisations = null;
-		if(!roles.isOLATAdmin()) {
-			userManagerOrganisations = organisationDao
-					.getOrganisations(actingIdentity, Collections.singletonList(OrganisationRoles.usermanager.name()));
-			if(userManagerOrganisations.isEmpty()) {
-				return Collections.emptyList();
-			}
+		List<String> managerRoles = new ArrayList<>();
+		managerRoles.add(OrganisationRoles.administrator.name());
+		managerRoles.add(OrganisationRoles.usermanager.name());
+		
+		List<Organisation> userManagerOrganisations = organisationDao.getOrganisations(actingIdentity, managerRoles);
+		if(userManagerOrganisations.isEmpty()) {
+			return Collections.emptyList();
 		}
 		
 		SearchIdentityParams params = new SearchIdentityParams();

@@ -48,7 +48,7 @@ import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.repository.RepositoryEntry;
-import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,7 +80,8 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");
-		course1 = CoursesWebService.createEmptyCourse(admin, "Course forum 1", "Course forum 1 long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		course1 = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		
 		//create a folder

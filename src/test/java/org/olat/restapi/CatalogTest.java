@@ -51,10 +51,12 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.course.CourseModule;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
@@ -95,6 +97,8 @@ public class CatalogTest extends OlatJerseyTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	private Identity admin, id1;
 	private CatalogEntry root1, entry1, entry2, subEntry11, subEntry12;
@@ -697,7 +701,8 @@ public class CatalogTest extends OlatJerseyTestCase {
 		
 		RepositoryEntry d = repositoryManager.lookupRepositoryEntry(resourceable, false);
 		if(d == null) {
-			d = repositoryService.create("Rei Ayanami", "-", displayName, "Repo entry", r);
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			d = repositoryService.create(null, "Rei Ayanami", "-", displayName, "Repo entry", r, 0, defOrganisation);
 			dbInstance.saveObject(d);
 		}
 		dbInstance.intermediateCommit();

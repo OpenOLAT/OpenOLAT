@@ -40,7 +40,7 @@ public class AuthorACSecurityCallback implements AccessMethodSecurityCallback {
 
 	@Override
 	public boolean canUse() {
-		return roles.isAuthor() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin();
+		return roles.isAuthor() || roles.isLearnResourceManager() || roles.isOLATAdmin();
 	}
 
 }

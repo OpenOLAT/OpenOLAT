@@ -30,7 +30,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -43,9 +45,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -72,6 +76,12 @@ public class HomePageDisplayController extends BasicController {
 	private UserManager userManager;
 	@Autowired
 	private InstantMessagingModule imModule;
+	@Autowired
+	private InstantMessagingService imService;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * @param ureq
@@ -94,7 +104,7 @@ public class HomePageDisplayController extends BasicController {
 		// add configured property handlers and the homepage config
 		// do the looping in the velocity context
 		List<UserPropertyHandler> userPropertyHandlers
-			= new ArrayList<UserPropertyHandler>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
+			= new ArrayList<>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
 		UserPropertyHandler userSearchedInterestsHandler = null;
 		UserPropertyHandler userInterestsHandler = null;
 		for(Iterator<UserPropertyHandler> propIt=userPropertyHandlers.iterator(); propIt.hasNext(); ) {
@@ -124,22 +134,40 @@ public class HomePageDisplayController extends BasicController {
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
-
+		
+		UserSession usess = ureq.getUserSession();
+		
+		exposeOrganisations(homeIdentity, mainVC);
+		exposeLogo(usess, homeIdentity, mainVC);
+		exposeInstantMessageLink(homeIdentity, mainVC);
+		putInitialPanel(mainVC);
+	}
+	
+	private void exposeOrganisations(Identity homeIdentity, VelocityContainer mainVC) {
+		if(organisationModule.isEnabled()) {
+			List<Organisation> organisations = organisationService.getOrganisations(homeIdentity, OrganisationRoles.values());
+			List<String> organisationNames = new ArrayList<>(organisations.size());
+			for(Organisation organisation:organisations) {
+				organisationNames.add(organisation.getDisplayName());
+			}
+			mainVC.contextPut("organisations", organisationNames);
+		}
+	}
+	
+	private void exposeLogo(UserSession usess, Identity homeIdentity, VelocityContainer mainVC) {
 		if(userModule.isLogoByProfileEnabled()) {
 			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
 			if (logo != null) {
-				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
+				ImageComponent logoCmp = new ImageComponent(usess, "logo");
 				logoCmp.setMedia(logo);
 				logoCmp.setMaxWithAndHeightToFitWithin(200, 66);
 				mainVC.put("logo", logoCmp);				
 			}
 		}
-		
-		putInitialPanel(mainVC);
-		
-		
+	}
+	
+	private void exposeInstantMessageLink(Identity homeIdentity, VelocityContainer mainVC) {
 		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
-			InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 			ImPreferences prefs = imService.getImPreferences(homeIdentity);
 			if(prefs.isVisibleToOthers()) {
 				User user = homeIdentity.getUser();
@@ -157,14 +185,10 @@ public class HomePageDisplayController extends BasicController {
 	}
 	
 	private String getStatusCss(Buddy buddy) {
-		StringBuilder sb = new StringBuilder(32);
-		sb.append("o_icon_status_").append(buddy.getStatus());
-		return sb.toString();
+		return "o_icon_status_".concat(buddy.getStatus());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(imLink == source) {
 			Buddy buddy = (Buddy)imLink.getUserObject();
@@ -173,10 +197,7 @@ public class HomePageDisplayController extends BasicController {
 		}
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// child controller disposed by basic controller
 	}

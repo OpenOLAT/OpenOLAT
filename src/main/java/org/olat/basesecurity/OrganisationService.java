@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 
 /**
@@ -70,7 +71,22 @@ public interface OrganisationService {
 	 * @param roles
 	 * @return
 	 */
-	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles);
+	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole);
+	
+	/**
+	 * Return the organization the specified user
+	 * is allow to manage. The method calculate with
+	 * administrator and the specified additional role
+	 * (user manager or learn resource manager)
+	 * 
+	 * 
+	 * @param member The user 
+	 * @param roles The roles of the specified user
+	 * @param managerRole The additional manager
+	 * @return A list of organizations a user can manage
+	 */
+	public List<Organisation> getManageableOrganisations(IdentityRef member, Roles roles, OrganisationRoles managerRole);
+
 	
 	public Organisation getDefaultOrganisation();
 
@@ -89,6 +105,8 @@ public interface OrganisationService {
 	public void removeMember(Organisation organisation, IdentityRef member);
 	
 	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role);
+	
+	public void setAsGuest(Identity identity);
 	
 	public List<OrganisationMember> getMembers(Organisation organisation);
 

@@ -165,6 +165,10 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		saveTestsButton.setElementCssClass("o_sel_correction_save_tests");
 	}
 	
+	public void reloadModel() {
+		loadModel(true, true);
+	}
+	
 	private void loadModel(boolean reset, boolean lastSessions) {
 		if(lastSessions) {
 			model.loadLastSessions();
@@ -284,6 +288,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				stackPanel.popController(identityItemCtrl);
 				SelectAssessmentItemEvent saie = (SelectAssessmentItemEvent)event;
 				doSelect(ureq, saie.getListEntry(), identityItemCtrl.getAssessmentEntryList());
+			} else if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(confirmSaveTestCtrl == source) {
 			if(event == Event.DONE_EVENT) {

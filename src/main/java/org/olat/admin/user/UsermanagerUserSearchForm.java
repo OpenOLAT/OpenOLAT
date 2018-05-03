@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.context.StateMapped;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
@@ -72,10 +73,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * used by the UserManagerSearchController
  */
 public class UsermanagerUserSearchForm extends FormBasicController {
+	
 	private static final String formIdentifyer = UsermanagerUserSearchForm.class.getCanonicalName();
 	
-	private TextElement login;
 	private MultipleSelectionElement roles;
+	private MultipleSelectionElement organisations;
 	private SingleSelection status;
 	private SelectionElement auth;
 	private DateChooser beforeDate;
@@ -84,20 +86,25 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private DateChooser userLoginAfter;
 	private FormLink searchButton;
 
-	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private String[] statusKeys;
 	private String[] statusValues;
 	private String[] roleKeys;
 	private String[] roleValues;
+	private String[] organisationKeys;
+	private String[] organisationValues;
 	private String[] authKeys;
 	private String[] authValues;
-	
-	private Map <String,FormItem>items;
+
 	private final boolean isAdministrativeUser;
+	private List<UserPropertyHandler> userPropertyHandlers;
+	private final Map <String,FormItem> items = new HashMap<>();
+	private final List<Organisation> manageableOrganisations;
 	
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private OAuthLoginModule oauthLoginModule;
 	
@@ -105,16 +112,14 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	 * @param binderName
 	 * @param cancelbutton
 	 */
-	public UsermanagerUserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdministrativeUser) {
+	public UsermanagerUserSearchForm(UserRequest ureq, WindowControl wControl,
+			boolean isAdministrativeUser, List<Organisation> manageableOrganisations) {
 		super(ureq, wControl);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
 		this.isAdministrativeUser = isAdministrativeUser;
-
-		UserManager um = UserManager.getInstance();
-		setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
-		
-		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
-		
-		items = new HashMap<>(); 
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(formIdentifyer, true);
+		this.manageableOrganisations = new ArrayList<>(manageableOrganisations);
 		
 		roleKeys = new String[] {
 				OrganisationRoles.administrator.name(),
@@ -135,7 +140,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				translate("search.form.constraint.poolmanager"),
 				translate("search.form.constraint.curriculummanager")
 		};
-		
+
 		statusKeys = new String[] { 
 				Integer.toString(Identity.STATUS_VISIBLE_LIMIT),
 				Integer.toString(Identity.STATUS_ACTIV),
@@ -150,6 +155,15 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				translate("rightsForm.status.login_denied"),
 				translate("rightsForm.status.deleted")
 		};
+		
+		List<String> organisationKeyList = new ArrayList<>();
+		List<String> organisationValueList = new ArrayList<>();
+		for(Organisation organisation:manageableOrganisations) {
+			organisationKeyList.add(organisation.getKey().toString());
+			organisationValueList.add(organisation.getDisplayName());
+		}
+		organisationKeys = organisationKeyList.toArray(new String[organisationKeyList.size()]);
+		organisationValues = organisationValueList.toArray(new String[organisationValueList.size()]);
 		
 		// take all providers from the config file
 		// convention is that a translation key "search.form.constraint.auth." +
@@ -218,11 +232,13 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		if (userPropertiesSearch.isEmpty()) {
 			userPropertiesSearch = null;
 		}
-
+		
 		OrganisationRoles[] selectedRoles = getRoles().toArray(new OrganisationRoles[0]);
-		return new SearchIdentityParams(loginVal, userPropertiesSearch, true,
+		SearchIdentityParams params = new SearchIdentityParams(loginVal, userPropertiesSearch, true,
 				selectedRoles, getAuthProviders(), getAfterDate(), getBeforeDate(),
 				getUserLoginAfter(), getUserLoginBefore(), getStatus());
+		params.setOrganisations(getOrganisations());
+		return params;
 	}
 
 	public List<UserPropertyHandler> getPropertyHandlers() {
@@ -273,6 +289,17 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 			}
 		}
 		return selectedRoles;
+	}
+	
+	protected List<Organisation> getOrganisations() {
+		List<Organisation> selectedOrganisations = new ArrayList<>();
+		Collection<String> selectedKeys = organisations.getSelectedKeys();
+		for(Organisation organisation:manageableOrganisations) {
+			if(selectedKeys.contains(organisation.getKey().toString())) {
+				selectedOrganisations.add(organisation);
+			}
+		}
+		return selectedOrganisations;
 	}
 	
 	protected Integer getStatus () {
@@ -341,7 +368,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_user_search_form");
 	
-		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
+		TextElement login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(isAdministrativeUser);
 		login.setElementCssClass("o_sel_user_search_username");
 		items.put("login", login);
@@ -374,6 +401,10 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		}
 
 		uifactory.addSpacerElement("space1", formLayout, false);
+		
+		organisations = uifactory.addCheckboxesVertical(
+				"organisations", "search.form.title.organisations", formLayout, organisationKeys, organisationValues, 1);
+		
 		roles = uifactory.addCheckboxesVertical(
 				"roles", "search.form.title.roles", formLayout, roleKeys, roleValues, 1);
 

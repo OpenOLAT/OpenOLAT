@@ -32,12 +32,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
@@ -406,9 +408,9 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	}
 
 	@Override
-	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath) {
+	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, List<? extends OrganisationRef> resourceOwnerships) {
 		try {
-			return new GenericQuotaEditController(ureq, wControl, relPath);
+			return new GenericQuotaEditController(ureq, wControl, relPath, resourceOwnerships);
 		} catch (OLATSecurityException e) {
 			log.warn("Try to access the quota editor without enough privilege", e);
 			GenericQuotaViewController viewCtrl = new GenericQuotaViewController(ureq, wControl, relPath);
@@ -424,7 +426,9 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	}
 
 	@Override
-	public boolean hasQuotaEditRights(Identity identity, Roles roles) {
-		return roles.isOLATAdmin() || roles.isUserManager() || roles.isInstitutionalResourceManager();
+	public boolean hasQuotaEditRights(Identity identity, Roles roles, List<OrganisationRef> organisationOwnerships) {
+		return roles.isOLATAdmin()
+				|| roles.hasRole(organisationOwnerships, OrganisationRoles.usermanager)
+				|| roles.hasRole(organisationOwnerships, OrganisationRoles.learnresourcemanager);
 	}
 }

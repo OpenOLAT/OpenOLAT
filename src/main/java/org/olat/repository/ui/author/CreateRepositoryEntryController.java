@@ -19,13 +19,20 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -36,6 +43,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -62,10 +70,12 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	
 	private FormLink wizardButton;
 	private TextElement displaynameEl;
+	private SingleSelection organisationEl;
 	private FormLayoutContainer exampleHelpEl;
 	
 	private RepositoryEntry addedEntry;
 	private final RepositoryHandler handler;
+	private final List<Organisation> manageableOrganisations;
 	
 	private Object userObject;
 	
@@ -76,12 +86,16 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
 	
 	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.handler = handler;
+		manageableOrganisations = organisationService
+				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.learnresourcemanager);
 		initForm(ureq);
 	}
 
@@ -136,13 +150,26 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		formLayout.add(exampleHelpEl);
 		exampleHelpEl.setVisible(false);
 		
+		List<String> organisationKeys = new ArrayList<>();
+		List<String> organisationValues = new ArrayList<>();
+		for(Organisation organisation:manageableOrganisations) {
+			organisationKeys.add(organisation.getKey().toString());
+			organisationValues.add(organisation.getDisplayName());
+		}
+		organisationEl = uifactory.addDropdownSingleselect("cif.organisations", "cif.organisations",
+				formLayout, organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]));
+		if(!organisationKeys.isEmpty()) {
+			organisationEl.select(organisationKeys.get(0), true);
+		}
+		organisationEl.setVisible(organisationKeys.size() > 1);
+		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 		FormSubmit submit = uifactory.addFormSubmitButton("cmd.create.ressource", buttonContainer);
 		submit.setElementCssClass("o_sel_author_create_submit");
 		
-		if(handler.isPostCreateWizardAvailable()) {
+		if(handler != null && handler.isPostCreateWizardAvailable()) {
 			wizardButton = uifactory.addFormLink("csc.startwizard", buttonContainer, Link.BUTTON);
 			wizardButton.setElementCssClass("o_sel_author_create_wizard");
 		}
@@ -157,7 +184,13 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		organisationEl.clearError();
+		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
+			organisationEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 		
 		displaynameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
@@ -167,7 +200,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -196,7 +229,15 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private void doCreate() {
 		String displayname = displaynameEl.getValue();
 		
-		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), getLocale());
+		Organisation organisation;
+		if(organisationEl.isOneSelected()) {
+			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
+			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		} else {
+			organisation = organisationService.getDefaultOrganisation();
+		}
+		
+		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), organisation, getLocale());
 		if (licenseModule.isEnabled(licenseHandler)) {
 			licenseService.createDefaultLicense(addedEntry.getOlatResource(), licenseHandler, getIdentity());
 		}

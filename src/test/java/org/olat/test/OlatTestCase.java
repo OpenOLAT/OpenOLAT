@@ -66,7 +66,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	private static boolean oracleConfigured = false;
 	private static boolean started = false;
 	
-	 @Rule public TestName name = new TestName();
+	 @Rule public TestName currentTestName = new TestName();
 	
 	/**
 	 * If you like to disable a test method for some time just add the
@@ -85,7 +85,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	@Before
 	public void printBanner(){
-		log.info("Method run: " + name.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
+		log.info("Method run: " + currentTestName.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
 		
 		if(started) {
 			return;
@@ -108,7 +108,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	@After
 	public void closeConnectionAfter() {
-		log.info("Method test finished: " + name.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
+		log.info("Method test finished: " + currentTestName.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
 		try {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {

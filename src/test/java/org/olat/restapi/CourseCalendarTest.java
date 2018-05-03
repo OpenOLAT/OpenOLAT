@@ -66,7 +66,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -103,7 +103,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			course1 = CoursesWebService.createEmptyCourse(auth1, "course calendar", "course with calendar for REST API testing", config);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1, RepositoryEntry.ACC_OWNERS);
+			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 			
 			ICourse course = CourseFactory.loadCourse(course1.getResourceableId());
@@ -191,7 +192,9 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		CourseConfigVO config = new CourseConfigVO();
 		config.setCalendar(Boolean.TRUE);
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "Course with calendar", "Course with calendar", config);
+		
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		//create an event

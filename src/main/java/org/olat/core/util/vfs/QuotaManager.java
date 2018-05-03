@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 
 /**
@@ -150,7 +151,7 @@ public interface QuotaManager {
 	 * @param relPath
 	 * @return
 	 */
-	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath);
+	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, List<? extends OrganisationRef> resourceOwnership);
 	
 	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath);
 	
@@ -161,5 +162,5 @@ public interface QuotaManager {
 	 * @return true: user is allowed to launch quota editor ; false: user is not
 	 *         allowed to launch quota editor
 	 */
-	public boolean hasQuotaEditRights(Identity identity, Roles roles);
+	public boolean hasQuotaEditRights(Identity identity, Roles roles, List<OrganisationRef> resourceOwnership);
 }

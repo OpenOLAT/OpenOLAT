@@ -43,6 +43,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -99,12 +100,13 @@ public class WikiHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		WikiResource wikiResource = WikiManager.getInstance().createWiki();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null,
-				WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -121,13 +123,13 @@ public class WikiHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		WikiResource wikiResource = new WikiResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		File rootDirectory = WikiManager.getInstance().getWikiRootContainer(resource).getBasefile();
 		WikiManager.getInstance().importWiki(file, filename, rootDirectory);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-			.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+			.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -198,7 +200,7 @@ public class WikiHandler implements RepositoryHandler {
 		SubscriptionContext subsContext = new SubscriptionContext(res, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 		final WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
 
-		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
+		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
@@ -217,8 +219,6 @@ public class WikiHandler implements RepositoryHandler {
 					return new OLATResourceableListeningWrapperController(uureq, wwControl, entry.getOlatResource(), controller, null, uureq.getIdentity());
 				}
 			});
-
-		return runtime;
 	}
 
 	@Override

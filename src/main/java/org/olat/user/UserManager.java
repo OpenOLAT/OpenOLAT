@@ -35,7 +35,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.manager.BasicManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -50,7 +49,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public abstract class UserManager extends BasicManager {
+public abstract class UserManager {
 	protected static UserManager INSTANCE;
 	
 	// injected by spring configuration

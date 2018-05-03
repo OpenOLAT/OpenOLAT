@@ -316,7 +316,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Roles modifiedRoles = new Roles(false, true, true, true, true, false, true, true, true, false);
+		Roles modifiedRoles = new Roles(false, true, true, true, true, false, true, true, true, false, false);
 		securityManager.updateRoles(id2, id1, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -326,7 +326,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(reloadRoles.isAuthor());
 		Assert.assertTrue(reloadRoles.isGroupManager());
 		Assert.assertFalse(reloadRoles.isGuestOnly());
-		Assert.assertTrue(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertTrue(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
 		Assert.assertTrue(reloadRoles.isOLATAdmin());
 		Assert.assertTrue(reloadRoles.isPoolAdmin());
@@ -347,7 +347,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Roles modifiedRoles = new Roles(false, false, true, false, true, false, false, false, true, false);
+		Roles modifiedRoles = new Roles(false, false, true, false, true, false, false, false, true, false, false);
 		securityManager.updateRoles(id2, id1, defOrganisation, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -357,7 +357,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(reloadRoles.isAuthor());
 		Assert.assertFalse(reloadRoles.isGroupManager());
 		Assert.assertFalse(reloadRoles.isGuestOnly());
-		Assert.assertFalse(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
 		Assert.assertFalse(reloadRoles.isOLATAdmin());
 		Assert.assertFalse(reloadRoles.isPoolAdmin());
@@ -388,7 +388,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertFalse(reloadRoles.isAuthor());
 		Assert.assertFalse(reloadRoles.isGroupManager());
 		Assert.assertTrue(reloadRoles.isGuestOnly());
-		Assert.assertFalse(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
 		Assert.assertFalse(reloadRoles.isOLATAdmin());
 		Assert.assertFalse(reloadRoles.isUserManager());

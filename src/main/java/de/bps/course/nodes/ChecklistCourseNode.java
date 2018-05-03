@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
@@ -213,7 +214,6 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, checkController, this, "o_cl_icon");
 		return new NodeRunConstructionResult(controller);
 	}
-
 	
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
@@ -224,10 +224,12 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
@@ -298,7 +300,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		if(getChecklistKey(cpm) != null) deleteChecklistKeyConf(cpm);
 		
@@ -326,7 +328,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		String exportContent = XStreamHelper.createXStreamInstance().toXML(checklist);
 		try {
 			exportStream.putNextEntry(new ZipEntry(filename));
-			IOUtils.write(exportContent, exportStream);
+			IOUtils.write(exportContent, exportStream, "UTF-8");
 			exportStream.closeEntry();
 		} catch (IOException e) {
 			log.error("", e);

@@ -30,7 +30,6 @@ import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -133,7 +132,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 			Assert.assertTrue(allowValue.contains(allowedMethod));
 		}
 
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -160,7 +159,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertNotNull(typeHeader);
 		Assert.assertEquals("text/plain", typeHeader.getValue());
 		EntityUtils.consume(response.getEntity());
-		IOUtils.closeQuietly(conn);
+		
+		conn.close();
 	}
 	
 	@Test
@@ -185,7 +185,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertTrue(publicXml.indexOf("<D:multistatus") > 0);//Windows need the D namespace
 		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/home/public/</D:href>") > 0);//check the root
 
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -219,7 +219,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertTrue(newItem instanceof VFSContainer);
 		Assert.assertTrue(newItem.exists());
 	
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -253,7 +253,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		VFSItem sourceItem = vfsPublic.resolve("test.txt");
 		Assert.assertNull(sourceItem);
 	
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -289,7 +289,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertTrue(sourceItem instanceof VFSLeaf);
 		Assert.assertTrue(sourceItem.exists());
 	
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -323,7 +323,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		String text = EntityUtils.toString(getResponse.getEntity());
 		Assert.assertEquals("Small text", text);
 	
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	/**
@@ -383,7 +383,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		HttpResponse patchResponse = conn.execute(patch);
 		Assert.assertEquals(207, patchResponse.getStatusLine().getStatusCode());
 	
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	/**
@@ -445,8 +445,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		int coauthorLock_2 = assistantConn.lockTry(putUri, coauthorLockToken_2);
 		Assert.assertEquals(200, coauthorLock_2);// it's lock
 		
-		IOUtils.closeQuietly(authorConn);
-		IOUtils.closeQuietly(assistantConn);
+		authorConn.close();
+		assistantConn.close();
 	}
 	
 	/**
@@ -494,7 +494,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertEquals(assistant.getKey(), lock.getLockedBy());
 		Assert.assertEquals(1, lock.getTokensSize());
 
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	/**
@@ -556,7 +556,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertEquals(user.getKey(), lockAfterUnlock.getLockedBy());
 		Assert.assertEquals(1, lock.getTokensSize());
 		
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -642,7 +642,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		VFSItem reloadTestLeaf = vfsPublic.resolve("testDelete.txt");
 		Assert.assertNull(reloadTestLeaf);
 
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -654,7 +654,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-webdav");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-webdav");
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
-		RepositoryEntry course = deployTestCourse(author, null, courseWithForumsUrl);
+		RepositoryEntry course = deployTestCourse(author, null, "WebDAV course", courseWithForumsUrl);
 		repositoryEntryRelationDao.addRole(participant, course, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -686,7 +686,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-webdav");
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
-		deployTestCourse(author, null, courseWithForumsUrl);
+		deployTestCourse(author, null, "WebDAV course", courseWithForumsUrl);
 		dbInstance.commitAndCloseSession();
 		
 		WebDAVConnection conn = new WebDAVConnection();
@@ -822,7 +822,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		VFSItem level5Mkcol = level_1_Container.resolve("DT2_01").resolve("DT3_01").resolve("DT4_01").resolve("DT5_01");
 		Assert.assertNull(level5Mkcol);
 	
-		IOUtils.closeQuietly(conn);
+		conn.close();
 	}
 	
 	@Test
@@ -880,38 +880,37 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	
 	private VFSItem createFile(VFSContainer container, String filename) throws IOException {
 		VFSLeaf testLeaf = container.createChildLeaf(filename);
-		InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
-		OutputStream out = testLeaf.getOutputStream(false);
-		FileUtils.copy(in, out);
-		out.flush();
-		IOUtils.closeQuietly(in);
-		IOUtils.closeQuietly(out);
+		try(InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
+				OutputStream out = testLeaf.getOutputStream(false)) {
+			FileUtils.copy(in, out);
+			out.flush();
+		} catch(IOException e) {
+			log.error("", e);
+		}
 		return container.resolve(filename);
 	}
 	
 	private RepositoryEntry deployMkdirsCourse(Identity author) 
 	throws URISyntaxException {
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("mkdirs.zip");
-		return deployTestCourse(author, null, courseWithForumsUrl);
+		return deployTestCourse(author, null, "Mkdirs", courseWithForumsUrl);
 	}
 
 	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor)
 	throws URISyntaxException {
 		URL courseWithForumsUrl = CoursePublishTest.class.getResource("myCourseWS.zip");
-		return deployTestCourse(author, coAuthor, courseWithForumsUrl);
+		return deployTestCourse(author, coAuthor, "Kurs", courseWithForumsUrl);
 	}
 	
-	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor, URL courseWithForumsUrl)
+	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor, String displayName, URL courseWithForumsUrl)
 	throws URISyntaxException {
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
+		RepositoryEntry re = JunitTestHelper.deployCourse(author, displayName, courseWithForums);
 		repositoryService.addRole(author, re, GroupRoles.owner.name());
 		if(coAuthor != null) {
 			repositoryService.addRole(coAuthor, re, GroupRoles.owner.name());
 		}
-		
 		dbInstance.commitAndCloseSession();
 		return re;
 	}

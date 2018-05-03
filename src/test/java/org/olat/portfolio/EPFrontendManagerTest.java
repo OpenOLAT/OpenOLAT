@@ -35,8 +35,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Invitation;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
@@ -82,20 +84,18 @@ public class EPFrontendManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	
 	@Autowired
 	private EPFrontendManager epFrontendManager;
-	
 	@Autowired
 	private EPStructureManager epStructureManager;
-	
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private InvitationDAO invitationDao;
-	
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Before
 	public void setUp() {
@@ -118,7 +118,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		//create a template
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		//create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "template-1", "map-template-1", resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "template-1", "map-template-1", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		//create the template owned by ident1
 		PortfolioStructureMap templateEl = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
@@ -207,7 +208,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		//create a template
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		//create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		//create the template owned by ident1
 		PortfolioStructureMap templateEl = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
 		//create five pages
@@ -469,7 +471,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		
 		//create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "test repo", "desc repo", resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "test repo", "desc repo", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//create the template owned by ident1
@@ -497,7 +500,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		//create a template
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		//create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		//create the template owned by ident1
 		PortfolioStructureMap template = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
 		dbInstance.commitAndCloseSession();
@@ -805,7 +809,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		//save parent and 20 children
 		
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
-		RepositoryEntry re = repositoryService.create(id, null, "", "Template to delete", "", resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(id, null, "", "Template to delete", "", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		PortfolioStructureMap template = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(id, re);
 		PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(template, "Page while be deleted", "Page description");
 		dbInstance.commitAndCloseSession();

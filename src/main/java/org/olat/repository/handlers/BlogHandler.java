@@ -35,6 +35,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
@@ -87,11 +88,12 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		OLATResourceable ores = FeedManager.getInstance().createBlogResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -108,7 +110,7 @@ public class BlogHandler implements RepositoryHandler {
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
-			String description, boolean withReferences, Locale locale, File file, String filename) {
+			String description, boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new BlogFileResource());
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
@@ -116,7 +118,7 @@ public class BlogHandler implements RepositoryHandler {
 		FileResource.copyResource(file, filename, blogRoot);
 		FeedManager.getInstance().importFeedFromXML(resource, true);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

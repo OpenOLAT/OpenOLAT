@@ -51,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -388,7 +389,8 @@ public class UserAdminController extends BasicController implements Activateable
 		if (canQuota.booleanValue() || isOlatAdmin) {
 			userTabP.addTab(translate(NLS_EDIT_UQUOTA),  uureq -> {
 				String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
-				quotaCtr = quotaManager.getQuotaEditorInstance(uureq, getWindowControl(), relPath);
+				List<Organisation> identityOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.values());
+				quotaCtr = quotaManager.getQuotaEditorInstance(uureq, getWindowControl(), relPath, identityOrganisations);
 				return quotaCtr.getInitialComponent();
 			});
 		}

@@ -21,7 +21,6 @@ package org.olat.modules.coach;
 
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,7 +37,6 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.course.CourseFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -131,11 +129,8 @@ public class CoachingLargeTest extends OlatTestCase {
 
 		//create courses with members
 		for(int i=0; i<NUM_OF_COURSES; i++) {
-			
-			URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-			File courseWithForums = new File(courseWithForumsUrl.toURI());
-			String softKey = UUID.randomUUID().toString();
-			RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 3);
+			URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+			RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl); // 3
 			if(i == 0) {
 				course10 = re;
 			}
@@ -176,11 +171,8 @@ public class CoachingLargeTest extends OlatTestCase {
 		
 		//create courses with members
 		for(int i=0; i<NUM_OF_COURSES; i++) {
-			
-			URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-			File courseWithForums = new File(courseWithForumsUrl.toURI());
-			String softKey = UUID.randomUUID().toString();
-			RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 3);
+			URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+			RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);// 3 
 			// create groups without waiting list
 			BusinessGroup g1 = businessGroupService.createBusinessGroup(author, "coach-g1", null, new Integer(0), new Integer(10), false, false, re);
 			BusinessGroup g2 = businessGroupService.createBusinessGroup(author, "coach-g2", null, new Integer(0), new Integer(10), false, false, re);

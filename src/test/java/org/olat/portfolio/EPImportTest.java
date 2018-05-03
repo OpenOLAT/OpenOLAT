@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
+import org.olat.portfolio.manager.EPStructureManagerTest;
 import org.olat.portfolio.manager.EPXStreamHandler;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
@@ -83,7 +84,7 @@ public class EPImportTest extends OlatTestCase {
 	public void testCopy() throws URISyntaxException  {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ImPort-1");
 		//save the map
-		PortfolioStructureMap map = epStructureManager.createPortfolioMapTemplate(ident, "import-map-1", "map-template");
+		PortfolioStructureMap map = EPStructureManagerTest.createPortfolioMapTemplate(ident, "import-map-1", "map-template");
 		epStructureManager.savePortfolioStructure(map);
 		dbInstance.commitAndCloseSession();
 		

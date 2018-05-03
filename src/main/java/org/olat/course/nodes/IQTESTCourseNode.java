@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
@@ -104,6 +105,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -145,10 +147,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		updateModuleConfigDefaults(true);
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -229,11 +227,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
 				timeLimit = true;
 			} else {
-				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
-						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 					timeLimit = true;
 				}
 			}
@@ -257,16 +252,29 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
 				timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
 			} else {
-				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
-						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 					timeLimit = assessmentTest.getTimeLimits().getMaximum().intValue();
 				}
 			}
 		}
 		return timeLimit;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public AssessmentTest loadAssessmentTest(RepositoryEntry testEntry) {
+		if(testEntry == null) return null;
+		
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+				.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		if(resolvedAssessmentTest != null) {
+			return resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		}
+		return null;
 	}
 
 	/**
@@ -429,36 +437,72 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
-	 */
 	@Override
 	public Float getCutValueConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		return (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
+		Float cutValue = null;
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
+		} else {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+			if(assessmentTest != null) {
+				Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
+				if(cut != null) {
+					cutValue = Float.valueOf(cut.floatValue());
+				}
+			}
+		}
+		return cutValue;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
-	 */
 	@Override
 	public Float getMaxScoreConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		return (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
+		Float maxScore = null;
+
+		ModuleConfiguration config = getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
+		} else {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+			if(assessmentTest != null) {
+				Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
+				if(max != null) {
+					maxScore = Float.valueOf(max.floatValue());
+				}
+			}
+		}
+		
+		return maxScore;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
-	 */
 	@Override
 	public Float getMinScoreConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		return (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
+		Float minScore = null;
+		ModuleConfiguration config = getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
+		} else {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+			if(assessmentTest != null) {
+				Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
+				if(min != null) {
+					minScore = Float.valueOf(min.floatValue());
+				}
+			}
+		}
+		return minScore;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
-	 */
 	@Override
 	public boolean hasCommentConfigured() {
 		// coach should be able to add comments here, visible to users
@@ -721,7 +765,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			File file = rie.importGetExportedFile();
@@ -730,13 +774,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			RepositoryEntry re;
 			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
 				re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 
 				getModuleConfiguration().set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			} else {
 				RepositoryHandler handlerQTI = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
 				re = handlerQTI.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			}
 			IQEditController.setIQReference(re, getModuleConfiguration());
 		} else {
@@ -744,9 +788,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -754,19 +795,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return am.getNodeAttempts(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
-	 */
 	@Override
 	public boolean hasAttemptsConfigured() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserAttempts(java.lang.Integer,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {

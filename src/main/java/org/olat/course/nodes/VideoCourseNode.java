@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -74,8 +75,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
-		RepositoryEntry entry = VideoEditController.getVideoReference(getModuleConfiguration(), false);
-		return entry;
+		return VideoEditController.getVideoReference(getModuleConfiguration(), false);
 	}
 
 	@Override
@@ -88,11 +88,9 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne,
 			String nodecmd) {
-		NodeRunConstructionResult ncr;
 		updateModuleConfigDefaults(false);
 		VideoRunController cprunC = new VideoRunController(getModuleConfiguration(), wControl, ureq, userCourseEnv, this);
-		ncr = cprunC.createNodeRunConstructionResult(ureq);
-		return ncr;
+		return cprunC.createNodeRunConstructionResult(ureq);
 	}
 
 	@Override
@@ -135,13 +133,12 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
-			//TODO: test
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(VideoFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+					rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			VideoEditController.setVideoReference(re, getModuleConfiguration());
 		} else {
 			VideoEditController.removeVideoReference(getModuleConfiguration());
@@ -151,10 +148,9 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		Controller controller = new VideoPeekviewController(ureq, wControl,
+		return new VideoPeekviewController(ureq, wControl,
 				getReferencedRepositoryEntry().getOlatResource(),
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),
 				getIdent());
-		return controller;
 	}
 }

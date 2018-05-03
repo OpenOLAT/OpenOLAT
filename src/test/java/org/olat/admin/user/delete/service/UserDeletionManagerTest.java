@@ -49,6 +49,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
+import org.olat.portfolio.manager.EPStructureManagerTest;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
@@ -97,7 +98,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(identity, "A map to delete", "This map must be deleted");
 		Assert.assertNotNull(map);
 		//a template
-		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(identity, "A template to delete", "This template must be deleted");
+		PortfolioStructureMap template = EPStructureManagerTest.createPortfolioMapTemplate(identity, "A template to delete", "This template must be deleted");
 		epStructureManager.savePortfolioStructure(template);
 		//an artefact
 		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(identity, "Forum");

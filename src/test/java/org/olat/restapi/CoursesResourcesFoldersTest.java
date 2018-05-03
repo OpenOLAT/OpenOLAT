@@ -55,9 +55,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.LinkVO;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -77,7 +79,8 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");
-		course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(admin, "Empty course", RepositoryEntry.ACC_OWNERS);
+		course1 = CourseFactory.loadCourse(courseEntry);
 		
 		//copy a couple of files in the resource folder
 		VFSContainer container = course1.getCourseFolderContainer();

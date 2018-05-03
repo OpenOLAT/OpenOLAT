@@ -19,13 +19,11 @@
  */
 package org.olat.course.assessment.manager;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -174,10 +172,8 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 	
 	private RepositoryEntry deployTestcourse() throws URISyntaxException {
 		//deploy a course
-		URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		String softKey = UUID.randomUUID().toString();
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);// 4);
 		Assert.assertNotNull(re);
 		dbInstance.commitAndCloseSession();
 		ICourse course = CourseFactory.loadCourse(re);			

@@ -42,6 +42,7 @@ import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -72,6 +73,7 @@ import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -155,19 +157,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private LifeFullIndexer lifeIndexer;
 
 	@Override
-	public RepositoryEntry create(String initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource) {
-		return create(initialAuthor, null, resourceName, displayname, description, resource, 0);
-	}
-
-	@Override
-	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt,
-			String resourceName, String displayname, String description, OLATResource resource, int access) {
-		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, access);
+	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt, String resourceName,
+			String displayname, String description, OLATResource resource, int access, Organisation organisation) {
+		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, access, organisation);
 	}
 
 	private RepositoryEntry create(String initialAuthorName, Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource, int access) {
+			String displayname, String description, OLATResource resource, int access, Organisation organisation) {
 		Date now = new Date();
 
 		RepositoryEntry re = new RepositoryEntry();
@@ -223,8 +219,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 		if(initialAuthor != null) {
 			groupDao.addMembershipTwoWay(group, initialAuthor, GroupRoles.owner.name());
 		}
-
 		dbInstance.getCurrentEntityManager().persist(re);
+		
+		if(organisation != null) {
+			RepositoryEntryToOrganisation toOrganisation = repositoryEntryToOrganisationDao.createRelation(organisation, re, false);
+			re.getOrganisations().add(toOrganisation);
+		}
 
 		autoAccessManager.grantAccess(re);
 		return re;
@@ -235,7 +235,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
-				sourceEntry.getDescription(), copyResource, RepositoryEntry.ACC_OWNERS);
+				sourceEntry.getDescription(), copyResource, RepositoryEntry.ACC_OWNERS, null);
 
 		//copy all fields
 		copyEntry.setAuthors(sourceEntry.getAuthors());
@@ -447,6 +447,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		//nullify the reference
 		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);
+		repositoryEntryToOrganisationDao.delete(entry);
 		dbInstance.commit();
 
 		if(debug) log.debug("deleteRepositoryEntry after reload entry=" + entry);
@@ -670,6 +671,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 				reToGroupDao.removeRole(re, role);
 			}
 		}
+	}
+
+	@Override
+	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry) {
+		return repositoryEntryToOrganisationDao.getOrganisationReferences(entry);
 	}
 
 	@Override

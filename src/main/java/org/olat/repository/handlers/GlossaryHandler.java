@@ -47,6 +47,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
@@ -92,11 +93,12 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -118,14 +120,14 @@ public class GlossaryHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
 		//copy resources
 		File glossyPath = GlossaryManager.getInstance().getGlossaryRootFolder(glossaryResource).getBasefile();
 		FileResource.copyResource(file, filename, glossyPath);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

@@ -445,7 +445,7 @@ public class LoginModule extends AbstractSpringModule {
 		if(roles.isUserManager()) {
 			age = getMaxAgeOrDefault(age, passwordMaxAgeUserManager);
 		}
-		if(roles.isInstitutionalResourceManager()) {
+		if(roles.isLearnResourceManager()) {
 			age = getMaxAgeOrDefault(age, passwordMaxAgeLearnResourceManager);
 		}
 		if(roles.isPoolAdmin()) {

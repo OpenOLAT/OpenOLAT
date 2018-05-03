@@ -30,7 +30,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.olat.admin.user.NewUsersNotificationsController;
 import org.olat.admin.user.UserAdminController;
@@ -71,9 +70,11 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
@@ -112,7 +113,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private final boolean isOlatAdmin;
-	private List<Organisation> userManagerOrganisations;
+	private List<Organisation> manageableOrganisations;
 
 	private LockResult lock;
 	@Autowired
@@ -130,9 +131,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	public UserAdminMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		if(!isOlatAdmin) {
-			userManagerOrganisations = organisationService.getOrganisations(getIdentity(), OrganisationRoles.usermanager);
+		UserSession usess = ureq.getUserSession();
+		isOlatAdmin = usess.getRoles().isOLATAdmin();
+		if(isOlatAdmin) {
+			manageableOrganisations = organisationService.getOrganisations();
+		} else {
+			manageableOrganisations = organisationService
+					.getManageableOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
 		}
 		
 		menuTree = new MenuTree("olatMenuTree");
@@ -359,11 +364,15 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl) {
-		return new UsermanagerUserSearchController(ureq, bwControl, content, userManagerOrganisations);
+		return new UsermanagerUserSearchController(ureq, bwControl, content, manageableOrganisations);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, SearchIdentityParams predefinedQuery) {
-		predefinedQuery.setOrganisationParents(userManagerOrganisations);
+		if(manageableOrganisations != null && predefinedQuery.getOrganisations() != null) {
+				List<OrganisationRef> allowedOrganisations = new ArrayList<>(predefinedQuery.getOrganisations());
+				allowedOrganisations	.retainAll(manageableOrganisations);
+				predefinedQuery.setOrganisations(allowedOrganisations);
+		}
 		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true);
 	}
 	
@@ -458,12 +467,12 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 	private void buildTreeOrganisationSubMenu(GenericTreeNode accessNode) {
 		List<Organisation> organisations;
-		if(userManagerOrganisations != null) {
+		if(manageableOrganisations != null) {
 			organisations = new ArrayList<>();
 			List<Organisation> allOrganisations = organisationService.getOrganisations();
 			for(Organisation organisation:allOrganisations) {
 				String path = organisation.getMaterializedPathKeys();
-				for(Organisation userManagerOrganisation:userManagerOrganisations) {
+				for(Organisation userManagerOrganisation:manageableOrganisations) {
 					if(path.startsWith(userManagerOrganisation.getMaterializedPathKeys())) {
 						organisations.add(organisation);
 					}
@@ -473,9 +482,11 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			organisations = organisationService.getOrganisations();
 		}
 		
-		Map<Long,Organisation> keytoOrganisations = organisations.stream()
-				.collect(Collectors.toMap(Organisation::getKey, l -> l));
-		
+		Map<Long,Organisation> keytoOrganisations = new HashMap<>();
+		for(Organisation organisation:organisations) {
+			keytoOrganisations.put(organisation.getKey(), organisation);
+		}
+
 		Map<Long, GenericTreeNode> fieldKeyToNode = new HashMap<>();
 		for(Organisation organisation:organisations) {
 			Long key = organisation.getKey();

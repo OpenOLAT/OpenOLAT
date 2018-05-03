@@ -162,8 +162,8 @@ public class FileElementImpl extends FormItemImpl
 			}
 
 			uploadFilename = form.getRequestMultipartFileName(component.getFormDispatchId());
-			// prevent an issue with Firefox
-			uploadFilename = FileUtils.normalizeFilenameWithSuffix(uploadFilename);
+			// prevent an issue with different operation systems and .
+			uploadFilename = FileUtils.cleanFilename(uploadFilename);
 			// use mime-type from file name to have deterministic mime types
 			uploadMimeType = WebappHelper.getMimeType(uploadFilename);
 			if (uploadMimeType == null) {

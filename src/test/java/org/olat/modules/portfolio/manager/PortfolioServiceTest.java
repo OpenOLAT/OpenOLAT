@@ -26,10 +26,12 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
@@ -74,6 +76,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	private PortfolioService portfolioService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void createNewOwnedPorfolio() {
@@ -892,7 +896,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	
 	private RepositoryEntry createTemplate(Identity initialAuthor, String displayname, String description) {
 		OLATResource resource = portfolioService.createBinderTemplateResource();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, Locale.ENGLISH);
 		return re;
 	}

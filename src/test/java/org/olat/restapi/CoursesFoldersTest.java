@@ -62,7 +62,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.repository.RepositoryEntry;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
@@ -89,7 +88,8 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		
 		admin = securityManager.findIdentityByName("administrator");
 		user = JunitTestHelper.createAndPersistIdentityAsUser("rest-cf-one");
-		course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		course1 = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		
 		//create a folder

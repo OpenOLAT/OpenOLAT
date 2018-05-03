@@ -45,6 +45,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -119,10 +120,11 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = olatResourceManager.findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		dbInstance.commit();
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
@@ -156,7 +158,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = olatResourceManager.createAndPersistOLATResourceInstance(ores);
@@ -164,7 +166,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		File zipDir = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
 		copyResource(file, filename, zipDir);
 
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		dbInstance.commit();
 		return re;
 	}
@@ -249,8 +251,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			toolbar.setMessage(translator.translate("evaluation.form.in.use"));
 			toolbar.setMessageCssClass("o_warning");
 		}
-		EvaluationFormEditorController editorCtrl = new EvaluationFormEditorController(ureq, control, formFile, restrictedEdit);
-		return editorCtrl;
+		return new EvaluationFormEditorController(ureq, control, formFile, restrictedEdit);
 	}
 	
 	public File getFormFile(RepositoryEntry re) {
@@ -323,7 +324,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			Path relativeFile = source.relativize(file);
 	        final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
 	        if(filter.matches(file)) {
-	        	Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+	        		Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 	        }
 	        return FileVisitResult.CONTINUE;
 		}
@@ -334,7 +335,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			Path relativeDir = source.relativize(dir);
 	        final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
 	        if(Files.notExists(dirToCreate)){
-	        	Files.createDirectory(dirToCreate);
+	        		Files.createDirectory(dirToCreate);
 	        }
 	        return FileVisitResult.CONTINUE;
 		}

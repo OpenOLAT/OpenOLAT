@@ -36,10 +36,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -55,7 +55,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.FileHandler;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -81,10 +80,11 @@ public abstract class QTIHandler extends FileHandler {
 	}
 
 	protected RepositoryEntry createResource(String type, FileResource ores, Identity initialAuthor,
-			String displayname, String description, Object object, Locale locale) {
+			String displayname, String description, Object object, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		
 		File fRepositoryQTI = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), "qti.zip");
@@ -99,7 +99,7 @@ public abstract class QTIHandler extends FileHandler {
 	}
 
 	protected RepositoryEntry importResource(Identity initialAuthor, String displayname, String description,
-			FileResource ores, File file, String filename) {
+			Organisation organisation, FileResource ores, File file, String filename) {
 		
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
@@ -107,7 +107,7 @@ public abstract class QTIHandler extends FileHandler {
 		FileResource.copyResource(file, filename, zipDir);
 		ZipUtil.zipAll(zipDir, new File(fResourceFileroot, "qti.zip"));
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		//zip it
 		return re;
@@ -137,9 +137,6 @@ public abstract class QTIHandler extends FileHandler {
 			return true;
 		}
 	}
-
-	@Override
-	public abstract MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl);
 
 	@Override
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {

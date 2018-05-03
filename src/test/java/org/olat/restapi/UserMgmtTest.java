@@ -1018,7 +1018,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Assert.assertTrue(reloadRoles.isAuthor());
 		Assert.assertFalse(reloadRoles.isGroupManager());
 		Assert.assertFalse(reloadRoles.isGuestOnly());
-		Assert.assertFalse(reloadRoles.isInstitutionalResourceManager());
+		Assert.assertFalse(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
 		Assert.assertFalse(reloadRoles.isOLATAdmin());
 		Assert.assertFalse(reloadRoles.isPoolAdmin());

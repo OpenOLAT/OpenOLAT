@@ -57,14 +57,14 @@ public class RolesVO {
 		userManager = roles.isUserManager();
 		author = roles.isAuthor();
 		guestOnly = roles.isGuestOnly();
-		institutionalResourceManager = roles.isInstitutionalResourceManager();
+		institutionalResourceManager = roles.isLearnResourceManager();
 		poolAdmin = roles.isPoolAdmin();
 		curriculumManager = roles.isCurriculumManager();
 		invitee = roles.isInvitee();
 	}
 	
 	public Roles toRoles() {
-		return new Roles(systemAdmin, olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, curriculumManager, invitee);
+		return new Roles(systemAdmin, olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, curriculumManager, false, invitee);
 	}
 
 	public boolean isSystemAdmin() {

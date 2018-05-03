@@ -29,7 +29,6 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -85,11 +84,8 @@ public class MyForumsTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void myForums() throws IOException, URISyntaxException {
-		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
-		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		String softKey = UUID.randomUUID().toString().replace("_", "");
-		RepositoryEntry myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
+		URL courseUrl = MyForumsTest.class.getResource("myCourseWS.zip");
+		RepositoryEntry myCourseRe = JunitTestHelper.deployCourse(null, "My course", courseUrl);// 4);	
 		Assert.assertNotNull(myCourseRe);
 		ICourse myCourse = CourseFactory.loadCourse(myCourseRe);
 		

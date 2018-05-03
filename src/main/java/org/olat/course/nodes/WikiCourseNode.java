@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -173,8 +174,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		//"false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
-		RepositoryEntry entry = WikiEditController.getWikiReference(getModuleConfiguration(), false);
-		return entry;
+		return WikiEditController.getWikiReference(getModuleConfiguration(), false);
 	}
 
 	@Override
@@ -194,12 +194,12 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(WikiResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			WikiEditController.setWikiRepoReference(re, getModuleConfiguration());
 		} else {
 			WikiEditController.removeWikiReference(getModuleConfiguration());

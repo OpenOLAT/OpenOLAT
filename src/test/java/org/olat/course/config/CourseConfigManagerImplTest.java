@@ -30,7 +30,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -43,9 +45,6 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description: <br>
- * TODO: patrick Class Description for CourseConfigManagerImplTest
- * <P>
  * Initial Date: Jun 3, 2005 <br>
  * 
  * @author patrick
@@ -58,12 +57,16 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OLATResourceManager resourceManager;
+	@Autowired
+	private OrganisationService organisationService;
 
 	@Test
 	public void testConfigFileCRUD() {
 		// create course and persist as OLATResourceImpl
 		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
-		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "JUnit course configuration course", "A JUnit course", resource);
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry addedEntry = repositoryService.create(null, "Ayanami", "-", "JUnit course configuration course", "A JUnit course", resource, 0, defOrganisation);
 		ICourse course = CourseFactory.createCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title",
 				"objective 1 objective 2 objective 3");
 		dbInstance.commitAndCloseSession();

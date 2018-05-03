@@ -85,7 +85,6 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.notification.UsersSubscriptionManager;
@@ -368,7 +367,8 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	public void testGetCourseForumNotifications() throws IOException, URISyntaxException {
 		//create a course with a forum
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("rest-not-6-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(id, "Course forum not", "Course forum with notification", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		//create the forum
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
@@ -417,7 +417,8 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	public void testGetCourseFolderNotifications() throws IOException, URISyntaxException {
 		//create a course with a forum
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("rest-not-7-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(id, "Course folder not", "Course with folder and notification", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		//create the folder
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");

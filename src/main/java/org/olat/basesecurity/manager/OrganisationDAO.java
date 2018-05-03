@@ -20,13 +20,15 @@
 package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.OrganisationRef;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
@@ -34,6 +36,7 @@ import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -214,7 +217,7 @@ public class OrganisationDAO {
 	
 	public List<Organisation> getOrganisations(IdentityRef identity, List<String> roleList) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select org from organisation org")
+		sb.append("select distinct org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)");
@@ -223,6 +226,55 @@ public class OrganisationDAO {
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("roles", roleList)
 				.getResultList();
+	}
+	
+	public List<Organisation> getOrganisations(Collection<OrganisationRef> rootOrganisations) {
+		if(rootOrganisations == null || rootOrganisations.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select org from organisation org")
+		  .append(" where org.key in (:organisationKeys)");
+
+		List<Long> organisationKeys = rootOrganisations.stream()
+				.map(OrganisationRef::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("organisationKeys", organisationKeys)
+				.getResultList();
+	}
+	
+	public List<Organisation> getDescendants(Organisation organisation) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select org from organisation org")
+		  .append(" where org.materializedPathKeys like :materializedPathKeys");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("materializedPathKeys", organisation.getMaterializedPathKeys() + "%")
+				.getResultList();
+	}
+	
+
+	public boolean hasAnyRole(IdentityRef identity, String excludeRole) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select membership.key from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey");
+		
+		if(StringHelper.containsNonWhitespace(excludeRole)) {
+			sb.append(" and not(membership.role=:excludeRole)");
+		}
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey());
+		if(StringHelper.containsNonWhitespace(excludeRole)) {
+			query.setParameter("excludeRole", excludeRole);
+		}
+
+		List<Long> memberships = query.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return memberships != null && !memberships.isEmpty() && memberships.get(0) != null && memberships.get(0).longValue() > 0;	
 	}
 	
 	public boolean hasRole(IdentityRef identity, String organisationIdentifier, String... role) {

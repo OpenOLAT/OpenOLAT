@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -49,6 +48,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -62,6 +63,8 @@ import org.junit.Assert;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class WebDAVConnection implements Closeable {
+	
+	private static final OLog log = Tracing.createLoggerFor(WebDAVConnection.class);
 	
 	private final int port;
 	private final String host;
@@ -236,7 +239,11 @@ public class WebDAVConnection implements Closeable {
 	
 	@Override
 	public void close() {
-		IOUtils.closeQuietly(httpclient);
+		try {
+			httpclient.close();
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	/**

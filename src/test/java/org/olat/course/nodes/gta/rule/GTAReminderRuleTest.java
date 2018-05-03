@@ -60,7 +60,6 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -319,7 +318,8 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("initial-launch-2");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("initial-launch-3");
 
-		ICourse course = CoursesWebService.createEmptyCourse(null, "initial-launch-dates", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(null);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());

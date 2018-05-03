@@ -74,7 +74,7 @@ class EvaluationFormTestsHelper {
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
-		return repositoryService.create(author, null, "", "Display name", "Description", resource, RepositoryEntry.ACC_OWNERS);
+		return repositoryService.create(author, null, "", "Display name", "Description", resource, RepositoryEntry.ACC_OWNERS, null);
 	}
 	
 	EvaluationFormSurvey createSurvey() {

@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -359,7 +360,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @return Controller for user driven import, or null after all import tasks
 	 *         have finished.
 	 */
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences);
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences);
 	
 	/**
 	 * Remap the node to the context of the course after import.

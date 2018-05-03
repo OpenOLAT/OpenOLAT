@@ -40,6 +40,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -51,7 +52,6 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.manager.VideoExportMediaResource;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.repository.RepositoryEntry;
@@ -84,7 +84,8 @@ public class VideoHandler extends FileHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		return null;
 	}
 
@@ -109,13 +110,13 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String fileName) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String fileName) {
 
 		// 1) Create resource and repository entry
 		FileResource ores = new VideoFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
 		RepositoryEntry repoEntry = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "",
-				displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		
 		if(fileName == null) {
 			fileName = file.getName();
@@ -151,8 +152,7 @@ public class VideoHandler extends FileHandler {
 			return new NotFoundMediaResource();
 		}
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);		
-		VideoExportMediaResource exportResource = videoManager.getVideoExportMediaResource(repoEntry);
-		return exportResource;
+		return videoManager.getVideoExportMediaResource(repoEntry);
 	}
 
 	@Override

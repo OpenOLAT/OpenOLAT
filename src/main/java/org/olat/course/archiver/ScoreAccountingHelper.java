@@ -367,10 +367,13 @@ public class ScoreAccountingHelper {
 			if(acnode instanceof STCourseNode || !acnode.hasScoreConfigured()) {
 				minVal = maxVal = cutVal = "-";
 			} else {
-				minVal = acnode.getMinScoreConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getMinScoreConfiguration());
-				maxVal = acnode.getMaxScoreConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getMaxScoreConfiguration());
+				Float minScoreConfig = acnode.getMinScoreConfiguration();
+				Float maxScoreConfig = acnode.getMaxScoreConfiguration();
+				minVal = minScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(minScoreConfig);
+				maxVal = maxScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(maxScoreConfig);
 				if (acnode.hasPassedConfigured()) {
-					cutVal = acnode.getCutValueConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getCutValueConfiguration());
+					Float cutValueConfig = acnode.getCutValueConfiguration();
+					cutVal = cutValueConfig == null ? "-" : AssessmentHelper.getRoundedScore(cutValueConfig);
 				} else {
 					cutVal = "-";
 				}

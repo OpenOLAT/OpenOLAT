@@ -30,6 +30,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -53,10 +54,8 @@ public interface RepositoryService {
 
 
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt,
-			String resourceName, String displayname, String description, OLATResource resource, int access);
-
-	public RepositoryEntry create(String initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource);
+			String resourceName, String displayname, String description,
+			OLATResource resource, int access, Organisation organisation);
 
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname);
 
@@ -305,6 +304,13 @@ public interface RepositoryService {
 	 * @return A merged repository entry
 	 */
 	public RepositoryEntry addOrganisation(RepositoryEntry entry, Organisation organisation, boolean master);
+	
+	/**
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry);
 	
 	
 	

@@ -29,7 +29,6 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -85,10 +84,8 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 		
 		if(setup) return;
 		
-		URL courseWithForumsUrl = UserFoldersTest.class.getResource("myCourseWS.zip");
-		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, UUID.randomUUID().toString(), 4);
+		URL courseUrl = UserFoldersTest.class.getResource("myCourseWS.zip");
+		myCourseRe = JunitTestHelper.deployCourse(null, "My course", courseUrl);// 4);
 		Assert.assertNotNull(myCourseRe);
 		myCourse = CourseFactory.loadCourse(myCourseRe);
 

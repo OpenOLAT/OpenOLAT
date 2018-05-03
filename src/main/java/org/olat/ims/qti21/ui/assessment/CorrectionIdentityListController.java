@@ -176,6 +176,10 @@ public class CorrectionIdentityListController extends FormBasicController {
 		saveTestsButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
 	}
 	
+	public void reloadModel() {
+		loadModel(true, true);
+	}
+	
 	private void loadModel(boolean reset, boolean lastSessions) {
 		if(lastSessions) {
 			model.loadLastSessions();
@@ -289,6 +293,8 @@ public class CorrectionIdentityListController extends FormBasicController {
 				doUnlock();
 				loadModel(false, true);
 				stackPanel.popController(identityItemListCtrl);
+			} else if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(confirmSaveTestCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -361,7 +367,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
 				true, translate("save.tests"));
-		cmc.activate();
 		listenTo(cmc);
 		cmc.activate();
 	}

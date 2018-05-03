@@ -69,11 +69,6 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return new CourseSiteContextEntryControllerCreator();
 	}
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		RepositoryEntry re = getRepositoryEntry(ureq, ces.get(0));
@@ -97,7 +92,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		UserSession usess = ureq.getUserSession();
 		if(re.getAccess() == RepositoryEntry.DELETED) {
 			Roles roles = usess.getRoles();
-			if(!roles.isInstitutionalResourceManager() && !roles.isOLATAdmin()) {
+			if(!roles.isLearnResourceManager() && !roles.isOLATAdmin()) {
 				return messageController(ureq, wControl, "repositoryentry.deleted");
 			}
 		}

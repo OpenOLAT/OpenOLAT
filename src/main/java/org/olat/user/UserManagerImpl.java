@@ -47,6 +47,8 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -71,6 +73,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class UserManagerImpl extends UserManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(UserManagerImpl.class);
+	
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
   private UserDisplayNameCreator userDisplayNameCreator;
@@ -152,13 +157,9 @@ public class UserManagerImpl extends UserManager {
 			.append(" inner join fetch identity.user user ")
 			.append(" where user.").append(propName).append("=:propValue");
 
-		List<Identity> userKeys = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("propValue", propValue).getResultList();
-		if(userKeys.isEmpty()) {
-			return null;
-		}
-		return userKeys;
 	}
 
 	@Override
@@ -173,7 +174,7 @@ public class UserManagerImpl extends UserManager {
 			String email = emails.get(i).toLowerCase();
 			if (!MailHelper.isValidEmailAddress(email)) {
 				emails.remove(i);
-				logWarn("Invalid email address: " + email, null);
+				log.warn("Invalid email address: " + email, null);
 			}
 			else {
 				emails.set(i, email);
@@ -278,7 +279,7 @@ public class UserManagerImpl extends UserManager {
 			String fullName = getUserDisplayName(identity);
 			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 		} catch (Exception e) {
-			logWarn("Error update usernames cache", e);
+			log.warn("Error update usernames cache", e);
 		}
 		User user = updateUser(identity.getUser());
 		((IdentityImpl)identity).setUser(user);

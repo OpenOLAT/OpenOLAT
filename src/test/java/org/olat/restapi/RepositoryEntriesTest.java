@@ -60,9 +60,11 @@ import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -84,7 +86,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * @author srosse, stephane.rosse@frentix.com, http:
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
@@ -97,6 +99,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private DB dbInstance;
 
@@ -847,7 +851,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().saveObject(r);
 		DBFactory.getInstance().intermediateCommit();
 
-		RepositoryEntry d = repositoryService.create(displayName, "-", displayName, "Repo entry", r);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry d = repositoryService.create(null, displayName, "-", displayName, "Repo entry", r, 0, defOrganisation);
 		DBFactory.getInstance().commit();
 		return d;
 	}

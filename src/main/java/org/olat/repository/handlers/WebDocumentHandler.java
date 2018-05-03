@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -76,8 +77,6 @@ import org.olat.resource.OLATResourceManager;
  *
  * @author Mike Stock
  * 
- * Comment:  
- * 
  */
 public class WebDocumentHandler extends FileHandler {
 	
@@ -99,7 +98,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		return null;
 	}
 	
@@ -140,7 +140,7 @@ public class WebDocumentHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		FileResource ores;
 		if (DocFileResource.TYPE_NAME.equals(supportedType) && DocFileResource.validate(filename)) {
@@ -174,7 +174,7 @@ public class WebDocumentHandler extends FileHandler {
 		}
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

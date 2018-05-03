@@ -29,7 +29,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessmentStatistics;
@@ -43,7 +42,6 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +70,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	public void assessmentTool_coach() {
 		//course
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "course-assessment-tool", "course long name", null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
 		//members as participant and coach
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-1");
@@ -81,7 +79,6 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-4");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-1");
 
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		

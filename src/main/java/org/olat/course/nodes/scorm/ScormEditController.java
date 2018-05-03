@@ -31,10 +31,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
@@ -210,7 +210,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
-		//= conf.get(CONFIG_CUTVALUE);
 		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons,
 				assessableType, cutvalue, fullWindow,
 				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
@@ -273,10 +272,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == searchController) {			
 			cmc.deactivate();
@@ -424,7 +420,7 @@ class VarForm extends FormBasicController {
 	private SelectionElement closeOnFinishEl;
 	private SingleSelection isAssessableEl;
 	private SelectionElement skipLaunchPageEl;
-	private IntegerElement cutValueEl;
+	private TextElement cutValueEl;
 	private SingleSelection attemptsEl;
 	private MultipleSelectionElement advanceScoreEl;
 	private MultipleSelectionElement scoreAttemptsEl;
@@ -474,7 +470,11 @@ class VarForm extends FormBasicController {
 	 * @return
 	 */
 	public int getCutValue() {
-		return cutValueEl.getIntValue();
+		String val = cutValueEl.getValue();
+		if(StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
+			return Integer.parseInt(val);
+		}
+		return 0;
 	}
 	
 	public boolean isFullWindow() {
@@ -527,19 +527,24 @@ class VarForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		cutValueEl.clearError();
-		if(cutValueEl.isVisible() && cutValueEl.isEnabled() && StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
-			try {
-				Integer.parseInt(cutValueEl.getValue());
-			} catch (NumberFormatException e) {
+		if(cutValueEl.isVisible() && cutValueEl.isEnabled()) {
+			if(StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
+				try {
+					Integer.parseInt(cutValueEl.getValue());
+				} catch (NumberFormatException e) {
+					cutValueEl.setErrorKey("cutvalue.validation", null);
+					allOk &= false;
+				}
+			} else {
 				cutValueEl.setErrorKey("cutvalue.validation", null);
 				allOk &= false;
 			}
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -570,8 +575,8 @@ class VarForm extends FormBasicController {
 			isAssessableEl.select(assessableKeys[0], true);
 		}
 		
-		cutValueEl = uifactory.addIntegerElement("cutvalue", "cutvalue.label", 0, formLayout);
-		cutValueEl.setIntValue(cutValue);
+		String val = cutValue < 0 ? "" : Integer.toString(cutValue);
+		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 5, val, formLayout);
 		cutValueEl.setDisplaySize(3);
 
 		advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{ "ison" }, new String[]{ "" });

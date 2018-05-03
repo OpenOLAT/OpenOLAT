@@ -29,7 +29,9 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -66,6 +68,8 @@ public class PublishProcessTest extends OlatTestCase {
 	private OLATResourceManager olatResourceManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	/**
 	 * Publish process without error
@@ -326,9 +330,10 @@ public class PublishProcessTest extends OlatTestCase {
 		if(!StringHelper.containsNonWhitespace(softKey)) {
 			softKey = importExport.getSoftkey();
 		}
-		
-		RepositoryEntry re = repositoryService.create(importExport.getInitialAuthor(), importExport.getResourceName(),
-				importExport.getDisplayName(), importExport.getDescription(), newCourseResource);
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, importExport.getInitialAuthor(), importExport.getResourceName(),
+				importExport.getDisplayName(), importExport.getDescription(), newCourseResource, 0, defOrganisation);
 		// ok, continue import
 		re.setSoftkey(softKey);
 		// set access configuration

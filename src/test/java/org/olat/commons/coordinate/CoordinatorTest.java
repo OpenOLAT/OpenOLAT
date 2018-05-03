@@ -37,9 +37,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -62,6 +64,8 @@ public class CoordinatorTest extends OlatTestCase {
 	
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 
 	/**
@@ -342,7 +346,8 @@ public class CoordinatorTest extends OlatTestCase {
 		OLATResource r =  CoreSpringFactory.getImpl(OLATResourceManager.class).findOrPersistResourceable(ores);
 		int maxLoop = 500;
 
-		final RepositoryEntry re = repositoryService.create("test", "perfTest", "testPerf", "perfTest description", r);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		final RepositoryEntry re = repositoryService.create(null, "test", "perfTest", "testPerf", "perfTest description", r, 0, defOrganisation);
 		// create security group
 		repositoryService.update(re);
 		DBFactory.getInstance().commitAndCloseSession();
@@ -361,6 +366,7 @@ public class CoordinatorTest extends OlatTestCase {
 		long startTimeDoInSync = System.currentTimeMillis();
 		for (int i = 0; i<maxLoop ; i++) {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
+				@Override
 				public void execute() {
 					doTestPerformanceJob(re);
 				}

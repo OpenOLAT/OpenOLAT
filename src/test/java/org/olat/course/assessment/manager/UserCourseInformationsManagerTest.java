@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.group.BusinessGroup;
@@ -42,7 +43,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,8 +68,9 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createUpdateCourseInfos_create() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-1-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -91,8 +92,9 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createUpdateCourseInfos_updateToo() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-1-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -114,8 +116,9 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void createUpdateCourseInfos_updateToo_implementationDetails() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-1-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-1-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -138,8 +141,9 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getRecentLaunchDate() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-7-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-7-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -152,8 +156,9 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getInitialLaunchDate_ressource() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -166,12 +171,13 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getInitialLaunchDate_repositoryEntry() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		userCourseInformationsManager.updateUserCourseInformations(courseResource, user);
 		dbInstance.commitAndCloseSession();
 		
@@ -183,11 +189,12 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	public void getInitialParticiantLaunchDate_businessGroup() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("init-launch-1-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("init-launch-2-");
-		ICourse course = CoursesWebService.createEmptyCourse(id1, "course-launch-dates", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id1);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		userCourseInformationsManager.updateUserCourseInformations(courseResource, id1);
 		userCourseInformationsManager.updateUserCourseInformations(courseResource, id2);
 		dbInstance.commit();
@@ -206,7 +213,8 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	public void getInitialLaunchDates() {
 		Identity user1 = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-3-" + UUID.randomUUID().toString());
 		Identity user2 = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-4-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user1, "course-launch-dates", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user1);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -232,7 +240,8 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-7-");
 		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-8-");
 		Identity user3 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-9-");
-		ICourse course = CoursesWebService.createEmptyCourse(user1, "course-launch-dates", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user1);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -259,7 +268,8 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	@Test
 	public void updateInitialLaunchDates_loop() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-5-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		for(int i=0; i<10; i++) {
@@ -283,7 +293,8 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	@Test
 	public void updateInitialLaunchDates_concurrent() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-concurrent-6-" + UUID.randomUUID().toString());
-		ICourse course = CoursesWebService.createEmptyCourse(user, "course-concurrent-launch-dates", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		
 		final int numThreads = 20;

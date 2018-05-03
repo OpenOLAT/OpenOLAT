@@ -37,6 +37,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -76,6 +77,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	
 	private final BGAreaManager areaManager;
 	private final BGRightManager rightManager;
+	private final RepositoryManager repositoryManager;
 	private final RepositoryService repositoryService;
 	private final OrganisationService organisationService;
 	private final BusinessGroupService businessGroupService;
@@ -88,6 +90,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		this.courseResource = courseResource;
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -98,6 +101,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		this.courseResource = courseRepoEntry.getOlatResource();
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -268,6 +272,11 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		return repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.owner.name());
 	}
 	
+	@Override
+	public boolean isIdentityCourseLearnResourceManager(Identity identity, Roles roles) {
+		return repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, courseRepoEntry);
+	}
+
 	@Override
 	public boolean isIdentityInOrganisation(IdentityRef identity, String organisationIdentifier, OrganisationRoles... roles) {
 		return organisationService.hasRole(organisationIdentifier, identity, roles);

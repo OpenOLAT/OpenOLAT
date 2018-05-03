@@ -57,13 +57,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
@@ -111,6 +112,10 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
@@ -137,9 +142,9 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
 		course = rm.findOrPersistResourceable(resourceable);
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
-		DBFactory.getInstance().commit();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "administrator", "-", "rest-re", null, course, 0, defOrganisation);
+		dbInstance.commit();
 		assertNotNull(re);
 		
 		//create learn group
@@ -148,7 +153,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		// create groups without waiting list
 		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
 		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		//permission to see owners and participants
 		businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
 		businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);

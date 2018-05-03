@@ -28,6 +28,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.site.model.CourseSiteConfiguration;
@@ -80,8 +81,7 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	
 	protected CourseSiteConfiguration getCourseSiteconfiguration() {
 		SiteDefinitions siteModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
-		CourseSiteConfiguration config = siteModule.getConfigurationCourseSite1();
-		return config;
+		return siteModule.getConfigurationCourseSite1();
 	}
 	
 	protected SiteInstance createSite(UserRequest ureq, CourseSiteConfiguration courseConfig, SiteConfiguration config) {
@@ -92,10 +92,12 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		
 		UserSession usess = ureq.getUserSession();
 		if(usess == null || usess.getRoles() == null) return null;
+		
+		Roles roles = usess.getRoles();
 
-		boolean canSeeToolController = usess.getRoles().isAuthor()
-				|| usess.getRoles().isOLATAdmin()
-				|| usess.getRoles().isInstitutionalResourceManager();
+		boolean canSeeToolController = roles.isAuthor()
+				|| roles.isOLATAdmin()
+				|| roles.isLearnResourceManager();
 		boolean showToolController = true;
 		if (!canSeeToolController && !courseConfig.isToolbar()) {
 			showToolController = false;

@@ -37,6 +37,7 @@ import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -94,13 +95,14 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 
 		PortfolioStructureMap mapTemp = eSTMgr.createAndPersistPortfolioMapTemplateFromEntry(initialAuthor, re);
 		// add a page, as each map should have at least one per default!
@@ -126,7 +128,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
 		
@@ -135,7 +137,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		if(structure != null) {
 			OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
 			re = CoreSpringFactory.getImpl(RepositoryService.class)
-					.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+					.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 			ePFMgr.importPortfolioMapTemplate(structure, resource);
 		}
 		return re;

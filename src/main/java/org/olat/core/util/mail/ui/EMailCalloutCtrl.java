@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.admin.user.UserSearchListProvider;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -86,7 +87,8 @@ public class EMailCalloutCtrl extends FormBasicController {
 			if(roles.isOLATAdmin()) {
 				searcheableOrganisations = null;
 			} else {
-				searcheableOrganisations = organisationService.getSearchableOrganisations(getIdentity(), roles);
+				searcheableOrganisations = organisationService
+						.getSearchableOrganisations(getIdentity(), roles, OrganisationRoles.usermanager);
 			}
 			ListProvider provider = new UserSearchListProvider(searcheableOrganisations);
 			autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, allowExternalAddress, 60, 3, null, mainForm);

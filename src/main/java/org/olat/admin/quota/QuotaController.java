@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,8 @@ public class QuotaController extends BasicController {
 	public QuotaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		if (!quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles())) {
+		UserSession usess = ureq.getUserSession();
+		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isSystemAdmin()) {
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
 		}
 

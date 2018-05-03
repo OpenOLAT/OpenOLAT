@@ -194,4 +194,15 @@ public class OrganisationTypeImpl implements Persistable, OrganisationType {
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("organisationType[key=").append(getKey() == null ? "" : getKey().toString())
+		  .append(":displayName=").append(displayName == null ? "" : displayName)
+		  .append(":identifier=").append(identifier == null ? "" : identifier)
+		  .append("]")
+		  .append(super.toString());
+		return sb.toString();
+	}
 }

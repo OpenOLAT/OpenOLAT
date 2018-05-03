@@ -66,13 +66,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -115,7 +115,8 @@ public class CourseTest extends OlatJerseyTestCase {
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
 			auth2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-two");
 			
-			course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+			course1 = CourseFactory.loadCourse(courseEntry);
 			
 			dbInstance.closeSession();
 		} catch (Exception e) {
@@ -223,7 +224,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteCourses() throws IOException, URISyntaxException {
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "courseToDel", "course to delete", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		
 		assertTrue(conn.login("administrator", "openolat"));
@@ -233,7 +235,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		List<String> courseType = new ArrayList<String>();
+		List<String> courseType = new ArrayList<>();
 		courseType.add(CourseModule.getCourseTypeName());
 		Roles roles = new Roles(true, true, true, true, false, true, false);
 
@@ -270,7 +272,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void addAuthors() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-auth-1");
 		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-auth-2");
 		dbInstance.commitAndCloseSession();
@@ -441,7 +444,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void addCoaches() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-coach-1");
 		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-coach-2");
 		dbInstance.commitAndCloseSession();
@@ -538,7 +542,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void addParticipants() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-part-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-part-2");
 		dbInstance.commitAndCloseSession();
@@ -568,7 +573,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void changedStatus_closed() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
-		ICourse courseToClose = CoursesWebService.createEmptyCourse(admin, "Course to close", "A course to close.", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse courseToClose = CourseFactory.loadCourse(courseEntry);
 		dbInstance.closeSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -587,7 +593,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Test
 	public void changedStatus_deleted() throws IOException, URISyntaxException {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
-		ICourse courseToClose = CoursesWebService.createEmptyCourse(admin, "Course to delete (soft)", "A course to delete.", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse courseToClose = CourseFactory.loadCourse(courseEntry);
 		dbInstance.closeSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")

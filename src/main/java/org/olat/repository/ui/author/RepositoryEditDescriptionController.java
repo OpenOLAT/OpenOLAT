@@ -39,6 +39,7 @@ import java.util.UUID;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -166,8 +167,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		repoEntryType = repositoryEntry.getOlatResource().getResourceableTypeName();
 		initForm(ureq);
 	}
-	
-	public RepositoryEntry getEntry() {
+
+	/**
+	 * @return Returns the repositoryEntry.
+	 */
+	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
 	}
 
@@ -421,7 +425,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		if(roles.isOLATAdmin()) {
 			organisations = organisationService.getOrganisations();
 		} else {
-			organisations = organisationService.getSearchableOrganisations(getIdentity(), roles);
+			organisations = organisationService
+					.getManageableOrganisations(getIdentity(), roles, OrganisationRoles.learnresourcemanager);
 		}
 		
 		List<String> keyList = new ArrayList<>();
@@ -737,12 +742,5 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-
-	/**
-	 * @return Returns the repositoryEntry.
-	 */
-	public RepositoryEntry getRepositoryEntry() {
-		return repositoryEntry;
 	}
 }

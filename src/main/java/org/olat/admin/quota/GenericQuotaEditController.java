@@ -25,6 +25,9 @@
 
 package org.olat.admin.quota;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.vfs.Quota;
@@ -53,13 +57,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author gnaegi
  */
-public class GenericQuotaEditController extends BasicController {
+class GenericQuotaEditController extends BasicController {
 
 	private VelocityContainer myContent;
 	private QuotaForm quotaForm;
 	
 	private Quota currentQuota;
 	private Link delQuotaButton;
+	
+	private List<OrganisationRef> organisations;
 	
 	@Autowired
 	private QuotaManager quotaManager;
@@ -75,8 +81,10 @@ public class GenericQuotaEditController extends BasicController {
 	 * @param wControl
 	 * @param quotaPath The path for which the quota should be edited
 	 */
-	GenericQuotaEditController(UserRequest ureq, WindowControl wControl, String relPath) {
+	GenericQuotaEditController(UserRequest ureq, WindowControl wControl, String relPath, List<? extends OrganisationRef> organisations) {
 		super(ureq, wControl);
+
+		this.organisations = organisations == null ? null : new ArrayList<>(organisations);
 		
 		// check if quota foqf.cannot.del.defaultr this path already exists
 		currentQuota = quotaManager.getCustomQuota(relPath);
@@ -136,7 +144,7 @@ public class GenericQuotaEditController extends BasicController {
 	}
 
 	private void initMyContent(UserRequest ureq) {
-		if (!quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles())) {
+		if (!quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles(), organisations)) {
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
 		}
 
@@ -192,7 +200,9 @@ public class GenericQuotaEditController extends BasicController {
 	}
 
 	public Quota getQuota() {
-		if (currentQuota == null) throw new AssertException("getQuota called but currentQuota is null");
+		if (currentQuota == null) {
+			throw new AssertException("getQuota called but currentQuota is null");
+		}
 		return currentQuota;
 	}
 		

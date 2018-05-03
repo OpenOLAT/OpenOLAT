@@ -66,6 +66,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -382,8 +383,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 						doLaunch(ureq, businessGroup);
 					} else if(TABLE_ACTION_DELETE.equals(cmd)) {
 						confirmDelete(ureq, Collections.singletonList(item));
-					} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
-						doLaunch(ureq, businessGroup);
 					} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 						doEdit(ureq, businessGroup);
 					} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
@@ -759,8 +758,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		} 
 		
-		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor()
-				|| ureq.getUserSession().getRoles().isInstitutionalResourceManager();
+		UserSession usess = ureq.getUserSession();
+		boolean isAuthor = usess.getRoles().isAuthor() || usess.getRoles().isLearnResourceManager();
 
 		Step start = new BGConfigToolsStep(ureq, isAuthor);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -1057,16 +1056,14 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 	protected final List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<? extends BusinessGroupRef> items, boolean editableOnly) {
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		for(BusinessGroupRef item:items) {
 			groupKeys.add(item.getKey());
 		}
 		if(editableOnly) {
 			filterEditableGroupKeys(ureq, groupKeys);
 		}
-
-		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
-		return groups;
+		return businessGroupService.loadBusinessGroups(groupKeys);
 	}
 	
 	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {

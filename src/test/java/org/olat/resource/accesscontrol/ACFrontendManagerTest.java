@@ -33,9 +33,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
 import org.olat.group.BusinessGroup;
@@ -83,6 +85,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -400,8 +404,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.getCurrentEntityManager().persist(r);
 
 		// now make a repository entry for this resource
-		RepositoryEntry re = repositoryService.create("Florian Gnägi", "Access controlled by OLAT ",
-				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description", r);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Florian Gnägi", "Access controlled by OLAT ",
+				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description", r, 0, defOrganisation);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		re = repositoryService.update(re);
 		dbInstance.commitAndCloseSession();

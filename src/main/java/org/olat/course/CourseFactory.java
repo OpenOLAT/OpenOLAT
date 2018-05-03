@@ -26,7 +26,6 @@
 package org.olat.course;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,7 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarNotificationManager;
@@ -126,11 +124,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -158,20 +153,15 @@ public class CourseFactory {
   //this is the lock that must be aquired at course editing, copy course, export course, configure course.
 	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<>();
 	private static final OLog log = Tracing.createLoggerFor(CourseFactory.class);
-	private static RepositoryManager repositoryManager;
 	private static ReferenceManager referenceManager;
-	private static RepositoryService repositoryService;
 
 
 	/**
 	 * [used by spring]
 	 */
-	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager,
-			RepositoryService repositoryService, ReferenceManager referenceManager) {
+	private CourseFactory(CoordinatorManager coordinatorManager, ReferenceManager referenceManager) {
 		loadedCourses = coordinatorManager.getCoordinator().getCacher().getCache(CourseFactory.class.getSimpleName(), "courses");
-		CourseFactory.repositoryManager = repositoryManager;
 		CourseFactory.referenceManager = referenceManager;
-		CourseFactory.repositoryService = repositoryService;
 	}
 
 	/**
@@ -567,39 +557,6 @@ public class CourseFactory {
 		FileUtils.deleteDirsAndFiles(fCanonicalCourseBasePath, true, true);
 		return null;
 	}
-
-	/**
-	 * Deploys a course from an exported course ZIP file. This process is unatended and
-	 * therefore relies on some default assumptions on how to setup the entry and add
-	 * any referenced resources to the repository.
-	 *
-	 * @param exportedCourseZIPFile
-	 */
-	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, String softKey, int access) {
-
-		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(exportedCourseZIPFile);
-		if(!StringHelper.containsNonWhitespace(softKey)) {
-			softKey = importExport.getSoftkey();
-		}
-		RepositoryEntry existingEntry = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
-		if (existingEntry != null) {
-			log.info("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.");
-			return existingEntry;
-		}
-
-
-		RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
-		RepositoryEntry re = courseHandler.importResource(null, importExport.getInitialAuthor(), importExport.getDisplayName(), importExport.getDescription(),
-				true, Locale.ENGLISH, exportedCourseZIPFile, exportedCourseZIPFile.getName());
-
-		re.setSoftkey(softKey);
-		repositoryService.update(re);
-
-		ICourse course = loadCourse(re);
-		publishCourse(course, access, false,  null, Locale.ENGLISH);
-		return re;
-	}
-
 
 	/**
 	 * Publish the course with some standard options
@@ -1057,9 +1014,7 @@ public class CourseFactory {
 			this.charset = charset;
 		}
 
-		/**
-		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-		 */
+		@Override
 		public void visit(INode node) {
 			CourseNode cn = (CourseNode) node;
 
@@ -1067,18 +1022,12 @@ public class CourseFactory {
 					+ StringHelper.transformDisplayNameToFileSystemName(cn.getShortName())
 					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 
-			FileOutputStream fileStream = null;
-			ZipOutputStream exportStream = null;
-			try {
-				File exportFile = new File(exportPath, archiveName);
-				fileStream = new FileOutputStream(exportFile);
-				exportStream = new ZipOutputStream(fileStream);
+			File exportFile = new File(exportPath, archiveName);
+			try(FileOutputStream fileStream = new FileOutputStream(exportFile);
+					ZipOutputStream exportStream = new ZipOutputStream(fileStream);) {
 				cn.archiveNodeData(locale, course, null, exportStream, charset);
-			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
 				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(exportStream);
-				IOUtils.closeQuietly(fileStream);
 			}
 		}
 	}

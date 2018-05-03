@@ -111,7 +111,6 @@ public class IQConfigurationController extends BasicController {
 	
 	private String type;
 	private ICourse course;
-	private List<Identity> learners;
 	private ModuleConfiguration moduleConfiguration;
 	private AbstractAccessableCourseNode courseNode;
 
@@ -496,7 +495,7 @@ public class IQConfigurationController extends BasicController {
 			// it exists partly results for this test
 			List<Identity> identitiesWithQtiSerEntry = iqManager.getIdentitiesWithQtiSerEntry(course.getResourceableId(), courseNode.getIdent());
 			if(passed || !identitiesWithQtiSerEntry.isEmpty()) {
-				learners = new ArrayList<>();
+				List<Identity> learners = new ArrayList<>();
 				for(QTIResult result : results) {
 					Identity identity = result.getResultSet().getIdentity();
 					if(identity != null && !learners.contains(identity)){

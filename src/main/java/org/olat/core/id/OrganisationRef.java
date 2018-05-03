@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
+package org.olat.core.id;
 
 /**
  * 

@@ -32,6 +32,8 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -52,8 +54,10 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -89,6 +93,7 @@ public class ProfileFormController extends FormBasicController {
 	private RichTextElement textAboutMe;
 
 	private Identity identityToModify;
+	private List<Organisation> identityOrganisations;
 	private DialogBoxController dialogCtr;
 
 	private FileElement logoUpload;
@@ -118,6 +123,8 @@ public class ProfileFormController extends FormBasicController {
 	private HomePageConfigManager hpcm;
 	@Autowired
 	private DisplayPortraitManager dps;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	/**
 	 * Create this controller with the request's identity as none administrative
@@ -148,10 +155,12 @@ public class ProfileFormController extends FormBasicController {
 		setFormStyle("o_user_profile_form");
 		
 		this.identityToModify = identityToModify;
-		this.isAdministrativeUser = isAdministrativeUser;
-		this.logoEnabled = userModule.isLogoByProfileEnabled();
+		logoEnabled = userModule.isLogoByProfileEnabled();
+		identityOrganisations = organisationService.getOrganisations(identityToModify, OrganisationRoles.values());
 		
+		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifier, isAdministrativeUser);
+		
 		initForm(ureq);
 	}
 	
@@ -166,7 +175,6 @@ public class ProfileFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		User user = identityToModify.getUser();
 
 		// show a form element for each property handler 
@@ -607,9 +615,15 @@ public class ProfileFormController extends FormBasicController {
 	}
 
 	private boolean isAllowedToChangeEmailWithoutVerification(final UserRequest ureq) {
-		boolean isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isUserManagerAndBypassVerification = BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION
-				&& ureq.getUserSession().getRoles().isUserManager();
+		UserSession usess = ureq.getUserSession();
+		boolean isOLATAdmin = usess .getRoles().isOLATAdmin();
+		boolean isUserManagerAndBypassVerification = false;
+		if(!isOLATAdmin && usess.getRoles().isUserManager() && BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION.booleanValue()) {
+			//check if the user manager is allowed to manage this user
+			List<Organisation> organisations = organisationService.getManageableOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
+			organisations.retainAll(identityOrganisations);
+			isUserManagerAndBypassVerification = !organisations.isEmpty();
+		}
 		return isOLATAdmin || isUserManagerAndBypassVerification;
 	}
 }

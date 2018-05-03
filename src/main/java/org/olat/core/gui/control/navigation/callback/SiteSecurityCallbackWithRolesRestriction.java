@@ -48,17 +48,19 @@ public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCal
 						return true;
 					} else if (theRole.equals("administrator") && roles.isOLATAdmin()) {
 						return true;
-					} else if (theRole.equals("groupmanager") && roles.isGroupManager()) {
+					} else if (theRole.equals("groupmanager") && (roles.isOLATAdmin() || roles.isGroupManager())) {
 						return true;
-					} else if (theRole.equals("usermanager") && roles.isUserManager()) {
+					} else if (theRole.equals("usermanager") && (roles.isOLATAdmin() || roles.isUserManager())) {
 						return true;
-					} else if (theRole.equals("author") && roles.isAuthor()) {
+					} else if (theRole.equals("pooladmin") && (roles.isOLATAdmin() || roles.isPoolAdmin())) {
 						return true;
-					} else if (theRole.equals("pooladmin") && roles.isPoolAdmin()) {
+					} else if (theRole.equals("institutionalresourcemanager") && (roles.isOLATAdmin() || roles.isLearnResourceManager())) {
 						return true;
-					} else if (theRole.equals("institutionalresourcemanager") && roles.isInstitutionalResourceManager()) {
+					} else if (theRole.equals("author") && (roles.isOLATAdmin() || roles.isAuthor())) {
 						return true;
-					}
+					} else if (theRole.equals("coach") && (roles.isOLATAdmin() || roles.isCoach())) {
+						return true;
+					} 
 				}
 			}
 			return false;
@@ -72,8 +74,6 @@ public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCal
 	public void setLimitToRole(String limitToRoleConfig) {
 		if (limitToRoleConfig != null) {
 			limitToRole = limitToRoleConfig.split(",");			
-		} else {
-			limitToRoleConfig = null;
 		}
 	}
 }

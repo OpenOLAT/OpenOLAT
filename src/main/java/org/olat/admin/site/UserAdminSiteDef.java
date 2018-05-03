@@ -32,13 +32,11 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 
 /**
  * Initial Date:  Jan 16, 2006
- * @author Florian Gnaegi
- * 
- * Comment:  TODO
- * </pre>
+ * @author Florian Gnaegi d
  */
 public class UserAdminSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
@@ -50,7 +48,9 @@ public class UserAdminSiteDef extends AbstractSiteDefinition implements SiteDefi
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new UserAdminSite(this, ureq.getLocale());
-		} else if (ureq.getUserSession().getRoles().isUserManager()) {
+		} 
+		UserSession usess = ureq.getUserSession();
+		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isUserManager()) {
 			// only open for olat-usermanagers
 			return new UserAdminSite(this, ureq.getLocale());
 		} 

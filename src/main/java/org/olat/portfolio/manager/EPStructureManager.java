@@ -1706,7 +1706,7 @@ public class EPStructureManager {
 		return el;
 	}
 	
-	private EPStructureElement fillStructureElement(EPStructureElement el, String title, String description) {
+	protected EPStructureElement fillStructureElement(EPStructureElement el, String title, String description) {
 		el.setTitle(title);
 		el.setDescription(description);
 		OLATResource resource = resourceManager.createOLATResourceInstance(el.getClass());
@@ -1722,32 +1722,6 @@ public class EPStructureManager {
 		if(resource.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(resource);
 		}
-		return el;
-	}
-	
-/**
- * Create a map template, create an OLAT resource and a repository entry with a security group
- * of type owner to the repository and add the identity has an owner.
- * @param identity
- * @param title
- * @param description
- * @return The structure element
- */
-	public PortfolioStructureMap createPortfolioMapTemplate(Identity identity, String title, String description) {
-		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
-		
-		fillStructureElement(el, title, description);
-
-		//create a repository entry with default security settings
-		RepositoryEntry re = createRepositoryEntry(identity, el.getOlatResource(), title);
-		dbInstance.commit();
-		
-		Group ownerGroup = repositoryService.getDefaultGroup(re);
-		
-		EPStructureElementToGroupRelation relation = createBaseRelation(el, ownerGroup);
-		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
-		relations.add(relation);
-		el.setGroups(relations);
 		return el;
 	}
 	
@@ -1861,13 +1835,6 @@ public class EPStructureManager {
 		}
 	}
 	
-	private RepositoryEntry createRepositoryEntry(Identity identity, OLATResource oresable, String title) {
-		// create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(identity, null, "-", title, null, oresable, RepositoryEntry.ACC_OWNERS);
-
-		return addedEntry;
-	}
-	
 	private EPStructureElementToGroupRelation createBaseGroup(EPStructureElement element, Identity author) {
 		//create security group
 		Group ownerGroup = groupDao.createGroup();
@@ -1880,7 +1847,7 @@ public class EPStructureManager {
 		return relation;
 	}
 	
-	private EPStructureElementToGroupRelation createBaseRelation(EPStructureElement element, Group ownerGroup) {
+	protected EPStructureElementToGroupRelation createBaseRelation(EPStructureElement element, Group ownerGroup) {
 		//create security group
 		EPStructureElementToGroupRelation relation = new EPStructureElementToGroupRelation();
 		relation.setDefaultGroup(true);

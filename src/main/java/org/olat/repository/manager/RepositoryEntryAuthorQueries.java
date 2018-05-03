@@ -22,6 +22,7 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -32,6 +33,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -121,7 +123,8 @@ public class RepositoryEntryAuthorQueries {
 		Roles roles = params.getRoles();
 		List<String> resourceTypes = params.getResourceTypes();
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
-		boolean admin = (roles != null && (roles.isInstitutionalResourceManager() || roles.isOLATAdmin()));
+		boolean admin = (roles != null && (roles.isLearnResourceManager() || roles.isOLATAdmin()));
+		boolean learnResourceOrgs = false;
 
 		boolean count = Number.class.equals(type);
 		boolean needIdentity = false;
@@ -174,6 +177,13 @@ public class RepositoryEntryAuthorQueries {
 				sb.append(" v.access=").append(RepositoryEntry.DELETED);
 			} else {
 				sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			}
+			
+			if(params.getLearnResourceManagerOrganisations() != null && !params.getLearnResourceManagerOrganisations().isEmpty()) {
+				sb.append(" and v.key in (select relToOrg.entry.key from repoentrytoorganisation as relToOrg")
+				  .append("  where relToOrg.organisation.key in (:learnResourceManagerOrganisationKeys)")
+				  .append(")");
+				learnResourceOrgs = true;
 			}
 		} else {
 			needIdentity = true;
@@ -241,8 +251,6 @@ public class RepositoryEntryAuthorQueries {
 
 		String displayname = params.getDisplayname();
 		if (StringHelper.containsNonWhitespace(displayname)) {
-			//displayName = '%' + displayName.replace('*', '%') + '%';
-			//query.append(" and v.displayname like :displayname");
 			displayname = PersistenceHelper.makeFuzzyQueryString(displayname);
 			sb.append(" and ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "displayname", dbInstance.getDbVendor());
@@ -250,8 +258,6 @@ public class RepositoryEntryAuthorQueries {
 		
 		String desc = params.getDescription();
 		if (StringHelper.containsNonWhitespace(desc)) {
-			//desc = '%' + desc.replace('*', '%') + '%';
-			//query.append(" and v.description like :desc");
 			desc = PersistenceHelper.makeFuzzyQueryString(desc);
 			sb.append(" and ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.description", "desc", dbInstance.getDbVendor());
@@ -339,6 +345,11 @@ public class RepositoryEntryAuthorQueries {
 		}
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbQuery.setParameter("desc", desc);
+		}
+		if(learnResourceOrgs && params.getLearnResourceManagerOrganisations() != null && !params.getLearnResourceManagerOrganisations().isEmpty()) {
+			List<Long> learnResourceManagerOrganisationKeys = params.getLearnResourceManagerOrganisations()
+					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+			dbQuery.setParameter("learnResourceManagerOrganisationKeys", learnResourceManagerOrganisationKeys);
 		}
 
 		if(needIdentity) {
