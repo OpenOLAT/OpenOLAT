@@ -164,7 +164,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 				}
 			}
 		} else if (fileDeleted && response != null) {
-			evaluationFormManager.deleteResponse(response.getKey());
+			evaluationFormManager.deleteResponse(response);
 			response = null;
 		}
 	}

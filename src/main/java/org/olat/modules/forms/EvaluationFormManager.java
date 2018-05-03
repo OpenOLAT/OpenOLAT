@@ -57,6 +57,14 @@ public interface EvaluationFormManager {
 	 */
 	public EvaluationFormSurvey updateSurveyForm(EvaluationFormSurvey survey, RepositoryEntry formEntry);
 
+	/**
+	 * Deletes all data of a survey but not the survey itself. It deletes all
+	 * responses, sessions and participations.
+	 *
+	 * @param survey
+	 */
+	public void deleteAllData(EvaluationFormSurvey survey);
+
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey);
 	
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor);
@@ -134,9 +142,9 @@ public interface EvaluationFormManager {
 	
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
 	
-	public void deleteResponse(Long key);
+	public void deleteResponse(EvaluationFormResponse response);
 	
-	public void deleteResponses(List<Long> keys);
+	public void deleteResponses(List<EvaluationFormResponse> response);
 
 	/**
 	 * Is there some sessions using this repository entry.

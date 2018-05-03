@@ -355,7 +355,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		} else {
 			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
 			if (response != null) {
-				evaluationFormManager.deleteResponse(response.getKey());
+				evaluationFormManager.deleteResponse(response);
 				responses.remove(sliderWrapper.getId());
 			}
 		}

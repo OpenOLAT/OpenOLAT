@@ -161,6 +161,19 @@ public class EvaluationFormSessionDAO {
 		}
 		return session;
 	}
+
+	public void deleteSessions(EvaluationFormSurvey survey) {
+		if (survey == null) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from evaluationformsession session");
+		sb.append(" where session.survey.key=:surveyKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("surveyKey", survey.getKey())
+				.executeUpdate();
+	}
 	
 	public int deleteSessionForPortfolioEvaluation(PageBody anchor) {
 		//delete responses

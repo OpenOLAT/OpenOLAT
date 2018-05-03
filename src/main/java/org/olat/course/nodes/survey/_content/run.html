@@ -1,3 +1,8 @@
+#if($r.available("run.commands"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("run.commands")
+	</div>
+#end
 #if($r.available("message"))
 	$r.render("message")
 #end

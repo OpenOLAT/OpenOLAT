@@ -21,6 +21,7 @@ package org.olat.modules.forms.manager;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
 import org.olat.modules.portfolio.PageBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +159,21 @@ public class EvaluationFormResponseDAO {
 				.createQuery(query, EvaluationFormResponse.class)
 				.setParameter("sessionKey", session.getKey())
 				.setParameter("responseIdentifier", responseIdentifier)
+				.getResultList();
+	}
+
+	List<EvaluationFormResponse> loadResponsesBySurvey(EvaluationFormSurvey survey) {
+		if (survey == null) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response from evaluationformresponse as response");
+		sb.append(" inner join response.session as session");
+		sb.append(" inner join session.survey as survey");
+		sb.append(" where survey.key=:surveyKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormResponse.class)
+				.setParameter("surveyKey", survey.getKey())
 				.getResultList();
 	}
 

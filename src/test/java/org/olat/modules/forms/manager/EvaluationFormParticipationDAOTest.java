@@ -167,4 +167,23 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		assertThat(loadedParticipation).isNull();
 	}
 
+	@Test
+	public void shouldShouldDeleteParticipationsOfSurvey() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation(survey);
+		EvaluationFormParticipation participation2 = evaTestHelper.createParticipation(survey);
+		EvaluationFormParticipation otherParticipation = evaTestHelper.createParticipation();
+		dbInstance.commit();
+
+		sut.deleteParticipations(survey);
+		dbInstance.commit();
+		
+		EvaluationFormParticipation loadedParticipation1 = sut.loadByIdentifier(participation1.getIdentifier());
+		assertThat(loadedParticipation1).isNull();
+		EvaluationFormParticipation loadedParticipation2 = sut.loadByIdentifier(participation2.getIdentifier());
+		assertThat(loadedParticipation2).isNull();
+		EvaluationFormParticipation loadedOtherParticipation = sut.loadByIdentifier(otherParticipation.getIdentifier());
+		assertThat(loadedOtherParticipation).isEqualTo(otherParticipation);
+;	}
+
 }

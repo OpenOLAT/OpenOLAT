@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.Section;
@@ -63,10 +64,11 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	@Autowired
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	@Autowired
-	private EvaluationFormResponseDAO evaluationFormResponseDao;
-	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
 	
+	@Autowired
+	private EvaluationFormResponseDAO sut;
+
 	@Before
 	public void cleanUp() {
 		evaTestHelper.deleteAll();
@@ -93,7 +95,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		BigDecimal numericalValue = new BigDecimal("2.2");
 		String stringuifiedResponse = numericalValue.toPlainString();
 		Path fileResponse = Paths.get("this", "is", "a", "path");
-		EvaluationFormResponse response = evaluationFormResponseDao.createResponse(responseIdentifier,
+		EvaluationFormResponse response = sut.createResponse(responseIdentifier,
 				numericalValue, stringuifiedResponse, fileResponse, session);
 		dbInstance.commit();
 
@@ -118,7 +120,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		BigDecimal numericalValue = new BigDecimal("3.3");
 		String stringuifiedResponse = numericalValue.toPlainString();
 		Path fileResponse = Paths.get("a", "b", "a", "c");
-		EvaluationFormResponse updatedResponse = evaluationFormResponseDao.updateResponse(numericalValue, stringuifiedResponse, fileResponse, response);
+		EvaluationFormResponse updatedResponse = sut.updateResponse(numericalValue, stringuifiedResponse, fileResponse, response);
 		
 		assertThat(updatedResponse.getNumericalResponse()).isEqualTo(numericalValue);
 		assertThat(updatedResponse.getStringuifiedResponse()).isEqualTo(stringuifiedResponse);
@@ -130,7 +132,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	public void shouldCreateNoResponse() {
 		EvaluationFormSession session = createSession();
 		String responseIdentifier = UUID.randomUUID().toString();
-		EvaluationFormResponse response = evaluationFormResponseDao.createNoResponse(responseIdentifier, session);
+		EvaluationFormResponse response = sut.createNoResponse(responseIdentifier, session);
 		dbInstance.commit();
 		
 		assertThat(response.getCreationDate()).isNotNull();
@@ -149,12 +151,31 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		EvaluationFormResponse initialResponse = createResponse(session);
 		dbInstance.commit();
 
-		EvaluationFormResponse response = evaluationFormResponseDao.updateNoResponse(initialResponse);
+		EvaluationFormResponse response = sut.updateNoResponse(initialResponse);
 
 		assertThat(response.isNoResponse()).isTrue();
 		assertThat(response.getNumericalResponse()).isNull();
 		assertThat(response.getStringuifiedResponse()).isNull();
 		assertThat(response.getFileResponse()).isNull();
+	}
+
+	@Test
+	public void shouldLoadResponsesBySurvey() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession surveySession1 = evaTestHelper.createSession(survey);
+		EvaluationFormResponse response11 = evaTestHelper.createResponse(surveySession1);
+		EvaluationFormResponse response12 = evaTestHelper.createResponse(surveySession1);
+		EvaluationFormSession surveySession2 = evaTestHelper.createSession(survey);
+		EvaluationFormResponse response21 = evaTestHelper.createResponse(surveySession2);
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		EvaluationFormResponse otherResponse = evaTestHelper.createResponse(otherSession);
+		dbInstance.commit();
+		
+		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesBySurvey(survey);
+		
+		assertThat(loadedResponses)
+				.contains(response11, response12, response21)
+				.doesNotContain(otherResponse);
 	}
 	
 	@Test
@@ -166,17 +187,18 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		createResponse(session, responseIdentifier);
 		dbInstance.commit();
 		
-		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponses(responseIdentifier, session);
+		List<EvaluationFormResponse> responses = sut.loadResponses(responseIdentifier, session);
 		assertThat(responses).hasSize(3);
 		
 		List<Long> keys = responses.stream().map(EvaluationFormResponse::getKey).collect(Collectors.toList());
-		evaluationFormResponseDao.deleteResponses(keys);
+		sut.deleteResponses(keys);
 		dbInstance.commit();
 		
 		
-		responses = evaluationFormResponseDao.loadResponses(responseIdentifier, session);
+		responses = sut.loadResponses(responseIdentifier, session);
 		assertThat(responses).hasSize(0);
 	}
+	
 
 	private EvaluationFormResponse createResponse(EvaluationFormSession session) {
 		String responseIdentifier = UUID.randomUUID().toString();
@@ -187,7 +209,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		BigDecimal numericalValue = new BigDecimal("2.2");
 		String stringuifiedResponse = numericalValue.toPlainString();
 		Path fileResponse = Paths.get("this", "is", "a", "path");
-		return evaluationFormResponseDao.createResponse(responseIdentifier, numericalValue, stringuifiedResponse,
+		return sut.createResponse(responseIdentifier, numericalValue, stringuifiedResponse,
 				fileResponse, session);
 	}
 

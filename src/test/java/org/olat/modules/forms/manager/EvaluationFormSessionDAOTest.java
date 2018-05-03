@@ -55,7 +55,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
-	private EvaluationFormSessionDAO evaluationFormSessionDao;
+	private EvaluationFormSessionDAO sut;
 	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
 	
@@ -69,7 +69,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
 		dbInstance.commit();
 		
-		EvaluationFormSession session = evaluationFormSessionDao.createSession(participation);
+		EvaluationFormSession session = sut.createSession(participation);
 		dbInstance.commit();
 		
 		assertThat(session).isNotNull();
@@ -83,10 +83,10 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldMakeSessionAnonymous() {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
-		EvaluationFormSession session = evaluationFormSessionDao.createSession(participation);
+		EvaluationFormSession session = sut.createSession(participation);
 		dbInstance.commit();
 		
-		EvaluationFormSession anonymousSession = evaluationFormSessionDao.makeAnonymous(session);
+		EvaluationFormSession anonymousSession = sut.makeAnonymous(session);
 		
 		assertThat(anonymousSession.getParticipation()).isNull();
 	}
@@ -95,10 +95,10 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadByParticipation() {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
-		EvaluationFormSession session = evaluationFormSessionDao.createSession(participation);
+		EvaluationFormSession session = sut.createSession(participation);
 		dbInstance.commitAndCloseSession();
 		
-		EvaluationFormSession loadedSession = evaluationFormSessionDao.loadSessionByParticipation(participation);
+		EvaluationFormSession loadedSession = sut.loadSessionByParticipation(participation);
 		
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession).isEqualTo(session);
@@ -108,10 +108,10 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	public void shouldCheckIfHasSessions() {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
 		EvaluationFormSurvey survey = participation.getSurvey();
-		evaluationFormSessionDao.createSession(participation);
+		sut.createSession(participation);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasSessions = evaluationFormSessionDao.hasSessions(survey);
+		boolean hasSessions = sut.hasSessions(survey);
 		
 		assertThat(hasSessions).isTrue();
 	}
@@ -121,11 +121,29 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
 		dbInstance.commit();
 		
-		boolean hasSessions = evaluationFormSessionDao.hasSessions(survey);
+		boolean hasSessions = sut.hasSessions(survey);
 		
 		assertThat(hasSessions).isFalse();
 	}
-
+	
+	@Test
+	public void shouldDeleteSessionsOfSurvey() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session1 = evaTestHelper.createSession(survey);
+		EvaluationFormSession session2 = evaTestHelper.createSession(survey);
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		sut.deleteSessions(survey);
+		dbInstance.commit();
+		
+		EvaluationFormSession loadedSession1 = sut.loadSessionByParticipation(session1.getParticipation());
+		assertThat(loadedSession1).isNull();
+		EvaluationFormSession loadedSession2 = sut.loadSessionByParticipation(session2.getParticipation());
+		assertThat(loadedSession2).isNull();
+		EvaluationFormSession loadedOtherSession = sut.loadSessionByParticipation(otherSession.getParticipation());
+		assertThat(loadedOtherSession).isEqualTo(otherSession);
+	}
 	
 	@Test
 	public void createSessionForPortfolio() {
@@ -140,7 +158,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
 
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		EvaluationFormSession session = evaluationFormSessionDao.createSessionForPortfolio(id, reloadedBody, formEntry);
+		EvaluationFormSession session = sut.createSessionForPortfolio(id, reloadedBody, formEntry);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(session);

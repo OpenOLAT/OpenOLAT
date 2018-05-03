@@ -37,12 +37,14 @@ public class SurveyRunSecurityCallback {
 	private final boolean guestOnly;
 	private final boolean executor;
 	private final boolean reportViewer;
+	private final boolean canRunCommands;
 	
 	public SurveyRunSecurityCallback(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
 		this.courseReadOnly = userCourseEnv.isCourseReadOnly();
 		this.guestOnly = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly();
 		this.executor = hasExecutionRole(moduleConfiguration, userCourseEnv);
 		this.reportViewer = hasReportRole(moduleConfiguration, userCourseEnv);
+		this.canRunCommands = userCourseEnv.isAdmin();
 	}
 
 	boolean isGuestOnly() {
@@ -134,6 +136,10 @@ public class SurveyRunSecurityCallback {
 
 	boolean isReadOnly() {
 		return courseReadOnly && isExecutor();
+	}
+
+	public boolean canRunCommands() {
+		return canRunCommands;
 	}
 
 

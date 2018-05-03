@@ -165,7 +165,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 			}
 		} else if (response != null) {
 			// If all text is deleted by the user, the response should be deleted as well.
-			evaluationFormManager.deleteResponse(response.getKey());
+			evaluationFormManager.deleteResponse(response);
 			response = null;
 		}
 	}

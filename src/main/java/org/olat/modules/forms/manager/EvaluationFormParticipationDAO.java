@@ -128,4 +128,17 @@ class EvaluationFormParticipationDAO {
 		return participations.isEmpty() || participations.size() > 1? null : participations.get(0);
 	}
 
+	void deleteParticipations(EvaluationFormSurvey survey) {
+		if (survey == null) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from evaluationformparticipation as participation");
+		sb.append(" where participation.survey.key=:surveyKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("surveyKey", survey.getKey())
+				.executeUpdate();
+	}
+
 }

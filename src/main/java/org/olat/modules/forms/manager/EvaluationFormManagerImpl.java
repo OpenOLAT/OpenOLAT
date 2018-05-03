@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -85,6 +86,14 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 			return evaluationFormSurveyDao.updateForm(survey, formEntry);
 		}
 		return survey;
+	}
+
+	@Override
+	public void deleteAllData(EvaluationFormSurvey survey) {
+		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesBySurvey(survey);
+		deleteResponses(responses);
+		evaluationFormSessionDao.deleteSessions(survey);
+		evaluationFormParticipationDao.deleteParticipations(survey);
 	}
 
 	@Override
@@ -261,13 +270,21 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public void deleteResponse(Long key) {
-		evaluationFormResponseDao.deleteResponses(Collections.singletonList(key));
+	public void deleteResponse(EvaluationFormResponse response) {
+		deleteResponses(Collections.singletonList(response));
 	}
 
 	@Override
-	public void deleteResponses(List<Long> keys) {
-		evaluationFormResponseDao.deleteResponses(keys);
+	public void deleteResponses(List<EvaluationFormResponse> responses) {
+		List<Long> responseKeys = new ArrayList<>();
+		for (EvaluationFormResponse response: responses) {
+			responseKeys.add(response.getKey());
+			Path fileResponse = response.getFileResponse();
+			if (fileResponse != null) {
+				evaluationFormStorage.delete(response.getFileResponse());
+			}
+		}
+		evaluationFormResponseDao.deleteResponses(responseKeys);
 	}
 
 	@Override

@@ -22,7 +22,6 @@ package org.olat.modules.forms.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -160,8 +159,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 
 	@Override
 	public void saveResponse(EvaluationFormSession session) {
-		List<Long> keys = responses.stream().map(EvaluationFormResponse::getKey).collect(Collectors.toList());
-		evaluationFormManager.deleteResponses(keys);
+		evaluationFormManager.deleteResponses(responses);
 
 		Collection<String> selectedChoises = new ArrayList<>(multipleChoiceEl.getSelectedKeys());
 		replaceOthersKeyWithValue(selectedChoises);

@@ -21,11 +21,15 @@ package org.olat.course.nodes.survey;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -48,9 +52,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SurveyRunController extends BasicController {
 	
-	private final VelocityContainer mainVC;
+	private VelocityContainer mainVC;
+	private Link commandsLink;
+	
+	private CloseableCalloutWindowController calloutCtrl;
+	private SurveyRunCommandsController commandsCtrl;
+	private CloseableModalController cmc;
+	private SurveyDeleteDataConfirmationController deleteDataConfirmationCtrl;
 	private EvaluationFormExecutionController executionCtrl;
 	
+	private final OLATResourceable ores;
+	private final String subIdent;
 	private final SurveyRunSecurityCallback secCallback;
 	private EvaluationFormSurvey survey;
 	private EvaluationFormParticipation participation;
@@ -61,11 +73,25 @@ public class SurveyRunController extends BasicController {
 	public SurveyRunController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, SurveyCourseNode courseNode,
 			SurveyRunSecurityCallback secCallback) {
 		super(ureq, wControl);
+		this.ores = ores;
+		this.subIdent = courseNode.getIdent();
 		this.secCallback = secCallback;
 
 		mainVC = createVelocityContainer("run");
+		putInitialPanel(mainVC);
+
+		initVelocityContainer(ureq);
+	}
+
+	private void initVelocityContainer(UserRequest ureq) {
+		mainVC.clear();
 		
-		survey = evaluationFormManager.loadSurvey(ores, courseNode.getIdent());
+		if (secCallback.canRunCommands()) {
+			commandsLink = LinkFactory.createButton("run.commands", mainVC, this);
+			commandsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_surv_commands");
+		}
+		
+		survey = evaluationFormManager.loadSurvey(ores, subIdent);
 		if (secCallback.canParticipate()) {
 			participation = loadOrCreateParticipation(ureq);
 		}
@@ -77,11 +103,10 @@ public class SurveyRunController extends BasicController {
 		} else if (secCallback.isReadOnly()) {
 			doShowReadOnly(ureq);
 		} else if (secCallback.canExecute(participation)) {
-			doShowExecution(ureq, wControl);
+			doShowExecution(ureq);
 		} else {
 			doShowNoAccess(ureq);
 		}
-		putInitialPanel(mainVC);
 	}
 
 	private EvaluationFormParticipation loadOrCreateParticipation(UserRequest ureq) {
@@ -122,17 +147,72 @@ public class SurveyRunController extends BasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source == commandsLink) {
+			doOpenCommands(ureq);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl && event == Event.DONE_EVENT) {
 			doShowReporting(ureq);
-		}
+		} else if(source == commandsCtrl) {
+			calloutCtrl.deactivate();
+			if(SurveyRunCommandsController.EVENT_DELETE_ALL_DATA.equals(event.getCommand())) {
+				doConfirmDeleteAllData(ureq);
+			}
+		} else if(source == deleteDataConfirmationCtrl) {
+			if (event == Event.DONE_EVENT) {
+				doDeleteAllData(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} 
 		super.event(ureq, source, event);
 	}
-	
-	private void doShowExecution(UserRequest ureq, WindowControl wControl) {
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(deleteDataConfirmationCtrl);
+		removeAsListenerAndDispose(commandsCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(cmc);
+		deleteDataConfirmationCtrl = null;
+		commandsCtrl = null;
+		calloutCtrl = null;
+		cmc = null;
+	}
+
+	private void doConfirmDeleteAllData(UserRequest ureq) {
+		deleteDataConfirmationCtrl = new SurveyDeleteDataConfirmationController(ureq, getWindowControl());
+		listenTo(deleteDataConfirmationCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				deleteDataConfirmationCtrl.getInitialComponent(), true, translate("run.command.delete.data.all.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doDeleteAllData(UserRequest ureq) {
+		evaluationFormManager.deleteAllData(survey);
+		initVelocityContainer(ureq);
+	}
+
+	private void doOpenCommands(UserRequest ureq) {
+		removeAsListenerAndDispose(commandsCtrl);
+		commandsCtrl = new SurveyRunCommandsController(ureq, getWindowControl());
+		listenTo(commandsCtrl);
+		
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsCtrl.getInitialComponent(),
+				commandsLink, "", true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();	
+	}
+
+	private void doShowExecution(UserRequest ureq) {
 		removeAllComponents();
 		EvaluationFormSession session = loadOrCreateSesssion(participation);
-		executionCtrl = new EvaluationFormExecutionController(ureq, wControl, session);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}
@@ -173,11 +253,6 @@ public class SurveyRunController extends BasicController {
 		mainVC.remove("message");
 		mainVC.remove("execution");
 		mainVC.remove("reporting");
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
 	}
 
 	@Override
