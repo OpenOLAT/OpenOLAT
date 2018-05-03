@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
@@ -65,6 +67,8 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	private BinderDAO binderDao;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	@Autowired
@@ -201,7 +205,8 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("eva-form-author");
-		RepositoryEntry re = repositoryService.create(author, null, "", displayname, "Description", resource, RepositoryEntry.ACC_OWNERS);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(author, null, "", displayname, "Description", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
 		dbInstance.commit();
 		return re;
 	}

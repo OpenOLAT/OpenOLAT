@@ -19,8 +19,9 @@
  */
 package org.olat.core.id;
 
+import java.util.List;
+
 import org.olat.basesecurity.OrganisationManagedFlag;
-import org.olat.basesecurity.OrganisationRef;
 
 /**
  * 
@@ -29,6 +30,8 @@ import org.olat.basesecurity.OrganisationRef;
  *
  */
 public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef {
+	
+	public boolean isDefault();
 	
 	public String getMaterializedPathKeys();
 	
@@ -53,6 +56,8 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	public void setManagedFlags(OrganisationManagedFlag[] flags);
 	
 	public Organisation getParent();
+	
+	public List<OrganisationRef> getParentLine();
 	
 	public Organisation getRoot();
 

@@ -43,6 +43,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
@@ -538,11 +539,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
 			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -559,26 +555,17 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		return new IdentityListCourseNodeController(ureq, wControl, stackPanel,
 				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
-	
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
-	 */
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
-	 */
 	@Override
 	public boolean hasDetails() {
 		return true;
@@ -668,7 +655,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);

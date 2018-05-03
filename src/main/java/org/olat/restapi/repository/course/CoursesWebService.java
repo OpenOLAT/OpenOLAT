@@ -49,11 +49,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -232,7 +235,8 @@ public class CoursesWebService {
 			@QueryParam("authors") String authors, @QueryParam("location") String location,
 			@QueryParam("managedFlags") String managedFlags, @QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
 			@QueryParam("copyFrom") Long copyFrom, @QueryParam("initialAuthor") Long initialAuthor,
-			@QueryParam("setAuthor")  @DefaultValue("true") Boolean setAuthor, @Context HttpServletRequest request) {
+			@QueryParam("setAuthor")  @DefaultValue("true") Boolean setAuthor,
+			@QueryParam("organisationKey") Long organisationKey, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -256,10 +260,14 @@ public class CoursesWebService {
 				id = ureq.getIdentity();
 			}
 		}
+
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
+			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description, softKey,
+					accessInt, membersOnlyBool, organisationKey,
+					authors, location, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(id, shortTitle, title, displayName, description, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
+			course = createEmptyCourse(id, shortTitle, title, displayName, description, softKey,
+					accessInt, membersOnlyBool, organisationKey, authors, location, externalId, externalRef, managedFlags, configVO);
 		}
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -292,7 +300,7 @@ public class CoursesWebService {
 		CourseConfigVO configVO = new CourseConfigVO();
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
 				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(),
-				courseVo.getSoftKey(), RepositoryEntry.ACC_OWNERS, false,
+				courseVo.getSoftKey(), RepositoryEntry.ACC_OWNERS, false, courseVo.getOrganisationKey(),
 				courseVo.getAuthors(), courseVo.getLocation(),
 				courseVo.getExternalId(), courseVo.getExternalRef(), courseVo.getManagedFlags(),
 				configVO);
@@ -344,7 +352,14 @@ public class CoursesWebService {
 				boolean membersonly = "true".equals(membersOnlyRaw);
 				String softKey = partsReader.getValue("softkey");
 				String displayName = partsReader.getValue("displayname");
-				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, access, membersonly);
+				String organisation = partsReader.getValue("organisationkey");
+				Long organisationKey = null;
+				if(StringHelper.isLong(organisation)) {
+					organisationKey = Long.valueOf(organisation);
+				}
+				
+				
+				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, access, membersonly, organisationKey);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
@@ -368,32 +383,36 @@ public class CoursesWebService {
 		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		AccessResult result = acManager.isAccessible(entry, identity, false);
-		if(result.isAccessible()) {
-			return true;
-		}
-		return false;
+		return result.isAccessible();
 	}
 
 	public static ICourse loadCourse(Long courseId) {
 		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
+			return CourseFactory.loadCourse(courseId);
 		} catch(Exception ex) {
 			log.error("cannot load course with id: " + courseId, ex);
 			return null;
 		}
 	}
 
-	public static ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP,
-			String displayName, String softKey, int access, boolean membersOnly) {
+	private ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP,
+			String displayName, String softKey, int access, boolean membersOnly, Long organisationKey) {
 
 		log.info("REST Import course " + displayName + " START");
 		if(!StringHelper.containsNonWhitespace(displayName)) {
 			displayName = "import-" + UUID.randomUUID().toString();
 		}
+		
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		Organisation organisation;
+		if(organisationKey == null) {
+			organisation = organisationService.getDefaultOrganisation();
+		} else {
+			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		}
 
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
-		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, Locale.ENGLISH, fCourseImportZIP, null);
+		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, organisation, Locale.ENGLISH, fCourseImportZIP, null);
 
 		if(StringHelper.containsNonWhitespace(softKey)) {
 			re.setSoftkey(softKey);
@@ -416,8 +435,8 @@ public class CoursesWebService {
 		return course;
 	}
 
-	private static ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle, String longTitle, String displayName,
-			String description, String softKey, int access, boolean membersOnly, String authors, String location, String externalId, String externalRef,
+	private ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle, String longTitle, String displayName,
+			String description, String softKey, int access, boolean membersOnly, Long organisationKey, String authors, String location, String externalId, String externalRef,
 			String managedFlags, CourseConfigVO courseConfigVO) {
 
 		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
@@ -440,6 +459,7 @@ public class CoursesWebService {
 
 		if(lockResult == null || (lockResult != null && lockResult.isSuccess()) && !isAlreadyLocked) {
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 
 			//create new repo entry
 			String name;
@@ -457,11 +477,18 @@ public class CoursesWebService {
 			if (resName == null) {
 				resName = "";
 			}
+			
+			Organisation organisation;
+			if(organisationKey == null) {
+				organisation = organisationService.getDefaultOrganisation();
+			} else {
+				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+			}
 
 			OLATResource sourceResource = src.getOlatResource();
 			OLATResource copyResource = OLATResourceManager.getInstance().createOLATResourceInstance(sourceResource.getResourceableTypeName());
 			RepositoryEntry preparedEntry = repositoryService.create(initialAuthor, null, resName, name,
-					description, copyResource, RepositoryEntry.ACC_OWNERS);
+					description, copyResource, RepositoryEntry.ACC_OWNERS, organisation);
 
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);
 			preparedEntry = handler.copy(initialAuthor, src, preparedEntry);
@@ -507,18 +534,6 @@ public class CoursesWebService {
 	}
 
 	/**
-	 * Create an empty course with some defaults settings
-	 * @param initialAuthor Author
-	 * @param shortTitle Title of the course
-	 * @param longTitle Long title of the course
-	 * @param courseConfigVO Can be null
-	 * @return
-	 */
-	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
-		return createEmptyCourse(initialAuthor, shortTitle, longTitle, shortTitle, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, courseConfigVO);
-	}
-
-	/**
 	 * Create an empty course with some settings
 	 * @param initialAuthor
 	 * @param shortTitle
@@ -530,8 +545,8 @@ public class CoursesWebService {
 	 * @param courseConfigVO
 	 * @return
 	 */
-	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
-			String description, String softKey, int access, boolean membersOnly, String authors, String location,
+	private ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
+			String description, String softKey, int access, boolean membersOnly, Long organisationKey, String authors, String location,
 			String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 
 		if(!StringHelper.containsNonWhitespace(reDisplayName)) {
@@ -539,10 +554,20 @@ public class CoursesWebService {
 		}
 
 		try {
-			// create a repository entry
+
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+			
+			Organisation organisation;
+			if(organisationKey == null) {
+				organisation = organisationService.getDefaultOrganisation();
+			} else {
+				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+			}
+
+			// create a repository entry
 			OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", reDisplayName, null, resource, 0);
+			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", reDisplayName, null, resource, 0, organisation);
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}
@@ -574,7 +599,7 @@ public class CoursesWebService {
 		}
 	}
 
-	private static ICourse prepareCourse(RepositoryEntry addedEntry, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
+	private ICourse prepareCourse(RepositoryEntry addedEntry, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
 		// set root node title
 		String courseShortTitle = addedEntry.getDisplayname();
 		if(StringHelper.containsNonWhitespace(shortTitle)) {

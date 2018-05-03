@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -142,6 +143,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected boolean corrupted;
 	protected boolean overrideReadOnly = false;
 	private RepositoryEntry re;
+	private List<OrganisationRef> organisations;
 	private LockResult lockResult;
 	private boolean assessmentLock;// by Assessment mode
 	private AssessmentMode assessmentMode;
@@ -197,6 +199,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		this.showInfos = showInfos;
 		this.allowBookmark = allowBookmark;
 		this.runtimeControllerCreator = runtimeControllerCreator;
+		organisations = repositoryService.getOrganisationReferences(re);
 		
 		if(assessmentLock) {
 			TransientAssessmentMode mode = session.getLockMode();
@@ -208,7 +211,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			List<HistoryPoint> stack = session.getHistoryStack();
 			for(int i=stack.size() - 2; i-->0; ) {
 				HistoryPoint point = stack.get(stack.size() - 2);
-				if(point.getEntries().size() > 0) {
+				if(!point.getEntries().isEmpty()) {
 					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
 					if(!OresHelper.equals(re, ores) && !OresHelper.equals(re.getOlatResource(), ores)) {
 						launchedFromPoint = point;
@@ -269,12 +272,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected RepositoryEntry loadRepositoryEntry() {
 		re = repositoryService.loadByKey(re.getKey());
+		organisations = repositoryService.getOrganisationReferences(re);
 		return re;
 	}
 	
 	protected RepositoryEntry refreshRepositoryEntry(RepositoryEntry refreshedEntry) {
 		re = refreshedEntry;
 		return re;
+	}
+	
+	protected List<OrganisationRef> getOrganisations() {
+		return organisations;
 	}
 	
 	protected OLATResourceable getOlatResourceable() {
@@ -574,7 +582,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				RepositoryEntry entry = descriptionCtrl.getEntry();
+				RepositoryEntry entry = descriptionCtrl.getRepositoryEntry();
 				refreshRepositoryEntry(entry);
 				handler.onDescriptionChanged(entry);
 				// update name of root bread crumb and opened tabs in top nav in case the title has been modified

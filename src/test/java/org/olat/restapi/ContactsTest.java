@@ -36,10 +36,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -66,6 +68,8 @@ public class ContactsTest extends OlatJerseyTestCase {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Before
 	@Override
@@ -87,7 +91,9 @@ public class ContactsTest extends OlatJerseyTestCase {
 		course = OLATResourceManager.getInstance().findOrPersistResourceable(resourceable);
 		
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = rs.create(null, "administrator", "-", "rest-re", null, course, 0, defOrganisation);
 		rs.update(re);
 		DBFactory.getInstance().commit();
 			

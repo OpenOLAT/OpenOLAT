@@ -504,7 +504,7 @@ public class FolderRunController extends BasicController implements Activateable
 		} 
 		
 		Boolean newEditQuota = Boolean.FALSE;
-		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isInstitutionalResourceManager()) {
+		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isLearnResourceManager()) {//TODO roles
 			// Only sys admins or institutonal resource managers can have the quota button
 			Quota q = VFSManager.isTopLevelQuotaContainer(folderComponent.getCurrentContainer());
 			newEditQuota = (q == null)? Boolean.FALSE : Boolean.TRUE;

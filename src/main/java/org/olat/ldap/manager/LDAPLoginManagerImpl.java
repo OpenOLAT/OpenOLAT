@@ -1071,34 +1071,39 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
 			Roles roles = securityManager.getRoles(identity);
 			switch(role) {
-				case author:
+				case coach:
 					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), true,
-									false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
+									false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
+					securityManager.updateRoles(null, identity, organisation, roles);
+					break;
+				case author:
+					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
+									false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), true, false);
 					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
 				case usermanager:
 					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), true, roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
+							false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
 					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
 				case groupmanager:
 					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), true, roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), false);
+							false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
 					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
 				case poolmanager:
 					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), true, roles.isCurriculumManager(), false);
+							false, roles.isLearnResourceManager(), true, roles.isCurriculumManager(), roles.isCoach(), false);
 					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
 				case curriculummanager:
 					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isInstitutionalResourceManager(), roles.isPoolAdmin(), true, false);
+							false, roles.isLearnResourceManager(), roles.isPoolAdmin(), true, roles.isCoach(), false);
 					securityManager.updateRoles(null, identity, organisation, roles);
 					break;	
 				case learnresourcemanager:
 					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, true, roles.isPoolAdmin(), roles.isCurriculumManager(), false);
+							false, true, roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
 					securityManager.updateRoles(null, identity, organisation, roles);
 					break;
 			}

@@ -49,6 +49,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -116,8 +117,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 			// create course and persist as OLATResourceImpl
 			OLATResource r =  rm.createOLATResourceInstance(resourceable);
 			dbInstance.getCurrentEntityManager().persist(r);
-			
-			RepositoryEntry d = repositoryService.create("Florian Gnägi", "Lernen mit OpenOLAT", "JunitTest_RepositoryEntry", "Beschreibung", r);
+
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			RepositoryEntry d = repositoryService.create(null, "Florian Gnägi", "Lernen mit OpenOLAT", "JunitTest_RepositoryEntry", "Beschreibung", r, 0, defOrganisation);
 			
 			dbInstance.commit();
 			Assert.assertNotNull(d);
@@ -755,8 +757,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 			dbInstance.getCurrentEntityManager().persist(r);
 			
 			// now make a repository entry for this course
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			RepositoryEntry re = repositoryService.create(owner, null,
-					"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r, RepositoryEntry.ACC_OWNERS_AUTHORS);			
+					"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r, RepositoryEntry.ACC_OWNERS_AUTHORS, defOrganisation);			
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			}
@@ -1331,7 +1334,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void lazyLoadingCheck() {
-		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 5", "", null);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 5", "", null, 0, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntryLifecycle cycle = lifecycleDao.create("New cycle 1", "New cycle soft 1", false, new Date(), new Date());
@@ -1361,9 +1365,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.saveObject(r);
 		
 		// now make a repository entry for this course
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		final RepositoryEntry re = repositoryService.create(owner, null,
 				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i",
-				r, RepositoryEntry.ACC_OWNERS_AUTHORS);
+				r, RepositoryEntry.ACC_OWNERS_AUTHORS, defOrganisation);
 		return re;
 	}
 }

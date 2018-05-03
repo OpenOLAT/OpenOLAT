@@ -19,14 +19,12 @@
  */
 package org.olat.restapi;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -84,11 +82,8 @@ public class NotificationsSubscribersTest extends OlatJerseyTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-sub-2");
 		
 		//deploy a course with forums
-		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
-		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		String softKey = UUID.randomUUID().toString().replace("-", "");
-		RepositoryEntry courseEntry = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
+		URL courseUrl = MyForumsTest.class.getResource("myCourseWS.zip");
+		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(null, "My course", courseUrl);// 4);	
 		Assert.assertNotNull(courseEntry);
 		
 		//load the course and found the first forum
@@ -148,11 +143,8 @@ public class NotificationsSubscribersTest extends OlatJerseyTestCase {
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-sub-5");
 		
 		//deploy a course with forums
-		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
-		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		String softKey = UUID.randomUUID().toString().replace("-", "");
-		RepositoryEntry courseEntry = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
+		URL courseUrl = MyForumsTest.class.getResource("myCourseWS.zip");
+		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(null, "My course", courseUrl);	
 		Assert.assertNotNull(courseEntry);
 		
 		//load the course and found the first forum

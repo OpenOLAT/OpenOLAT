@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -107,6 +106,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	private Object userObject;
 	
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
@@ -221,9 +222,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		return limitingTypes != null && limitingTypes.length == 1 && "CourseModule".equals(limitingTypes[0])
 				&& (roles.isOLATAdmin() ||
-						(roles.isInstitutionalResourceManager() && roles.isGroupManager()) ||
-						(roles.isGroupManager()
-								&& CoreSpringFactory.getImpl(BusinessGroupModule.class).isGroupManagersAllowedToLinkCourses()));
+						(roles.isLearnResourceManager() && roles.isGroupManager()) ||
+						(roles.isGroupManager() && businessGroupModule.isGroupManagersAllowedToLinkCourses()));
 	}
 	
 	/**
@@ -342,7 +342,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 				selectedRepositoryEntries = searchCtr.getSelectedEntries();
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRIES_SELECTED);
 			}
-			//initLinks();
 		} else if (source == createController) { 
 			if (event.equals(Event.DONE_EVENT)) {
 				cmc.deactivate();
@@ -374,10 +373,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		}
 	}
 	
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

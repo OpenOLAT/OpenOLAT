@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -413,10 +414,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 	// nothing to do in default implementation
@@ -424,12 +421,9 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 
 	/**
 	 * Implemented by specialized node
-	 * @see org.olat.course.nodes.CourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, boolean)
 	 */
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		// nothing to do in default implementation
 	}
 

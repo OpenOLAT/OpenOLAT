@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
@@ -146,10 +147,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		updateModuleConfigDefaults(true);
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -768,7 +765,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			File file = rie.importGetExportedFile();
@@ -777,13 +774,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			RepositoryEntry re;
 			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
 				re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 
 				getModuleConfiguration().set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			} else {
 				RepositoryHandler handlerQTI = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
 				re = handlerQTI.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			}
 			IQEditController.setIQReference(re, getModuleConfiguration());
 		} else {
@@ -791,9 +788,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -801,19 +795,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return am.getNodeAttempts(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
-	 */
 	@Override
 	public boolean hasAttemptsConfigured() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserAttempts(java.lang.Integer,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {

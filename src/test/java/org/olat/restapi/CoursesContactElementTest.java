@@ -57,8 +57,9 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.CourseNodeVO;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -90,7 +91,9 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");
-		course1 = CoursesWebService.createEmptyCourse(admin, "course-rest-contacts", "Course to test the contacts elements", null);
+		
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		course1 = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		
 		rootNodeId = course1.getEditorTreeModel().getRootNode().getIdent();

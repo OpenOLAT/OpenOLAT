@@ -50,6 +50,7 @@ public class QuotaImpl implements Quota {
 	/**
 	 * @return The path
 	 */
+	@Override
 	public String getPath() {
 		return path;
 	}
@@ -57,6 +58,7 @@ public class QuotaImpl implements Quota {
 	/**
 	 * @return Quota in KB
 	 */
+	@Override
 	public Long getQuotaKB() {
 		return quotaKB;
 	}
@@ -64,22 +66,24 @@ public class QuotaImpl implements Quota {
 	/**
 	 * @return Upload Limit in KB.
 	 */
+	@Override
 	public Long getUlLimitKB() {
 		return ulLimitKB;
 	}
-	
+
+	@Override
 	public Long getRemainingSpace() {
-		long quotaKB = getQuotaKB().longValue();
+		long quotaInKB = getQuotaKB().longValue();
 		long remainingQuotaKB;
-		if (quotaKB == Quota.UNLIMITED) {
-			remainingQuotaKB = quotaKB;
+		if (quotaInKB == Quota.UNLIMITED) {
+			remainingQuotaKB = quotaInKB;
 		} else {
 			OlatRootFolderImpl container = new OlatRootFolderImpl(path, null);
 			long actualUsage = VFSManager.getUsageKB(container);
-			if (quotaKB - actualUsage < 0) {
+			if (quotaInKB - actualUsage < 0) {
 				remainingQuotaKB = 0l;
 			} else {
-				remainingQuotaKB = quotaKB - actualUsage;
+				remainingQuotaKB = quotaInKB - actualUsage;
 			}
 		}
 		return new Long(remainingQuotaKB);

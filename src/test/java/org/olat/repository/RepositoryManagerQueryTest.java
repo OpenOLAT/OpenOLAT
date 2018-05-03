@@ -29,9 +29,12 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -56,13 +59,23 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	private static final String TEST_RES_NAME = "TestManagerQuery";
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private RepositoryManager rm;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private UserManager userManager;
+	private OLATResourceManager resourceManager;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	private static Identity admin;
+	private static Identity learnResourceManager1;
+	private static Identity learnResourceManager2;
 	
 	private static final String author = "RepositoryManagerQueryAuthor";
 	private static boolean initialized = false;
@@ -74,8 +87,10 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	@Before
 	public void setup() {
 		if(initialized) return;
-		
-		DB db = DBFactory.getInstance();
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = organisationService.createOrganisation("Test repo query", "test-repo-query", null, defOrganisation, null);
+		dbInstance.commit();
 		
 		admin = JunitTestHelper.createAndPersistIdentityAsAdmin("administrator");
 		
@@ -89,19 +104,25 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		id2.getUser().setProperty(UserConstants.LASTNAME, author + "2");
 		userManager.updateUserFromIdentity(id2);
 
-		Identity institut1 = JunitTestHelper.createAndPersistIdentityAsAuthor("kanu");
-		institut1.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "Volks");
-		institut1.getUser().setProperty(UserConstants.FIRSTNAME, "Kanu");
-		institut1.getUser().setProperty(UserConstants.LASTNAME, "Unchou");
-		userManager.updateUserFromIdentity(institut1);
+		learnResourceManager1 = JunitTestHelper.createAndPersistIdentityAsAuthor("kanu");
+		learnResourceManager1.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "Volks");
+		learnResourceManager1.getUser().setProperty(UserConstants.FIRSTNAME, "Kanu");
+		learnResourceManager1.getUser().setProperty(UserConstants.LASTNAME, "Unchou");
+		userManager.updateUserFromIdentity(learnResourceManager1);
 
-		Identity institut2 = JunitTestHelper.createAndPersistIdentityAsAuthor("rei");
-		institut2.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "Nerv");
-		institut2.getUser().setProperty(UserConstants.FIRSTNAME, "Rei");
-		institut2.getUser().setProperty(UserConstants.LASTNAME, "Ayanami");
-		userManager.updateUserFromIdentity(institut2);
+		learnResourceManager2 = JunitTestHelper.createAndPersistIdentityAsAuthor("rei");
+		learnResourceManager2.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "Nerv");
+		learnResourceManager2.getUser().setProperty(UserConstants.FIRSTNAME, "Rei");
+		learnResourceManager2.getUser().setProperty(UserConstants.LASTNAME, "Ayanami");
+		userManager.updateUserFromIdentity(learnResourceManager2);
 
-		db.commitAndCloseSession();
+		dbInstance.commit();
+		
+		organisationService.addMember(organisation, learnResourceManager1, OrganisationRoles.learnresourcemanager);
+		organisationService.addMember(organisation, learnResourceManager2, OrganisationRoles.learnresourcemanager);
+		organisationService.addMember(organisation, id1, OrganisationRoles.user);
+		organisationService.addMember(organisation, id2, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
 
 		// generate some repo entries
 		int numbRes = 500;
@@ -124,27 +145,27 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 				}
 				case 2: {
 					access = RepositoryEntry.ACC_OWNERS;
-					owner = institut1;
+					owner = learnResourceManager1;
 					break;
 				}
 				case 3: {
 					access = RepositoryEntry.ACC_OWNERS;
-					owner = institut2;
+					owner = learnResourceManager2;
 					break;
 				}
 			}
 			
 			// create course and persist as OLATResourceImpl
-			RepositoryEntry re = createCourseRepositoryEntry(db, owner, i);
+			RepositoryEntry re = createCourseRepositoryEntry(owner, i, organisation);
 			re.setAccess(access);
 
 			repositoryService.update(re);
 			if (i % 20 == 0) {
-				db.commitAndCloseSession();
+				dbInstance.commitAndCloseSession();
 			}
 		}
 
-		db.commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		
 		initialized = true;
 	}
@@ -154,8 +175,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		List<String> types = Collections.singletonList(TEST_RES_NAME);
 		
 		//roles: author + institution manager
-		Roles role2 = new Roles(false, false, false, true, false, true, false);
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types, admin, role2, "Volks");
+		Roles adminRoles = securityManager.getRoles(admin);
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types, admin, adminRoles, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut);
 		assertFalse(resultOneShootInstitut.isEmpty());
@@ -179,9 +200,10 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		List<String> types = Collections.singletonList(TEST_RES_NAME);
 		
 		//roles: institution manager
-		Roles role3 = new Roles(false, false, false, true, false, true, false);
+		Roles learnResourceManager1Roles = securityManager.getRoles(learnResourceManager1);
 
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types, null, role3, "Volks");
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types,
+				learnResourceManager1, learnResourceManager1Roles, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut3 = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut3);
 		assertFalse(resultOneShootInstitut3.isEmpty());
@@ -192,9 +214,10 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		List<String> types = Collections.singletonList(TEST_RES_NAME);
 		
 		//roles: institution manager search: authorname
-		Roles role4 = new Roles(false, false, false, false, false, true, false);
+		Roles learnResourceManager2Roles = securityManager.getRoles(learnResourceManager2);
 
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types, null, role4, "Volks");
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types,
+				learnResourceManager2, learnResourceManager2Roles, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut4 = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut4);
 		assertFalse(resultOneShootInstitut4.isEmpty());
@@ -205,24 +228,23 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		List<String> types = Collections.singletonList(TEST_RES_NAME);
 		
 		//roles: institution manager search: authorname
-		Roles role4 = new Roles(false, false, false, false, false, true, false);
+		Roles learnResourceManager1Role = securityManager.getRoles(learnResourceManager1);
 
-		
 		//test paging
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types, null, role4, "Volks");
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types,
+				learnResourceManager1, learnResourceManager1Role, "Volks");
 		List<RepositoryEntry> resultOneShootInstitut6 = rm.genericANDQueryWithRolesRestriction(params, 0, 50, true);
 		rm.countGenericANDQueryWithRolesRestriction(params);
 		assertNotNull(resultOneShootInstitut6);
 		assertEquals(50, resultOneShootInstitut6.size());
 	}
 	
-	private RepositoryEntry createCourseRepositoryEntry(DB db, Identity owner, final int i) {
-		OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(TEST_RES_NAME);
-		db.saveObject(r);
+	private RepositoryEntry createCourseRepositoryEntry(Identity owner, final int i, Organisation organisation) {
+		OLATResource r =  resourceManager.createOLATResourceInstance(TEST_RES_NAME);
+		resourceManager.saveOLATResource(r);
 		// now make a repository entry for this course
 		RepositoryEntry re = repositoryService.create(owner, null,
-				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "Description of learning by OLAT " + i, r, RepositoryEntry.ACC_OWNERS);
-		//db.commit();
+				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "Description of learning by OLAT " + i, r, RepositoryEntry.ACC_OWNERS, organisation);
 		return re;
 	}
 }

@@ -44,6 +44,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.Component;
@@ -55,6 +56,7 @@ import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -114,6 +116,8 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private EnrollmentManager enrollmentManager;
@@ -168,7 +172,8 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ENCourseNode enNode = new ENCourseNode();
 
 		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
-		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "Enrollment test course 1", "A JUnit course", resource);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry addedEntry = repositoryService.create(null, "Ayanami", "-", "Enrollment test course 1", "A JUnit course", resource, 0, defOrganisation);
 		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test", "Test", "learningObjectives").getCourseEnvironment();
 		// 1. enroll wg1 user
 		IdentityEnvironment ienv = new IdentityEnvironment();

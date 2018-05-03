@@ -41,6 +41,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentMode;
@@ -88,9 +89,10 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		SurveyFileResource ores = new SurveyFileResource();
-		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, ores, initialAuthor, displayname, description, createObject, locale);
+		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, ores, initialAuthor, displayname, description, createObject, organisation, locale);
 	}
 
 	@Override
@@ -100,8 +102,8 @@ public class QTISurveyHandler extends QTIHandler {
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
-		return super.importResource(initialAuthor, displayname, description, new SurveyFileResource(), file, filename);
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+		return super.importResource(initialAuthor, displayname, description, organisation, new SurveyFileResource(), file, filename);
 	}
 
 	@Override

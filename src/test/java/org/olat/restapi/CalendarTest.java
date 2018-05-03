@@ -62,7 +62,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -99,7 +98,8 @@ public class CalendarTest extends OlatJerseyTestCase {
 			//create a course with a calendar
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			course1 = CoursesWebService.createEmptyCourse(id1, "Cal course", "Cal course", config);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id1, RepositoryEntry.ACC_OWNERS);
+			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 			
 			ICourse course = CourseFactory.loadCourse(course1.getResourceableId());
@@ -136,7 +136,8 @@ public class CalendarTest extends OlatJerseyTestCase {
 			//create a course with a calendar
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			course2 = CoursesWebService.createEmptyCourse(id2, "Cal course - 2", "Cal course - 2", config);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id2, RepositoryEntry.ACC_OWNERS);
+			course2 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 
 			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course2);

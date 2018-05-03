@@ -41,7 +41,7 @@ public class CatalogAdminSiteDef extends AbstractSiteDefinition implements SiteD
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new CatalogAdminSite(this, ureq.getLocale());
-		} else if(ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+		} else if(ureq.getUserSession().getRoles().isLearnResourceManager()) {
 			// only for admins
 			return new CatalogAdminSite(this, ureq.getLocale());
 		}

@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -79,11 +80,6 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl,  BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
@@ -91,19 +87,11 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, blogChildController);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation, java.lang.String)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		RepositoryEntry entry = getReferencedRepositoryEntry();
-		// create business path courseID:nodeID
-		// userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		// getIdent();
+
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		String nodeId = this.getIdent();
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
@@ -123,17 +111,9 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(nodecmd);
 		blogCtr.activate(ureq, entries, null);
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, blogCtr, this, "o_blog_icon");
-		NodeRunConstructionResult result = new NodeRunConstructionResult(wrapperCtrl);
-		return result;
-
+		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
@@ -148,8 +128,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 			boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), entry);
 			FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
 			FeedUIFactory uiFactory = BlogUIFactory.getInstance(ureq.getLocale());
-			Controller peekViewController = new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, nodeId, uiFactory, 2, "o_blog_peekview");
-			return peekViewController;
+			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, nodeId, uiFactory, 2, "o_blog_peekview");
 		} else {
 			// use standard peekview
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
@@ -161,9 +140,6 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		return CourseNode.DISPLAY_OPTS_CONTENT;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#isConfigValid(org.olat.course.editor.CourseEditorEnv)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
@@ -193,10 +169,10 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		if(withReferences) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(BlogFileResource.TYPE_NAME);
-			importFeed(handler, importDirectory, owner, locale);
+			importFeed(handler, importDirectory, owner, organisation, locale);
 		} else {
 			FeedNodeEditController.removeReference(getModuleConfiguration());
 		}

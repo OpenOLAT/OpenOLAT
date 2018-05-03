@@ -74,7 +74,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.JunitTestHelper;
@@ -86,7 +85,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	private static final OLog log = Tracing.createLoggerFor(CoursesTest.class);
 
 	private Identity admin;
-	private ICourse course1, course2, course3;
+	private ICourse course2, course3;
 	private RepositoryEntry re1, re2, re3;
 	private String externalId, externalRef;
 	private String externalId3;
@@ -113,25 +112,23 @@ public class CoursesTest extends OlatJerseyTestCase {
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = securityManager.findIdentityByName("administrator");
-			course1 = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, null);
+			
+			re1 = JunitTestHelper.deployBasicCourse(admin, "courses1", RepositoryEntry.ACC_OWNERS);
+			re2 = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+			re3 = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+			dbInstance.commit();
 
 			externalId = UUID.randomUUID().toString();
 			externalRef = UUID.randomUUID().toString();
-			course2 = CoursesWebService.createEmptyCourse(admin, "courses2", "courses2 long name", null, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, externalId, externalRef, "all", null);
-
-			dbInstance.commitAndCloseSession();
-
-			re1 = repositoryManager.lookupRepositoryEntry(course1, false);
-			re2 = repositoryManager.lookupRepositoryEntry(course2, false);
-
+			re2 = repositoryManager.setDescriptionAndName(re2, "courses2", "courses2 desc", null, null, externalId, externalRef, null, null);
+			
 			externalId3 = UUID.randomUUID().toString();
-			course3 = CoursesWebService.createEmptyCourse(admin, "courses3", "courses3 long name", null, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, externalId3, null, "all", null);
-			re3 = repositoryManager.lookupRepositoryEntry(course3, false);
 			RepositoryEntryLifecycle lifecycle3 = reLifecycleDao.create("course3 lifecycle", UUID.randomUUID().toString(), true, new Date(), new Date());
-			dbInstance.commit();
-			re3.setLifecycle(lifecycle3);
-			re3 = dbInstance.getCurrentEntityManager().merge(re3);
+			re3 = repositoryManager.setDescriptionAndName(re3, "courses3", "courses3 desc", null, null, externalId3, null, "all", lifecycle3);
 			dbInstance.commitAndCloseSession();
+			
+			course2 = CourseFactory.loadCourse(re2);
+			course3 = CourseFactory.loadCourse(re3);
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
 		}

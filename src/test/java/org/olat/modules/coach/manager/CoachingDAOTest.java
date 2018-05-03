@@ -19,7 +19,6 @@
  */
 package org.olat.modules.coach.manager;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
@@ -100,10 +99,9 @@ public class CoachingDAOTest extends OlatTestCase {
 	throws URISyntaxException {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
-		URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		String softKey = UUID.randomUUID().toString();
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
+
 		Assert.assertNotNull(re);
 
 		dbInstance.commitAndCloseSession();
@@ -206,11 +204,10 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_notAttempted()
 	throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re1 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re2 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re3 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		
@@ -326,11 +323,10 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_owner()
 	throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re1 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re2 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re3 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl); 
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl); 
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -473,11 +469,10 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_permissionOnCourses()
 	throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re1 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 1);
-		RepositoryEntry re2 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 2);
-		RepositoryEntry re3 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 3);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntry.ACC_OWNERS, courseUrl);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntry.ACC_OWNERS_AUTHORS, courseUrl);
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", RepositoryEntry.ACC_USERS, courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -657,10 +652,9 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_emptyStatements_emptyCourseInfos()
 	throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re1 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re2 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -736,10 +730,9 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_empty()
 	throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re1 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re2 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -771,11 +764,10 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getUsers()
 	throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re1 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re2 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
-		RepositoryEntry re3 = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -850,9 +842,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getStudents_coach_course() throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -882,9 +873,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getStudents_owner_course() throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -926,9 +916,8 @@ public class CoachingDAOTest extends OlatTestCase {
 
 	@Test
 	public void isCoach_owner() throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
 		dbInstance.commitAndCloseSession();
 	
 		//members of courses
@@ -942,9 +931,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isCoach_coach() throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 4);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
 		dbInstance.commitAndCloseSession();
 	
 		//coach of course
@@ -967,9 +955,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isCoach_notPermitted() throws URISyntaxException {
-		URL coachingCourseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		File coachingCourseFile = new File(coachingCourseUrl.toURI());
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(coachingCourseFile, UUID.randomUUID().toString(), 1);
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntry.ACC_OWNERS, courseUrl);
 		dbInstance.commitAndCloseSession();
 	
 		//owner of course

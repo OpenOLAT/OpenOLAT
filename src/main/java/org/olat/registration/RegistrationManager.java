@@ -162,8 +162,10 @@ public class RegistrationManager {
 	 * @return the newly created subject or null
 	 */
 	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User myUser, TemporaryKey tk) {
-		Identity identity = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, myUser);
-		if (identity == null) return null;
+		Identity identity = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, myUser, null);
+		if (identity == null) {
+			return null;
+		}
 		deleteTemporaryKey(tk);
 		return identity;
 	}
@@ -399,7 +401,7 @@ public class RegistrationManager {
 			// don't use the discrete method to be more robust in case that more than one
 			// property is found
 			List<Property> disclaimerProperties = propertyManager.listProperties(identity, null, null, "user", "dislaimer_accepted");
-			needsToConfirm = ( disclaimerProperties.size() == 0);
+			needsToConfirm = disclaimerProperties.isEmpty();
 		}
 		return needsToConfirm;
 	}

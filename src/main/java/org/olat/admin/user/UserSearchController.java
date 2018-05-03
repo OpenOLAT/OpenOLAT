@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
@@ -184,7 +185,8 @@ public class UserSearchController extends BasicController {
 		if(usess.getRoles().isOLATAdmin()) {
 			searchableOrganisations = null;//null mean all
 		} else {
-			searchableOrganisations = organisationService.getSearchableOrganisations(getIdentity(), usess.getRoles());
+			searchableOrganisations = organisationService
+					.getSearchableOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
 		}
 		
 		Roles roles = usess.getRoles();

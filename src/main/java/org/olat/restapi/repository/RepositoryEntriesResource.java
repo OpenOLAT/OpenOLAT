@@ -56,8 +56,11 @@ import javax.ws.rs.core.UriInfo;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -233,7 +236,7 @@ public class RepositoryEntriesResource {
 			@Context HttpServletRequest httpRequest) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		try {
-			List<RepositoryEntry> reposFound = new ArrayList<RepositoryEntry>();
+			List<RepositoryEntry> reposFound = new ArrayList<>();
 			Identity identity = getIdentity(httpRequest);
 			boolean restrictedType = type != null && !type.isEmpty();
 			
@@ -248,14 +251,16 @@ public class RepositoryEntriesResource {
 					// filter by search conditions
 					for(RepositoryEntry re : lstRepos) {
 						boolean nameOk = restrictedName ? re.getDisplayname().toLowerCase().contains(name.toLowerCase()) : true;
-						boolean authorOk = restrictedAuthor ? re.getInitialAuthor().toLowerCase().equals(author.toLowerCase()) : true;
-						if(nameOk & authorOk) reposFound.add(re);
+						boolean authorOk = restrictedAuthor ? re.getInitialAuthor().equalsIgnoreCase(author) : true;
+						if(nameOk && authorOk) {
+							reposFound.add(re);
+						}
 					}
 				} else {
 					if(!lstRepos.isEmpty()) reposFound.addAll(lstRepos);
 				}
 			} else {
-				List<String> types = new ArrayList<String>(1);
+				List<String> types = new ArrayList<>(1);
 				if(restrictedType) types.add(type);
 
 				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(name, author, null, restrictedType ? types : null, identity, roles, null);
@@ -311,7 +316,17 @@ public class RepositoryEntriesResource {
 				String softkey = partsReader.getValue("softkey");
 				String resourcename = partsReader.getValue("resourcename");
 				String displayname = partsReader.getValue("displayname");	
-				RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access);
+				String organisationKey = partsReader.getValue("organisationkey");
+				Organisation organisation = null;
+				if(StringHelper.containsNonWhitespace(organisationKey)) {
+					organisation = CoreSpringFactory.getImpl(OrganisationService.class)
+							.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationKey)));
+				} else {
+					organisation = CoreSpringFactory.getImpl(OrganisationService.class)
+							.getDefaultOrganisation();
+				}
+
+				RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access, organisation);
 				RepositoryEntryVO vo = ObjectFactory.get(re);
 				return Response.ok(vo).build();
 			}
@@ -325,7 +340,7 @@ public class RepositoryEntriesResource {
 	}
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
-			String displayname, String softkey, int access) {
+			String displayname, String softkey, int access, Organisation organisation) {
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryHandlerFactory handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
@@ -345,7 +360,7 @@ public class RepositoryEntriesResource {
 				Locale locale = I18nModule.getDefaultLocale();
 				
 				addedEntry = handler.importResource(identity, null, displayname,
-						"", true, locale, fResource, fResource.getName());
+						"", true, organisation, locale, fResource, fResource.getName());
 				
 				if(StringHelper.containsNonWhitespace(resourcename)) {
 					addedEntry.setResourcename(resourcename);

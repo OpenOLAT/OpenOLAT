@@ -21,6 +21,7 @@ package org.olat.repository.manager;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
@@ -45,12 +46,15 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
 	
 	@Test
 	public void createRelation() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-1", null, null, null, null);
-		RepositoryEntry re = repositoryService.create("Asuka Langley", "rel", "rel", null, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntryToOrganisation relation = repositoryEntryToOrganisationDao

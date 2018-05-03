@@ -25,6 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -62,28 +66,33 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImportRepositoryEntryController extends FormBasicController {
 	
+	private static final String[] refKeys = new String[]{ "checked" };
+	
 	private String[] limitTypes;
 	private RepositoryEntry importedEntry;
+	private final List<Organisation> manageableOrganisations;
 	private List<ResourceHandler> handlerForUploadedResources;
 	
-	private SpacerElement spacerEl;
 	private FormSubmit importButton;
 	private SingleSelection selectType;
 	private FileElement uploadFileEl;
 	private StaticTextElement typeEl;
 	private TextElement displaynameEl;
+	private SingleSelection organisationEl;
 	private MultipleSelectionElement referencesEl;
 	
-	private final static String[] refKeys = new String[]{ "checked" };
-
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		manageableOrganisations = organisationService
+				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.learnresourcemanager);
 		
 		initForm(ureq);
 	}
@@ -92,6 +101,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.limitTypes = limitTypes;
+		manageableOrganisations = organisationService
+				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.learnresourcemanager);
 		
 		initForm(ureq);
 	}
@@ -103,7 +114,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "import.file", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 		
-		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
+		SpacerElement spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		spacerEl.setVisible(false);
 		
 		typeEl = uifactory.addStaticTextElement("cif.type", "cif.type", "", formLayout);
@@ -119,6 +130,19 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setMandatory(true);
 		displaynameEl.setVisible(false);
 		displaynameEl.setElementCssClass("o_sel_author_imported_name");
+		
+		List<String> organisationKeys = new ArrayList<>();
+		List<String> organisationValues = new ArrayList<>();
+		for(Organisation organisation:manageableOrganisations) {
+			organisationKeys.add(organisation.getKey().toString());
+			organisationValues.add(organisation.getDisplayName());
+		}
+		organisationEl = uifactory.addDropdownSingleselect("cif.organisations", "cif.organisations",
+				formLayout, organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]));
+		if(!organisationKeys.isEmpty()) {
+			organisationEl.select(organisationKeys.get(0), true);
+		}
+		organisationEl.setVisible(organisationKeys.size() > 1);
 
 		String[] refValues = new String[]{ translate("references.expl") };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
@@ -178,7 +202,14 @@ public class ImportRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
+		
+
+		organisationEl.clearError();
+		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
+			organisationEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
 			displaynameEl.setErrorKey("cif.error.displayname.empty", new String[] {});
@@ -190,8 +221,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		}
 		
 		allOk &= validLimitationOnType(handlerForUploadedResources);
-		allOk &= handlerForUploadedResources != null && handlerForUploadedResources.size() > 0;
-		return allOk & super.validateFormLogic(ureq);
+		allOk &= handlerForUploadedResources != null && !handlerForUploadedResources.isEmpty();
+		return allOk;
 	}
 	
 	private boolean validLimitationOnType(List<ResourceHandler> handlers) {
@@ -233,13 +264,21 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		}
 		
 		if(handler != null) {
+			Organisation organisation;
+			if(organisationEl.isOneSelected()) {
+				Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
+				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+			} else {
+				organisation = organisationService.getDefaultOrganisation();
+			}
+
 			String displayname = displaynameEl.getValue();
 			File uploadedFile = uploadFileEl.getUploadFile();
 			String uploadedFilename = uploadFileEl.getUploadFileName();
 			boolean withReferences = referencesEl.isAtLeastSelected(1);
 			
 			importedEntry = handler.importResource(getIdentity(), null, displayname,
-					"", withReferences, getLocale(), uploadedFile, uploadedFilename);
+					"", withReferences, organisation, getLocale(), uploadedFile, uploadedFilename);
 			
 			if(importedEntry == null) {
 				showWarning("error.import");

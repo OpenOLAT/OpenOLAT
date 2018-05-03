@@ -29,6 +29,7 @@
 package org.olat.test;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Random;
@@ -41,6 +42,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
@@ -52,6 +54,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -193,7 +196,9 @@ public class JunitTestHelper {
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry re = repositoryService.create(initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null, r);
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null, r, 0, defOrganisation);
 		if(membersOnly) {
 			re.setAccess(RepositoryEntry.ACC_OWNERS);
 			re.setMembersOnly(true);
@@ -209,20 +214,10 @@ public class JunitTestHelper {
 	 * @return the created RepositoryEntry
 	 */
 	public static RepositoryEntry deployDemoCourse(Identity initialAuthor) {		
-		String displayname = "Demo-Kurs-7.1";
-		String description = "";
-
 		RepositoryEntry re = null;
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Demo-Kurs-7.1.zip");
-			File courseFile = new File(courseUrl.toURI());
-			
-			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
-					.getRepositoryHandler(CourseModule.getCourseTypeName());
-			re = courseHandler.importResource(initialAuthor, null, displayname, description, true, Locale.ENGLISH, courseFile, null);
-			
-			ICourse course = CourseFactory.loadCourse(re);
-			CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  initialAuthor, Locale.ENGLISH);
+			re = deployCourse(initialAuthor, "Demo-Kurs-7.1", RepositoryEntry.ACC_USERS, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -230,50 +225,120 @@ public class JunitTestHelper {
 	}
 	
 	/**
-	 * Deploy a course with only a single page.
-	 * @param initialAuthor
-	 * @return
+	 * Deploy a course with only a single page. Title is randomized.
+	 * 
+	 * @param initialAuthor The author
+	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor) {		
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor) {
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		String description = "A course with only a single page";
+		return deployBasicCourse(initialAuthor, displayname, RepositoryEntry.ACC_USERS);
+	}
+	
+	/**
+	 * Deploy a course with only a single page. Title is randomized.
+	 * 
+	 * @param initialAuthor The author
+	 * @param access The access
+	 * @return The repository entry of the course
+	 */
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, int access) {
+		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
+		return deployBasicCourse(initialAuthor, displayname, access);
+	}
 
-		RepositoryEntry re = null;
+	/**
+	 * Deploy a course with only a single page.
+	 * 
+	 * @param initialAuthor The author
+	 * @param displayname The title of the course
+	 * @param access The access
+	 * @return The repository entry of the course
+	 */
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname, int access) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Basic_course.zip");
-			File courseFile = new File(courseUrl.toURI());
-			
-			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
-					.getRepositoryHandler(CourseModule.getCourseTypeName());
-			re = courseHandler.importResource(initialAuthor, null, displayname, description, true, Locale.ENGLISH, courseFile, null);
-			
-			ICourse course = CourseFactory.loadCourse(re);
-			CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  initialAuthor, Locale.ENGLISH);
+			return deployCourse(initialAuthor, displayname, access, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
+			return null;
 		}
-		return re;
+	}
+	
+	public static RepositoryEntry deployEmptyCourse(Identity initialAuthor, String displayname, int access) {
+		try {
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Empty_course.zip");
+			return deployCourse(initialAuthor, displayname, access, courseUrl);
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	/**
-	 * Deploy a course with only a single page.
-	 * @param initialAuthor
-	 * @return
+	 * The course will be accessible to all registrated users.
+	 * 
+	 * @param initialAuthor The author
+	 * @param displayname the name of the course
+	 * @param courseUrl The file to import
+	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile) {		
-		String description = "A course";
-
-		RepositoryEntry re = null;
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, URL courseUrl) {
+		return deployCourse(initialAuthor, displayname, RepositoryEntry.ACC_USERS, courseUrl);
+	}
+	
+	/**
+	 * 
+	 * @param initialAuthor The author
+	 * @param displayname The name of the course
+	 * @param access The access
+	 * @param courseUrl The file to import
+	 * @return The repository entry of the course
+	 */
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, int access, URL courseUrl) {
+		try {
+			File courseFile = new File(courseUrl.toURI());
+			return deployCourse(initialAuthor, displayname, courseFile, access);
+		} catch (URISyntaxException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	/**
+	 * The course will be accessible to all registrated users.
+	 * 
+	 * @param initialAuthor The author (not mandatory)
+	 * @param displayname The name of the course
+	 * @param courseFile The file to import
+	 * @return The repository entry of the course
+	 */
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile) {	
+		return deployCourse(initialAuthor, displayname, courseFile, RepositoryEntry.ACC_USERS) ;
+	}
+	
+	/**
+	 * 
+	 * @param initialAuthor The author (not mandatory)
+	 * @param displayname The name of the course
+	 * @param courseFile The file to import
+	 * @param access The access
+	 * @return The repository entry of the course
+	 */
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile, int access) {		
 		try {
 			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
-			re = courseHandler.importResource(initialAuthor, null, displayname, description, true, Locale.ENGLISH, courseFile, null);
+			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course", true, defOrganisation, Locale.ENGLISH, courseFile, null);
 			
 			ICourse course = CourseFactory.loadCourse(re);
-			CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  initialAuthor, Locale.ENGLISH);
+			CourseFactory.publishCourse(course, access, false,  initialAuthor, Locale.ENGLISH);
+			return  CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(re.getKey());
 		} catch (Exception e) {
 			log.error("", e);
+			return null;
 		}
-		return re;
 	}
 }

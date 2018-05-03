@@ -25,10 +25,13 @@
 
 package org.olat.admin.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,6 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -135,20 +139,30 @@ class NewUserForm extends FormBasicController {
 	private static final String FIELD_NEW2 = "passwordnew2";
 	private static final String LOGINNAME = "loginname";
 	private static final String USER_CREATE_SUCCESS = "user successfully created: ";
-	private List<UserPropertyHandler> userPropertyHandlers;
+	
+
 	private boolean showPasswordFields = false;
+	private List<UserPropertyHandler> userPropertyHandlers;
+	private List<Organisation> manageableOrganisations;
 	
 	private TextElement emailTextElement;
 	private TextElement usernameTextElement;
 	private TextElement psw1TextElement;
 	private TextElement psw2TextElement;
+	private SingleSelection organisationsElement;
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
+	
+	
 	
 	@Autowired
 	private UserModule userModule;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * 
@@ -159,8 +173,10 @@ class NewUserForm extends FormBasicController {
 	 */
 	public NewUserForm(UserRequest ureq, WindowControl wControl, boolean showPasswordFields, Translator translator) {
 		super(ureq, wControl);
+		setTranslator(translator);
 		this.showPasswordFields = showPasswordFields;
-		this.setTranslator(translator);
+		manageableOrganisations = organisationService
+				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.usermanager);
 		initForm(ureq);
 	}	 
 	
@@ -175,9 +191,8 @@ class NewUserForm extends FormBasicController {
 		usernameTextElement.setMandatory(true);
 		usernameTextElement.setDisplaySize(30);
 		usernameTextElement.setElementCssClass("o_sel_id_username");
-		
-		UserManager um = UserManager.getInstance();
-		userPropertyHandlers = um.getUserPropertyHandlersFor(USER_PROPS_IDENTIFIER, true);
+
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_IDENTIFIER, true);
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -201,6 +216,19 @@ class NewUserForm extends FormBasicController {
 		languageSingleSelection = uifactory.addDropdownSingleselect("new.form.language", formLayout, langKeys, langValues, null); 
 		// select default language in form
 		languageSingleSelection.select(I18nModule.getDefaultLocale().toString(), true);
+		
+		List<String> organisationKeys = new ArrayList<>();
+		List<String> organisationValues = new ArrayList<>();
+		for(Organisation organisation:manageableOrganisations) {
+			organisationKeys.add(organisation.getKey().toString());
+			organisationValues.add(organisation.getDisplayName());
+		}
+		organisationsElement = uifactory.addDropdownSingleselect("new.form.organisations", formLayout,
+				organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]), null);
+		organisationsElement.setVisible(organisationKeys.size() > 1);
+		if(!organisationKeys.isEmpty()) {
+			organisationsElement.select(organisationKeys.get(0), true);
+		}
 		
 		//add password fields!!!
 		if (showPasswordFields) {
@@ -242,62 +270,69 @@ class NewUserForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		// validate if username does match the syntactical login requirements
 		String loginName = usernameTextElement.getValue();
-		if (usernameTextElement.isEmpty() || !UserManager.getInstance().syntaxCheckOlatLogin(loginName)) {			
-			usernameTextElement.setErrorKey("new.error.loginname.empty", new String[]{});
-			return false;
-		}
-		// Check if login is still available
-		Identity identity = securityManager.findIdentityByName(loginName);
-		if (identity != null) {			
-			usernameTextElement.setErrorKey("new.error.loginname.choosen", new String[]{});
-			return false;
-		}
 		usernameTextElement.clearError();
+		if (usernameTextElement.isEmpty() || !userManager.syntaxCheckOlatLogin(loginName)) {			
+			usernameTextElement.setErrorKey("new.error.loginname.empty", new String[]{});
+			allOk &= false;
+		} else {
+			// Check if login is still available
+			Identity identity = securityManager.findIdentityByName(loginName);
+			if (identity != null) {			
+				usernameTextElement.setErrorKey("new.error.loginname.choosen", new String[]{});
+				allOk &= false;
+			}
+		}
 
 		// validate special rules for each user property
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {			
 			//we assume here that there are only textElements for the user properties
 			FormItem formItem = flc.getFormComponent(userPropertyHandler.getName());
-			if ( ! userPropertyHandler.isValid(null, formItem, null) || formItem.hasError()) {
-				return false;				
-			}
 			formItem.clearError();
+			if ( ! userPropertyHandler.isValid(null, formItem, null) || formItem.hasError()) {
+				allOk &= false;				
+			}
 		}
 
 		// special test on email address: validate if email is already used
 		String email = emailTextElement.getValue();
-		if (!UserManager.getInstance().isEmailAllowed(email)) {
+		emailTextElement.clearError();
+		if (!userManager.isEmailAllowed(email)) {
 			emailTextElement.setErrorKey("new.error.email.choosen", new String[] {});
-			return false;
+			allOk &= false;
+		}
+		
+		// organization
+		organisationsElement.clearError();
+		if(organisationsElement.isVisible() && !organisationsElement.isOneSelected()) {
+			organisationsElement.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
-		// validate if new password does match the syntactical password requirements
-
+		// validate if new password does match the syntactical password requirement
 		// password fields depend on form configuration
-		if (showPasswordFields && psw1TextElement!=null && psw2TextElement!=null && authCheckbox.isSelected(0)) {
+		if (showPasswordFields && psw1TextElement != null && psw2TextElement != null && authCheckbox.isSelected(0)) {
+			psw1TextElement.clearError();
+			psw2TextElement.clearError();
+			
 			String pwd = psw1TextElement.getValue();
 			if(psw1TextElement.isEmpty("new.form.mandatory") || psw1TextElement.hasError()) {
-				return false;
-			}
-			if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {					
+				allOk &= false;
+			} else if (!userManager.syntaxCheckOlatPassword(pwd)) {					
 				psw1TextElement.setErrorKey("form.checkPassword", new String[]{});					
-				return false;
+				allOk &=  false;
 			}
-			psw1TextElement.clearError();
 			if(psw2TextElement.isEmpty("new.form.mandatory") || psw2TextElement.hasError()) {
-				return false;
-			}
-			// validate that both passwords are the same
-			if (!pwd.equals(psw2TextElement.getValue())) {
+				allOk &= false;
+			} else if (!pwd.equals(psw2TextElement.getValue())) {
 				psw2TextElement.setErrorKey("new.error.password.nomatch", new String []{});
-				return false;
+				allOk &= false;
 			}
-			psw2TextElement.clearError();
 		}
-		// all checks passed
-		return true;
+		return allOk;
 	}
 	
 	@Override
@@ -333,18 +368,27 @@ class NewUserForm extends FormBasicController {
 		}
 		// Create new user and identity and put user to users group
 		// Create transient user without firstName,lastName, email
-		UserManager um = UserManager.getInstance();
-		User newUser = um.createUser(null, null, null);
+		User newUser = userManager.createUser(null, null, null);
 		// Now add data from user fields (firstName,lastName and email are mandatory)
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem propertyItem = this.flc.getFormComponent(userPropertyHandler.getName());
+			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
 			userPropertyHandler.updateUserFromFormItem(newUser, propertyItem);
 		}
 		// Init preferences
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
-		return securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, pwd, newUser);
+		Organisation userOrganisation = null;
+		if(organisationsElement.isOneSelected()) {
+			String selectedOrganisationKey = organisationsElement.getSelectedKey();
+			for(Organisation organisation: manageableOrganisations) {
+				if(selectedOrganisationKey.equals(organisation.getKey().toString())) {
+					userOrganisation = organisation;
+					break;
+				}
+			}
+		}
+		return securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, pwd, newUser, userOrganisation);
 	}
 	
 	@Override

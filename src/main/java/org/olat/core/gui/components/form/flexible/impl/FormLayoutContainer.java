@@ -71,7 +71,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	/**
 	 * manage the form components of this form container
 	 */
-	private VelocityContainer formLayoutContainer;
+	private final VelocityContainer formLayoutContainer;
 	/**
 	 * formComponents and formComponentNames are managed together, change something here needs a change there.
 	 * formComponents contain the FormItem based on their name
@@ -128,12 +128,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		listeningOnlyFormComponents = new HashMap<>();
 	}
 
-	
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#rememberFormRequest(org.olat.core.gui.UserRequest,
-	 *      long[], int)
-	 */
+	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		// form layouter has no values to store temporary
 	}
@@ -155,10 +150,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		hasRootForm = true;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormContainer#add(java.lang.String,
-	 *      org.olat.core.gui.components.form.flexible.FormComponentImpl)
-	 */
+	@Override
 	public void add(FormItem formComp) {
 		add(formComp.getName(), formComp);
 	}
@@ -214,7 +206,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		
 		//make collection accessible with <name> in the container.
 		//collection contains then only the names.
-		List<String> foItemsCollectionAsNames = new ArrayList<String>();
+		List<String> foItemsCollectionAsNames = new ArrayList<>();
 		formLayoutContainer.contextPut(name, foItemsCollectionAsNames);
 
 		//add all items as form items to the container
@@ -590,10 +582,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 
 	/**
+	 * Create a layout based on a velocity template.
 	 * 
-	 * @param name
-	 * @param formTranslator
-	 * @param page
+	 * @param name The name of the component
+	 * @param formTranslator The translator
+	 * @param page The velocity template
 	 * @return
 	 */
 	public static FormLayoutContainer createCustomFormLayout(String name, Translator formTranslator, String page) {

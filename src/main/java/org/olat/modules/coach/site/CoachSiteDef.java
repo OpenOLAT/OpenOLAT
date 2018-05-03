@@ -27,6 +27,7 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.modules.coach.CoachingModule;
 import org.olat.modules.coach.CoachingService;
 
@@ -43,12 +44,12 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		UserSession usess = ureq.getUserSession();
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())
-				|| (!ureq.getUserSession().getRoles().isGuestOnly()
-				&& !ureq.getUserSession().getRoles().isInvitee())) {
+				|| (!usess.getRoles().isGuestOnly() && !usess.getRoles().isInvitee())) {
 			CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-			if(ureq.getUserSession().getRoles().isOLATAdmin() 
-					|| ureq.getUserSession().getRoles().isUserManager()
+			if(usess.getRoles().isOLATAdmin() 
+					|| usess.getRoles().isUserManager()
 					|| coachingService.isCoach(ureq.getIdentity())) {
 				return new CoachSite(this, ureq.getLocale());
 			}

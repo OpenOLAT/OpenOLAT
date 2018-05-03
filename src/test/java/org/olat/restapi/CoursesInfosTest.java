@@ -40,10 +40,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -77,7 +79,8 @@ public class CoursesInfosTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetCourseInfos_byId() throws IOException, URISyntaxException {
 		Identity admin = securityManager.findIdentityByName("administrator");
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "course-info 1", "course long name", null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-info 1", RepositoryEntry.ACC_OWNERS);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));

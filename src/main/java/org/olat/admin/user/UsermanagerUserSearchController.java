@@ -101,7 +101,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 
 	private UsermanagerUserSearchForm searchFormCtrl;
 	private UserSearchTableController tableCtr;
-	private List<Identity> identitiesList, selectedIdentities;
+	private List<Identity> identitiesList;
+	private List<Identity> selectedIdentities;
 	private List<String> notUpdatedIdentities = new ArrayList<>();
 	private ExtendedIdentitiesTableDataModel tdm;
 	private ContactFormController contactCtr;
@@ -112,7 +113,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	
 	
 	private final boolean isAdministrativeUser;
-	private List<Organisation> parentOrganisations;
+	private List<Organisation> manageableOrganisations;
 	private SearchIdentityParams identityQueryParams;
 	
 	@Autowired
@@ -131,12 +132,12 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param wControl
 	 */
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-			List<Organisation> parentOrganisations) {
+			List<Organisation> manageableOrganisations) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.stackedPanel = stackedPanel;
-		this.parentOrganisations = parentOrganisations;
+		this.manageableOrganisations = manageableOrganisations;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
@@ -153,7 +154,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.contextPut("emptyList", Boolean.FALSE);
 		userListVC.contextPut("showTitle", Boolean.TRUE);
 
-		searchFormCtrl = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser);
+		searchFormCtrl = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser, manageableOrganisations);
 		listenTo(searchFormCtrl);
 		
 		userSearchVC.put("usersearch", searchFormCtrl.getInitialComponent());
@@ -358,7 +359,9 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	
 	private void doPushSearch(UserRequest ureq) {
 		identityQueryParams = searchFormCtrl.getSearchIdentityParams();
-		identityQueryParams.setOrganisationParents(parentOrganisations);
+		if(identityQueryParams.getOrganisations() == null || identityQueryParams.getOrganisations().isEmpty()) {
+			identityQueryParams.setOrganisations(manageableOrganisations);
+		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));

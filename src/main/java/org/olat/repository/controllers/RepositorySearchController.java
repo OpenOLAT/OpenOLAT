@@ -256,7 +256,7 @@ public class RepositorySearchController extends BasicController implements Activ
 			restrictedTypes = Collections.singletonList(limitType);
 		} else {
 			Collection<String> s = searchForm.getRestrictedTypes();
-			restrictedTypes = (s == null) ? null : new ArrayList<String>(s);
+			restrictedTypes = (s == null) ? null : new ArrayList<>(s);
 		}
 		Roles roles = ureq.getUserSession().getRoles();
 		Identity ident = ureq.getIdentity();
@@ -272,7 +272,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else if(enableSearchforAllInSearchForm == Can.copyable){
 			entries = rm.queryCopyableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
 		} else {
-			entries = new ArrayList<RepositoryEntry>();
+			entries = new ArrayList<>();
 		}
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -308,7 +308,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 */
 	public void doSearchForReferencableResourcesLimitType(Identity owner, String[] limitTypes, Roles roles) {
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List<String> restrictedTypes = new ArrayList<String>();
+		List<String> restrictedTypes = new ArrayList<>();
 		if(limitTypes == null) {
 			restrictedTypes = null;
 		}

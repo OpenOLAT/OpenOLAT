@@ -22,6 +22,7 @@ package org.olat.repository.site;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.util.UserSession;
 import org.olat.repository.manager.CatalogManager;
 
 /**
@@ -44,17 +45,18 @@ public class CatalogManagerSecurityCallback implements SiteSecurityCallback {
 		this.catalogManager = catalogManager;
 	}
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (ureq == null || ureq.getUserSession() == null || ureq.getUserSession().getRoles() == null
-				|| ureq.getIdentity() == null
-				|| ureq.getUserSession().getRoles().isInvitee() || ureq.getUserSession().getRoles().isGuestOnly()) {
+		if(ureq == null) {
 			return false;
 		}
-		if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+		
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null || ureq.getIdentity() == null
+				|| usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
+			return false;
+		}
+		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isLearnResourceManager()) {
 			return true;
 		}
 		return catalogManager.isOwner(ureq.getIdentity());

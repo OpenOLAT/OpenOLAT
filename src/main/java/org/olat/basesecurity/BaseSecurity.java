@@ -33,7 +33,9 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.util.Encoder;
 
@@ -60,6 +62,8 @@ public interface BaseSecurity {
 	 */
 	public List<String> getRolesAsString(IdentityRef identity);
 	
+	public List<String> getRolesAsString(IdentityRef identity, OrganisationRef organisation);
+	
 	/**
 	 * Update the roles
 	 * @param actingIdentity The identity who is performing the change
@@ -67,6 +71,8 @@ public interface BaseSecurity {
 	 * @param roles The new roles to set on updatedIdentity
 	 */
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
+	
+	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation organisation);
 
 	public boolean isGuest(IdentityRef identity);
 	
@@ -245,10 +251,11 @@ public interface BaseSecurity {
 	 * @param externalId
 	 * @param pwd null: no OLAT authentication is generated. If not null, the password will be 
 	 *   encrypted and and an OLAT authentication is generated.
-	 * @param newUser unpersisted users
+	 * @param newUser The unpersisted users
+	 * @param organisation The organization where it is user (if null the default organization will be choosed)
 	 * @return Identity
 	 */
-	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd, User newUser);
+	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd, User newUser, Organisation organisation);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to

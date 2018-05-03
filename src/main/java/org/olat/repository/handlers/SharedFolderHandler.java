@@ -41,6 +41,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
@@ -71,9 +72,6 @@ import org.olat.resource.references.ReferenceManager;
 
 
 /**
- * Description:<br>
- * TODO: as Class Description for SharedFolderHandler
- * 
  * <P>
  * Initial Date: Apr 6 <br>
  * @author gnaegi
@@ -91,12 +89,13 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		SharedFolderFileResource folderResource = SharedFolderManager.getInstance().createSharedFolder();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(folderResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null,
-				SharedFolderFileResource.RESOURCE_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				SharedFolderFileResource.RESOURCE_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -113,7 +112,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		return null;
 	}
 	

@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -137,12 +138,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		return new NodeRunConstructionResult(ctrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		updateModuleConfigDefaults(false);
@@ -158,9 +153,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
 		/*
@@ -197,24 +189,17 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		return oneClickStatusCache;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
-		RepositoryEntry entry = CPEditController.getCPReference(getModuleConfiguration(), false);
-		return entry;
+		return CPEditController.getCPReference(getModuleConfiguration(), false);
 	}
 	
 	public String getReferencedRepositoryEntrySoftkey() {
 		return (String)getModuleConfiguration().get(CPEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
@@ -356,12 +341,12 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ScormCPFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			ScormEditController.setScormCPReference(re, getModuleConfiguration());
 		} else {
 			CPEditController.removeCPReference(getModuleConfiguration());
@@ -378,7 +363,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		String results = ScormExportManager.getInstance().getResults(course.getCourseEnvironment(), this, trans);
 		try {
 			exportStream.putNextEntry(new ZipEntry(fileName));
-			IOUtils.write(results, exportStream);
+			IOUtils.write(results, exportStream, "UTF-8");
 			exportStream.closeEntry();
 		} catch (IOException e) {
 			log.error("", e);
@@ -408,32 +393,23 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
-	 */
 	@Override
 	public Float getCutValueConfiguration() {
 		ModuleConfiguration config = this.getModuleConfiguration();
 		int cutValue = config.getIntegerSafe(ScormEditController.CONFIG_CUTVALUE, 0); 
-		return new Float(new Integer(cutValue).floatValue());
+		return Float.valueOf(cutValue);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
-	 */
 	@Override
 	public Float getMaxScoreConfiguration() {
 		// According to SCORM Standard, SCORE is between 0 and 100.
-		return new Float(100);
+		return Float.valueOf(100);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
-	 */
 	@Override
 	public Float getMinScoreConfiguration() {
 		// According to SCORM Standard, SCORE is between 0 and 100.
-		return new Float(0);
+		return Float.valueOf(0);
 	}
 
 	/**
@@ -544,20 +520,13 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String coachCommentValue = am.getNodeCoachComment(this, mySelf);
-		return coachCommentValue;
+		return am.getNodeCoachComment(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -571,42 +540,25 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String logValue = am.getUserNodeLog(this, mySelf);
-		return logValue;
+		return am.getUserNodeLog(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Integer userAttemptsValue = am.getNodeAttempts(this, mySelf);
-		return userAttemptsValue;
-
+		return am.getNodeAttempts(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
-	 */
 	@Override
 	public boolean hasAttemptsConfigured() {
 		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserAttempts(java.lang.Integer,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {
@@ -616,9 +568,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -649,44 +598,27 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		return new ScormResultDetailsController(ureq, wControl, this, coachCourseEnv, assessedUserCourseEnv);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
-	 */
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
-	 */
 	@Override
 	public boolean hasDetails() {
 		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
-	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);

@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
@@ -81,6 +83,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -177,6 +181,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Autowired
 	protected RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
@@ -195,8 +201,19 @@ public class AuthorListController extends FormBasicController implements Activat
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isOlatAdmin = roles.isOLATAdmin() || roles.isInstitutionalResourceManager();
-		hasAuthorRight = roles.isAuthor() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin();
+		boolean learnResourceManager = roles.isLearnResourceManager();
+		isOlatAdmin = roles.isOLATAdmin() || learnResourceManager;
+		hasAuthorRight = roles.isAuthor() || learnResourceManager || roles.isOLATAdmin();
+		if(!roles.isOLATAdmin()) {
+			if(learnResourceManager) {
+				List<Organisation> orgs = organisationService
+						.getManageableOrganisations(getIdentity(), roles, OrganisationRoles.learnresourcemanager);
+				searchParams.setLearnResourceManagerOrganisations(new ArrayList<OrganisationRef>(orgs));
+			}
+			if(roles.isAuthor()) {
+				
+			}
+		}
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this, !withSearch);
 		initForm(ureq);
@@ -503,7 +520,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				searchParams.setDescription(null);
 				searchParams.setOwnedResourcesOnly(false);
 				searchParams.setResourceUsage(ResourceUsage.all);
-				searchParams.setLicneseTypeKeys(null);
+				searchParams.setLicenseTypeKeys(null);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -791,7 +808,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setClosed(se.getClosed());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
-		searchParams.setLicneseTypeKeys(se.getLicenseTypeKeys());
+		searchParams.setLicenseTypeKeys(se.getLicenseTypeKeys());
 		tableEl.reset(true, true, true);
 		
 		AuthorListState stateEntry = new AuthorListState();

@@ -299,6 +299,8 @@ class UserPrefsResetForm extends FormBasicController {
 	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
+	private HistoryManager historyManager;
+	@Autowired
 	private UserSessionManager sessionManager;
 	
 	public UserPrefsResetForm(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
@@ -372,7 +374,7 @@ class UserPrefsResetForm extends FormBasicController {
 			}
 			// Reset history
 			if (resetElements.isSelected(2)) {
-				HistoryManager.getInstance().deleteHistory(tobeChangedIdentity);
+				historyManager.deleteHistory(tobeChangedIdentity);
 			}
 			// reset form buttons
 			resetElements.uncheckAll();

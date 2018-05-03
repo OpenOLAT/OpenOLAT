@@ -108,7 +108,7 @@ public class SelectBusinessGroupController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		return roles.isOLATAdmin() 
 				|| roles.isGroupManager() 
-				|| (roles.isInstitutionalResourceManager() && businessGroupModule.isResourceManagersAllowedToLinkGroups());
+				|| (roles.isLearnResourceManager() && businessGroupModule.isResourceManagersAllowedToLinkGroups());
 	}
 	
 	public Object getUserObject() {

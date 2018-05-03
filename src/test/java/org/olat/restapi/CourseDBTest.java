@@ -42,12 +42,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.db.CourseDBEntry;
 import org.olat.course.db.CourseDBManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.KeyValuePair;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -79,7 +79,8 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		// create course and persist as OLATResourceImpl
 		if(!initialized) {
 			auth = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");
-			course = CoursesWebService.createEmptyCourse(auth, "course calendar", "course with calendar for REST API testing", null);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth);
+			course = CourseFactory.loadCourse(courseEntry);
 			initialized = true;
 		}
 	}

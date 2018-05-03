@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -577,13 +578,13 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (withReferences && rie.anyExportedPropertiesAvailable()) {
 
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+					rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			if(re != null) {
 				EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 				PortfolioStructure map = ePFMgr.loadPortfolioStructure(re.getOlatResource());

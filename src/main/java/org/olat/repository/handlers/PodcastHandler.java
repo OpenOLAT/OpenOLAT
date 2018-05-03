@@ -35,6 +35,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
@@ -42,7 +43,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
@@ -61,7 +61,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -87,11 +86,12 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResourceable ores = FeedManager.getInstance().createPodcastResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -108,7 +108,7 @@ public class PodcastHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new PodcastFileResource());
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
@@ -116,7 +116,7 @@ public class PodcastHandler implements RepositoryHandler {
 		FileResource.copyResource(file, filename, blogRoot);
 		FeedManager.getInstance().importFeedFromXML(resource, true);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -137,9 +137,6 @@ public class PodcastHandler implements RepositoryHandler {
 	@Override
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
-		// For now, notifications are not implemented since a podcast feed is meant
-		// to be subscriped to anyway.
-		// NotificationsManager.getInstance().deletePublishersOf(res);
 		FeedManager.getInstance().deleteFeed(res);
 		return true;
 	}
@@ -169,16 +166,12 @@ public class PodcastHandler implements RepositoryHandler {
 		SubscriptionContext subsContext = new SubscriptionContext(re.getOlatResource(), re.getSoftkey());
 		callback.setSubscriptionContext(subsContext);
 		return new FeedRuntimeController(ureq, wControl, re, reSecurity,
-			new RuntimeControllerCreator() {
-				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+				(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
 						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null);
-				}
-		});
+				});
 	}
 	
 	@Override

@@ -35,13 +35,24 @@
 					<td colspan="3">$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
 				#end
 			</tr>
-			#end		
-		#if( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
-		<tr valign="top" class="o_user_aboutme">
-			<th>$r.translate("form.text")</th>
-			<td colspan="3">$!r.formatLatexFormulas($homepageConfig.getTextAboutMe())</td>
-		</tr>		
-		#end
+			#end	
+			
+			#if($r.isNotEmpty($organisations))
+			<tr valign="top" class="o_usser_organisations">
+				<th>$r.translate("form.organisations")</th>
+				<td colspan="3"><ul class="list-unstyled">
+				#foreach($organisation in $organisations)
+					<li>$r.escapeHtml($organisation)</li>
+				#end
+				</ul></td>
+			</tr>
+			#end				
+			#if( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
+			<tr valign="top" class="o_user_aboutme">
+				<th>$r.translate("form.text")</th>
+				<td colspan="3">$!r.formatLatexFormulas($homepageConfig.getTextAboutMe())</td>
+			</tr>		
+			#end
 		</table>
 	</div>
 </div></div>

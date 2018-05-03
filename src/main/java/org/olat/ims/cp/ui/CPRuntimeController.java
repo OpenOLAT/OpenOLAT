@@ -55,7 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	
-	private Link quotaLink, deliveryOptionsLink;
+	private Link quotaLink;
+	private Link deliveryOptionsLink;
 	
 	@Autowired
 	private CPManager cpManager;
@@ -73,7 +74,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		if (reSecurity.isEntryAdmin()) {
 			settingsDropdown.addComponent(new Spacer(""));
 			
-			if (quotaManager.hasQuotaEditRights(getIdentity(), roles)) {
+			if (quotaManager.hasQuotaEditRights(getIdentity(), roles, getOrganisations())) {
 				quotaLink = LinkFactory.createToolLink("quota", translate("tab.quota.edit"), this, "o_sel_repo_quota");
 				quotaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota");
 				settingsDropdown.addComponent(quotaLink);
@@ -88,7 +89,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		entries = removeRepositoryEntry(entries);
-		if(entries != null && entries.size() > 0) {
+		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Quota".equalsIgnoreCase(type)) {
 				doQuota(ureq);
@@ -123,12 +124,12 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	private void doQuota(UserRequest ureq) {
-		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles)) {
+		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles, getOrganisations())) {
 			RepositoryEntry entry = getRepositoryEntry();
 			OLATResource resource = entry.getOlatResource();
 			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
 			WindowControl bwControl = getSubWindowControl("Quota");
-			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), cpRoot.getRelPath());
+			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), cpRoot.getRelPath(), getOrganisations());
 			pushController(ureq, translate("tab.quota.edit"), quotaCtrl);
 			setActiveTool(quotaLink);
 		}

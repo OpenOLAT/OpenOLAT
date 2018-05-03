@@ -20,10 +20,15 @@
 package org.olat.repository.manager;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +57,30 @@ public class RepositoryEntryToOrganisationDAO {
 		return relation;
 	}
 	
+	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef re) {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("select org.key from repoentrytoorganisation as reToOrganisation")
+		  .append(" inner join reToOrganisation.organisation org")
+		  .append(" where reToOrganisation.entry.key=:entryKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", re.getKey())
+				.getResultList();
+		return keys.stream().map(OrganisationRefImpl::new)
+				.collect(Collectors.toList());
+	}
+	
 	public void delete(RepositoryEntryToOrganisation relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
+	}
+	
+	public int delete(RepositoryEntryRef entry) {
+		String query = "delete from repoentrytoorganisation as reToOrganisation where reToOrganisation.entry.key=:entryKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
 	}
 
 }

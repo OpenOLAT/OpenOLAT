@@ -333,7 +333,7 @@ public class InvitationDAO {
 			for(Identity identity:identities) {
 				if(identity.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
 					//already deleted
-				} else if(organisationDao.hasRole(identity, null, OrganisationRoles.user.name())) {//TODO roles perhaps an other role
+				} else if(organisationDao.hasAnyRole(identity, OrganisationRoles.invitee.name())) {
 					//out of scope
 				} else {
 					//delete user

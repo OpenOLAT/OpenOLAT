@@ -52,7 +52,6 @@ public class HistoryManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(HistoryManager.class);
 	
-	private static HistoryManager THIS;
 	private static XStream historyReadStream = XStreamHelper.createXStreamInstance();
 	private static XStream historyWriteStream = XStreamHelper.createXStreamInstance();
 	static {
@@ -72,6 +71,7 @@ public class HistoryManager {
 		historyReadStream.omitField(RepositoryEntry.class, "tutorGroup");
 		historyReadStream.omitField(RepositoryEntry.class, "metaDataElements");
 		historyReadStream.omitField(RepositoryEntry.class, "version");
+		historyReadStream.omitField(RepositoryEntry.class, "organisations");
 		historyReadStream.omitField(org.olat.core.commons.persistence.PersistentObject.class, "version");
 		
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);
@@ -81,14 +81,6 @@ public class HistoryManager {
 		historyReadStream.aliasAttribute(Resourceable.class, "resourceableTypeName", "val$type");
 		historyReadStream.aliasAttribute(Resourceable.class, "resourceableId", "val_-key");
 		historyReadStream.aliasAttribute(Resourceable.class, "resourceableId", "val$key");
-	}
-	
-	public HistoryManager() {
-		THIS = this;
-	}
-	
-	public static HistoryManager getInstance() {
-		return THIS;
 	}
 	
 	public void persistHistoryPoint(Identity identity, HistoryPoint historyPoint) {

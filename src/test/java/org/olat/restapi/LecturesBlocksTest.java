@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -56,8 +57,6 @@ import org.olat.modules.lecture.restapi.LectureBlockVO;
 import org.olat.modules.lecture.restapi.RepositoryEntryLectureConfigurationVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.restapi.repository.course.CoursesWebService;
-import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,7 +87,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void getLecturesBlock_course()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -120,7 +120,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void getLecturesBlock_repository()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -146,7 +147,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void putLecturesBlock_repository()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 
@@ -212,7 +214,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void putLecturesBlock_autoclosed()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 
@@ -261,7 +264,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void getLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 		
@@ -282,8 +286,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void updateLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
@@ -333,8 +336,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void getLectureBlock()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
@@ -359,8 +361,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void deleteLectureBlock()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
@@ -383,8 +384,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void addRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
@@ -414,8 +414,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	public void removeRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		lectureService.save(block, Collections.singletonList(defGroup));
@@ -446,8 +445,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		
@@ -475,8 +473,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
 		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence config", "Course with absence configuration", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, teacher1);

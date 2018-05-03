@@ -38,13 +38,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.restapi.LectureBlockVO;
 import org.olat.repository.RepositoryEntry;
-import org.olat.restapi.repository.course.CoursesWebService;
-import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +63,8 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 	public void getLecturesBlock()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-root-all");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, author);
@@ -101,8 +98,7 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 	public void getLecturesBlock_date()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-root-1");
-		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, author);

@@ -36,6 +36,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -98,11 +99,11 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		OLATResource resource = portfolioService.createBinderTemplateResource();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, locale);
 		DBFactory.getInstance().commit();
 		return re;
@@ -120,7 +121,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
@@ -133,7 +134,8 @@ public class BinderTemplateHandler implements RepositoryHandler {
 			FileResource.copyResource(file, filename, zipRoot);
 
 			//create repository entry
-			RepositoryEntry re = repositoryService.create(initialAuthor, initialAuthorAlt, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+			RepositoryEntry re = repositoryService
+					.create(initialAuthor, initialAuthorAlt, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 			
 			//import binder
 			File binderFile = new File(zipRoot, BinderTemplateResource.BINDER_XML);
@@ -189,15 +191,6 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		/*PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		Binder template = portfolioService.getBinderByResource(entry.getOlatResource());
-		if(portfolioService.isTemplateInUse(template, null, null)) {
-			Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
-			errors.setError(translator.translate("warning.template.in.use",
-					new String[] { template.getTitle(), entry.getDisplayname() }));
-			return false;
-		}*/
-		
 		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class)
 				.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {

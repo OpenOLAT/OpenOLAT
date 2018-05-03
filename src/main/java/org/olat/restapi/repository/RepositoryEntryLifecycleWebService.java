@@ -62,13 +62,13 @@ public class RepositoryEntryLifecycleWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isInstitutionalResourceManager() && !roles.isOLATAdmin()) {
+		if(!roles.isLearnResourceManager() && !roles.isOLATAdmin()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		RepositoryEntryLifecycleDAO lifeCycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		List<RepositoryEntryLifecycle> publicLifeCycles = lifeCycleDao.loadPublicLifecycle();
-		List<RepositoryEntryLifecycleVO> voList = new ArrayList<RepositoryEntryLifecycleVO>(publicLifeCycles.size());
+		List<RepositoryEntryLifecycleVO> voList = new ArrayList<>(publicLifeCycles.size());
 		for(RepositoryEntryLifecycle lifeCycle: publicLifeCycles) {
 			voList.add(new RepositoryEntryLifecycleVO(lifeCycle));
 		}

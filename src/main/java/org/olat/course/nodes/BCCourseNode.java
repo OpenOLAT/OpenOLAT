@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -208,8 +209,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	public static OlatNamedContainerImpl getNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv) {
 		String path = getFoldernodePathRelToFolderBase(courseEnv, node);
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(node.getShortTitle(), rootFolder);
-		return namedFolder;
+		return new OlatNamedContainerImpl(node.getShortTitle(), rootFolder);
 	}
 	
 	public static OlatNamedContainerImpl getSecurisedNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv, IdentityEnvironment ienv) {
@@ -236,7 +236,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		// the export has copies the files under the node's ID
 		File fFolderNodeData = new File(importDirectory, this.getIdent());
 		// the whole folder can be moved back to the root direcotry of foldernodes
@@ -424,9 +424,9 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<ConditionExpression>(parentsConditions);
-		}else {
-			retVal = new ArrayList<ConditionExpression>();
+			retVal = new ArrayList<>(parentsConditions);
+		} else {
+			retVal = new ArrayList<>();
 		}
 		//
 		String coS = getPreConditionDownloaders().getConditionExpression();

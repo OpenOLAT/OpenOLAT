@@ -93,7 +93,7 @@ public class RestSecurityHelper {
 	public static boolean isAuthor(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
-			return (roles.isAuthor() || roles.isOLATAdmin() || roles.isInstitutionalResourceManager());
+			return (roles.isAuthor() || roles.isOLATAdmin() || roles.isLearnResourceManager());
 		} catch (Exception e) {
 			return false;
 		}
@@ -150,7 +150,7 @@ public class RestSecurityHelper {
 	public static boolean isInstitutionalResourceManager(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
-			return (roles.isInstitutionalResourceManager() || roles.isOLATAdmin());
+			return (roles.isLearnResourceManager() || roles.isOLATAdmin());
 		} catch (Exception e) {
 			return false;
 		}
@@ -181,11 +181,8 @@ public class RestSecurityHelper {
 				return true;
 			}
 			UserRequest ureq = (UserRequest)request.getAttribute(SEC_USER_REQUEST);
-			if(ureq != null && ureq.getUserSession() != null
-					&& ureq.getUserSession().getEntry(SYSTEM_MARKER) != null) {
-				return true;
-			}
-			return false;
+			return ureq != null && ureq.getUserSession() != null
+					&& ureq.getUserSession().getEntry(SYSTEM_MARKER) != null;
 		} catch (Exception e) {
 			return false;
 		}

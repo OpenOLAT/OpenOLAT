@@ -92,7 +92,7 @@ public class OLATResourceManager extends BasicManager {
 	 * @return OLATResource
 	 */
 	public OLATResource createOLATResourceInstance(String typeName) {
-		Long id = new Long(CodeHelper.getForeverUniqueID());
+		Long id = Long.valueOf(CodeHelper.getForeverUniqueID());
 		return new OLATResourceImpl(id, typeName);
 	}
 	

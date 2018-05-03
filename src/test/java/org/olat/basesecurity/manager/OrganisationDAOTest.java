@@ -32,6 +32,7 @@ import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,25 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertEquals("Org-5", reloadedOrganisation.getDisplayName());
 		Assert.assertEquals("ORG-5", reloadedOrganisation.getIdentifier());
 		Assert.assertEquals(type, reloadedOrganisation.getType());
+	}
+	
+	@Test
+	public void createOrganisationWithParent() {
+		Organisation parentOrganisation = organisationDao.createAndPersistOrganisation("Org-10", null, null, null, null);
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-10", null, null, parentOrganisation, null);
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(organisation);
+		Assert.assertNotNull(organisation.getKey());
+		Assert.assertNotNull(organisation.getCreationDate());
+		Assert.assertNotNull(organisation.getLastModified());
+		
+		// check the ad-hoc parent line
+		List<OrganisationRef> parentLine = organisation.getParentLine();
+		Assert.assertNotNull(parentLine);
+		Assert.assertEquals(1, parentLine.size());
+		Assert.assertEquals(parentOrganisation.getKey(), parentLine.get(0).getKey());
+		
 	}
 	
 	@Test

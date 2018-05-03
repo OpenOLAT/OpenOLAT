@@ -107,14 +107,14 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			boolean moderator = roles.isOLATAdmin();
 			Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			if (!moderator) {
-				if(roles.isInstitutionalResourceManager() | roles.isAuthor()) {
+				if(roles.isLearnResourceManager() || roles.isAuthor()) {
 					RepositoryManager rm = RepositoryManager.getInstance();
 					ICourse course = CourseFactory.loadCourse(key);
 					RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 					if (re != null) {
 						moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 						if(!moderator) {
-							moderator = rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
+							moderator = rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), roles, re);
 						}
 					}
 				}

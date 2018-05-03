@@ -31,7 +31,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableDefaultController;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -140,10 +139,9 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		boolean moderator = roles.isOLATAdmin();
 		Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		if (!moderator) {
-			if(roles.isInstitutionalResourceManager() | roles.isAuthor()) {
+			if(roles.isLearnResourceManager() || roles.isAuthor()) {
 				RepositoryManager rm = RepositoryManager.getInstance();
-				ICourse course = CourseFactory.loadCourse(key);
-				RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				if (re != null) {
 					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 					if(!moderator) {

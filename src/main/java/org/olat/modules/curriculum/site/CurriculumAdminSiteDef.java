@@ -42,7 +42,7 @@ public class CurriculumAdminSiteDef extends AbstractSiteDefinition implements Si
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new CurriculumAdminSite(this, ureq.getLocale());
 		}
-		if(ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+		if(ureq.getUserSession().getRoles().isLearnResourceManager()) {
 			// only for admins
 			return new CurriculumAdminSite(this, ureq.getLocale());
 		}

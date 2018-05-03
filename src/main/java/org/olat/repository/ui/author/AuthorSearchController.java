@@ -257,8 +257,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	 */
 	public Set<String> getRestrictedTypes() {
 		if(types.isAtLeastSelected(1)) {
-			Set<String> selectedTypes = new HashSet<>(types.getSelectedKeys());
-			return selectedTypes;
+			return new HashSet<>(types.getSelectedKeys());
 		}
 		return null;
 	}

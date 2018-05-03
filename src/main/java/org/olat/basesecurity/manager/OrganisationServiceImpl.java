@@ -20,11 +20,12 @@
 package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationManagedFlag;
-import org.olat.basesecurity.OrganisationRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
@@ -33,6 +34,7 @@ import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -116,7 +118,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles) {
+	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole) {
 		List<String> roleList = new ArrayList<>();// if user manager, descent organization tree
 		for(OrganisationRoles r:OrganisationRoles.values()) {
 			if(r !=  OrganisationRoles.guest) {
@@ -125,14 +127,53 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 		List<Organisation> organisations = organisationDao.getOrganisations(member, roleList);
 		
-		return organisations;
+		Set<Organisation> organisationWithDescendants = new HashSet<>();
+		for(Organisation organisation:organisations) {
+			organisationWithDescendants.add(organisation);
+			if(roles.hasRole(organisation, additionalManagerRole)
+					|| roles.hasRole(organisation, OrganisationRoles.administrator)) {
+				List<Organisation> descendants = organisationDao.getDescendants(organisation);
+				organisationWithDescendants.addAll(descendants);
+			}
+		}
+
+		return new ArrayList<>(organisationWithDescendants);
+	}
+
+	@Override
+	public List<Organisation> getManageableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole) {
+		Set<OrganisationRef> manageableRootOrganisations = new HashSet<>();
+		manageableRootOrganisations.addAll(roles.getOrganisationsWithRoles(OrganisationRoles.administrator));
+		manageableRootOrganisations.addAll(roles.getOrganisationsWithRoles(additionalManagerRole));
+
+		List<Organisation> organisations = organisationDao.getOrganisations(manageableRootOrganisations);
+		Set<Organisation> organisationWithDescendants = new HashSet<>();
+		for(Organisation organisation:organisations) {
+			organisationWithDescendants.add(organisation);
+			if(roles.hasRole(organisation, additionalManagerRole)
+					|| roles.hasRole(organisation, OrganisationRoles.administrator)) {
+				List<Organisation> descendants = organisationDao.getDescendants(organisation);
+				organisationWithDescendants.addAll(descendants);
+			}
+		}
+		
+		return new ArrayList<>(organisationWithDescendants);
 	}
 
 	@Override
 	public List<OrganisationMember> getMembers(Organisation organisation) {
 		return organisationDao.getMembers(organisation);
 	}
-	
+
+	@Override
+	public void setAsGuest(Identity identity) {
+		OrganisationImpl defOrganisation = (OrganisationImpl)getDefaultOrganisation();
+		if(!groupDao.hasRole(defOrganisation.getGroup(), identity, OrganisationRoles.guest.name())) {
+			groupDao.removeMemberships(identity);
+			addMember(defOrganisation, identity, OrganisationRoles.guest);
+		}
+	}
+
 	@Override
 	public void addMember(Identity member, OrganisationRoles role) {
 		Organisation defOrganisation = getDefaultOrganisation();

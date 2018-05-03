@@ -190,7 +190,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
 		boolean adminLazy = identityEnvironment.getRoles().isOLATAdmin()
-				|| identityEnvironment.getRoles().isInstitutionalResourceManager()
+				|| (identityEnvironment.getRoles().isLearnResourceManager()
+						&& cgm.isIdentityCourseLearnResourceManager(identityEnvironment.getIdentity(), identityEnvironment.getRoles()))
 				|| cgm.isIdentityAnyCourseAdministrator(identityEnvironment.getIdentity());
 		adminAnyCourse = Boolean.valueOf(adminLazy);
 		return adminLazy;

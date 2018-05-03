@@ -19,7 +19,7 @@
  */
 package org.olat.basesecurity.model;
 
-import org.olat.basesecurity.OrganisationRef;
+import org.olat.core.id.OrganisationRef;
 
 /**
  * 
@@ -55,5 +55,13 @@ public class OrganisationRefImpl implements OrganisationRef {
 			return key != null && key.equals(ref.key);
 		}
 		return false;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("organisationRef[key=").append(getKey() == null ? "" : getKey().toString()).append("]")
+		  .append(super.toString());
+		return sb.toString();
 	}
 }

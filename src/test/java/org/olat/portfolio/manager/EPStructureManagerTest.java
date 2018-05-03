@@ -27,22 +27,30 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.Roles;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPStructureElement;
+import org.olat.portfolio.model.structel.EPStructureElementToGroupRelation;
 import org.olat.portfolio.model.structel.EPStructureToStructureLink;
 import org.olat.portfolio.model.structel.EPStructuredMap;
+import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.EPTargetResource;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
@@ -372,7 +380,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	@Test
 	public void testCreateStructureMapTemplate() {
 		//save parent and 20 children
-		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(ident1, "paged-parent-structure-el", "parent-structure-element");
+		PortfolioStructureMap template = createPortfolioMapTemplate(ident1, "paged-parent-structure-el", "parent-structure-element");
 		epStructureManager.savePortfolioStructure(template);
 		dbInstance.commitAndCloseSession();
 		
@@ -389,7 +397,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	@Test
 	public void testUseStructureMapTemplate() {
 		//save parent and 20 children
-		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(ident1, "paged-parent-structure-el", "parent-structure-element");
+		PortfolioStructureMap template = createPortfolioMapTemplate(ident1, "paged-parent-structure-el", "parent-structure-element");
 		epStructureManager.savePortfolioStructure(template);
 		dbInstance.commitAndCloseSession();
 		
@@ -423,7 +431,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	public void testLoadPortfolioStructuredMap(){
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
 		//create a template
-		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
+		PortfolioStructureMap template = createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
 		epStructureManager.savePortfolioStructure(template);
 		dbInstance.commitAndCloseSession();
 		//clone the template
@@ -448,7 +456,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	public void testLoadPortfolioStructuredMaps() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
 		//a template
-		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
+		PortfolioStructureMap template = createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
 		epStructureManager.savePortfolioStructure(template);
 		dbInstance.commitAndCloseSession();
 		//clone the template
@@ -475,7 +483,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	public void loadPortfolioStructure_resourceable() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-res-tmp-");
 		//a template
-		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "resourced-el", "resource-element");
+		PortfolioStructureMap template = createPortfolioMapTemplate(user, "resourced-el", "resource-element");
 		epStructureManager.savePortfolioStructure(template);
 		dbInstance.commitAndCloseSession();
 		
@@ -640,7 +648,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	@Test
 	public void testAddAuthorToMap() {
 		//save the map
-		PortfolioStructureMap map = epStructureManager.createPortfolioMapTemplate(ident1, "add-author-map-1", "add-an-author-to-map-template");
+		PortfolioStructureMap map = createPortfolioMapTemplate(ident1, "add-author-map-1", "add-an-author-to-map-template");
 		epStructureManager.savePortfolioStructure(map);
 		dbInstance.commitAndCloseSession();
 		
@@ -662,7 +670,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	@Test
 	public void testRemoveAuthorToMap() {
 		//save the map
-		PortfolioStructureMap map = epStructureManager.createPortfolioMapTemplate(ident1, "add-author-map-1", "add-an-author-to-map-template");
+		PortfolioStructureMap map = createPortfolioMapTemplate(ident1, "add-author-map-1", "add-an-author-to-map-template");
 		epStructureManager.savePortfolioStructure(map);
 		dbInstance.commitAndCloseSession();
 		
@@ -691,4 +699,43 @@ public class EPStructureManagerTest extends OlatTestCase {
 		securityGroupDao.getSecurityGroupsForIdentity(ident1);
 		repositoryManager.queryReferencableResourcesLimitType(ident1, new Roles(false, false, false, false, false, false, false), null, null, null, null);
 	}
+	
+	
+	/**
+	 * Create a map template, create an OLAT resource and a repository entry with a security group
+	 * of type owner to the repository and add the identity has an owner.
+	 * @param identity
+	 * @param title
+	 * @param description
+	 * @return The structure element
+	 */
+	public static PortfolioStructureMap createPortfolioMapTemplate(Identity identity, String title, String description) {
+		EPStructureManager epStructureManager = CoreSpringFactory.getImpl(EPStructureManager.class);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		DB dbInstance = CoreSpringFactory.getImpl(DB.class);
+		
+		
+		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		
+		epStructureManager.fillStructureElement(el, title, description);
+
+		//create a repository entry with default security settings
+		RepositoryEntry re = repositoryService.create(identity, null, "-", title, null, el.getOlatResource(), RepositoryEntry.ACC_OWNERS, defOrganisation);
+				
+		dbInstance.commit();
+		
+		Group ownerGroup = repositoryService.getDefaultGroup(re);
+		
+		EPStructureElementToGroupRelation relation = epStructureManager.createBaseRelation(el, ownerGroup);
+		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
+		relations.add(relation);
+		el.setGroups(relations);
+		return el;
+	}
+	
+	
+	
+	
 }

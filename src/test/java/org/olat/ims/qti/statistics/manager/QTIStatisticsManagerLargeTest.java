@@ -38,7 +38,9 @@ import org.dom4j.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XMLParser;
@@ -103,6 +105,8 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 	private QTIStatisticsManager qtim;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 
 	@Before
 	public void setUp() throws Exception {
@@ -348,7 +352,8 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		dbInstance.saveObject(r);
 		dbInstance.intermediateCommit();
 
-		RepositoryEntry d = repositoryService.create("Kanu Unchou", "QTIStatisticsTest", "QTIStatisticsTest", "Repo entry", r);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry d = repositoryService.create(null, "Kanu Unchou", "QTIStatisticsTest", "QTIStatisticsTest", "Repo entry", r, 0, defOrganisation);
 		dbInstance.saveObject(d);
 		dbInstance.intermediateCommit();
 		return d;

@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -875,8 +876,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
-		super.importNode(importDirectory, course, owner, locale, withReferences);
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+		super.importNode(importDirectory, course, owner, organisation, locale, withReferences);
 	}
 
 	@Override

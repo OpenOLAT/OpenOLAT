@@ -50,13 +50,13 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -141,10 +141,12 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 
 		String shortDisplayname = Formatter.truncateOnly(displayname, 25);
@@ -219,18 +221,17 @@ public class CourseHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
-			String description, boolean withReferences, Locale locale, File file, String filename) {
+			String description, boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 
 		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, file);
-		// cfc.release();
 		if (course == null) {
 			return null;
 		}
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = repositoryService
-				.create(initialAuthor, null, "", displayname, description, newCourseResource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, newCourseResource, RepositoryEntry.ACC_OWNERS, organisation);
 		DBFactory.getInstance().commit();
 
 		// create empty run structure
@@ -241,12 +242,12 @@ public class CourseHandler implements RepositoryHandler {
 		
 		//import references
 		CourseEditorTreeNode rootNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
-		importReferences(rootNode, course, initialAuthor, locale, withReferences);
+		importReferences(rootNode, course, initialAuthor, organisation, locale, withReferences);
 		if(withReferences && course.getCourseConfig().hasCustomSharedFolder()) {
-			importSharedFolder(course, initialAuthor);
+			importSharedFolder(course, initialAuthor, organisation);
 		}
 		if(withReferences && course.getCourseConfig().hasGlossary()) {
-			importGlossary(course, initialAuthor);
+			importGlossary(course, initialAuthor, organisation);
 		}
 
 		// create group management / import groups
@@ -281,7 +282,7 @@ public class CourseHandler implements RepositoryHandler {
 			course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
 			course.getRunStructure().getRootNode().setLongTitle(displayname);
 		}
-		//course.saveRunStructure();
+		
 		CourseEditorTreeNode editorRootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
 		editorRootNode.getCourseNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
 		editorRootNode.getCourseNode().setLongTitle(displayname);
@@ -318,7 +319,7 @@ public class CourseHandler implements RepositoryHandler {
 		}
 	}
 	
-	private void importSharedFolder(ICourse course, Identity owner) {
+	private void importSharedFolder(ICourse course, Identity owner, Organisation organisation) {
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		RepositoryEntryImportExport importExport = sfm.getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
 		
@@ -339,7 +340,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, null,
-				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0, organisation);
 
 		// set the new shared folder reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
@@ -350,7 +351,7 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
-	private void importGlossary(ICourse course, Identity owner) {
+	private void importGlossary(ICourse course, Identity owner, Organisation organisation) {
 		GlossaryManager gm = GlossaryManager.getInstance();
 		RepositoryEntryImportExport importExport = gm.getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
 		GlossaryResource resource = gm.createGlossary();
@@ -373,7 +374,7 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner,
-				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0, organisation);
 
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
@@ -382,13 +383,13 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
-	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Locale locale, boolean withReferences) {
-		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, locale, withReferences);
+	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, organisation, locale, withReferences);
 
 		for (int i = 0; i<node.getChildCount(); i++) {
 			INode child = node.getChildAt(i);
 			if(child instanceof CourseEditorTreeNode) {
-				importReferences((CourseEditorTreeNode)child, course, owner, locale, withReferences);
+				importReferences((CourseEditorTreeNode)child, course, owner, organisation, locale, withReferences);
 			}
 		}
 	}
@@ -568,8 +569,7 @@ public class CourseHandler implements RepositoryHandler {
 		final CourseCreationConfiguration courseConfig = new CourseCreationConfiguration(course.getCourseTitle(), Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey());
 		// wizard finish callback called after "finish" is called
 		final CourseCreationHelper ccHelper = new CourseCreationHelper(ureq.getLocale(), repoEntry, courseConfig , course);
-		StepRunnerCallback finishCallback = new StepRunnerCallback() {
-			public Step execute(UserRequest uureq, WindowControl control, StepsRunContext runContext) {
+		StepRunnerCallback finishCallback = (uureq, control, runContext) -> {
 				// retrieve access and properties
 				CourseAccessAndProperties accessAndProps = (CourseAccessAndProperties) runContext.get("accessAndProperties");
 				courseConfig.setAccessAndProperties(accessAndProps);
@@ -581,11 +581,10 @@ public class CourseHandler implements RepositoryHandler {
 				final MailerResult mr = CourseCreationMailHelper.sentNotificationMail(uureq, ccHelper.getConfiguration());
 				MailHelper.printErrorsAndWarnings(mr, control, uureq.getUserSession().getRoles().isOLATAdmin(), uureq.getLocale());
 				return StepsMainRunController.DONE_MODIFIED;
-			}
-		};
+			};
+
 		Step start  = new CcStep00(ureq, courseConfig, repoEntry);
-		StepsMainRunController ccSMRC = new StepsMainRunController(ureq, wControl, start, finishCallback, null, cceTranslator.translate("coursecreation.title"), "o_sel_course_create_wizard");
-		return ccSMRC;
+		return new StepsMainRunController(ureq, wControl, start, finishCallback, null, cceTranslator.translate("coursecreation.title"), "o_sel_course_create_wizard");
 	}
 
 	@Override

@@ -25,8 +25,10 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -56,6 +58,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Test
@@ -65,7 +69,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String displayName = "ServiceTest";
 		String resourceName = "ServiceTest";
 		String description = "Test the brand new service";
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null, 0);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null, 0, defOrganisation);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(re);
@@ -81,7 +86,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String displayName = "Service test 2";
 		String resourceName = "ServiceTest";
 		String description = "Test the brand new service";
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null, 0);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null, 0, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		

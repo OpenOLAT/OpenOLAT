@@ -14,8 +14,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -34,6 +36,8 @@ public class RepositoryEntryResourceTest extends OlatJerseyTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void exportCourse()
@@ -63,7 +67,8 @@ public class RepositoryEntryResourceTest extends OlatJerseyTestCase {
 		File testFile = new File(testUrl.toURI());		
 		RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 						.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
-		RepositoryEntry testEntry = courseHandler.importResource(author, null, "Test QTI 2.1", "", true, Locale.ENGLISH, testFile, null);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry testEntry = courseHandler.importResource(author, null, "Test QTI 2.1", "", true, defOrganisation, Locale.ENGLISH, testFile, null);
 		dbInstance.closeSession();
 		
 		RestConnection conn = new RestConnection();

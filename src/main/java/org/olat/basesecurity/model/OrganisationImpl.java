@@ -19,7 +19,9 @@
  */
 package org.olat.basesecurity.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,12 +34,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -125,6 +131,11 @@ public class OrganisationImpl implements Persistable, Organisation {
 	@Override
 	public void setLastModified(Date date) {
 		lastModified = date;
+	}
+
+	@Override
+	public boolean isDefault() {
+		return OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(identifier);
 	}
 
 	@Override
@@ -217,6 +228,7 @@ public class OrganisationImpl implements Persistable, Organisation {
 		this.group = group;
 	}
 
+	@Override
 	public Organisation getRoot() {
 		return root;
 	}
@@ -225,12 +237,31 @@ public class OrganisationImpl implements Persistable, Organisation {
 		this.root = root;
 	}
 
+	@Override
 	public Organisation getParent() {
 		return parent;
 	}
 
 	public void setParent(Organisation parent) {
 		this.parent = parent;
+	}
+
+	@Override
+	@Transient
+	public List<OrganisationRef> getParentLine() {
+		List<OrganisationRef> parentLine = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(materializedPathKeys)) {
+			String[] parentKeyStrings = materializedPathKeys.split("[/]");
+			for(String parentKeyString:parentKeyStrings) {
+				if(StringHelper.containsNonWhitespace(parentKeyString)) {
+					Long parentKey = Long.valueOf(parentKeyString);
+					if(!parentKey.equals(getKey())) {
+						parentLine.add(new OrganisationRefImpl(parentKey));
+					}
+				}
+			}
+		}
+		return parentLine;
 	}
 
 	public OrganisationType getType() {
@@ -261,5 +292,16 @@ public class OrganisationImpl implements Persistable, Organisation {
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("organisation[key=").append(getKey() == null ? "" : getKey().toString())
+		  .append(":displayName=").append(displayName == null ? "" : displayName)
+		  .append(":identifier=").append(identifier == null ? "" : identifier)
+		  .append("]")
+		  .append(super.toString());
+		return sb.toString();
 	}
 }

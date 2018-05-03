@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -43,6 +44,8 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -56,8 +59,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -133,6 +136,8 @@ public class RepositoryManager {
 	private LifeFullIndexer lifeIndexer;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * @return Singleton.
@@ -232,8 +237,7 @@ public class RepositoryManager {
 		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
 			Size newImageSize = imageHelper.getSize(newImageFile, extension);
 			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
-				boolean success = VFSManager.copyContent(newImageFile, repoImage);
-				return success;
+				return VFSManager.copyContent(newImageFile, repoImage);
 			}
 		}
 
@@ -959,30 +963,31 @@ public class RepositoryManager {
 	 * @return
 	 */
 	public List<RepositoryEntry> queryByTypeLimitAccess(Identity identity, Roles roles, List<String> restrictedType) {
-		if(restrictedType == null | restrictedType.isEmpty()) return Collections.emptyList();
+		if(restrictedType == null || restrictedType.isEmpty()) return Collections.emptyList();
 
-		String institution = identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
-		List<RepositoryEntry> results = new ArrayList<RepositoryEntry>();
-		if(!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager()) {
-			StringBuilder sb = new StringBuilder(400);
-			sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v")
-			  .append(" inner join fetch v.olatResource as res")
-			  .append(" inner join fetch v.statistics as statistics")
-			  .append(" left join fetch v.lifecycle as lifecycle")
-			  .append(" inner join v.groups as relGroup")
-			  .append(" inner join relGroup.group as baseGroup")
-			  .append(" inner join baseGroup.members as membership")
-			  .append(" inner join membership.identity as identity")
-			  .append(" inner join identity.user as user")
-			  .append(" where user.institutionalName=:institutionCourseManager")
-			  .append(" and res.resName in (:restrictedType) and v.access = 1");
-
-			List<RepositoryEntry> institutionalResults = dbInstance.getCurrentEntityManager()
-					.createQuery(sb.toString(), RepositoryEntry.class)
-					.setParameter("restrictedType", restrictedType)
-					.setParameter("institutionCourseManager", institution)
-					.getResultList();
-			results.addAll(institutionalResults);
+		List<RepositoryEntry> results = new ArrayList<>();
+		if(!roles.isOLATAdmin() && roles.isLearnResourceManager()) {
+			List<Organisation> managedOrganisations = organisationService.getManageableOrganisations(identity, roles, OrganisationRoles.learnresourcemanager);
+			if(!managedOrganisations.isEmpty()) {
+				StringBuilder sb = new StringBuilder(400);
+				sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v")
+				  .append(" inner join fetch v.olatResource as res")
+				  .append(" inner join fetch v.statistics as statistics")
+				  .append(" left join fetch v.lifecycle as lifecycle")
+				  .append(" inner join v.organisations as relToOrg")
+				  .append(" where relToOrg.organisation.key in (:managedOrganisationsKey)")
+				  .append(" and res.resName in (:restrictedType) and v.access = 1");
+				
+				List<Long> managedOrganisationsKey = managedOrganisations
+						.stream().map(Organisation::getKey).collect(Collectors.toList());
+	
+				List<RepositoryEntry> institutionalResults = dbInstance.getCurrentEntityManager()
+						.createQuery(sb.toString(), RepositoryEntry.class)
+						.setParameter("restrictedType", restrictedType)
+						.setParameter("managedOrganisationsKey", managedOrganisationsKey)
+						.getResultList();
+				results.addAll(institutionalResults);
+			}
 		}
 
 		long start = System.currentTimeMillis();
@@ -1131,7 +1136,7 @@ public class RepositoryManager {
 		}
 		if (!roles.isAuthor()) {
 			// if user has no author right he can not reference to any resource at all
-			return new ArrayList<RepositoryEntry>();
+			return new ArrayList<>();
 		}
 		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc, true, false);
 	}
@@ -1154,9 +1159,9 @@ public class RepositoryManager {
 		if (identity == null) {
 			throw new AssertException("identity can not be null!");
 		}
-		if (!roles.isAuthor()) {
+		if (!roles.isAuthor() && !roles.isOLATAdmin()) {
 			// if user has no author right he can not reference to any resource at all
-			return new ArrayList<RepositoryEntry>();
+			return new ArrayList<>();
 		}
 		return queryResourcesLimitType(identity, resourceTypes, displayName, author, desc, false, true);
 	}
@@ -1274,12 +1279,11 @@ public class RepositoryManager {
 		}
 		sb.append(")");
 
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("limitAccess", limitAccess)
 				.getResultList();
-		return entries;
 	}
 
 	/**
@@ -1335,14 +1339,12 @@ public class RepositoryManager {
 	}
 
 	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, int firstResult, int maxResults, boolean orderBy) {
-
 		TypedQuery<RepositoryEntry> dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, RepositoryEntry.class);
 		dbQuery.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
 		}
-		List<RepositoryEntry> res = dbQuery.getResultList();
-		return res;
+		return dbQuery.getResultList();
 	}
 
 	private <T> TypedQuery<T> createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, Class<T> type) {
@@ -1352,9 +1354,8 @@ public class RepositoryManager {
 		final List<String> resourceTypes = params.getResourceTypes();
 		final Identity identity = params.getIdentity();
 		final Roles roles = params.getRoles();
-		final String institution = params.getInstitution();
 
-		boolean institut = (!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager());
+		boolean isLearnResourceManager = (!roles.isOLATAdmin() && roles.isLearnResourceManager());
 		boolean var_author = StringHelper.containsNonWhitespace(author);
 		boolean var_displayname = StringHelper.containsNonWhitespace(displayName);
 		boolean var_desc = StringHelper.containsNonWhitespace(desc);
@@ -1382,11 +1383,12 @@ public class RepositoryManager {
 		}
 
 		boolean setIdentity = false;
+		List<Long> managedOrganisationKeys = null;
 
 		//access rules
 		if(roles.isOLATAdmin()) {
 			query.append(" where v.access!=0 ");
-		} else if(institut) {
+		} else if(isLearnResourceManager) {
 			query.append(" where (v.access >=");
 			if (roles.isAuthor()) {
 				query.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
@@ -1396,12 +1398,12 @@ public class RepositoryManager {
 				query.append(RepositoryEntry.ACC_USERS);
 			}
 			query.append(" or (");
-			query.append("v.access=1 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
-			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
-	             .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and user.identity.key=identity.key")
-	             .append("      and user.institutionalName=:institution and membership.role='").append(GroupRoles.owner.name()).append("'")
+			query.append("v.access=1 and exists (select relToOrg.key from repoentrytoorganisation as relToOrg")
+	             .append("    where relToOrg.entry.key=v.key and relToOrg.organisation.key in (:managedOrganisationKeys)")
 	             .append(")))");
-
+			
+			List<Organisation> organisations = organisationService.getManageableOrganisations(identity, roles, OrganisationRoles.learnresourcemanager);
+			managedOrganisationKeys = organisations.stream().map(Organisation::getKey).collect(Collectors.toList());
 		} else if (params.isOnlyOwnedResources()) {
 			query.append(" where (v.access>0 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
 		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup")
@@ -1445,16 +1447,12 @@ public class RepositoryManager {
 		}
 
 		if (var_displayname) {
-			//displayName = '%' + displayName.replace('*', '%') + '%';
-			//query.append(" and v.displayname like :displayname");
 			displayName = PersistenceHelper.makeFuzzyQueryString(displayName);
 			query.append(" and ");
 			PersistenceHelper.appendFuzzyLike(query, "v.displayname", "displayname", dbInstance.getDbVendor());
 		}
 
 		if (var_desc) {
-			//desc = '%' + desc.replace('*', '%') + '%';
-			//query.append(" and v.description like :desc");
 			desc = PersistenceHelper.makeFuzzyQueryString(desc);
 			query.append(" and ");
 			PersistenceHelper.appendFuzzyLike(query, "v.description", "desc", dbInstance.getDbVendor());
@@ -1497,8 +1495,8 @@ public class RepositoryManager {
 		}
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), type);
-		if(institut) {
-			dbQuery.setParameter("institution", institution);
+		if(managedOrganisationKeys != null) {
+			dbQuery.setParameter("managedOrganisationKeys", managedOrganisationKeys);
 		}
 		if(params.getParentEntry() != null) {
 			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
@@ -1912,30 +1910,20 @@ public class RepositoryManager {
 			return false;
 		}
 
-		String currentUserInstitutionalName = identity.getUser().getProperty(UserConstants.INSTITUTIONALNAME, null);
-		if(!StringHelper.containsNonWhitespace(currentUserInstitutionalName)) {
+		if(!roles.isLearnResourceManager()) {
 			return false;
 		}
-
-		if(!roles.isInstitutionalResourceManager()) {
-			return false;
+		
+		List<OrganisationRef> learnResourceManagerOrganisations = roles.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager);
+		List<OrganisationRef> repositoryOrganisations = repositoryEntryToOrganisationDao.getOrganisationReferences(repositoryEntry);
+		for(OrganisationRef learnResourceManagerOrganisation:learnResourceManagerOrganisations) {
+			for(OrganisationRef repositoryOrganisation:repositoryOrganisations) {
+				if(learnResourceManagerOrganisation.getKey().equals(repositoryOrganisation.getKey())) {
+					return true;
+				}
+			}
 		}
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" inner join membership.identity as identity")
-		  .append(" inner join identity.user as user")
-		  .append(" where v.key=:repoKey and user.institutionalName=:institutionCourseManager");
-
-		Number count = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("repoKey", repositoryEntry.getKey())
-				.setParameter("institutionCourseManager", currentUserInstitutionalName)
-				.getSingleResult();
-		return count == null ? false : count.intValue() > 0;
+		return false;
 	}
 
 	public int countLearningResourcesAsStudent(IdentityRef identity) {

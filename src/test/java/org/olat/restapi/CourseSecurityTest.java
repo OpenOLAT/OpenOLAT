@@ -49,10 +49,10 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +98,8 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 			auth2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id-c-s-2");
 			Assert.assertNotNull(auth2);
 			
-			course = CoursesWebService.createEmptyCourse(admin, "course-security-2", "Test course for the security test", null);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+			course = CourseFactory.loadCourse(courseEntry);
 			dbInstance.intermediateCommit();
 
 			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course, false);

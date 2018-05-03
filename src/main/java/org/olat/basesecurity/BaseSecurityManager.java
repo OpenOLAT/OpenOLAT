@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,6 +44,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
@@ -50,7 +52,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -137,27 +141,82 @@ public class BaseSecurityManager implements BaseSecurity {
 	public Roles getRoles(IdentityRef identity) {
 		boolean isGuestOnly = false;
 		boolean isInvitee = false;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select org.key, membership.role from organisation as org ")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		Map<OrganisationRef, List<OrganisationRoles>> orgToRoles = new HashMap<>();
+		
+		boolean sysAdmin = false;
+		boolean admin = false;
+		
+		boolean groupManager = false;
+		boolean userManager = false;
+		boolean resourceManager = false;
+		boolean poolManager = false;
+		boolean curriculumnManager = false;
+		
+		boolean author = false;
+		boolean coach = false;
+		
+		for(Object[] rawObject:rawObjects) {
+			Long organisationKey = (Long)rawObject[0];
+			String role = (String)rawObject[1];
+
+			List<OrganisationRoles> roleList = orgToRoles
+					.computeIfAbsent(new OrganisationRefImpl(organisationKey), key -> new ArrayList<>());
+			roleList.add(OrganisationRoles.valueOf(role));
+			
+			sysAdmin |= role.equals(OrganisationRoles.sysadmin.name());
+			admin |= role.equals(OrganisationRoles.administrator.name());
+			
+			groupManager |= role.equals(OrganisationRoles.groupmanager.name());
+			userManager |= role.equals(OrganisationRoles.usermanager.name());
+			resourceManager |= role.equals(OrganisationRoles.learnresourcemanager.name());
+			poolManager |= role.equals(OrganisationRoles.poolmanager.name());
+			curriculumnManager |= role.equals(OrganisationRoles.curriculummanager.name());
+			
+
+			author |= role.equals(OrganisationRoles.author.name());
+			coach |= role.equals(OrganisationRoles.coach.name());
+		}
+		
+		admin |= sysAdmin;
+		
+		groupManager |= admin;
+		userManager |= admin;
+		poolManager |= admin;
+		curriculumnManager |= admin;
+		
+		author |= admin;
+		coach |= admin;
 
 		List<String> rolesStr = getRolesAsString(identity);
-		boolean sysAdmin = rolesStr.contains(OrganisationRoles.sysadmin.name());
-		boolean admin = sysAdmin || rolesStr.contains(OrganisationRoles.administrator.name());
-		boolean author = admin || rolesStr.contains(OrganisationRoles.author.name());
-		boolean groupManager = admin || rolesStr.contains(OrganisationRoles.groupmanager.name());
-		boolean userManager = admin || rolesStr.contains(OrganisationRoles.usermanager.name());
-		boolean resourceManager = rolesStr.contains(OrganisationRoles.learnresourcemanager.name());
-		boolean poolManager = admin || rolesStr.contains(OrganisationRoles.poolmanager.name());
-		boolean curriculumnManager = admin || rolesStr.contains(OrganisationRoles.curriculummanager.name());
+		
 		
 		if(!rolesStr.contains(OrganisationRoles.user.name())) {
 			isInvitee = invitationDao.isInvitee(identity);
 			isGuestOnly = rolesStr.contains(OrganisationRoles.guest.name());
 		}
-		return new Roles(sysAdmin, admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, curriculumnManager, isInvitee);
+		Roles roles = new Roles(sysAdmin, admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, curriculumnManager, coach, isInvitee);
+		List<RolesByOrganisation> rolesByOrganisations = new ArrayList<>();
+		for(Map.Entry<OrganisationRef, List<OrganisationRoles>> entry:orgToRoles.entrySet()) {
+			rolesByOrganisations.add(new RolesByOrganisation(entry.getKey(), entry.getValue()));
+		}
+		roles.setRolesByOrganisation(rolesByOrganisations);
+		return roles;
 	}
 
 	@Override
 	public List<String> getRolesAsString(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(255);
 		sb.append("select membership.role from organisation as org ")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
@@ -166,6 +225,21 @@ public class BaseSecurityManager implements BaseSecurity {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
 				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+
+	@Override
+	public List<String> getRolesAsString(IdentityRef identity, OrganisationRef organisation) {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("select membership.role from organisation as org ")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and org.key=:organisationKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("organisationKey", organisation.getKey())
 				.getResultList();
 	}
 
@@ -186,7 +260,7 @@ public class BaseSecurityManager implements BaseSecurity {
 
 		// author
 		boolean hasBeenAuthor = currentRoles.contains(OrganisationRoles.author.name());
-		boolean isAuthor = (roles.isAuthor() || roles.isInstitutionalResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
+		boolean isAuthor = (roles.isAuthor() || roles.isLearnResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.author, hasBeenAuthor, isAuthor);
 
 		// user manager, only allowed by admin
@@ -196,7 +270,7 @@ public class BaseSecurityManager implements BaseSecurity {
 
  		// institutional resource manager
 		boolean hasBeenInstitutionalResourceManager = currentRoles.contains(OrganisationRoles.learnresourcemanager.name());
-		boolean institutionalResourceManager = roles.isInstitutionalResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		boolean institutionalResourceManager = roles.isLearnResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.learnresourcemanager, hasBeenInstitutionalResourceManager, institutionalResourceManager);
 
 		// institutional resource manager
@@ -214,6 +288,61 @@ public class BaseSecurityManager implements BaseSecurity {
 		boolean isOLATAdmin = roles.isOLATAdmin() && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.administrator, hasBeenAdmin, isOLATAdmin);		
 	}
+	
+	@Override
+	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation roles) {
+		Organisation organisation = organisationService.getOrganisation(roles.getOrganisation());
+		
+		List<String> currentRoles = getRolesAsString(updatedIdentity, organisation);
+		
+		boolean hasBeenAnonymous = currentRoles.contains(OrganisationRoles.guest.name());
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.guest, hasBeenAnonymous, roles.isGuestOnly());
+		
+		// system users - opposite of anonymous users
+		boolean hasBeenUser = currentRoles.contains(OrganisationRoles.user.name());
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,  OrganisationRoles.user, hasBeenUser, !roles.isGuestOnly());
+
+		// coach
+		boolean hasBeenAuthor = currentRoles.contains(OrganisationRoles.author.name());
+		boolean isAuthor = (roles.isAuthor() || roles.isLearnResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.author, hasBeenAuthor, isAuthor);
+
+		// author
+		boolean hasBeenCoach = currentRoles.contains(OrganisationRoles.coach.name());
+		boolean isCoach = roles.isCoach() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.coach, hasBeenCoach, isCoach);
+
+		// group manager
+		boolean hasBeenGroupManager = currentRoles.contains(OrganisationRoles.groupmanager.name());
+		boolean groupManager = roles.isGroupManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.groupmanager, hasBeenGroupManager, groupManager);
+		
+		// user manager, only allowed by admin
+		boolean hasBeenUserManager = currentRoles.contains(OrganisationRoles.usermanager.name());
+		boolean userManager = roles.isUserManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,  OrganisationRoles.usermanager, hasBeenUserManager, userManager);
+
+ 		// institutional resource manager
+		boolean hasBeenInstitutionalResourceManager = currentRoles.contains(OrganisationRoles.learnresourcemanager.name());
+		boolean institutionalResourceManager = roles.isLearnResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.learnresourcemanager, hasBeenInstitutionalResourceManager, institutionalResourceManager);
+
+		// institutional resource manager
+		boolean hasBeenPoolManager = currentRoles.contains(OrganisationRoles.poolmanager.name());
+		boolean poolManager = roles.isPoolManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.poolmanager, hasBeenPoolManager, poolManager);
+		
+		// institutional resource manager
+		boolean hasBeenCurriculumManager = currentRoles.contains(OrganisationRoles.curriculummanager.name());
+		boolean curriculumManager = roles.isCurriculumManager() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.curriculummanager, hasBeenCurriculumManager, curriculumManager);
+
+		// system administrator
+		boolean hasBeenAdmin = currentRoles.contains(OrganisationRoles.administrator.name());
+		boolean isOLATAdmin = roles.isAdministrator() && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.administrator, hasBeenAdmin, isOLATAdmin);		
+	}
+	
 	
 	private void updateRolesInSecurityGroup(Organisation organisation, Identity actingIdentity, Identity updatedIdentity, OrganisationRoles role, boolean hasBeen, boolean isNow) {
 		if (!hasBeen && isNow) {
@@ -299,8 +428,9 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * @return Identity
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd,  User newUser) {
-		Identity ident = null;
+	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd,
+			User newUser, Organisation organisation) {
+		Identity ident;
 		if (pwd == null) {
 			// when no password is used the provider must be set to null to not generate
 			// an OLAT authentication token. See method doku.
@@ -312,7 +442,11 @@ public class BaseSecurityManager implements BaseSecurity {
 		}
 
 		// Add user to the default organization as user
-		organisationService.addMember(ident, OrganisationRoles.user);
+		if(organisation == null) {
+			organisationService.addMember(ident, OrganisationRoles.user);
+		} else {
+			organisationService.addMember(organisation, ident, OrganisationRoles.user);
+		}
 		return ident;
 	}
 	

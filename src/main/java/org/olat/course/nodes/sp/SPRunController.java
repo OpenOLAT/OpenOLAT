@@ -149,14 +149,13 @@ public class SPRunController extends BasicController implements Activateable2 {
 			}
 
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			if(roles.isInstitutionalResourceManager() &&
+			if(roles.isLearnResourceManager() &&
 				repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, cgm.getCourseEntry())) {
 				return true;
 			}
-			if(config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false)){
-				if(cgm.isIdentityCourseCoach(ureq.getIdentity())){
-					return true;
-				}
+			if(config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false)
+					&& cgm.isIdentityCourseCoach(ureq.getIdentity())) {
+				return true;
 			}
 			return cgm.isIdentityCourseAdministrator(getIdentity())
 					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);

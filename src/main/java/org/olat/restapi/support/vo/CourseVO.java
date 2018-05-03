@@ -42,9 +42,11 @@ public class CourseVO {
 	private String displayName;
 	private String description;
 	private Long repoEntryKey;
-	@XmlAttribute(name="authors",required=false)
+	@XmlAttribute(name="organisationKey", required=false)
+	private Long organisationKey;
+	@XmlAttribute(name="authors", required=false)
 	private String authors;
-	@XmlAttribute(name="location",required=false)
+	@XmlAttribute(name="location", required=false)
 	private String location;
 	private String externalId;
 	private String externalRef;
@@ -125,6 +127,14 @@ public class CourseVO {
 
 	public void setManagedFlags(String managedFlags) {
 		this.managedFlags = managedFlags;
+	}
+
+	public Long getOrganisationKey() {
+		return organisationKey;
+	}
+
+	public void setOrganisationKey(Long organisationKey) {
+		this.organisationKey = organisationKey;
 	}
 
 	public Long getOlatResourceKey() {

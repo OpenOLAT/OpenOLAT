@@ -215,11 +215,11 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("v", entry);
-			layoutCont.contextPut("guestOnly", new Boolean(guestOnly));
+			layoutCont.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
 			layoutCont.contextPut("cssClass", cssClass);
 			boolean closed = entry.getRepositoryEntryStatus().isClosed() || entry.getRepositoryEntryStatus().isUnpublished();
-			layoutCont.contextPut("closed", new Boolean(closed));
+			layoutCont.contextPut("closed", Boolean.valueOf(closed));
 			
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 			VFSContainer mediaContainer = handler.getMediaContainer(entry);
@@ -314,7 +314,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             		|| memberRoles.contains(GroupRoles.participant.name());
 			if (isMember) {
 				isAuthor = authorKeys.contains(getIdentity().getKey());
-				layoutCont.contextPut("isEntryAuthor", new Boolean(isAuthor));
+				layoutCont.contextPut("isEntryAuthor", Boolean.valueOf(isAuthor));
 			}
 			// push roles to velocity as well
             Roles roles = ureq.getUserSession().getRoles();
@@ -329,7 +329,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 
 			//access control
 			String accessI18n = null;
-			List<PriceMethod> types = new ArrayList<PriceMethod>();
+			List<PriceMethod> types = new ArrayList<>();
 			if (entry.isMembersOnly()) {
 				// members only
 				if(isMember) {
@@ -374,7 +374,6 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				} else {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
-					//startLink.setEnabled(false);
 					startLink.setElementCssClass("o_start btn-block");
 					startLink.setVisible(!guestOnly);
 				}
@@ -457,9 +456,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             layoutCont.contextPut("numUsers", numUsers);
             
             // Where is it in use
-            if(isAuthor || roles.isOLATAdmin() || roles.isInstitutionalResourceManager()) {
+            if(isAuthor || roles.isOLATAdmin() || roles.isLearnResourceManager()) {
 				List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());
-				if(refs.size() > 0) {
+				if(!refs.isEmpty()) {
 					List<String> refLinks = new ArrayList<>(refs.size());
 					int count = 0;
 					for(RepositoryEntry ref:refs) {
@@ -470,7 +469,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
 						refLinks.add(name);
 					}
-	            	layoutCont.contextPut("referenceLinks", refLinks);
+	            		layoutCont.contextPut("referenceLinks", refLinks);
 				}
             }
             
