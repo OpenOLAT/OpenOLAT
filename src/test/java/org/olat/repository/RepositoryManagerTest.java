@@ -27,7 +27,6 @@
 package org.olat.repository;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -64,7 +63,6 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
-import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
@@ -653,81 +651,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void queryByTypeLimitAccess() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-1-" + UUID.randomUUID().toString());
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-1", "tg", null, null, false, false, re);
-	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
-		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
-				types, new Roles(false, false, false, false, false, false, false));
-		
-		Assert.assertNotNull(entries);
-		Assert.assertFalse(entries.isEmpty());
-		Assert.assertTrue(entries.contains(re));
-		for(RepositoryEntry entry:entries) {
-			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-			}
-		}
-	}
-	
-	@Test
-	public void queryByTypeLimitAccess_withoutInstitution() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-2-" + UUID.randomUUID().toString());
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-2", "tg", null, null, false, false, re);
-	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
-		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
-				new Roles(false, false, false, false, false, false, false), types);
-		
-		Assert.assertNotNull(entries);
-		Assert.assertFalse(entries.isEmpty());
-		Assert.assertTrue(entries.contains(re));
-		for(RepositoryEntry entry:entries) {
-			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-			}
-		}
-	}
-	
-	@Test
-	public void queryByTypeLimitAccess_withInstitution() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("qbtla-3-" + UUID.randomUUID().toString());
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "qbtla-3", "tg", null, null, false, false, re);
-	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
-		dbInstance.commitAndCloseSession();
-
-		//promote id to institution resource manager
-		id.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "openolat.org");
-		userManager.updateUserFromIdentity(id);
-		organisationService.addMember(id, OrganisationRoles.learnresourcemanager);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		List<String> types = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
-		List<RepositoryEntry> entries = repositoryManager.queryByTypeLimitAccess(id,
-				new Roles(false, false, false, false, false, true, false), types);
-		
-		Assert.assertNotNull(entries);
-		Assert.assertFalse(entries.isEmpty());
-		Assert.assertTrue(entries.contains(re));
-		for(RepositoryEntry entry:entries) {
-			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-			}
-		}
-	}
-	
-	@Test
 	public void queryResourcesLimitType() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -735,15 +658,16 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		List<String> resourceTypes = Collections.singletonList(re.getOlatResource().getResourceableTypeName());
 		List<RepositoryEntry> entries = repositoryManager
-				.queryResourcesLimitType(id, resourceTypes, "re-member", "me", "no", true, true);
+				.queryResourcesLimitType(id, Roles.authorRoles(), resourceTypes, "re-member", "me", "no", true, true);
 		Assert.assertNotNull(entries);
 	}
 	
 	@Test
 	public void queryReferencableResourcesLimitType() {
-		final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
+		String resourceType = UUID.randomUUID().toString().replace("_", "");
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id2");
+		Roles id1Roles = securityManager.getRoles(id1);
 
 		// generate 5000 repo entries
 		int numbRes = 500;
@@ -752,7 +676,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			// create course and persist as OLATResourceImpl
 			Identity owner = (i % 2 > 0) ? id1 : id2;
 
-			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(FG_TYPE, new Long(i));
+			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance(resourceType, new Long(i));
 			OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(resourceable);
 			dbInstance.getCurrentEntityManager().persist(r);
 			
@@ -778,18 +702,18 @@ public class RepositoryManagerTest extends OlatTestCase {
 		long endCreate = System.currentTimeMillis();
 		log.info("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms");
 		
-		List<String> typelist = Collections.singletonList(FG_TYPE);
+		List<String> typelist = Collections.singletonList(resourceType);
 		// finally the search query
 		long startSearchReferencable = System.currentTimeMillis();
-		List<RepositoryEntry> results = repositoryManager.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
+		List<RepositoryEntry> results = repositoryManager.queryResourcesLimitType(id1, id1Roles, typelist, null, null, null, true, false);
 		long endSearchReferencable = System.currentTimeMillis();
 		log.info("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
 
 		// only half of the items should be found
-		assertEquals(numbRes / 2, results.size());
+		Assert.assertEquals(numbRes / 2, results.size());
 		
 		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
-		assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
+		Assert.assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
 	}
 	
 	@Test
@@ -1002,177 +926,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void genericANDQueryWithRolesRestrictionMembersOnly() {
-		//create 2 identities (repo owner and tutor)
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-3-" + UUID.randomUUID().toString());
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re);
-	    businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
-		dbInstance.commitAndCloseSession();
-		
-		
-		//check for id 1 (owner of the repository entry)
-		SearchRepositoryEntryParameters params1 = new SearchRepositoryEntryParameters();
-		params1.setIdentity(id1);
-		params1.setRoles(new Roles(false, false, false, false, false, false, false));
-		params1.setOnlyExplicitMember(true);
-		List<RepositoryEntry> entries1 = repositoryManager.genericANDQueryWithRolesRestriction(params1, 0, -1, true);
-		Assert.assertNotNull(entries1);
-		Assert.assertFalse(entries1.isEmpty());
-		Assert.assertTrue(entries1.contains(re));
-		for(RepositoryEntry entry:entries1) {
-			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-			}
-		}
-		
-		//check for id2 (tutor)
-		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
-		params2.setIdentity(id2);
-		params2.setRoles(new Roles(false, false, false, false, false, false, false));
-		params2.setOnlyExplicitMember(true);
-		List<RepositoryEntry> entries2 = repositoryManager.genericANDQueryWithRolesRestriction(params2, 0, -1, true);
-		Assert.assertNotNull(entries2);
-		Assert.assertFalse(entries2.isEmpty());
-		Assert.assertTrue(entries2.contains(re));
-		for(RepositoryEntry entry:entries2) {
-			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-			}
-		}
-		
-		//check for id3 (negative test)
-		SearchRepositoryEntryParameters params3 = new SearchRepositoryEntryParameters();
-		params3.setIdentity(id3);
-		params3.setRoles(new Roles(false, false, false, false, false, false, false));
-		params3.setOnlyExplicitMember(true);
-		List<RepositoryEntry> entries3 = repositoryManager.genericANDQueryWithRolesRestriction(params3, 0, -1, true);
-		Assert.assertNotNull(entries3);
-		Assert.assertFalse(entries3.contains(re));
-		for(RepositoryEntry entry:entries3) {
-			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-		}
-	}
-	
-	@Test
-	public void genericANDQueryWithRolesWithStandardUser() {
-		//create 2 identities (repo owner and tutor)
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
-		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
-		repositoryEntryRelationDao.addRole(id1, re2, GroupRoles.participant.name());
-		BusinessGroup group = businessGroupService.createBusinessGroup(null, "teacherg", "tg", null, null, false, false, re1);
-	    businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
-		dbInstance.commitAndCloseSession();
-		
-		
-		//check for guest (negative test)
-		SearchRepositoryEntryParameters params1 = new SearchRepositoryEntryParameters();
-		params1.setRoles(new Roles(false, false, false, false, true, false, false));
-		List<RepositoryEntry> entries1 = repositoryManager.genericANDQueryWithRolesRestriction(params1, 0, -1, true);
-		Assert.assertNotNull(entries1);
-		Assert.assertFalse(entries1.contains(re1));
-		Assert.assertFalse(entries1.contains(re2));
-		for(RepositoryEntry entry:entries1) {
-			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS);
-		}
-		
-		//check for identity 1 (participant re2 + re1 accessible to all users)
-		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
-		params2.setIdentity(id1);
-		params2.setRoles(new Roles(false, false, false, false, false, false, false));
-		List<RepositoryEntry> entries2 = repositoryManager.genericANDQueryWithRolesRestriction(params2, 0, -1, true);
-		Assert.assertNotNull(entries2);
-		Assert.assertFalse(entries2.isEmpty());
-		Assert.assertTrue(entries2.contains(re1));
-		Assert.assertTrue(entries2.contains(re2));
-		for(RepositoryEntry entry:entries2) {
-			if(!entry.equals(re2)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-			}
-		}
-		
-		//check for identity 1 (re1 accessible to all users)
-		SearchRepositoryEntryParameters params3 = new SearchRepositoryEntryParameters();
-		params3.setIdentity(id2);
-		params3.setRoles(new Roles(false, false, false, false, false, false, false));
-		List<RepositoryEntry> entries3 = repositoryManager.genericANDQueryWithRolesRestriction(params3, 0, -1, true);
-		Assert.assertNotNull(entries3);
-		Assert.assertFalse(entries3.isEmpty());
-		Assert.assertTrue(entries3.contains(re1));
-		Assert.assertFalse(entries3.contains(re2));
-		for(RepositoryEntry entry:entries3) {
-			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
-		}
-	}
-
-	@Test
-	public void genericANDQueryWithRoles_managed() {
-		RepositoryEntry managedRe = JunitTestHelper.createAndPersistRepositoryEntry();
-		managedRe.setManagedFlagsString("all");
-		managedRe = dbInstance.getCurrentEntityManager().merge(managedRe);
-		RepositoryEntry freeRe = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-		
-		//search managed
-		SearchRepositoryEntryParameters paramsManaged = new SearchRepositoryEntryParameters();
-		paramsManaged.setRoles(new Roles(true, false, false, false, false, false, false));
-		paramsManaged.setManaged(Boolean.TRUE);
-		List<RepositoryEntry> managedEntries = repositoryManager.genericANDQueryWithRolesRestriction(paramsManaged, 0, -1, true);
-		Assert.assertNotNull(managedEntries);
-		Assert.assertTrue(managedEntries.size() > 0);
-		Assert.assertTrue(managedEntries.contains(managedRe));
-		Assert.assertFalse(managedEntries.contains(freeRe));
-
-		//search unmanaged
-		SearchRepositoryEntryParameters paramsFree = new SearchRepositoryEntryParameters();
-		paramsFree.setRoles(new Roles(true, false, false, false, false, false, false));
-		paramsFree.setManaged(Boolean.FALSE);
-		List<RepositoryEntry> freeEntries = repositoryManager.genericANDQueryWithRolesRestriction(paramsFree, 0, -1, true);
-		Assert.assertNotNull(freeEntries);
-		Assert.assertTrue(freeEntries.size() > 0);
-		Assert.assertFalse(freeEntries.contains(managedRe));
-		Assert.assertTrue(freeEntries.contains(freeRe));
-	}
-	
-	@Test
-	public void genericANDQueryWithRoles_owned() {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("owned-re-");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
-		dbInstance.commitAndCloseSession();
-		
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(new Roles(false, false, false, true, false, false, false));
-		params.setOnlyOwnedResources(true);
-		params.setIdentity(owner);
-		List<RepositoryEntry> myEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
-		Assert.assertNotNull(myEntries);
-		Assert.assertEquals(1, myEntries.size());
-		Assert.assertTrue(myEntries.contains(re));
-	}
-	
-	@Test
-	public void genericANDQueryWithRoles_byauthor() {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("author-re-");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
-		dbInstance.commitAndCloseSession();
-		
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(new Roles(true, false, false, false, false, false, false));
-		params.setAuthor(owner.getName());
-		List<RepositoryEntry> myEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
-		Assert.assertNotNull(myEntries);
-		Assert.assertEquals(1, myEntries.size());
-		Assert.assertTrue(myEntries.contains(re));
-	}
-
-	@Test
 	public void setDescriptionAndName() {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
@@ -1228,6 +981,35 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertEquals("Brand new name", reloaded.getDisplayname());
 		Assert.assertEquals("Brand new description", reloaded.getDescription());
 		Assert.assertEquals(publicCycle, reloaded.getLifecycle());
+	}
+	
+	@Test
+	public void setDescriptionAndName_organisations() {
+		RepositoryEntryLifecycle publicCycle
+			= lifecycleDao.create("Public 2", "Soft public 2", false, new Date(), new Date());
+		Organisation organisation = organisationService.getDefaultOrganisation();
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		
+		String newName = "Organized name";
+		String newDesc = "Organized description";
+		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null,
+				publicCycle, Collections.singletonList(organisation));
+		Assert.assertNotNull(re);
+		Assert.assertEquals(2, re.getGroups().size());// check repository entry to group relations
+		
+		dbInstance.commitAndCloseSession();
+		
+		// reload and check twice
+		RepositoryEntry reloaded = repositoryManager.lookupRepositoryEntry(re.getKey());
+		Assert.assertNotNull(reloaded);
+		Assert.assertEquals("Organized name", reloaded.getDisplayname());
+		Assert.assertEquals("Organized description", reloaded.getDescription());
+		Assert.assertEquals(publicCycle, reloaded.getLifecycle());
+		Assert.assertEquals(1, reloaded.getOrganisations().size());// check repository entry to organization relations
+		Assert.assertEquals(2, reloaded.getGroups().size());// check repository entry to group relations
 	}
 
 	@Test

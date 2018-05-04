@@ -113,6 +113,7 @@ import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -157,6 +158,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryEntryQueries repositoryEntryQueries;
 	@Autowired
 	private RepositoryDeletionModule deletionManager;
 	@Autowired
@@ -1585,7 +1588,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		
 		float ratio = -1.0f;
 		if(delegate != null) {
-			int numOfEntries = repositoryManager.countGenericANDQueryWithRolesRestriction(params);
+			int numOfEntries = repositoryEntryQueries.countEntries(params);
 			ratio = 100.0f / numOfEntries;
 		}
 
@@ -1595,7 +1598,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		int batch = 25;
 		List<RepositoryEntry> entries;
 		do {
-			entries = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, batch, true);
+			entries = repositoryEntryQueries.searchEntries(params, counter, batch, true);
 			for(RepositoryEntry re:entries) {
 				countForCommit += 2 + dedupSingleRepositoryentry(ureqIdentity, re, coaches, participants, false);
 				if(countForCommit > 25) {

@@ -112,10 +112,10 @@ public class CoursesInfosWebService {
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params);
 			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
-			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>();
+			List<CourseInfoVO> infos = new ArrayList<>();
 
-			final Set<Long> forumNotified = new HashSet<Long>();
-			final Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
+			final Set<Long> forumNotified = new HashSet<>();
+			final Map<Long,Set<String>> courseNotified = new HashMap<>();
 			collectSubscriptions(identity, forumNotified, courseNotified);
 
 			for(RepositoryEntry entry:repoEntries) {

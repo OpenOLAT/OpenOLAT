@@ -21,6 +21,7 @@ package org.olat.core.id;
 
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationManagedFlag;
 
 /**
@@ -60,5 +61,7 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	public List<OrganisationRef> getParentLine();
 	
 	public Organisation getRoot();
+	
+	public Group getGroup();
 
 }

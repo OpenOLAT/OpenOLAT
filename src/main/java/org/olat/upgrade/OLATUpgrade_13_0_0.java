@@ -21,6 +21,7 @@ package org.olat.upgrade;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.OrganisationRoles;
@@ -124,7 +125,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		List<Long> identitiyKeys = getIdentityInSecurityGroup(secGroupName);
 		for(int i=0; i<identitiyKeys.size(); i++) {
 			Identity member = dbInstance.getCurrentEntityManager().getReference(IdentityImpl.class, identitiyKeys.get(i));
-			organisationService.addMember(organisation, member, role);
+			organisationService.addMember(organisation, member, role, GroupMembershipInheritance.none);
 			if(i % 20 == 0) {
 				dbInstance.commitAndCloseSession();
 			}

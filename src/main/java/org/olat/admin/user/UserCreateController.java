@@ -175,8 +175,8 @@ class NewUserForm extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(translator);
 		this.showPasswordFields = showPasswordFields;
-		manageableOrganisations = organisationService
-				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.usermanager);
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+						OrganisationRoles.administrator, OrganisationRoles.usermanager);
 		initForm(ureq);
 	}	 
 	

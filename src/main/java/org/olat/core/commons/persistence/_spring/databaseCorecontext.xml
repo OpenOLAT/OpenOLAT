@@ -170,7 +170,7 @@
 	<bean id="hikariHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
-	            <prop key="hibernate.connection.provider_class">com.zaxxer.hikari.hibernate.HikariConnectionProvider</prop>
+	            <prop key="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</prop>
 	            <!-- Max pool size , mysql-default value is 100, If you need to support more connections, you should set a larger value for this variable in mysql config -->
 	            <prop key="hibernate.hikari.maximumPoolSize">${db.hibernate.hikari.maxsize}</prop>
 	            <prop key="hibernate.hikari.minimumIdle">4</prop>

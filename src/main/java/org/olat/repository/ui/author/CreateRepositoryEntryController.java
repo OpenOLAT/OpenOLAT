@@ -94,8 +94,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.handler = handler;
-		manageableOrganisations = organisationService
-				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.learnresourcemanager);
+		
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
 		initForm(ureq);
 	}
 

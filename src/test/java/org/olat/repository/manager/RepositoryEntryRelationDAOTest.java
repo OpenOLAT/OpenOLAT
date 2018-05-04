@@ -528,7 +528,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	    dbInstance.commitAndCloseSession();
 	    
 	    int numOfRelations = repositoryEntryRelationDao.removeRelations(re2);
-	    Assert.assertEquals(2, numOfRelations);//default relation + relation to group
+	    Assert.assertEquals(3, numOfRelations);//default relation + relation to group + default organization
 	    dbInstance.commitAndCloseSession();
 	    
 	    List<Group> groups = Collections.singletonList(group.getBaseGroup());

@@ -61,10 +61,12 @@ public class RepositoryEntryRelationDAO {
 	private GroupDAO groupDao;
 	
 	/**
-	 * Get roles in the repository entry, with business groups too
-	 * @param identity
-	 * @param re
-	 * @return
+	 * Get roles in the repository entry, with business groups too but
+	 * not the organizations.
+	 * 
+	 * @param identity The identity
+	 * @param re The repository entry
+	 * @return The list of roles
 	 */
 	public List<String> getRoles(IdentityRef identity, RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder();
@@ -72,7 +74,8 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -113,7 +116,7 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");
-		if(roleList.size() > 0) {
+		if(!roleList.isEmpty()) {
 			sb.append(" and membership.role in (:roles)");
 		}
 		
@@ -121,7 +124,7 @@ public class RepositoryEntryRelationDAO {
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repoKey", re.getKey());
-		if(roleList.size() > 0) {
+		if(!roleList.isEmpty()) {
 			query.setParameter("roles", roleList);
 		}
 		
@@ -150,7 +153,7 @@ public class RepositoryEntryRelationDAO {
 		sb.append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey");
-		if(roleList.size() > 0) {
+		if(!roleList.isEmpty()) {
 			sb.append(" and membership.role in (:roles)");
 		}
 		
@@ -159,7 +162,7 @@ public class RepositoryEntryRelationDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.setParameter("identityKey", identity.getKey());
-		if(roleList.size() > 0) {
+		if(!roleList.isEmpty()) {
 			query.setParameter("roles", roleList);
 		}
 		
@@ -263,9 +266,11 @@ public class RepositoryEntryRelationDAO {
 	}
 	
 	/**
-	 * It will count all members, business groups members too
-	 * @param re
-	 * @param roles
+	 * It will count all members, business groups members too but not
+	 * the organizations.
+	 * 
+	 * @param re The repository entry
+	 * @param roles The roles (optional)
 	 * @return
 	 */
 	public int countMembers(RepositoryEntryRef re, String... roles) {
@@ -276,15 +281,16 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
-		  .append(" where v.key=:repoKey");
-		if(roleList.size() > 0) {
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
+		if(!roleList.isEmpty()) {
 				sb.append(" and members.role in (:roles)");
 		}
 		
 		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("repoKey", re.getKey());
-		if(roleList.size() > 0) {
+		if(!roleList.isEmpty()) {
 				query.setParameter("roles", roleList);
 		}
 		
@@ -301,11 +307,12 @@ public class RepositoryEntryRelationDAO {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(distinct members.identity.key) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		sb.append("select count(distinct members.identity.key) from repositoryentry as v")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
-		  .append(" where v.key in (:repoKeys)");
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key in (:repoKeys) and (relGroup.defaultGroup=true or businessGroup.key is not null)");
 		if(excludeMe != null) {
 			sb.append(" and not(members.identity.key=:identityKey)");
 		}
@@ -353,8 +360,9 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
-		  .append(" where v.key=:repoKey and members.identity.key=:identityKey");
-		if(roleList != null && roleList.size() > 0) {
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null) and members.identity.key=:identityKey");
+		if(roleList != null && !roleList.isEmpty()) {
 			sb.append(" and members.role in (:roles)");
 		}
 
@@ -362,7 +370,7 @@ public class RepositoryEntryRelationDAO {
 				.createQuery(sb.toString(), Date.class)
 				.setParameter("repoKey", re.getKey())
 				.setParameter("identityKey", identity.getKey());
-		if(roleList != null && roleList.size() > 0) {
+		if(roleList != null && !roleList.isEmpty()) {
 			datesQuery.setParameter("roles", roleList);
 		}
 		
@@ -386,8 +394,9 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
-		  .append(" where v.key=:repoKey");
-		if(roleList != null && roleList.size() > 0) {
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
+		if(roleList != null && !roleList.isEmpty()) {
 			sb.append(" and members.role in (:roles)");
 		}
 		sb.append(" group by members.identity.key");
@@ -395,7 +404,7 @@ public class RepositoryEntryRelationDAO {
 		TypedQuery<Object[]> datesQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("repoKey", re.getKey());
-		if(roleList != null && roleList.size() > 0) {
+		if(roleList != null && !roleList.isEmpty()) {
 			datesQuery.setParameter("roles", roleList);
 		}
 		
@@ -431,6 +440,15 @@ public class RepositoryEntryRelationDAO {
 		return getMembers(Collections.singletonList(re), type, roles);
 	}
 	
+	/**
+	 * The query is limited to the default group and the business group (as specified by
+	 * the type parameter).
+	 * 
+	 * @param res The list repository entry references
+	 * @param type The type of relation (only default group, only busines groups or both)
+	 * @param roles The roles (optional)
+	 * @return A list of identity
+	 */
 	public List<Identity> getMembers(List<? extends RepositoryEntryRef> res, RepositoryEntryRelationType type, String... roles) {
 		if(res == null || res.isEmpty()) return Collections.emptyList();
 		
@@ -444,27 +462,37 @@ public class RepositoryEntryRelationDAO {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(RepositoryEntry.class.getName()).append(" as v")
+		sb.append("select ident from repositoryentry as v")
 		  .append(" inner join v.groups as relGroup").append(def)
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as memberships")
 		  .append(" inner join memberships.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" where v.key in (:repoKeys)");
-		if(roleList.size() > 0) {
-				sb.append(" and memberships.role in (:roles)");
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key in (:repoKeys) and (relGroup.defaultGroup=true or businessGroup.key is not null)");
+		if(!roleList.isEmpty()) {
+			sb.append(" and memberships.role in (:roles)");
 		}
 		
-		List<Long> repoKeys = res.stream().map(re -> re.getKey()).collect(Collectors.toList());	
+		List<Long> repoKeys = res.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());	
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("repoKeys", repoKeys);
-		if(roleList.size() > 0) {
-				query.setParameter("roles", roleList);
+		if(!roleList.isEmpty()) {
+			query.setParameter("roles", roleList);
 		}
 		return query.getResultList();
 	}
 	
+	/**
+	 * The query is limited to the default group and the business group (as specified by
+	 * the type parameter).
+	 * 
+	 * @param re The repository entry
+	 * @param type The type of relation (only default group, only busines groups or both)
+	 * @param roles The roles (optional)
+	 * @return A list of identity keys
+	 */
 	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType type, String... roles) {
 		List<String> roleList = GroupRoles.toList(roles);
 		
@@ -476,19 +504,20 @@ public class RepositoryEntryRelationDAO {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select members.identity.key from ").append(RepositoryEntry.class.getName()).append(" as v")
+		sb.append("select members.identity.key from repositoryentry as v")
 		  .append(" inner join v.groups as relGroup").append(def)
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
-		  .append(" where v.key=:repoKey");
-		if(roleList.size() > 0) {
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
+		if(!roleList.isEmpty()) {
 				sb.append(" and members.role in (:roles)");
 		}
 			
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("repoKey", re.getKey());
-		if(roleList.size() > 0) {
+		if(!roleList.isEmpty()) {
 				query.setParameter("roles", roleList);
 		}
 		return query.getResultList();

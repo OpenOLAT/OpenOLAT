@@ -30,6 +30,7 @@ import javax.persistence.EntityManager;
 import org.olat.basesecurity.Grant;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.GrantImpl;
 import org.olat.basesecurity.model.GroupImpl;
@@ -84,12 +85,17 @@ public class GroupDAO {
 	 * reloaded.
 	 */
 	public GroupMembership addMembershipTwoWay(Group group, Identity identity, String role) {
+		return addMembershipTwoWay(group, identity, role, GroupMembershipInheritance.none);
+	}
+
+	public GroupMembership addMembershipTwoWay(Group group, Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
 		GroupMembershipImpl membership = new GroupMembershipImpl();
 		membership.setCreationDate(new Date());
 		membership.setLastModified(new Date());
 		membership.setGroup(group);
 		membership.setIdentity(identity);
 		membership.setRole(role);
+		membership.setInheritanceMode(inheritanceMode);
 		dbInstance.getCurrentEntityManager().persist(membership);
 		
 		Set<GroupMembership> members = ((GroupImpl)group).getMembers();
@@ -105,13 +111,31 @@ public class GroupDAO {
 	 * Create a membership without updating the set in the group.
 	 */
 	public void addMembershipOneWay(Group group, Identity identity, String role) {
+		addMembershipOneWay(group, identity, role, GroupMembershipInheritance.none);
+	}
+	
+	/**
+	 * Create a membership without updating the set in the group.
+	 * 
+	 * @param group
+	 * @param identity
+	 * @param role
+	 * @param inheritanceMode
+	 */
+	public void addMembershipOneWay(Group group, Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
 		GroupMembershipImpl membership = new GroupMembershipImpl();
 		membership.setCreationDate(new Date());
 		membership.setLastModified(new Date());
 		membership.setGroup(group);
 		membership.setIdentity(identity);
 		membership.setRole(role);
+		membership.setInheritanceMode(inheritanceMode);
 		dbInstance.getCurrentEntityManager().persist(membership);
+	}
+	
+	public GroupMembership updateInheritanceMode(GroupMembership membership, GroupMembershipInheritance inheritanceMode) {
+		((GroupMembershipImpl)membership).setInheritanceMode(inheritanceMode);
+		return dbInstance.getCurrentEntityManager().merge(membership);
 	}
 	
 	public int removeMemberships(Group group) {
@@ -165,6 +189,10 @@ public class GroupDAO {
 				.executeUpdate();
 	}
 	
+	public void removeMembership(GroupMembership membership) {
+		dbInstance.getCurrentEntityManager().remove(membership);
+	}
+	
 	public int countMembers(Group group) {
 		Number count = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("countMembersByGroup", Number.class)
@@ -191,12 +219,37 @@ public class GroupDAO {
 			.getResultList();
 	}
 	
+	public List<GroupMembership> getMemberships(Group group) {
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membershipsByGroup", GroupMembership.class)
+			.setParameter("groupKey", group.getKey())
+			.getResultList();
+	}
+	
 	public List<GroupMembership> getMemberships(Group group, String role) {
 		return dbInstance.getCurrentEntityManager()
 			.createNamedQuery("membershipsByGroupAndRole", GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("role", role)
 			.getResultList();
+	}
+	
+	public List<GroupMembership> getMemberships(Group group, IdentityRef identity) {
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membershipsByGroupAndIdentity", GroupMembership.class)
+			.setParameter("groupKey", group.getKey())
+			.setParameter("identityKey", identity.getKey())
+			.getResultList();
+	}
+	
+	public GroupMembership getMembership(Group group, IdentityRef identity, String role) {
+		List<GroupMembership> memberships = dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membershipByGroupIdentityAndRole", GroupMembership.class)
+			.setParameter("groupKey", group.getKey())
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("role", role)
+			.getResultList();
+		return memberships == null || memberships.isEmpty() ? null : memberships.get(0);
 	}
 	
 	public boolean hasGrant(IdentityRef identity, String permission, OLATResource resource) {

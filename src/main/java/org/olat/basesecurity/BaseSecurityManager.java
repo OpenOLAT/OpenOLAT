@@ -143,7 +143,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		boolean isInvitee = false;
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select org.key, membership.role from organisation as org ")
+		sb.append("select org.key, org.identifier, membership.role from organisation as org ")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where membership.identity.key=:identityKey");
@@ -168,7 +168,8 @@ public class BaseSecurityManager implements BaseSecurity {
 		
 		for(Object[] rawObject:rawObjects) {
 			Long organisationKey = (Long)rawObject[0];
-			String role = (String)rawObject[1];
+			String organisationId = (String)rawObject[1];
+			String role = (String)rawObject[2];
 
 			List<OrganisationRoles> roleList = orgToRoles
 					.computeIfAbsent(new OrganisationRefImpl(organisationKey), key -> new ArrayList<>());
@@ -347,7 +348,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	private void updateRolesInSecurityGroup(Organisation organisation, Identity actingIdentity, Identity updatedIdentity, OrganisationRoles role, boolean hasBeen, boolean isNow) {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
-			organisationService.addMember(organisation, updatedIdentity, role);
+			organisationService.addMember(organisation, updatedIdentity, role, GroupMembershipInheritance.none);
 			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getName(), null);
 		} else if (hasBeen && !isNow) {
 			// user not anymore in security group, remove him
@@ -445,7 +446,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		if(organisation == null) {
 			organisationService.addMember(ident, OrganisationRoles.user);
 		} else {
-			organisationService.addMember(organisation, ident, OrganisationRoles.user);
+			organisationService.addMember(organisation, ident, OrganisationRoles.user, GroupMembershipInheritance.none);
 		}
 		return ident;
 	}

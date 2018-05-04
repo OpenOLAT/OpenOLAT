@@ -185,3 +185,9 @@ create unique index idx_eva_part_executor_idx on o_eva_form_participation (fk_ex
 alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
 
+
+-- membership
+alter table o_bs_group_member add column g_inheritance_mode varchar(16) default 'none' not null;
+
+
+

@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
@@ -33,6 +35,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -251,6 +254,36 @@ public class OrganisationDAO {
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("materializedPathKeys", organisation.getMaterializedPathKeys() + "%")
 				.getResultList();
+	}
+	
+	public OrganisationNode getDescendantTree(Organisation rootOrganisation) {
+		OrganisationNode rootNode = new OrganisationNode(rootOrganisation);
+
+		List<Organisation> descendants = getDescendants(rootOrganisation);
+		Map<Long,OrganisationNode> keyToOrganisations = new HashMap<>();
+		for(Organisation descendant:descendants) {
+			keyToOrganisations.put(descendant.getKey(), new OrganisationNode(descendant));
+		}
+
+		for(Organisation descendant:descendants) {
+			Long key = descendant.getKey();
+			if(key.equals(rootOrganisation.getKey())) {
+				continue;
+			}
+			
+			OrganisationNode node = keyToOrganisations.get(key);
+			Organisation parentOrganisation = descendant.getParent();
+			Long parentKey = parentOrganisation.getKey();
+			if(parentKey.equals(rootOrganisation.getKey())) {
+				//this is a root, or the user has not access to parent
+				rootNode.addChildrenNode(node);
+			} else {
+				OrganisationNode parentNode = keyToOrganisations.get(parentKey);
+				parentNode.addChildrenNode(node);
+			}
+		}
+
+		return rootNode;
 	}
 	
 

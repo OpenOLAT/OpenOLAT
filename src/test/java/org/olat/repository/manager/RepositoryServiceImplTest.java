@@ -97,7 +97,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		Assert.assertNotNull(re.getLastModified());
 		Assert.assertNotNull(re.getOlatResource());
 		Assert.assertNotNull(loadedEntry.getGroups());
-		Assert.assertEquals(1, loadedEntry.getGroups().size());
+		Assert.assertEquals(2, loadedEntry.getGroups().size());// default group + default organization group
 		//saved?
 		Assert.assertEquals(displayName, re.getDisplayname());
 		Assert.assertEquals(resourceName, re.getResourcename());

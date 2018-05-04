@@ -39,10 +39,12 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -55,6 +57,7 @@ import org.olat.core.id.Persistable;
 @NamedQueries({
 	@NamedQuery(name="membershipsByGroup", query="select membership from bgroupmember as membership where membership.group.key=:groupKey"),
 	@NamedQuery(name="membershipsByGroupAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
+	@NamedQuery(name="membershipByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role"),
 	@NamedQuery(name="deleteMembershipsByGroupAndRole", query="delete from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
 	@NamedQuery(name="membershipsByGroupAndIdentity", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey"),
 	@NamedQuery(name="membershipsByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role"),
@@ -91,6 +94,9 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 	@Column(name="g_role", nullable=false, insertable=true, updatable=false)
 	private String role;
 	
+	@Column(name="g_inheritance_mode", nullable=false, insertable=true, updatable=false)
+	private String inheritanceModeString;
+	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group group;
@@ -126,12 +132,31 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public String getRole() {
 		return role;
 	}
 
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	public String getInheritanceModeString() {
+		return inheritanceModeString;
+	}
+
+	public void setInheritanceModeString(String inheritanceModeString) {
+		this.inheritanceModeString = inheritanceModeString;
+	}
+
+	@Override
+	public GroupMembershipInheritance getInheritanceMode() {
+		return StringHelper.containsNonWhitespace(inheritanceModeString)
+				? GroupMembershipInheritance.valueOf(inheritanceModeString) : GroupMembershipInheritance.none;
+	}
+	
+	public void setInheritanceMode(GroupMembershipInheritance mode) {
+		inheritanceModeString = mode == null ? GroupMembershipInheritance.none.name() : mode.name(); 
 	}
 
 	public Group getGroup() {
@@ -141,7 +166,8 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 	public void setGroup(Group group) {
 		this.group = group;
 	}
-	
+
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}

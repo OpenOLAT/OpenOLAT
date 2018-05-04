@@ -20,10 +20,14 @@
 package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
@@ -31,11 +35,13 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.InitializingBean;
@@ -75,8 +81,19 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public Organisation createOrganisation(String displayName, String identifier, String description, Organisation organisation, OrganisationType type) {
-		return organisationDao.createAndPersistOrganisation(displayName, identifier, description, organisation, type);
+	public Organisation createOrganisation(String displayName, String identifier, String description, Organisation parentOrganisation, OrganisationType type) {
+		Organisation organisation = organisationDao.createAndPersistOrganisation(displayName, identifier, description, parentOrganisation, type);
+		if(parentOrganisation != null) {
+			Group organisationGroup = organisation.getGroup();
+			List<GroupMembership> memberships = groupDao.getMemberships(parentOrganisation.getGroup());
+			for(GroupMembership membership:memberships) {
+				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited
+						|| membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+					groupDao.addMembershipOneWay(organisationGroup, membership.getIdentity(), membership.getRole(), GroupMembershipInheritance.inherited);
+				}
+			}
+		}
+		return organisation;
 	}
 
 	@Override
@@ -118,46 +135,22 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole) {
-		List<String> roleList = new ArrayList<>();// if user manager, descent organization tree
-		for(OrganisationRoles r:OrganisationRoles.values()) {
-			if(r !=  OrganisationRoles.guest) {
-				roleList.add(r.name());
-			}
-		}
-		List<Organisation> organisations = organisationDao.getOrganisations(member, roleList);
-		
-		Set<Organisation> organisationWithDescendants = new HashSet<>();
-		for(Organisation organisation:organisations) {
-			organisationWithDescendants.add(organisation);
-			if(roles.hasRole(organisation, additionalManagerRole)
-					|| roles.hasRole(organisation, OrganisationRoles.administrator)) {
-				List<Organisation> descendants = organisationDao.getDescendants(organisation);
-				organisationWithDescendants.addAll(descendants);
-			}
-		}
-
-		return new ArrayList<>(organisationWithDescendants);
-	}
-
-	@Override
-	public List<Organisation> getManageableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole) {
-		Set<OrganisationRef> manageableRootOrganisations = new HashSet<>();
-		manageableRootOrganisations.addAll(roles.getOrganisationsWithRoles(OrganisationRoles.administrator));
-		manageableRootOrganisations.addAll(roles.getOrganisationsWithRoles(additionalManagerRole));
-
-		List<Organisation> organisations = organisationDao.getOrganisations(manageableRootOrganisations);
-		Set<Organisation> organisationWithDescendants = new HashSet<>();
-		for(Organisation organisation:organisations) {
-			organisationWithDescendants.add(organisation);
-			if(roles.hasRole(organisation, additionalManagerRole)
-					|| roles.hasRole(organisation, OrganisationRoles.administrator)) {
-				List<Organisation> descendants = organisationDao.getDescendants(organisation);
-				organisationWithDescendants.addAll(descendants);
-			}
+	public List<Organisation> getOrganisations(IdentityRef member, Roles roles, OrganisationRoles... organisationRoles) {
+		if(organisationRoles == null || organisationRoles.length == 0 || organisationRoles[0] == null) {
+			return Collections.emptyList();
 		}
 		
-		return new ArrayList<>(organisationWithDescendants);
+		if(roles.isOLATAdmin()) {
+			return organisationDao.find();
+		}
+		
+		Set<OrganisationRef> organisations = new HashSet<>();
+		for(OrganisationRoles organisationRole:organisationRoles) {
+			if(organisationRole != null) {
+				organisations.addAll(roles.getOrganisationsWithRoles(organisationRole));
+			}
+		}
+		return organisationDao.getOrganisations(organisations);
 	}
 
 	@Override
@@ -170,14 +163,14 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		OrganisationImpl defOrganisation = (OrganisationImpl)getDefaultOrganisation();
 		if(!groupDao.hasRole(defOrganisation.getGroup(), identity, OrganisationRoles.guest.name())) {
 			groupDao.removeMemberships(identity);
-			addMember(defOrganisation, identity, OrganisationRoles.guest);
+			addMember(defOrganisation, identity, OrganisationRoles.guest, GroupMembershipInheritance.none);
 		}
 	}
 
 	@Override
 	public void addMember(Identity member, OrganisationRoles role) {
 		Organisation defOrganisation = getDefaultOrganisation();
-		addMember(defOrganisation, member, role);
+		addMember(defOrganisation, member, role, GroupMembershipInheritance.none);
 	}
 
 	@Override
@@ -187,23 +180,79 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public void addMember(Organisation organisation, Identity member, OrganisationRoles role) {
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role, GroupMembershipInheritance inheritanceMode) {
+		if(inheritanceMode == GroupMembershipInheritance.inherited) {
+			throw new AssertException("Inherited are automatic");
+		}
+		
 		OrganisationImpl org = (OrganisationImpl)organisation;
-		if(!groupDao.hasRole(org.getGroup(), member, role.name())) {
-			groupDao.addMembershipOneWay(org.getGroup(), member, role.name());
+		GroupMembership membership = groupDao.getMembership(org.getGroup(), member, role.name());
+		if(membership == null) {
+			groupDao.addMembershipOneWay(org.getGroup(), member, role.name(), inheritanceMode);
+		} else if(membership.getInheritanceMode() != inheritanceMode) {
+			groupDao.updateInheritanceMode(membership, inheritanceMode);
+		}
+
+		if(inheritanceMode == GroupMembershipInheritance.root) {
+			List<Organisation> descendants = organisationDao.getDescendants(organisation);
+			for(Organisation descendant:descendants) {
+				OrganisationImpl orgDescendant = (OrganisationImpl)descendant;
+				GroupMembership inheritedMembership = groupDao.getMembership(orgDescendant.getGroup(), member, role.name());
+				if(inheritedMembership == null) {
+					groupDao.addMembershipOneWay(orgDescendant.getGroup(), member, role.name(), GroupMembershipInheritance.inherited);
+				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
+					groupDao.updateInheritanceMode(inheritedMembership, GroupMembershipInheritance.inherited);
+				}
+			}
 		}
 	}
 	
 	@Override
 	public void removeMember(Organisation organisation, IdentityRef member) {
-		OrganisationImpl org = (OrganisationImpl)organisation;
-		groupDao.removeMembership(org.getGroup(), member);
+		List<GroupMembership> memberships = groupDao.getMemberships(organisation.getGroup(), member);
+		
+		OrganisationNode organisationTree = null;
+		
+		for(GroupMembership membership:memberships) {
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.none) {
+				groupDao.removeMembership(membership);
+			} else if(membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+				String role = membership.getRole();
+				groupDao.removeMembership(membership);
+				
+				if(organisationTree == null) {
+					organisationTree = organisationDao.getDescendantTree(organisation);
+				}
+				for(OrganisationNode child:organisationTree.getChildrenNode()) {
+					removeInherithedMembership(child, member, role);
+				}
+			}
+		}
 	}
+	
+	/**
+	 * The method will recursively delete the inherithed membership. If it
+	 * found a mebership marked as "root" or "none". It will stop.
+	 * 
+	 * @param organisationNode The organization node
+	 * @param member The user to remove
+	 * @param role The role
+	 */
+	private void removeInherithedMembership(OrganisationNode organisationNode, IdentityRef member, String role) {
+		GroupMembership membership = groupDao
+				.getMembership(organisationNode.getOrganisation().getGroup(), member, role);
+		if(membership != null && membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+			groupDao.removeMembership(membership);
+			for(OrganisationNode child:organisationNode.getChildrenNode()) {
+				removeInherithedMembership(child, member, role);
+			}
+		}
+	}
+	
 
 	@Override
 	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role) {
-		OrganisationImpl org = (OrganisationImpl)organisation;
-		groupDao.removeMembership(org.getGroup(), member, role.name());
+		groupDao.removeMembership(organisation.getGroup(), member, role.name());
 	}
 	
 	@Override

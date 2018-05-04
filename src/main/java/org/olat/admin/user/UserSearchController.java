@@ -182,12 +182,8 @@ public class UserSearchController extends BasicController {
 		myContent.put("usersearchPanel", searchPanel);
 
 		UserSession usess = ureq.getUserSession();
-		if(usess.getRoles().isOLATAdmin()) {
-			searchableOrganisations = null;//null mean all
-		} else {
-			searchableOrganisations = organisationService
-					.getSearchableOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
-		}
+		searchableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
+				OrganisationRoles.valuesWithoutGuestAndInvitee());
 		
 		Roles roles = usess.getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);

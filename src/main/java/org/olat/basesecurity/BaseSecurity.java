@@ -55,7 +55,7 @@ public interface BaseSecurity {
 	public Roles getRoles(IdentityRef identity);
 	
 	/**
-	 * Get the list of roles as string without inheritence (an admin
+	 * Get the list of roles as string without inheritance (an admin
 	 * has only admin role and not the user manager role...).
 	 * @param identity
 	 * @return

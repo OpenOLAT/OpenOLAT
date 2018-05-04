@@ -91,6 +91,10 @@ public class Roles implements Serializable {
 		return new Roles(false, false, false, false, false, false, false, false, false, false, false);
 	}
 	
+	public static final Roles authorRoles() {
+		return new Roles(false, false, false, true, false, false, false);
+	}
+	
 	public void setRolesByOrganisation(List<RolesByOrganisation> rolesByOrganisations) {
 		this.rolesByOrganisations = new ArrayList<>(rolesByOrganisations);
 	}

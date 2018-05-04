@@ -392,7 +392,7 @@ public class CoachingDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as coach on coach.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.owner.name()).append("')")
 		  .append(" where coach.identity.key=:coachKey and res.resName='CourseModule'")
-		  .append(" and ((v.access=1 and v.membersOnly=true) ")
+		  .append(" and ((v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true)")
 		  .append(" or (v.access >= ").append(RepositoryEntry.ACC_USERS).append(" and coach.role='").append(GroupRoles.coach.name()).append("')")
 		  .append(" or (v.access >= ").append(RepositoryEntry.ACC_OWNERS).append(" and coach.role='").append(GroupRoles.owner.name()).append("'))");
 
@@ -418,8 +418,8 @@ public class CoachingDAO {
 		  .append("  count(distinct pg_initial_launch.id) as pg_id")
 		  .append(" from o_repositoryentry sg_re ")
 		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = 'coach')")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
+		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = '").append(GroupRoles.coach.name()).append("')")
+		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='").append(GroupRoles.participant.name()).append("')")
 		  .append(" left join o_as_user_course_infos pg_initial_launch")
 		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
 		  .append(" where sg_coach.fk_identity_id=:coachKey and ( ")

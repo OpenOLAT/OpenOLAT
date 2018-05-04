@@ -1,0 +1,64 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>4</uuid>
+  <businessPath>[RepositoryEntry:1319927808]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.repository.RepositoryEntry">
+        <key>1319927808</key>
+        <version>1</version>
+        <creationDate class="sql-timestamp">2018-04-27 12:57:49.727</creationDate>
+        <lastModified class="sql-timestamp">2018-04-27 12:57:49.727</lastModified>
+        <softkey>sropenpg_1_97589364187858</softkey>
+        <olatResource class="org.olat.resource.OLATResourceImpl">
+          <key>1319796736</key>
+          <version>0</version>
+          <creationDate class="sql-timestamp">2018-04-27 12:57:49.728</creationDate>
+          <resName>CourseModule</resName>
+          <resId>97589364187857</resId>
+        </olatResource>
+        <groups class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.groups</role>
+          <key class="long">1319927808</key>
+          <dirty>false</dirty>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </groups>
+        <organisations class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.organisations</role>
+          <key class="long">1319927808</key>
+          <dirty>false</dirty>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </organisations>
+        <resourcename>-</resourcename>
+        <displayname>Artificial life course</displayname>
+        <description></description>
+        <initialAuthor>kanu</initialAuthor>
+        <statistics>
+          <key>1319829504</key>
+          <creationDate class="sql-timestamp">2018-04-27 12:57:49.727</creationDate>
+          <lastModified class="sql-timestamp">2018-04-27 12:57:49.727</lastModified>
+          <numOfRatings>0</numOfRatings>
+          <numOfComments>0</numOfComments>
+          <launchCounter>6</launchCounter>
+          <downloadCounter>0</downloadCounter>
+          <lastUsage class="sql-timestamp">2018-05-04 09:51:13.265</lastUsage>
+        </statistics>
+        <access>1</access>
+        <canCopy>false</canCopy>
+        <canReference>false</canReference>
+        <canLaunch>true</canLaunch>
+        <canDownload>false</canDownload>
+        <membersOnly>false</membersOnly>
+        <statusCode>0</statusCode>
+        <allowToLeave>atAnyTime</allowToLeave>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>

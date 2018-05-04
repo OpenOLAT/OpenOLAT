@@ -27,6 +27,7 @@ import java.util.Set;
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -270,8 +271,12 @@ public class OrganisationUserManagementController extends FormBasicController {
 	}
 	
 	private void doAddMember(List<Identity> identitiesToAdd, OrganisationRoles role) {
+		GroupMembershipInheritance inheritenceMode = GroupMembershipInheritance.none;
+		if(role == OrganisationRoles.learnresourcemanager || role == OrganisationRoles.usermanager) {
+			inheritenceMode = GroupMembershipInheritance.root;
+		}
 		for(Identity identityToAdd:identitiesToAdd) {
-			organisationService.addMember(organisation, identityToAdd, role);
+			organisationService.addMember(organisation, identityToAdd, role, inheritenceMode);
 		}
 		loadModel(true);
 	}

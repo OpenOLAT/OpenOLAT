@@ -55,6 +55,7 @@ CREATE TABLE o_bs_group_member (
    creationdate date not null,
    lastmodified date not null,
    g_role varchar2(50 char) not null,
+   g_inheritance_mode varchar2(16 char) default 'none' not null,
    fk_group_id number(20) not null,
    fk_identity_id number(20) not null,
    PRIMARY KEY (id)

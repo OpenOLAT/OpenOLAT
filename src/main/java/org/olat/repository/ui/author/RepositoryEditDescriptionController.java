@@ -420,14 +420,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	}
 
 	protected void initFormOrganisations(FormItemContainer formLayout, UserRequest ureq) {
-		List<Organisation> organisations;
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isOLATAdmin()) {
-			organisations = organisationService.getOrganisations();
-		} else {
-			organisations = organisationService
-					.getManageableOrganisations(getIdentity(), roles, OrganisationRoles.learnresourcemanager);
-		}
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
 		
 		List<String> keyList = new ArrayList<>();
 		List<String> valueList = new ArrayList<>();

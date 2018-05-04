@@ -133,13 +133,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		UserSession usess = ureq.getUserSession();
 		isOlatAdmin = usess.getRoles().isOLATAdmin();
-		if(isOlatAdmin) {
-			manageableOrganisations = organisationService.getOrganisations();
-		} else {
-			manageableOrganisations = organisationService
-					.getManageableOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
-		}
-		
+	
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
+				OrganisationRoles.administrator, OrganisationRoles.usermanager);
+
 		menuTree = new MenuTree("olatMenuTree");
 		menuTree.setExpandSelectedNode(false);
 		menuTree.setScrollTopOnClick(true);

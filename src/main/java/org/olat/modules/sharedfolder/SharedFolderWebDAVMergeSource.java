@@ -22,7 +22,6 @@ package org.olat.modules.sharedfolder;
 import static org.olat.modules.sharedfolder.SharedFolderWebDAVProvider.readOnlyCallback;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +35,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 
 
 /**
@@ -83,9 +83,9 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 			// If the first value in the list is '*', list all resource folders.
 			if (firstItem != null && firstItem.equals("*")) {
 				// fake role that represents normally logged in user
-				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
-				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
-				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(getIdentity(), types, registeredUserRole);
+				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), Roles.userRoles(), SharedFolderFileResource.TYPE_NAME);
+				List<RepositoryEntry> allEntries = repoManager
+						.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				for (RepositoryEntry entry : allEntries) {
 					addReadonlyFolder(entry, sfm, addedEntries, containers);
 				}

@@ -42,12 +42,10 @@ public class SearchRepositoryEntryParameters {
 	private List<String> resourceTypes;
 	private Identity identity;
 	private Roles roles;
-	private Boolean marked;
 	private String institution;
 	private Boolean managed;
 	private String externalId;
 	private String externalRef;
-	private boolean onlyOwnedResources;
 	private boolean onlyExplicitMember;
 	private List<Long> repositoryEntryKeys;
 	private CatalogEntry parentEntry;
@@ -148,7 +146,7 @@ public class SearchRepositoryEntryParameters {
 	
 	public void addResourceTypes(String... types) {
 		if(this.resourceTypes == null) {
-			this.resourceTypes = new ArrayList<String>();
+			this.resourceTypes = new ArrayList<>();
 		}
 		if(types != null) {
 			for(String resourceType:types) {
@@ -172,14 +170,7 @@ public class SearchRepositoryEntryParameters {
 	public void setRoles(Roles roles) {
 		this.roles = roles;
 	}
-	
-	public Boolean getMarked() {
-		return marked;
-	}
 
-	public void setMarked(Boolean marked) {
-		this.marked = marked;
-	}
 	
 	public String getInstitution() {
 		return institution;
@@ -187,19 +178,6 @@ public class SearchRepositoryEntryParameters {
 	
 	public void setInstitution(String institution) {
 		this.institution = institution;
-	}
-
-	/**
-	 * This has effect for authors. Administrator or instituional mangers
-	 * has more rights.
-	 * @return
-	 */
-	public boolean isOnlyOwnedResources() {
-		return onlyOwnedResources;
-	}
-
-	public void setOnlyOwnedResources(boolean onlyOwnedResources) {
-		this.onlyOwnedResources = onlyOwnedResources;
 	}
 
 	public boolean isOnlyExplicitMember() {

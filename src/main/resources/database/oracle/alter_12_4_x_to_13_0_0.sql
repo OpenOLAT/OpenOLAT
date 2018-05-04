@@ -184,3 +184,6 @@ alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (
 create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);
 alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
 
+
+-- membership
+alter table o_bs_group_member add g_inheritance_mode varchar(16) default 'none' not null;
