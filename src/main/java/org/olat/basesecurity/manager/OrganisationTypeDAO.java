@@ -40,12 +40,13 @@ public class OrganisationTypeDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public OrganisationType createAndPersist(String displayName, String identifier) {
+	public OrganisationType createAndPersist(String displayName, String identifier, String description) {
 		OrganisationTypeImpl type = new OrganisationTypeImpl();
 		type.setCreationDate(new Date());
 		type.setLastModified(type.getCreationDate());
 		type.setDisplayName(displayName);
 		type.setIdentifier(identifier);
+		type.setDescription(description);
 		dbInstance.getCurrentEntityManager().persist(type);
 		return type;
 	}
@@ -56,6 +57,18 @@ public class OrganisationTypeDAO {
 				.createQuery(q, OrganisationType.class).setParameter("key", key)
 				.getResultList();
 		return types == null || types.isEmpty() ? null : types.get(0);
+	}
+	
+	public List<OrganisationType> load() {
+		String q = "select type from organisationtype type";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, OrganisationType.class)
+				.getResultList();
+	}
+	
+	public OrganisationType updateOrganisationType(OrganisationType type) {
+		((OrganisationTypeImpl)type).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(type);
 	}
 
 }

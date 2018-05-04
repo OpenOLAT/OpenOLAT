@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationType;
 
 /**
  * 
@@ -61,6 +62,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	public List<OrganisationRef> getParentLine();
 	
 	public Organisation getRoot();
+	
+	public OrganisationType getType();
+	
+	public void setType(OrganisationType type);
 	
 	public Group getGroup();
 

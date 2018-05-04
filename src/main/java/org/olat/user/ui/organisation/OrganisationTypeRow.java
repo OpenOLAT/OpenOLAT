@@ -17,41 +17,50 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
+package org.olat.user.ui.organisation;
 
-import java.util.Set;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.basesecurity.OrganisationType;
+import org.olat.basesecurity.OrganisationTypeRef;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 
 /**
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 4 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OrganisationType extends CreateInfo, ModifiedInfo, OrganisationTypeRef {
+public class OrganisationTypeRow implements OrganisationTypeRef {
 	
-	public String getIdentifier();
+	private final OrganisationType type;
+	private FormLink toolsLink;
 	
-	public void setIdentifier(String identifier);
+	public OrganisationTypeRow(OrganisationType type) {
+		this.type = type;
+	}
 	
-	public String getDisplayName();
+	@Override
+	public Long getKey() {
+		return type.getKey();
+	}
 	
-	public void setDisplayName(String displayName);
+	public String getIdentifier() {
+		return type.getIdentifier();
+	}
 	
-	public String getDescription();
+	public String getDisplayName() {
+		return type.getDisplayName();
+	}
 	
-	public void setDescription(String description);
+	public OrganisationType getType() {
+		return type;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
 	
-	public String getExternalId();
-	
-	public void setExternalId(String externalId);
-	
-	public String getCssClass();
-	
-	public void setCssClass(String cssClass);
-	
-	public Set<OrganisationTypeToType> getAllowedSubTypes();
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
+	}
 
 }

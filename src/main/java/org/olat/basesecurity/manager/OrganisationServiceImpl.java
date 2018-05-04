@@ -33,6 +33,7 @@ import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
+import org.olat.basesecurity.OrganisationTypeRef;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
@@ -65,6 +66,10 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	private GroupDAO groupDao;
 	@Autowired
 	private OrganisationDAO organisationDao;
+	@Autowired
+	private OrganisationTypeDAO organisationTypeDao;
+	@Autowired
+	private OrganisationTypeToTypeDAO organisationTypeToTypeDao;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -102,6 +107,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public List<Organisation> getOrganisationParentLine(Organisation organisation) {
+		return organisationDao.getParentLine(organisation);
+	}
+
+	@Override
 	public Organisation updateOrganisation(Organisation organisation) {
 		return organisationDao.update(organisation);
 	}
@@ -123,6 +133,27 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public List<Organisation> getOrganisations() {
 		return organisationDao.find();
+	}
+
+	@Override
+	public OrganisationType createOrganisationType(String displayName, String identifier, String description) {
+		return organisationTypeDao.createAndPersist(displayName, identifier, description);
+	}
+
+	@Override
+	public OrganisationType getOrganisationType(OrganisationTypeRef type) {
+		return organisationTypeDao.loadByKey(type.getKey());
+	}
+
+	@Override
+	public OrganisationType updateOrganisationType(OrganisationType type, List<OrganisationType> allowedSubTypes) {
+		organisationTypeToTypeDao.setAllowedSubType(type, allowedSubTypes);
+		return organisationTypeDao.updateOrganisationType(type);
+	}
+
+	@Override
+	public List<OrganisationType> getOrganisationTypes() {
+		return organisationTypeDao.load();
 	}
 
 	@Override

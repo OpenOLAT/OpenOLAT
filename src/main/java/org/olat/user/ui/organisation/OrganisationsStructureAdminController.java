@@ -109,6 +109,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.typeIdentifier));
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);

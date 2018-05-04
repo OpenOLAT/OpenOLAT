@@ -19,11 +19,19 @@
  */
 package org.olat.user.ui.organisation;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationType;
+import org.olat.basesecurity.OrganisationTypeToType;
+import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -45,6 +53,7 @@ public class EditOrganisationController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
+	private SingleSelection organisationTypeEl;
 	
 	private Organisation organisation;
 	private Organisation parentOrganisation;
@@ -69,6 +78,34 @@ public class EditOrganisationController extends FormBasicController {
 	public Organisation getOrganisation() {
 		return organisation;
 	}
+	
+	private List<OrganisationType> getTypes() {
+		List<OrganisationType> types = new ArrayList<>();
+		if(organisation != null) {
+			List<Organisation> parentLine = organisationService.getOrganisationParentLine(organisation);
+			for(int i=parentLine.size() - 1; i-->0; ) {
+				Organisation parent = parentLine.get(i);
+				OrganisationType parentType = parent.getType();
+				if(parentType != null) {
+					Set<OrganisationTypeToType> typeToTypes = parentType.getAllowedSubTypes();
+					for(OrganisationTypeToType typeToType:typeToTypes) {
+						if(typeToType != null) {
+							types.add(typeToType.getAllowedSubOrganisationType());
+						}
+					}
+					break;
+				}
+			}
+		}
+		if(types.isEmpty()) {
+			types.addAll(organisationService.getOrganisationTypes());
+		} else if(organisation != null && organisation.getType() != null) {
+			if(!types.contains(organisation.getType())) {
+				types.add(organisation.getType());
+			}
+		}
+		return types;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -88,6 +125,33 @@ public class EditOrganisationController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("organisation.displayName", "organisation.displayName", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
+		
+		List<OrganisationType> types = getTypes();
+		String[] typeKeys = new String[types.size() + 1];
+		String[] typeValues = new String[types.size() + 1];
+		typeKeys[0] = "";
+		typeValues[0] = "-";
+		for(int i=types.size(); i-->0; ) {
+			typeKeys[i+1] = types.get(i).getKey().toString();
+			typeValues[i+1] = types.get(i).getDisplayName();
+		}
+		organisationTypeEl = uifactory.addDropdownSingleselect("organisation.type", "organisation.type", formLayout, typeKeys, typeValues, null);
+		organisationTypeEl.setEnabled(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.type));
+		boolean typeFound = false;
+		if(organisation != null && organisation.getType() != null) {
+			String selectedTypeKey = organisation.getType().getKey().toString();
+			for(String typeKey:typeKeys) {
+				if(typeKey.equals(selectedTypeKey)) {
+					organisationTypeEl.select(selectedTypeKey, true);
+					typeFound = true;
+					break;
+				}
+			}
+		}
+		if(!typeFound) {
+			organisationTypeEl.select(typeKeys[0], true);
+		}
+		
 		
 		String description = organisation == null ? "" : organisation.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("organisation.description", "organisation.description", description, 10, 60, null,
@@ -126,15 +190,23 @@ public class EditOrganisationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		OrganisationType organisationType = null;
+		String selectedTypeKey = organisationTypeEl.getSelectedKey();
+		if(StringHelper.containsNonWhitespace(selectedTypeKey)) {
+			organisationType = organisationService
+					.getOrganisationType(new OrganisationTypeRefImpl(new Long(selectedTypeKey)));
+		}
+
 		if(organisation == null) {
 			//create a new one
 			organisation = organisationService
-					.createOrganisation(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), parentOrganisation, null);
+					.createOrganisation(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), parentOrganisation, organisationType);
 		} else {
 			organisation = organisationService.getOrganisation(organisation);
 			organisation.setIdentifier(identifierEl.getValue());
 			organisation.setDisplayName(displayNameEl.getValue());
 			organisation.setDescription(descriptionEl.getValue());
+			organisation.setType(organisationType);
 			organisation = organisationService.updateOrganisation(organisation);
 		}
 

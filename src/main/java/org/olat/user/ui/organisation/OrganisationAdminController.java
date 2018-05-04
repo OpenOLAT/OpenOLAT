@@ -50,14 +50,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OrganisationAdminController extends BasicController implements Activateable2, BreadcrumbPanelAware {
 	
-	private Link organisationListLink;
 	private final Link configurationLink;
+	private final Link organisationListLink;
+	private final Link organisationTypeListLink;
+	
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
-	private OrganisationsStructureAdminController organisationListCtrl;
+	private OrganisationTypesAdminController typeListCtrl;
 	private OrganisationAdminConfigrationController configurationCtrl;
+	private OrganisationsStructureAdminController organisationListCtrl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -71,10 +74,12 @@ public class OrganisationAdminController extends BasicController implements Acti
 		segmentView.setDontShowSingleSegment(true);
 		configurationLink = LinkFactory.createLink("organisation.configuration", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
+		organisationListLink = LinkFactory.createLink("organisation.structure", mainVC, this);
+		organisationTypeListLink = LinkFactory.createLink("organisation.types", mainVC, this);
 		doOpenConfiguration(ureq);
 		if(organisationModule.isEnabled()) {
-			organisationListLink = LinkFactory.createLink("organisation.structure", mainVC, this);
 			segmentView.addSegment(organisationListLink, false);
+			segmentView.addSegment(organisationTypeListLink, false);
 		}
 		
 		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
@@ -84,6 +89,7 @@ public class OrganisationAdminController extends BasicController implements Acti
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
+		stackPanel.changeDisplayname(translate("admin.menu.title"));
 		if(organisationListCtrl != null) {
 			organisationListCtrl.setBreadcrumbPanel(stackPanel);
 		}
@@ -104,8 +110,10 @@ public class OrganisationAdminController extends BasicController implements Acti
 		if(configurationCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				segmentView.removeSegment(organisationListLink);
+				segmentView.removeSegment(organisationTypeListLink);
 				if(organisationModule.isEnabled()) {
 					segmentView.addSegment(organisationListLink, false);
+					segmentView.addSegment(organisationTypeListLink, false);
 				}
 			}
 		}
@@ -123,6 +131,8 @@ public class OrganisationAdminController extends BasicController implements Acti
 					doOpenConfiguration(ureq);
 				} else if (clickedLink == organisationListLink){
 					doOpenOrganisationList(ureq);
+				} else if (clickedLink == organisationTypeListLink) {
+					doOpenOrganisationTypeList(ureq);
 				}
 			}
 		}
@@ -147,5 +157,15 @@ public class OrganisationAdminController extends BasicController implements Acti
 		}
 		addToHistory(ureq, organisationListCtrl);
 		mainVC.put("segmentCmp", organisationListCtrl.getInitialComponent());
+	}
+
+	private void doOpenOrganisationTypeList(UserRequest ureq) {
+		if(typeListCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("OrganisationTypes"), null);
+			typeListCtrl = new OrganisationTypesAdminController(ureq, bwControl);
+			listenTo(typeListCtrl);
+		}
+		addToHistory(ureq, typeListCtrl);
+		mainVC.put("segmentCmp", typeListCtrl.getInitialComponent());
 	}
 }

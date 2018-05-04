@@ -19,10 +19,11 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationType;
-import org.olat.basesecurity.manager.OrganisationTypeDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class OrganisationTypeDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createOrganisationType() {
-		OrganisationType type = organisationTypeDao.createAndPersist("Typo", "3.0");
+		OrganisationType type = organisationTypeDao.createAndPersist("Typo", "3.0", null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(type);
 		Assert.assertNotNull(type.getKey());
@@ -54,7 +55,7 @@ public class OrganisationTypeDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadOrganisationType() {
-		OrganisationType type = organisationTypeDao.createAndPersist("Typo", "4.0");
+		OrganisationType type = organisationTypeDao.createAndPersist("Typo", "4.0", "Type 4.0 Description");
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(type);
 		
@@ -64,6 +65,47 @@ public class OrganisationTypeDAOTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedType.getLastModified());
 		Assert.assertEquals("Typo", reloadedType.getDisplayName());
 		Assert.assertEquals("4.0", reloadedType.getIdentifier());
+		Assert.assertEquals("Type 4.0 Description", reloadedType.getDescription());
 		Assert.assertEquals(type, reloadedType);
+	}
+	
+	@Test
+	public void loadAllOrganisationType() {
+		OrganisationType type = organisationTypeDao.createAndPersist("Typo", "5.0", "Type 5.0 Description");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(type);
+		
+		List<OrganisationType> allTypes = organisationTypeDao.load();
+		Assert.assertNotNull(allTypes);
+		Assert.assertFalse(allTypes.isEmpty());
+		Assert.assertTrue(allTypes.contains(type));
+	}
+	
+	@Test
+	public void updateOrganisationType() {
+		OrganisationType type = organisationTypeDao.createAndPersist("Typo", "6.0", "Type 6.0 Description");
+		dbInstance.commitAndCloseSession();
+		
+		// change every fields
+		OrganisationType reloadedType = organisationTypeDao.loadByKey(type.getKey());
+		reloadedType.setIdentifier("6.1");
+		reloadedType.setDisplayName("Alternate typo");
+		reloadedType.setExternalId("EXT-ID-6.1");
+		reloadedType.setDescription("Alternate description");
+		reloadedType.setCssClass("CSS-6.1");
+		OrganisationType mergedType = organisationTypeDao.updateOrganisationType(reloadedType);
+		Assert.assertNotNull(mergedType);
+		dbInstance.commitAndCloseSession();
+		
+		// reload and check every fields
+		OrganisationType reloadedMergedType = organisationTypeDao.loadByKey(type.getKey());
+		Assert.assertNotNull(reloadedMergedType);
+		Assert.assertNotNull(reloadedMergedType.getCreationDate());
+		Assert.assertNotNull(reloadedMergedType.getLastModified());
+		Assert.assertEquals("Alternate typo", reloadedMergedType.getDisplayName());
+		Assert.assertEquals("6.1", reloadedMergedType.getIdentifier());
+		Assert.assertEquals("EXT-ID-6.1", reloadedMergedType.getExternalId());
+		Assert.assertEquals("CSS-6.1", reloadedMergedType.getCssClass());
+		Assert.assertEquals("Alternate description", reloadedMergedType.getDescription());
 	}
 }

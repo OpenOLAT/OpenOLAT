@@ -184,6 +184,7 @@ public class OrganisationImpl implements Persistable, Organisation {
 		this.status = status;
 	}
 
+	@Override
 	public String getMaterializedPathKeys() {
 		return materializedPathKeys;
 	}
@@ -220,6 +221,7 @@ public class OrganisationImpl implements Persistable, Organisation {
 		managedFlagsString = OrganisationManagedFlag.toString(flags);
 	}
 
+	@Override
 	public Group getGroup() {
 		return group;
 	}
@@ -264,10 +266,12 @@ public class OrganisationImpl implements Persistable, Organisation {
 		return parentLine;
 	}
 
+	@Override
 	public OrganisationType getType() {
 		return type;
 	}
 
+	@Override
 	public void setType(OrganisationType type) {
 		this.type = type;
 	}

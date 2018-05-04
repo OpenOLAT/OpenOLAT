@@ -19,71 +19,62 @@
  */
 package org.olat.user.ui.organisation;
 
-import java.util.List;
-
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
- * Initial date: 10 nov. 2017<br>
+ * Initial date: 4 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<OrganisationRow> {
+public class OrganisationTypesDataModel extends DefaultFlexiTableDataModel<OrganisationTypeRow>
+implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 	
-	public OrganisationTreeDataModel(FlexiTableColumnModel columnModel) {
+	public OrganisationTypesDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void sort(SortKey sortKey) {
 		//
 	}
 	
 	@Override
-	public boolean hasChildren(int row) {
-		OrganisationRow level = getObject(row);
-		return level.hasChildren();
+	public Object getValueAt(int row, int col) {
+		OrganisationTypeRow type = getObject(row);
+		return getValueAt(type, col);
 	}
 
 	@Override
-	public Object getValueAt(int row, int col) {
-		OrganisationRow organisation = getObject(row);
-		switch(OrganisationCols.values()[col]) {
-			case key: return organisation.getKey();
-			case displayName: return organisation.getDisplayName();
-			case identifier: return organisation.getIdentifier();
-			case typeIdentifier: return organisation.getTypeIdentifier();
-			case tools: return organisation.getTools();
-			default: return "ERROR";
+	public Object getValueAt(OrganisationTypeRow row, int col) {
+		switch(TypeCols.values()[col]) {
+			case key: return row.getKey();
+			case identifier: return row.getIdentifier();
+			case displayName: return row.getDisplayName();
+			case tools: return row.getToolsLink();
+			default: return null;
 		}
 	}
-	
+
 	@Override
-	public DefaultFlexiTableDataModel<OrganisationRow> createCopyWithEmptyList() {
-		return new OrganisationTreeDataModel(getTableColumnModel());
+	public OrganisationTypesDataModel createCopyWithEmptyList() {
+		return new OrganisationTypesDataModel(getTableColumnModel());
 	}
 	
-	public enum OrganisationCols implements FlexiSortableColumnDef {
+	public enum TypeCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.displayName"),
-		identifier("table.header.identifier"),
-		typeIdentifier("table.header.type.identifier"),
+		identifier("table.header.type.identifier"),
+		displayName("table.header.type.displayName"),
 		tools("table.header.tools");
 		
-		private final String i18nKey;
+		private final String i18nHeaderKey;
 		
-		private OrganisationCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
-		
-		@Override
-		public String i18nHeaderKey() {
-			return i18nKey;
+		private TypeCols(String i18nHeaderKey) {
+			this.i18nHeaderKey = i18nHeaderKey;
 		}
 
 		@Override
@@ -94,6 +85,11 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 		@Override
 		public String sortKey() {
 			return name();
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nHeaderKey;
 		}
 	}
 }

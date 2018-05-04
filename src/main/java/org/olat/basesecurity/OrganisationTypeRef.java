@@ -19,39 +19,14 @@
  */
 package org.olat.basesecurity;
 
-import java.util.Set;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-
 /**
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 4 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OrganisationType extends CreateInfo, ModifiedInfo, OrganisationTypeRef {
+public interface OrganisationTypeRef {
 	
-	public String getIdentifier();
-	
-	public void setIdentifier(String identifier);
-	
-	public String getDisplayName();
-	
-	public void setDisplayName(String displayName);
-	
-	public String getDescription();
-	
-	public void setDescription(String description);
-	
-	public String getExternalId();
-	
-	public void setExternalId(String externalId);
-	
-	public String getCssClass();
-	
-	public void setCssClass(String cssClass);
-	
-	public Set<OrganisationTypeToType> getAllowedSubTypes();
+	public Long getKey();
 
 }

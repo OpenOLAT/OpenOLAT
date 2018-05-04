@@ -53,15 +53,54 @@ public interface OrganisationService {
 			Organisation parentOrganisation, OrganisationType type);
 	
 	/**
+	 * The default organization.
+	 * 
+	 * @return The default organization.
+	 */
+	public Organisation getDefaultOrganisation();
+	
+	/**
 	 * 
 	 * @param organisation A reference of the organization
 	 * @return A reloaded organization
 	 */
 	public Organisation getOrganisation(OrganisationRef organisation);
 	
+	public List<Organisation> getOrganisationParentLine(Organisation organisation);
+	
 	public Organisation updateOrganisation(Organisation organisation);
 	
 	public List<Organisation> getOrganisations();
+	
+	/**
+	 * Create a new organization type.
+	 * 
+	 * @param displayName The name
+	 * @param identifier The identifier of the type
+	 * @param description The description
+	 * @return A persisted organization type
+	 */
+	public OrganisationType createOrganisationType(String displayName, String identifier, String description);
+	
+	/**
+	 * Reload an organization type.
+	 * 
+	 * @param type The primary key
+	 * @return A fresh organization type
+	 */
+	public OrganisationType getOrganisationType(OrganisationTypeRef type);
+	
+	/**
+	 * Update the type and the rleation to sub-types.
+	 * 
+	 * @param type
+	 * @param allowedSubTypes
+	 * @return
+	 */
+	public OrganisationType updateOrganisationType(OrganisationType type, List<OrganisationType> allowedSubTypes);
+	
+	public List<OrganisationType> getOrganisationTypes();
+	
 	
 	/**
 	 * @param member The user (mandatory)
@@ -69,14 +108,6 @@ public interface OrganisationService {
 	 * @return A list of organization where the user has the specified roles
 	 */
 	public List<Organisation> getOrganisations(IdentityRef member, OrganisationRoles... role);
-	
-	/**
-	 * 
-	 * @param member
-	 * @param roles
-	 * @return
-	 */
-	//public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole);
 	
 	/**
 	 * Return the organization the specified user is allow to see. 
@@ -89,10 +120,6 @@ public interface OrganisationService {
 	 * @return A list of organizations a user can manage
 	 */
 	public List<Organisation> getOrganisations(IdentityRef member, Roles roles, OrganisationRoles... managerRole);
-
-	
-	public Organisation getDefaultOrganisation();
-
 	
 	/**
 	 * Add a membership without inheritance on the default organization.

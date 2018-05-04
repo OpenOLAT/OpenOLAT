@@ -22,6 +22,7 @@ package org.olat.basesecurity.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -223,6 +224,8 @@ public class OrganisationDAO {
 		sb.append("select distinct org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
 		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
@@ -249,10 +252,14 @@ public class OrganisationDAO {
 	public List<Organisation> getDescendants(Organisation organisation) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select org from organisation org")
-		  .append(" where org.materializedPathKeys like :materializedPathKeys");
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where org.materializedPathKeys like :materializedPathKeys and not(org.key=:organisationKey)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("materializedPathKeys", organisation.getMaterializedPathKeys() + "%")
+				.setParameter("organisationKey", organisation.getKey())
 				.getResultList();
 	}
 	
@@ -284,6 +291,22 @@ public class OrganisationDAO {
 		}
 
 		return rootNode;
+	}
+	
+	public List<Organisation> getParentLine(Organisation organisation) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select org from organisation as org")
+		  .append(" inner join org.group as baseGroup")
+		  .append(" left join fetch org.parent as parent")
+		  .append(" left join fetch org.type as type")
+		  .append(" where locate(org.materializedPathKeys,:materializedPath) = 1");
+		  
+		List<Organisation> levels = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Organisation.class)
+			.setParameter("materializedPath", organisation.getMaterializedPathKeys() + "%")
+			.getResultList();
+		Collections.sort(levels, new PathMaterializedPathLengthComparator());
+		return levels;
 	}
 	
 
@@ -344,5 +367,17 @@ public class OrganisationDAO {
 			.setMaxResults(1)
 			.getResultList();
 		return memberships != null && !memberships.isEmpty() && memberships.get(0) != null && memberships.get(0).longValue() > 0;
+	}
+	
+	private static class PathMaterializedPathLengthComparator implements Comparator<Organisation> {
+		@Override
+		public int compare(Organisation l1, Organisation l2) {
+			String s1 = l1.getMaterializedPathKeys();
+			String s2 = l2.getMaterializedPathKeys();
+			
+			int len1 = s1 == null ? 0 : s1.length();
+			int len2 = s2 == null ? 0 : s2.length();
+			return len1 - len2;
+		}
 	}
 }
