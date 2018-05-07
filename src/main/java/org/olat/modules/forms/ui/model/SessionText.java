@@ -19,38 +19,30 @@
  */
 package org.olat.modules.forms.ui.model;
 
-import java.util.List;
-
-import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormSession;
 
 /**
  * 
- * Initial date: 18.04.2018<br>
+ * Initial date: 07.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CompareResponse {
+public class SessionText {
 	
-	private final List<EvaluationFormResponse> responses;
-	private final String legendName;
-	private final String color;
+	private final EvaluationFormSession session;
+	private final String text;
 	
-	public CompareResponse(List<EvaluationFormResponse> responses, String legendName, String color) {
-		this.responses = responses;
-		this.legendName = legendName;
-		this.color = color;
-	}
-
-	public List<EvaluationFormResponse> getResponses() {
-		return responses;
-	}
-
-	public String getLegendName() {
-		return legendName;
-	}
-
-	public String getColor() {
-		return color;
+	public SessionText(EvaluationFormSession session, String text) {
+		super();
+		this.session = session;
+		this.text = text;
 	}
 	
+	public EvaluationFormSession getSession() {
+		return session;
+	}
+	public String getText() {
+		return text;
+	}
+
 }

@@ -37,6 +37,7 @@ import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.PageBody;
@@ -146,6 +147,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey,
+			EvaluationFormSessionStatus status) {
+		return evaluationFormSessionDao.loadSessionsBySurvey(survey, status);
+	}
+
+	@Override
 	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry) {
 		return evaluationFormSessionDao.createSessionForPortfolio(identity, body, formEntry);
 	}
@@ -160,9 +167,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		EvaluationFormSession finishedSesssion = session;
 		EvaluationFormParticipation participation = session.getParticipation();
 		if (participation != null) {
-			evaluationFormParticipationDao.changeStatus(session.getParticipation(), EvaluationFormParticipationStatus.done);
+			participation = evaluationFormParticipationDao.changeStatus(participation, EvaluationFormParticipationStatus.done);
 			if (participation.isAnonymous()) {
-				finishedSesssion = evaluationFormSessionDao.makeAnonymous(session);
+				finishedSesssion = evaluationFormSessionDao.makeAnonymous(finishedSesssion);
 			}
 		}
 		finishedSesssion = evaluationFormSessionDao.changeStatus(finishedSesssion, EvaluationFormSessionStatus.done);
@@ -246,12 +253,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session) {
+	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session) {
 		return evaluationFormResponseDao.loadResponse(responseIdentifier, session);
 	}
 
 	@Override
-	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSession session) {
+	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session) {
 		return evaluationFormResponseDao.loadResponses(responseIdentifier, session);
 	}
 

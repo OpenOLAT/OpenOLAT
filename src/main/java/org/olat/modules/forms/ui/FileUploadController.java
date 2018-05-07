@@ -39,6 +39,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,7 +136,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSession session) {
+	public void loadResponse(EvaluationFormSessionRef session) {
 		response = evaluationFormManager.loadResponse(fileUpload.getId(), session);
 		File responseFile = evaluationFormManager.loadResponseFile(response);
 		if (responseFile != null) {

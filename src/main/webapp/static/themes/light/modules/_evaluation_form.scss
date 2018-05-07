@@ -43,29 +43,6 @@
 		background-color: $o-evaluation-slider-hover-background-color;
 	}
 	
-	.o_evaluation_discrete_slider {
-		.o_evaluation_step_labels {
-			position: relative;
-		
-			div:first-child {
-				position: absolute;
-				left: 0px;
-				text-align: left;
-			}
-			
-			div {
-				display:inline-block;
-				text-align: center;
-			}
-			
-			div:last-child {
-				position: absolute;
-				right: 0px;
-				text-align: right;
-			}
-		}
-	}
-	
 	.o_evaluation_discrete_radio {
 		.o_slider {
 			
@@ -134,6 +111,29 @@
 	.o_evaluation_mc_other {
 		margin-top: -20px;
 		margin-left: 20px;
+	}
+}
+
+.o_evaluation_discrete_slider {
+	.o_evaluation_step_labels {
+		position: relative;
+	
+		div:first-child {
+			position: absolute;
+			left: 0px;
+			text-align: left;
+		}
+		
+		div {
+			display:inline-block;
+			text-align: center;
+		}
+		
+		div:last-child {
+			position: absolute;
+			right: 0px;
+			text-align: right;
+		}
 	}
 }
 
@@ -245,6 +245,10 @@
 			right: 15px;
 		}
 	}
+}
+
+.d3chart {
+	.o_eva_bar { fill: $o-d3chart-default; }
 }
 
 

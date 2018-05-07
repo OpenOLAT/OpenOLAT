@@ -26,15 +26,12 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.TextInput;
-import org.olat.modules.forms.ui.TextInputCompareController;
 import org.olat.modules.forms.ui.TextInputController;
 import org.olat.modules.forms.ui.TextInputEditorController;
-import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -116,14 +113,4 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 		return Collections.emptyList();
 	}
 
-	@Override
-	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<CompareResponse> compareResponses) {
-		if (element instanceof TextInput) {
-			TextInput textInput = (TextInput) element;
-			Controller ctrl = new TextInputCompareController(ureq, windowControl, textInput, compareResponses);
-			return ctrl.getInitialComponent();
-		}
-		return null;
-	}
 }

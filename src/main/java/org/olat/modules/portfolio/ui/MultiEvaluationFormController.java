@@ -19,8 +19,15 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,13 +42,39 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
-import org.olat.modules.forms.ui.EvaluationFormCompareController;
+import org.olat.modules.forms.handler.EvaluationFormReportHandler;
+import org.olat.modules.forms.handler.EvaluationFormReportProvider;
+import org.olat.modules.forms.handler.FileUploadListingHandler;
+import org.olat.modules.forms.handler.HTMLRawHandler;
+import org.olat.modules.forms.handler.MultipleChoiceLegendTextHandler;
+import org.olat.modules.forms.handler.RubricRadarHandler;
+import org.olat.modules.forms.handler.SingleChoiceLegendTextHandler;
+import org.olat.modules.forms.handler.SpacerHandler;
+import org.olat.modules.forms.handler.TextInputLegendTextHandler;
+import org.olat.modules.forms.handler.TitleHandler;
+import org.olat.modules.forms.model.xml.FileUpload;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.FormXStream;
+import org.olat.modules.forms.model.xml.HTMLRaw;
+import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.model.xml.Spacer;
+import org.olat.modules.forms.model.xml.TextInput;
+import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.modules.forms.ui.EvaluationFormReportController;
+import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +170,7 @@ public class MultiEvaluationFormController extends BasicController {
 		}
 		
 		if(viewOthers && (owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
-			Controller ctrl = new EvaluationFormCompareController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+			Controller ctrl = createReportController(ureq);
 			Evaluator eval = new Evaluator(null, translate("compare.evaluations"));
 			String componentName = "panel_" + (++count);
 			panels.add(new EvaluatorPanel(eval, componentName, ctrl.getInitialComponent()));
@@ -270,10 +303,52 @@ public class MultiEvaluationFormController extends BasicController {
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
-		Controller ctrl = new EvaluationFormCompareController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+		//TODO uh delete
+//		Controller ctrl = new EvaluationFormCompareController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+		Controller ctrl = createReportController(ureq);
 		mainVC.put("segmentCmp", ctrl.getInitialComponent());
 	}
 	
+	private EvaluationFormReportController createReportController(UserRequest ureq) {
+		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
+		File formFile = new File(repositoryDir, FORM_XML_FILE);
+		Form form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+				
+		//TODO uh delete class Evaluator
+		List<Identity> evaluatorIdentities = evaluators.stream().map(evaluator -> evaluator.getIdentity()).collect(Collectors.toList());
+		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluatorIdentities, anchor, EvaluationFormSessionStatus.done);
+		Set<EvaluationFormSession> responseSessions = responses.stream().map(EvaluationFormResponse::getSession).collect(Collectors.toSet());
+		List<? extends EvaluationFormSessionRef> sessions = new ArrayList<>(responseSessions);
+		
+		EvaluationFormReportProvider provider = new ReportProvider();
+
+		ReportHelper reportHelper = ReportHelper.builder(getLocale())
+				.withColors()
+				.build();
+		return new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
+	}
+	
+	private final static class ReportProvider implements EvaluationFormReportProvider {
+		
+		private final Map<String, EvaluationFormReportHandler> handlers = new HashMap<>();
+		
+		public ReportProvider() {
+			handlers.put(Title.TYPE, new TitleHandler());
+			handlers.put(Spacer.TYPE, new SpacerHandler());
+			handlers.put(HTMLRaw.TYPE, new HTMLRawHandler());
+			handlers.put(Rubric.TYPE, new RubricRadarHandler());
+			handlers.put(TextInput.TYPE, new TextInputLegendTextHandler());
+			handlers.put(FileUpload.TYPE, new FileUploadListingHandler());
+			handlers.put(SingleChoice.TYPE, new SingleChoiceLegendTextHandler());
+			handlers.put(MultipleChoice.TYPE, new MultipleChoiceLegendTextHandler());
+		}
+
+		@Override
+		public EvaluationFormReportHandler getReportHandler(PageElement element) {
+			return handlers.get(element.getType());
+		}
+	}
+
 	public static class EvaluatorPanel {
 		
 		

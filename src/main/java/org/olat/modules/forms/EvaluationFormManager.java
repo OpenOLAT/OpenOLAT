@@ -92,7 +92,9 @@ public interface EvaluationFormManager {
 	
 	public EvaluationFormSession createSession(EvaluationFormParticipation participation);
 	
-	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation EvaluationFormParticipation);
+	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation);
+	
+	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey, EvaluationFormSessionStatus status);
 	
 	public EvaluationFormSession finishSession(EvaluationFormSession session);
 	
@@ -134,9 +136,9 @@ public interface EvaluationFormManager {
 	
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
 	
-	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session);
+	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session);
 	
-	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSession session);
+	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session);
 	
 	public File loadResponseFile(EvaluationFormResponse response);
 	

@@ -83,7 +83,7 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=false)
 	private EvaluationFormSurvey survey;
 	@OneToOne(targetEntity=EvaluationFormParticipationImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_participation", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_participation", nullable=true, insertable=true, updatable=true)
 	private EvaluationFormParticipation participation;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)

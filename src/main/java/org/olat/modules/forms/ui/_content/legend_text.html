@@ -1,6 +1,6 @@
 #foreach($wrapper in $wrappers)
-<div class="o_evaluation_block o_evaluation_single_choice clearfix o_block_large">
+<div class="o_evaluation_block o_evaluation_textinput_listing clearfix o_block_large">
 	<div class="o_evaluation_legend" style="border-left: 3px solid $wrapper.color"><h6>$r.escapeHtml($wrapper.name)</h6></div>
-	<div class="o_evaluation_text">$r.xssScan($wrapper.choice)</div>
+	<div class="o_evaluation_text">$r.xssScan($wrapper.content)</div>
 </div>
 #end

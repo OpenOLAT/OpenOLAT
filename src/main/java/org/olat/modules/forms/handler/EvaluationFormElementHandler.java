@@ -22,10 +22,8 @@ package org.olat.modules.forms.handler;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
@@ -43,6 +41,4 @@ public interface EvaluationFormElementHandler extends PageElementHandler {
 	
 	public List<String> getCompareResponseIdentifiers(PageElement element);
 
-	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<CompareResponse> compareResponses);
 }

@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -35,10 +34,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
 import org.olat.modules.forms.model.xml.MultipleChoice;
-import org.olat.modules.forms.ui.MultipleChoiceCompareController;
 import org.olat.modules.forms.ui.MultipleChoiceController;
 import org.olat.modules.forms.ui.MultipleChoiceEditorController;
-import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -126,17 +123,6 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 			return Arrays.asList(multipleChoice.getId());
 		}
 		return Collections.emptyList();
-	}
-
-	@Override
-	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<CompareResponse> compareResponses) {
-		if (element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
-			Controller ctrl = new MultipleChoiceCompareController(ureq, windowControl, multipleChoice, compareResponses);
-			return ctrl.getInitialComponent();
-		}
-		return null;
 	}
 
 }

@@ -26,17 +26,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
-import org.olat.modules.forms.ui.RubricCompareController;
 import org.olat.modules.forms.ui.RubricController;
 import org.olat.modules.forms.ui.RubricEditorController;
-import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -121,16 +118,5 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 			return rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
 		}
 		return Collections.emptyList();
-	}
-
-	@Override
-	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<CompareResponse> compareResponses) {
-		if (element instanceof Rubric) {
-			Rubric rubric = (Rubric) element;
-			Controller ctrl = new RubricCompareController(ureq, windowControl, rubric, compareResponses);
-			return ctrl.getInitialComponent();
-		}
-		return null;
 	}
 }

@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -245,7 +246,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSession session) {
+	public void loadResponse(EvaluationFormSessionRef session) {
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
 			EvaluationFormResponse response = evaluationFormManager.loadResponse(sliderWrapper.getId(), session);
 			if (response != null) {
@@ -333,7 +334,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private void saveSliderResponse(EvaluationFormSession session, SliderWrapper sliderWrapper) {
 		BigDecimal value = null;
 		SliderElement slider = sliderWrapper.getSliderEl();
-		if (slider != null) {
+		if (slider != null && slider.hasValue()) {
 			value = BigDecimal.valueOf(slider.getValue());
 		} else {
 			SingleSelection radioEl = sliderWrapper.getRadioEl();

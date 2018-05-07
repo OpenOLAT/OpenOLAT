@@ -29,9 +29,11 @@ public class Spacer extends AbstractHTMLElement {
 
 	private static final long serialVersionUID = -6861207034797291130L;
 
+	public static final String TYPE = "formhr";
+
 	@Override
 	public String getType() {
-		return "formhr";
+		return TYPE;
 	}
 	
 	@Override

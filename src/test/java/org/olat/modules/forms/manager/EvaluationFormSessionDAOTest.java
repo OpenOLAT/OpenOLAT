@@ -21,6 +21,8 @@ package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +30,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
@@ -95,7 +99,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadByParticipation() {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
-		EvaluationFormSession session = sut.createSession(participation);
+		EvaluationFormSessionRef session = sut.createSession(participation);
 		dbInstance.commitAndCloseSession();
 		
 		EvaluationFormSession loadedSession = sut.loadSessionByParticipation(participation);
@@ -103,6 +107,25 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession).isEqualTo(session);
 	}
+	
+	@Test
+	public void shouldLoadSessionsBySurvey() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session1 = evaTestHelper.createSession(survey);
+		sut.changeStatus(session1, EvaluationFormSessionStatus.done);
+		EvaluationFormSession session2 = evaTestHelper.createSession(survey);
+		sut.changeStatus(session2, EvaluationFormSessionStatus.done);
+		EvaluationFormSession openSession = evaTestHelper.createSession(survey);
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		sut.changeStatus(otherSession, EvaluationFormSessionStatus.done);
+		dbInstance.commit();
+		
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsBySurvey(survey, EvaluationFormSessionStatus.done);
+		assertThat(loadedSessions)
+				.contains(session1, session2)
+				.doesNotContain(openSession, otherSession);
+	}
+
 	
 	@Test
 	public void shouldCheckIfHasSessions() {

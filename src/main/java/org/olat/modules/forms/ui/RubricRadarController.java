@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.chart.RadarChartComponent.Format;
@@ -36,64 +37,58 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
+import org.olat.modules.forms.ui.ReportHelper.Legend;
 import org.olat.modules.forms.ui.component.SliderOverviewElement;
 import org.olat.modules.forms.ui.component.SliderPoint;
-import org.olat.modules.forms.ui.model.CompareResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 20.04.2018<br>
+ * Initial date: 07.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RubricCompareController extends FormBasicController implements Controller {
+public class RubricRadarController extends FormBasicController {
 
 	private final Rubric rubric;
-	private final List<CompareResponse> compareResponses;
-	private final Map<String, List<SliderResponse>> identifierToResponse = new HashMap<>();
+	private final ReportHelper reportHelper;
+	private final Map<String, List<EvaluationFormResponse>> identifierToResponses;
 	
-	public RubricCompareController(UserRequest ureq, WindowControl wControl, Rubric rubric,
-			List<CompareResponse> compareResponses) {
-		super(ureq, wControl, "rubric_compare");
+	@Autowired
+	private EvaluationFormReportDAO reportDAO;
+
+	public RubricRadarController(UserRequest ureq, WindowControl wControl, Rubric rubric,
+			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+		super(ureq, wControl, "rubric_radar");
 		this.rubric = rubric;
-		this.compareResponses = compareResponses;
+		this.reportHelper = reportHelper;
+		List<String> responseIdentifiers = rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
+		identifierToResponses = reportDAO.getResponses(responseIdentifiers , sessions).stream()
+				.collect(Collectors.groupingBy(EvaluationFormResponse::getResponseIdentifier));
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		for (CompareResponse compareResponse: compareResponses) {
-			for (EvaluationFormResponse evaluationFromResponse: compareResponse.getResponses()) {
-				if (!evaluationFromResponse.isNoResponse()) {
-					String responseIdentifier = evaluationFromResponse.getResponseIdentifier();
-					List<SliderResponse> sliderResponses = identifierToResponse.get(responseIdentifier);
-					if (sliderResponses == null) {
-						sliderResponses = new ArrayList<>();
-						identifierToResponse.put(responseIdentifier, sliderResponses);
-					}
-					SliderResponse sliderResponse = new SliderResponse(compareResponse.getLegendName(),
-							compareResponse.getColor(), evaluationFromResponse);
-					sliderResponses.add(sliderResponse);
-				}
-			}
-		}
-		
 		flc.contextPut("rubricWrapper", createWrapper());
 	}
 
-	private RubricCompareWrapper createWrapper() {
+	private RubricWrapper createWrapper() {
 		if(rubric.getSliders().size() > 2) {
 			return createRadarRubricWrapper();
 		}
 		return createRubricWrapper();
 	}
 
-	private RubricCompareWrapper createRadarRubricWrapper() {
-		RubricCompareWrapper wrapper = new RubricCompareWrapper(rubric);
+	private RubricWrapper createRadarRubricWrapper() {
+		RubricWrapper wrapper = new RubricWrapper(rubric);
 		wrapper.setRadarOverview(true);
 		
 		List<String> axisList = new ArrayList<>();
@@ -111,15 +106,13 @@ public class RubricCompareController extends FormBasicController implements Cont
 			axisList.add(axis);
 			
 			String responseIdentifier = slider.getId();
-			List<SliderResponse> sliderReesponses = identifierToResponse.get(responseIdentifier);
-			if(sliderReesponses != null && sliderReesponses.size() > 0) {
-				for(SliderResponse sliderResponse: sliderReesponses) {
-					EvaluationFormResponse response = sliderResponse.getResponse();
+			List<EvaluationFormResponse> responses = identifierToResponses.get(responseIdentifier);
+			if(responses != null && responses.size() > 0) {
+				for(EvaluationFormResponse response: responses) {
 					EvaluationFormSession responseSession = response.getSession();
 					if(!series.containsKey(responseSession)) {
-						String legend = sliderResponse.getLegendName();
-						String color = sliderResponse.getColor();
-						series.put(responseSession, new RadarSeries(legend, color));
+						Legend legend = reportHelper.getLegend(responseSession);
+						series.put(responseSession, new RadarSeries(legend.getName(), legend.getColor()));
 					}
 					if(response.getNumericalResponse() != null ) {
 						double value = response.getNumericalResponse().doubleValue();
@@ -148,22 +141,22 @@ public class RubricCompareController extends FormBasicController implements Cont
 		return wrapper;
 	}
 
-	private RubricCompareWrapper createRubricWrapper() {
-		RubricCompareWrapper wrapper = new RubricCompareWrapper(rubric);
+	private RubricWrapper createRubricWrapper() {
+		RubricWrapper wrapper = new RubricWrapper(rubric);
 		wrapper.setSliderOverview(true);
 		List<Slider> sliders = rubric.getSliders();
-		List<SliderCompareWrapper> sliderWrappers = new ArrayList<>(sliders.size());
+		List<SliderWrapper> sliderWrappers = new ArrayList<>(sliders.size());
 		for(Slider slider:sliders) {
 			String responseIdentifier = slider.getId();
-			List<SliderResponse> sliderResponses = identifierToResponse.get(responseIdentifier);
-			SliderCompareWrapper sliderWrapper = createSliderCompareWrapper(slider, sliderResponses);
+			List<EvaluationFormResponse> responses = identifierToResponses.get(responseIdentifier);
+			SliderWrapper sliderWrapper = createSliderCompareWrapper(slider, responses);
 			sliderWrappers.add(sliderWrapper);
 		}
 		wrapper.setSliders(sliderWrappers);
 		return wrapper;
 	}
 	
-	private SliderCompareWrapper createSliderCompareWrapper(Slider slider, List<SliderResponse> sliderResponses) {
+	private SliderWrapper createSliderCompareWrapper(Slider slider, List<EvaluationFormResponse> responses) {
 		String id = "overview_" + CodeHelper.getRAMUniqueID();
 		SliderOverviewElement overviewEl = new SliderOverviewElement(id);
 		overviewEl.setMinValue(rubric.getStart());
@@ -171,11 +164,11 @@ public class RubricCompareController extends FormBasicController implements Cont
 		flc.add(id, overviewEl);
 		
 		List<SliderPoint> values = new ArrayList<>();
-		if(sliderResponses != null && sliderResponses.size() > 0) {
-			for(SliderResponse sliderResponse: sliderResponses) {
-				EvaluationFormResponse response = sliderResponse.getResponse();
+		if(responses != null && responses.size() > 0) {
+			for(EvaluationFormResponse response: responses) {
 				if(response.getNumericalResponse() != null) {
-					String color = sliderResponse.getColor();
+					Legend legend = reportHelper.getLegend(response.getSession());
+					String color = legend.getColor();
 					double value = response.getNumericalResponse().doubleValue();
 					values.add(new SliderPoint(color, value));
 				}
@@ -183,7 +176,7 @@ public class RubricCompareController extends FormBasicController implements Cont
 		}
 		overviewEl.setValues(values);
 		
-		return new SliderCompareWrapper(slider, overviewEl);
+		return new SliderWrapper(slider, overviewEl);
 	}
 
 	@Override
@@ -196,41 +189,15 @@ public class RubricCompareController extends FormBasicController implements Cont
 		//
 	}
 	
-	private final static class SliderResponse {
-		
-		private final String legendName;
-		private final String color;
-		private final EvaluationFormResponse response;
-		
-		SliderResponse(String legendName, String color, EvaluationFormResponse response) {
-			this.legendName = legendName;
-			this.color = color;
-			this.response = response;
-		}
-
-		String getLegendName() {
-			return legendName;
-		}
-
-		String getColor() {
-			return color;
-		}
-
-		EvaluationFormResponse getResponse() {
-			return response;
-		}
-		
-	}
-	
-	public final static class RubricCompareWrapper {
+	public final static class RubricWrapper {
 
 		private final Rubric rubric;
 		private boolean sliderOverview;
 		private boolean radarOverview;
-		private List<SliderCompareWrapper> sliders;
+		private List<SliderWrapper> sliders;
 		private RadarChartElement radarEl;
 		
-		public RubricCompareWrapper(Rubric rubric) {
+		public RubricWrapper(Rubric rubric) {
 			this.rubric = rubric;
 		}
 
@@ -250,11 +217,11 @@ public class RubricCompareController extends FormBasicController implements Cont
 			this.radarOverview = radarOverview;
 		}
 
-		public List<SliderCompareWrapper> getSliders() {
+		public List<SliderWrapper> getSliders() {
 			return sliders;
 		}
 
-		void setSliders(List<SliderCompareWrapper> sliders) {
+		void setSliders(List<SliderWrapper> sliders) {
 			this.sliders = sliders;
 		}
 
@@ -326,12 +293,12 @@ public class RubricCompareController extends FormBasicController implements Cont
 
 	}
 	
-	public final static class SliderCompareWrapper {
+	public final static class SliderWrapper {
 		
 		private final Slider slider;
 		private final SliderOverviewElement overviewEl;
 
-		public SliderCompareWrapper(Slider slider, SliderOverviewElement overviewEl) {
+		public SliderWrapper(Slider slider, SliderOverviewElement overviewEl) {
 			this.slider = slider;
 			this.overviewEl = overviewEl;
 		}

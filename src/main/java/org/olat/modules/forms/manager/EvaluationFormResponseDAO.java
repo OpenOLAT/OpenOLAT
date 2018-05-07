@@ -33,6 +33,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
@@ -143,12 +144,12 @@ public class EvaluationFormResponseDAO {
 				.executeUpdate();
 	}
 
-	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSession session) {
+	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session) {
 		List<EvaluationFormResponse> resultList = loadResponses(responseIdentifier, session);
 		return resultList.isEmpty()? null: resultList.get(0);
 	}
 
-	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSession session) {
+	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session) {
 		String query = new StringBuilder()
 				.append("select response from evaluationformresponse as response")
 				.append(" inner join response.session as session")

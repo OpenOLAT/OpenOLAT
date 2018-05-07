@@ -1,0 +1,7 @@
+<div class="o_evaluation_form">
+	#foreach($fragment in $fragments)
+		<div class="o_report_block">
+			<div class="$fragment.cssClass">$r.render($fragment.componentName)</div>
+		</div>
+	#end
+</div>

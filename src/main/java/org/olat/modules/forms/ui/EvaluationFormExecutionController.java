@@ -48,6 +48,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.handler.AllHandlerPageProvider;
 import org.olat.modules.forms.handler.EvaluationFormElementHandler;
@@ -354,7 +355,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			return executionElement.hasResponse();
 		}
 		
-		public void load(EvaluationFormSession session) {
+		public void load(EvaluationFormSessionRef session) {
 			executionElement.loadResponse(session);
 		}
 		

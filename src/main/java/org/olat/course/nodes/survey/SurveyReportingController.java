@@ -19,13 +19,27 @@
  */
 package org.olat.course.nodes.survey;
 
+import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+
+import java.io.File;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.FormXStream;
+import org.olat.modules.forms.ui.EvaluationFormReportController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -36,11 +50,26 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 public class SurveyReportingController extends BasicController {
 	
 	private final VelocityContainer mainVC;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	public SurveyReportingController(UserRequest ureq, WindowControl wControl, EvaluationFormSurvey survey) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("reporting");
-		
+
+		File repositoryDir = new File(
+				FileResourceManager.getInstance().getFileResourceRoot(survey.getFormEntry().getOlatResource()),
+				FileResourceManager.ZIPDIR);
+		File formFile = new File(repositoryDir, FORM_XML_FILE);
+		Form form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+
+		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
+				EvaluationFormSessionStatus.done);
+
+		EvaluationFormReportController reportCtrl = new EvaluationFormReportController(ureq, wControl, form, sessions);
+		mainVC.put("report", reportCtrl.getInitialComponent());
+
 		putInitialPanel(mainVC);
 	}
 

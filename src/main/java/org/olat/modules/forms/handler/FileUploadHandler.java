@@ -27,16 +27,13 @@ import java.util.UUID;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
-import org.olat.modules.forms.ui.FileUploadCompareController;
 import org.olat.modules.forms.ui.FileUploadController;
 import org.olat.modules.forms.ui.FileUploadEditorController;
-import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
@@ -117,17 +114,6 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 			return Arrays.asList(fileUpload.getId());
 		}
 		return Collections.emptyList();
-	}
-
-	@Override
-	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<CompareResponse> compareResponses) {
-		if(element instanceof FileUpload) {
-			FileUpload fileUpload = (FileUpload) element;
-			Controller ctrl = new FileUploadCompareController(ureq, windowControl, fileUpload, compareResponses);
-			return ctrl.getInitialComponent();
-		}
-		return null;
 	}
 
 }

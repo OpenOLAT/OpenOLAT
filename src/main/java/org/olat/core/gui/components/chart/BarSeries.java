@@ -34,10 +34,14 @@ public class BarSeries {
 	private final String color;
 	private final String legend;
 	private final String cssClass;
-	private List<BarPoint> points = new ArrayList<BarPoint>();
+	private List<BarPoint> points = new ArrayList<>();
 	
 	public BarSeries() {
 		this(null, null, null);
+	}
+	
+	public BarSeries(String cssClass) {
+		this(cssClass, null, null);
 	}
 	
 	public BarSeries(String cssClass, String color, String legend) {

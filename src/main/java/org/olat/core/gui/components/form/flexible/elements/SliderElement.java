@@ -44,6 +44,17 @@ public interface SliderElement extends FormItem {
 	public void setValue(double value);
 	
 	public double getValue();
+	
+	/**
+	 * {@link #getValue()} returns always a value even if it was never set by
+	 * {@link #setValue(String)} or by the user in the GUI. The default value is
+	 * 0.0. So if {@link #getValue()} returns 0.0 is is not clear if it is the
+	 * default value or if it was set by the user. Use this method to determine if
+	 * the value was at least set once by the user.
+	 *
+	 * @return
+	 */
+	public boolean hasValue();
 
 	public void setDomReplacementWrapperRequired(boolean required);
 

@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
@@ -89,6 +90,21 @@ public class EvaluationFormSessionDAO {
 				.getResultList();
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
+
+	List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey, EvaluationFormSessionStatus status) {
+		if (survey == null || status == null) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from evaluationformsession as session");
+		sb.append(" where session.survey.key=:surveyKey");
+		sb.append("   and session.status=:status");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSession.class)
+				.setParameter("surveyKey", survey.getKey())
+				.setParameter("status", status.toString())
+				.getResultList();
+	}
 	
 	EvaluationFormSession makeAnonymous(EvaluationFormSession session) {
 		if (session instanceof EvaluationFormSessionImpl) {
@@ -143,7 +159,7 @@ public class EvaluationFormSessionDAO {
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
-	public EvaluationFormSession changeStatusOfSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor, EvaluationFormSessionStatus status) {
+	public EvaluationFormSessionRef changeStatusOfSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor, EvaluationFormSessionStatus status) {
 		EvaluationFormSession session = getSessionForPortfolioEvaluation(identity, anchor);
 		return changeStatus(session, status);
 	}
@@ -197,9 +213,9 @@ public class EvaluationFormSessionDAO {
 	}
 	
 	public boolean isInUse(RepositoryEntryRef formEntry) {
-		String sb = "select session.key from evaluationformsession as session where session.formEntry.key=:formEntryKey";
+		String query = "select session.key from evaluationformsession as session where session.formEntry.key=:formEntryKey";
 		List<Long> sessions = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+				.createQuery(query, Long.class)
 				.setParameter("formEntryKey", formEntry.getKey())
 				.setFirstResult(0)
 				.setMaxResults(1)

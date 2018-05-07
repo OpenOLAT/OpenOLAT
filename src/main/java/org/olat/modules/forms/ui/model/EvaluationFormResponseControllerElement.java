@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.portfolio.ui.editor.ValidatingController;
 import org.olat.modules.portfolio.ui.editor.ValidationMessage;
 
@@ -76,7 +77,7 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 	}
 	
 	@Override
-	public void loadResponse(EvaluationFormSession session) {
+	public void loadResponse(EvaluationFormSessionRef session) {
 		controller.loadResponse(session);
 	}
 

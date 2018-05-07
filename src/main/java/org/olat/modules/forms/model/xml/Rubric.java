@@ -32,6 +32,8 @@ public class Rubric extends AbstractElement {
 
 	private static final long serialVersionUID = -8486210445435845568L;
 	
+	public static final String TYPE = "formrubric";
+
 	private SliderType sliderType;
 	private ScaleType scaleType;
 	private List<Slider> sliders = new ArrayList<>();
@@ -45,7 +47,7 @@ public class Rubric extends AbstractElement {
 	
 	@Override
 	public String getType() {
-		return "formrubric";
+		return TYPE;
 	}
 
 	public SliderType getSliderType() {

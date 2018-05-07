@@ -30,9 +30,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Spacer;
+import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.SpacerEditorController;
-import org.olat.modules.forms.ui.model.CompareResponse;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
@@ -48,7 +49,7 @@ import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
+public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, EvaluationFormReportHandler {
 	
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 
@@ -103,13 +104,13 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 		return Collections.emptyList();
 	}
 
-	@Override
-	public Component getCompareComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<CompareResponse> compareResponses) {
-		return getComponent();
-	}
-
 	private SpacerElementComponent getComponent() {
 		return new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+	}
+
+	@Override
+	public Component getReportComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+		return getComponent();
 	}
 }

@@ -22,6 +22,7 @@ package org.olat.modules.forms.ui.model;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 
 /**
  * 
@@ -35,7 +36,7 @@ public interface EvaluationFormResponseController extends Controller {
 	
 	public boolean hasResponse();
 	
-	public void loadResponse(EvaluationFormSession session);
+	public void loadResponse(EvaluationFormSessionRef session);
 	
 	public void saveResponse(EvaluationFormSession session);
 	

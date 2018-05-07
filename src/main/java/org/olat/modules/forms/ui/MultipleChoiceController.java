@@ -38,6 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
@@ -143,7 +144,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSession session) {
+	public void loadResponse(EvaluationFormSessionRef session) {
 		responses = evaluationFormManager.loadResponses(multipleChoice.getId(), session);
 		for (EvaluationFormResponse response : responses) {
 			String key = response.getStringuifiedResponse();

@@ -33,9 +33,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormSession extends CreateInfo, ModifiedInfo {
-	
-	public Long getKey();
+public interface EvaluationFormSession extends EvaluationFormSessionRef, CreateInfo, ModifiedInfo{
 	
 	public Date getSubmissionDate();
 	

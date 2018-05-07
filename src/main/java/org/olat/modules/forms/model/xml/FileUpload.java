@@ -29,12 +29,14 @@ public class FileUpload extends AbstractElement {
 
 	private static final long serialVersionUID = 7057962558556618266L;
 	
+	public static final String TYPE = "formfileupload";
+
 	private long maxUploadSizeKB;
 	private String mimeTypeSetKey;
 
 	@Override
 	public String getType() {
-		return "formfileupload";
+		return TYPE;
 	}
 	
 	public Long getMaxUploadSizeKB() {

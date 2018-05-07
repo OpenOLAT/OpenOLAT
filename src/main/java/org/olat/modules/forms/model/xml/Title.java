@@ -29,9 +29,11 @@ public class Title extends AbstractHTMLElement {
 
 	private static final long serialVersionUID = 1567753376804106600L;
 
+	public static final String TYPE = "formhtitle";
+
 	@Override
 	public String getType() {
-		return "formhtitle";
+		return TYPE;
 	}
 	
 	@Override

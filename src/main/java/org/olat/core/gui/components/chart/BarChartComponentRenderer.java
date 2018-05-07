@@ -87,16 +87,17 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		sb.append("svg.append('g')\n")
 		  .append("   .attr('class', 'x axis')\n")
 		  .append("   .attr('transform', 'translate(0,' + height + ')')\n")
-		  .append("   .call(xAxis);\n");
+		  .append("   .call(xAxis)\n");
 		if(StringHelper.containsNonWhitespace(xLegend)) {
 			sb.append("  .append('text')\n")
-			  .append("    .attr('y', 0)\n")
-			  .append("    .attr('x', 0 - (width / 2))\n")
+			  .append("    .attr('y', (margin.bottom / 2))\n")
+			  .append("    .attr('x', (width / 2))\n")
 			  .append("    .attr('dy', '1em')\n")
 			  .append("    .attr('fill', '#000')\n")
 			  .append("    .style('text-anchor', 'middle')\n")
-			  .append("    .text('").append(xLegend).append("');\n");
+			  .append("    .text('").append(xLegend).append("')\n");
 		}
+		sb.append(";\n");
 		
 		//append y axis and legend
 		sb.append("svg.append('g')\n")
@@ -110,9 +111,10 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 			  .append("    .attr('dy', '1em')\n")
 			  .append("    .attr('fill', '#000')\n")
 			  .append("    .style('text-anchor', 'middle')\n")
-			  .append("    .text('").append(yLegend).append("');\n")
+			  .append("    .text('").append(yLegend).append("')\n")
 			  .append("\n");
 		}
+		sb.append(";\n");
 
 		appendSeries(sb, infos.getColors(), chartCmp);
 		
