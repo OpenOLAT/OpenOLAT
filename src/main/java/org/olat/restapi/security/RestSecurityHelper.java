@@ -123,7 +123,7 @@ public class RestSecurityHelper {
 				UserRequest ureq = getUserRequest(request);
 				Identity identity = ureq.getIdentity();
 				RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
-				return rm.isOwnerOfRepositoryEntry(identity, entry) || rm.isInstitutionalRessourceManagerFor(identity, roles, entry);
+				return rm.isOwnerOfRepositoryEntry(identity, entry) || rm.isLearnResourceManagerFor(roles, entry);
 			}
 			return false;
 		} catch (Exception e) {

@@ -899,9 +899,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Roles rolesOwner1 = securityManager.getRoles(owner1);
 		Roles rolesOwner2 = securityManager.getRoles(owner2);
 		Roles rolesPart3 = securityManager.getRoles(part3);
-		boolean institutionMgr1 = repositoryManager.isInstitutionalRessourceManagerFor(owner1, rolesOwner1, re);
-		boolean institutionMgr2 = repositoryManager.isInstitutionalRessourceManagerFor(owner2, rolesOwner2, re);
-		boolean institutionMgr3 = repositoryManager.isInstitutionalRessourceManagerFor(part3, rolesPart3, re);
+		boolean institutionMgr1 = repositoryManager.isLearnResourceManagerFor(rolesOwner1, re);
+		boolean institutionMgr2 = repositoryManager.isLearnResourceManagerFor(rolesOwner2, re);
+		boolean institutionMgr3 = repositoryManager.isLearnResourceManagerFor(rolesPart3, re);
 	
 		Assert.assertTrue(institutionMgr1);
 		Assert.assertFalse(institutionMgr2);

@@ -187,7 +187,7 @@ public class ReferenceManager {
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, entry);
+						&& repositoryManager.isLearnResourceManagerFor(roles, entry);
 			boolean isOwner = isOlatAdmin || reToGroupDao.hasRole(identity, entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
 

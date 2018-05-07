@@ -90,7 +90,6 @@ public class SPRunController extends BasicController implements Activateable2 {
 	
 	private final boolean hasEditRights;
 	private CustomLinkTreeModel linkTreeModel;
-	private CloneController cloneC;
 
 	private final UserCourseEnvironment userCourseEnv;
 	
@@ -150,7 +149,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 			if(roles.isLearnResourceManager() &&
-				repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, cgm.getCourseEntry())) {
+				repositoryManager.isLearnResourceManagerFor(roles, cgm.getCourseEntry())) {
 				return true;
 			}
 			if(config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false)
@@ -234,7 +233,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), spCtr, courseNode, "o_sp_icon");
 		if(ctrl instanceof CloneableController) {
-			cloneC= new CloneController(ureq, getWindowControl(), (CloneableController)ctrl, clccc);
+			CloneController cloneC= new CloneController(ureq, getWindowControl(), (CloneableController)ctrl, clccc);
 			listenTo(cloneC);
 			main.setContent(cloneC.getInitialComponent());
 		} else {

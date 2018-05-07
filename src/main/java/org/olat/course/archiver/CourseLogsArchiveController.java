@@ -55,6 +55,7 @@ import org.olat.home.HomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: Archives the user chosen courselogfiles
@@ -73,6 +74,9 @@ public class CourseLogsArchiveController extends BasicController {
 	
 	private CloseableModalController cmc;
 	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
 	/**
 	 * Constructor for the course logs archive controller
 	 * @param ureq
@@ -90,10 +94,10 @@ public class CourseLogsArchiveController extends BasicController {
 		Identity identity = ureq.getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
 		
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-		boolean isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re);
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
+		boolean isOLATAdmin = roles.isOLATAdmin();
+		boolean isOresOwner = repositoryManager.isOwnerOfRepositoryEntry(identity, re);
+		boolean isOresInstitutionalManager = repositoryManager.isLearnResourceManagerFor(roles, re);
 		boolean aLogV = isOresOwner || isOresInstitutionalManager;
 		boolean uLogV = isOLATAdmin;
 		boolean sLogV = isOresOwner || isOresInstitutionalManager;
@@ -124,10 +128,7 @@ public class CourseLogsArchiveController extends BasicController {
 		putInitialPanel(myPanel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showFileButton){
     	ICourse course = CourseFactory.loadCourse(ores);
@@ -165,6 +166,7 @@ public class CourseLogsArchiveController extends BasicController {
 		}
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == logFileChooserForm) {
 			if (event == Event.DONE_EVENT) {	
@@ -218,14 +220,11 @@ public class CourseLogsArchiveController extends BasicController {
 			vcOngoing.contextPut("body", translate("course.logs.busy"));			
 		}
 		myPanel.setContent(vcOngoing);
-
-		// initialize polling 
-		//myPanel.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), 3000));
 	}
 
 	protected void showExportFinished() {
 		ICourse course = CourseFactory.loadCourse(ores);
-	  VelocityContainer vcFeedback = createVelocityContainer("courselogs_feedback");
+		VelocityContainer vcFeedback = createVelocityContainer("courselogs_feedback");
 		showFileButton = LinkFactory.createButton("showfile", vcFeedback, this);
 		vcFeedback.contextPut("body", translate("course.logs.feedback", course.getCourseTitle()));
 		myPanel.setContent(vcFeedback);
@@ -237,9 +236,8 @@ public class CourseLogsArchiveController extends BasicController {
 
 		showInfo("course.logs.finished", course.getCourseTitle());
 	}
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	
+	@Override
 	protected void doDispose() {
 		//has nothing to dispose so far
 	}

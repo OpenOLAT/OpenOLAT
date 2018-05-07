@@ -121,7 +121,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 				RepositoryManager rm = RepositoryManager.getInstance();
 				if (re != null) {
 					admin = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
-							|| rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), roles, re);
+							|| rm.isLearnResourceManagerFor(roles, re);
 					moderator = admin 
 							|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re)
 							|| isCoach(re, ureq.getIdentity());

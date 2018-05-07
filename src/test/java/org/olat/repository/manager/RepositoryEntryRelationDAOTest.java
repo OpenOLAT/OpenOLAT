@@ -558,4 +558,17 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(groups);
 	    Assert.assertEquals(0, relations.size());
 	}
+	
+	@Test
+	public void getOrganisations() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, organisation);
+		dbInstance.commitAndCloseSession();
+		
+		List<Organisation> organisations = repositoryEntryRelationDao.getOrganisations(re);
+		Assert.assertNotNull(organisations);
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertEquals(organisation, organisations.get(0));
+	}
 }

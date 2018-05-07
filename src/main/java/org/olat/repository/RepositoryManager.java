@@ -551,7 +551,7 @@ public class RepositoryManager {
 		// allow for olat administrators
 		if (roles.isOLATAdmin()) return true;
 		// allow for institutional resource manager
-		if (isInstitutionalRessourceManagerFor(identity, roles, re)) return true;
+		if (isLearnResourceManagerFor(roles, re)) return true;
 		// allow for authors if access granted at least for authors
 		if (roles.isAuthor() && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) return true;
 		// allow for guests if access granted for guests
@@ -1581,11 +1581,11 @@ public class RepositoryManager {
 	}
 
 	/**
-	 * has one owner of repository entry the same institution like the resource manager
+	 * 
 	 * @param RepositoryEntry repositoryEntry
 	 * @param Identity identity
 	 */
-	public boolean isInstitutionalRessourceManagerFor(Identity identity, Roles roles, RepositoryEntryRef repositoryEntry) {
+	public boolean isLearnResourceManagerFor(Roles roles, RepositoryEntryRef repositoryEntry) {
 		if(repositoryEntry == null) {
 			return false;
 		}

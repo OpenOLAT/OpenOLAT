@@ -635,8 +635,7 @@ public class CourseFactory {
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurity(false, false, false, false, false, false, false, true, false);
-			RunMainController launchC = new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
-			return launchC;
+			return new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
 		}
 	}
 
@@ -655,7 +654,7 @@ public class CourseFactory {
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
 		boolean isOLATAdmin = roles.isOLATAdmin();
 		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, courseRe);
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, courseRe);
+		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isLearnResourceManagerFor(roles, courseRe);
 		archiveCourse(identity, course, charset, locale, exportDirectory, isOLATAdmin, isOresOwner, isOresInstitutionalManager);
 	}
 

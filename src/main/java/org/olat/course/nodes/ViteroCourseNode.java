@@ -114,7 +114,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 					if (re != null) {
 						moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 						if(!moderator) {
-							moderator = rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), roles, re);
+							moderator = rm.isLearnResourceManagerFor(roles, re);
 						}
 					}
 				}

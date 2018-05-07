@@ -68,6 +68,7 @@ import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR/> Edit controller for content packaging course nodes <P/>
@@ -106,7 +107,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 	private TabbedPane myTabbedPane;
 
-	final static String[] paneKeys = { PANE_TAB_CPCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CPCONFIG, PANE_TAB_ACCESSIBILITY };
 
 	private Link previewLink;
 	private Link editLink;
@@ -116,6 +117,9 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	private Controller previewCtr;
 	private CloseableModalController cmc;
 	private final BreadcrumbPanel stackPanel;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	/**
 	 * @param cpNode
@@ -286,8 +290,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	 */
 	private boolean isEditable(Identity identity, Roles roles, RepositoryEntry re) {
 		return roles.isOLATAdmin()
-				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re) 
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
+				|| repositoryManager.isOwnerOfRepositoryEntry(identity, re) 
+				|| repositoryManager.isLearnResourceManagerFor(roles, re);
 	}
 
 	/**
@@ -320,9 +324,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 			else return null;
 		}
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
-		// entry can be null only if !strict
-		return entry;
+		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
 	}
 
 	/**

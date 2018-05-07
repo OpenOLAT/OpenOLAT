@@ -97,7 +97,7 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 			
 			Roles roles = ureq.getUserSession().getRoles();
 			RepositoryEntry courseRe = courseEnv.getCourseGroupManager().getCourseEntry();
-			if(!roles.isOLATAdmin() && !repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, courseRe)) {
+			if(!roles.isOLATAdmin() && !repositoryManager.isLearnResourceManagerFor(roles, courseRe)) {
 				List<String> reRoles = repositoryService.getRoles(getIdentity(), courseRe);
 				if(reRoles.contains(GroupRoles.owner.name())) {
 					//view all groups;

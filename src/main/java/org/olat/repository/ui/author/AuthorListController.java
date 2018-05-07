@@ -852,7 +852,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.membersmanagement);
 			boolean canAddOwner = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+					|| repositoryManager.isLearnResourceManagerFor(roles, row);
 			if(canAddOwner && !managed) {
 				manageableRows.add(row);
 			}
@@ -892,7 +892,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(entry == null) {
 				deleted = true;
 			} else {
-				boolean isInstitutionalResourceManager = repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+				boolean isInstitutionalResourceManager = repositoryManager.isLearnResourceManagerFor(roles, row);
 				boolean isOwner = roles.isOLATAdmin()
 						|| repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
@@ -990,7 +990,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
 			boolean canDelete = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+					|| repositoryManager.isLearnResourceManagerFor(roles, row);
 			if(canDelete && !managed) {
 				deleteableRowKeys.add(row.getKey());
 			}
@@ -1213,10 +1213,9 @@ public class AuthorListController extends FormBasicController implements Activat
 			setTranslator(AuthorListController.this.getTranslator());
 			this.row = row;
 			
-			Identity identity = getIdentity();
 			Roles roles = ureq.getUserSession().getRoles();
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, entry);
+						&& repositoryManager.isLearnResourceManagerFor(roles, entry);
 			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
 			isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;

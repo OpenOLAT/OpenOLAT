@@ -298,14 +298,12 @@ public interface RepositoryService {
 	
 	
 	/**
-	 * Add an organization to the repository entry.
+	 * Hold the organizations via the group relation.
 	 * 
 	 * @param entry The repository entry
-	 * @param organisation The organisation
-	 * @param master If the relation is "master"
-	 * @return A merged repository entry
+	 * @return A list of organization
 	 */
-	public RepositoryEntry addOrganisation(RepositoryEntry entry, Organisation organisation, boolean master);
+	public List<Organisation> getOrganisations(RepositoryEntryRef entry);
 	
 	/**
 	 * 

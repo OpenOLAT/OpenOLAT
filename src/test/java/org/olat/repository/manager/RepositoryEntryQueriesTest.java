@@ -214,7 +214,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Roles learnResourceManager1Roles = securityManager.getRoles(learnResourceManager1);
 
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, null, null, types,
-				learnResourceManager1, learnResourceManager1Roles, "Volks");
+				learnResourceManager1, learnResourceManager1Roles);
 		List<RepositoryEntry> resultOneShootInstitut3 = repositoryEntryQueries.searchEntries(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut3);
 		assertFalse(resultOneShootInstitut3.isEmpty());
@@ -228,7 +228,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Roles learnResourceManager2Roles = securityManager.getRoles(learnResourceManager2);
 
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types,
-				learnResourceManager2, learnResourceManager2Roles, "Volks");
+				learnResourceManager2, learnResourceManager2Roles);
 		List<RepositoryEntry> resultOneShootInstitut4 = repositoryEntryQueries.searchEntries(params, 0, -1, true);
 		assertNotNull(resultOneShootInstitut4);
 		assertFalse(resultOneShootInstitut4.isEmpty());
@@ -243,7 +243,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 
 		//test paging
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types,
-				learnResourceManager1, learnResourceManager1Role, "Volks");
+				learnResourceManager1, learnResourceManager1Role);
 		List<RepositoryEntry> resultOneShootInstitut6 = repositoryEntryQueries.searchEntries(params, 0, 50, true);
 		rm.countGenericANDQueryWithRolesRestriction(params);
 		assertNotNull(resultOneShootInstitut6);

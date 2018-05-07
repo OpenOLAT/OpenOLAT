@@ -96,7 +96,7 @@ public class CourseCalendarController extends BasicController {
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isPrivileged = !userCourseEnv.isCourseReadOnly() && (roles.isOLATAdmin() || userCourseEnv.isAdmin()
-				|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, cgm.getCourseEntry()));
+				|| repositoryManager.isLearnResourceManagerFor(roles, cgm.getCourseEntry()));
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 			courseKalendarWrapper.setPrivateEventsVisible(true);

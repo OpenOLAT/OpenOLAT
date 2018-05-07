@@ -55,7 +55,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
@@ -94,12 +93,15 @@ public class RepositorySearchController extends BasicController implements Activ
 	private CloseableCalloutWindowController calloutCtrl;
 	private RepositoryEntrySmallDetailsController infosCtrl;
 	
-	private Link backLink, cancelButton;
+	private Link loginLink;
+	private Link backLink;
+	private Link cancelButton;
+	
 	private RepositoryEntry selectedEntry;
 	private List<RepositoryEntry> selectedEntries;
 	private Can enableSearchforAllInSearchForm;
-	private Link loginLink;
 	private SearchType searchType;
+	private final Roles identityRoles;
 	private RepositoryEntryFilter filter;
 	
 	@Autowired
@@ -112,7 +114,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		
 		this.filter = filter;
-		Roles roles = ureq.getUserSession().getRoles();
+		identityRoles = ureq.getUserSession().getRoles();
 		
 		vc = createVelocityContainer("reposearch", "search");
 
@@ -144,8 +146,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());
 
-		vc.contextPut("isAuthor", Boolean.valueOf(roles.isAuthor()));
-		vc.contextPut("withCancel", new Boolean(withCancel));
+		vc.contextPut("isAuthor", Boolean.valueOf(identityRoles.isAuthor()));
+		vc.contextPut("withCancel", Boolean.valueOf(withCancel));
 		enableBackToSearchFormLink(false); // default, must be enabled explicitly
 		enableSearchforAllXXAbleInSearchForm(null); // default
 		putInitialPanel(vc);
@@ -181,9 +183,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		enableSearchforAllInSearchForm = enable;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -191,7 +191,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else if (source == backLink){
 			displaySearchForm();
 			return;
-		}else if (source == loginLink){
+		} else if (source == loginLink){
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
 	}
@@ -220,16 +220,9 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else {
 			restrictedTypes = (s == null) ? null : new ArrayList<>(s);
 		}
-		
-		String author = searchForm.getAuthor();
-		String displayName = searchForm.getDisplayName();
-		String description = searchForm.getDescription();
 
-		SearchRepositoryEntryParameters params =
-				new SearchRepositoryEntryParameters(displayName, author, description,
-						restrictedTypes, getIdentity(), ureq.getUserSession().getRoles(),
-						getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
-		
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(searchForm.getDisplayName(),
+				searchForm.getAuthor(), searchForm.getDescription(), restrictedTypes, getIdentity(), identityRoles);
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -254,13 +247,11 @@ public class RepositorySearchController extends BasicController implements Activ
 			Collection<String> s = searchForm.getRestrictedTypes();
 			restrictedTypes = (s == null) ? null : new ArrayList<>(s);
 		}
-		Roles roles = ureq.getUserSession().getRoles();
-		Identity ident = ureq.getIdentity();
+		
 		String name = searchForm.getDisplayName();
 		String author = searchForm.getAuthor();
 		String desc = searchForm.getDescription();
-		
-		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(ident, roles, restrictedTypes, name, author, desc,
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(), identityRoles, restrictedTypes, name, author, desc,
 					enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -386,7 +377,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	public void doSearchByTypeLimitAccess(String[] restrictedTypes, UserRequest ureq) {
 		searchType = null;
 
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), ureq.getUserSession().getRoles(), restrictedTypes);
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), identityRoles, restrictedTypes);
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
@@ -451,8 +442,8 @@ public class RepositorySearchController extends BasicController implements Activ
 	}
 	
 	protected void updateFilters(List<RepositoryEntry> entries, Identity owner) {
-		List<ShortName> restrictedTypes = new ArrayList<ShortName>();
-		Set<String> uniqueTypes = new HashSet<String>();
+		List<ShortName> restrictedTypes = new ArrayList<>();
+		Set<String> uniqueTypes = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			if(entry.getOlatResource() == null) continue;//no red screen for that
 			String type = entry.getOlatResource().getResourceableTypeName();
@@ -511,7 +502,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		backLink = LinkFactory.createLinkBack(vc, this);
 		vc.setPage(VELOCITY_ROOT + "/results.html");
 		//REVIEW:pb why can ureq be null here?
-		vc.contextPut("isGuest", (ureq != null) ? new Boolean(ureq.getUserSession().getRoles().isGuestOnly()) : Boolean.FALSE);
+		vc.contextPut("isGuest", (ureq != null) ? Boolean.valueOf(identityRoles.isGuestOnly()) : Boolean.FALSE);
 		loginLink = LinkFactory.createLink("repo.login", vc, this);
 		cancelButton = LinkFactory.createButton("cancel", vc, this);
 	}

@@ -257,7 +257,7 @@ public class IQConfigurationController extends BasicController {
 
 		return roles.isOLATAdmin()
 				|| repositoryManager.isOwnerOfRepositoryEntry(identity, re)
-				|| repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, re);
+				|| repositoryManager.isLearnResourceManagerFor(roles, re);
 	}
 
 	@Override

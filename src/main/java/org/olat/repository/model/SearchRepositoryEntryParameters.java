@@ -42,7 +42,6 @@ public class SearchRepositoryEntryParameters {
 	private List<String> resourceTypes;
 	private Identity identity;
 	private Roles roles;
-	private String institution;
 	private Boolean managed;
 	private String externalId;
 	private String externalRef;
@@ -68,16 +67,14 @@ public class SearchRepositoryEntryParameters {
 	 * @param resourceTypes
 	 * @param identity
 	 * @param roles
-	 * @param institution
 	 */
-	public SearchRepositoryEntryParameters(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles, String institution) {
+	public SearchRepositoryEntryParameters(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles) {
 		this.displayName = displayName;
 		this.author = author;
 		this.desc = desc;
 		this.resourceTypes = resourceTypes;
 		this.identity = identity;
 		this.roles = roles;
-		this.institution = institution;
 	}
 	
 	public String getDisplayName() {
@@ -169,15 +166,6 @@ public class SearchRepositoryEntryParameters {
 	
 	public void setRoles(Roles roles) {
 		this.roles = roles;
-	}
-
-	
-	public String getInstitution() {
-		return institution;
-	}
-	
-	public void setInstitution(String institution) {
-		this.institution = institution;
 	}
 
 	public boolean isOnlyExplicitMember() {
