@@ -75,6 +75,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private MoveOrganisationController moveCtrl;
 	private EditOrganisationController newOrganisationCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private OrganisationOverviewController organisationOverviewCtrl;
@@ -200,6 +201,12 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(moveCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(true);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -208,8 +215,10 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(newOrganisationCtrl);
+		removeAsListenerAndDispose(moveCtrl);
 		removeAsListenerAndDispose(cmc);
 		newOrganisationCtrl = null;
+		moveCtrl = null;
 		cmc = null;
 	}
 
@@ -283,7 +292,14 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private void doMove(UserRequest ureq, Organisation organisation) {
-		getWindowControl().setWarning("Not implement"); //TODO
+		if(moveCtrl != null) return;
+		
+		moveCtrl = new MoveOrganisationController(ureq, getWindowControl(), Collections.singletonList(organisation));
+		listenTo(moveCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", moveCtrl.getInitialComponent(), true, translate("move.organisation"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doSelectOrganisation(UserRequest ureq, OrganisationRow row) {
@@ -301,7 +317,6 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	private void doConfirmDelete(UserRequest ureq, OrganisationRow row) {
 		getWindowControl().setWarning("Not implement"); //TODO
 	}
-	
 
 	private class ToolsController extends BasicController {
 		
@@ -326,7 +341,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 			//edit
 			editLink = addLink("edit", "o_icon_edit", links);
 			if(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.move)) {
-				moveLink = addLink("move.organisation.level", "o_icon_move", links);
+				moveLink = addLink("move.organisation", "o_icon_move", links);
 			}
 			newLink = addLink("add.organisation.under", "o_icon_levels", links);
 			if(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.delete)) {

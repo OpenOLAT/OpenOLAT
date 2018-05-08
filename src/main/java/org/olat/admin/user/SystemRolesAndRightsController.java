@@ -31,7 +31,6 @@ import java.util.List;
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -399,7 +398,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 
 	private void doAddIdentityToOrganisation(Organisation organisation) {
-		organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user);
 		dbInstance.commit();
 		organisations = organisationService.getOrganisations(editedIdentity, OrganisationRoles.values());
 		

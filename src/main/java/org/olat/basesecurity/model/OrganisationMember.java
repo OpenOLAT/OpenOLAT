@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.model;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.core.id.Identity;
 
 /**
@@ -31,10 +32,12 @@ public class OrganisationMember {
 	
 	private final Identity identity;
 	private final String role;
+	private final GroupMembershipInheritance inheritanceMode;
 	
-	public OrganisationMember(Identity identity, String role) {
+	public OrganisationMember(Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
 		this.identity = identity;
 		this.role = role;
+		this.inheritanceMode = inheritanceMode;
 	}
 
 	public Identity getIdentity() {
@@ -43,5 +46,9 @@ public class OrganisationMember {
 
 	public String getRole() {
 		return role;
+	}
+	
+	public GroupMembershipInheritance getInheritanceMode() {
+		return inheritanceMode;
 	}
 }

@@ -70,6 +70,14 @@ public interface OrganisationService {
 	
 	public Organisation updateOrganisation(Organisation organisation);
 	
+	/**
+	 * Move an organization to a new place in the organization structure.
+	 * 
+	 * @param organisationToMove The organization to move
+	 * @param newParent The new parent
+	 */
+	public void moveOrganisation(OrganisationRef organisationToMove, OrganisationRef newParent);
+	
 	public List<Organisation> getOrganisations();
 	
 	/**
@@ -131,7 +139,17 @@ public interface OrganisationService {
 	
 	/**
 	 * Add a membership on the specified organization. The inheritance mode "root"
-	 * will automatically be propagated to child-organizations as "inherithed".
+	 * will be automatically applied to learn resource manager, author and user manager.
+	 * This role will be propagated to child-organizations as "inherithed".
+	 * 
+	 * @param organisation The organization
+	 * @param member The new member of the organization
+	 * @param role The role in the organization
+	 */
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role);
+	
+	/**
+	 * A method to fine set role. 
 	 * 
 	 * @param organisation The organization
 	 * @param member The new member of the organization

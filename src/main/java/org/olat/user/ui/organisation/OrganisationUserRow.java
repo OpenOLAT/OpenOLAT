@@ -22,6 +22,7 @@ package org.olat.user.ui.organisation;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -35,14 +36,20 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class OrganisationUserRow extends UserPropertiesRow {
 	
 	private final String role;
+	private final GroupMembershipInheritance inheritanceMode;
 	
 	public OrganisationUserRow(OrganisationMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member.getIdentity(), userPropertyHandlers, locale);
 		role = member.getRole();
+		inheritanceMode = member.getInheritanceMode();
 	}
 	
 	public String getRole() {
 		return role;
+	}
+	
+	public GroupMembershipInheritance getInheritanceMode() {
+		return inheritanceMode;
 	}
 
 }

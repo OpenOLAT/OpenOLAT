@@ -21,8 +21,11 @@ package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.Group;
@@ -117,6 +120,133 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public void moveOrganisation(OrganisationRef organisationToMove, OrganisationRef newParentRef) {
+		OrganisationImpl toMove = (OrganisationImpl)organisationDao.loadByKey(organisationToMove.getKey());
+		Organisation newParent = organisationDao.loadByKey(newParentRef.getKey());
+		if(newParent == null || newParent.equals(toMove.getParent())) {
+			return;// nothing to do
+		}
+
+		OrganisationNode treeToMove = organisationDao.getDescendantTree(toMove);
+		// clean inheritance of memberships
+		cleanMembership(treeToMove, new HashSet<>()); 
+
+		String keysPath = toMove.getMaterializedPathKeys();
+		
+		toMove.setParent(newParent);
+		toMove.setLastModified(new Date());
+		String newKeysPath = organisationDao.getMaterializedPathKeys(newParent, toMove);
+		toMove.setMaterializedPathKeys(newKeysPath);
+		dbInstance.getCurrentEntityManager().merge(toMove);
+		
+		List<Organisation> descendants = new ArrayList<>();
+		treeToMove.visit(node -> {
+			if(node != treeToMove) {
+				descendants.add(node.getOrganisation());
+			}
+		});
+		
+
+		for(Organisation descendant:descendants) {
+			String descendantKeysPath = descendant.getMaterializedPathKeys();
+			if(descendantKeysPath.indexOf(keysPath) == 0) {
+				String end = descendantKeysPath.substring(keysPath.length(), descendantKeysPath.length());
+				String updatedPath = newKeysPath + end;
+				((OrganisationImpl)descendant).setMaterializedPathKeys(updatedPath);
+			}
+			dbInstance.getCurrentEntityManager().merge(descendant);
+		}
+		
+		// propagate inheritance of the new parent
+		List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
+		List<GroupMembership> membershipsToPropagate = new ArrayList<>();
+		for(GroupMembership membership:memberships) {
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited || membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+				membershipsToPropagate.add(membership);
+			}
+		}
+		
+		if(!membershipsToPropagate.isEmpty()) {
+			propagateMembership(treeToMove, membershipsToPropagate);
+		}
+		
+		dbInstance.commit();
+	}
+	
+	private void propagateMembership(OrganisationNode node, List<GroupMembership> membershipsToPropagate) {
+		Group group = node.getOrganisation().getGroup();
+		List<GroupMembership> nodeMemberships = groupDao.getMemberships(group);
+		Map<IdentityRoleKey,GroupMembership> identityRoleToMembership = new HashMap<>();
+		for(GroupMembership nodeMembership:nodeMemberships) {
+			identityRoleToMembership.put(new IdentityRoleKey(nodeMembership), nodeMembership);
+		}
+
+		for(GroupMembership membershipToPropagate:membershipsToPropagate) {
+			GroupMembership nodeMembership = identityRoleToMembership.get(new IdentityRoleKey(membershipToPropagate));
+			if(nodeMembership == null) {
+				groupDao.addMembershipOneWay(group, membershipToPropagate.getIdentity(), membershipToPropagate.getRole(), GroupMembershipInheritance.inherited);
+			} else if(nodeMembership.getInheritanceMode() != GroupMembershipInheritance.inherited)  {
+				groupDao.updateInheritanceMode(nodeMembership, GroupMembershipInheritance.inherited);
+			}
+		}
+
+		List<OrganisationNode> children = node.getChildrenNode();
+		if(children != null && !children.isEmpty()) {
+			for(OrganisationNode child:children) {
+				propagateMembership(child, membershipsToPropagate);
+			}
+		}
+	}
+	
+	private void cleanMembership(OrganisationNode node, Set<IdentityRoleKey> inheritance) {
+		List<GroupMembership> memberships = groupDao.getMemberships(node.getOrganisation().getGroup());
+		for(GroupMembership membership:memberships) {
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+				if(!inheritance.contains(new IdentityRoleKey(membership))) {
+					groupDao.removeMembership(node.getOrganisation().getGroup(), membership.getIdentity(), membership.getRole());
+				}
+			} else if(membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+				inheritance.add(new IdentityRoleKey(membership));
+			}
+		}
+		
+		List<OrganisationNode> children = node.getChildrenNode();
+		if(children != null && !children.isEmpty()) {
+			for(OrganisationNode child:children) {
+				cleanMembership(child, new HashSet<>(inheritance));
+			}
+		}
+	}
+	
+	private static class IdentityRoleKey {
+		
+		private final Long identityKey;
+		private final String role;
+		
+		public IdentityRoleKey(GroupMembership membership) {
+			identityKey = membership.getIdentity().getKey();
+			role = membership.getRole();
+		}
+
+		@Override
+		public int hashCode() {
+			return identityKey.hashCode() + role.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof IdentityRoleKey) {
+				IdentityRoleKey m = (IdentityRoleKey)obj;
+				return identityKey.equals(m.identityKey) && role.equals(m.role);
+			}
+			return false;
+		}
+	}
+
+	@Override
 	public Organisation getDefaultOrganisation() {
 		List<Organisation> defOrganisations = organisationDao.loadDefaultOrganisation();
 		if(defOrganisations.size() == 1) {
@@ -201,13 +331,25 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public void addMember(Identity member, OrganisationRoles role) {
 		Organisation defOrganisation = getDefaultOrganisation();
-		addMember(defOrganisation, member, role, GroupMembershipInheritance.none);
+		addMember(defOrganisation, member, role);
 	}
 
 	@Override
 	public void removeMember(IdentityRef member, OrganisationRoles role) {
 		Organisation defOrganisation = getDefaultOrganisation();
 		removeMember(defOrganisation, member, role);
+	}
+	
+
+	@Override
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role) {
+		GroupMembershipInheritance inheritanceMode;
+		if(role == OrganisationRoles.usermanager || role == OrganisationRoles.learnresourcemanager || role == OrganisationRoles.author) {
+			inheritanceMode = GroupMembershipInheritance.root;
+		} else {
+			inheritanceMode = GroupMembershipInheritance.none;
+		}
+		addMember(organisation, member, role, inheritanceMode);
 	}
 
 	@Override

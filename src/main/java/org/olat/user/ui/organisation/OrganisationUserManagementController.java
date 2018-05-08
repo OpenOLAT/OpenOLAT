@@ -27,7 +27,6 @@ import java.util.Set;
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -58,6 +57,7 @@ import org.olat.core.id.Organisation;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.organisation.OrganisationUserManagementTableModel.MemberCols;
+import org.olat.user.ui.organisation.component.InheritanceModeFlexiCellRenderer;
 import org.olat.user.ui.organisation.component.RoleFlexiCellRenderer;
 import org.olat.user.ui.organisation.event.RoleEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,6 +136,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new RoleFlexiCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.inheritance, new InheritanceModeFlexiCellRenderer(getTranslator())));
 
 		tableModel = new OrganisationUserManagementTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -271,14 +272,9 @@ public class OrganisationUserManagementController extends FormBasicController {
 	}
 	
 	private void doAddMember(List<Identity> identitiesToAdd, OrganisationRoles role) {
-		GroupMembershipInheritance inheritenceMode = GroupMembershipInheritance.none;
-		if(role == OrganisationRoles.learnresourcemanager || role == OrganisationRoles.usermanager) {
-			inheritenceMode = GroupMembershipInheritance.root;
-		}
 		for(Identity identityToAdd:identitiesToAdd) {
-			organisationService.addMember(organisation, identityToAdd, role, inheritenceMode);
+			organisationService.addMember(organisation, identityToAdd, role);
 		}
 		loadModel(true);
 	}
-	
 }

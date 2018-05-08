@@ -323,13 +323,13 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void queryByOwnerLimitAccess() {
 		//create a repository entry with an owner
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-owner-la-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(id, RepositoryEntry.ACC_OWNERS, Boolean.TRUE);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(id);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));

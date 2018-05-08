@@ -55,6 +55,7 @@ implements SortableFlexiTableDataModel<OrganisationUserRow> {
 			switch(MemberCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case role: return row.getRole();
+				case inheritance: return row.getInheritanceMode();
 				default : return "ERROR";
 			}
 		}
@@ -70,7 +71,8 @@ implements SortableFlexiTableDataModel<OrganisationUserRow> {
 	
 	public enum MemberCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
-		role("table.header.role");
+		role("table.header.role"),
+		inheritance("table.header.inheritance.mode");
 		
 		private final String i18nKey;
 		

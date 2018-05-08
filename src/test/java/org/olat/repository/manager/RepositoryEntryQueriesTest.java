@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -133,10 +132,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 
 		dbInstance.commit();
 		
-		organisationService.addMember(organisation, learnResourceManager1, OrganisationRoles.learnresourcemanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation, learnResourceManager2, OrganisationRoles.learnresourcemanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation, user1, OrganisationRoles.user, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation, user1, OrganisationRoles.user, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation, learnResourceManager1, OrganisationRoles.learnresourcemanager);
+		organisationService.addMember(organisation, learnResourceManager2, OrganisationRoles.learnresourcemanager);
+		organisationService.addMember(organisation, user1, OrganisationRoles.user);
+		organisationService.addMember(organisation, user1, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 
 		// generate some repo entries

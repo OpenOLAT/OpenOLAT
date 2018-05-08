@@ -1168,7 +1168,7 @@ public class RepositoryManager {
 	 * @param limitAccess
 	 * @return Results
 	 */
-	public List<RepositoryEntry> queryByOwnerLimitAccess(Identity identity, int limitAccess, Boolean membersOnly) {
+	public List<RepositoryEntry> queryByOwnerLimitAccess(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from repositoryentry v")
 		  .append(" inner join fetch v.olatResource as res")
@@ -1177,16 +1177,12 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" where membership.identity.key=:identityKey and (v.access>=:limitAccess");
-		if(limitAccess != RepositoryEntry.ACC_OWNERS && membersOnly != null && membersOnly.booleanValue()) {
-			sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true)");
-		}
-		sb.append(")");
-
+		  .append(" where membership.identity.key=:identityKey and (v.access>=").append(RepositoryEntry.ACC_USERS)
+		  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true)")
+		  .append(")");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("limitAccess", limitAccess)
 				.getResultList();
 	}
 
@@ -1950,7 +1946,7 @@ public class RepositoryManager {
 				.setParameter("repoKey", re.getKey())
 				.getResultList();
 
-		Map<Long, RepositoryEntryMembership> memberships = new HashMap<Long, RepositoryEntryMembership>();
+		Map<Long, RepositoryEntryMembership> memberships = new HashMap<>();
 		for(Object[] membership:members) {
 			Long identityKey = (Long)membership[0];
 			Date lastModified = (Date)membership[1];
@@ -1979,7 +1975,7 @@ public class RepositoryManager {
 		return new ArrayList<>(memberships.values());
 	}
 
-	public List<RepositoryEntryMembership> getOwnersMembership(List<RepositoryEntry> res) {
+	public List<RepositoryEntryMembership> getOwnersMembership2(List<RepositoryEntry> res) {
 		if(res== null || res.isEmpty()) return Collections.emptyList();
 
 		StringBuilder sb = new StringBuilder(400);

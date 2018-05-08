@@ -21,6 +21,7 @@ package org.olat.basesecurity.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -33,7 +34,7 @@ import org.olat.core.id.OrganisationRef;
  */
 public class OrganisationNode {
 	
-	private final Organisation organisation;
+	private Organisation organisation;
 	private OrganisationNode parentNode;
 	private final List<OrganisationNode> childrenNodes = new ArrayList<>();
 	
@@ -69,5 +70,10 @@ public class OrganisationNode {
 			}
 		}
 		return child;
+	}
+	
+	public void visit(Consumer<OrganisationNode> visitor) {
+		visitor.accept(this);
+		childrenNodes.stream().forEach(node -> node.visit(visitor));
 	}
 }

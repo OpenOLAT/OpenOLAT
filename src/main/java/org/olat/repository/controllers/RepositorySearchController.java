@@ -358,7 +358,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param access
 	 */
 	public void doSearchByOwnerLimitAccess(Identity owner) {
-		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(owner, RepositoryEntry.ACC_USERS, Boolean.TRUE);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(owner);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);

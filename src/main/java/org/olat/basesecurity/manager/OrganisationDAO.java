@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
@@ -87,7 +88,7 @@ public class OrganisationDAO {
 		return organisation;
 	}
 	
-	private String getMaterializedPathKeys(Organisation parent, Organisation level) {
+	public String getMaterializedPathKeys(Organisation parent, Organisation level) {
 		if(parent != null) {
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
@@ -172,7 +173,7 @@ public class OrganisationDAO {
 	
 	public List<OrganisationMember> getMembers(OrganisationRef organisation) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select ident, membership.role from organisation org")
+		sb.append("select ident, membership.role, membership.inheritanceModeString from organisation org")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join membership.identity ident")
@@ -185,7 +186,12 @@ public class OrganisationDAO {
 		for(Object[] object:objects) {
 			Identity identity = (Identity)object[0];
 			String role = (String)object[1];
-			members.add(new OrganisationMember(identity, role));
+			String inheritanceModeString = (String)object[2];
+			GroupMembershipInheritance inheritanceMode = GroupMembershipInheritance.none;
+			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
+				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
+			}
+			members.add(new OrganisationMember(identity, role, inheritanceMode));
 		}
 		return members;
 	}

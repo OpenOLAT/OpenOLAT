@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
@@ -139,7 +138,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT EE", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.user, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation, member, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 		
 		List<OrganisationMember> members = organisationDao.getMembers(organisation);
@@ -157,8 +156,8 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Org 6", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member1, OrganisationRoles.groupmanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation, member2, OrganisationRoles.usermanager, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation, member1, OrganisationRoles.groupmanager);
+		organisationService.addMember(organisation, member2, OrganisationRoles.usermanager);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> userManagers = organisationDao.getIdentities(identifier, OrganisationRoles.usermanager.name());
@@ -176,10 +175,10 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Org 8", identifier, null, null, null);
 		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 9", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation1, member1, OrganisationRoles.groupmanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation1, member2, OrganisationRoles.usermanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation1, member1, OrganisationRoles.groupmanager);
+		organisationService.addMember(organisation1, member2, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> userManagers = organisationDao.getIdentities(OrganisationRoles.usermanager.name());
@@ -207,11 +206,11 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 11", identifier, null, null, null);
 		Organisation organisation3 = organisationDao.createAndPersistOrganisation("Org 12", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation1, member, OrganisationRoles.user, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation1, member, OrganisationRoles.usermanager, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation2, member, OrganisationRoles.user, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation3, member, OrganisationRoles.user, GroupMembershipInheritance.none);
-		organisationService.addMember(organisation3, member, OrganisationRoles.poolmanager, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation1, member, OrganisationRoles.user);
+		organisationService.addMember(organisation1, member, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation2, member, OrganisationRoles.user);
+		organisationService.addMember(organisation3, member, OrganisationRoles.user);
+		organisationService.addMember(organisation3, member, OrganisationRoles.poolmanager);
 		dbInstance.commitAndCloseSession();
 		
 		List<String> managerRoles = new ArrayList<>();
@@ -406,7 +405,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E2E", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
 		dbInstance.commitAndCloseSession();
 		
 		boolean isPoolManager = organisationDao.hasRole(member, identifier, OrganisationRoles.poolmanager.name());
@@ -423,7 +422,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Org. 8", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.user, GroupMembershipInheritance.none);
+		organisationService.addMember(organisation, member, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 		
 		boolean hasNot = organisationDao.hasAnyRole(member, OrganisationRoles.user.name());
