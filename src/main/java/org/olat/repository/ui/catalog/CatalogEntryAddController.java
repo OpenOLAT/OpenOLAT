@@ -22,7 +22,6 @@ package org.olat.repository.ui.catalog;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -60,8 +59,6 @@ public class CatalogEntryAddController extends BasicController {
 	private Link okButton, cancelButton;
 	private RepositoryEntry toBeAddedEntry;
 	
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	protected CatalogManager catalogManager;
 

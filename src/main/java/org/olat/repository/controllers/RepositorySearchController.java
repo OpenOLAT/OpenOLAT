@@ -145,8 +145,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		tableCtr.setTableDataModel(repoTableModel);
 		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());
-
-		vc.contextPut("isAuthor", Boolean.valueOf(identityRoles.isAuthor()));
 		vc.contextPut("withCancel", Boolean.valueOf(withCancel));
 		enableBackToSearchFormLink(false); // default, must be enabled explicitly
 		enableSearchforAllXXAbleInSearchForm(null); // default
@@ -157,7 +155,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param enableBack true: back link is shown, back goes to search form; false; no back link
 	 */
 	public void enableBackToSearchFormLink(boolean enableBack) {
-		vc.contextPut("withBack", new Boolean(enableBack));
+		vc.contextPut("withBack", Boolean.valueOf(enableBack));
 	}
 	
 	@Override
@@ -388,7 +386,7 @@ public class RepositorySearchController extends BasicController implements Activ
 
 	private void doSearchById(String id, Collection<String> restrictedTypes) {
 		List<RepositoryEntry> entries = repositoryService.searchByIdAndRefs(id);
-		if(restrictedTypes != null && restrictedTypes.size() > 0) {
+		if(restrictedTypes != null && !restrictedTypes.isEmpty()) {
 			for(Iterator<RepositoryEntry> it=entries.iterator(); it.hasNext(); ) {
 				RepositoryEntry entry = it.next();
 				if(!restrictedTypes.contains(entry.getOlatResource().getResourceableTypeName())) {

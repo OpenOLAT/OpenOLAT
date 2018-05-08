@@ -178,7 +178,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		Set<OrganisationRef> organisations = new HashSet<>();
 		for(OrganisationRoles organisationRole:organisationRoles) {
 			if(organisationRole != null) {
-				organisations.addAll(roles.getOrganisationsWithRoles(organisationRole));
+				organisations.addAll(roles.getOrganisationsWithRole(organisationRole));
 			}
 		}
 		return organisationDao.getOrganisations(organisations);

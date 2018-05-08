@@ -131,7 +131,8 @@ public class CourseCalendars {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 
 		// add course group calendars
-		boolean isGroupManager = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isGroupManager = roles.isOLATAdmin() || roles.isGroupManager()
 				|| cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
 		boolean readOnly = courseEnv.isCourseReadOnly();
 		

@@ -21,6 +21,8 @@ package org.olat.core.extensions.security;
 
 import org.olat.core.extensions.action.ActionExtensionSecurityCallback;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 
 /**
  * 
@@ -30,16 +32,17 @@ import org.olat.core.gui.UserRequest;
  */
 public class GroupManagerOnlyExtensionSecurityCallback implements ActionExtensionSecurityCallback {
 
-	/**
-	 * 
-	 * @see org.olat.core.extensions.action.ActionExtensionSecurityCallback#isAllowedToLaunchActionController(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchActionController(UserRequest ureq) {
-		if(ureq == null || ureq.getUserSession() == null || ureq.getUserSession().getRoles() == null) {
+		if(ureq == null) {
 			return false;
 		}
-		return ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null) {
+			return false;
+		}
+		
+		Roles roles = usess.getRoles();
+		return roles.isOLATAdmin() || roles.isGroupManager();
 	}
-
 }

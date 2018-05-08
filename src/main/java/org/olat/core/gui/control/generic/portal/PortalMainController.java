@@ -79,7 +79,7 @@ public class PortalMainController extends BasicController {
 				portalEditButton.setEnabled(false);
 				portalEditButton.setVisible(false);
 			} else if((roles.isGroupManager() || roles.isLearnResourceManager() || roles.isOLATAdmin()
-					|| roles.isPoolAdmin() || roles.isUserManager() || roles.isCurriculumManager())
+					|| roles.isQPoolManager() || roles.isUserManager() || roles.isCurriculumManager())
 					&& CoreSpringFactory.containsBean("authorportal")) {
 				portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("authorportal"));
 			} else {

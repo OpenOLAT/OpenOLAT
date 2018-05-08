@@ -1595,7 +1595,7 @@ public class RepositoryManager {
 		}
 		
 		//TODO roles (add administration)
-		List<OrganisationRef> learnResourceManagerOrganisations = roles.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager);
+		List<OrganisationRef> learnResourceManagerOrganisations = roles.getOrganisationsWithRole(OrganisationRoles.learnresourcemanager);
 		List<OrganisationRef> repositoryOrganisations = repositoryEntryToOrganisationDao.getOrganisationReferences(repositoryEntry);
 		for(OrganisationRef learnResourceManagerOrganisation:learnResourceManagerOrganisations) {
 			for(OrganisationRef repositoryOrganisation:repositoryOrganisations) {

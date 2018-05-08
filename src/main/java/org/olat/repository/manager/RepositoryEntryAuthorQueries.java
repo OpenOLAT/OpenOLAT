@@ -344,7 +344,6 @@ public class RepositoryEntryAuthorQueries {
 		} 
 		
 		if(roles != null && (roles.isAuthor() || roles.isLearnResourceManager())) {
-			//TODO roles (author permissions)
 			sb.append(" (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
 			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
 			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
@@ -466,6 +465,10 @@ public class RepositoryEntryAuthorQueries {
 						appendAsc(sb, asc).append(" nulls last, deletedByUser.firstName ");
 						appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					}
+					break;
+				case license:
+					sb.append(" order by v.key");
+					appendAsc(sb, asc);
 					break;
 			}
 		}

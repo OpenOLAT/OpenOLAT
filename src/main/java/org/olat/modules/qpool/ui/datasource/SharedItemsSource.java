@@ -101,7 +101,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 
 	@Override
 	public boolean isRemoveEnabled() {
-		return roles.isOLATAdmin() || roles.isPoolAdmin() || admin;
+		return roles.isOLATAdmin() || roles.isQPoolManager() || admin;
 	}
 
 	@Override

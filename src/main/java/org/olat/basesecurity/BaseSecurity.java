@@ -70,7 +70,7 @@ public interface BaseSecurity {
 	 * @param updatedIdentity The identity that is changed
 	 * @param roles The new roles to set on updatedIdentity
 	 */
-	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
+	//public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
 	
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation organisation);
 

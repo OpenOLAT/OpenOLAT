@@ -67,6 +67,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -1071,41 +1072,58 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
 			Roles roles = securityManager.getRoles(identity);
 			switch(role) {
-				case coach:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), true,
-									false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
-					securityManager.updateRoles(null, identity, organisation, roles);
+				case coach: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							true, roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
-				case author:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-									false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), true, false);
-					securityManager.updateRoles(null, identity, organisation, roles);
+				}
+				case author: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							roles.isCoach(), true, roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
-				case usermanager:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), true, roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
-					securityManager.updateRoles(null, identity, organisation, roles);
+				}
+				case usermanager: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
+							true, roles.isLearnResourceManager(), roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
-				case groupmanager:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), true, roles.isAuthor(),
-							false, roles.isLearnResourceManager(), roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
-					securityManager.updateRoles(null, identity, organisation, roles);
+				}
+				case groupmanager: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							roles.isCoach(), roles.isAuthor(), true, roles.isQPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
-				case poolmanager:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isLearnResourceManager(), true, roles.isCurriculumManager(), roles.isCoach(), false);
-					securityManager.updateRoles(null, identity, organisation, roles);
+				}
+				case poolmanager: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), true, roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
-				case curriculummanager:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, roles.isLearnResourceManager(), roles.isPoolAdmin(), true, roles.isCoach(), false);
-					securityManager.updateRoles(null, identity, organisation, roles);
-					break;	
-				case learnresourcemanager:
-					roles = new Roles(roles.isSystemAdmin(), roles.isOLATAdmin(), roles.isUserManager(), roles.isGroupManager(), roles.isAuthor(),
-							false, true, roles.isPoolAdmin(), roles.isCurriculumManager(), roles.isCoach(), false);
-					securityManager.updateRoles(null, identity, organisation, roles);
+				}
+				case curriculummanager: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), true,
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
+				}
+				case learnresourcemanager: {
+					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), true, roles.isOLATAdmin());
+					securityManager.updateRoles(null, identity, modifiedRoles);
+					break;
+				}
+				default: {
+					log.error("LDAP Role synchronization not supported for: " + role);
+				}
 			}
 		}
 	}

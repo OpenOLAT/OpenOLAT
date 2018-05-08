@@ -334,8 +334,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setResourceUsage(getResourceUsage());
 		e.setClosed(getClosed());
 		if (licenseModule.isEnabled(licenseHandler)) {
-			Set<Long> keys = licenseEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
-			e.setLicenseTypeKeys(keys);
+			Set<Long> licenceKeys = licenseEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
+			e.setLicenseTypeKeys(licenceKeys);
 		}
 		fireEvent(ureq, e);
 	}

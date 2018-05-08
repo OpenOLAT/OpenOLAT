@@ -10,15 +10,10 @@ $r.render("repotable")
 #if ($hasResults)
 	<div class="o_xsmall">$r.translate("table.header.access.desc")</div>
 	#if ($withCancel)
-		<p>
-			$r.render("cancel")
-		<p>
+		<div class="o_button_group">$r.render("cancel")<div>
 	#end
 #else
-	<br />
 	#if ($withCancel)
-		<p>
-			$r.render("cancel")
-		<p>
+		<div class="o_button_group">$r.render("cancel")<div>
 	#end
 #end
