@@ -68,7 +68,7 @@ public class AccessTransactionGatling extends OlatTestCase {
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where ores.resName='CourseModule' and v.access>0");
+		  .append(" where ores.resName='CourseModule' and v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		
 		List<RepositoryEntry> courses= dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)

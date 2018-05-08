@@ -228,7 +228,7 @@ public class RepositoryEntryQueries {
 			  .append("  and membership.role='").append(OrganisationRoles.author.name()).append("')");
 		}
 		// as owner
-		sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
+		sb.append(" or (v.access>=").append(RepositoryEntry.ACC_OWNERS)
 		  .append("  and membership.role='").append(GroupRoles.owner.name()).append("')");
 		// as member
 		sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")

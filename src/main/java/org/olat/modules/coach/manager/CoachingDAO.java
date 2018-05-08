@@ -83,9 +83,9 @@ public class CoachingDAO {
 		  .append(" inner join baseGroup.members as membership on membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("')")
 		  .append(" where membership.identity.key=:identityKey")
 		  .append(" and (")
-		  .append("  (membership.role = 'coach' and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true)))")
+		  .append("  (membership.role = '").append(GroupRoles.coach.name()).append("' and (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true)))")
 		  .append("  or")
-		  .append("  (membership.role = 'owner' and v.access>=1)")
+		  .append("  (membership.role = '").append(GroupRoles.owner.name()).append("' and v.access>=").append(RepositoryEntry.ACC_OWNERS).append(")")
 		  .append(" )");
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
@@ -758,9 +758,9 @@ public class CoachingDAO {
 			  .append("  inner join o_as_eff_statement sg_statement ")
 			  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
 			  .append("  where  ( ")
-			  .append("    (sg_re.accesscode>2) ")
+			  .append("    (sg_re.accesscode>").append(RepositoryEntry.ACC_OWNERS_AUTHORS).append(") ")
 			  .append("    or ")
-			  .append("    (sg_re.accesscode=1 and sg_re.membersonly=").appendTrue().append(")) ")
+			  .append("    (sg_re.accesscode=").append(RepositoryEntry.ACC_OWNERS).append(" and sg_re.membersonly=").appendTrue().append(")) ")
 			  .append(" )");
 		}
 		if(hasOwned) {
@@ -889,7 +889,7 @@ public class CoachingDAO {
 		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
 		  .append(" inner join o_bs_identity id_participant on (sg_participant.fk_identity_id = id_participant.id) ");
 		appendUsersStatisticsJoins(params, sb)
-		  .append(" where  sg_re.accesscode>0 ");
+		  .append(" where  sg_re.accesscode>=").append(RepositoryEntry.ACC_OWNERS);
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
 		  .append(") ")
 		  .append("group by fin_statement.fk_identity ");

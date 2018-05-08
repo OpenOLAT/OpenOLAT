@@ -947,7 +947,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" where v.access>0 and membership.identity.key=:identityKey");
+		  .append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS).append(" and membership.identity.key=:identityKey");
 		if (limitTypes != null && limitTypes.length > 0) {
 			sb.append(" and res.resName in (:types)");
 		}
@@ -1609,7 +1609,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 		  .append(" and membership.identity.key=:identityKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
@@ -1631,7 +1631,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 		  .append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
 		if(StringHelper.containsNonWhitespace(type)) {
 			sb.append(" and res.resName=:resourceType");
@@ -1667,7 +1667,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 		  .append(" and membership.identity.key=:identityKey and membership.role in('").append(GroupRoles.participant.name()).append("','").append(GroupRoles.coach.name()).append("')");
 		if(StringHelper.containsNonWhitespace(type)) {
 			sb.append(" and res.resName=:resourceType");
@@ -1736,7 +1736,7 @@ public class RepositoryManager {
 		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
 		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
 		  .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
-		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		  .append(" and (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
@@ -1755,7 +1755,7 @@ public class RepositoryManager {
 		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
 		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
 		  .append("      and membership.role='").append(GroupRoles.coach.name()).append("')")
-		  .append("  and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		  .append("  and (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
@@ -1774,7 +1774,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where v.access>=0 and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'");
+		  .append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS).append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
@@ -1833,7 +1833,7 @@ public class RepositoryManager {
 		sb.append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role ='").append(GroupRoles.coach.name()).append("'")
-		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 		  .append(" and membership.identity.key=:identityKey");
 	}
 
@@ -1920,7 +1920,7 @@ public class RepositoryManager {
 			query.setParameter("repoKey", re.getKey());
 		}
 		if(identity != null && identity.length > 0) {
-			List<Long> ids = new ArrayList<Long>(identity.length);
+			List<Long> ids = new ArrayList<>(identity.length);
 			for(Identity id:identity) {
 				ids.add(id.getKey());
 			}
@@ -1953,13 +1953,12 @@ public class RepositoryManager {
 			Date creationDate = (Date)membership[2];
 			Object role = membership[3];
 
-			RepositoryEntryMembership mb = memberships.get(identityKey);
-			if(mb == null) {
-				mb = new RepositoryEntryMembership();
-				mb.setIdentityKey(identityKey);
-				mb.setRepoKey(re.getKey());
-				memberships.put(identityKey, mb);
-			}
+			RepositoryEntryMembership mb = memberships.computeIfAbsent(identityKey, key -> {
+				RepositoryEntryMembership rmb = new RepositoryEntryMembership();
+				rmb.setIdentityKey(identityKey);
+				rmb.setRepoKey(re.getKey());
+				return rmb;
+			});
 			mb.setCreationDate(creationDate);
 			mb.setLastModified(lastModified);
 

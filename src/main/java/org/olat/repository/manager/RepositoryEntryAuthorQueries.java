@@ -334,33 +334,39 @@ public class RepositoryEntryAuthorQueries {
 		}
 		
 		Roles roles = params.getRoles();
-		if(roles != null && roles.isOLATAdmin()) {
+		if(roles == null) {
+			sb.append(" v.access>=").append(RepositoryEntry.ACC_USERS);
+			return false;
+		}
+
+		if(roles.isOLATAdmin()) {
 			if(params.isDeleted()) {
 				sb.append(" v.access=").append(RepositoryEntry.DELETED);
 			} else {
 				sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
 			}
 			return false;
-		} 
-		
-		if(roles != null && (roles.isAuthor() || roles.isLearnResourceManager())) {
-			sb.append(" (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
-			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
-			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("       and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(OrganisationRoles.learnresourcemanager).append("')")
-			  .append("   )")
-			  .append(" ))");
-
-		} else {
-			sb.append(" (v.access>=").append(RepositoryEntry.ACC_USERS)
-			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
-			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("       and membership.role in ('").append(GroupRoles.owner.name()).append("')")
-			  .append("   )")
-			  .append(" ))");
 		}
+		
+		sb.append(" (v.access>=").append(RepositoryEntry.ACC_USERS);
+		if(roles.isAuthor()) {
+			sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
+			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("       and membership.role = '").append(OrganisationRoles.author).append("'")
+			  .append("   )")
+			  .append(" )");
+		} 
+		sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
+		  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("       and membership.role in ('").append(GroupRoles.owner.name()).append("'");
+		if(roles.isLearnResourceManager()) {
+			sb.append(",'").append(OrganisationRoles.learnresourcemanager.name()).append("'");
+		}
+		sb.append("     )")//close in
+		  .append("   )")
+		  .append(" ))");
 		return true;
 	}
 	
