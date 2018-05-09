@@ -83,6 +83,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
@@ -97,6 +98,7 @@ import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
 import uk.ac.ed.ph.jqtiplus.attribute.ForeignAttribute;
 import uk.ac.ed.ph.jqtiplus.attribute.value.IntegerAttribute;
+import uk.ac.ed.ph.jqtiplus.attribute.value.StringAttribute;
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -470,15 +472,29 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			case RubricBlock.QTI_CLASS_NAME: break; //never rendered automatically
 			case Math.QTI_CLASS_NAME: {
+				String domid = "mw_" + CodeHelper.getRAMUniqueID();
+				sb.append("<div id=\"").append(domid).append("\">");
 				renderMath(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Math)block);
+				sb.append("</div>")
+				  .append(Formatter.elementLatexFormattingScript(domid));
 				break;
 			}
-			case Div.QTI_CLASS_NAME:
+			case Div.QTI_CLASS_NAME: {
+				String domid = null;
+				if (containsClass(block, "math")) {
+					domid = "mw_" + CodeHelper.getRAMUniqueID();
+					sb.append("<div id=\"").append(domid).append("\">");
+				}
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				((Div)block).getFlows().forEach((flow)
 						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 				renderEndTag(sb, block);
+				if (domid != null) {
+					sb.append("</div>")
+					  .append(Formatter.elementLatexFormattingScript(domid));
+				}
 				break;
+			}
 			case Ul.QTI_CLASS_NAME:
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				((Ul)block).getLis().forEach((li)
@@ -672,7 +688,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case Math.QTI_CLASS_NAME: {
+				String domid = "mw_" + CodeHelper.getRAMUniqueID();
+				sb.append("<span id=\"").append(domid).append("\">");
 				renderMath(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Math)inline);
+				sb.append("</span>")
+				  .append(Formatter.elementLatexFormattingScript(domid));
 				break;
 			}
 			case Img.QTI_CLASS_NAME: {
@@ -709,9 +729,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected final void renderSpan(AssessmentRenderer renderer, StringOutput sb, Span span, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
-		StringMultipleAttribute attrClass = span.getAttributes().getStringMultipleAttribute("class");
-
-		if (attrClass != null && attrClass.getValue() != null && attrClass.getValue().contains("math")) {
+		if (containsClass(span,"math")) {
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			sb.append("<span id=\"").append(domid).append("\">");
 			
@@ -721,7 +739,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			renderEndTag(sb, span);
 			
 			sb.append("</span>")
-			  .append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100); }); \n/* ]]> */\n</script>");
+			  .append(Formatter.elementLatexFormattingScript(domid));
 		} else {
 			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
 			span.getInlines().forEach((child)
@@ -1391,10 +1409,15 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		renderer.setMathXsltDisabled(true);
 		try(StringOutput mathOutput = StringOutputPool.allocStringBuilder(2048)) {
-			mathOutput.append("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">");
+			if (!math.getAttributes().contains("xmlns")) {
+				StringAttribute xmlnsAttribute = new StringAttribute(math, "xmlns", false);
+				xmlnsAttribute.setValue("http://www.w3.org/1998/Math/MathML");
+				math.getAttributes().add(xmlnsAttribute);
+			}
+			renderStartHtmlTag(mathOutput, component, resolvedAssessmentItem, math, null);
 			math.getContent().forEach((foreignElement)
 					-> renderMath(renderer, mathOutput, component, resolvedAssessmentItem, itemSessionState, foreignElement));
-			mathOutput.append("</math>");
+			renderEndTag(mathOutput, math);
 			String enrichedMathML = StringOutputPool.freePop(mathOutput);
 			renderer.setMathXsltDisabled(false);
 			transformMathmlAsString(sb, enrichedMathML);
@@ -1449,7 +1472,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderEndTag(out, fElement);
 			}
 		} else if(mathElement instanceof TextRun) {
-			out.append(((TextRun)mathElement).getTextContent());
+			out.append(StringEscapeUtils.escapeXml(((TextRun)mathElement).getTextContent()));
 		}
 	}
 	
@@ -1588,7 +1611,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
             sb.append("<span class='o_error'>ERROR MATHML</span>");
         }
 	}
-	
+
 	protected boolean containsClass(QtiNode element, String marker) {
 		AttributeList attributes = element.getAttributes();
 		for(int i=attributes.size(); i-->0; ) {
