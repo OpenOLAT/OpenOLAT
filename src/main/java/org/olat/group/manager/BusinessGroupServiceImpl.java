@@ -766,8 +766,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// 1) Delete all group properties
 			CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 			ct.deleteTools(group);// deletes everything concerning properties&collabTools
-			// 1.c)delete user in security groups
-			//removeFromRepositoryEntrySecurityGroup(group);
 			// 2) Delete the group areas
 			areaManager.deleteBGtoAreaRelations(group);
 			// 3) Delete the relations
@@ -783,8 +781,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			infoMessageManager.removeInfoMessagesAndSubscriptionContext(group);
 			// 7) the group
 			businessGroupDAO.delete(group);
-			// 8) delete the associated security groups
-			//TODO group
 			
 			dbInstance.commit();
 	
