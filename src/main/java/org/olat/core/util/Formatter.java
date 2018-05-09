@@ -663,10 +663,24 @@ public class Formatter {
 			sb.append("<").append(elem).append(" id=\"").append(domid).append("\">");
 			sb.append(htmlFragment);
 			sb.append("</").append(elem).append(">");
-			sb.append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100);\n/* ]]> */\n</script>");
+			sb.append(elementLatexFormattingScript(domid));
 			return sb.toString();
 		}
 		return htmlFragment;
+	}
+
+	/**
+	 * Html code script to render the latex formulas of a given element id 
+	 * @param domid Id of the DOM node containing the elements to render.
+	 */
+	public static String elementLatexFormattingScript(String domid) {
+		return String.format("%n"
+				+ "<script type='text/javascript'>%n"
+				+ "/* <![CDATA[ */%n"
+				+ " jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('%s');}, 100); }); %n"
+				+ "/* ]]> */%n"
+				+ "</script>",
+				domid);
 	}
 	
 	

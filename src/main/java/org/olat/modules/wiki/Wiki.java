@@ -152,8 +152,14 @@ public class Wiki implements WikiContainer, Serializable {
 			return page;
 		}
 		if (loadContent) {
-			VFSLeaf leaf = (VFSLeaf) pageContainer.resolve(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
-			page.setContent(FileUtils.load(leaf.getInputStream(), "utf-8"));
+			VFSItem item = pageContainer.resolve(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
+			if(item instanceof VFSLeaf) {
+				try(InputStream in = ((VFSLeaf)item).getInputStream()) {
+					page.setContent(FileUtils.load(in, "utf-8"));
+				} catch(Exception e) {
+					log.error("Cannot load wiki page: " + item, e);
+				}
+			}
 		}
 		return page;
 	}
