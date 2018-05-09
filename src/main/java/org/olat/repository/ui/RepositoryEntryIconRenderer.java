@@ -23,9 +23,13 @@ import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
@@ -40,8 +44,14 @@ import org.olat.repository.RepositoryEntryShort;
  * 
  * @author Florian Gnägi, http://www.frentix.com
  */
-public class RepositoryEntryIconRenderer implements CustomCellRenderer {
+public class RepositoryEntryIconRenderer implements CustomCellRenderer, FlexiCellRenderer {
 	
+	private final Locale locale;
+	
+	public RepositoryEntryIconRenderer(Locale locale) {
+		this.locale = locale;
+	}
+
 	public String getIconCssClass(Object val) {
 		String cssClass = null;
 		if (val instanceof RepositoryEntry) {
@@ -53,9 +63,19 @@ public class RepositoryEntryIconRenderer implements CustomCellRenderer {
 		}
 		return cssClass == null ? "" : cssClass;
 	}
-	
+
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		render(target, renderer, cellValue);
+	}
+
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale loc, int alignment, String action) {
+		render(sb, renderer, val);
+	}
+	
+	private void render(StringOutput sb, Renderer renderer, Object val) {
 		if (renderer == null) {
 			// render for export
 		} else {

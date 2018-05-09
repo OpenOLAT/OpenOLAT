@@ -2484,6 +2484,16 @@
 	  primary key (id)
 	);
 	
+	create table o_re_to_curriculum_element (
+	  id bigint not null auto_increment,
+	  creationdate datetime not null,
+	  lastmodified datetime not null,
+	  c_master bit default 0,
+	  fk_entry bigint not null,
+	  fk_curriculum_element bigint not null,
+	  primary key (id)
+	);
+	
 	-- user view
 	create view o_bs_identity_short_v as (
 	   select
@@ -2849,6 +2859,7 @@
 	alter table o_cur_curriculum ENGINE = InnoDB;
 	alter table o_cur_curriculum_element ENGINE = InnoDB;
 	alter table o_cur_element_type_to_type ENGINE = InnoDB;
+	alter table o_re_to_curriculum_element ENGINE = InnoDB;	
 	
 	-- rating
 	alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -3422,6 +3433,9 @@
 	
 	alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 	alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
+	
+	alter table o_re_to_curriculum_element add constraint rel_cur_el_to_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+	alter table o_re_to_curriculum_element add constraint rel_cur_el_to_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
 	
 	-- o_logging_table
 	create index log_target_resid_idx on o_loggingtable(targetresid);

@@ -21,8 +21,13 @@ package org.olat.modules.curriculum;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -64,5 +69,51 @@ public interface CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef element);
 	
 	public CurriculumElement updateCurriculumElement(CurriculumElement element);
+	
+	/**
+	 * The list of members of the specified curriculum element.
+	 * 
+	 * @param element The curriculum element
+	 * @return The list of memberships
+	 */
+	public List<CurriculumElementMember> getMembers(CurriculumElement element);
+	
+	/**
+	 * Add a member with the specified role to the curriculum element. The
+	 * inheritance mode of the membership is per default "none".
+	 * 
+	 * @param element The curriculum element
+	 * @param member The identity to make a member of
+	 * @param role The role of the member
+	 */
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role);
+	
+	/**
+	 * Remove a member of the curriculum element and discard all its roles.
+	 * 
+	 * @param element The curriculum element
+	 * @param member The identity to remove
+	 */
+	public void removeMember(CurriculumElement element, IdentityRef member);
+	
+	/**
+	 * The all list of repository entries hold by the specified curriculum element.
+	 * 
+	 * @param element The curriculum element
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element);
+	
+	/**
+	 * This will add a relation between the curriculum element and the repository
+	 * entry and it will add the base group of the curriculum to the set of groups
+	 * of the repository entry.
+	 * 
+	 * 
+	 * @param element The curriculum element
+	 * @param entry The repository entry
+	 * @param master If the relation is the master one
+	 */
+	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master);
 
 }

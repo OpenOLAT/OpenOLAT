@@ -22,28 +22,36 @@ package org.olat.repository.ui;
 import java.util.Collection;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for RepositoryEntryACColumnDescriptor
- * 
- * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse
  */
-//fxdiff VCRP-1,2: access control of resources
-public class RepositoryEntryACColumnDescriptor implements CustomCellRenderer {
+public class RepositoryEntryACColumnDescriptor implements CustomCellRenderer, FlexiCellRenderer {
+
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		render(target, cellValue);
+	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		render(sb, val);
+	}
+	
+	private void render(StringOutput sb, Object val) {
 		if(val instanceof Collection) {
 			Collection<?> accessTypes = (Collection<?>)val;
 			for(Object accessType:accessTypes) {

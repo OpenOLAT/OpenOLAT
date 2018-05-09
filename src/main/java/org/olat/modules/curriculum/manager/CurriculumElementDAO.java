@@ -19,16 +19,21 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,5 +101,30 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("curriculumKey", curriculum.getKey())
 				.getResultList();
+	}
+	
+	public List<CurriculumElementMember> getMembers(CurriculumElementRef element) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident, membership.role, membership.inheritanceModeString from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" where el.key=:elementKey");
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("elementKey", element.getKey())
+				.getResultList();
+		List<CurriculumElementMember> members = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Identity identity = (Identity)object[0];
+			String role = (String)object[1];
+			String inheritanceModeString = (String)object[2];
+			GroupMembershipInheritance inheritanceMode = GroupMembershipInheritance.none;
+			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
+				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
+			}
+			members.add(new CurriculumElementMember(identity, role, inheritanceMode));
+		}
+		return members;
 	}
 }

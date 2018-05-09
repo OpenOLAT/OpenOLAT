@@ -40,14 +40,14 @@ public class EditCurriculumElementOverviewController extends BasicController {
 	private TabbedPane tabPane;
 	
 	private EditCurriculumElementController metadataCtrl;
+	private CurriculumElementResourceListController resourcesCtrl;
+	private CurriculumElementUserManagementController userManagementCtrl;
 	
-	private Curriculum curriculum;
 	private CurriculumElement element;
 	
 	public EditCurriculumElementOverviewController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement element, Curriculum curriculum) {
 		super(ureq, wControl);
-		this.curriculum = curriculum;
 		this.element = element;
 		
 		VelocityContainer mainVC = createVelocityContainer("curriculum_element_overview");
@@ -66,9 +66,17 @@ public class EditCurriculumElementOverviewController extends BasicController {
 	}
 	
 	private void initTabPane() {
+		tabPane.addTab(translate("tab.resources"), uureq -> {
+			resourcesCtrl = new CurriculumElementResourceListController(uureq, getWindowControl(), element);
+			listenTo(resourcesCtrl);
+			return resourcesCtrl.getInitialComponent();
+		});
 		
-
-		
+		tabPane.addTab(translate("tab.user.management"), uureq -> {
+			userManagementCtrl = new CurriculumElementUserManagementController(uureq, getWindowControl(), element);
+			listenTo(userManagementCtrl);
+			return userManagementCtrl.getInitialComponent();
+		});
 	}
 
 	@Override

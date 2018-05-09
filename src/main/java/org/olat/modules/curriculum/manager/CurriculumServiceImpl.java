@@ -21,13 +21,23 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,9 +51,17 @@ import org.springframework.stereotype.Service;
 public class CurriculumServiceImpl implements CurriculumService {
 	
 	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
 	private CurriculumDAO curriculumDao;
 	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
 
 	@Override
 	public Curriculum createCurriculum(String identifier, String displayName, String description, Organisation organisation) {
@@ -85,7 +103,33 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum) {
 		return curriculumElementDao.loadElements(curriculum);
 	}
-	
-	
-	
+
+	@Override
+	public List<CurriculumElementMember> getMembers(CurriculumElement element) {
+		return curriculumElementDao.getMembers(element);
+	}
+
+	@Override
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role) {
+		if(!groupDao.hasRole(element.getGroup(), member, role.name())) {
+			groupDao.addMembershipOneWay(element.getGroup(), member, role.name(), GroupMembershipInheritance.none);
+		} 
+	}
+
+	@Override
+	public void removeMember(CurriculumElement element, IdentityRef member) {
+		groupDao.removeMembership(element.getGroup(), member);
+	}
+
+	@Override
+	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
+		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(element);
+	}
+
+	@Override
+	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master) {
+		RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
+		repositoryEntryRelationDao.createRelation(element.getGroup(), repoEntry);
+		curriculumRepositoryEntryRelationDao.createRelation(repoEntry, element, master);
+	}
 }

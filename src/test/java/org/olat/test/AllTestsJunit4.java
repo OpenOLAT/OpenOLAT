@@ -180,6 +180,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.curriculum.manager.CurriculumDAOTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementDAOTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementTypeDAOTest.class,
+	org.olat.modules.curriculum.manager.CurriculumRepositoryEntryRelationDAOTest.class,
 	org.olat.modules.docpool.manager.DocumentPoolManagerTest.class,
 	org.olat.modules.forms.manager.EvaluationFormSurveyDAOTest.class,
 	org.olat.modules.forms.manager.EvaluationFormParticipationDAOTest.class,

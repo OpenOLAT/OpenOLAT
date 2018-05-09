@@ -151,10 +151,6 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == repoSearchCtr) {
@@ -221,7 +217,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	}
 
 	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
-		List<RepositoryEntry> repoEntries = new ArrayList<RepositoryEntry>();
+		List<RepositoryEntry> repoEntries = new ArrayList<>();
 		for(RepositoryEntry entry:entries) {
 			if(!repoTableModel.getObjects().contains(entry)) {
 				repoEntries.add(entry);
@@ -231,10 +227,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		repoTableModel.addObjects(repoEntries);
 		resourcesCtr.modelChanged();
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean asynchronous)
-	 */
+
 	@Override
 	protected void doDispose() {
 		//

@@ -39,6 +39,7 @@ public enum CurriculumElementManagedFlag {
 	 displayName(all),
 	 description(all),
 	 externalId(all),
+	 members(all),
 	 move(all),
 	 addChildren(all),
 	 delete(all);

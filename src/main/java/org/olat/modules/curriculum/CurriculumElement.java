@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -53,5 +54,7 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	public Curriculum getCurriculum();
 	
 	public CurriculumElement getParent();
+	
+	public Group getGroup();
 
 }
