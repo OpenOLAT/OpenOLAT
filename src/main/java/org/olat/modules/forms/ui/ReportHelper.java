@@ -29,7 +29,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.user.UserManager;
 
 /**
  * 
@@ -47,16 +46,13 @@ public class ReportHelper {
 	
 	private final Legend anonymousLegend;
 	private final ColorGenerator colorGenerator;
+	private final LegendNameGenerator legendNameGenerator;
 	
 	private final Map<EvaluationFormSession, Legend> sessionToData = new HashMap<>();
 	private final Map<EvaluationFormParticipation, Legend> participationToLegend = new HashMap<>();
 	private final Map<Identity, Legend> executorToLegend = new HashMap<>();
 	
-	private UserManager userManager;
-	
 	private ReportHelper(Builder builder) {
-		this.userManager = UserManager.getInstance();
-		
 		String anonymousName;
 		if (StringHelper.containsNonWhitespace(builder.anonymousName)) {
 			anonymousName = builder.anonymousName;
@@ -64,8 +60,10 @@ public class ReportHelper {
 			Translator translator = Util.createPackageTranslator(ReportHelper.class, builder.locale);
 			anonymousName = translator.translate("report.anonymous.user");
 		}
-		String anonymousColor = builder.anonymousColor;
-		if (!StringHelper.containsNonWhitespace(anonymousColor)) {
+		String anonymousColor;
+		if (StringHelper.containsNonWhitespace(builder.anonymousColor)) {
+			anonymousColor = builder.anonymousColor;
+		} else {
 			anonymousColor = DEFAULT_COLOR;
 		}
 		this.anonymousLegend = new Legend(anonymousName, anonymousColor);
@@ -77,15 +75,12 @@ public class ReportHelper {
 			colors = new String[] { DEFAULT_COLOR };
 		}
 		this.colorGenerator = new ColorGenerator(colors);
-	}
-	
-	/**
-	 * Use this method only for testing purposes.
-	 *
-	 * @param userManager
-	 */
-	void setUserManager(UserManager userManager) {
-		this.userManager = userManager;
+		
+		if (builder.legendNameGenerator != null) {
+			this.legendNameGenerator = builder.legendNameGenerator;
+		} else {
+			this.legendNameGenerator = new UserDisplayNameGenerator();
+		}
 	}
 	
 	Legend getLegend(EvaluationFormSession session) {
@@ -97,7 +92,8 @@ public class ReportHelper {
 			}
 		}
 		if (legend == null) {
-			legend = addLegend(session);
+			legend = getLegendFromSession(session);
+			cacheLegend(session, legend);
 		}
 		if (legend == null) {
 			legend = anonymousLegend;
@@ -105,18 +101,29 @@ public class ReportHelper {
 		return legend;
 	}
 	
-	private Legend addLegend(EvaluationFormSession session) {
+	private Legend getLegendFromSession(EvaluationFormSession session) {
+		Legend legend = null;
 		if (session.getParticipation() != null && session.getParticipation().getExecutor() != null) {
 			Identity executor = session.getParticipation().getExecutor();
-			String name = userManager.getUserDisplayName(executor);
+			String name = legendNameGenerator.getName(executor);
 			String color = colorGenerator.getColor();
-			Legend legend = new Legend(name, color);
-			sessionToData.put(session, legend);
-			participationToLegend.put(session.getParticipation(), legend);
-			executorToLegend.put(executor, legend);
-			return legend;
+			legend = new Legend(name, color);
 		}
-		return null;
+		return legend ;
+	}
+
+	private void cacheLegend(EvaluationFormSession session, Legend legend) {
+		if (session != null && legend != null) {
+			sessionToData.put(session, legend);
+			EvaluationFormParticipation participation = session.getParticipation();
+			if (participation != null) {
+				participationToLegend.put(participation, legend);
+				Identity executor = participation.getExecutor();
+				if (executor != null) {
+					executorToLegend.put(executor, legend);
+				}
+			}
+		}
 	}
 
 	public static Builder builder(Locale locale) {
@@ -129,6 +136,7 @@ public class ReportHelper {
 		private String anonymousName = null;
 		private String anonymousColor = null;
 		private boolean hasColors = false;
+		private LegendNameGenerator legendNameGenerator;
 		
 		Builder(Locale locale) {
 			this.locale = locale;
@@ -138,14 +146,19 @@ public class ReportHelper {
 			this.anonymousName = name;
 			return this;
 		}
-		
+
 		public Builder withAnonymousColor(String color) {
 			this.anonymousColor = color;
 			return this;
 		}
-		
+
 		public Builder withColors() {
 			this.hasColors = true;
+			return this;
+		}
+		
+		public Builder withLegendNameGenrator(LegendNameGenerator legendNameGenerator) {
+			this.legendNameGenerator = legendNameGenerator;
 			return this;
 		}
 		

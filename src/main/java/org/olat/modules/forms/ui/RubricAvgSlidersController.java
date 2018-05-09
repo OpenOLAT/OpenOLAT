@@ -95,7 +95,6 @@ public class RubricAvgSlidersController extends BasicController {
 		}
 		overviewEl.setValues(sliderPoints);
 		mainVC.put(id, overviewEl.getComponent());
-		System.out.println("" + responseIdentifier + ": " +value);
 		return new SliderWrapper(slider, overviewEl);
 	}
 

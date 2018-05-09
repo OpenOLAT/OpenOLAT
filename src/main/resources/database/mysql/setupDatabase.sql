@@ -3295,6 +3295,7 @@ alter table o_eva_form_session add constraint eva_sess_to_form_idx foreign key (
 create index idx_eva_surv_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident(255));
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
+create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

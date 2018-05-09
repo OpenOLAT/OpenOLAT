@@ -20,8 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.Locale;
@@ -39,7 +37,6 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.ReportHelper.Legend;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 
 /**
  * 
@@ -52,8 +49,6 @@ public class ReportHelperTest {
 	private static final String ANONYMOUS_NAME = "name";
 	private static final String ANONYMOUS_COLOR = "color";
 	
-	private UserManager userManagerMock;
-	
 	private ReportHelper sut;
 	
 	@Before
@@ -62,9 +57,8 @@ public class ReportHelperTest {
 				.withAnonymousName(ANONYMOUS_NAME)
 				.withAnonymousColor(ANONYMOUS_COLOR)
 				.withColors()
+				.withLegendNameGenrator(new IdentityNameGenarator())
 				.build();
-		userManagerMock = mock(UserManager.class);
-		sut.setUserManager(userManagerMock);
 	}
 
 	@Test
@@ -75,8 +69,6 @@ public class ReportHelperTest {
 		executor.setName(executorName);
 		EvaluationFormParticipation participation = new TestableParticipation(Long.valueOf(1), executor);
 		EvaluationFormSession session =  new TestableSession(Long.valueOf(1), participation);
-		
-		when(userManagerMock.getUserDisplayName(executor)).thenReturn(executor.getName());
 		
 		Legend legend1 = sut.getLegend(session);
 		Legend legend2 = sut.getLegend(session);
@@ -96,8 +88,6 @@ public class ReportHelperTest {
 		EvaluationFormSession session1 =  new TestableSession(Long.valueOf(1), participation);
 		EvaluationFormSession session2 = new TestableSession(Long.valueOf(2), participation);
 		
-		when(userManagerMock.getUserDisplayName(executor)).thenReturn(executor.getName());
-		
 		Legend legend1 = sut.getLegend(session1);
 		Legend legend2 = sut.getLegend(session2);
 		
@@ -116,8 +106,6 @@ public class ReportHelperTest {
 		EvaluationFormSession session1 = new TestableSession(Long.valueOf(1), participation1);
 		EvaluationFormParticipation participation2 = new TestableParticipation(Long.valueOf(2), executor);
 		EvaluationFormSession session2 =  new TestableSession(Long.valueOf(1), participation2);
-		
-		when(userManagerMock.getUserDisplayName(executor)).thenReturn(executor.getName());
 		
 		Legend legend1 = sut.getLegend(session1);
 		Legend legend2 = sut.getLegend(session2);
@@ -141,9 +129,6 @@ public class ReportHelperTest {
 		executor2.setName(executorName2);
 		EvaluationFormParticipation participation2 = new TestableParticipation(Long.valueOf(2), executor2);
 		EvaluationFormSession session2 = new TestableSession(Long.valueOf(2), participation2);
-		
-		when(userManagerMock.getUserDisplayName(executor1)).thenReturn(executor1.getName());
-		when(userManagerMock.getUserDisplayName(executor2)).thenReturn(executor2.getName());
 		
 		Legend legend1 = sut.getLegend(session1);
 		Legend legend2 = sut.getLegend(session2);
@@ -231,11 +216,6 @@ public class ReportHelperTest {
 		}
 
 		@Override
-		public void setEvaluationFormSessionStatus(EvaluationFormSessionStatus sessionStatus) {
-			//
-		}
-
-		@Override
 		public Identity getIdentity() {
 			return null;
 		}
@@ -310,6 +290,15 @@ public class ReportHelperTest {
 		public Identity getExecutor() {
 			return executor;
 		}
+	}
+	
+	private final static class IdentityNameGenarator implements LegendNameGenerator {
+
+		@Override
+		public String getName(Identity identity) {
+			return identity.getName();
+		}
+		
 	}
 
 }

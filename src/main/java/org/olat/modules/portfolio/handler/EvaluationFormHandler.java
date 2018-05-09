@@ -35,6 +35,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Page;
@@ -81,9 +83,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 			EvaluationFormPart eva = (EvaluationFormPart)element;
 			PageBody body = eva.getBody();
 			Assignment assignment = portfolioService.getAssignment(body);
-			if(assignment == null) {
-				ctrl = getController(ureq, wControl, body, eva);
-			} else {
+			if(assignment != null) {
 				ctrl = getControllerForAssignment(ureq, wControl, body, assignment, hints.isOnePage());
 			}
 		}
@@ -98,31 +98,12 @@ public class EvaluationFormHandler implements PageElementHandler {
 	}
 	
 
-	private Controller getController(UserRequest ureq, WindowControl wControl, PageBody body, EvaluationFormPart eva) {
-		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		
-		Controller ctrl = null;
-		Page page = portfolioService.getPageByBody(body);
-		List<AccessRights> accessRights = portfolioService.getAccessRights(page);
-		if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
-			ctrl = new EvaluationFormExecutionController(ureq, wControl, ureq.getIdentity(), body, eva.getContent(), false);
-		} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
-			Identity owner = getOwner(accessRights);
-			ctrl =  new EvaluationFormExecutionController(ureq, wControl, owner, body, eva.getContent(), true);
-		} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
-				|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
-			Identity owner = getOwner(accessRights);
-			ctrl = new EvaluationFormExecutionController(ureq, wControl, owner, body, eva.getContent(), true);
-		}
-		
-		return ctrl;
-	}
-	
 	private Controller getControllerForAssignment(UserRequest ureq, WindowControl wControl, PageBody body, Assignment assignment, boolean onePage) {
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 
 		//find the evaluation form
 		RepositoryEntry re = assignment.getFormEntry();
+		EvaluationFormSurvey survey = portfolioService.loadOrCreateSurvey(body, re);
 
 		Page page = assignment.getPage();
 		PageStatus pageStatus = page.getPageStatus();
@@ -132,21 +113,25 @@ public class EvaluationFormHandler implements PageElementHandler {
 		boolean anonym = assignment.isAnonymousExternalEvaluation();
 		if(pageStatus == null || pageStatus == PageStatus.draft) {
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
-				ctrl = new EvaluationFormExecutionController(ureq, wControl, ureq.getIdentity(), body, re, false, false);
+				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
+				ctrl = new EvaluationFormExecutionController(ureq, wControl, session, false, false);
 			}
 		} else if (assignment.isOnlyAutoEvaluation()) {
 			// only the auto evaluation is shown
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
-				ctrl =  new EvaluationFormExecutionController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, false);
+				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
+				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, readOnly, false);
 			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
-				ctrl =  new EvaluationFormExecutionController(ureq, wControl, owner, body, re, true, false);
+				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, owner);
+				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, true, false);
 			} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
 				if(assignment.isReviewerSeeAutoEvaluation()) {
 					Identity owner = getOwner(accessRights);
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, owner, body, re, true, false);
+					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, owner);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, true, false);
 				}
 			}
 		} else {
@@ -155,31 +140,32 @@ public class EvaluationFormHandler implements PageElementHandler {
 				Identity owner = getOwner(accessRights);
 				List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
 				if(coachesAndReviewers.size() > 0) {
-					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, onePage, anonym);
+					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
 				} else {
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, false);
+					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, false);
 				}
 			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
 				List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
 				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
-				ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, onePage, anonym);
+				ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
 			} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
 				if(assignment.isReviewerSeeAutoEvaluation()) {
 					Identity owner = getOwner(accessRights);
 					List<Identity> reviewers = Collections.singletonList(ureq.getIdentity());
-					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, body, re, true, readOnly, onePage, anonym);
+					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, survey, true, readOnly, onePage, anonym);
 				} else {
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, !readOnly);
+					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly);
 				}
 			}
 		}
 		return ctrl;
 	}
-		
-	
+
 	private Identity getOwner(List<AccessRights> accessRights) {
 		for(AccessRights accessRight:accessRights) {
 			if(PortfolioRoles.owner == accessRight.getRole()) {

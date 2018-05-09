@@ -56,7 +56,6 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
-import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.ui.editor.ValidatingController;
 import org.olat.modules.portfolio.ui.editor.ValidationMessage;
 import org.olat.modules.portfolio.ui.editor.ValidationMessage.Level;
@@ -93,8 +92,13 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EvaluationFormManager evaluationFormManager;
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
+		this(ureq, wControl, session, false, true);
+	}
+	
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
+			boolean readOnly, boolean showDoneButton) {
 		super(ureq, wControl, "execute");
-
+		
 		RepositoryEntry formEntry = session.getSurvey().getFormEntry();
 		File repositoryDir = new File(
 				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
@@ -103,40 +107,13 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		
 		this.session = session;
-		this.readOnly = false;
-		this.showDoneButton = true;
-		
-		initForm(ureq);
-	}
-	
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Identity evaluator,
-			PageBody anchor, RepositoryEntry formEntry, boolean readOnly, boolean showDoneButton) {
-		super(ureq, wControl, "execute");
-
-		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
-		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
-		
-		this.session = loadOrCreateSession(evaluator, anchor, formEntry);
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
 		
 		initForm(ureq);
+		
 	}
 	
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Identity evaluator,
-			PageBody pageBody, String xmlForm, boolean readOnly) {
-		super(ureq, wControl, "execute");
-		
-		form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), xmlForm);
-		
-		this.session = loadOrCreateSession(evaluator, pageBody, null);
-		this.readOnly = readOnly;
-		this.showDoneButton = false;
-		
-		initForm(ureq);
-	}
-
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile) {
 		super(ureq, wControl, "execute");
 
@@ -166,24 +143,20 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		showHideButtons();
 	}
 	
-	private EvaluationFormSession loadOrCreateSession(Identity evaluator, PageBody anchor, RepositoryEntry formEntry) {
-		if (evaluator == null || anchor == null) return null;
-		
-		EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(evaluator, anchor);
-		if (session == null && formEntry != null) {
-			session = evaluationFormManager.createSessionForPortfolioEvaluation(evaluator, anchor, formEntry);
-		}
-		return session;
-	}
-
 	private void ajustFromSession() {
 		if (session == null) return;
 		
 		if(session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			readOnly = true;
 			showDoneButton = false;
-		} else if(session.getIdentity() != null && !session.getIdentity().equals(getIdentity())) {
-			flc.contextPut("messageNotDone", Boolean.TRUE);
+		} else {
+			Identity executor = null;
+			if (session.getParticipation() != null) {
+				executor = session.getParticipation().getExecutor();
+			}
+			if (executor != null && !executor.equals(getIdentity())) {
+				flc.contextPut("messageNotDone", Boolean.TRUE);
+			}
 		}
 	}
 

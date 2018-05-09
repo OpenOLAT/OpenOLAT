@@ -38,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.forms.manager.EvaluationFormSessionDAO;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
@@ -47,6 +46,7 @@ import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AbstractPart;
@@ -71,7 +71,7 @@ public class PageDAO {
 	@Autowired
 	private UserCommentsDAO userCommentsDAO;
 	@Autowired
-	private EvaluationFormSessionDAO evaluationFormSessionDao;
+	private PortfolioService portfolioService;
 
 	/**
 	 * 
@@ -460,13 +460,13 @@ public class PageDAO {
 				.setParameter("pageKey", page.getKey())
 				.executeUpdate();
 		
-		int evaluations = evaluationFormSessionDao.deleteSessionForPortfolioEvaluation(body);
+		portfolioService.deleteSurvey(body);
 		
 		dbInstance.getCurrentEntityManager().remove(page);
 		dbInstance.getCurrentEntityManager().remove(body);
 		
 		int comments = userCommentsDAO.deleteAllComments(ores, null);
 
-		return comments + parts + evaluations + assignments + 2;
+		return comments + parts + assignments + 2;
 	}
 }

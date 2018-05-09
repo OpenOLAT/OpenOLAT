@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -81,18 +82,6 @@ public class EvaluationFormMangerImplTest {
 		
 		verify(surveyDaoMock, never()).updateForm(surveyMock, formEntryMock);
 	}
-
-	
-	@Test
-	public void shouldMakeParticipationDoneWhenFinishingSession() {
-		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
-		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
-		when(sessionMock.getParticipation()).thenReturn(participationMock);
-		
-		sut.finishSession(sessionMock);
-
-		verify(particopationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.done);
-	}
 	
 	@Test
 	public void shouldMakeSessionDoneWhenFinishingSession() {
@@ -104,11 +93,24 @@ public class EvaluationFormMangerImplTest {
 	}
 	
 	@Test
+	public void shouldMakeParticipationDoneWhenFinishingSession() {
+		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
+		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		when(particopationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		
+		sut.finishSession(sessionMock);
+
+		verify(particopationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.done);
+	}
+	
+	@Test
 	public void shouldMakeSessionAnonymousWhenFinishingSessionIfParticipationIsAnonymous() {
 		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
 		when(participationMock.isAnonymous()).thenReturn(Boolean.TRUE);
 		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		when(particopationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
 		
 		sut.finishSession(sessionMock);
 
@@ -121,10 +123,45 @@ public class EvaluationFormMangerImplTest {
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
 		when(participationMock.isAnonymous()).thenReturn(Boolean.FALSE);
 		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		when(particopationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
 		
 		sut.finishSession(sessionMock);
 
 		verify(sessionDaoMock, never()).makeAnonymous(sessionMock);
+	}
+	
+	@Test
+	public void shouldMakeSessionInProgressWhenReopeningSession() {
+		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
+		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		
+		sut.reopenSession(sessionMock);
+
+		verify(sessionDaoMock).changeStatus(sessionMock, EvaluationFormSessionStatus.inProgress);
+	}
+
+	@Test
+	public void shouldMakeParticipationPreparedWhenReopeningSession() {
+		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
+		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		
+		sut.reopenSession(sessionMock);
+
+		verify(particopationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
+	}
+
+	@Test
+	public void shouldNotReopenWhenIsAnonymousSession() {
+		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
+		when(sessionMock.getParticipation()).thenReturn(null);
+		
+		sut.reopenSession(sessionMock);
+
+		verify(sessionDaoMock, never()).changeStatus(sessionMock, EvaluationFormSessionStatus.inProgress);
+		verify(particopationDaoMock, never()).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
 	}
 
 }

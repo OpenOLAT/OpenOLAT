@@ -31,6 +31,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -632,6 +634,10 @@ public interface PortfolioService {
 	
 	public void setAssessmentStatus(Identity assessedIdentity, BinderRef binderRef, AssessmentEntryStatus status, Identity coachingIdentity);
 		
+	public EvaluationFormSurvey loadOrCreateSurvey(PageBody body, RepositoryEntry formEntry);
 	
+	public EvaluationFormSession loadOrCreateSession(EvaluationFormSurvey survey, Identity executor);
+
+	public void deleteSurvey(PageBody body);
 
 }

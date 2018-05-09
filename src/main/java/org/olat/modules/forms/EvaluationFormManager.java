@@ -28,24 +28,24 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
  * Initial date: 12 déc. 2016<br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public interface EvaluationFormManager {
-	
+
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry);
-	
+
 	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent);
 
 	public boolean isFormUpdateable(EvaluationFormSurvey survey);
-	
+
 	/**
 	 * Update the form of a survey. Use {@link isFormUpdateable(survey)} to check if
 	 * the form can be updated before using this method. If the form can not be
@@ -65,12 +65,20 @@ public interface EvaluationFormManager {
 	 */
 	public void deleteAllData(EvaluationFormSurvey survey);
 
+	/**
+	 * Delete the survey and all data but the evaluation form.
+	 *
+	 * @param survey
+	 */
+	public void deleteSurvey(EvaluationFormSurvey survey);
+
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey);
-	
+
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor);
-	
-	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormParticipationIdentifier identifier);
-	
+
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier);
+
 	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation);
 
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor);
@@ -89,63 +97,61 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
-	
+
 	public EvaluationFormSession createSession(EvaluationFormParticipation participation);
-	
+
 	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation);
-	
-	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey, EvaluationFormSessionStatus status);
-	
+
+	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey,
+			EvaluationFormSessionStatus status);
+
+	/**
+	 * Finish a session and the correspondent participation.
+	 *
+	 * @param session
+	 * @return
+	 */
 	public EvaluationFormSession finishSession(EvaluationFormSession session);
 	
-	//TODO uh replace
-	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry); 
-	
-	//TODO uh replace
-	public EvaluationFormSession getSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor);
-	
-	//TODO uh replace
-	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor);
-	
-	//TODO uh replace
-	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status);
-	
-	//TODO uh replace
-	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier,
-			BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormSession session);
+	/**
+	 * Reopen a session and the correspondent participation. It is not possible to
+	 * reopen a anonymous session.
+	 *
+	 * @param session
+	 * @return
+	 */
+	public EvaluationFormSession reopenSession(EvaluationFormSession session);
 
-	//TODO uh replace
-	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
-			String filename, EvaluationFormSession session) throws IOException;
-	
-	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session, String value);
-	
-	public EvaluationFormResponse createNumericalResponse(String responseIdentifier, EvaluationFormSession session, BigDecimal value);
-	
+	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
+			String value);
+
+	public EvaluationFormResponse createNumericalResponse(String responseIdentifier, EvaluationFormSession session,
+			BigDecimal value);
+
+	public EvaluationFormResponse createFileResponse(String responseIdentifier, EvaluationFormSession session,
+			File file, String filename) throws IOException;
+
 	public EvaluationFormResponse createNoResponse(String responseIdentifier, EvaluationFormSession session);
 
 	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value);
-	
-	public EvaluationFormResponse updateResponseForPortfolioEvaluation(BigDecimal numericalValue,
-			String stringuifiedResponse, EvaluationFormResponse response);
-	
+
 	public EvaluationFormResponse updateResponse(EvaluationFormResponse response, String stringValue);
 
-	public EvaluationFormResponse updateResponseForPortfolioEvaluation(File file, String filename,
-			EvaluationFormResponse response) throws IOException;
-	
+	public EvaluationFormResponse updateFileResponse(EvaluationFormResponse response, File file, String filename)
+			throws IOException;
+
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
-	
+
 	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session);
-	
+
 	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session);
-	
+
 	public File loadResponseFile(EvaluationFormResponse response);
-	
+
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
-	
+
 	public void deleteResponse(EvaluationFormResponse response);
-	
+
 	public void deleteResponses(List<EvaluationFormResponse> response);
 
 	/**

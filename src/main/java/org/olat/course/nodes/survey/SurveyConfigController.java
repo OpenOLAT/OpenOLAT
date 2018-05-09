@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.survey;
 
+import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+
+import java.io.File;
 import java.util.Collection;
 import java.util.stream.Stream;
 
@@ -43,6 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -257,8 +261,10 @@ public class SurveyConfigController extends FormBasicController {
 
 	private void doPreviewQuestionnaire(UserRequest ureq) {
 		RepositoryEntry formEntry = survey.getFormEntry();
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, formEntry, false,
-				false);
+		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
+		File formFile = new File(repositoryDir, FORM_XML_FILE);
+		Controller controller =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile);
+
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);
 		previewCtr.addDisposableChildController(controller);

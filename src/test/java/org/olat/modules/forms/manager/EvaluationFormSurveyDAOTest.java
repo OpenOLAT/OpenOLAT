@@ -94,4 +94,19 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		
 		assertThat(loadedSurvey).isEqualTo(survey);
 	}
+	
+	@Test
+	public void shouldDeleteSurvey() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry);
+		dbInstance.commit();
+		
+		sut.delete(survey);
+		dbInstance.commit();
+		
+		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, null);
+		assertThat(loadedSurvey).isNull();
+	}
+
 }

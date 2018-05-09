@@ -64,8 +64,10 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
-import org.olat.modules.forms.manager.EvaluationFormSessionDAO;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
@@ -172,7 +174,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private EvaluationFormSessionDAO evaluationFormSessionDao;
+	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private BinderUserInformationsDAO binderUserInformationsDao;
 	
@@ -427,7 +429,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, false, null, section);
 				reloadedAssignment = assignmentDao.startFormAssignment(reloadedAssignment, page, author);
 				// create the session for the assignee
-				evaluationFormSessionDao.createSessionForPortfolio(author, page.getBody(), formEntry);
+				EvaluationFormSurvey survey = loadOrCreateSurvey(page.getBody(), formEntry);
+				loadOrCreateSession(survey, author);
 			}
 		}
 		dbInstance.commit();
@@ -1064,9 +1067,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 			((PageImpl)reloadedPage).setLastPublicationDate(now);
 			Section section = reloadedPage.getSection();
-			// auto update the status of the evaluation form of the authors of the binder
-			changeAssignmentStatus(page, section, EvaluationFormSessionStatus.done);
-			
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
 				if(currentStatus == PageStatus.closed) {
@@ -1078,10 +1078,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 					((SectionImpl)section).setSectionStatus(SectionStatus.inProgress);
 					binderDao.updateSection(section);
 				}
+				List<Identity> owners = getOwners(page, section);
+				for (Identity owner: owners) {
+					EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
+					EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
+					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
+					evaluationFormManager.finishSession(session);
+				}
 			}
 		} else if(status == PageStatus.inRevision) {
 			Section section = reloadedPage.getSection();
-			changeAssignmentStatus(page, section, EvaluationFormSessionStatus.inProgress);
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
 				if(sectionStatus == null || sectionStatus == SectionStatus.notStarted || sectionStatus == SectionStatus.closed) {
@@ -1089,6 +1095,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 						((SectionImpl)section).setSectionStatus(SectionStatus.inProgress);
 						binderDao.updateSection(section);
 					}
+				}
+				List<Identity> owners = getOwners(page, section);
+				for (Identity owner: owners) {
+					EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
+					EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
+					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
+					evaluationFormManager.reopenSession(session);
 				}
 			}
 			pageUserInfosDao.updateStatus(reloadedPage, PageUserStatus.inProcess, PageUserStatus.done);
@@ -1104,27 +1117,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 		return pageDao.updatePage(reloadedPage);
 	}
 	
-	/**
-	 * Auto update the status of the evaluation form of the authors of the binder.
-	 * 
-	 * @param page The page where the evaluation is
-	 * @param section The section of the page
-	 * @param newStatus The new status of the evaluation
-	 */
-	private void changeAssignmentStatus(Page page, Section section, EvaluationFormSessionStatus newStatus) {
-		// auto update the status of the evaluation form of the authors of the binder
+	private List<Identity> getOwners(Page page, Section section) {
 		Assignment assignment = assignmentDao.loadAssignment(page.getBody());
 		if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
-			List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
-			for(Identity owner:owners) {
-				evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), newStatus);
-			}
-		} else if(evaluationFormSessionDao.hasSessionForPortfolioEvaluation(page.getBody())) {
-			List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
-			for(Identity owner:owners) {
-				evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), newStatus);
-			}
+			return getMembers(section.getBinder(), PortfolioRoles.owner.name());
 		}
+		return new ArrayList<>();
 	}
 	
 	@Override
@@ -1376,5 +1374,42 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 	}
 	
+	@Override
+	public EvaluationFormSurvey loadOrCreateSurvey(PageBody body, RepositoryEntry formEntry) {
+		OLATResourceable ores = getOLATResourceableForEvaluationForm(body);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, null);
+		if (survey == null) {
+			survey = evaluationFormManager.createSurvey(ores, null, formEntry);
+		}
+		return survey;
+	}
+
+	private OLATResourceable getOLATResourceableForEvaluationForm(PageBody body) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("portfolio-evaluation", body.getKey());
+		return ores;
+	}
+
+	@Override
+	public EvaluationFormSession loadOrCreateSession(EvaluationFormSurvey survey, Identity executor) {
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
+		if (participation == null) {
+			participation = evaluationFormManager.createParticipation(survey, executor);
+		}
+		
+		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
+		if (session == null) {
+			session = evaluationFormManager.createSession(participation);
+		}
+		return session;
+	}
+
+	@Override
+	public void deleteSurvey(PageBody body) {
+		OLATResourceable ores = getOLATResourceableForEvaluationForm(body);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, null);
+		if (survey != null) {
+			evaluationFormManager.deleteSurvey(survey);
+		}
+	}
 	
 }

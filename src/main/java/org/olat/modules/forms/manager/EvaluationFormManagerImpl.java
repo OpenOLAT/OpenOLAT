@@ -40,7 +40,6 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,10 +90,19 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public void deleteAllData(EvaluationFormSurvey survey) {
+		if (survey == null) return;
+		
 		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesBySurvey(survey);
 		deleteResponses(responses);
 		evaluationFormSessionDao.deleteSessions(survey);
 		evaluationFormParticipationDao.deleteParticipations(survey);
+	}
+	
+	@Override
+	public void deleteSurvey(EvaluationFormSurvey survey) {
+		if (survey == null) return;
+		deleteAllData(survey);
+		evaluationFormSurveyDao.delete(survey);
 	}
 
 	@Override
@@ -153,17 +161,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormSession createSessionForPortfolioEvaluation(Identity identity, PageBody body, RepositoryEntry formEntry) {
-		return evaluationFormSessionDao.createSessionForPortfolio(identity, body, formEntry);
-	}
-
-	@Override
-	public EvaluationFormSession getSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor) {
-		return evaluationFormSessionDao.getSessionForPortfolioEvaluation(identity, anchor);
-	}
-
-	@Override
 	public EvaluationFormSession finishSession(EvaluationFormSession session) {
+		if (session == null) return null;
 		EvaluationFormSession finishedSesssion = session;
 		EvaluationFormParticipation participation = session.getParticipation();
 		if (participation != null) {
@@ -175,26 +174,22 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		finishedSesssion = evaluationFormSessionDao.changeStatus(finishedSesssion, EvaluationFormSessionStatus.done);
 		return finishedSesssion;
 	}
-
+	
 	@Override
-	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor) {
-		return evaluationFormResponseDao.getResponsesFromPortfolioEvaluation(identity, anchor);
+	public EvaluationFormSession reopenSession(EvaluationFormSession session) {
+		if (session == null) return null;
+		EvaluationFormSession finishedSesssion = session;
+		EvaluationFormParticipation participation = session.getParticipation();
+		if (participation != null) {
+			participation = evaluationFormParticipationDao.changeStatus(participation, EvaluationFormParticipationStatus.prepared);
+			finishedSesssion = evaluationFormSessionDao.changeStatus(finishedSesssion, EvaluationFormSessionStatus.inProgress);
+		}
+		return finishedSesssion;
 	}
 
 	@Override
-	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status) {
-		return evaluationFormResponseDao.getResponsesFromPortfolioEvaluation(identities, anchor, status);
-	}
-
-	@Override
-	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
-			EvaluationFormSession session) {
-		return evaluationFormResponseDao.createResponse(responseIdentifier, numericalValue, stringuifiedResponse, null, session);
-	}
-
-	@Override
-	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, File file,
-			String filename, EvaluationFormSession session) throws IOException {
+	public EvaluationFormResponse createFileResponse(String responseIdentifier, EvaluationFormSession session,
+			File file, String filename) throws IOException {
 		Path relativePath = evaluationFormStorage.save(file, filename);
 		return evaluationFormResponseDao.createResponse(responseIdentifier, null, filename, relativePath,
 				session);
@@ -223,13 +218,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormResponse updateResponseForPortfolioEvaluation(BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormResponse response) {
-		return evaluationFormResponseDao.updateResponse(numericalValue, stringuifiedResponse, null, response);
-	}
-
-	@Override
-	public EvaluationFormResponse updateResponseForPortfolioEvaluation(File file, String filename,
-			EvaluationFormResponse response) throws IOException {
+	public EvaluationFormResponse updateFileResponse(EvaluationFormResponse response, File file,
+			String filename) throws IOException {
 		if (response.getFileResponse() != null) {
 			evaluationFormStorage.delete(response.getFileResponse());
 		}
@@ -296,6 +286,6 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry) {
-		return evaluationFormSessionDao.isInUse(formEntry);
+		return evaluationFormSessionDao.hasSessions(formEntry);
 	}
 }

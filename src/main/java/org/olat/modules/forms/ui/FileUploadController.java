@@ -153,10 +153,10 @@ public class FileUploadController extends FormBasicController implements Evaluat
 				String filename = fileEl.getUploadFileName();
 				try {
 					if (response == null) {
-						response = evaluationFormManager.createResponseForPortfolioEvaluation(fileUpload.getId(), file,
-								filename, session);
+						response = evaluationFormManager.createFileResponse(fileUpload.getId(), session,
+								file, filename);
 					} else {
-						response = evaluationFormManager.updateResponseForPortfolioEvaluation(file, filename, response);
+						response = evaluationFormManager.updateFileResponse(response, file, filename);
 					}
 					newFileUploaded = false;
 				} catch (IOException e) {

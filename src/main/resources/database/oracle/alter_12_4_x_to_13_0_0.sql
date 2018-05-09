@@ -184,3 +184,5 @@ alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (
 create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);
 alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
 
+create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
+

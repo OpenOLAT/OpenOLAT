@@ -28,22 +28,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageBody;
-import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.manager.BinderDAO;
-import org.olat.modules.portfolio.manager.PageDAO;
-import org.olat.modules.portfolio.model.BinderImpl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,12 +48,6 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private PageDAO pageDao;
-	@Autowired
-	private BinderDAO binderDao;
-	@Autowired
-	private EvaluationFormSessionDAO evaluationFormSessionDao;
-	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
 	
 	@Autowired
@@ -75,45 +59,8 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void createResponseForPortfolio() {
-		//prepare a test case with the binder up to the page body
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("eva-1");
-		BinderImpl binder = binderDao.createAndPersist("Binder evaluation 1", "A binder with an evaluation", null, null);
-		Section section = binderDao.createSection("Section", "First section", null, null, binder);
-		dbInstance.commit();
-		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("Page 1", "A page with an evalutation.", null, null, true, reloadedSection, null);
-		dbInstance.commit();
-		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-
-		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		EvaluationFormSession session = evaluationFormSessionDao.createSessionForPortfolio(id, reloadedBody, formEntry);
-		dbInstance.commit();
-		
-		//create a response
-		String responseIdentifier = UUID.randomUUID().toString();
-		BigDecimal numericalValue = new BigDecimal("2.2");
-		String stringuifiedResponse = numericalValue.toPlainString();
-		Path fileResponse = Paths.get("this", "is", "a", "path");
-		EvaluationFormResponse response = sut.createResponse(responseIdentifier,
-				numericalValue, stringuifiedResponse, fileResponse, session);
-		dbInstance.commit();
-
-		Assert.assertNotNull(response);
-		Assert.assertNotNull(response.getKey());
-		Assert.assertNotNull(response.getCreationDate());
-		Assert.assertNotNull(response.getLastModified());
-		Assert.assertFalse(response.isNoResponse());
-		Assert.assertEquals(session, response.getSession());
-		Assert.assertEquals(numericalValue, response.getNumericalResponse());
-		Assert.assertEquals(stringuifiedResponse, response.getStringuifiedResponse());
-		Assert.assertEquals(fileResponse, response.getFileResponse());
-		Assert.assertEquals(responseIdentifier, response.getResponseIdentifier());
-	}
-	
-	@Test
 	public void shouldUpdateResponse() {
-		EvaluationFormSession session = createSession();
+		EvaluationFormSession session = evaTestHelper.createSession();
 		EvaluationFormResponse response = createResponse(session);
 		dbInstance.commit();
 		
@@ -130,7 +77,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldCreateNoResponse() {
-		EvaluationFormSession session = createSession();
+		EvaluationFormSession session = evaTestHelper.createSession();
 		String responseIdentifier = UUID.randomUUID().toString();
 		EvaluationFormResponse response = sut.createNoResponse(responseIdentifier, session);
 		dbInstance.commit();
@@ -147,7 +94,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldUpdateNoResponse() {
-		EvaluationFormSession session = createSession();
+		EvaluationFormSession session = evaTestHelper.createSession();
 		EvaluationFormResponse initialResponse = createResponse(session);
 		dbInstance.commit();
 
@@ -180,7 +127,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteResponses() {
-		EvaluationFormSession session = createSession();
+		EvaluationFormSession session = evaTestHelper.createSession();
 		String responseIdentifier = UUID.randomUUID().toString();
 		createResponse(session, responseIdentifier);
 		createResponse(session, responseIdentifier);
@@ -213,11 +160,4 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 				fileResponse, session);
 	}
 
-	private EvaluationFormSession createSession() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("eva-resp");
-		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSession session = evaluationFormSessionDao.createSessionForPortfolio(id, null, formEntry);
-		return session;
-	}
-	
 }

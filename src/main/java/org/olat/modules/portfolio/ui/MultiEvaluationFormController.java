@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -42,13 +41,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
 import org.olat.modules.forms.handler.FileUploadListingHandler;
@@ -71,11 +72,11 @@ import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormReportController;
+import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.Evaluator;
-import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,11 +89,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MultiEvaluationFormController extends BasicController {
 	
 	private int count = 0;
-	private final PageBody anchor;
 	private final Identity owner;
 	private final boolean readOnly;
 	private final boolean doneFirst;
-	private final RepositoryEntry formEntry;
+	private final EvaluationFormSurvey survey;
 	
 	private Link ownerLink;
 	private Link compareLink;
@@ -108,16 +108,17 @@ public class MultiEvaluationFormController extends BasicController {
 	private UserManager userManager;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public MultiEvaluationFormController(UserRequest ureq, WindowControl wControl,
-			Identity owner, List<Identity> otherEvaluators, PageBody anchor, RepositoryEntry formEntry,
+			Identity owner, List<Identity> otherEvaluators, EvaluationFormSurvey survey,
 			boolean doneFirst, boolean readOnly, boolean onePage, boolean anonym) {
 		super(ureq, wControl);
 		this.owner = owner;
-		this.anchor = anchor;
+		this.survey = survey;
 		this.readOnly = readOnly;
 		this.doneFirst = doneFirst;
-		this.formEntry = formEntry;
 		
 		if(onePage) {
 			initOnePageView(ureq, otherEvaluators, anonym);
@@ -181,7 +182,8 @@ public class MultiEvaluationFormController extends BasicController {
 	private Controller createEvalutationForm(UserRequest ureq, Identity evaluator) {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
-		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
+		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
+		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton);
 		listenTo(evalutionFormCtrl);
 		return evalutionFormCtrl;
 	}
@@ -243,8 +245,8 @@ public class MultiEvaluationFormController extends BasicController {
 	private boolean isViewOthers() {
 		boolean viewOthers;
 		if(doneFirst) {
-			EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(getIdentity(), anchor);
-			viewOthers = session == null ? false : session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done;
+			EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, getIdentity());
+			viewOthers = participation == null ? false : participation.getStatus() == EvaluationFormParticipationStatus.done;
 		} else {
 			viewOthers = true;
 		}
@@ -262,8 +264,8 @@ public class MultiEvaluationFormController extends BasicController {
 			if(event == Event.DONE_EVENT) {
 				if(doneFirst) {
 					// check if it's really done
-					EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(getIdentity(), anchor);
-					if(session != null && session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+					EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, getIdentity());
+					if(participation != null && participation.getStatus() == EvaluationFormParticipationStatus.done) {
 						segmentView.setVisible(true);
 					}
 				}
@@ -297,37 +299,46 @@ public class MultiEvaluationFormController extends BasicController {
 	private void doOpenEvalutationForm(UserRequest ureq, Identity evaluator) {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
-		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
+		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
+		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton);
 		listenTo(currentEvalutionFormCtrl);
 		mainVC.put("segmentCmp", currentEvalutionFormCtrl.getInitialComponent());
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
-		//TODO uh delete
-//		Controller ctrl = new EvaluationFormCompareController(ureq, getWindowControl(), evaluators, anchor, formEntry);
 		Controller ctrl = createReportController(ureq);
 		mainVC.put("segmentCmp", ctrl.getInitialComponent());
 	}
 	
 	private EvaluationFormReportController createReportController(UserRequest ureq) {
-		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
+		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(survey.getFormEntry().getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		Form form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 				
-		//TODO uh delete class Evaluator
-		List<Identity> evaluatorIdentities = evaluators.stream().map(evaluator -> evaluator.getIdentity()).collect(Collectors.toList());
-		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluatorIdentities, anchor, EvaluationFormSessionStatus.done);
-		Set<EvaluationFormSession> responseSessions = responses.stream().map(EvaluationFormResponse::getSession).collect(Collectors.toSet());
-		List<? extends EvaluationFormSessionRef> sessions = new ArrayList<>(responseSessions);
+		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey, EvaluationFormSessionStatus.done);
+		sessions.removeIf(session -> notEvaluator(session));
 		
 		EvaluationFormReportProvider provider = new ReportProvider();
 
+		LegendNameGenerator legendNameGenerator = new EvaluatorNameGenerator(evaluators);
 		ReportHelper reportHelper = ReportHelper.builder(getLocale())
 				.withColors()
+				.withLegendNameGenrator(legendNameGenerator)
 				.build();
 		return new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
 	}
 	
+	private boolean notEvaluator(EvaluationFormSession session) {
+		if (session != null && session.getParticipation() != null && session.getParticipation().getExecutor() != null) {
+			Identity executor = session.getParticipation().getExecutor();
+			List<Identity> evaluatorIdentities = evaluators.stream().map(Evaluator::getIdentity).collect(Collectors.toList());
+			if (evaluatorIdentities.contains(executor)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private final static class ReportProvider implements EvaluationFormReportProvider {
 		
 		private final Map<String, EvaluationFormReportHandler> handlers = new HashMap<>();
@@ -347,6 +358,24 @@ public class MultiEvaluationFormController extends BasicController {
 		public EvaluationFormReportHandler getReportHandler(PageElement element) {
 			return handlers.get(element.getType());
 		}
+	}
+	
+	private final static class EvaluatorNameGenerator implements LegendNameGenerator {
+
+		private final Map<Identity, String> identityToName;
+		
+		public EvaluatorNameGenerator(List<Evaluator> evaluators) {
+			super();
+			this.identityToName = evaluators.stream()
+					.collect(Collectors.toMap(Evaluator::getIdentity, Evaluator::getFullName));
+		}
+
+		@Override
+		public String getName(Identity identity) {
+			String name = identityToName.get(identity);
+			return StringHelper.containsNonWhitespace(name)? name: "???";
+		}
+		
 	}
 
 	public static class EvaluatorPanel {

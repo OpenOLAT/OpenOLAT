@@ -80,7 +80,7 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	private Date firstSubmissionDate;
 	
 	@ManyToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=true)
 	private EvaluationFormSurvey survey;
 	@OneToOne(targetEntity=EvaluationFormParticipationImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_participation", nullable=true, insertable=true, updatable=true)
@@ -144,7 +144,6 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 		return null;
 	}
 
-	@Override
 	public void setEvaluationFormSessionStatus(EvaluationFormSessionStatus sessionStatus) {
 		if(sessionStatus == null) {
 			status = null;

@@ -30,6 +30,15 @@ import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
+import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
+import org.olat.modules.portfolio.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,6 +51,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_13.0.0";
 	private static final String MIGRATE_ROLE = "MIGRATE ROLE";
+	private static final String MIGRATE_PORTFOLIO_EVAL_FORM = "PORTFOLIO EVALUATION FORM";
 	
 	@Autowired
 	private DB dbInstance;
@@ -49,6 +59,10 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private PortfolioService portfolioService;
+	@Autowired
+	private EvaluationFormManager evaManger;
 	
 	public OLATUpgrade_13_0_0() {
 		super();
@@ -76,6 +90,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateRole(upgradeManager, uhd);
+		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -148,4 +163,78 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 				.setParameter("groupName", securityGroupName)
 				.getResultList();
 	}
+	
+	private boolean migratePortfolioEvaluationForm(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_PORTFOLIO_EVAL_FORM)) {
+			try {
+				migrateSessions();
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_PORTFOLIO_EVAL_FORM, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	@SuppressWarnings("deprecation")
+	private void migrateSessions() {
+		log.info("Start migration of sessions of porfolio evaluation forms.");
+		List<EvaluationFormSession> sessions = loadPortfolioSessions();
+		for(int i=0; i<sessions.size(); i++) {
+			EvaluationFormSession session = sessions.get(i);
+			if (session.getPageBody() == null || session.getFormEntry() == null || session.getIdentity() == null) {
+				log.warn("EvaluationFormSession " + session.getKey() + " was not migrated. [FormEntry: "
+						+ session.getFormEntry().toString() + "], [Identity: " + session.getIdentity().toString() + "]");
+			}
+			EvaluationFormSurvey survey = portfolioService.loadOrCreateSurvey(session.getPageBody(), session.getFormEntry());
+			EvaluationFormParticipation participation = loadOrCreateParticipation(session, survey);
+			if (session instanceof EvaluationFormSessionImpl) {
+				EvaluationFormSessionImpl sessionImpl = (EvaluationFormSessionImpl) session;
+				sessionImpl.setParticipation(participation);
+				sessionImpl.setSurvey(survey);
+				dbInstance.getCurrentEntityManager().merge(sessionImpl);
+			}
+			if(i % 20 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+			if(i % 500 == 0) {
+				log.info("" + i + " sessions migrated.");
+			}
+		}
+		dbInstance.commit();
+		log.info("End migration of " + sessions.size() + " sessions of porfolio evaluation forms.");
+	}
+
+	@SuppressWarnings("deprecation")
+	private EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSession session, EvaluationFormSurvey survey) {
+		EvaluationFormParticipation participation = evaManger.loadParticipationByExecutor(survey, session.getIdentity());
+		if (participation == null) {
+			participation = evaManger.createParticipation(survey, session.getIdentity());
+			if (EvaluationFormSessionStatus.done.equals(session.getEvaluationFormSessionStatus())) {
+				if (participation instanceof EvaluationFormParticipationImpl) {
+					EvaluationFormParticipationImpl participationImpl = (EvaluationFormParticipationImpl) participation;
+					participationImpl.setStatus(EvaluationFormParticipationStatus.done);
+					dbInstance.getCurrentEntityManager().merge(participationImpl);
+				}
+			}
+		}
+		return participation;
+	}
+
+	private List<EvaluationFormSession> loadPortfolioSessions() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from evaluationformsession as session");
+		sb.append(" where session.pageBody is not null");
+		sb.append("   and session.participation is null"); // exclude already migrated session
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSession.class)
+				.getResultList();
+	}
+
 }

@@ -94,4 +94,14 @@ class EvaluationFormSurveyDAO {
 		return surveys.isEmpty() ? null : surveys.get(0);
 	}
 
+	void delete(EvaluationFormSurvey survey) {
+		if (survey == null) return;	
+
+		String query = "delete from evaluationformsurvey as survey where survey.key=:surveyKey";
+		
+		dbInstance.getCurrentEntityManager().createQuery(query)
+			.setParameter("surveyKey", survey.getKey())
+			.executeUpdate();
+	}
+
 }

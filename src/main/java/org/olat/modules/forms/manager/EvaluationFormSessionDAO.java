@@ -22,17 +22,13 @@ package org.olat.modules.forms.manager;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
 import org.olat.modules.portfolio.PageBody;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,12 +40,12 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class EvaluationFormSessionDAO {
+class EvaluationFormSessionDAO {
 	
 	@Autowired
 	private DB dbInstance;
 	
-	public EvaluationFormSession createSession(EvaluationFormParticipation participation) {
+	EvaluationFormSession createSession(EvaluationFormParticipation participation) {
 		EvaluationFormSessionImpl session = new EvaluationFormSessionImpl();
 		session.setCreationDate(new Date());
 		session.setLastModified(session.getCreationDate());
@@ -60,23 +56,6 @@ public class EvaluationFormSessionDAO {
 		return session;
 	}
 	
-	public EvaluationFormSession createSessionForPortfolio(Identity identity, PageBody body, RepositoryEntry formEntry) {
-		EvaluationFormSessionImpl session = createSession(identity, formEntry);
-		session.setPageBody(body);
-		dbInstance.getCurrentEntityManager().persist(session);
-		return session;
-	}
-
-	private EvaluationFormSessionImpl createSession(Identity identity, RepositoryEntry formEntry) {
-		EvaluationFormSessionImpl session = new EvaluationFormSessionImpl();
-		session.setCreationDate(new Date());
-		session.setLastModified(session.getCreationDate());
-		session.setIdentity(identity);
-		session.setFormEntry(formEntry);
-		session.setEvaluationFormSessionStatus(EvaluationFormSessionStatus.inProgress);
-		return session;
-	}
-
 	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
 		if (participation == null) return null;
 		
@@ -136,49 +115,38 @@ public class EvaluationFormSessionDAO {
 		return sessions == null || sessions.isEmpty() || sessions.get(0) == null ? false : true;
 	}
 	
-	public boolean hasSessionForPortfolioEvaluation(PageBody anchor) {
+	boolean hasSessions(RepositoryEntryRef formEntry) {
+		if (formEntry == null) return false;
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select session.key from evaluationformsession as session")
-		  .append(" where session.pageBody.key=:bodyKey");
+		sb.append("select session.key from evaluationformsession as session");
+		sb.append(" where session.survey.formEntry.key=:formKey");
+		
 		List<Long> sessions = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
-				.setParameter("bodyKey", anchor.getKey())
+				.setParameter("formKey", formEntry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
-		return sessions == null || sessions.isEmpty() || sessions.get(0) == null ? false : sessions.get(0).longValue() > 0;
+		return sessions == null || sessions.isEmpty() || sessions.get(0) == null ? false : true;
 	}
 	
-	public EvaluationFormSession getSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select session from evaluationformsession as session")
-		  .append(" where session.identity.key=:identityKey and session.pageBody.key=:bodyKey");
-		List<EvaluationFormSession> sessions = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormSession.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("bodyKey", anchor.getKey())
-				.getResultList();
-		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
-	}
-	
-	public EvaluationFormSessionRef changeStatusOfSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor, EvaluationFormSessionStatus status) {
-		EvaluationFormSession session = getSessionForPortfolioEvaluation(identity, anchor);
-		return changeStatus(session, status);
-	}
-	
-	public EvaluationFormSession changeStatus(EvaluationFormSession session, EvaluationFormSessionStatus newStatus) {
-		if(session != null) {
+	EvaluationFormSession changeStatus(EvaluationFormSession session, EvaluationFormSessionStatus newStatus) {
+		if(session instanceof EvaluationFormSessionImpl) {
+			EvaluationFormSessionImpl sessionImpl = (EvaluationFormSessionImpl) session;
+			sessionImpl.setEvaluationFormSessionStatus(newStatus);
 			if(newStatus == EvaluationFormSessionStatus.done && session.getEvaluationFormSessionStatus() != EvaluationFormSessionStatus.done) {
-				((EvaluationFormSessionImpl)session).setSubmissionDate(new Date());
+				sessionImpl.setSubmissionDate(new Date());
 				if(session.getFirstSubmissionDate() == null) {
-					((EvaluationFormSessionImpl)session).setFirstSubmissionDate(session.getSubmissionDate());
+					sessionImpl.setFirstSubmissionDate(sessionImpl.getSubmissionDate());
 				}
 			}
-			session.setEvaluationFormSessionStatus(newStatus);
-			dbInstance.getCurrentEntityManager().merge(session);
+			dbInstance.getCurrentEntityManager().merge(sessionImpl);
 		}
 		return session;
 	}
 
-	public void deleteSessions(EvaluationFormSurvey survey) {
+	void deleteSessions(EvaluationFormSurvey survey) {
 		if (survey == null) return;
 		
 		StringBuilder sb = new StringBuilder();
@@ -191,7 +159,7 @@ public class EvaluationFormSessionDAO {
 				.executeUpdate();
 	}
 	
-	public int deleteSessionForPortfolioEvaluation(PageBody anchor) {
+	int deleteSessionForPortfolioEvaluation(PageBody anchor) {
 		//delete responses
 		int rows = 0;
 		StringBuilder responseQ = new StringBuilder();
@@ -212,15 +180,4 @@ public class EvaluationFormSessionDAO {
 		return rows;
 	}
 	
-	public boolean isInUse(RepositoryEntryRef formEntry) {
-		String query = "select session.key from evaluationformsession as session where session.formEntry.key=:formEntryKey";
-		List<Long> sessions = dbInstance.getCurrentEntityManager()
-				.createQuery(query, Long.class)
-				.setParameter("formEntryKey", formEntry.getKey())
-				.setFirstResult(0)
-				.setMaxResults(1)
-				.getResultList();
-		return sessions == null || sessions.isEmpty() || sessions.get(0) == null ? false : true;
-	}
-
 }

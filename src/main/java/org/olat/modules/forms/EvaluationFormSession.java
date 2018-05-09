@@ -25,6 +25,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -51,26 +52,22 @@ public interface EvaluationFormSession extends EvaluationFormSessionRef, CreateI
 	
 	public EvaluationFormSurvey getSurvey();
 	
-	//TODO uh remove
-	public void setEvaluationFormSessionStatus(EvaluationFormSessionStatus sessionStatus);
-	
 	/**
-	 * The author of the evaluation
-	 * 
-	 * @return
+	 * @deprecated Use getParticipation().getExecutor()
 	 */
-	//TODO uh remove
+	@Deprecated
 	public Identity getIdentity();
 	
 	/**
-	 * The anchor for portfolio evaluation
-	 * 
-	 * @return
+	 * @deprecated Use the survey for the PageBody. See {@link PortfolioService#loadOrCreateSurvey(PageBody)}.
 	 */
-	//TODO uh remove
+	@Deprecated
 	public PageBody getPageBody();
 	
-	//TODO uh remove
+	/**
+	 * @deprecated Use getSurvey().getFormEntry()
+	 */
+	@Deprecated
 	public RepositoryEntry getFormEntry();
 
 }
