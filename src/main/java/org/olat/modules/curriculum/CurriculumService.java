@@ -53,6 +53,13 @@ public interface CurriculumService {
 	
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
 	
+	/**
+	 * The list of all types available.
+	 * 
+	 * @return A list of curriculum element types
+	 */
+	public List<CurriculumElementType> getCurriculumElementTypes();
+	
 	
 	
 	public CurriculumElement createCurriculumElement(String identifier, String displayName,
@@ -69,6 +76,13 @@ public interface CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef element);
 	
 	public CurriculumElement updateCurriculumElement(CurriculumElement element);
+	
+	/**
+	 * 
+	 * @param elementToMove The element to move
+	 * @param newParent The new parent or null if root
+	 */
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent);
 	
 	/**
 	 * The list of members of the specified curriculum element.

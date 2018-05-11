@@ -29,6 +29,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -59,6 +60,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
+	private CurriculumElementTypeDAO curriculumElementTypeDao;
+	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
@@ -76,6 +79,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public Curriculum updateCurriculum(Curriculum curriculum) {
 		return curriculumDao.update(curriculum);
+	}
+
+	@Override
+	public List<CurriculumElementType> getCurriculumElementTypes() {
+		return curriculumElementTypeDao.load();
 	}
 
 	@Override
@@ -97,6 +105,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
 		return curriculumElementDao.update(element);
+	}
+
+	@Override
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent) {
+		return curriculumElementDao.move(elementToMove, newParent);
 	}
 
 	@Override

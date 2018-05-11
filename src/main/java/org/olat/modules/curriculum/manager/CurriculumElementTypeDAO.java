@@ -60,6 +60,12 @@ public class CurriculumElementTypeDAO {
 		return types == null || types.isEmpty() ? null : types.get(0);
 	}
 	
+	public List<CurriculumElementType> load() {
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("loadCurriculumElementTypes", CurriculumElementType.class)
+			.getResultList();
+	}
+	
 	public CurriculumElementType update(CurriculumElementType type) {
 		((CurriculumElementTypeImpl)type).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(type);

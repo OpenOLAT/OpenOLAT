@@ -77,6 +77,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private EditCurriculumElementController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementController newSubElementCtrl;
+	private MoveCurriculumElementController moveElementCtrl;
 	
 	private int counter;
 	private final Curriculum curriculum;
@@ -164,7 +165,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newElementCtrl == source || newSubElementCtrl == source) {
+		if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -177,8 +178,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(moveElementCtrl);
 		removeAsListenerAndDispose(newElementCtrl);
 		removeAsListenerAndDispose(cmc);
+		moveElementCtrl = null;
 		newElementCtrl = null;
 		cmc = null;
 	}
@@ -257,6 +260,22 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
+	private void doMoveCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			List<CurriculumElement> elementsToMove = Collections.singletonList(element);
+			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum);
+			listenTo(moveElementCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", moveElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -330,7 +349,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(editLink == source) {
 				close();
 				doEditCurriculumElement(ureq, row);
-			} else if(deleteLink == source || moveLink == source) {
+			} else if(moveLink == source) {
+				close();
+				doMoveCurriculumElement(ureq, row);
+			} else if(deleteLink == source) {
 				close();
 				showWarning("Not implemented");
 			} else if(newLink == source) {

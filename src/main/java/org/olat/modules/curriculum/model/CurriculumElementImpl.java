@@ -44,6 +44,7 @@ import org.olat.core.id.Persistable;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
  * 
@@ -106,6 +107,10 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@ManyToOne(targetEntity=CurriculumImpl.class)
 	@JoinColumn(name="fk_curriculum", nullable=true, insertable=true, updatable=true)
 	private Curriculum curriculum;
+	
+	@ManyToOne(targetEntity=CurriculumElementTypeImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
+	private CurriculumElementType type;
 	
 	@Override
 	public Long getKey() {
@@ -245,6 +250,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setCurriculum(Curriculum curriculum) {
 		this.curriculum = curriculum;
+	}
+
+	@Override
+	public CurriculumElementType getType() {
+		return type;
+	}
+	
+	public void setType(CurriculumElementType type) {
+		this.type = type;
 	}
 
 	@Override

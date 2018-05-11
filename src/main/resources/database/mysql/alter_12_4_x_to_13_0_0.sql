@@ -118,6 +118,7 @@ create table o_cur_curriculum_element (
   fk_group bigint not null,
   fk_parent bigint,
   fk_curriculum bigint not null,
+  fk_type bigint,
   primary key (id)
 );
 alter table o_cur_curriculum_element ENGINE = InnoDB;
@@ -125,6 +126,7 @@ alter table o_cur_curriculum_element ENGINE = InnoDB;
 alter table o_cur_curriculum_element add constraint cur_el_to_group_idx foreign key (fk_group) references o_bs_group (id);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_el_idx foreign key (fk_parent) references o_cur_curriculum_element (id);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);
 
 create table o_cur_element_type_to_type (
   id bigint not null auto_increment,

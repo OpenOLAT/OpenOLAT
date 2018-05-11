@@ -55,6 +55,9 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	
 	public CurriculumElement getParent();
 	
+	public CurriculumElementType getType();
+	
 	public Group getGroup();
+	
 
 }

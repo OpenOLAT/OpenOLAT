@@ -84,6 +84,20 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadAlltypes() {
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("cur-el-3", "3. Element", "Third element", "AC-236");
+		Assert.assertNotNull(type);
+		dbInstance.commitAndCloseSession();
+		
+		// load the element type
+		List<CurriculumElementType> allTypes = curriculumElementTypeDao.load();
+		dbInstance.commitAndCloseSession();
+		//check
+		Assert.assertNotNull(allTypes);
+		Assert.assertTrue(allTypes.contains(type));
+	}
+	
+	@Test
 	public void allowSubTypes() {
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("Type-parent", "A type", null, null);
 		CurriculumElementType subType1 = curriculumElementTypeDao.createCurriculumElementType("Type-sub-1", "A type", null, null);

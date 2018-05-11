@@ -48,9 +48,8 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
  *
  */
 @NamedQueries({
-	@NamedQuery(name="loadCurriculumElementTypeByKey", query="select el from curriculumelementtype el where el.key=:key")
-	
-	
+	@NamedQuery(name="loadCurriculumElementTypeByKey", query="select el from curriculumelementtype el where el.key=:key"),
+	@NamedQuery(name="loadCurriculumElementTypes", query="select elementType from curriculumelementtype elementType")	
 })
 @Entity(name="curriculumelementtype")
 @Table(name="o_cur_element_type")

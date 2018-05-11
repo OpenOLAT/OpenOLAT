@@ -89,6 +89,22 @@ public class CurriculumElementDAO {
 		return dbInstance.getCurrentEntityManager().merge(element);
 	}
 	
+	public CurriculumElement move(CurriculumElement element, CurriculumElement newParentElement) {
+		CurriculumElement parentLevel = element.getParent();
+		if(parentLevel == null && newParentElement == null) {
+			return element;//already root
+		} else if(parentLevel != null && parentLevel.equals(newParentElement)) {
+			return element;//same parent
+		}
+
+		CurriculumElementImpl elementImpl = (CurriculumElementImpl)element;
+		elementImpl.setParent(newParentElement);
+		elementImpl.setLastModified(new Date());
+		elementImpl = dbInstance.getCurrentEntityManager().merge(elementImpl);
+		dbInstance.commit();
+		return elementImpl;
+	}
+	
 	public List<CurriculumElement> loadElements(CurriculumRef curriculum) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement el")
