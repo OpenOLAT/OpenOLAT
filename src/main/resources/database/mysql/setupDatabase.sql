@@ -2470,11 +2470,12 @@
 	  c_begin datetime,
 	  c_end datetime,
 	  c_external_id varchar(64),
+	  c_m_path_keys varchar(255),
 	  c_managed_flags varchar(255),
 	  fk_group bigint not null,
 	  fk_parent bigint,
 	  fk_curriculum bigint not null,
-  fk_type bigint,
+	  fk_type bigint,
 	  primary key (id)
 	);
 	

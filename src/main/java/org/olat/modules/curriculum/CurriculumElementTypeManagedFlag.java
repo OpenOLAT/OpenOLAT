@@ -28,52 +28,49 @@ import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Initial date: 16 févr. 2018<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum CurriculumElementManagedFlag {
+public enum CurriculumElementTypeManagedFlag {
 	
 	all,
 	 identifier(all),
 	 displayName(all),
 	 description(all),
 	 externalId(all),
-	 dates(all),
-	 type(all),
-	 members(all),
-	 move(all),
-	 addChildren(all),
+	 subTypes(all),
+	 copy(all),
 	 delete(all);
 	
-	private CurriculumElementManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(CurriculumElementManagedFlag.class);
-	public static final CurriculumElementManagedFlag[] EMPTY_ARRAY = new CurriculumElementManagedFlag[0];
+	private CurriculumElementTypeManagedFlag[] parents;
+	private static final OLog log = Tracing.createLoggerFor(CurriculumElementTypeManagedFlag.class);
+	public static final CurriculumElementTypeManagedFlag[] EMPTY_ARRAY = new CurriculumElementTypeManagedFlag[0];
 	
 	private static CurriculumModule curriculumModule;
 
-	private CurriculumElementManagedFlag() {
+	private CurriculumElementTypeManagedFlag() {
 		//
 	}
 	
-	private CurriculumElementManagedFlag(CurriculumElementManagedFlag... parents) {
+	private CurriculumElementTypeManagedFlag(CurriculumElementTypeManagedFlag... parents) {
 		if(parents == null) {
-			this.parents = new CurriculumElementManagedFlag[0];
+			this.parents = new CurriculumElementTypeManagedFlag[0];
 		} else {
 			this.parents = parents;
 		}
 	}
 	
-	public static CurriculumElementManagedFlag[] toEnum(String flags) {
+	public static CurriculumElementTypeManagedFlag[] toEnum(String flags) {
 		if(StringHelper.containsNonWhitespace(flags)) {
 			String[] flagArr = flags.split(",");
-			CurriculumElementManagedFlag[] flagEnums = new CurriculumElementManagedFlag[flagArr.length];
+			CurriculumElementTypeManagedFlag[] flagEnums = new CurriculumElementTypeManagedFlag[flagArr.length];
 	
 			int count = 0;
 			for(String flag:flagArr) {
 				if(StringHelper.containsNonWhitespace(flag)) {
 					try {
-						CurriculumElementManagedFlag flagEnum = valueOf(flag);
+						CurriculumElementTypeManagedFlag flagEnum = valueOf(flag);
 						flagEnums[count++] = flagEnum;
 					} catch (Exception e) {
 						log.warn("Cannot parse this managed flag: " + flag, e);
@@ -89,10 +86,10 @@ public enum CurriculumElementManagedFlag {
 		return EMPTY_ARRAY;
 	}
 	
-	public static String toString(CurriculumElementManagedFlag... flags) {
+	public static String toString(CurriculumElementTypeManagedFlag... flags) {
 		StringBuilder sb = new StringBuilder();
 		if(flags != null && flags.length > 0 && flags[0] != null) {
-			for(CurriculumElementManagedFlag flag:flags) {
+			for(CurriculumElementTypeManagedFlag flag:flags) {
 				if(flag != null) {
 					if(sb.length() > 0) sb.append(",");
 					sb.append(flag.name());
@@ -102,17 +99,17 @@ public enum CurriculumElementManagedFlag {
 		return sb.length() == 0 ? null : sb.toString();
 	}
 	
-	public static boolean isManaged(CurriculumElement element, CurriculumElementManagedFlag marker) {
+	public static boolean isManaged(CurriculumElementType elementType, CurriculumElementTypeManagedFlag marker) {
 		if(curriculumModule == null) {
 			curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		}
 		if(!curriculumModule.isCurriculumManaged()) {
 			return false;
 		}
-		return (element != null && (contains(element, marker) || contains(element, marker.parents)));
+		return (elementType != null && (contains(elementType, marker) || contains(elementType, marker.parents)));
 	}
 	
-	public static boolean isManaged(CurriculumElementManagedFlag[] flags, CurriculumElementManagedFlag marker) {
+	public static boolean isManaged(CurriculumElementTypeManagedFlag[] flags, CurriculumElementTypeManagedFlag marker) {
 		if(curriculumModule == null) {
 			curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		}
@@ -123,17 +120,17 @@ public enum CurriculumElementManagedFlag {
 		return (flags != null && (contains(flags, marker) || contains(flags, marker.parents)));
 	}
 	
-	private static boolean contains(CurriculumElement element, CurriculumElementManagedFlag... markers) {
-		if(element == null) return false;
-		CurriculumElementManagedFlag[] flags = element.getManagedFlags();
+	private static boolean contains(CurriculumElementType elementType, CurriculumElementTypeManagedFlag... markers) {
+		if(elementType == null) return false;
+		CurriculumElementTypeManagedFlag[] flags = elementType.getManagedFlags();
 		return contains(flags, markers);
 	}
 
-	private static boolean contains(CurriculumElementManagedFlag[] flags, CurriculumElementManagedFlag... markers) {
+	private static boolean contains(CurriculumElementTypeManagedFlag[] flags, CurriculumElementTypeManagedFlag... markers) {
 		if(flags == null || flags.length == 0) return false;
 
-		for(CurriculumElementManagedFlag flag:flags) {
-			for(CurriculumElementManagedFlag marker:markers) {
+		for(CurriculumElementTypeManagedFlag flag:flags) {
+			for(CurriculumElementTypeManagedFlag marker:markers) {
 				if(flag.equals(marker)) {
 					return true;
 				}

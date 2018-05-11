@@ -223,7 +223,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doNewCurriculumElement(UserRequest ureq) {
 		if(newElementCtrl != null) return;
 
-		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), curriculum);
+		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum);
 		listenTo(newElementCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
@@ -237,7 +237,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), curriculum);
+			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement, curriculum);
 			newSubElementCtrl.setParentElement(parentElement);
 			listenTo(newSubElementCtrl);
 			

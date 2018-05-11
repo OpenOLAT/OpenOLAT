@@ -17,39 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.curriculum.ui;
 
-import java.util.Set;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 
 /**
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementType extends CurriculumElementTypeRef, CreateInfo, ModifiedInfo {
+public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 	
-	public String getIdentifier();
+	private FormLink toolsLink;
+	private final CurriculumElementType type;
 	
-	public void setIdentifier(String identifier);
+	public CurriculumElementTypeRow(CurriculumElementType type) {
+		this.type = type;
+	}
 	
-	public String getDisplayName();
+	@Override
+	public Long getKey() {
+		return type.getKey();
+	}
 	
-	public void setDisplayName(String displayName);
+	public String getIdentifier() {
+		return type.getIdentifier();
+	}
 	
-	public String getDescription();
+	public String getDisplayName() {
+		return type.getDisplayName();
+	}
 	
-	public void setDescription(String description);
-	
-	public String getExternalId();
-	
-	public void setExternalId(String externalId);
-	
-	public CurriculumElementTypeManagedFlag[] getManagedFlags();
-	
-	public Set<CurriculumElementTypeToType> getAllowedSubTypes();
+	public CurriculumElementType getType() {
+		return type;
+	}
 
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+	
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
+	}
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -60,10 +61,25 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElementType> getCurriculumElementTypes();
 	
+	/**
+	 * Load the curriculum element type with the specified primary key.
+	 * 
+	 * @param ref The reference of the type
+	 * @return A curriculum element type
+	 */
+	public CurriculumElementType getCurriculumElementType(CurriculumElementTypeRef typeRef);
+	
+	public CurriculumElementType createCurriculumElementType(String identifier, String displayName, String description, String externalId);
+	
+	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType, List<CurriculumElementType> allowedSubTypes);
+	
+	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef typeRef);
+	
+	public boolean deleteCurriculumElementType(CurriculumElementTypeRef typeRef);
 	
 	
-	public CurriculumElement createCurriculumElement(String identifier, String displayName,
-			CurriculumElementRef parent, Curriculum curriculum);
+	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
+			CurriculumElementRef parent, CurriculumElementType elementType, Curriculum curriculum);
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
 	
@@ -74,6 +90,14 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef element);
+
+	/**
+	 * Return the parent line of the specified curriculum element.
+	 * 
+	 * @param element A curriculum element
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElement> getCurriculumElementParentLine(CurriculumElement element);
 	
 	public CurriculumElement updateCurriculumElement(CurriculumElement element);
 	

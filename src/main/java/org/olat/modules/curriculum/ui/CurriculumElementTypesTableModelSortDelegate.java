@@ -17,39 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.curriculum.ui;
 
-import java.util.Set;
+import java.util.Locale;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
- * Initial date: 9 févr. 2018<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementType extends CurriculumElementTypeRef, CreateInfo, ModifiedInfo {
+public class CurriculumElementTypesTableModelSortDelegate extends SortableFlexiTableModelDelegate<CurriculumElementTypeRow> {
 	
-	public String getIdentifier();
-	
-	public void setIdentifier(String identifier);
-	
-	public String getDisplayName();
-	
-	public void setDisplayName(String displayName);
-	
-	public String getDescription();
-	
-	public void setDescription(String description);
-	
-	public String getExternalId();
-	
-	public void setExternalId(String externalId);
-	
-	public CurriculumElementTypeManagedFlag[] getManagedFlags();
-	
-	public Set<CurriculumElementTypeToType> getAllowedSubTypes();
-
+	public CurriculumElementTypesTableModelSortDelegate(SortKey orderBy, CurriculumElementTypesTableModel tableModel, Locale locale) {
+		super(orderBy, tableModel, locale);
+	}
 }

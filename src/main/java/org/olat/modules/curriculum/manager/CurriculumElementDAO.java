@@ -20,6 +20,8 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
@@ -51,22 +54,26 @@ public class CurriculumElementDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public CurriculumElement createCurriculumElement(String identifier, String displayName, CurriculumElementRef parentRef, Curriculum curriculum) {
+	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
+			CurriculumElementRef parentRef, CurriculumElementType elementType, Curriculum curriculum) {
 		CurriculumElementImpl element = new CurriculumElementImpl();
 		element.setCreationDate(new Date());
 		element.setLastModified(element.getCreationDate());
 		element.setIdentifier(identifier);
 		element.setDisplayName(displayName);
+		element.setBeginDate(beginDate);
+		element.setEndDate(endDate);
 		element.setCurriculum(curriculum);
+		element.setType(elementType);
 		element.setGroup(groupDao.createGroup());
 		CurriculumElement parent = parentRef == null ? null : loadByKey(parentRef.getKey());
 		element.setParent(parent);
 		dbInstance.getCurrentEntityManager().persist(element);
-		
 		if(parent != null) {
 			((CurriculumElementImpl)parent).getChildren().add(element);
 			dbInstance.getCurrentEntityManager().merge(parent);
 		}
+		element.setMaterializedPathKeys(getMaterializedPathKeys(parent, element));
 		return element;
 	}
 	
@@ -84,23 +91,50 @@ public class CurriculumElementDAO {
 		return elements == null || elements.isEmpty() ? null : elements.get(0);
 	}
 	
+	public String getMaterializedPathKeys(CurriculumElement parent, CurriculumElement element) {
+		if(parent != null) {
+			String parentPathOfKeys = parent.getMaterializedPathKeys();
+			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
+				parentPathOfKeys = "";
+			}
+			return parentPathOfKeys + element.getKey() + "/";
+		}
+		return "/" + element.getKey() + "/";
+	}
+	
 	public CurriculumElement update(CurriculumElement element) {
 		((CurriculumElementImpl)element).setLastModified(new Date());
+		((CurriculumElementImpl)element).setMaterializedPathKeys(getMaterializedPathKeys(element.getParent(), element));
 		return dbInstance.getCurrentEntityManager().merge(element);
 	}
 	
 	public CurriculumElement move(CurriculumElement element, CurriculumElement newParentElement) {
-		CurriculumElement parentLevel = element.getParent();
-		if(parentLevel == null && newParentElement == null) {
+		CurriculumElement parentElement = element.getParent();
+		if(parentElement == null && newParentElement == null) {
 			return element;//already root
-		} else if(parentLevel != null && parentLevel.equals(newParentElement)) {
+		} else if(parentElement != null && parentElement.equals(newParentElement)) {
 			return element;//same parent
 		}
 
+		String keysPath = element.getMaterializedPathKeys();
+		
+		List<CurriculumElement> descendants = getDescendants(element);
 		CurriculumElementImpl elementImpl = (CurriculumElementImpl)element;
 		elementImpl.setParent(newParentElement);
 		elementImpl.setLastModified(new Date());
+		String newKeysPath = getMaterializedPathKeys(newParentElement, elementImpl);
+		elementImpl.setMaterializedPathKeys(newKeysPath);
 		elementImpl = dbInstance.getCurrentEntityManager().merge(elementImpl);
+
+		for(CurriculumElement descendant:descendants) {
+			String descendantKeysPath = descendant.getMaterializedPathKeys();
+			if(descendantKeysPath.indexOf(keysPath) == 0) {
+				String end = descendantKeysPath.substring(keysPath.length(), descendantKeysPath.length());
+				String updatedPath = newKeysPath + end;
+				((CurriculumElementImpl)descendant).setMaterializedPathKeys(updatedPath);
+			}
+			dbInstance.getCurrentEntityManager().merge(descendant);
+		}		
 		dbInstance.commit();
 		return elementImpl;
 	}
@@ -117,6 +151,44 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("curriculumKey", curriculum.getKey())
 				.getResultList();
+	}
+	
+	public List<CurriculumElement> getParentLine(CurriculumElement curriculumElement) {
+		StringBuilder sb = new StringBuilder(384);
+		sb.append("select el from curriculumelement as el")
+		  .append(" inner join el.curriculum as curriculum")
+		  .append(" inner join el.group as baseGroup")
+		  .append(" left join fetch el.parent as parent")
+		  .append(" left join fetch el.type as type")
+		  .append(" where curriculum.key=:curriculumKey and locate(el.materializedPathKeys,:materializedPath) = 1");
+		  
+		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CurriculumElement.class)
+			.setParameter("curriculumKey", curriculumElement.getCurriculum().getKey())
+			.setParameter("materializedPath", curriculumElement.getMaterializedPathKeys() + "%")
+			.getResultList();
+		Collections.sort(elements, new PathMaterializedPathLengthComparator());
+		return elements;
+	}
+	
+	public List<CurriculumElement> getDescendants(CurriculumElement curriculumElement) {
+		StringBuilder sb = new StringBuilder(384);
+		sb.append("select el from curriculumelement as el")
+		  .append(" inner join el.curriculum as curriculum")
+		  .append(" inner join el.group as baseGroup")
+		  .append(" left join fetch el.parent as parent")
+		  .append(" left join fetch el.type as type")
+		  .append(" where el.curriculum.key=:curriculumKey")
+		  .append(" and el.key!=:elementKey and el.materializedPathKeys like :materializedPath");
+		  
+		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CurriculumElement.class)
+			.setParameter("materializedPath", curriculumElement.getMaterializedPathKeys() + "%")
+			.setParameter("elementKey", curriculumElement.getKey())
+			.setParameter("curriculumKey", curriculumElement.getCurriculum().getKey())
+			.getResultList();
+		Collections.sort(elements, new PathMaterializedPathLengthComparator());
+		return elements;
 	}
 	
 	public List<CurriculumElementMember> getMembers(CurriculumElementRef element) {
@@ -142,5 +214,17 @@ public class CurriculumElementDAO {
 			members.add(new CurriculumElementMember(identity, role, inheritanceMode));
 		}
 		return members;
+	}
+	
+	private static class PathMaterializedPathLengthComparator implements Comparator<CurriculumElement> {
+		@Override
+		public int compare(CurriculumElement c1, CurriculumElement c2) {
+			String s1 = c1.getMaterializedPathKeys();
+			String s2 = c2.getMaterializedPathKeys();
+			
+			int len1 = s1 == null ? 0 : s1.length();
+			int len2 = s2 == null ? 0 : s2.length();
+			return len1 - len2;
+		}
 	}
 }

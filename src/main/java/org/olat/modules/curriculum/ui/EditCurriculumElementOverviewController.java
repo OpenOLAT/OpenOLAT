@@ -55,7 +55,7 @@ public class EditCurriculumElementOverviewController extends BasicController {
 		tabPane = new TabbedPane("tabs", getLocale());
 		tabPane.addListener(this);
 		
-		metadataCtrl = new EditCurriculumElementController(ureq, getWindowControl(), element, curriculum);
+		metadataCtrl = new EditCurriculumElementController(ureq, getWindowControl(), element, element.getParent(), curriculum);
 		listenTo(metadataCtrl);
 		tabPane.addTab(translate("curriculum.element.metadata"), metadataCtrl);
 		initTabPane();

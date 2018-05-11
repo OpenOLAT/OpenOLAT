@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -30,6 +31,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -62,6 +64,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Autowired
 	private CurriculumElementTypeDAO curriculumElementTypeDao;
 	@Autowired
+	private CurriculumElementTypeToTypeDAO curriculumElementTypeToTypeDao;
+	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
@@ -87,14 +91,42 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public CurriculumElementType getCurriculumElementType(CurriculumElementTypeRef typeRef) {
+		return curriculumElementTypeDao.loadByKey(typeRef.getKey());
+	}
+
+	@Override
+	public CurriculumElementType createCurriculumElementType(String identifier, String displayName,
+			String description, String externalId) {
+		return curriculumElementTypeDao.createCurriculumElementType(identifier, displayName, description, externalId);
+	}
+
+	@Override
+	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType, List<CurriculumElementType> allowedSubTypes) {
+		curriculumElementTypeToTypeDao.setAllowedSubType(elementType, allowedSubTypes);
+		return curriculumElementTypeDao.update(elementType);
+	}
+
+	@Override
+	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef typeRef) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean deleteCurriculumElementType(CurriculumElementTypeRef typeRef) {
+		return false;
+	}
+
+	@Override
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params) {
 		return curriculumDao.search(params);
 	}
 
 	@Override
-	public CurriculumElement createCurriculumElement(String identifier, String displayName,
-			CurriculumElementRef parentRef, Curriculum curriculum) {
-		return curriculumElementDao.createCurriculumElement(identifier, displayName, parentRef, curriculum);
+	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
+			CurriculumElementRef parentRef, CurriculumElementType elementType, Curriculum curriculum) {
+		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, curriculum);
 	}
 
 	@Override
@@ -115,6 +147,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum) {
 		return curriculumElementDao.loadElements(curriculum);
+	}
+
+	@Override
+	public List<CurriculumElement> getCurriculumElementParentLine(CurriculumElement element) {
+		return curriculumElementDao.getParentLine(element);
 	}
 
 	@Override

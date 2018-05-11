@@ -83,6 +83,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+		setStringProperty(CURRICULUM_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public boolean isCurriculumManaged() {
@@ -95,6 +96,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 
 	public void setCurriculumInMyCourses(boolean curriculumInMyCourses) {
 		this.curriculumInMyCourses = curriculumInMyCourses;
+		setStringProperty(CURRICULUM_IN_MY_COURSES_ENABLED, Boolean.toString(curriculumInMyCourses), true);
 	}
 	
 	

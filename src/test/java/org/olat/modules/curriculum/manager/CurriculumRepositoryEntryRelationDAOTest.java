@@ -33,7 +33,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void createRelation() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commitAndCloseSession();
@@ -52,7 +52,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRepositoryEntries() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
@@ -69,7 +69,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();

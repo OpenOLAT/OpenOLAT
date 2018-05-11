@@ -2514,6 +2514,7 @@ create table o_cur_curriculum_element (
   c_begin date,
   c_end date,
   c_external_id varchar(64),
+  c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
   fk_group number(20) not null,
   fk_parent number(20),
