@@ -45,6 +45,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -68,7 +70,11 @@ public class OverviewRepositoryListController extends BasicController implements
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link myCourseLink;
-	private Link favoriteLink, catalogLink, searchCourseLink, closedCourseLink;
+	private Link favoriteLink;
+	private Link catalogLink;
+	private Link searchCourseLink;
+	private Link closedCourseLink;
+	private Link curriculumLink;
 	
 	private Controller currentCtrl;
 	private RepositoryEntryListController markedCtrl;
@@ -77,6 +83,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	private BreadcrumbedStackedPanel myCoursesStackPanel;
 	private CatalogNodeController catalogCtrl;
 	private BreadcrumbedStackedPanel catalogStackPanel;
+	private CurriculumListController curriculumListCtrl;
+	private BreadcrumbedStackedPanel curriculumStackPanel;
 	private RepositoryEntryListController searchCoursesCtrl;
 	private RepositoryEntryListController closedCoursesCtrl;
 	private BreadcrumbedStackedPanel searchCoursesStackPanel;
@@ -90,6 +98,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	private CatalogManager catalogManager;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	
 	public OverviewRepositoryListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -116,6 +126,12 @@ public class OverviewRepositoryListController extends BasicController implements
 		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
 		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
 		segmentView.addSegment(closedCourseLink, false);
+		
+		if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
+			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
+			curriculumLink.setElementCssClass("o_sel_mycurriculums");
+			segmentView.addSegment(curriculumLink, false);
+		}
 		
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
@@ -181,6 +197,12 @@ public class OverviewRepositoryListController extends BasicController implements
 					ctrl.activate(ureq, entries, entry.getTransientState());
 					segmentView.select(catalogLink);
 				}
+			} else if("Curriculum".equalsIgnoreCase(segment)) {
+				CurriculumListController ctrl = doOpenCurriculum(ureq);
+				if(ctrl != null) {
+					ctrl.activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(curriculumLink);
+				}
 			} else if("Search".equalsIgnoreCase(segment) && searchCourseLink != null) {
 				doOpenSearchCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchCourseLink);
@@ -231,6 +253,8 @@ public class OverviewRepositoryListController extends BasicController implements
 					doOpenMyCourses(ureq);
 				} else if (clickedLink == catalogLink) {
 					doOpenCatalog(ureq);
+				} else if (clickedLink == curriculumLink) {
+					doOpenCurriculum(ureq);
 				} else if(clickedLink == searchCourseLink) {
 					doOpenSearchCourses(ureq);
 				} else if(clickedLink == closedCourseLink) {
@@ -304,7 +328,7 @@ public class OverviewRepositoryListController extends BasicController implements
 
 		List<CatalogEntry> entries = catalogManager.getRootCatalogEntries();
 		CatalogEntry rootEntry = null;
-		if(entries.size() > 0) {
+		if(!entries.isEmpty()) {
 			rootEntry = entries.get(0);
 		}
 		
@@ -321,6 +345,28 @@ public class OverviewRepositoryListController extends BasicController implements
 		mainVC.put("segmentCmp", catalogStackPanel);
 		return catalogCtrl;
 	}
+	
+	private CurriculumListController doOpenCurriculum(UserRequest ureq) {
+		if(!curriculumModule.isEnabled() || !curriculumModule.isCurriculumInMyCourses()) {
+			return null;
+		}
+		cleanUp();
+		
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Curriculum", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		curriculumStackPanel = new BreadcrumbedStackedPanel("curriculumstack", getTranslator(), this);
+		curriculumListCtrl = new CurriculumListController(ureq, bwControl, curriculumStackPanel);
+		curriculumStackPanel.pushController(translate("search.curriculums"), curriculumListCtrl);
+		listenTo(curriculumListCtrl);
+		currentCtrl = curriculumListCtrl;
+		
+		addToHistory(ureq, curriculumListCtrl);
+		mainVC.put("segmentCmp", curriculumStackPanel);
+		return curriculumListCtrl;
+	}
+	
 	
 	private RepositoryEntryListController doOpenSearchCourses(UserRequest ureq) {
 		cleanUp();

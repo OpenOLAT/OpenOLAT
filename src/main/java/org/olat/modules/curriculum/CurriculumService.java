@@ -81,6 +81,7 @@ public interface CurriculumService {
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
 			CurriculumElementRef parent, CurriculumElementType elementType, Curriculum curriculum);
 	
+	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
 	
 	/**
@@ -89,7 +90,7 @@ public interface CurriculumService {
 	 * @param curriculum The curriculum
 	 * @return A list of curriculum elements
 	 */
-	public List<CurriculumElement> getCurriculumElements(CurriculumRef element);
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum);
 
 	/**
 	 * Return the parent line of the specified curriculum element.
