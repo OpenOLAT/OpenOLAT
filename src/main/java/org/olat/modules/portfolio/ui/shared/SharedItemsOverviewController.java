@@ -107,6 +107,11 @@ public class SharedItemsOverviewController extends BasicController implements Ac
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doOpenBinders(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 				segmentView.select(bindersLink);
+			} else if("Binder".equalsIgnoreCase(name)) {
+				doOpenBinders(ureq).activate(ureq, entries, state);
+				segmentView.select(bindersLink);
+			} else {
+				activateCold(ureq);
 			}
 		}
 	}
