@@ -17,24 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.handler;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+package org.olat.modules.forms.model.xml;
 
 /**
  * 
- * Initial date: 15.04.2018<br>
+ * Initial date: 09.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormElementHandler extends PageElementHandler {
+public class Disclaimer extends AbstractElement {
 
-	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl,
-			Form rootForm, PageElement element);
+	private static final long serialVersionUID = -4672645489065727192L;
+	
+	public static final String TYPE = "formdisclaimer";
+	
+	private String text;
+
+	@Override
+	public String getType() {
+		return TYPE;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof Disclaimer) {
+			Disclaimer disclaimer = (Disclaimer)obj;
+			return getId() != null && getId().equals(disclaimer.getId());
+		}
+		return super.equals(obj);
+	}
 
 }

@@ -19,11 +19,8 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -111,12 +108,4 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 		return null;
 	}
 
-	@Override
-	public List<String> getCompareResponseIdentifiers(PageElement element) {
-		if (element instanceof Rubric) {
-			Rubric rubric = (Rubric) element;
-			return rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
-		}
-		return Collections.emptyList();
-	}
 }

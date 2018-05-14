@@ -19,9 +19,6 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -114,15 +111,6 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;
-	}
-
-	@Override
-	public List<String> getCompareResponseIdentifiers(PageElement element) {
-		if (element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
-			return Arrays.asList(multipleChoice.getId());
-		}
-		return Collections.emptyList();
 	}
 
 }

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -95,11 +94,6 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 			return new EvaluationFormComponentElement(runElement);
 		}
 		return null;
-	}
-
-	@Override
-	public List<String> getCompareResponseIdentifiers(PageElement element) {
-		return Collections.emptyList();
 	}
 
 	private Component getComponent(PageElement element) {
