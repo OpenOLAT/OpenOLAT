@@ -146,7 +146,7 @@ public interface ProjectGroupManager {
 	 * @param project
 	 * @return
 	 */
-	public abstract List<Identity> addCandidates(List<Identity> addIdentities, Project project);
+	public List<Identity> addCandidates(List<Identity> addIdentities, Project project);
 
 	/**
 	 * Remove identities as candidates.
@@ -161,7 +161,7 @@ public interface ProjectGroupManager {
 	 * @param courseResourceableId
 	 * @param identity
 	 */
-	public abstract void sendGroupChangeEvent(Project project, Long courseResourceableId, Identity identity);
+	public void sendGroupChangeEvent(Project project, Long courseResourceableId, Identity identity);
 
 	/**
 	 * Accept all candidates for a project broker as participants. 
@@ -170,14 +170,14 @@ public interface ProjectGroupManager {
 	 * @param autoSignOut
 	 * @param isAcceptSelectionManually
 	 */
-	public abstract void acceptAllCandidates(Long projectBrokerId, Identity actionIdentity, boolean autoSignOut, boolean isAcceptSelectionManually);
+	public void acceptAllCandidates(Long projectBrokerId, Identity actionIdentity, boolean autoSignOut, boolean isAcceptSelectionManually);
 
   /**
    * Returns true when a certain project-broker has any candidates in any of his projects
    * @param projectBrokerId
    * @return
    */
-	public abstract boolean hasProjectBrokerAnyCandidates(Long projectBrokerId);
+	public boolean hasProjectBrokerAnyCandidates(Long projectBrokerId);
 	
 	/**
 	 * Check if a certain identity has the role of project-manager for certain project.   

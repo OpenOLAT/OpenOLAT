@@ -398,9 +398,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Override
 	protected void doDispose() {
 		suspendAssessmentTest(new Date());
-        OLATResourceable sessionOres = OresHelper
-        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
+		if(candidateSession != null) {
+			OLATResourceable sessionOres = OresHelper
+					.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
+		}
 	}
 	
 	/**
