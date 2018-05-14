@@ -185,6 +185,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 		return false;
 	}
 
+	@Override
 	public void deleteAccountManagerGroup( CoursePropertyManager cpm, CourseNode courseNode) {
 		log.debug("deleteAccountManagerGroup start...");
   	Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
@@ -245,8 +246,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 
 	@Override
 	public void deleteProjectGroupFor(Project project) {
-		BusinessGroupService bgs = businessGroupService;
-		bgs.deleteBusinessGroup(project.getProjectGroup());
+		businessGroupService.deleteBusinessGroup(project.getProjectGroup());
 	}
 	
 	/**
@@ -256,9 +256,8 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	 */
 	@Override
 	public BusinessGroup changeProjectGroupName(Identity ureqIdentity, BusinessGroup projectGroup, String groupName, String groupDescription, OLATResource courseResource) {
-		BusinessGroupService bgs = businessGroupService;
-		BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
-		return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
+		BusinessGroup reloadedBusinessGroup = businessGroupService.loadBusinessGroup(projectGroup);
+		return businessGroupService.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
 				reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
 				reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 	}

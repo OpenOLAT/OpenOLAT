@@ -254,31 +254,33 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	 * This method is cluster-save.
 	 * @see org.olat.course.nodes.projectbroker.service.ProjectBrokerManager#deleteProject(org.olat.course.nodes.projectbroker.datamodel.Project)
 	 */
+	@Override
 	public void deleteProject(final Project project, final boolean deleteGroup, final CourseEnvironment courseEnv, final CourseNode cNode) {
 		logDebug("start deleteProject project=" + project);
-		final Long projectBrokerId = project.getProjectBroker().getKey();
-		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, new SyncerExecutor() {
-			public void execute() {
-				Project reloadedProject = (Project) dbInstance.loadObject(project, true);
-				// delete first candidate-group, project-group will be deleted after deleting project
-				SecurityGroup candidateGroup = reloadedProject.getCandidateGroup();
-				if ( (courseEnv != null) && (cNode != null) ) {
-					deleteAllAttachmentFilesOfProject(reloadedProject, courseEnv, cNode);
-					deleteAllDropboxFilesOfProject(reloadedProject, courseEnv, cNode);
-					deleteAllReturnboxFilesOfProject(reloadedProject, courseEnv, cNode);
-				}
-				dbInstance.deleteObject(reloadedProject);
-				logInfo("deleteSecurityGroup(project.getCandidateGroup())=" + candidateGroup.getKey());
-				securityManager.deleteSecurityGroup(candidateGroup);
-				// invalide with removing from cache
-				projectCache.remove(projectBrokerId.toString());
+		Long projectBrokerId = project.getProjectBroker().getKey();
+		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(), projectBrokerId);
+
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, () -> {
+			Project reloadedProject = (Project) dbInstance.loadObject(project, true);
+			BusinessGroup projectGroup = reloadedProject.getProjectGroup();
+			// delete first candidate-group, project-group will be deleted after deleting project
+			SecurityGroup candidateGroup = reloadedProject.getCandidateGroup();
+			if ( (courseEnv != null) && (cNode != null) ) {
+				deleteAllAttachmentFilesOfProject(reloadedProject, courseEnv, cNode);
+				deleteAllDropboxFilesOfProject(reloadedProject, courseEnv, cNode);
+				deleteAllReturnboxFilesOfProject(reloadedProject, courseEnv, cNode);
+			}
+			dbInstance.deleteObject(reloadedProject);
+			logInfo("deleteSecurityGroup(project.getCandidateGroup())=" + candidateGroup.getKey());
+			securityManager.deleteSecurityGroup(candidateGroup);
+			// invalide with removing from cache
+			projectCache.remove(projectBrokerId.toString());
+			if (deleteGroup) {
+				logDebug("start deleteProjectGroupFor project group=" + projectGroup);
+				businessGroupService.deleteBusinessGroup(projectGroup);
 			}
 		});
-		if (deleteGroup) {
-			logDebug("start deleteProjectGroupFor project=" + project);
-			projectGroupManager.deleteProjectGroupFor(project);
-		}
+		
 		logDebug("DONE deleteProjectGroupFor project=" + project);
 	}
 
