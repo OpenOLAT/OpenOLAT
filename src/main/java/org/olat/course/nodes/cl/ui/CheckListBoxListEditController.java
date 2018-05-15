@@ -142,7 +142,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 	
 	private void updateModel() {
 		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		List<CheckboxConfigRow> boxList = new ArrayList<CheckboxConfigRow>();
+		List<CheckboxConfigRow> boxList = new ArrayList<>();
 
 		if(list != null && list.getList() != null) {
 			for(Checkbox checkbox:list.getList()) {

@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -38,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,8 +62,10 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
+import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,15 +75,15 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CheckboxEditController extends FormBasicController {
 	
-	private FormLink deleteLink, deleteFileLink, downloadFileLink;
+	private FormLink deleteLink;
+	private FormLink downloadFileLink;
 	private TextElement titleEl, pointsEl;
 	private SingleSelection releaseEl, labelEl;
 	private MultipleSelectionElement awardPointEl;
 	private RichTextElement descriptionEl;
 	private FileElement fileEl;
-	private FormLayoutContainer deleteFileCont;
 	
-	private Boolean deleteFile;
+	private List<String> filesToDelete = new ArrayList<>();
 	
 	private final Checkbox checkbox;
 	private final boolean withScore;
@@ -86,7 +91,8 @@ public class CheckboxEditController extends FormBasicController {
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
 	
-	private final CheckboxManager checkboxManager;
+	@Autowired
+	private CheckboxManager checkboxManager;
 	
 	public CheckboxEditController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres,
@@ -103,7 +109,6 @@ public class CheckboxEditController extends FormBasicController {
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
 		this.newCheckbox = newCheckbox;
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		initForm(ureq);
 	}
 
@@ -152,14 +157,17 @@ public class CheckboxEditController extends FormBasicController {
 				getWindowControl());
 
 		fileEl = uifactory.addFileElement(getWindowControl(), "file", formLayout);
+		fileEl.setDeleteEnabled(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
+		if(courseNode != null && checkbox != null && StringHelper.containsNonWhitespace(checkbox.getFilename())) {
+			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseOres).getCourseEnvironment();
+			File directory = checkboxManager.getFileDirectory(courseEnv, courseNode);
+			fileEl.setInitialFile(new File(directory, checkbox.getFilename()));	
+		}
 
-		String template = velocity_root + "/delete_file.html";
-		deleteFileCont = FormLayoutContainer.createCustomFormLayout("delete", getTranslator(), template);
-		formLayout.add(deleteFileCont);
-		downloadFileLink = uifactory.addFormLink("download", checkbox.getFilename(), null, deleteFileCont, Link.NONTRANSLATED);
-		deleteFileLink = uifactory.addFormLink("deleteFile", "delete", null, deleteFileCont, Link.BUTTON);
-		deleteFileCont.setVisible(StringHelper.containsNonWhitespace(checkbox.getFilename()));
+		downloadFileLink = uifactory.addFormLink("download", checkbox.getFilename(), null, formLayout, Link.NONTRANSLATED);
+		downloadFileLink.setVisible(fileEl.getInitialFile() != null);
+		downloadFileLink.setIconLeftCSS("o_icon o_icon_download");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -208,7 +216,7 @@ public class CheckboxEditController extends FormBasicController {
 		if(awardPointEl.isAtLeastSelected(1)) {
 			Float points = null;
 			try {
-				points = new Float(Float.parseFloat(pointsEl.getValue()));
+				points = Float.valueOf(Float.parseFloat(pointsEl.getValue()));
 			} catch (NumberFormatException e) {
 				//check in validation
 			}
@@ -218,21 +226,17 @@ public class CheckboxEditController extends FormBasicController {
 		}
 		checkbox.setDescription(descriptionEl.getValue());
 		
-		if(Boolean.TRUE.equals(deleteFile)) {
-			checkbox.setFilename(null);
-			VFSContainer container = getFileContainer();
-			for (VFSItem chd:container.getItems()) {
-				chd.delete();
-			}
-		}
+		deleteFiles();
 		
-		File uploadedFile = fileEl.getUploadFile();
-		if(uploadedFile != null) {
+		if(fileEl.getUploadFile() == null && fileEl.getInitialFile() == null) {
+			checkbox.setFilename(null);
+		} else if(fileEl.getUploadFile() != null) {
 			String filename = fileEl.getUploadFileName();
 			checkbox.setFilename(filename);
 			
 			VFSContainer container = getFileContainer();
 			VFSLeaf leaf = container.createChildLeaf(filename);
+			File uploadedFile = fileEl.getUploadFile();
 			try(InputStream inStream = new FileInputStream(uploadedFile)) {
 				VFSManager.copyContent(inStream, leaf);
 			} catch (IOException e) {
@@ -247,6 +251,30 @@ public class CheckboxEditController extends FormBasicController {
 		}
 
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void deleteFiles() {
+		File directory = getFileDirectory();
+		if(courseNode != null) {
+			CheckboxList list = (CheckboxList)courseNode.getModuleConfiguration().get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+			if(list != null && list.getList() != null) {
+				for(Checkbox box:list.getList()) {
+					if((checkbox == null || !checkbox.getCheckboxId().equals(box.getCheckboxId()))
+							&& StringHelper.containsNonWhitespace(box.getFilename())) {
+						filesToDelete.remove(box.getFilename());
+					}
+				}
+			}
+		}
+
+		for(String filenameToDelete: filesToDelete) {
+			File fileToDelete = new File(directory, filenameToDelete);
+			try {
+				Files.deleteIfExists(fileToDelete.toPath());
+			} catch (IOException e) {
+				logError("Cannot delete file: " + fileToDelete, e);
+			}
+		}
 	}
 
 	@Override
@@ -264,26 +292,30 @@ public class CheckboxEditController extends FormBasicController {
 			}
 		} else if(downloadFileLink == source) {
 			doDownloadFile(ureq);
-		} else if(deleteFileLink == source) {
-			deleteFile();
 		} else if(awardPointEl == source) {
 			pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
 		} else if(fileEl == source) {
-			String filename = fileEl.getUploadFileName();
-			downloadFileLink.setI18nKey(filename);
-			downloadFileLink.setEnabled(false);
+			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				if(fileEl.getInitialFile() != null) {
+					filesToDelete.add(fileEl.getInitialFile().getName());
+				}
+				
+				
+				fileEl.clearError();
+				if(fileEl.getUploadFile() != null && fileEl.getUploadFile() != fileEl.getInitialFile()) {
+					fileEl.reset();
+				} else {
+					fileEl.setInitialFile(null);
+				}
+				flc.setDirty(true);
+			} else if(fileEl.isUploadSuccess()) {
+				filesToDelete.remove(fileEl.getUploadFileName());
+			}
+			
+			downloadFileLink.setVisible(fileEl.getInitialFile() != null);
+			
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void deleteFile() {
-		deleteFile = Boolean.TRUE;
-		deleteFileCont.setVisible(false);
-
-		String filename = fileEl.getUploadFileName();
-		if(filename != null && filename.equals(downloadFileLink.getI18nKey())) {
-			fileEl.reset();
-		}
 	}
 	
 	private void doDownloadFile(UserRequest ureq) {
@@ -307,5 +339,17 @@ public class CheckboxEditController extends FormBasicController {
 			container = checkboxManager.getFileContainer(courseEnv, courseNode);
 		}
 		return container;
+	}
+	
+	private File getFileDirectory() {
+		File directory;
+		if(courseNode == null) {
+			directory = new File(FolderConfig.getCanonicalTmpDir(), checkbox.getCheckboxId());
+		} else {
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			CourseEnvironment courseEnv = course.getCourseEnvironment();
+			directory = checkboxManager.getFileDirectory(courseEnv, courseNode);
+		}
+		return directory;
 	}
 }
