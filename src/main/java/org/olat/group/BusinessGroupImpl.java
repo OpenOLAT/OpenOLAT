@@ -373,26 +373,14 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		}
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#getMinParticipants()
-	 */
 	public Integer getMinParticipants() {
 		return minParticipants;
 	}
 
-	/**
-	 * @see org.olat.group.BusinessGroup#setMinParticipants(java.lang.Integer)
-	 */
 	public void setMinParticipants(Integer minParticipants) {
 		this.minParticipants = minParticipants;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "name=" + name + "::" + "::" + super.toString();
-	}
 
 	public Boolean getAutoCloseRanksEnabled() {
 		return autoCloseRanksEnabled;
@@ -433,5 +421,14 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 2901 : getKey().hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("businessGroup[key=").append(getKey() == null ? "" : getKey())
+		  .append(";name=").append(getName() == null ? "" : getName()).append("]")
+		  .append(super.toString());
+		return sb.toString();
 	}
 }
