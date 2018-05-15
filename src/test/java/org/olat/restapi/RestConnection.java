@@ -282,7 +282,7 @@ public class RestConnection {
 	private void decorateHttpMessage(HttpRequestBase msg, String accept, String langage, boolean cookie) {
 		if(cookie) {
 			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY)
+				.setCookieSpec(CookieSpecs.DEFAULT)
 				.build();
 			msg.setConfig(config);
 		}
