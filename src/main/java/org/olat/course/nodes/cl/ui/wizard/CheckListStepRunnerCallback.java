@@ -20,6 +20,7 @@
 package org.olat.course.nodes.cl.ui.wizard;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,9 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -61,6 +65,8 @@ import org.olat.modules.ModuleConfiguration;
  *
  */
 public class CheckListStepRunnerCallback implements StepRunnerCallback {
+	
+	private static final OLog log = Tracing.createLoggerFor(CheckListStepRunnerCallback.class);
 	
 	private final OLATResourceable courseOres;
 	
@@ -105,7 +111,6 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 					if(item instanceof VFSLeaf) {
 						VFSContainer container = checkboxManager.getFileContainer(courseEnv, checkNode);
 						VFSManager.copyContent(tmpContainer, container);
-						tmpContainer.deleteSilently();
 					}
 				}
 			}
@@ -116,11 +121,24 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 			if(dueDate) {
 				config.set(CheckListCourseNode.CONFIG_KEY_DUE_DATE, node.getDueDate());
 			}
-			config.set(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE, new Boolean(dueDate));
+			config.set(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE, Boolean.valueOf(dueDate));
 			
 			course.getEditorTreeModel().addCourseNode(checkNode, structureNode);
 		}
 		
+		for(Checkbox templateBox:templateCheckbox) {
+			if(StringHelper.containsNonWhitespace(templateBox.getFilename())) {
+				File path = new File(FolderConfig.getCanonicalTmpDir(), templateBox.getCheckboxId());
+				if(path.exists()) {
+					try {
+						FileUtils.deleteDirsAndFiles(path.toPath());
+					} catch (IOException e) {
+						log.error("Cannot cleanup tmp directory: " + path);
+					}
+				}
+			}
+		}
+
 		setScoreCalculation(data, (STCourseNode)structureNode, nodesIdent);
 		
 		return StepsMainRunController.DONE_MODIFIED;

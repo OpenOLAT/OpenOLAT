@@ -52,6 +52,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -590,15 +591,26 @@ public class CollaborationTools implements Serializable {
 		if("2".equals(version)) {
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 			Binder binder = portfolioService.getBinderByKey(key);
-			portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
-			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-			BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
-			ctrl = binderCtrl;
+			if(binder == null) {
+				Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
+				String text = trans.translate("error.missing.map");
+				ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
+			} else {
+				portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
+				BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
+				ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+			}
 		} else {
 			PortfolioStructureMap map = (PortfolioStructureMap) CoreSpringFactory.getImpl(EPFrontendManager.class)
 					.loadPortfolioStructureByKey(key);
-			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
-			ctrl = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
+			if(map == null) {
+				Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
+				String text = trans.translate("error.missing.map");
+				ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
+			} else {
+				EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
+				ctrl = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
+			}
 		}
 		return ctrl;
 	}
