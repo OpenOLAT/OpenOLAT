@@ -1896,7 +1896,7 @@ create table o_eva_form_session (
    e_submission_date datetime,
    e_first_submission_date datetime,
    fk_survey bigint,
-   fk_participation bigint unique
+   fk_participation bigint unique,
    fk_identity bigint,
    fk_page_body bigint,
    fk_form_entry bigint,
@@ -1913,17 +1913,6 @@ create table o_eva_form_response (
    e_stringuifiedresponse mediumtext,
    e_file_response_path varchar(4000),
    fk_session bigint not null,
-   primary key (id)
-);
-
-create table o_eva_form_survey (
-   id bigint not null auto_increment,
-   creationdate datetime not null,
-   lastmodified datetime not null,
-   e_resname varchar(50),
-   e_resid bigint,
-   e_sub_ident varchar(2048),
-   fk_form_entry bigint not null,
    primary key (id)
 );
 
@@ -3292,7 +3281,6 @@ alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (
 alter table o_eva_form_session add constraint eva_sess_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_eva_form_session add constraint eva_sess_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
 alter table o_eva_form_session add constraint eva_sess_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_eva_surv_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident(255));
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);

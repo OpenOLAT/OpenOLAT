@@ -91,7 +91,7 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, sessions);
 		
 		assertThat(responses)
-				.containsExactly(response111, response112, response121, response221)
+				.containsExactlyInAnyOrder(response111, response112, response121, response221)
 				.doesNotContain(responseOtherIdentifier, responseOtherSession, noResponse);
 	}
 

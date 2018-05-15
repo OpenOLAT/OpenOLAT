@@ -153,7 +153,7 @@ public class ResourceLicenseDAOTest extends OlatTestCase {
 		
 		List<ResourceLicense> loadedLicenses = licenseDao.loadLicenses(Arrays.asList(ores1, ores2, ores3));
 		
-		assertThat(loadedLicenses).containsExactly(license1, license2, license3);
+		assertThat(loadedLicenses).containsExactlyInAnyOrder(license1, license2, license3);
 	}
 	
 	@Test

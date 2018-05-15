@@ -95,7 +95,7 @@ public class GTAIdentityMarkDAOTest extends OlatTestCase {
 		List<IdentityMark> marks = sut.loadMarks(taskList, marker);
 		
 		assertThat(marks).hasSize(3);
-		assertThat(marks).containsExactly(mark1, mark2, mark3);
+		assertThat(marks).containsExactlyInAnyOrder(mark1, mark2, mark3);
 	}
 	
 	@Test
@@ -177,7 +177,7 @@ public class GTAIdentityMarkDAOTest extends OlatTestCase {
 		
 		List<IdentityMark> marks = sut.loadMarks(taskList, marker);
 		assertThat(marks).hasSize(2);
-		assertThat(marks).containsExactly(mark1, mark3);
+		assertThat(marks).containsExactlyInAnyOrder(mark1, mark3);
 	}
 	
 	@Test

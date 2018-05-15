@@ -3426,7 +3426,6 @@ alter table o_eva_form_session add constraint eva_session_to_body_idx foreign ke
 create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
 alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);
-create index idx_eva_sess_ores_idx on o_eva_form_session (e_resid, e_resname, e_sub_ident);
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);
