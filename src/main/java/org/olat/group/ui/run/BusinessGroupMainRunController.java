@@ -781,7 +781,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		return (Activateable2)collabToolCtr;
 	}
 	
-	private Activateable2 doPortfolio(UserRequest ureq) {
+	private Controller doPortfolio(UserRequest ureq) {
 		addLoggingResourceable(LoggingResourceable.wrap(ORES_TOOLPORTFOLIO, OlatResourceableType.portfolio));
 
 		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLPORTFOLIO);
@@ -796,8 +796,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		toolbarPanel.pushController("Portfolio", collabToolCtr);
 		
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
-		((Activateable2)collabToolCtr).activate(ureq, entries, null);
-		return (Activateable2)collabToolCtr;
+		if(collabToolCtr instanceof Activateable2) {
+			((Activateable2)collabToolCtr).activate(ureq, entries, null);
+		}
+		return collabToolCtr;
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {
@@ -944,7 +946,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			}
 		} else if (OresHelper.equals(ores, ORES_TOOLPORTFOLIO)) {
 			if (nodePortfolio != null) {
-				doPortfolio(ureq).activate(ureq, entries, ce.getTransientState());
+				Controller ctrl = doPortfolio(ureq);
+				if(ctrl instanceof Activateable2) {
+					((Activateable2)ctrl).activate(ureq, entries, ce.getTransientState());
+				}
 				bgTree.setSelectedNode(nodePortfolio);
 			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.portfolionotavailable");

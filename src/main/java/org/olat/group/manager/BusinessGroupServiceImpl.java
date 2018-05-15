@@ -750,6 +750,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public void deleteBusinessGroup(BusinessGroup group) {
 		try{
+			log.audit("Start deleting Business Group", group.toString());
+			
 			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(group);
 			// notify all (currently running) BusinessGroupXXXcontrollers
 			// about the deletion which will occur.

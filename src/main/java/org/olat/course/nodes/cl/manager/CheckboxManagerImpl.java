@@ -212,7 +212,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	@Override
 	public void syncCheckbox(CheckboxList checkboxList, OLATResourceable ores, String resSubPath) {
 		List<DBCheckbox> dbCheckboxList = loadCheckbox(ores, resSubPath);
-		Map<String,DBCheckbox> uuids = new HashMap<String,DBCheckbox>();
+		Map<String,DBCheckbox> uuids = new HashMap<>();
 		for(DBCheckbox dbCheckbox:dbCheckboxList) {
 			uuids.put(dbCheckbox.getCheckboxId(), dbCheckbox);
 		}
@@ -498,7 +498,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		}
 		
 		List<DBCheck> checks = query.getResultList();
-		Map<Long, AssessmentData> identToBox = new HashMap<Long,AssessmentData>();
+		Map<Long, AssessmentData> identToBox = new HashMap<>();
 		for(DBCheck check:checks) {
 			AssessmentData data = identToBox.get(check.getIdentity().getKey());
 			if(data == null) {
@@ -507,21 +507,19 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			}
 			data.getChecks().add(check);
 		}
-		return new ArrayList<AssessmentData>(identToBox.values());
+		return new ArrayList<>(identToBox.values());
 	}
 
 	@Override
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode) {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-		return rootFolder; 
+		return new OlatRootFolderImpl(path, null);
 	}
 
 	@Override
 	public File getFileDirectory(CourseEnvironment courseEnv, CheckListCourseNode cNode) {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
-		File rootFolder = new File(FolderConfig.getCanonicalRoot(), path);
-		return rootFolder; 
+		return new File(FolderConfig.getCanonicalRoot(), path);
 	}
 	
 	private static class BatchComparator implements Comparator<AssessmentBatch> {
