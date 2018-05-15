@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.collaboration.CollaborationTools;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
@@ -60,6 +61,8 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.group.BusinessGroup;
+import org.olat.group.DeletableGroupData;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
@@ -114,6 +117,8 @@ import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.properties.NarrowedPropertyManager;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
@@ -132,7 +137,7 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 @Service
-public class PortfolioServiceImpl implements PortfolioService {
+public class PortfolioServiceImpl implements PortfolioService, DeletableGroupData {
 	
 	private static final OLog log = Tracing.createLoggerFor(PortfolioServiceImpl.class);
 	
@@ -264,6 +269,24 @@ public class PortfolioServiceImpl implements PortfolioService {
 		return binder;
 	}
 	
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(group);
+		Property mapKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_PORTFOLIO);
+		if (mapKeyProperty != null) {
+			Long mapKey = mapKeyProperty.getLongValue();
+			String version = mapKeyProperty.getStringValue();
+			if("2".equals(version)) {
+				Binder binder = binderDao.loadByKey(mapKey);
+				if(binder != null) {
+					deleteBinder(binder);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public boolean detachCourseFromBinders(RepositoryEntry entry) {
 		int deletedRows = binderDao.detachBinderFromRepositoryEntry(entry);

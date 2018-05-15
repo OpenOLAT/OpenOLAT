@@ -18,6 +18,7 @@
 				<value>org.olat.restapi.security.Authentication</value>
 				<value>org.olat.user.restapi.UserWebService</value>
 				<value>org.olat.user.restapi.ContactsWebService</value>
+				<value>org.olat.user.restapi.OrganisationsWebService</value>
 				<value>org.olat.user.restapi.UserAuthenticationWebService</value>
 				<value>org.olat.restapi.group.LearningGroupWebService</value>
 				<value>org.olat.restapi.repository.CatalogWebService</value>

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 
 /**
@@ -42,8 +41,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private boolean deleted = false;
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage = ResourceUsage.all;
-	
-	private List<OrganisationRef> learnResourceManagerOrganisations;
 	
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -207,14 +204,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setLicenseTypeKeys(Set<Long> licenseTypeKeys) {
 		this.licenseTypeKeys = licenseTypeKeys;
-	}
-
-	public List<OrganisationRef> getLearnResourceManagerOrganisations() {
-		return learnResourceManagerOrganisations;
-	}
-
-	public void setLearnResourceManagerOrganisations(List<OrganisationRef> learnResourceManagerOrganisations) {
-		this.learnResourceManagerOrganisations = learnResourceManagerOrganisations;
 	}
 
 	public enum OrderBy {

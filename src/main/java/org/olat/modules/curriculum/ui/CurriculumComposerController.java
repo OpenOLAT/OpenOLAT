@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -76,6 +77,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private EditCurriculumElementController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementController newSubElementCtrl;
+	private MoveCurriculumElementController moveElementCtrl;
 	
 	private int counter;
 	private final Curriculum curriculum;
@@ -163,7 +165,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newElementCtrl == source || newSubElementCtrl == source) {
+		if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -176,8 +178,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(moveElementCtrl);
 		removeAsListenerAndDispose(newElementCtrl);
 		removeAsListenerAndDispose(cmc);
+		moveElementCtrl = null;
 		newElementCtrl = null;
 		cmc = null;
 	}
@@ -197,7 +201,16 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("select".equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					doEditCurriculumElement(ureq, row);
+				}
+			}
+		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
@@ -210,7 +223,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doNewCurriculumElement(UserRequest ureq) {
 		if(newElementCtrl != null) return;
 
-		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), curriculum);
+		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum);
 		listenTo(newElementCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
@@ -224,7 +237,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), curriculum);
+			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement, curriculum);
 			newSubElementCtrl.setParentElement(parentElement);
 			listenTo(newSubElementCtrl);
 			
@@ -244,6 +257,22 @@ public class CurriculumComposerController extends FormBasicController implements
 			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum);
 			listenTo(editCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
+		}
+	}
+	
+	private void doMoveCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			List<CurriculumElement> elementsToMove = Collections.singletonList(element);
+			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum);
+			listenTo(moveElementCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", moveElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 	
@@ -320,7 +349,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(editLink == source) {
 				close();
 				doEditCurriculumElement(ureq, row);
-			} else if(deleteLink == source || moveLink == source) {
+			} else if(moveLink == source) {
+				close();
+				doMoveCurriculumElement(ureq, row);
+			} else if(deleteLink == source) {
 				close();
 				showWarning("Not implemented");
 			} else if(newLink == source) {

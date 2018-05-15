@@ -141,7 +141,7 @@
 	$r.render("highScore")
 #end
 
-#if($showResultsOnHomePage && $attempts > 0)	
+#if($showResultsOnHomePage && $r.isNotNull($attempts) && $attempts > 0)	
 	<div class="panel panel-default o_results">
 	  	<div class="panel-heading">
 	  		<h4 class="panel-title">#if ($showResults && $r.available("command.hideResults"))

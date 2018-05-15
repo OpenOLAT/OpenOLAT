@@ -143,7 +143,7 @@ public class CourseOverviewController extends BasicController  {
 				TABLE_ACTION_LAUNCH, getLocale()));
 		
 		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.entry.i18n(), MSCols.entry.ordinal(),
-				null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new RepositoryEntryIconRenderer()));
+				null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new RepositoryEntryIconRenderer(getLocale())));
 		
 		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.title.i18n(), MSCols.title.ordinal(),
 				TABLE_ACTION_LAUNCH, getLocale()));

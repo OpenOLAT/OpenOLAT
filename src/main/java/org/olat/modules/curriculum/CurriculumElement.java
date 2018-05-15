@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.Date;
+
+import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -46,6 +49,16 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	
 	public void setExternalId(String externalId);
 	
+	public Date getBeginDate();
+	
+	public void setBeginDate(Date date);
+	
+	public Date getEndDate();
+	
+	public void setEndDate(Date date);
+	
+	public String getMaterializedPathKeys();
+	
 	public CurriculumElementManagedFlag[] getManagedFlags();
 	
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
@@ -53,5 +66,12 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	public Curriculum getCurriculum();
 	
 	public CurriculumElement getParent();
+	
+	public CurriculumElementType getType();
+	
+	public void setType(CurriculumElementType type);
+	
+	public Group getGroup();
+	
 
 }

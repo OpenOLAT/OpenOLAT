@@ -61,6 +61,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -173,9 +174,10 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		this.rootwControl = rootwControl;
 		mapperThumbnailKey = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
 		
-		isAuthor = ureq.getUserSession().getRoles().isAuthor();
-		isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-		isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		Roles roles = ureq.getUserSession().getRoles();
+		isAuthor = roles.isAuthor();
+		isGuest = roles.isGuestOnly();
+		isOLATAdmin = roles.isOLATAdmin();
 		
 		if(isOLATAdmin) {
 			isLocalTreeAdmin = false;
@@ -679,7 +681,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, new String[0], null);
 		listenTo(entrySearchCtrl);
 		// OLAT-Admin has search form
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if (isOLATAdmin) {
 			entrySearchCtrl.displaySearchForm();
 		}
 		// an Author gets the list of his repository

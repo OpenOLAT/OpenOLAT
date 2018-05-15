@@ -42,15 +42,24 @@ public enum OrganisationRoles {
 	invitee,
 	guest;
 	
+	public static boolean isValue(String value) {
+		boolean isValue = false;
+		if(StringHelper.containsNonWhitespace(value)) {
+			for(OrganisationRoles role:OrganisationRoles.values()) {
+				if(role.name().equals(value)) {
+					isValue = true;
+				}
+			}
+		}
+		return isValue;
+	}
+	
 	public static boolean valid(String value) {
 		if(!StringHelper.containsNonWhitespace(value)) {
 			return false;
 		}
-		try {
-			return OrganisationRoles.valueOf(value) != null;
-		} catch (Exception e) {
-			return false;
-		}
+
+		return OrganisationRoles.isValue(value);
 	}
 	
 	public static OrganisationRoles[] valuesWithoutGuestAndInvitee() {

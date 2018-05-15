@@ -53,7 +53,7 @@ public class QPoolSecurityCallbackFactory {
 		securityCallback.setQuestionItemView(itemView);
 		securityCallback.setQuestionItemSource(questionItemSource);
 		securityCallback.setAdmin(roles.isOLATAdmin());
-		securityCallback.setPoolAdmin(roles.isPoolAdmin());
+		securityCallback.setPoolAdmin(roles.isQPoolManager());
 		return securityCallback;
 	}
 

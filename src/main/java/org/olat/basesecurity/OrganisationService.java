@@ -37,27 +37,94 @@ public interface OrganisationService {
 	
 	public static final String DEFAULT_ORGANISATION_IDENTIFIER = "default-org";
 	
+
 	/**
-	 * Create and persist a brand new organisation.
+	 * Create a brand new organization. The membership inheritance
+	 * will be automatically calculated and propagated.
 	 * 
-	 * @param displayName The display name
+	 * @param displayName The name of the organization
 	 * @param identifier The identifier
-	 * @return The persisted organisation
+	 * @param description The description
+	 * @param parentOrganisation The Parent organization if any
+	 * @param type The type
+	 * @return The persisted organization
 	 */
 	public Organisation createOrganisation(String displayName, String identifier, String description,
 			Organisation parentOrganisation, OrganisationType type);
 	
 	/**
+	 * The default organization.
 	 * 
-	 * @param organisation A reference of the organisation
-	 * @return A reloaded organisation
+	 * @return The default organization.
+	 */
+	public Organisation getDefaultOrganisation();
+	
+	/**
+	 * 
+	 * @param organisation A reference of the organization
+	 * @return A reloaded organization
 	 */
 	public Organisation getOrganisation(OrganisationRef organisation);
 	
+	public List<Organisation> getOrganisationParentLine(Organisation organisation);
+	
 	public Organisation updateOrganisation(Organisation organisation);
+	
+	/**
+	 * Move an organization to a new place in the organization structure.
+	 * 
+	 * @param organisationToMove The organization to move
+	 * @param newParent The new parent
+	 */
+	public void moveOrganisation(OrganisationRef organisationToMove, OrganisationRef newParent);
 	
 	public List<Organisation> getOrganisations();
 	
+	/**
+	 * Create a new organization type.
+	 * 
+	 * @param displayName The name
+	 * @param identifier The identifier of the type
+	 * @param description The description
+	 * @return A persisted organization type
+	 */
+	public OrganisationType createOrganisationType(String displayName, String identifier, String description);
+	
+	/**
+	 * Reload an organization type.
+	 * 
+	 * @param type The primary key
+	 * @return A fresh organization type
+	 */
+	public OrganisationType getOrganisationType(OrganisationTypeRef type);
+	
+	/**
+	 * Update the type without touching to the sub-types.
+	 * 
+	 * @param type
+	 * @param allowedSubTypes
+	 * @return
+	 */
+	public OrganisationType updateOrganisationType(OrganisationType type);
+	
+	/**
+	 * Update the type and the relation to sub-types.
+	 * 
+	 * @param type The type to update
+	 * @param allowedSubTypes The sub-types allowed
+	 * @return The merged type
+	 */
+	public OrganisationType updateOrganisationType(OrganisationType type, List<OrganisationType> allowedSubTypes);
+	
+	public void allowOrganisationSubType(OrganisationType parentType, OrganisationType allowedSubType);
+	
+	public void disallowOrganisationSubType(OrganisationType parentType, OrganisationType allowedSubType);
+	
+	/**
+	 * @return The list of organization types
+	 */
+	public List<OrganisationType> getOrganisationTypes();
+
 	/**
 	 * @param member The user (mandatory)
 	 * @param role The roles (mandatory)
@@ -66,18 +133,8 @@ public interface OrganisationService {
 	public List<Organisation> getOrganisations(IdentityRef member, OrganisationRoles... role);
 	
 	/**
-	 * 
-	 * @param member
-	 * @param roles
-	 * @return
-	 */
-	public List<Organisation> getSearchableOrganisations(IdentityRef member, Roles roles, OrganisationRoles additionalManagerRole);
-	
-	/**
-	 * Return the organization the specified user
-	 * is allow to manage. The method calculate with
-	 * administrator and the specified additional role
-	 * (user manager or learn resource manager)
+	 * Return the organization the specified user is allow to see. 
+	 * An OpenOLAT admin. can see all organizations.
 	 * 
 	 * 
 	 * @param member The user 
@@ -85,20 +142,36 @@ public interface OrganisationService {
 	 * @param managerRole The additional manager
 	 * @return A list of organizations a user can manage
 	 */
-	public List<Organisation> getManageableOrganisations(IdentityRef member, Roles roles, OrganisationRoles managerRole);
-
+	public List<Organisation> getOrganisations(IdentityRef member, Roles roles, OrganisationRoles... managerRole);
 	
-	public Organisation getDefaultOrganisation();
-
+	/**
+	 * Add a membership without inheritance on the default organization.
+	 * 
+	 * @param member The identity
+	 * @param role The role in the organization
+	 */
+	public void addMember(Identity member, OrganisationRoles role);
+	
+	/**
+	 * Add a membership on the specified organization. The inheritance mode "root"
+	 * will be automatically applied to learn resource manager, author and user manager.
+	 * This role will be propagated to child-organizations as "inherithed".
+	 * 
+	 * @param organisation The organization
+	 * @param member The new member of the organization
+	 * @param role The role in the organization
+	 */
 	public void addMember(Organisation organisation, Identity member, OrganisationRoles role);
 	
 	/**
+	 * A method to fine set role. 
 	 * 
-	 * 
-	 * @param member The identity
-	 * @param role The role in the organisation
+	 * @param organisation The organization
+	 * @param member The new member of the organization
+	 * @param role The role in the organization
+	 * @param inheritanceMode The inheritance mode (none, root)
 	 */
-	public void addMember(Identity member, OrganisationRoles role);
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role, GroupMembershipInheritance inheritanceMode);
 	
 	public void removeMember(IdentityRef member, OrganisationRoles role);
 

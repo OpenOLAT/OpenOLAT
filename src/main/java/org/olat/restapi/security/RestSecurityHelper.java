@@ -81,6 +81,15 @@ public class RestSecurityHelper {
 		}
 	}
 	
+	public static boolean isCurriculumManager(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isCurriculumManager() || roles.isOLATAdmin());
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	public static boolean isGroupManager(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
@@ -123,7 +132,7 @@ public class RestSecurityHelper {
 				UserRequest ureq = getUserRequest(request);
 				Identity identity = ureq.getIdentity();
 				RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
-				return rm.isOwnerOfRepositoryEntry(identity, entry) || rm.isInstitutionalRessourceManagerFor(identity, roles, entry);
+				return rm.isOwnerOfRepositoryEntry(identity, entry) || rm.isLearnResourceManagerFor(roles, entry);
 			}
 			return false;
 		} catch (Exception e) {
@@ -159,7 +168,7 @@ public class RestSecurityHelper {
 	public static boolean isQuestionPoolManager(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
-			return (roles.isPoolAdmin() || roles.isOLATAdmin());
+			return (roles.isQPoolManager() || roles.isOLATAdmin());
 		} catch (Exception e) {
 			return false;
 		}

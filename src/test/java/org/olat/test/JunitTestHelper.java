@@ -53,6 +53,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.fileresource.types.ImageFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -102,6 +103,15 @@ public class JunitTestHelper {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(ores);
 		OLATResourceManager.getInstance().saveOLATResource(resource);
 		return resource;
+	}
+	
+	public static final RepositoryEntry createRandomRepositoryEntry(Identity author) {
+		OLATResource resource = OLATResourceManager.getInstance()
+				.createOLATResourceInstance(new ImageFileResource());
+		Organisation defOrganisation = CoreSpringFactory.getImpl(OrganisationService.class)
+				.getDefaultOrganisation();
+		return CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(author, "", "-", "Image - " + resource.getResourceableId(), "", resource, 1, defOrganisation);
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {

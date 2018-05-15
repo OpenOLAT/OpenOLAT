@@ -55,7 +55,7 @@ public interface BaseSecurity {
 	public Roles getRoles(IdentityRef identity);
 	
 	/**
-	 * Get the list of roles as string without inheritence (an admin
+	 * Get the list of roles as string without inheritance (an admin
 	 * has only admin role and not the user manager role...).
 	 * @param identity
 	 * @return
@@ -70,7 +70,7 @@ public interface BaseSecurity {
 	 * @param updatedIdentity The identity that is changed
 	 * @param roles The new roles to set on updatedIdentity
 	 */
-	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
+	//public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
 	
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation organisation);
 

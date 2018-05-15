@@ -31,6 +31,7 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 
@@ -55,8 +56,12 @@ public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDef
 		} 
 		
 		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null) {
+			return null;
+		}
 		
-		if(usess.getRoles().isAuthor() || usess.getRoles().isLearnResourceManager()) {
+		Roles roles = usess.getRoles();
+		if(roles.isOLATAdmin() || roles.isAuthor() || roles.isLearnResourceManager()) {
 			// only for authors and institutional resource managers
 			return new RepositorySite(this, ureq.getLocale());
 		}

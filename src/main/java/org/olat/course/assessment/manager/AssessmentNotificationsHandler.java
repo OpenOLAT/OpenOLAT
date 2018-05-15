@@ -222,8 +222,8 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 		if (ident == null) return false;
 
 		CourseGroupManager grpMan = course.getCourseEnvironment().getCourseGroupManager();
-		boolean isInstitutionalResourceManager = organisationService.hasRole(ident, OrganisationRoles.learnresourcemanager);
-		return isInstitutionalResourceManager || grpMan.isIdentityCourseAdministrator(ident) || grpMan.isIdentityCourseCoach(ident) || grpMan.hasRight(ident, CourseRights.RIGHT_ASSESSMENT);
+		boolean isLearnResourceManager = organisationService.hasRole(ident, OrganisationRoles.learnresourcemanager);
+		return isLearnResourceManager || grpMan.isIdentityCourseAdministrator(ident) || grpMan.isIdentityCourseCoach(ident) || grpMan.hasRight(ident, CourseRights.RIGHT_ASSESSMENT);
 	}
 
 	/**

@@ -77,10 +77,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.Roles;
+import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.restapi.group.MyGroupWebService;
@@ -98,7 +97,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 @Path("users")
 public class UserWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserWebService.class);
 	private static final String VERSION = "1.0";
 	
 	public static final String PROPERTY_HANDLER_IDENTIFIER = UserWebService.class.getName();
@@ -111,9 +109,9 @@ public class UserWebService {
 	
 	/**
 	 * The version of the User Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+ 	 * @response.representation.200.doc The version of this specific Web Service
+ 	 * @response.representation.200.example 1.0
 	 * @return The version number
 	 */
 	@GET
@@ -181,7 +179,7 @@ public class UserWebService {
 			}
 			
 			//retrieve and convert the parameters value
-			Map<String,String> userProps = new HashMap<String,String>();
+			Map<String,String> userProps = new HashMap<>();
 			if(!params.isEmpty()) {
 				UserManager um = UserManager.getInstance();
 				Locale locale = getLocale(httpRequest);
@@ -289,9 +287,9 @@ public class UserWebService {
 	 * Retrieves the roles of a user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param httpRequest The HTTP request
 	 * @return an xml or json representation of a the roles being search.
@@ -300,30 +298,26 @@ public class UserWebService {
 	@Path("{identityKey}/roles")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getRoles(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		try {
-			boolean isUserManager = isUserManager(request);
-			if(!isUserManager) {
-				return Response.serverError().status(Status.FORBIDDEN).build();
-			}
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
-			return Response.ok(new RolesVO(roles)).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		boolean isUserManager = isUserManager(request);
+		if(!isUserManager) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
+		return Response.ok(new RolesVO(roles)).build();
 	}
 	
 	/**
 	 * Update the roles of a user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param roles The updated roles
 	 * @param httpRequest The HTTP request
@@ -346,11 +340,16 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		Roles modRoles = roles.toRoles();
 		Identity actingIdentity = getIdentity(request);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		securityManager.updateRoles(actingIdentity, identity, defOrganisation, modRoles);
-		return Response.ok(new RolesVO(modRoles)).build();
+		boolean userRole = !roles.isGuestOnly() && !roles.isInvitee();
+		boolean coachRole = false;
+		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation,
+				roles.isGuestOnly(), roles.isInvitee(), userRole, coachRole,
+				roles.isAuthor(), roles.isGroupManager(), roles.isPoolAdmin(), roles.isCurriculumManager(),
+				roles.isUserManager(), roles.isInstitutionalResourceManager(), roles.isOlatAdmin());
+		securityManager.updateRoles(actingIdentity, identity, modifiedRoles);
+		return Response.ok(new RolesVO(roles.toRoles())).build();
 	}
 	
 	/**
@@ -369,22 +368,18 @@ public class UserWebService {
 	@Path("{identityKey}/status")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getStatus(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		try {
-			boolean isUserManager = isUserManager(request);
-			if(!isUserManager) {
-				return Response.serverError().status(Status.FORBIDDEN).build();
-			}
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			StatusVO status = new StatusVO();
-			status.setStatus(identity.getStatus());
-			return Response.ok(status).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		boolean isUserManager = isUserManager(request);
+		if(!isUserManager) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		StatusVO status = new StatusVO();
+		status.setStatus(identity.getStatus());
+		return Response.ok(status).build();
 	}
 	
 	/**
@@ -399,9 +394,9 @@ public class UserWebService {
 	 * @response.representation.qname {http://www.example.com}statusVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ROLESVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param status The status to update
 	 * @param httpRequest The HTTP request
@@ -436,9 +431,9 @@ public class UserWebService {
 	 * Retrieves the preferences of a user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The preferences
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_PREFERENCESVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_PREFERENCESVO}
+ 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+ 	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param httpRequest The HTTP request
 	 * @return an xml or json representation of a the roles being search.
@@ -465,9 +460,9 @@ public class UserWebService {
 	 * Update the preferences of a user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_PREFERENCESVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_PREFERENCESVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param preferences The updated preferences
 	 * @param httpRequest The HTTP request
@@ -478,23 +473,19 @@ public class UserWebService {
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updatePreferences(@PathParam("identityKey") Long identityKey, PreferencesVO preferences, @Context HttpServletRequest request) {
-		try {
-			boolean isUserManager = isUserManager(request);
-			if(!isUserManager) {
-				return Response.serverError().status(Status.FORBIDDEN).build();
-			}
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			Preferences prefs = identity.getUser().getPreferences();
-			prefs.setLanguage(preferences.getLanguage());
-			UserManager.getInstance().updateUserFromIdentity(identity);
-			return Response.ok(new PreferencesVO(prefs)).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		boolean isUserManager = isUserManager(request);
+		if(!isUserManager) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		Preferences prefs = identity.getUser().getPreferences();
+		prefs.setLanguage(preferences.getLanguage());
+		UserManager.getInstance().updateUserFromIdentity(identity);
+		return Response.ok(new PreferencesVO(prefs)).build();
 	}
 	
 
@@ -502,9 +493,9 @@ public class UserWebService {
 	 * Retrieves an user given its unique key identifier
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param withPortrait If true return the portrait as Base64 (default false)
 	 * @param httpRequest The HTTP request
@@ -517,18 +508,14 @@ public class UserWebService {
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("identityKey") Long identityKey, @QueryParam("withPortrait") @DefaultValue("false") Boolean withPortrait,
 			@Context HttpServletRequest httpRequest) {
-		try {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			
-			boolean isUserManager = isUserManager(httpRequest);
-			UserVO userVO = get(identity, null, true, isUserManager, withPortrait);
-			return Response.ok(userVO).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		
+		boolean isUserManager = isUserManager(httpRequest);
+		UserVO userVO = get(identity, null, true, isUserManager, withPortrait);
+		return Response.ok(userVO).build();
 	}
 	
 	@Path("{identityKey}/folders")
@@ -567,22 +554,18 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortraitHead(@PathParam("identityKey") Long identityKey) {
-		try {
-			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
-			if(portrait == null || !portrait.exists()) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			Date lastModified = new Date(portrait.lastModified());
-			return Response.ok().lastModified(lastModified).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		
+		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+		if(portrait == null || !portrait.exists()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		Date lastModified = new Date(portrait.lastModified());
+		return Response.ok().lastModified(lastModified).build();
 	}
 	
 	/**
@@ -597,31 +580,27 @@ public class UserWebService {
 	@Path("{identityKey}/portrait/{size}")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getOriginalPortraitHead(@PathParam("identityKey") Long identityKey, @PathParam("size") String size) {
-		try {
-			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			
-			DisplayPortraitManager portraitManager = DisplayPortraitManager.getInstance();
-			
-			File portrait = null;
-			if("master".equals(size)) {
-				portrait = portraitManager.getMasterPortrait(identity.getName());
-			} else if("big".equals(size)) {
-				portrait = portraitManager.getBigPortrait(identity.getName());
-			} else if("small".equals(size)) {
-				portrait = portraitManager.getSmallPortrait(identity.getName());
-			}
-
-			if(portrait == null || !portrait.exists()) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			Date lastModified = new Date(portrait.lastModified());
-			return Response.ok().lastModified(lastModified).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		
+		DisplayPortraitManager portraitManager = DisplayPortraitManager.getInstance();
+		
+		File portrait = null;
+		if("master".equals(size)) {
+			portrait = portraitManager.getMasterPortrait(identity.getName());
+		} else if("big".equals(size)) {
+			portrait = portraitManager.getBigPortrait(identity.getName());
+		} else if("small".equals(size)) {
+			portrait = portraitManager.getSmallPortrait(identity.getName());
+		}
+
+		if(portrait == null || !portrait.exists()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Date lastModified = new Date(portrait.lastModified());
+		return Response.ok().lastModified(lastModified).build();
 	}
 	
 	/**
@@ -686,7 +665,7 @@ public class UserWebService {
 			String filename = partsReader.getFilename();
 			DisplayPortraitManager.getInstance().setPortrait(tmpFile, filename, identity.getName());
 			return Response.ok().build();
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		} finally {
 			MultipartReader.closeQuietly(partsReader);
@@ -696,7 +675,7 @@ public class UserWebService {
 	/**
 	 * Deletes the portrait of an user
 	 * @response.representation.200.doc The portrait deleted
-   * @response.representation.401.doc Not authorized
+	 * @response.representation.401.doc Not authorized
 	 * @param identityKey The identity key identifier of the user being searched
 	 * @param request The REST request
 	 * @return The image
@@ -704,20 +683,16 @@ public class UserWebService {
 	@DELETE
 	@Path("{identityKey}/portrait")
 	public Response deletePortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		try {
-			Identity authIdentity = getUserRequest(request).getIdentity();
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(identity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-		
-			DisplayPortraitManager.getInstance().deletePortrait(identity);
-			return Response.ok().build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
-		}	
+		Identity authIdentity = getUserRequest(request).getIdentity();
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+	
+		DisplayPortraitManager.getInstance().deletePortrait(identity);
+		return Response.ok().build();
 	}
 
 	@Path("{identityKey}/groups")
@@ -755,43 +730,38 @@ public class UserWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("identityKey") Long identityKey, UserVO user, @Context HttpServletRequest request) {
-		try {
-			if(user == null) {
-				return Response.serverError().status(Status.NO_CONTENT).build();
-			}
-			if(!isUserManager(request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-
-			BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
-			Identity retrievedIdentity = baseSecurity.loadIdentityByKey(identityKey, false);
-			if(retrievedIdentity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			
-			User retrievedUser = retrievedIdentity.getUser();
-			List<ErrorVO> errors = validateUser(retrievedUser, user, request);
-			if(errors.isEmpty()) {
-				if(StringHelper.containsNonWhitespace(user.getExternalId())
-						&& !user.getExternalId().equals(retrievedIdentity.getExternalId())) {
-					retrievedIdentity = baseSecurity.setExternalId(retrievedIdentity, user.getExternalId());
-					retrievedUser = retrievedIdentity.getUser();
-				}
-				String oldEmail = retrievedUser.getEmail();
-				post(retrievedUser, user, getLocale(request));
-				UserManager.getInstance().updateUser(retrievedUser);
-				BaseSecurityManager.getInstance().deleteInvalidAuthenticationsByEmail(oldEmail);
-				return Response.ok(get(retrievedIdentity, true, true)).build();
-			}
-			
-			//content not ok
-			ErrorVO[] errorVos = new ErrorVO[errors.size()];
-			errors.toArray(errorVos);
-			return Response.ok(errorVos).status(Status.NOT_ACCEPTABLE).build();
-		} catch (Exception e) {
-			log.error("Error updating an user", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		if(user == null) {
+			return Response.serverError().status(Status.NO_CONTENT).build();
 		}
+		if(!isUserManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
+		Identity retrievedIdentity = baseSecurity.loadIdentityByKey(identityKey, false);
+		if(retrievedIdentity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		User retrievedUser = retrievedIdentity.getUser();
+		List<ErrorVO> errors = validateUser(retrievedUser, user, request);
+		if(errors.isEmpty()) {
+			if(StringHelper.containsNonWhitespace(user.getExternalId())
+					&& !user.getExternalId().equals(retrievedIdentity.getExternalId())) {
+				retrievedIdentity = baseSecurity.setExternalId(retrievedIdentity, user.getExternalId());
+				retrievedUser = retrievedIdentity.getUser();
+			}
+			String oldEmail = retrievedUser.getEmail();
+			post(retrievedUser, user, getLocale(request));
+			UserManager.getInstance().updateUser(retrievedUser);
+			BaseSecurityManager.getInstance().deleteInvalidAuthenticationsByEmail(oldEmail);
+			return Response.ok(get(retrievedIdentity, true, true)).build();
+		}
+		
+		//content not ok
+		ErrorVO[] errorVos = new ErrorVO[errors.size()];
+		errors.toArray(errorVos);
+		return Response.ok(errorVos).status(Status.NOT_ACCEPTABLE).build();
 	}
 
 	private List<ErrorVO> validateUser(User user, UserVO userVo, HttpServletRequest request) {
@@ -862,7 +832,7 @@ public class UserWebService {
 	 * Delete an user from the system
 	 * @response.representation.200.doc The user is removed from the group
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier
 	 * @param request The HTTP request
 	 * @return <code>Response</code> object. The operation status (success or fail)

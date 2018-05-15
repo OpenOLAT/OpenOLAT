@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.Set;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -45,5 +47,9 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
+	
+	public CurriculumElementTypeManagedFlag[] getManagedFlags();
+	
+	public Set<CurriculumElementTypeToType> getAllowedSubTypes();
 
 }

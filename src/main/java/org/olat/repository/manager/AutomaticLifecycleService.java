@@ -90,7 +90,7 @@ public class AutomaticLifecycleService {
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
 		  .append(" where lifecycle.validTo<:now and v.statusCode=").append(RepositoryEntryStatus.REPOSITORY_STATUS_OPEN)
-		  .append(" and v.access>0");
+		  .append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -132,7 +132,7 @@ public class AutomaticLifecycleService {
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
 		  .append(" where lifecycle.validTo<:now and not(v.statusCode=").append(RepositoryEntryStatus.REPOSITORY_STATUS_UNPUBLISHED).append(")")
-		  .append(" and v.access>0");
+		  .append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -173,7 +173,7 @@ public class AutomaticLifecycleService {
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.access>0");
+		  .append(" where lifecycle.validTo<:now and v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);

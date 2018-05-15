@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
@@ -83,8 +81,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -181,8 +177,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Autowired
 	protected RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
-	private OrganisationService organisationService;
-	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
@@ -204,16 +198,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		boolean learnResourceManager = roles.isLearnResourceManager();
 		isOlatAdmin = roles.isOLATAdmin() || learnResourceManager;
 		hasAuthorRight = roles.isAuthor() || learnResourceManager || roles.isOLATAdmin();
-		if(!roles.isOLATAdmin()) {
-			if(learnResourceManager) {
-				List<Organisation> orgs = organisationService
-						.getManageableOrganisations(getIdentity(), roles, OrganisationRoles.learnresourcemanager);
-				searchParams.setLearnResourceManagerOrganisations(new ArrayList<OrganisationRef>(orgs));
-			}
-			if(roles.isAuthor()) {
-				
-			}
-		}
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this, !withSearch);
 		initForm(ureq);
@@ -868,7 +852,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.membersmanagement);
 			boolean canAddOwner = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+					|| repositoryManager.isLearnResourceManagerFor(roles, row);
 			if(canAddOwner && !managed) {
 				manageableRows.add(row);
 			}
@@ -908,7 +892,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(entry == null) {
 				deleted = true;
 			} else {
-				boolean isInstitutionalResourceManager = repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+				boolean isInstitutionalResourceManager = repositoryManager.isLearnResourceManagerFor(roles, row);
 				boolean isOwner = roles.isOLATAdmin()
 						|| repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
@@ -1006,7 +990,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
 			boolean canDelete = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+					|| repositoryManager.isLearnResourceManagerFor(roles, row);
 			if(canDelete && !managed) {
 				deleteableRowKeys.add(row.getKey());
 			}
@@ -1229,13 +1213,12 @@ public class AuthorListController extends FormBasicController implements Activat
 			setTranslator(AuthorListController.this.getTranslator());
 			this.row = row;
 			
-			Identity identity = getIdentity();
 			Roles roles = ureq.getUserSession().getRoles();
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, entry);
+						&& repositoryManager.isLearnResourceManagerFor(roles, entry);
 			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
-			isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
+			isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;
 			
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 

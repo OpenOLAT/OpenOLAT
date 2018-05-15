@@ -39,6 +39,7 @@ import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 
 /**
@@ -48,9 +49,8 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
  *
  */
 @NamedQueries({
-	@NamedQuery(name="loadCurriculumElementTypeByKey", query="select el from curriculumelementtype el where el.key=:key")
-	
-	
+	@NamedQuery(name="loadCurriculumElementTypeByKey", query="select el from curriculumelementtype el where el.key=:key"),
+	@NamedQuery(name="loadCurriculumElementTypes", query="select elementType from curriculumelementtype elementType")	
 })
 @Entity(name="curriculumelementtype")
 @Table(name="o_cur_element_type")
@@ -172,6 +172,16 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 		this.managedFlagsString = managedFlagsString;
 	}
 
+	@Override
+	public CurriculumElementTypeManagedFlag[] getManagedFlags() {
+		return CurriculumElementTypeManagedFlag.toEnum(managedFlagsString);
+	}
+	
+	public void setManagedFlagss(CurriculumElementTypeManagedFlag[] flags) {
+		managedFlagsString = CurriculumElementTypeManagedFlag.toString(flags);
+	}
+
+	@Override
 	public Set<CurriculumElementTypeToType> getAllowedSubTypes() {
 		return allowedSubTypes;
 	}

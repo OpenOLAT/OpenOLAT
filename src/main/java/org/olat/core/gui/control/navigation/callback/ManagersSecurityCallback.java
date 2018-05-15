@@ -45,7 +45,7 @@ public class ManagersSecurityCallback implements SiteSecurityCallback {
 				|| usess.getRoles().isGroupManager()
 				|| usess.getRoles().isLearnResourceManager()
 				|| usess.getRoles().isUserManager()
-				|| usess.getRoles().isPoolAdmin()
+				|| usess.getRoles().isQPoolManager()
 				|| usess.getRoles().isCurriculumManager();
 	}
 }

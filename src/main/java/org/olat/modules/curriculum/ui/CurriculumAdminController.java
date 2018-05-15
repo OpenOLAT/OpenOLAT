@@ -20,28 +20,36 @@
 package org.olat.modules.curriculum.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 12 févr. 2018<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumAdminController extends FormBasicController {
+public class CurriculumAdminController extends BasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
+	private final Link configurationLink;
+	private final Link curriculumElementTypeListLink;
+	private final VelocityContainer mainVC;
+	private final SegmentViewComponent segmentView;
 	
-	private MultipleSelectionElement enableEl;
-	private MultipleSelectionElement curriculumMyCoursesEl;
+	private CurriculumAdminConfigurationController configurationCtrl;
+	private CurriculumElementTypesEditController elementTypeListCtrl;
 	
 	@Autowired
 	private CurriculumModule curriculumModule;
@@ -49,52 +57,75 @@ public class CurriculumAdminController extends FormBasicController {
 	public CurriculumAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		initForm(ureq);
-		update();
-	}
+		mainVC = createVelocityContainer("curriculum_admin");
+		
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+		configurationLink = LinkFactory.createLink("curriculum.configuration", mainVC, this);
+		segmentView.addSegment(configurationLink, true);
+		curriculumElementTypeListLink = LinkFactory.createLink("curriculum.element.types", mainVC, this);
+		doOpenConfiguration(ureq);
+		if(curriculumModule.isEnabled()) {
+			segmentView.addSegment(curriculumElementTypeListLink, false);
+		}
+		
+		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
+		putInitialPanel(mainVC);
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.title");
-		setFormDescription("admin.description");
-		
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("curriculum.admin.enabled", formLayout, onKeys, onValues);
-		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(curriculumModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
-		
-		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculum.in.my.courses.enabled", formLayout, onKeys, onValues);
-		curriculumMyCoursesEl.addActionListener(FormEvent.ONCHANGE);
-		if(curriculumModule.isEnabled()) {
-			curriculumMyCoursesEl.select(onKeys[0], true);
-		}
 	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
-
+	
 	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(configurationCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				segmentView.removeSegment(curriculumElementTypeListLink);
+				if(curriculumModule.isEnabled()) {
+					segmentView.addSegment(curriculumElementTypeListLink, false);
+				}
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enableEl == source) {
-			curriculumModule.setEnabled(enableEl.isAtLeastSelected(1));
-			update();
-		} else if(curriculumMyCoursesEl == source) {
-			curriculumModule.setCurriculumInMyCourses(curriculumMyCoursesEl.isAtLeastSelected(1));
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == configurationLink) {
+					doOpenConfiguration(ureq);
+				} else if (clickedLink == curriculumElementTypeListLink){
+					doOpenCurriculumElementTypes(ureq);
+				}
+			}
 		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void update() {
-		boolean enabled = enableEl.isAtLeastSelected(1);
-		curriculumMyCoursesEl.setVisible(enabled);
+	private void doOpenConfiguration(UserRequest ureq) {
+		if(configurationCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Configuration"), null);
+			configurationCtrl = new CurriculumAdminConfigurationController(ureq, bwControl);
+			listenTo(configurationCtrl);
+		}
+		addToHistory(ureq, configurationCtrl);
+		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
 	}
+	
+	private void doOpenCurriculumElementTypes(UserRequest ureq) {
+		if(elementTypeListCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Types"), null);
+			elementTypeListCtrl = new CurriculumElementTypesEditController(ureq, bwControl);
+			listenTo(elementTypeListCtrl);
+		}
+		addToHistory(ureq, elementTypeListCtrl);
+		mainVC.put("segmentCmp", elementTypeListCtrl.getInitialComponent());
+	}
+
 }

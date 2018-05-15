@@ -44,6 +44,7 @@ import org.olat.core.id.Persistable;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
  * 
@@ -90,6 +91,9 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
 	
+	@Column(name="c_m_path_keys", nullable=true, insertable=true, updatable=true)
+	private String materializedPathKeys;
+	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group", nullable=false, insertable=true, updatable=false)
 	private Group group;
@@ -106,6 +110,10 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@ManyToOne(targetEntity=CurriculumImpl.class)
 	@JoinColumn(name="fk_curriculum", nullable=true, insertable=true, updatable=true)
 	private Curriculum curriculum;
+	
+	@ManyToOne(targetEntity=CurriculumElementTypeImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
+	private CurriculumElementType type;
 	
 	@Override
 	public Long getKey() {
@@ -135,26 +143,32 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public String getIdentifier() {
 		return identifier;
 	}
 
+	@Override
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
 	}
 
+	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
 
+	@Override
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
 
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -167,18 +181,22 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		this.status = status;
 	}
 
+	@Override
 	public Date getBeginDate() {
 		return beginDate;
 	}
 
+	@Override
 	public void setBeginDate(Date beginDate) {
 		this.beginDate = beginDate;
 	}
 
+	@Override
 	public Date getEndDate() {
 		return endDate;
 	}
 
+	@Override
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
@@ -191,6 +209,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	@Override
+	public String getMaterializedPathKeys() {
+		return materializedPathKeys;
+	}
+
+	public void setMaterializedPathKeys(String materializedPathKeys) {
+		this.materializedPathKeys = materializedPathKeys;
 	}
 
 	public String getManagedFlagsString() {
@@ -211,6 +238,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		managedFlagsString = CurriculumElementManagedFlag.toString(flags);
 	}
 
+	@Override
 	public Group getGroup() {
 		return group;
 	}
@@ -219,6 +247,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		this.group = group;
 	}
 
+	@Override
 	public CurriculumElement getParent() {
 		return parent;
 	}
@@ -245,6 +274,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setCurriculum(Curriculum curriculum) {
 		this.curriculum = curriculum;
+	}
+
+	@Override
+	public CurriculumElementType getType() {
+		return type;
+	}
+	
+	public void setType(CurriculumElementType type) {
+		this.type = type;
 	}
 
 	@Override

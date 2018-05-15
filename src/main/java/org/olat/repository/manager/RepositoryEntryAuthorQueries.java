@@ -22,18 +22,17 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -120,11 +119,8 @@ public class RepositoryEntryAuthorQueries {
 			Class<T> type) {
 
 		IdentityRef identity = params.getIdentity();
-		Roles roles = params.getRoles();
 		List<String> resourceTypes = params.getResourceTypes();
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
-		boolean admin = (roles != null && (roles.isLearnResourceManager() || roles.isOLATAdmin()));
-		boolean learnResourceOrgs = false;
 
 		boolean count = Number.class.equals(type);
 		boolean needIdentity = false;
@@ -161,40 +157,8 @@ public class RepositoryEntryAuthorQueries {
 		}
 
 		sb.append(" where");
-		if(params.isOwnedResourcesOnly()) {
-			needIdentity = true;
-			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
-			  .append(" )");
-			if(params.isDeleted()) {
-				sb.append(" and v.access=").append(RepositoryEntry.DELETED);
-			} else {
-				sb.append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
-			}
-		} else if(admin) {
-			if(params.isDeleted()) {
-				sb.append(" v.access=").append(RepositoryEntry.DELETED);
-			} else {
-				sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
-			}
-			
-			if(params.getLearnResourceManagerOrganisations() != null && !params.getLearnResourceManagerOrganisations().isEmpty()) {
-				sb.append(" and v.key in (select relToOrg.entry.key from repoentrytoorganisation as relToOrg")
-				  .append("  where relToOrg.organisation.key in (:learnResourceManagerOrganisationKeys)")
-				  .append(")");
-				learnResourceOrgs = true;
-			}
-		} else {
-			needIdentity = true;
-			sb.append(" (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
-			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
-			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("       and membership.role='").append(GroupRoles.owner.name()).append("'")
-			  .append("   )")
-			  .append(" ))");
-		}
+		
+		needIdentity |= appendAccessSubSelect(sb, params);
 		
 		if(params.getClosed() != null) {
 			if(params.getClosed().booleanValue()) {
@@ -212,7 +176,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" exists (select ref.key from references as ref where ref.target.key=res.key)");
 		}
 		
-		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
+		if(params.getRepoEntryKeys() != null && !params.getRepoEntryKeys().isEmpty()) {
 			sb.append(" and v.key in (:repoEntryKeys)");
 		}
 
@@ -312,7 +276,7 @@ public class RepositoryEntryAuthorQueries {
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
-		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
+		if(params.getRepoEntryKeys() != null && !params.getRepoEntryKeys().isEmpty()) {
 			dbQuery.setParameter("repoEntryKeys", params.getRepoEntryKeys());
 		}
 		if (params.isResourceTypesDefined()) {
@@ -346,12 +310,6 @@ public class RepositoryEntryAuthorQueries {
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbQuery.setParameter("desc", desc);
 		}
-		if(learnResourceOrgs && params.getLearnResourceManagerOrganisations() != null && !params.getLearnResourceManagerOrganisations().isEmpty()) {
-			List<Long> learnResourceManagerOrganisationKeys = params.getLearnResourceManagerOrganisations()
-					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
-			dbQuery.setParameter("learnResourceManagerOrganisationKeys", learnResourceManagerOrganisationKeys);
-		}
-
 		if(needIdentity) {
 			dbQuery.setParameter("identityKey", identity.getKey());
 		}
@@ -359,6 +317,57 @@ public class RepositoryEntryAuthorQueries {
 			dbQuery.setParameter("licenseTypeKeys", params.getLicenseTypeKeys());
 		}
 		return dbQuery;
+	}
+	
+	private boolean appendAccessSubSelect(StringBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
+		if(params.isOwnedResourcesOnly()) {
+			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
+			  .append(" )");
+			if(params.isDeleted()) {
+				sb.append(" and v.access=").append(RepositoryEntry.DELETED);
+			} else {
+				sb.append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			}
+			return true;
+		}
+		
+		Roles roles = params.getRoles();
+		if(roles == null) {
+			sb.append(" v.access>=").append(RepositoryEntry.ACC_USERS);
+			return false;
+		}
+
+		if(roles.isOLATAdmin()) {
+			if(params.isDeleted()) {
+				sb.append(" v.access=").append(RepositoryEntry.DELETED);
+			} else {
+				sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			}
+			return false;
+		}
+		
+		sb.append(" (v.access>=").append(RepositoryEntry.ACC_USERS);
+		if(roles.isAuthor()) {
+			sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
+			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("       and membership.role = '").append(OrganisationRoles.author).append("'")
+			  .append("   )")
+			  .append(" )");
+		} 
+		sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
+		  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("       and membership.role in ('").append(GroupRoles.owner.name()).append("'");
+		if(roles.isLearnResourceManager()) {
+			sb.append(",'").append(OrganisationRoles.learnresourcemanager.name()).append("'");
+		}
+		sb.append("     )")//close in
+		  .append("   )")
+		  .append(" ))");
+		return true;
 	}
 	
 	private void appendAuthorViewOrderBy(SearchAuthorRepositoryEntryViewParams params, StringBuilder sb) {
@@ -462,6 +471,10 @@ public class RepositoryEntryAuthorQueries {
 						appendAsc(sb, asc).append(" nulls last, deletedByUser.firstName ");
 						appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					}
+					break;
+				case license:
+					sb.append(" order by v.key");
+					appendAsc(sb, asc);
 					break;
 			}
 		}

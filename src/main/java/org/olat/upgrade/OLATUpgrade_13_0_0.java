@@ -30,6 +30,10 @@ import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -51,6 +55,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_13.0.0";
 	private static final String MIGRATE_ROLE = "MIGRATE ROLE";
+	private static final String MIGRATE_REPO_ENTRY_DEFAULT_ORG = "MIGRATE REPO ENTRY TO DEF ORG";
 	private static final String MIGRATE_PORTFOLIO_EVAL_FORM = "PORTFOLIO EVALUATION FORM";
 	
 	@Autowired
@@ -59,6 +64,12 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
@@ -90,6 +101,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateRole(upgradeManager, uhd);
+		allOk &= migrateRepositoryEntriesTodefaultOrganisation(upgradeManager, uhd);
 		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
@@ -100,6 +112,41 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			log.audit("OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
+	}
+	
+	private boolean migrateRepositoryEntriesTodefaultOrganisation(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_REPO_ENTRY_DEFAULT_ORG)) {
+			try {
+				List<Long> repositoryEntryKeys = getRepositoryEntryKeys();
+				for(int i=0; i<repositoryEntryKeys.size(); i++) {
+					migrateRepositoryEntryToDefaultOrganisation(repositoryEntryKeys.get(0));
+					if(i % 50 == 0) {
+						log.info("Migration repository entries to default organisation: " + i + " / " + repositoryEntryKeys.size());
+					}
+				}
+				log.info("Migration repository entries to default organisation done: " + repositoryEntryKeys.size());
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_REPO_ENTRY_DEFAULT_ORG, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateRepositoryEntryToDefaultOrganisation(Long repositoryEntryKey) {
+		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
+		List<Organisation> currentOrganisations = repositoryEntryRelationDao.getOrganisations(entry);
+		if(currentOrganisations.isEmpty()) {
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			repositoryEntryToOrganisationDao.createRelation(defOrganisation, entry, false);
+			repositoryEntryRelationDao.createRelation(defOrganisation.getGroup(), entry);
+			dbInstance.commitAndCloseSession();
+		}
 	}
 	
 	private boolean migrateRole(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -161,6 +208,13 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("groupName", securityGroupName)
+				.getResultList();
+	}
+	
+	private List<Long> getRepositoryEntryKeys() {
+		String q = "select v.key from repositoryentry as v";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, Long.class)
 				.getResultList();
 	}
 	

@@ -57,6 +57,7 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 			case key: return organisation.getKey();
 			case displayName: return organisation.getDisplayName();
 			case identifier: return organisation.getIdentifier();
+			case typeIdentifier: return organisation.getTypeIdentifier();
 			case tools: return organisation.getTools();
 			default: return "ERROR";
 		}
@@ -71,6 +72,7 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 		key("table.header.key"),
 		displayName("table.header.displayName"),
 		identifier("table.header.identifier"),
+		typeIdentifier("table.header.type.identifier"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

@@ -28,11 +28,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
@@ -325,6 +327,21 @@ public class UserSessionManager implements GenericEventListener {
 			} else {
 				sessionCountWeb.incrementAndGet();
 			}
+		}
+	}
+	
+	/**
+	 * The method will logout the specified user from all of its
+	 * session, UI, WebDAV, REST...
+	 * @param identity
+	 */
+	public void signOffAndClearAll(IdentityRef identity) {
+		List<UserSession> userSessions = authUserSessions.stream()
+				.filter(userSession -> userSession.getIdentity() != null && userSession.getIdentity().getKey().equals(identity.getKey()))
+				.collect(Collectors.toList());
+		for(UserSession userSession:userSessions) {
+			internSignOffAndClear(userSession);
+			dbInstance.commit();
 		}
 	}
 	

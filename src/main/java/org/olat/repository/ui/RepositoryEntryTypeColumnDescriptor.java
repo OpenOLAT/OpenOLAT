@@ -47,7 +47,7 @@ public class RepositoryEntryTypeColumnDescriptor extends CustomRenderColumnDescr
 	 * @param aligment
 	 */
 	public RepositoryEntryTypeColumnDescriptor(String headerKey, int dataColumn, String action, Locale locale, int aligment) {
-		super(headerKey, dataColumn, action, locale, aligment, new RepositoryEntryIconRenderer());
+		super(headerKey, dataColumn, action, locale, aligment, new RepositoryEntryIconRenderer(locale));
 	}
 
 	/**

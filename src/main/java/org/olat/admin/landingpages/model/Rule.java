@@ -91,7 +91,7 @@ public class Rule {
 				case USER_MGR: match &= roles.isUserManager(); break;
 				case GROUP_MGR: match &= roles.isGroupManager(); break;
 				case RSRC_MGR: match &= roles.isLearnResourceManager(); break;
-				case POOL_MGR: match &= roles.isPoolAdmin(); break;
+				case POOL_MGR: match &= roles.isQPoolManager(); break;
 				case ADMIN: match &= roles.isOLATAdmin(); break;
 				default: {
 					match &= false;

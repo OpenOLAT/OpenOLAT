@@ -65,7 +65,7 @@ public class LecturesSearchController extends BasicController implements Activat
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
 		Roles roles = ureq.getUserSession().getRoles();
-		admin = (roles.isUserManager() || roles.isOLATAdmin());
+		admin = (roles.isUserManager() || roles.isOLATAdmin());//TODO roles
 		
 		searchForm = new LecturesSearchFormController(ureq, getWindowControl(), admin);
 		listenTo(searchForm);

@@ -118,7 +118,7 @@ public class InfoRunController extends BasicController {
 		
 			boolean isAdmin = roles.isOLATAdmin()
 					|| cgm.isIdentityCourseAdministrator(identity)
-					|| repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
+					|| repositoryManager.isLearnResourceManagerFor(roles, cgm.getCourseEntry());
 			
 			canAdd = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
 			canAdmin = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);

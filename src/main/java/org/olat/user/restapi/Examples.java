@@ -33,29 +33,49 @@ public class Examples {
 	
 	public static final UserVO SAMPLE_USERVO = new UserVO();
 	public static final UserVOes SAMPLE_USERVOes = new UserVOes();
-
 	public static final RolesVO SAMPLE_ROLESVO = new RolesVO();
-	
 	public static final StatusVO SAMPLE_STATUSVO = new StatusVO();
-	
 	public static final PreferencesVO SAMPLE_PREFERENCESVO = new PreferencesVO();
 	
+	public static final OrganisationVO SAMPLE_ORGANISATIONVO = new OrganisationVO();
+	
+	public static final OrganisationTypeVO SAMPLE_ORGANISATIONTYPEVO = new OrganisationTypeVO();
+	
   
-  static {
-  	SAMPLE_USERVO.setKey(345l);
-  	SAMPLE_USERVO.setFirstName("John");
-  	SAMPLE_USERVO.setLastName("Smith");
-  	SAMPLE_USERVO.setLogin("john");
-  	SAMPLE_USERVO.setEmail("john.smith@frentix.com");
-  	SAMPLE_USERVO.setPassword("");
-  	SAMPLE_USERVO.putProperty("telPrivate", "238456782");
-  	SAMPLE_USERVO.putProperty("telMobile", "238456782");
-  	SAMPLE_USERVOes.setUsers(new UserVO[]{SAMPLE_USERVO});
+	static {
+		SAMPLE_USERVO.setKey(345l);
+		SAMPLE_USERVO.setFirstName("John");
+		SAMPLE_USERVO.setLastName("Smith");
+		SAMPLE_USERVO.setLogin("john");
+		SAMPLE_USERVO.setEmail("john.smith@frentix.com");
+		SAMPLE_USERVO.setPassword("");
+		SAMPLE_USERVO.putProperty("telPrivate", "238456782");
+		SAMPLE_USERVO.putProperty("telMobile", "238456782");
+		SAMPLE_USERVOes.setUsers(new UserVO[]{SAMPLE_USERVO});
 
-  	SAMPLE_ROLESVO.setAuthor(true);
+		SAMPLE_ROLESVO.setAuthor(true);
   	
-  	SAMPLE_STATUSVO.setStatus(new Integer(2));
+		SAMPLE_STATUSVO.setStatus(Integer.valueOf(2));
   	
-  	SAMPLE_PREFERENCESVO.setLanguage("de");
-  }
+		SAMPLE_PREFERENCESVO.setLanguage("de");
+		
+		SAMPLE_ORGANISATIONVO.setKey(4587L);
+		SAMPLE_ORGANISATIONVO.setIdentifier("HEROL-2");
+		SAMPLE_ORGANISATIONVO.setDisplayName("Herol 2");
+		SAMPLE_ORGANISATIONVO.setCssClass("o_icon_beautiful");
+		SAMPLE_ORGANISATIONVO.setDescription("An organisation description");
+		SAMPLE_ORGANISATIONVO.setExternalId("IDEXT78");
+		SAMPLE_ORGANISATIONVO.setManagedFlagsString("all");
+		SAMPLE_ORGANISATIONVO.setOrganisationTypeKey(38l);
+		SAMPLE_ORGANISATIONVO.setParentOrganisationKey(3l);
+		SAMPLE_ORGANISATIONVO.setRootOrganisationKey(1l);
+		
+		SAMPLE_ORGANISATIONTYPEVO.setKey(38l);
+		SAMPLE_ORGANISATIONTYPEVO.setIdentifier("OWL-1");
+		SAMPLE_ORGANISATIONTYPEVO.setCssClass("o_icon_owl");
+		SAMPLE_ORGANISATIONTYPEVO.setDescription("An organization type");
+		SAMPLE_ORGANISATIONTYPEVO.setDisplayName("Organization type");
+		SAMPLE_ORGANISATIONTYPEVO.setExternalId("OWL-1-ext");
+		SAMPLE_ORGANISATIONTYPEVO.setManagedFlagsString("externalId");
+	}
 }

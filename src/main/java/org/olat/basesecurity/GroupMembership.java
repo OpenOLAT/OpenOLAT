@@ -36,5 +36,9 @@ public interface GroupMembership {
 	public String getRole();
 	
 	public Identity getIdentity();
+	
+	public GroupMembershipInheritance getInheritanceMode();
+	
+	public void setInheritanceMode(GroupMembershipInheritance inheritanceMode);
 
 }

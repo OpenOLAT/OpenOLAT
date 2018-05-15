@@ -80,8 +80,7 @@ public class CourseCalendars {
 	}
 
 	public CourseCalendarSubscription createSubscription2(UserRequest ureq) {
-		CourseCalendarSubscription calSubscription = new CourseCalendarSubscription(getKalendar(), ureq.getUserSession().getGuiPreferences());
-		return calSubscription;
+		return new CourseCalendarSubscription(getKalendar(), ureq.getUserSession().getGuiPreferences());
 	}
 	
 	/**
@@ -98,12 +97,11 @@ public class CourseCalendars {
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseResourceableId());
 		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		Identity identity = ureq.getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isPrivileged = ! courseEnv.isCourseReadOnly() &&
 				(roles.isOLATAdmin() || courseEnv.isAdmin()
 				  || (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
-				  || RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry()));
+				  || RepositoryManager.getInstance().isLearnResourceManagerFor(roles, cgm.getCourseEntry()));
 		
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
@@ -133,7 +131,8 @@ public class CourseCalendars {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 
 		// add course group calendars
-		boolean isGroupManager = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isGroupManager = roles.isOLATAdmin() || roles.isGroupManager()
 				|| cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
 		boolean readOnly = courseEnv.isCourseReadOnly();
 		

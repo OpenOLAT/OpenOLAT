@@ -1337,7 +1337,7 @@ public class EPStructureManager {
 	
 	private EPStructureElement instantiateClone(PortfolioStructure source) {
 		EPStructureElement targetEl = null;
-		//don't forget the inheritence 
+		//don't forget the inheritance 
 		if (source instanceof EPPage) {
 			targetEl = new EPPage();
 			targetEl.setTitle(((EPPage) source).getTitle());

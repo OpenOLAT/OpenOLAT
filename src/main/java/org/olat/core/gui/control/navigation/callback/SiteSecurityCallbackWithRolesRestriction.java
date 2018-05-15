@@ -52,7 +52,7 @@ public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCal
 						return true;
 					} else if (theRole.equals("usermanager") && (roles.isOLATAdmin() || roles.isUserManager())) {
 						return true;
-					} else if (theRole.equals("pooladmin") && (roles.isOLATAdmin() || roles.isPoolAdmin())) {
+					} else if (theRole.equals("pooladmin") && (roles.isOLATAdmin() || roles.isQPoolManager())) {
 						return true;
 					} else if (theRole.equals("institutionalresourcemanager") && (roles.isOLATAdmin() || roles.isLearnResourceManager())) {
 						return true;

@@ -139,13 +139,13 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		boolean moderator = roles.isOLATAdmin();
 		Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		if (!moderator) {
-			if(roles.isLearnResourceManager() || roles.isAuthor()) {
+			if(roles.isLearnResourceManager() || roles.isAuthor() || roles.isOLATAdmin()) {
 				RepositoryManager rm = RepositoryManager.getInstance();
 				RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				if (re != null) {
 					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 					if(!moderator) {
-						moderator = rm.isInstitutionalRessourceManagerFor(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
+						moderator = rm.isLearnResourceManagerFor(ureq.getUserSession().getRoles(), re);
 					}
 				}
 			}

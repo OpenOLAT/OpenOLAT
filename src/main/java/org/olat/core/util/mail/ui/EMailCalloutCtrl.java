@@ -83,13 +83,8 @@ public class EMailCalloutCtrl extends FormBasicController {
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		if (autoCompleteAllowed) {
-			List<Organisation> searcheableOrganisations;
-			if(roles.isOLATAdmin()) {
-				searcheableOrganisations = null;
-			} else {
-				searcheableOrganisations = organisationService
-						.getSearchableOrganisations(getIdentity(), roles, OrganisationRoles.usermanager);
-			}
+			List<Organisation> searcheableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.valuesWithoutGuestAndInvitee());
 			ListProvider provider = new UserSearchListProvider(searcheableOrganisations);
 			autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, allowExternalAddress, 60, 3, null, mainForm);
 			autocompleterC.setFormElement(false);
@@ -137,7 +132,7 @@ public class EMailCalloutCtrl extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(emailEl != null) {
 			emailEl.clearError();
@@ -147,7 +142,7 @@ public class EMailCalloutCtrl extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

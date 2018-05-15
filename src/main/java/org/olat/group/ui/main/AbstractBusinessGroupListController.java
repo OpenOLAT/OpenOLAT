@@ -66,7 +66,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -758,8 +757,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		} 
 		
-		UserSession usess = ureq.getUserSession();
-		boolean isAuthor = usess.getRoles().isAuthor() || usess.getRoles().isLearnResourceManager();
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAuthor = roles.isOLATAdmin() || roles.isAuthor() || roles.isLearnResourceManager();
 
 		Step start = new BGConfigToolsStep(ureq, isAuthor);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -784,7 +783,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 								}
 								
 							} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {
-								tools.saveCalendarAccess(new Long(configuration.getCalendarAccess()));
+								tools.saveCalendarAccess(Long.valueOf(configuration.getCalendarAccess()));
 							}
 						}
 						for(String disabledTool:configuration.getToolsToDisable()) {
@@ -1067,7 +1066,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
-		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isOLATAdmin() || roles.isGroupManager()) {
 			return false;
 		}
 		
@@ -1094,10 +1094,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 * @param doSendMail specifies if notification mails should be sent to users of delted group
 	 */
 	private void doDelete(UserRequest ureq, boolean doSendMail, List<BusinessGroup> groups) {
+		Roles roles = ureq.getUserSession().getRoles();
 		for(BusinessGroup group:groups) {
 			//check security
-			boolean ow = ureq.getUserSession().getRoles().isOLATAdmin()
-					|| ureq.getUserSession().getRoles().isGroupManager()
+			boolean ow = roles.isOLATAdmin() || roles.isGroupManager()
 					|| businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
 
 			if (ow) {

@@ -230,26 +230,33 @@ public class ReminderDAO {
 				.getResultList();
 	}
 	
-
+	/**
+	 * The query is limited to the default group of the repository entry
+	 * and the business groups 
+	 * @param entry
+	 * @param identities
+	 * @return
+	 */
 	public Map<Long,Date> getCourseEnrollmentDates(RepositoryEntryRef entry, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Date>();
+			return new HashMap<>();
 		}
 
 		List<Long> identityKeys = PersistenceHelper.toKeys(identities);
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.identity.key, membership.creationDate from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select membership.identity.key, membership.creationDate from repositoryentry as v ")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where v.key=:repoKey");
+		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
 
 		Set<Long> identityKeySet = null;
 		if(identityKeys.size() < 100) {
 			sb.append(" and membership.identity.key in (:identityKeys)");
 		} else {
-			identityKeySet = new HashSet<Long>(identityKeys);
+			identityKeySet = new HashSet<>(identityKeys);
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()

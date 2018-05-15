@@ -211,9 +211,19 @@ public class RepositoryServiceImpl implements RepositoryService {
 		rel.setDefaultGroup(true);
 		rel.setGroup(group);
 		rel.setEntry(re);
-
+		
 		Set<RepositoryEntryToGroupRelation> rels = new HashSet<>(2);
 		rels.add(rel);
+		
+		if(organisation != null) {
+			RepositoryEntryToGroupRelation relOrg = new RepositoryEntryToGroupRelation();
+			relOrg.setCreationDate(new Date());
+			relOrg.setDefaultGroup(false);
+			relOrg.setGroup(organisation.getGroup());
+			relOrg.setEntry(re);
+			rels.add(relOrg);
+		}
+
 		re.setGroups(rels);
 
 		if(initialAuthor != null) {
@@ -546,20 +556,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 		return reToGroupDao.getDefaultGroup(ref);
 	}
 
-	/**
-	 * Get the role in the specified resource, business group are included in
-	 * the query.
-	 *
-	 */
 	@Override
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re) {
 		return reToGroupDao.getRoles(identity, re);
 	}
 
-	/**
-	 * Has specific role in the specified resource WITHOUT business groups included in
-	 * the query.
-	 */
 	@Override
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.hasRole(identity, re, roles);
@@ -674,14 +675,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry) {
-		return repositoryEntryToOrganisationDao.getOrganisationReferences(entry);
+	public List<Organisation> getOrganisations(RepositoryEntryRef entry) {
+		return reToGroupDao.getOrganisations(entry);
 	}
 
 	@Override
-	public RepositoryEntry addOrganisation(RepositoryEntry entry, Organisation organisation, boolean master) {
-		repositoryEntryToOrganisationDao.createRelation(organisation, entry, master);
-		return null;
+	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry) {
+		return repositoryEntryToOrganisationDao.getOrganisationReferences(entry);
 	}
 
 	@Override

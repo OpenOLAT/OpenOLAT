@@ -236,7 +236,7 @@ class UserBulkChangeStep01 extends BasicStep {
 			}
 			
 			//pool manager
-			if (roles.isOLATAdmin() || roles.isPoolAdmin()) {
+			if (roles.isOLATAdmin() || roles.isQPoolManager()) {
 				chkPoolManager = uifactory.addCheckboxesHorizontal("PoolManager", "table.role.poolManager", innerFormLayout, onKeys, onValues);
 				chkPoolManager.select("Author", false);
 				chkPoolManager.addActionListener(FormEvent.ONCLICK);

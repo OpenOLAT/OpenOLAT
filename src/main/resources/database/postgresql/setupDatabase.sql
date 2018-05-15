@@ -49,6 +49,7 @@ create table o_bs_group_member (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    g_role varchar(50) not null,
+   g_inheritance_mode varchar(16) default 'none' not null,
    fk_group_id int8 not null,
    fk_identity_id int8 not null,
    primary key (id)
@@ -2466,10 +2467,12 @@ create table o_cur_curriculum_element (
   c_begin timestamp,
   c_end timestamp ,
   c_external_id varchar(64),
+  c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
   fk_group int8 not null,
   fk_parent int8,
   fk_curriculum int8 not null,
+  fk_type int8,
   primary key (id)
 );
 
@@ -2477,6 +2480,16 @@ create table o_cur_element_type_to_type (
   id bigserial,
   fk_type int8 not null,
   fk_allowed_sub_type int8 not null,
+  primary key (id)
+);
+
+create table o_re_to_curriculum_element (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  c_master bool default false,
+  fk_entry int8 not null,
+  fk_curriculum_element int8 not null,
   primary key (id)
 );
 
@@ -3475,11 +3488,18 @@ alter table o_cur_curriculum_element add constraint cur_el_to_cur_el_idx foreign
 create index idx_cur_el_to_cur_el_idx on o_cur_curriculum_element (fk_parent);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
 create index idx_cur_el_to_cur_idx on o_cur_curriculum_element (fk_curriculum);
+alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);
+create index idx_cur_el_type_to_el_type_idx on o_cur_curriculum_element (fk_type);
 
 alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 create index idx_cur_type_to_type_idx on o_cur_element_type_to_type (fk_type);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
 create index idx_cur_type_to_sub_type_idx on o_cur_element_type_to_type (fk_allowed_sub_type);
+
+alter table o_re_to_curriculum_element add constraint rel_cur_el_to_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_rel_cur_el_to_re_idx on o_re_to_curriculum_element (fk_entry);
+alter table o_re_to_curriculum_element add constraint rel_cur_el_to_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+create index idx_rel_cur_el_to_cur_el_idx on o_re_to_curriculum_element (fk_curriculum_element);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

@@ -339,7 +339,7 @@ public class ProfileFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		formContext.put("username", identityToModify.getName());
 		
 		User user = identityToModify.getUser();
@@ -363,7 +363,7 @@ public class ProfileFormController extends FormBasicController {
 			textAboutMe.setErrorKey("input.toolong", new String[] {"10000"});
 			allOk = false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -620,7 +620,7 @@ public class ProfileFormController extends FormBasicController {
 		boolean isUserManagerAndBypassVerification = false;
 		if(!isOLATAdmin && usess.getRoles().isUserManager() && BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION.booleanValue()) {
 			//check if the user manager is allowed to manage this user
-			List<Organisation> organisations = organisationService.getManageableOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
+			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(), OrganisationRoles.usermanager);
 			organisations.retainAll(identityOrganisations);
 			isUserManagerAndBypassVerification = !organisations.isEmpty();
 		}

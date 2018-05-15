@@ -593,6 +593,8 @@ public class AssessmentRenderFunctions {
 			case "class":
 			case "contextmenu":
 			case "dir":
+			case "display":
+			case "download":
 			case "hidden":
 			case "name":
 			case "id":
@@ -603,6 +605,7 @@ public class AssessmentRenderFunctions {
 			case "style":
 			case "width":
 			case "height":
+			case "xmlns":
 				value = getDomAttributeValue(attribute);
 				break;
 			case "href":

@@ -183,7 +183,9 @@ public interface RepositoryService {
 	public int countMembers(RepositoryEntryRef re, String... roles);
 
 	/**
-	 * Count all members (following up to business groups wainting list)
+	 * Count all members (following up to business groups waiting list) with the following
+	 * roles: owner, coach, participant, waiting 
+	 * 
 	 * @param res
 	 * @param excludeMe Exclude to user which call the method (optional)
 	 * @return
@@ -250,7 +252,7 @@ public interface RepositoryService {
 
 	/**
 	 * Get the role in the specified resource, business group are included in
-	 * the query.
+	 * the query but not organizations.
 	 *
 	 * @return The list of roles
 	 */
@@ -296,14 +298,12 @@ public interface RepositoryService {
 	
 	
 	/**
-	 * Add an organization to the repository entry.
+	 * Hold the organizations via the group relation.
 	 * 
 	 * @param entry The repository entry
-	 * @param organisation The organisation
-	 * @param master If the relation is "master"
-	 * @return A merged repository entry
+	 * @return A list of organization
 	 */
-	public RepositoryEntry addOrganisation(RepositoryEntry entry, Organisation organisation, boolean master);
+	public List<Organisation> getOrganisations(RepositoryEntryRef entry);
 	
 	/**
 	 * 

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.site;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.springframework.stereotype.Service;
 
@@ -35,14 +36,18 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (ureq == null || ureq.getUserSession() == null) {
+		if (ureq == null) {
 			return false;
 		}
 		UserSession usess = ureq.getUserSession();
-		if (usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
+		if(usess == null || usess.getRoles() == null) {
 			return false;
 		}
-
-		return usess.getRoles().isOLATAdmin() || usess.getRoles().isCurriculumManager();
+		
+		Roles roles = usess.getRoles();
+		if (usess.getRoles() == null || roles.isInvitee() || roles.isGuestOnly()) {
+			return false;
+		}
+		return roles.isOLATAdmin() || roles.isCurriculumManager();
 	}
 }

@@ -41,7 +41,7 @@ public class OlatRestApplication extends Application {
 
 	@Override
 	public Set<Class<?>> getClasses() {
-		Set<Class<?>> classes = new HashSet<Class<?>>();
+		Set<Class<?>> classes = new HashSet<>();
 		classes.add(JacksonJaxbJsonProvider.class);	
 		classes.addAll(getRestRegistrationService().getClasses());
 		return classes;

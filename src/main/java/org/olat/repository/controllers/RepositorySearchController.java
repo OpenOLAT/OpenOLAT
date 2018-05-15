@@ -55,7 +55,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
@@ -94,13 +93,19 @@ public class RepositorySearchController extends BasicController implements Activ
 	private CloseableCalloutWindowController calloutCtrl;
 	private RepositoryEntrySmallDetailsController infosCtrl;
 	
-	private Link backLink, cancelButton;
+	private Link loginLink;
+	private Link backLink;
+	private Link cancelButton;
+	
 	private RepositoryEntry selectedEntry;
 	private List<RepositoryEntry> selectedEntries;
 	private Can enableSearchforAllInSearchForm;
-	private Link loginLink;
 	private SearchType searchType;
+	private final Roles identityRoles;
 	private RepositoryEntryFilter filter;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 
@@ -109,7 +114,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		
 		this.filter = filter;
-		Roles roles = ureq.getUserSession().getRoles();
+		identityRoles = ureq.getUserSession().getRoles();
 		
 		vc = createVelocityContainer("reposearch", "search");
 
@@ -140,9 +145,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		tableCtr.setTableDataModel(repoTableModel);
 		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());
-
-		vc.contextPut("isAuthor", Boolean.valueOf(roles.isAuthor()));
-		vc.contextPut("withCancel", new Boolean(withCancel));
+		vc.contextPut("withCancel", Boolean.valueOf(withCancel));
 		enableBackToSearchFormLink(false); // default, must be enabled explicitly
 		enableSearchforAllXXAbleInSearchForm(null); // default
 		putInitialPanel(vc);
@@ -152,7 +155,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param enableBack true: back link is shown, back goes to search form; false; no back link
 	 */
 	public void enableBackToSearchFormLink(boolean enableBack) {
-		vc.contextPut("withBack", new Boolean(enableBack));
+		vc.contextPut("withBack", Boolean.valueOf(enableBack));
 	}
 	
 	@Override
@@ -163,7 +166,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		if(RepositoryEntry.class.getSimpleName().equals(subType)) {
 			//activate details
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
-			selectedEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resId);
+			selectedEntry = repositoryManager.lookupRepositoryEntry(resId);
 			fireEvent(ureq, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_LINK));
 		}
 	}
@@ -178,9 +181,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		enableSearchforAllInSearchForm = enable;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -188,7 +189,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else if (source == backLink){
 			displaySearchForm();
 			return;
-		}else if (source == loginLink){
+		} else if (source == loginLink){
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
 	}
@@ -209,31 +210,18 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param ureq
 	 */
 	private void doSearch(UserRequest ureq, String limitType, boolean updateFilters) {
-		doSearch(ureq, limitType, false, updateFilters);
-	}
-	
-	private void doSearch(UserRequest ureq, String limitType, boolean onlyOwner, boolean updateFilters) {
 		searchType = SearchType.searchForm;
-		RepositoryManager rm = RepositoryManager.getInstance();
 		Collection<String> s = searchForm.getRestrictedTypes();
 		List<String> restrictedTypes;
 		if(limitType != null) {
 			restrictedTypes = Collections.singletonList(limitType);
 		} else {
-			restrictedTypes = (s == null) ? null : new ArrayList<String>(s);
+			restrictedTypes = (s == null) ? null : new ArrayList<>(s);
 		}
-		
-		String author = searchForm.getAuthor();
-		String displayName = searchForm.getDisplayName();
-		String description = searchForm.getDescription();
 
-		SearchRepositoryEntryParameters params =
-				new SearchRepositoryEntryParameters(displayName, author, description,
-						restrictedTypes, getIdentity(), ureq.getUserSession().getRoles(),
-						getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, null));
-		params.setOnlyOwnedResources(onlyOwner);
-		
-		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(searchForm.getDisplayName(),
+				searchForm.getAuthor(), searchForm.getDescription(), restrictedTypes, getIdentity(), identityRoles);
+		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		if(updateFilters) {
@@ -250,7 +238,6 @@ public class RepositorySearchController extends BasicController implements Activ
 	 */
 	private void doSearchAllReferencables(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.searchForm;
-		RepositoryManager rm = RepositoryManager.getInstance();
 		List<String> restrictedTypes;
 		if(limitType != null) {
 			restrictedTypes = Collections.singletonList(limitType);
@@ -258,22 +245,12 @@ public class RepositorySearchController extends BasicController implements Activ
 			Collection<String> s = searchForm.getRestrictedTypes();
 			restrictedTypes = (s == null) ? null : new ArrayList<>(s);
 		}
-		Roles roles = ureq.getUserSession().getRoles();
-		Identity ident = ureq.getIdentity();
+		
 		String name = searchForm.getDisplayName();
 		String author = searchForm.getAuthor();
 		String desc = searchForm.getDescription();
-		
-		List<RepositoryEntry> entries;
-		if(searchForm.isAdminSearch()) {
-			entries = rm.queryResourcesLimitType(null, restrictedTypes, name, author, desc, true, false);
-		} else if(enableSearchforAllInSearchForm == Can.referenceable){
-			entries = rm.queryReferencableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
-		} else if(enableSearchforAllInSearchForm == Can.copyable){
-			entries = rm.queryCopyableResourcesLimitType(ident, roles, restrictedTypes, name, author, desc);
-		} else {
-			entries = new ArrayList<>();
-		}
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(), identityRoles, restrictedTypes, name, author, desc,
+					enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		if(updateFilters) {
@@ -307,15 +284,13 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param roles The users roles
 	 */
 	public void doSearchForReferencableResourcesLimitType(Identity owner, String[] limitTypes, Roles roles) {
-		RepositoryManager rm = RepositoryManager.getInstance();
 		List<String> restrictedTypes = new ArrayList<>();
 		if(limitTypes == null) {
 			restrictedTypes = null;
-		}
-		else {
+		} else {
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
-		List<RepositoryEntry> entries = rm.queryReferencableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, restrictedTypes, null, null, null, true, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -333,15 +308,13 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param roles The users roles
 	 */
 	public void doSearchForCopyableResourcesLimitType(Identity owner, String[] limitTypes, Roles roles) {
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<String> restrictedTypes = new ArrayList<String>();
+		List<String> restrictedTypes = new ArrayList<>();
 		if(limitTypes == null) {
 			restrictedTypes = null;
-		}
-		else {
+		} else {
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
-		List<RepositoryEntry> entries = rm.queryCopyableResourcesLimitType(owner, roles, restrictedTypes, null, null, null);
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, restrictedTypes, null, null, null, false, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -369,8 +342,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	private void doSearchByOwnerLimitTypeInternal(Identity owner, String[] limitTypes, boolean updateFilters) {
 		searchType = SearchType.byOwner;
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.queryByOwner(owner, limitTypes);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, limitTypes);
 		filterRepositoryEntries(entries);
 		if(updateFilters) {
 			updateFilters(entries, owner);
@@ -386,8 +358,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param access
 	 */
 	public void doSearchByOwnerLimitAccess(Identity owner) {
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.queryByOwnerLimitAccess(owner, RepositoryEntry.ACC_USERS, Boolean.TRUE);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(owner);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -403,10 +374,9 @@ public class RepositorySearchController extends BasicController implements Activ
 	 */
 	public void doSearchByTypeLimitAccess(String[] restrictedTypes, UserRequest ureq) {
 		searchType = null;
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<String> types = Arrays.asList(restrictedTypes);
 
-		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(ureq.getIdentity(), ureq.getUserSession().getRoles(), types);
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), identityRoles, restrictedTypes);
+		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -416,7 +386,7 @@ public class RepositorySearchController extends BasicController implements Activ
 
 	private void doSearchById(String id, Collection<String> restrictedTypes) {
 		List<RepositoryEntry> entries = repositoryService.searchByIdAndRefs(id);
-		if(restrictedTypes != null && restrictedTypes.size() > 0) {
+		if(restrictedTypes != null && !restrictedTypes.isEmpty()) {
 			for(Iterator<RepositoryEntry> it=entries.iterator(); it.hasNext(); ) {
 				RepositoryEntry entry = it.next();
 				if(!restrictedTypes.contains(entry.getOlatResource().getResourceableTypeName())) {
@@ -436,8 +406,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		
 	private void doSearchMyCoursesStudent(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsStudent;
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.getLearningResourcesAsStudent(ureq.getIdentity(), null, 0, -1);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(ureq.getIdentity(), null, 0, -1);
 		filterRepositoryEntries(entries);
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}
@@ -448,8 +417,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	private void doSearchMyCoursesTeacher(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsTeacher;
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.getLearningResourcesAsTeacher(ureq.getIdentity(), 0, -1);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(ureq.getIdentity(), 0, -1);
 		filterRepositoryEntries(entries);
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}
@@ -472,8 +440,8 @@ public class RepositorySearchController extends BasicController implements Activ
 	}
 	
 	protected void updateFilters(List<RepositoryEntry> entries, Identity owner) {
-		List<ShortName> restrictedTypes = new ArrayList<ShortName>();
-		Set<String> uniqueTypes = new HashSet<String>();
+		List<ShortName> restrictedTypes = new ArrayList<>();
+		Set<String> uniqueTypes = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			if(entry.getOlatResource() == null) continue;//no red screen for that
 			String type = entry.getOlatResource().getResourceableTypeName();
@@ -532,7 +500,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		backLink = LinkFactory.createLinkBack(vc, this);
 		vc.setPage(VELOCITY_ROOT + "/results.html");
 		//REVIEW:pb why can ureq be null here?
-		vc.contextPut("isGuest", (ureq != null) ? new Boolean(ureq.getUserSession().getRoles().isGuestOnly()) : Boolean.FALSE);
+		vc.contextPut("isGuest", (ureq != null) ? Boolean.valueOf(identityRoles.isGuestOnly()) : Boolean.FALSE);
 		loginLink = LinkFactory.createLink("repo.login", vc, this);
 		cancelButton = LinkFactory.createButton("cancel", vc, this);
 	}

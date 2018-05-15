@@ -19,6 +19,7 @@
  */
 package org.olat.user.ui.organisation;
 
+import org.olat.basesecurity.OrganisationType;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.id.Organisation;
@@ -33,6 +34,7 @@ import org.olat.core.id.OrganisationRef;
 public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 	
 	private final Organisation organisation;
+	private final OrganisationType type;
 	private final Long parentOrganisationKey;
 
 	private boolean hasChildren;
@@ -41,6 +43,7 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 	
 	public OrganisationRow(Organisation organisation, FormLink toolsLink) {
 		this.organisation = organisation;
+		type = organisation.getType();
 		this.toolsLink = toolsLink;
 		parentOrganisationKey = organisation.getParent() == null ? null : organisation.getParent().getKey();
 	}
@@ -77,6 +80,14 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 
 	public String getIdentifier() {
 		return organisation.getIdentifier();
+	}
+
+	public Long getTypeKey() {
+		return type == null ? null : type.getKey();
+	}
+	
+	public String getTypeIdentifier() {
+		return type == null ? null : type.getIdentifier();
 	}
 	
 	public FormLink getTools() {

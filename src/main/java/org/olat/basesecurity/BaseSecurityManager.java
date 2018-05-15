@@ -143,7 +143,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		boolean isInvitee = false;
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select org.key, membership.role from organisation as org ")
+		sb.append("select org.key, org.identifier, membership.role from organisation as org ")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where membership.identity.key=:identityKey");
@@ -168,7 +168,8 @@ public class BaseSecurityManager implements BaseSecurity {
 		
 		for(Object[] rawObject:rawObjects) {
 			Long organisationKey = (Long)rawObject[0];
-			String role = (String)rawObject[1];
+			//String organisationId = (String)rawObject[1];
+			String role = (String)rawObject[2];
 
 			List<OrganisationRoles> roleList = orgToRoles
 					.computeIfAbsent(new OrganisationRefImpl(organisationKey), key -> new ArrayList<>());
@@ -182,25 +183,13 @@ public class BaseSecurityManager implements BaseSecurity {
 			resourceManager |= role.equals(OrganisationRoles.learnresourcemanager.name());
 			poolManager |= role.equals(OrganisationRoles.poolmanager.name());
 			curriculumnManager |= role.equals(OrganisationRoles.curriculummanager.name());
-			
 
 			author |= role.equals(OrganisationRoles.author.name());
 			coach |= role.equals(OrganisationRoles.coach.name());
 		}
 		
-		admin |= sysAdmin;
-		
-		groupManager |= admin;
-		userManager |= admin;
-		poolManager |= admin;
-		curriculumnManager |= admin;
-		
-		author |= admin;
-		coach |= admin;
 
 		List<String> rolesStr = getRolesAsString(identity);
-		
-		
 		if(!rolesStr.contains(OrganisationRoles.user.name())) {
 			isInvitee = invitationDao.isInvitee(identity);
 			isGuestOnly = rolesStr.contains(OrganisationRoles.guest.name());
@@ -242,52 +231,6 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("organisationKey", organisation.getKey())
 				.getResultList();
 	}
-
-	@Override
-	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles) {
-		List<String> currentRoles = getRolesAsString(updatedIdentity);
-		
-		boolean hasBeenAnonymous = currentRoles.contains(OrganisationRoles.guest.name());
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.guest, hasBeenAnonymous, roles.isGuestOnly());
-		
-		// system users - opposite of anonymous users
-		boolean hasBeenUser = currentRoles.contains(OrganisationRoles.user.name());
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,  OrganisationRoles.user, hasBeenUser, !roles.isGuestOnly());
-
-		boolean hasBeenGroupManager = currentRoles.contains(OrganisationRoles.groupmanager.name());
-		boolean groupManager = roles.isGroupManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.groupmanager, hasBeenGroupManager, groupManager);
-
-		// author
-		boolean hasBeenAuthor = currentRoles.contains(OrganisationRoles.author.name());
-		boolean isAuthor = (roles.isAuthor() || roles.isLearnResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.author, hasBeenAuthor, isAuthor);
-
-		// user manager, only allowed by admin
-		boolean hasBeenUserManager = currentRoles.contains(OrganisationRoles.usermanager.name());
-		boolean userManager = roles.isUserManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,  OrganisationRoles.usermanager, hasBeenUserManager, userManager);
-
- 		// institutional resource manager
-		boolean hasBeenInstitutionalResourceManager = currentRoles.contains(OrganisationRoles.learnresourcemanager.name());
-		boolean institutionalResourceManager = roles.isLearnResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.learnresourcemanager, hasBeenInstitutionalResourceManager, institutionalResourceManager);
-
-		// institutional resource manager
-		boolean hasBeenPoolManager = currentRoles.contains(OrganisationRoles.poolmanager.name());
-		boolean poolManager = roles.isPoolAdmin() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.poolmanager, hasBeenPoolManager, poolManager);
-		
-		// institutional resource manager
-		boolean hasBeenCurriculumManager = currentRoles.contains(OrganisationRoles.curriculummanager.name());
-		boolean curriculumManager = roles.isCurriculumManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.curriculummanager, hasBeenCurriculumManager, curriculumManager);
-
-		// system administrator
-		boolean hasBeenAdmin = currentRoles.contains(OrganisationRoles.administrator.name());
-		boolean isOLATAdmin = roles.isOLATAdmin() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.administrator, hasBeenAdmin, isOLATAdmin);		
-	}
 	
 	@Override
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation roles) {
@@ -296,55 +239,66 @@ public class BaseSecurityManager implements BaseSecurity {
 		List<String> currentRoles = getRolesAsString(updatedIdentity, organisation);
 		
 		boolean hasBeenAnonymous = currentRoles.contains(OrganisationRoles.guest.name());
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.guest, hasBeenAnonymous, roles.isGuestOnly());
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.guest, hasBeenAnonymous, roles.isGuestOnly());
 		
 		// system users - opposite of anonymous users
 		boolean hasBeenUser = currentRoles.contains(OrganisationRoles.user.name());
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,  OrganisationRoles.user, hasBeenUser, !roles.isGuestOnly());
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.user, hasBeenUser, !roles.isGuestOnly());
 
 		// coach
 		boolean hasBeenAuthor = currentRoles.contains(OrganisationRoles.author.name());
 		boolean isAuthor = (roles.isAuthor() || roles.isLearnResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.author, hasBeenAuthor, isAuthor);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.author, hasBeenAuthor, isAuthor);
 
 		// author
 		boolean hasBeenCoach = currentRoles.contains(OrganisationRoles.coach.name());
 		boolean isCoach = roles.isCoach() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.coach, hasBeenCoach, isCoach);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.coach, hasBeenCoach, isCoach);
 
 		// group manager
 		boolean hasBeenGroupManager = currentRoles.contains(OrganisationRoles.groupmanager.name());
 		boolean groupManager = roles.isGroupManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.groupmanager, hasBeenGroupManager, groupManager);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.groupmanager, hasBeenGroupManager, groupManager);
 		
 		// user manager, only allowed by admin
 		boolean hasBeenUserManager = currentRoles.contains(OrganisationRoles.usermanager.name());
 		boolean userManager = roles.isUserManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,  OrganisationRoles.usermanager, hasBeenUserManager, userManager);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.usermanager, hasBeenUserManager, userManager);
 
  		// institutional resource manager
 		boolean hasBeenInstitutionalResourceManager = currentRoles.contains(OrganisationRoles.learnresourcemanager.name());
 		boolean institutionalResourceManager = roles.isLearnResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.learnresourcemanager, hasBeenInstitutionalResourceManager, institutionalResourceManager);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.learnresourcemanager, hasBeenInstitutionalResourceManager, institutionalResourceManager);
 
 		// institutional resource manager
 		boolean hasBeenPoolManager = currentRoles.contains(OrganisationRoles.poolmanager.name());
 		boolean poolManager = roles.isPoolManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.poolmanager, hasBeenPoolManager, poolManager);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.poolmanager, hasBeenPoolManager, poolManager);
 		
 		// institutional resource manager
 		boolean hasBeenCurriculumManager = currentRoles.contains(OrganisationRoles.curriculummanager.name());
 		boolean curriculumManager = roles.isCurriculumManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.curriculummanager, hasBeenCurriculumManager, curriculumManager);
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.curriculummanager, hasBeenCurriculumManager, curriculumManager);
 
 		// system administrator
 		boolean hasBeenAdmin = currentRoles.contains(OrganisationRoles.administrator.name());
 		boolean isOLATAdmin = roles.isAdministrator() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity, OrganisationRoles.administrator, hasBeenAdmin, isOLATAdmin);		
+		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.administrator, hasBeenAdmin, isOLATAdmin);		
 	}
 	
 	
-	private void updateRolesInSecurityGroup(Organisation organisation, Identity actingIdentity, Identity updatedIdentity, OrganisationRoles role, boolean hasBeen, boolean isNow) {
+	private void updateRolesInSecurityGroup(Organisation organisation, Identity actingIdentity, Identity updatedIdentity,
+			OrganisationRoles role, boolean hasBeen, boolean isNow) {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
 			organisationService.addMember(organisation, updatedIdentity, role);

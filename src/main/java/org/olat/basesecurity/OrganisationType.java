@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import java.util.Set;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -28,9 +30,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OrganisationType extends CreateInfo, ModifiedInfo {
-	
-	public Long getKey();
+public interface OrganisationType extends CreateInfo, ModifiedInfo, OrganisationTypeRef {
 	
 	public String getIdentifier();
 	
@@ -47,5 +47,15 @@ public interface OrganisationType extends CreateInfo, ModifiedInfo {
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
+	
+	public String getCssClass();
+	
+	public void setCssClass(String cssClass);
+	
+	public OrganisationTypeManagedFlag[] getManagedFlags();
+	
+	public void setManagedFlags(OrganisationTypeManagedFlag[] flags);
+	
+	public Set<OrganisationTypeToType> getAllowedSubTypes();
 
 }

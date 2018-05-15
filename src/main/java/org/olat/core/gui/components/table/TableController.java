@@ -150,26 +150,6 @@ public class TableController extends BasicController {
 	private Link preferenceLink;
 	private Link downloadLink;
 
-	/**
-	 * Constructor for the table controller using the table filter.
-	 * 
-	 * @param tableConfig The table GUI configuration determines the tables
-	 *          behavior, may be <code>null</code> to use default table configuration.
-	 * @param ureq The user request
-	 * @param wControl The window control
-	 * @param filters A list of filter objects ({@link ShortName})
-	 * @param activeFilter The initially activated filter object
-	 * @param filterTitle The translated title of the filter
-	 * @param noFilterOption The translated key for the no-filter filter or
-	 *          <code>null</code> if not used
-	 * @param tableTrans The translator that is used to translate the table
-	 */
-	public TableController(final TableGuiConfiguration tableConfig, final UserRequest ureq, final WindowControl wControl, final List<ShortName> filters, final ShortName activeFilter,
-			final String filterTitle, final String noFilterOption, final Translator tableTrans) {
-		// init using regular constructor
-		this(tableConfig, ureq, wControl, filters, activeFilter, filterTitle, noFilterOption, false, tableTrans);
-
-	}
 	
 	/**
 	 * Constructor for the table controller using the table filter.

@@ -91,8 +91,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		manageableOrganisations = organisationService
-				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.learnresourcemanager);
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
 		
 		initForm(ureq);
 	}
@@ -101,8 +101,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.limitTypes = limitTypes;
-		manageableOrganisations = organisationService
-				.getManageableOrganisations(getIdentity(), ureq.getUserSession().getRoles(), OrganisationRoles.learnresourcemanager);
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
 		
 		initForm(ureq);
 	}

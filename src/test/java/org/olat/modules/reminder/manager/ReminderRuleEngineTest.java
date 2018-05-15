@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
@@ -70,7 +72,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -635,8 +636,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	}
 	
 	private void addEnrollmentDate(RepositoryEntry entry, Identity id, GroupRoles role, int amount, int field) {
-		RepositoryEntryToGroupRelation rel = entry.getGroups().iterator().next();
-		rel.getGroup();
+		Group group = repositoryEntryRelationDao.getDefaultGroup(entry);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
@@ -645,9 +645,10 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		GroupMembershipImpl membership = new GroupMembershipImpl();
 		membership.setCreationDate(cal.getTime());
 		membership.setLastModified(cal.getTime());
-		membership.setGroup(rel.getGroup());
+		membership.setGroup(group);
 		membership.setIdentity(id);
 		membership.setRole(role.name());
+		membership.setInheritanceMode(GroupMembershipInheritance.none);
 		dbInstance.getCurrentEntityManager().persist(membership);
 		dbInstance.commit();
 	}

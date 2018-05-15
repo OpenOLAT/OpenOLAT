@@ -1,0 +1,260 @@
+<org.olat.core.id.context.HistoryPointImpl>
+  <uuid>16</uuid>
+  <businessPath>[RepositoryEntry:5242880][CourseNode:91389880396330]</businessPath>
+  <entries>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.repository.RepositoryEntry">
+        <key>5242880</key>
+        <version>2</version>
+        <creationDate class="sql-timestamp">2018-05-04 09:58:45</creationDate>
+        <lastModified>2018-05-04 09:58:45.321 UTC</lastModified>
+        <softkey>2_1_97627386084952</softkey>
+        <olatResource class="org.olat.resource.OLATResourceImpl">
+          <key>5144576</key>
+          <version>0</version>
+          <creationDate>2018-05-04 09:58:45.139 UTC</creationDate>
+          <resName>CourseModule</resName>
+          <resId>97627386084951</resId>
+        </olatResource>
+        <groups class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.groups</role>
+          <key class="long">5242880</key>
+          <dirty>false</dirty>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </groups>
+        <organisations class="org.hibernate.collection.internal.PersistentSet">
+          <isTempSession>false</isTempSession>
+          <initialized>true</initialized>
+          <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.repository.RepositoryEntry.organisations</role>
+          <key class="long">5242880</key>
+          <dirty>false</dirty>
+          <storedSnapshot class="map">
+            <entry>
+              <org.olat.repository.model.RepositoryEntryToOrganisationImpl>
+                <key>617</key>
+                <creationDate>2018-05-04 09:58:45.158 UTC</creationDate>
+                <lastModified reference="../creationDate"/>
+                <master>false</master>
+                <entry>
+                  <key>5242880</key>
+                  <version>1</version>
+                  <creationDate>2018-05-04 09:58:45.128 UTC</creationDate>
+                  <lastModified reference="../creationDate"/>
+                  <softkey>2_1_97627386084952</softkey>
+                  <olatResource class="org.olat.resource.OLATResourceImpl" reference="../../../../../../olatResource"/>
+                  <groups class="org.hibernate.collection.internal.PersistentSet">
+                    <isTempSession>false</isTempSession>
+                    <initialized>true</initialized>
+                    <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+                    <cachedSize>-1</cachedSize>
+                    <role>org.olat.repository.RepositoryEntry.groups</role>
+                    <key class="long">5242880</key>
+                    <dirty>false</dirty>
+                    <storedSnapshot class="map">
+                      <entry>
+                        <org.olat.repository.model.RepositoryEntryToGroupRelation>
+                          <key>5275648</key>
+                          <creationDate>2018-05-04 09:58:45.152 UTC</creationDate>
+                          <defaultGroup>true</defaultGroup>
+                          <group class="org.olat.basesecurity.model.GroupImpl">
+                            <key>5210112</key>
+                            <creationDate>2018-05-04 09:58:45.146 UTC</creationDate>
+                            <members class="org.hibernate.collection.internal.PersistentSet">
+                              <isTempSession>false</isTempSession>
+                              <initialized>true</initialized>
+                              <owner class="org.olat.basesecurity.model.GroupImpl" reference="../.."/>
+                              <cachedSize>-1</cachedSize>
+                              <role>org.olat.basesecurity.model.GroupImpl.members</role>
+                              <key class="long">5210112</key>
+                              <dirty>false</dirty>
+                              <storedSnapshot class="map">
+                                <entry>
+                                  <org.olat.basesecurity.model.GroupMembershipImpl>
+                                    <key>4980738</key>
+                                    <creationDate>2018-05-04 09:58:45.152 UTC</creationDate>
+                                    <lastModified>2018-05-04 09:58:45.152 UTC</lastModified>
+                                    <role>owner</role>
+                                    <inheritanceModeString>none</inheritanceModeString>
+                                    <group class="org.olat.basesecurity.model.GroupImpl" reference="../../../../.."/>
+                                    <identity class="org.olat.basesecurity.IdentityImpl">
+                                      <key>4882432</key>
+                                      <version>0</version>
+                                      <creationDate class="sql-timestamp">2018-05-04 09:58:42</creationDate>
+                                      <lastLogin class="sql-timestamp">2018-05-04 09:58:42</lastLogin>
+                                      <name>selena-1ecd96e68-11a9-4f</name>
+                                      <user class="org.olat.user.UserImpl">
+                                        <key>4915200</key>
+                                        <version>1</version>
+                                        <creationDate class="sql-timestamp">2018-05-04 09:58:42</creationDate>
+                                        <identity class="org.olat.basesecurity.IdentityImpl" reference="../.."/>
+                                        <webdav>false</webdav>
+                                        <firstName>Selena-Auth-1ecd96e68-11a9-4f45-9a20-4e0e7d019bfa</firstName>
+                                        <lastName>Smith</lastName>
+                                        <email>selena-1ecd96e68-11a9-4f@frentix.com</email>
+                                        <gender>female</gender>
+                                        <birthDay>20091212</birthDay>
+                                        <telPrivate>39847592</telPrivate>
+                                        <telMobile>39847592</telMobile>
+                                        <telOffice>39847592</telOffice>
+                                        <preferences>
+                                          <language>de</language>
+                                          <fontsize>100</fontsize>
+                                          <notificationInterval>daily</notificationInterval>
+                                          <informSessionTimeout>false</informSessionTimeout>
+                                          <presenceMessagesPublic>false</presenceMessagesPublic>
+                                        </preferences>
+                                        <identEnvAttribs>
+                                          <entry>
+                                            <string>authprovider</string>
+                                            <string>OLAT</string>
+                                          </entry>
+                                          <entry>
+                                            <string>isrest</string>
+                                            <string>false</string>
+                                          </entry>
+                                          <entry>
+                                            <string>iswebdav</string>
+                                            <string>false</string>
+                                          </entry>
+                                          <entry>
+                                            <string>language</string>
+                                            <string>de</string>
+                                          </entry>
+                                        </identEnvAttribs>
+                                      </user>
+                                      <status>2</status>
+                                    </identity>
+                                  </org.olat.basesecurity.model.GroupMembershipImpl>
+                                  <org.olat.basesecurity.model.GroupMembershipImpl reference="../org.olat.basesecurity.model.GroupMembershipImpl"/>
+                                </entry>
+                              </storedSnapshot>
+                              <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+                              <set>
+                                <org.olat.basesecurity.model.GroupMembershipImpl reference="../../storedSnapshot/entry/org.olat.basesecurity.model.GroupMembershipImpl"/>
+                              </set>
+                            </members>
+                          </group>
+                          <entry reference="../../../../.."/>
+                        </org.olat.repository.model.RepositoryEntryToGroupRelation>
+                        <org.olat.repository.model.RepositoryEntryToGroupRelation reference="../org.olat.repository.model.RepositoryEntryToGroupRelation"/>
+                      </entry>
+                      <entry>
+                        <org.olat.repository.model.RepositoryEntryToGroupRelation>
+                          <key>5275649</key>
+                          <creationDate>2018-05-04 09:58:45.152 UTC</creationDate>
+                          <defaultGroup>false</defaultGroup>
+                          <group class="org.olat.basesecurity.model.GroupImpl">
+                            <key>65536</key>
+                            <creationDate class="sql-timestamp">2018-05-04 08:50:29</creationDate>
+                            <members class="org.hibernate.collection.internal.PersistentSet">
+                              <isTempSession>false</isTempSession>
+                              <initialized>false</initialized>
+                              <owner class="org.olat.basesecurity.model.GroupImpl" reference="../.."/>
+                              <cachedSize>-1</cachedSize>
+                              <role>org.olat.basesecurity.model.GroupImpl.members</role>
+                              <key class="long">65536</key>
+                              <dirty>false</dirty>
+                              <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+                            </members>
+                          </group>
+                          <entry reference="../../../../.."/>
+                        </org.olat.repository.model.RepositoryEntryToGroupRelation>
+                        <org.olat.repository.model.RepositoryEntryToGroupRelation reference="../org.olat.repository.model.RepositoryEntryToGroupRelation"/>
+                      </entry>
+                    </storedSnapshot>
+                    <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+                    <set>
+                      <org.olat.repository.model.RepositoryEntryToGroupRelation reference="../../storedSnapshot/entry/org.olat.repository.model.RepositoryEntryToGroupRelation"/>
+                      <org.olat.repository.model.RepositoryEntryToGroupRelation reference="../../storedSnapshot/entry[2]/org.olat.repository.model.RepositoryEntryToGroupRelation"/>
+                    </set>
+                  </groups>
+                  <organisations class="org.hibernate.collection.internal.PersistentSet">
+                    <isTempSession>false</isTempSession>
+                    <initialized>true</initialized>
+                    <owner class="org.olat.repository.RepositoryEntry" reference="../.."/>
+                    <cachedSize>-1</cachedSize>
+                    <role>org.olat.repository.RepositoryEntry.organisations</role>
+                    <key class="long">5242880</key>
+                    <dirty>false</dirty>
+                    <storedSnapshot class="map">
+                      <entry>
+                        <org.olat.repository.model.RepositoryEntryToOrganisationImpl reference="../../../../.."/>
+                        <org.olat.repository.model.RepositoryEntryToOrganisationImpl reference="../../../../.."/>
+                      </entry>
+                    </storedSnapshot>
+                    <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+                    <set>
+                      <org.olat.repository.model.RepositoryEntryToOrganisationImpl reference="../../../.."/>
+                    </set>
+                  </organisations>
+                  <resourcename>-</resourcename>
+                  <displayname>SCORM courseSCORM - 7eceeb94-ad58-4a55-a913-3a883c55038e</displayname>
+                  <description></description>
+                  <initialAuthor>selena-1ecd96e68-11a9-4f</initialAuthor>
+                  <statistics>
+                    <key>5177344</key>
+                    <creationDate reference="../../creationDate"/>
+                    <lastModified reference="../../creationDate"/>
+                    <numOfRatings>0</numOfRatings>
+                    <numOfComments>0</numOfComments>
+                    <launchCounter>0</launchCounter>
+                    <downloadCounter>0</downloadCounter>
+                    <lastUsage reference="../../creationDate"/>
+                  </statistics>
+                  <access>1</access>
+                  <canCopy>false</canCopy>
+                  <canReference>false</canReference>
+                  <canLaunch>true</canLaunch>
+                  <canDownload>false</canDownload>
+                  <membersOnly>false</membersOnly>
+                  <statusCode>0</statusCode>
+                  <allowToLeave>atAnyTime</allowToLeave>
+                </entry>
+                <organisation class="org.olat.basesecurity.model.OrganisationImpl">
+                  <key>1</key>
+                  <creationDate class="sql-timestamp">2018-05-04 08:50:29</creationDate>
+                  <lastModified class="sql-timestamp">2018-05-04 08:50:29</lastModified>
+                  <identifier>default-org</identifier>
+                  <displayName>OpenOLAT</displayName>
+                  <materializedPathKeys>/1/</materializedPathKeys>
+                  <managedFlagsString>identifier,externalId,move,delete</managedFlagsString>
+                  <group class="org.olat.basesecurity.model.GroupImpl" reference="../../entry/groups/storedSnapshot/entry[2]/org.olat.repository.model.RepositoryEntryToGroupRelation/group"/>
+                </organisation>
+              </org.olat.repository.model.RepositoryEntryToOrganisationImpl>
+              <org.olat.repository.model.RepositoryEntryToOrganisationImpl reference="../org.olat.repository.model.RepositoryEntryToOrganisationImpl"/>
+            </entry>
+          </storedSnapshot>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+          <set>
+            <org.olat.repository.model.RepositoryEntryToOrganisationImpl reference="../../storedSnapshot/entry/org.olat.repository.model.RepositoryEntryToOrganisationImpl"/>
+          </set>
+        </organisations>
+        <resourcename>-</resourcename>
+        <displayname>SCORM courseSCORM - 7eceeb94-ad58-4a55-a913-3a883c55038e</displayname>
+        <description></description>
+        <initialAuthor>selena-1ecd96e68-11a9-4f</initialAuthor>
+        <statistics reference="../organisations/storedSnapshot/entry/org.olat.repository.model.RepositoryEntryToOrganisationImpl/entry/statistics"/>
+        <access>1</access>
+        <canCopy>false</canCopy>
+        <canReference>false</canReference>
+        <canLaunch>true</canLaunch>
+        <canDownload>false</canDownload>
+        <membersOnly>false</membersOnly>
+        <statusCode>0</statusCode>
+        <allowToLeave>atAnyTime</allowToLeave>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+    <org.olat.core.id.context.MyContextEntry>
+      <olatResourceable class="org.olat.core.util.resource.Resourceable">
+        <resourceableTypeName>CourseNode</resourceableTypeName>
+        <resourceableId>91389880396330</resourceableId>
+      </olatResourceable>
+    </org.olat.core.id.context.MyContextEntry>
+  </entries>
+</org.olat.core.id.context.HistoryPointImpl>

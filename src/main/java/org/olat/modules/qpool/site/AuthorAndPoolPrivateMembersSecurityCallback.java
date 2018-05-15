@@ -59,7 +59,7 @@ public class AuthorAndPoolPrivateMembersSecurityCallback implements SiteSecurity
 		if (roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isOLATAdmin() || roles.isPoolAdmin() || roles.isAuthor()) {
+		if (roles.isOLATAdmin() || roles.isQPoolManager() || roles.isAuthor()) {
 			return true;
 		}
 		return qPoolService.isMemberOfPrivatePools(ureq.getIdentity());

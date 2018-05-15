@@ -21,7 +21,9 @@ package org.olat.core.id;
 
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationType;
 
 /**
  * 
@@ -43,6 +45,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	
 	public void setDisplayName(String displayName);
 	
+	public String getCssClass();
+	
+	public void setCssClass(String css);
+	
 	public String getDescription();
 	
 	public void setDescription(String description);
@@ -50,6 +56,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
+	
+	public String getStatus();
+	
+	public void setStatus(String status);
 	
 	public OrganisationManagedFlag[] getManagedFlags();
 	
@@ -60,5 +70,11 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	public List<OrganisationRef> getParentLine();
 	
 	public Organisation getRoot();
+	
+	public OrganisationType getType();
+	
+	public void setType(OrganisationType type);
+	
+	public Group getGroup();
 
 }

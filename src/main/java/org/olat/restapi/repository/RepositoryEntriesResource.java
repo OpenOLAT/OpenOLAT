@@ -263,7 +263,7 @@ public class RepositoryEntriesResource {
 				List<String> types = new ArrayList<>(1);
 				if(restrictedType) types.add(type);
 
-				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(name, author, null, restrictedType ? types : null, identity, roles, null);
+				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(name, author, null, restrictedType ? types : null, identity, roles);
 				List<RepositoryEntry> lstRepos = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				if(!lstRepos.isEmpty()) reposFound.addAll(lstRepos);
 			}

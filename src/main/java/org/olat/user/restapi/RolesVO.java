@@ -58,7 +58,7 @@ public class RolesVO {
 		author = roles.isAuthor();
 		guestOnly = roles.isGuestOnly();
 		institutionalResourceManager = roles.isLearnResourceManager();
-		poolAdmin = roles.isPoolAdmin();
+		poolAdmin = roles.isQPoolManager();
 		curriculumManager = roles.isCurriculumManager();
 		invitee = roles.isInvitee();
 	}

@@ -274,7 +274,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	
 	@Override
 	public boolean isIdentityCourseLearnResourceManager(Identity identity, Roles roles) {
-		return repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, courseRepoEntry);
+		return repositoryManager.isLearnResourceManagerFor(roles, courseRepoEntry);
 	}
 
 	@Override

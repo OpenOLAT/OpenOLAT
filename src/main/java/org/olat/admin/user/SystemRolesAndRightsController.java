@@ -118,7 +118,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		organisations = organisationService.getOrganisations(editedIdentity, OrganisationRoles.values());
 
 		managerRoles = ureq.getUserSession().getRoles();
-		manageableOrganisations = organisationService.getManageableOrganisations(getIdentity(), managerRoles, OrganisationRoles.usermanager);
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), managerRoles,
+				OrganisationRoles.administrator, OrganisationRoles.usermanager);
 		
 		initStatusKeysAndValues();
 		initForm(ureq);
@@ -513,7 +514,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		}
 		
 		RolesByOrganisation updatedRoles = RolesByOrganisation.roles(wrapper.getOrganisation(),
-				invitee, user, coach, author,
+				false, invitee, user, coach, author,
 				groupManager, poolmanager, curriculummanager,
 				usermanager, learnresourcemanager, admin);
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);

@@ -58,7 +58,6 @@ public class BGConfigToolsStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		BGConfigToolsStepController controller = new BGConfigToolsStepController(ureq, wControl, form, runContext);
-		return controller;
+		return new BGConfigToolsStepController(ureq, wControl, form, runContext);
 	}
 }

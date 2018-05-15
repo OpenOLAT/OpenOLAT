@@ -22,17 +22,22 @@ package org.olat.basesecurity.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -83,7 +88,7 @@ public class OrganisationDAO {
 		return organisation;
 	}
 	
-	private String getMaterializedPathKeys(Organisation parent, Organisation level) {
+	public String getMaterializedPathKeys(Organisation parent, Organisation level) {
 		if(parent != null) {
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
@@ -168,7 +173,7 @@ public class OrganisationDAO {
 	
 	public List<OrganisationMember> getMembers(OrganisationRef organisation) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select ident, membership.role from organisation org")
+		sb.append("select ident, membership.role, membership.inheritanceModeString from organisation org")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join membership.identity ident")
@@ -181,7 +186,12 @@ public class OrganisationDAO {
 		for(Object[] object:objects) {
 			Identity identity = (Identity)object[0];
 			String role = (String)object[1];
-			members.add(new OrganisationMember(identity, role));
+			String inheritanceModeString = (String)object[2];
+			GroupMembershipInheritance inheritanceMode = GroupMembershipInheritance.none;
+			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
+				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
+			}
+			members.add(new OrganisationMember(identity, role, inheritanceMode));
 		}
 		return members;
 	}
@@ -220,6 +230,8 @@ public class OrganisationDAO {
 		sb.append("select distinct org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
 		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
@@ -246,11 +258,61 @@ public class OrganisationDAO {
 	public List<Organisation> getDescendants(Organisation organisation) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select org from organisation org")
-		  .append(" where org.materializedPathKeys like :materializedPathKeys");
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where org.materializedPathKeys like :materializedPathKeys and not(org.key=:organisationKey)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("materializedPathKeys", organisation.getMaterializedPathKeys() + "%")
+				.setParameter("organisationKey", organisation.getKey())
 				.getResultList();
+	}
+	
+	public OrganisationNode getDescendantTree(Organisation rootOrganisation) {
+		OrganisationNode rootNode = new OrganisationNode(rootOrganisation);
+
+		List<Organisation> descendants = getDescendants(rootOrganisation);
+		Map<Long,OrganisationNode> keyToOrganisations = new HashMap<>();
+		for(Organisation descendant:descendants) {
+			keyToOrganisations.put(descendant.getKey(), new OrganisationNode(descendant));
+		}
+
+		for(Organisation descendant:descendants) {
+			Long key = descendant.getKey();
+			if(key.equals(rootOrganisation.getKey())) {
+				continue;
+			}
+			
+			OrganisationNode node = keyToOrganisations.get(key);
+			Organisation parentOrganisation = descendant.getParent();
+			Long parentKey = parentOrganisation.getKey();
+			if(parentKey.equals(rootOrganisation.getKey())) {
+				//this is a root, or the user has not access to parent
+				rootNode.addChildrenNode(node);
+			} else {
+				OrganisationNode parentNode = keyToOrganisations.get(parentKey);
+				parentNode.addChildrenNode(node);
+			}
+		}
+
+		return rootNode;
+	}
+	
+	public List<Organisation> getParentLine(Organisation organisation) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select org from organisation as org")
+		  .append(" inner join org.group as baseGroup")
+		  .append(" left join fetch org.parent as parent")
+		  .append(" left join fetch org.type as type")
+		  .append(" where locate(org.materializedPathKeys,:materializedPath) = 1");
+		  
+		List<Organisation> levels = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Organisation.class)
+			.setParameter("materializedPath", organisation.getMaterializedPathKeys() + "%")
+			.getResultList();
+		Collections.sort(levels, new PathMaterializedPathLengthComparator());
+		return levels;
 	}
 	
 
@@ -311,5 +373,17 @@ public class OrganisationDAO {
 			.setMaxResults(1)
 			.getResultList();
 		return memberships != null && !memberships.isEmpty() && memberships.get(0) != null && memberships.get(0).longValue() > 0;
+	}
+	
+	private static class PathMaterializedPathLengthComparator implements Comparator<Organisation> {
+		@Override
+		public int compare(Organisation l1, Organisation l2) {
+			String s1 = l1.getMaterializedPathKeys();
+			String s2 = l2.getMaterializedPathKeys();
+			
+			int len1 = s1 == null ? 0 : s1.length();
+			int len2 = s2 == null ? 0 : s2.length();
+			return len1 - len2;
+		}
 	}
 }

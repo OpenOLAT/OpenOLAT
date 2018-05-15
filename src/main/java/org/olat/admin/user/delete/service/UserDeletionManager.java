@@ -63,6 +63,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
@@ -113,6 +114,8 @@ public class UserDeletionManager {
 	private SecurityGroupDAO securityGroupDao;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private UserSessionManager userSessionManager;
 	@Autowired
 	private AuthenticationHistoryDAO suthenticationHistoryDao;
 	@Autowired
@@ -273,6 +276,9 @@ public class UserDeletionManager {
 	 */
 	public void deleteIdentity(Identity identity) {
 		log.info("Start deleteIdentity for identity=" + identity);
+		
+		//logout
+		userSessionManager.signOffAndClearAll(identity);
 
 		String newName = getBackupStringWithDate(identity.getName());
 
