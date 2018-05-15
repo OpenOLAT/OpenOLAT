@@ -22,7 +22,7 @@ package org.olat.modules.curriculum.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 
 /**
  * 
@@ -32,16 +32,16 @@ import org.olat.core.id.Organisation;
  */
 public class CurriculumSearchParameters {
 	
-	private List<Organisation> organisations;
+	private List<OrganisationRef> organisations;
 
-	public List<Organisation> getOrganisations() {
+	public List<OrganisationRef> getOrganisations() {
 		if(organisations == null) {
 			organisations = new ArrayList<>();
 		}
 		return organisations;
 	}
 
-	public void setOrganisations(List<Organisation> organisations) {
+	public void setOrganisations(List<OrganisationRef> organisations) {
 		this.organisations = organisations;
 	}
 	

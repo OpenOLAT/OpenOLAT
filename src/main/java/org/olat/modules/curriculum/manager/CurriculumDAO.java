@@ -29,6 +29,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -92,7 +93,7 @@ public class CurriculumDAO {
 				.createQuery(sb.toString(), Curriculum.class);
 		if(!params.getOrganisations().isEmpty()) {
 			List<Long> organisationKeys = params.getOrganisations()
-					.stream().map(Organisation::getKey).collect(Collectors.toList());
+					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 			query.setParameter("organisationKeys", organisationKeys);
 		}
 		return query.getResultList();

@@ -43,11 +43,21 @@ public interface Curriculum extends CreateInfo, ModifiedInfo, CurriculumRef {
 	
 	public void setDescription(String description);
 	
+	public String getStatus();
+	
+	public void setStatus(String status);
+	
+	public String getDegree();
+	
+	public void setDegree(String degree);
+	
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
 	
 	public Organisation getOrganisation();
+	
+	public void setOrganisation(Organisation organisation);
 	
 	public CurriculumManagedFlag[] getManagedFlags();
 	

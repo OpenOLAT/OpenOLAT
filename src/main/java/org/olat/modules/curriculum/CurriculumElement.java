@@ -57,6 +57,10 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	
 	public void setEndDate(Date date);
 	
+	public String getStatus();
+	
+	public void setStatus(String status);
+	
 	public String getMaterializedPathKeys();
 	
 	public CurriculumElementManagedFlag[] getManagedFlags();

@@ -115,6 +115,11 @@ public class JunitTestHelper {
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsUser(login);
+	}
+	
+	private static final String getRandomizedLoginName(String prefixLogin) {
 		if(StringHelper.containsNonWhitespace(prefixLogin)) {
 			if(!prefixLogin.endsWith("-")) {
 				prefixLogin += "-";
@@ -122,8 +127,7 @@ public class JunitTestHelper {
 		} else {
 			prefixLogin = "junit-";
 		}
-		String login = prefixLogin + UUID.randomUUID().toString();
-		return createAndPersistIdentityAsUser(login);
+		return prefixLogin + UUID.randomUUID();
 	}
 
 	/**
@@ -142,6 +146,17 @@ public class JunitTestHelper {
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		return identity;
+	}
+	
+	/**
+	 * Create a new identity with author permission.
+	 * 
+	 * @param prefixLogin The prefix of the user name.
+	 * @return The new unique identity
+	 */
+	public static final Identity createAndPersistIdentityAsRndAuthor(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsAuthor(login);
 	}
 
 	/**
