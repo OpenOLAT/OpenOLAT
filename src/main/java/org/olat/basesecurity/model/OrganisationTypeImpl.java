@@ -36,6 +36,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.basesecurity.OrganisationType;
+import org.olat.basesecurity.OrganisationTypeManagedFlag;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.core.id.Persistable;
 
@@ -139,10 +140,12 @@ public class OrganisationTypeImpl implements Persistable, OrganisationType {
 		this.description = description;
 	}
 
+	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
 
+	@Override
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 	}
@@ -165,6 +168,17 @@ public class OrganisationTypeImpl implements Persistable, OrganisationType {
 		this.managedFlagsString = managedFlagsString;
 	}
 
+	@Override
+	public OrganisationTypeManagedFlag[] getManagedFlags() {
+		return OrganisationTypeManagedFlag.toEnum(managedFlagsString);
+	}
+
+	@Override
+	public void setManagedFlags(OrganisationTypeManagedFlag[] flags) {
+		managedFlagsString = OrganisationTypeManagedFlag.toString(flags);
+	}
+
+	@Override
 	public Set<OrganisationTypeToType> getAllowedSubTypes() {
 		return allowedSubTypes;
 	}

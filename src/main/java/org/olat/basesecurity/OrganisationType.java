@@ -52,6 +52,10 @@ public interface OrganisationType extends CreateInfo, ModifiedInfo, Organisation
 	
 	public void setCssClass(String cssClass);
 	
+	public OrganisationTypeManagedFlag[] getManagedFlags();
+	
+	public void setManagedFlags(OrganisationTypeManagedFlag[] flags);
+	
 	public Set<OrganisationTypeToType> getAllowedSubTypes();
 
 }

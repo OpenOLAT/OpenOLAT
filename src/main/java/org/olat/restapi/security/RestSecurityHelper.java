@@ -81,6 +81,15 @@ public class RestSecurityHelper {
 		}
 	}
 	
+	public static boolean isCurriculumManager(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isCurriculumManager() || roles.isOLATAdmin());
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	public static boolean isGroupManager(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);

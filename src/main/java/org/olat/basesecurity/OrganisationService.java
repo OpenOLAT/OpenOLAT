@@ -99,17 +99,32 @@ public interface OrganisationService {
 	public OrganisationType getOrganisationType(OrganisationTypeRef type);
 	
 	/**
-	 * Update the type and the rleation to sub-types.
+	 * Update the type without touching to the sub-types.
 	 * 
 	 * @param type
 	 * @param allowedSubTypes
 	 * @return
 	 */
+	public OrganisationType updateOrganisationType(OrganisationType type);
+	
+	/**
+	 * Update the type and the relation to sub-types.
+	 * 
+	 * @param type The type to update
+	 * @param allowedSubTypes The sub-types allowed
+	 * @return The merged type
+	 */
 	public OrganisationType updateOrganisationType(OrganisationType type, List<OrganisationType> allowedSubTypes);
 	
+	public void allowOrganisationSubType(OrganisationType parentType, OrganisationType allowedSubType);
+	
+	public void disallowOrganisationSubType(OrganisationType parentType, OrganisationType allowedSubType);
+	
+	/**
+	 * @return The list of organization types
+	 */
 	public List<OrganisationType> getOrganisationTypes();
-	
-	
+
 	/**
 	 * @param member The user (mandatory)
 	 * @param role The roles (mandatory)

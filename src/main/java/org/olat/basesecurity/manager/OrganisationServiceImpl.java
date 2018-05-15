@@ -274,11 +274,26 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	public OrganisationType getOrganisationType(OrganisationTypeRef type) {
 		return organisationTypeDao.loadByKey(type.getKey());
 	}
+	
+	@Override
+	public OrganisationType updateOrganisationType(OrganisationType type) {
+		return organisationTypeDao.updateOrganisationType(type);
+	}
 
 	@Override
 	public OrganisationType updateOrganisationType(OrganisationType type, List<OrganisationType> allowedSubTypes) {
 		organisationTypeToTypeDao.setAllowedSubType(type, allowedSubTypes);
 		return organisationTypeDao.updateOrganisationType(type);
+	}
+
+	@Override
+	public void allowOrganisationSubType(OrganisationType parentType, OrganisationType allowedSubType) {
+		organisationTypeToTypeDao.addAllowedSubType(parentType, allowedSubType);
+	}
+
+	@Override
+	public void disallowOrganisationSubType(OrganisationType parentType, OrganisationType disallowedSubType) {
+		organisationTypeToTypeDao.disallowedSubType(parentType, disallowedSubType);
 	}
 
 	@Override

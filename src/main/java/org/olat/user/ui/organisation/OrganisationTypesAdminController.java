@@ -86,9 +86,6 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(TypeCols.tools);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
 		
 		model = new OrganisationTypesDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);

@@ -84,7 +84,7 @@ public class NotificationsWebService {
 	 * @response.representation.200.qname {http://www.example.com}publisherVo
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The publisher
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_PUBLISHERVO}
+	 * @response.representation.200.example {@link org.olat.core.commons.services.notifications.restapi.vo.Examples#SAMPLE_PUBLISHERVO}
 	 * @response.representation.204.doc The publisher doesn't exist
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @return It returns the <code>CourseVO</code> object representing the course.

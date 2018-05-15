@@ -45,6 +45,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	
 	public void setDisplayName(String displayName);
 	
+	public String getCssClass();
+	
+	public void setCssClass(String css);
+	
 	public String getDescription();
 	
 	public void setDescription(String description);
@@ -52,6 +56,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
+	
+	public String getStatus();
+	
+	public void setStatus(String status);
 	
 	public OrganisationManagedFlag[] getManagedFlags();
 	
