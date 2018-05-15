@@ -138,7 +138,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 			if (response == null) {
 				response = evaluationFormManager.createStringResponse(singleChoice.getId(), session, stringValue);
 			} else {
-				response = evaluationFormManager.updateResponse(response, stringValue);
+				response = evaluationFormManager.updateStringResponse(response, stringValue);
 			}
 		} else if (response != null) {
 			evaluationFormManager.deleteResponse(response);

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
+import org.olat.modules.forms.handler.GeneralInformationsHandler;
 import org.olat.modules.forms.handler.HTMLRawHandler;
 import org.olat.modules.forms.handler.MultipleChoiceHandler;
 import org.olat.modules.forms.handler.RubricHandler;
@@ -146,6 +147,8 @@ public class EvaluationFormEditorController extends BasicController {
 			handlers.add(multipleChoiceHandler);
 			DisclaimerHandler disclaimerHandler = new DisclaimerHandler(restrictedEdit);
 			handlers.add(disclaimerHandler);
+			GeneralInformationsHandler generalInformationsHandler = new GeneralInformationsHandler(restrictedEdit);
+			handlers.add(generalInformationsHandler);
 			
 			if(!restrictedEdit) {
 				creationHandlers.add(titleRawHandler);
@@ -157,6 +160,7 @@ public class EvaluationFormEditorController extends BasicController {
 				creationHandlers.add(singleChoiceHandler);
 				creationHandlers.add(multipleChoiceHandler);
 				creationHandlers.add(disclaimerHandler);
+				creationHandlers.add(generalInformationsHandler);
 			}
 		}
 

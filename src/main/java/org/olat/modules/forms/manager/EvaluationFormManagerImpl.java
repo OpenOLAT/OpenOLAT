@@ -233,7 +233,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormResponse updateResponse(EvaluationFormResponse response, String stringValue) {
+	public EvaluationFormResponse updateStringResponse(EvaluationFormResponse response, String stringValue) {
 		return evaluationFormResponseDao.updateResponse(null, stringValue, null, response);
 	}
 

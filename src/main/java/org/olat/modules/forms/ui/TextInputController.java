@@ -161,7 +161,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 				if (response == null) {
 					response = evaluationFormManager.createStringResponse(textInput.getId(), session, valueToSave);
 				} else {
-					response = evaluationFormManager.updateResponse(response, valueToSave);
+					response = evaluationFormManager.updateStringResponse(response, valueToSave);
 				}
 			}
 		} else if (response != null) {

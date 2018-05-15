@@ -44,7 +44,8 @@ public class FormXStream {
 		xstream.alias("choices", Choices.class);
 		xstream.alias("singlechoice", SingleChoice.class);
 		xstream.alias("multiplechoice", MultipleChoice.class);
-		xstream.alias("userdata", UserData.class);
+		xstream.alias("generalinformation", GeneralInformation.class);
+		xstream.alias("generalinformations", GeneralInformations.class);
 		xstream.alias("disclaimer", Disclaimer.class);
 	}
 	

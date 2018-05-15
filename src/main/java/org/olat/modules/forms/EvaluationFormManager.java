@@ -135,7 +135,7 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormResponse updateNumericalResponse(EvaluationFormResponse response, BigDecimal value);
 
-	public EvaluationFormResponse updateResponse(EvaluationFormResponse response, String stringValue);
+	public EvaluationFormResponse updateStringResponse(EvaluationFormResponse response, String stringValue);
 
 	public EvaluationFormResponse updateFileResponse(EvaluationFormResponse response, File file, String filename)
 			throws IOException;
