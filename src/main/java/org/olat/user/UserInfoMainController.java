@@ -154,12 +154,14 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		firstLastName = userManager.getUserDisplayName(chosenIdentity);
 
 		// Navigation menu
-		menuTree = new MenuTree("menuTree");
-		GenericTreeModel tm = buildTreeModel(firstLastName);
-		menuTree.setTreeModel(tm);
-		menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());
-		menuTree.addListener(this);
-		menuTree.setRootVisible(showRootNode);
+		if (!chosenIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
+			menuTree = new MenuTree("menuTree");
+			GenericTreeModel tm = buildTreeModel(firstLastName);
+			menuTree.setTreeModel(tm);
+			menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());
+			menuTree.addListener(this);
+			menuTree.setRootVisible(showRootNode);
+		}
 
 		// override if user is guest, don't show anything
 		if (ureq.getUserSession().getRoles().isGuestOnly()) {
