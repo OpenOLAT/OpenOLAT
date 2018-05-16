@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -46,6 +47,7 @@ public class DisclaimerEditorController extends FormBasicController implements P
 
 	private DisclaimerController disclaimerCtrl;
 	private TextAreaElement textEl;
+	private TextElement agreementEl;
 	private FormLink saveButton;
 
 	private Disclaimer disclaimer;
@@ -73,11 +75,16 @@ public class DisclaimerEditorController extends FormBasicController implements P
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
 		
-		textEl = uifactory.addTextAreaElement("disclaimer_" + CodeHelper.getRAMUniqueID(), "disclaimer.text", 50000, 12, 72,
+		long prefix = CodeHelper.getRAMUniqueID();
+		textEl = uifactory.addTextAreaElement("disclaimer_" + prefix, "disclaimer.text", 50000, 12, 72,
 				false, disclaimer.getText(), settingsCont);
 		textEl.setEnabled(!restrictedEdit);
 		
-		saveButton = uifactory.addFormLink("save_" + CodeHelper.getRAMUniqueID(), "save", null, settingsCont, Link.BUTTON);
+		agreementEl = uifactory.addTextElement("agreement_" + prefix, "disclaimer.agreement", 200,
+				disclaimer.getAgreement(), settingsCont);
+		agreementEl.setEnabled(!restrictedEdit);
+		
+		saveButton = uifactory.addFormLink("save_" + prefix, "save", null, settingsCont, Link.BUTTON);
 		saveButton.setVisible(!restrictedEdit);
 	}
 	
@@ -106,6 +113,9 @@ public class DisclaimerEditorController extends FormBasicController implements P
 	protected void formOK(UserRequest ureq) {
 		String text = textEl.getValue();
 		disclaimer.setText(text);
+		String agreement = agreementEl.getValue();
+		disclaimer.setAgreement(agreement);
+		disclaimerCtrl.update();
 
 		fireEvent(ureq, new ChangePartEvent(disclaimer));
 		fireEvent(ureq, new ClosePartEvent(disclaimer));

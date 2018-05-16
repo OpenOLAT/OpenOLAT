@@ -139,10 +139,9 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		tableEl.setLabel("choice.values", null);
 		loadModel();
 		
-		if (!restrictedEdit) {
-			addChoiceEl = uifactory.addFormLink("choice.add", flc, Link.BUTTON);
-			addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
-		}
+		addChoiceEl = uifactory.addFormLink("choice.add", settingsCont, Link.BUTTON);
+		addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
+		addChoiceEl.setVisible(!restrictedEdit);
 	}
 	
 	private void loadModel() {

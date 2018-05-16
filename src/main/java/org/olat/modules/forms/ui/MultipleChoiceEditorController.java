@@ -138,7 +138,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		tableEl.setLabel("choice.values", null);
 		loadModel();
 		
-		addChoiceEl = uifactory.addFormLink("choice.add", flc, Link.BUTTON);
+		addChoiceEl = uifactory.addFormLink("choice.add", settingsCont, Link.BUTTON);
 		addChoiceEl.setIconLeftCSS("o_icon o_icon_add");
 		addChoiceEl.setVisible(!restrictedEdit);
 	}
