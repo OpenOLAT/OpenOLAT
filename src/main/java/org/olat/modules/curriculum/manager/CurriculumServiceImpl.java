@@ -100,11 +100,26 @@ public class CurriculumServiceImpl implements CurriculumService {
 			String description, String externalId) {
 		return curriculumElementTypeDao.createCurriculumElementType(identifier, displayName, description, externalId);
 	}
+	
+	@Override
+	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType) {
+		return curriculumElementTypeDao.update(elementType);
+	}
 
 	@Override
 	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType, List<CurriculumElementType> allowedSubTypes) {
 		curriculumElementTypeToTypeDao.setAllowedSubType(elementType, allowedSubTypes);
 		return curriculumElementTypeDao.update(elementType);
+	}
+	
+	@Override
+	public void allowCurriculumElementSubType(CurriculumElementType parentType, CurriculumElementType allowedSubType) {
+		curriculumElementTypeToTypeDao.addAllowedSubType(parentType, allowedSubType);
+	}
+
+	@Override
+	public void disallowCurriculumElementSubType(CurriculumElementType parentType, CurriculumElementType disallowedSubType) {
+		curriculumElementTypeToTypeDao.disallowedSubType(parentType, disallowedSubType);
 	}
 
 	@Override

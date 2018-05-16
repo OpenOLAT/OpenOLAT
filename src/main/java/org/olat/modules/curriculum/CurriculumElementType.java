@@ -40,6 +40,10 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	
 	public void setDisplayName(String displayName);
 	
+	public String getCssClass();
+	
+	public void setCssClass(String cssClass);
+	
 	public String getDescription();
 	
 	public void setDescription(String description);
@@ -49,6 +53,8 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	public void setExternalId(String externalId);
 	
 	public CurriculumElementTypeManagedFlag[] getManagedFlags();
+	
+	public void setManagedFlags(CurriculumElementTypeManagedFlag[] flags);
 	
 	public Set<CurriculumElementTypeToType> getAllowedSubTypes();
 

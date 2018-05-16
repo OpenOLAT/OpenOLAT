@@ -146,10 +146,12 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 		this.description = description;
 	}
 
+	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
 
+	@Override
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 	}
@@ -176,8 +178,9 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	public CurriculumElementTypeManagedFlag[] getManagedFlags() {
 		return CurriculumElementTypeManagedFlag.toEnum(managedFlagsString);
 	}
-	
-	public void setManagedFlagss(CurriculumElementTypeManagedFlag[] flags) {
+
+	@Override
+	public void setManagedFlags(CurriculumElementTypeManagedFlag[] flags) {
 		managedFlagsString = CurriculumElementTypeManagedFlag.toString(flags);
 	}
 

@@ -70,8 +70,42 @@ public interface CurriculumService {
 	public CurriculumElementType getCurriculumElementType(CurriculumElementTypeRef typeRef);
 	
 	public CurriculumElementType createCurriculumElementType(String identifier, String displayName, String description, String externalId);
+
+	/**
+	 * Update only the curriculum element type with the allowed sub-types.
+	 * 
+	 * @param elementType The curriculum element type to update
+	 * @return The merged curriculum element type
+	 */
+	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType);
 	
+	/**
+	 * Update only the curriculum element type and the relations to the allowed sub-types.
+	 * 
+	 * @param elementType The curriculum element type to updates
+	 * @param allowedSubTypes The allowed sub-types
+	 * @return A merged curriculum element type
+	 */
 	public CurriculumElementType updateCurriculumElementType(CurriculumElementType elementType, List<CurriculumElementType> allowedSubTypes);
+	
+	/**
+	 * Add a sub-type in the list of allowed sub-types of the specified
+	 * curriculum element type.
+	 * 
+	 * @param parentType The parent curriculum element type
+	 * @param allowedSubType The sub-type to allow
+	 */
+	public void allowCurriculumElementSubType(CurriculumElementType parentType, CurriculumElementType allowedSubType);
+	
+	/**
+	 * Remove a sub-type of the list of allowed sub-types in the specified
+	 * curriculum element type.
+	 * 
+	 * @param parentType The parent curriculum element type
+	 * @param allowedSubType The sub-type to remove
+	 */
+	public void disallowCurriculumElementSubType(CurriculumElementType parentType, CurriculumElementType disallowedSubType);
+	
 	
 	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef typeRef);
 	

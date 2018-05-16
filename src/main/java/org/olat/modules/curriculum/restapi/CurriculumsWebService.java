@@ -61,6 +61,21 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 @Path("curriculum")
 public class CurriculumsWebService {
 	
+	private static final String VERSION = "1.0";
+	
+	/**
+	 * The version of the User Web Service
+	 * @response.representation.200.mediaType text/plain
+ 	 * @response.representation.200.doc The version of this specific Web Service
+ 	 * @response.representation.200.example 1.0
+	 * @return The version number
+	 */
+	@GET
+	@Path("version")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getVersion() {
+		return Response.ok(VERSION).build();
+	}
 	
 	/**
 	 * Return the curriculums an administrative user is allowed to see.
@@ -97,6 +112,15 @@ public class CurriculumsWebService {
 			voes.add(CurriculumVO.valueOf(curriculum));
 		}
 		return Response.ok(voes.toArray(new CurriculumVO[voes.size()])).build();
+	}
+	
+	@Path("types")
+	public CurriculumElementTypesWebService getCurriculumElementTypesWebService(@Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isOLATAdmin()) {
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+		}
+		return new CurriculumElementTypesWebService();
 	}
 
 	/**

@@ -33,6 +33,8 @@ public class Examples {
 	
 	public static final CurriculumElementVO SAMPLE_CURRICULUMELEMENTVO = new CurriculumElementVO();
 	
+	public static final CurriculumElementTypeVO SAMPLE_CURRICULUMELEMENTTYPEVO = new CurriculumElementTypeVO();
+	
 	static {
 		SAMPLE_CURRICULUMVO.setKey(2l);
 		SAMPLE_CURRICULUMVO.setDisplayName("Dipl. engineer");
@@ -54,5 +56,13 @@ public class Examples {
 		SAMPLE_CURRICULUMELEMENTVO.setCurriculumElementTypeKey(25l);
 		SAMPLE_CURRICULUMELEMENTVO.setParentElementKey(1l);
 		SAMPLE_CURRICULUMELEMENTVO.setManagedFlagsString("delete");
+		
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setKey(25l);
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setCssClass("o_icon_type");
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setDisplayName("a curriculum element type");
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setIdentifier("CUR-EL-TYP-1");
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setExternalId("CET-1001");
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setDescription("This is the description of a type");
+		SAMPLE_CURRICULUMELEMENTTYPEVO.setManagedFlagsString("displayName");
 	}
 }
