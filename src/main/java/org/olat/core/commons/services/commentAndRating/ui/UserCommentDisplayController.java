@@ -44,10 +44,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -86,6 +85,9 @@ public class UserCommentDisplayController extends BasicController {
 	private OLATResourceable ores;
 	private final CommentAndRatingService commentAndRatingService;
 	
+	@Autowired
+	private UserManager userManager;
+	
 	UserCommentDisplayController(UserRequest ureq, WindowControl wControl,
 			UserComment userComment, List<UserComment> allComments,
 			OLATResourceable ores, String resSubPath,
@@ -103,11 +105,9 @@ public class UserCommentDisplayController extends BasicController {
 		userCommentDisplayVC.contextPut("securityCallback", securityCallback);
 		userCommentDisplayVC.contextPut("comment", userComment);
 		// Creator information
-		User user = userComment.getCreator().getUser();
 		TextComponent creator = TextFactory.createTextComponentFromI18nKey("creator", null, null, null, true, userCommentDisplayVC);
-		String firstName = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
-		String lastName = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
-		creator.setText(translate("comments.comment.creator", new String[]{firstName, lastName}));
+		String name = userManager.getUserDisplayName(userComment.getCreator());
+		creator.setText(translate("comments.comment.creator", new String[]{name}));
 		// Portrait
 		if (CoreSpringFactory.containsBean(UserAvatarDisplayControllerCreator.class.getName())) {
 			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);
@@ -187,8 +187,8 @@ public class UserCommentDisplayController extends BasicController {
 			// Init reply workflow
 			replyCommentFormCtr = new UserCommentFormController(ureq, getWindowControl(), userComment, null, ores, resSubPath);
 			listenTo(replyCommentFormCtr);
-			User parentUser = userComment.getCreator().getUser();
-			String title = translate("comments.coment.reply.title", new String[]{parentUser.getProperty(UserConstants.FIRSTNAME, null), parentUser.getProperty(UserConstants.LASTNAME, null)});
+			String name = userManager.getUserDisplayName(userComment.getCreator());
+			String title = translate("comments.coment.reply.title", new String[]{name});
 			TitleInfo titleInfo = new TitleInfo(null, title);
 			replyTitledWrapperCtr = new TitledWrapperController(ureq, getWindowControl(), replyCommentFormCtr, null, titleInfo);
 			listenTo(replyTitledWrapperCtr);
