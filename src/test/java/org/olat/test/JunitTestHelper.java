@@ -40,6 +40,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -145,6 +146,7 @@ public class JunitTestHelper {
 		User user = userManager.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
 	
@@ -175,6 +177,7 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
 	
@@ -194,6 +197,7 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		addToDefaultOrganisation(identity, OrganisationRoles.administrator);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
 	
