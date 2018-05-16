@@ -27,6 +27,7 @@ package org.olat.modules.webFeed.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -387,7 +388,7 @@ public class FeedManagerImplTest {
 	public void exportShouldWriteItemsToXmlFiles() {
 		List<Item> threeItems = java.util.Arrays.asList(internalItemMock, internalItemMock, internalItemMock);
 
-		when(itemDAOMock.loadItems(any(Feed.class))).thenReturn(threeItems);
+		when(itemDAOMock.loadItems(any(Feed.class), isNull())).thenReturn(threeItems);
 		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.getFeedArchive(resourceDummy);
@@ -408,7 +409,7 @@ public class FeedManagerImplTest {
 	public void exportShoulDeleteItemsXmlFiles() {
 		List<Item> threeItems = java.util.Arrays.asList(internalItemMock, internalItemMock, internalItemMock);
 
-		when(itemDAOMock.loadItems(any(Feed.class))).thenReturn(threeItems);
+		when(itemDAOMock.loadItems(any(Feed.class), isNull())).thenReturn(threeItems);
 		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.getFeedArchive(resourceDummy);

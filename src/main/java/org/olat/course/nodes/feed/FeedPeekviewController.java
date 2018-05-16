@@ -20,6 +20,7 @@
 package org.olat.course.nodes.feed;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -95,7 +96,7 @@ public class FeedPeekviewController extends BasicController implements Controlle
 			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), getTranslator(), courseId, nodeId);
 			peekviewVC.contextPut("helper", helper);
 			// add items, only as many as configured
-			List<Item> allItems = FeedManager.getInstance().loadFilteredAndSortedItems(feed, callback, getIdentity());
+			List<Item> allItems = FeedManager.getInstance().loadFilteredAndSortedItems(feed, Collections.emptyList(), callback, getIdentity());
 			List<Item> items = new ArrayList<>();
 			for (int i = 0; i < allItems.size(); i++) {
 				if (items.size() == itemsToDisplay) {

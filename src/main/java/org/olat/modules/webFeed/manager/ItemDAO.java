@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.Feed;
@@ -169,16 +171,27 @@ public class ItemDAO {
 	 * Loads all items of a feed.
 	 * 
 	 * @param feed
+	 * @param filteredItemIds 
 	 * @return the list of Items or null
 	 */
-	public List<Item> loadItems(Feed feed) {
+	public List<Item> loadItems(Feed feed, List<Long> filteredItemIds) {
 		if (feed == null) return null;
 		
-		List<ItemImpl> items = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadItemsByFeed", ItemImpl.class)
-				.setParameter("feed", feed)
-				.getResultList();
-		return new ArrayList<>(items);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data");
+		sb.append("  from item data");
+		sb.append(" where data.feed=:feed");
+		if (filteredItemIds != null && !filteredItemIds.isEmpty()) {
+			sb.append(" and data.key in (:filteredItemIds)");
+		}
+		
+		 TypedQuery<Item> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Item.class)
+				.setParameter("feed", feed);
+		if (filteredItemIds != null && !filteredItemIds.isEmpty()) {
+			query.setParameter("filteredItemIds", filteredItemIds);
+		}
+		return query.getResultList();
 	}
 	
 	/**

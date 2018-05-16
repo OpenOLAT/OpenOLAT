@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -359,7 +360,7 @@ public class ItemDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadItems_Feed() {
+	public void shouldLoadItemsOfAFeedUnfiltered() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		Feed feed = feedDao.createFeedForResourcable(resource);
 		dbInstance.commitAndCloseSession();
@@ -371,10 +372,27 @@ public class ItemDAOTest extends OlatTestCase {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		List<Item> items = itemDao.loadItems(feed);
+		List<Item> items = itemDao.loadItems(feed, null);
 
 		// check if all three items of the feed are loaded
 		assertThat(items.size()).isEqualTo(3);
+	}
+	
+	@Test
+	public void shouldLoadItemsOfAFeedFiltered() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Feed feed = feedDao.createFeedForResourcable(resource);
+		Item item1 = itemDao.createItem(feed);
+		Item item2 = itemDao.createItem(feed);
+		Item item3 = itemDao.createItem(feed);
+		Item item4 = itemDao.createItem(feed);
+		dbInstance.commitAndCloseSession();
+		
+		List<Item> items = itemDao.loadItems(feed, Arrays.asList(item1.getKey(), item3.getKey()));
+
+		assertThat(items)
+				.containsExactlyInAnyOrder(item1, item3)
+				.doesNotContain(item2, item4);
 	}
 	
 	@Test
