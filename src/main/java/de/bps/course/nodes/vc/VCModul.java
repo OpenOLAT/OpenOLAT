@@ -22,7 +22,6 @@ package de.bps.course.nodes.vc;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.LogModule;
 
 /**
  * Description:<br>
@@ -36,7 +35,7 @@ import org.olat.core.logging.activity.LogModule;
  */
 public class VCModul {
 
-	static final OLog log = Tracing.createLoggerFor(LogModule.class);
+	static final OLog log = Tracing.createLoggerFor(VCModul.class);
 
 	private String baseUrl, adminLogin, adminPassword, connectID, version;
 
