@@ -46,6 +46,7 @@ public class EdubaseAdminController extends FormBasicController {
 	private TextElement edubaseOauthSecretEl;
 	private TextElement edubaseLtiLaunchUrlEl;
 	private TextElement edubaseReaderUrlEl;
+	private MultipleSelectionElement edubaseReaderUrlUniqueEl;
 	private TextElement edubaseInfoverUrlEl;
 
 	@Autowired
@@ -68,9 +69,7 @@ public class EdubaseAdminController extends FormBasicController {
 
 		String[] enableValues = new String[]{ translate("on") };
 		edubaseEnabledEl = uifactory.addCheckboxesHorizontal("admin.edubase.enabled", edubaseCont, enabledKeys, enableValues);
-		if (edubaseModule.isEnabled()) {
-			edubaseEnabledEl.select(enabledKeys[0], true);
-		}
+		edubaseEnabledEl.select(enabledKeys[0], edubaseModule.isEnabled());
 
 		String edubaseOauthKey = edubaseModule.getOauthKey();
 		edubaseOauthKeyEl = uifactory.addTextElement("admin.edubase.oauth.key", "admin.edubase.oauth.key", 128, edubaseOauthKey, edubaseCont);
@@ -90,6 +89,10 @@ public class EdubaseAdminController extends FormBasicController {
 		String edubaseReaderUrl = edubaseModule.getReaderUrl();
 		edubaseReaderUrlEl = uifactory.addTextElement("admin.edubase.reader.url", "admin.edubase.reader.url", 128, edubaseReaderUrl, edubaseCont);
 		edubaseReaderUrlEl.setMandatory(true);
+		
+		edubaseReaderUrlUniqueEl = uifactory.addCheckboxesHorizontal("admin.edubase.reader.url.unique", edubaseCont, enabledKeys, enableValues);
+		edubaseReaderUrlUniqueEl.setHelpTextKey("admin.edubase.reader.url.unique.help", null);
+		edubaseReaderUrlUniqueEl.select(enabledKeys[0], edubaseModule.isReaderUrlUnique());
 
 		String edubaseInfoverUrl = edubaseModule.getInfoverUrl();
 		edubaseInfoverUrlEl = uifactory.addTextElement("admin.edubase.infover.url", "admin.edubase.infover.url", 128, edubaseInfoverUrl, edubaseCont);
@@ -116,6 +119,7 @@ public class EdubaseAdminController extends FormBasicController {
 		edubaseModule.setOauthSecret(edubaseOauthSecretEl.getValue());
 		edubaseModule.setLtiLaunchUrl(edubaseLtiLaunchUrlEl.getValue());
 		edubaseModule.setReaderUrl(edubaseReaderUrlEl.getValue());
+		edubaseModule.setReaderUrlUnique(edubaseReaderUrlUniqueEl.isAtLeastSelected(1));
 		edubaseModule.setInfoverUrl(edubaseInfoverUrlEl.getValue());
 	}
 

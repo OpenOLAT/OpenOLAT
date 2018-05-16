@@ -40,6 +40,7 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	public static final String EDUBASE_OAUTH_KEY = "edubase.oauthKey";
 	public static final String EDUBASE_OAUTH_SECRET = "edubase.oauth";
 	public static final String EDUBASE_READER_URL = "edubase.readerUrl";
+	public static final String EDUBASE_READER_URL_UNIQUE = "edubase.readerUrl.unique";
 	public static final String EDUBASE_LTI_LAUNCH_URL = "edubase.ltiLaunchUrl";
 	public static final String EDUBASE_INFOVER_URL = "edubase.infoverUrl";
 
@@ -49,6 +50,8 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	private String oauthSecret;
 	@Value("${edubase.readerUrl}")
 	private String readerUrl;
+	@Value("${edubase.readerUrl.unique:true}")
+	private boolean readerUrlUnique;
 	@Value("${edubase.ltiLaunchUrl}")
 	private String ltiLaunchUrl;
 	@Value("${edubase.infoverUrl}")
@@ -84,6 +87,11 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 		String readerUrlObj = getStringPropertyValue(EDUBASE_READER_URL, true);
 		if (StringHelper.containsNonWhitespace(readerUrlObj)) {
 			readerUrl = readerUrlObj;
+		}
+		
+		String readerUrlUniqueObj = getStringPropertyValue(EDUBASE_READER_URL_UNIQUE, true);
+		if(StringHelper.containsNonWhitespace(readerUrlUniqueObj)) {
+			readerUrlUnique = "true".equals(readerUrlUniqueObj);
 		}
 
 		String ltiLaunchUrlObj = getStringPropertyValue(EDUBASE_LTI_LAUNCH_URL, true);
@@ -127,6 +135,14 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setReaderUrl(String readerUrl) {
 		this.readerUrl = readerUrl;
 		setStringProperty(EDUBASE_READER_URL, readerUrl, true);
+	}
+
+	public boolean isReaderUrlUnique() {
+		return readerUrlUnique;
+	}
+
+	public void setReaderUrlUnique(boolean readerUrlUnique) {
+		this.readerUrlUnique = readerUrlUnique;
 	}
 
 	public String getLtiLaunchUrl() {

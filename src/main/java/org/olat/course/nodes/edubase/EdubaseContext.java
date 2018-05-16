@@ -30,7 +30,6 @@ import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.modules.edubase.EdubaseManager;
-import org.olat.modules.edubase.EdubaseModule;
 
 /**
  *
@@ -104,9 +103,10 @@ public class EdubaseContext implements LTIContext {
 	public String getCustomProperties() {
 		Map<String, String> customProps = new HashMap<>();
 
-		String readerUrl =  CoreSpringFactory.getImpl(EdubaseModule.class).getReaderUrl();
-		if (StringHelper.containsNonWhitespace(readerUrl)) {
-			customProps.put(CUSTOM_APPLICATION, readerUrl);
+		Identity identity = identityEnvironment.getIdentity();
+		String applicationUrl =  CoreSpringFactory.getImpl(EdubaseManager.class).getApplicationUrl(identity);
+		if (StringHelper.containsNonWhitespace(applicationUrl)) {
+			customProps.put(CUSTOM_APPLICATION, applicationUrl);
 		}
 		if (pageTo != null) {
 			customProps.put(CUSTOM_END_PAGE, Integer.toString(pageTo));
