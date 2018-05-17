@@ -26,7 +26,20 @@
 
 package org.olat.core.logging.activity;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
 
 /**
  * Hibernate class representing a <i>log line</i> - 
@@ -35,36 +48,76 @@ import org.olat.core.commons.persistence.PersistentObject;
  * Initial Date:  20.10.2009 <br>
  * @author Stefan
  */
-public class LoggingObject extends PersistentObject {
+@Entity(name="loggingobject")
+@Table(name="o_loggingtable")
+public class LoggingObject implements CreateInfo, Persistable {
 	private static final long serialVersionUID = -7960024949707705523L;
 
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="log_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
 	// technical fields
+	@Column(name="sourceclass", nullable=true, insertable=true, updatable=true)
 	private String sourceClass;
 	
 	// session and user fields
+	@Column(name="sessionid", nullable=true, insertable=true, updatable=true)
 	private String sessionId;
+	@Column(name="user_id", nullable=true, insertable=true, updatable=true)
 	private long userId;
 	
 	// action fields
+	@Column(name="actioncrudtype", nullable=true, insertable=true, updatable=true)
 	private String actionCrudType;
+	@Column(name="actionverb", nullable=true, insertable=true, updatable=true)
 	private String actionVerb;
+	@Column(name="actionobject", nullable=true, insertable=true, updatable=true)
 	private String actionObject;
+	@Column(name="resourceadminaction", nullable=true, insertable=true, updatable=true)
 	private Boolean resourceAdminAction;
+	@Column(name="simpleduration", nullable=true, insertable=true, updatable=true)
 	private long simpleDuration;
 	
 	// scope fields
+	@Column(name="businesspath", nullable=true, insertable=true, updatable=true)
 	private String businessPath;
+	@Column(name="greatgrandparentrestype", nullable=true, insertable=true, updatable=true)
 	private String greatGrandParentResType;
+	@Column(name="greatgrandparentresid", nullable=true, insertable=true, updatable=true)
 	private String greatGrandParentResId;
+	@Column(name="greatgrandparentresname", nullable=true, insertable=true, updatable=true)
 	private String greatGrandParentResName;
+	@Column(name="grandparentrestype", nullable=true, insertable=true, updatable=true)
 	private String grandParentResType;
+	@Column(name="grandparentresid", nullable=true, insertable=true, updatable=true)
 	private String grandParentResId;
+	@Column(name="grandparentresname", nullable=true, insertable=true, updatable=true)
 	private String grandParentResName;
+	@Column(name="parentrestype", nullable=true, insertable=true, updatable=true)
 	private String parentResType;
+	@Column(name="parentresid", nullable=true, insertable=true, updatable=true)
 	private String parentResId;
+	@Column(name="parentresname", nullable=true, insertable=true, updatable=true)
 	private String parentResName;
+	@Column(name="targetrestype", nullable=true, insertable=true, updatable=true)
 	private String targetResType;
+	@Column(name="targetresid", nullable=true, insertable=true, updatable=true)
 	private String targetResId;
+	@Column(name="targetresname", nullable=true, insertable=true, updatable=true)
 	private String targetResName;
 	
 	public LoggingObject(){
@@ -181,35 +234,53 @@ public class LoggingObject extends PersistentObject {
 // Following are generated setters and getters
 //
 
-	public final String getSourceClass() {
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public String getSourceClass() {
 		return sourceClass;
 	}
 
-	public final void setSourceClass(String sourceClass) {
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public void setSourceClass(String sourceClass) {
 		this.sourceClass = sourceClass;
 	}
 
-	public final String getSessionId() {
+	public String getSessionId() {
 		return sessionId;
 	}
 
-	public final void setSessionId(String sessionId) {
+	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
 	}
 
-	public final long getUserId() {
+	public long getUserId() {
 		return userId;
 	}
 
-	public final void setUserId(long userId) {
+	public void setUserId(long userId) {
 		this.userId = userId;
 	}
 
-	public final String getActionCrudType() {
+	public String getActionCrudType() {
 		return actionCrudType;
 	}
 	
-	public final String getActionCrudTypeVerbose() {
+	public String getActionCrudTypeVerbose() {
 		if ("c".equals(actionCrudType)) {
 			return "create";
 		} else if ("r".equals(actionCrudType)) {
@@ -226,146 +297,168 @@ public class LoggingObject extends PersistentObject {
 		}
 	}
 
-	public final void setActionCrudType(String actionCrudType) {
+	public void setActionCrudType(String actionCrudType) {
 		if (actionCrudType.length()>1) {
 			throw new IllegalArgumentException("actionCrudType must be of length 1");
 		}
 		this.actionCrudType = actionCrudType;
 	}
 
-	public final String getActionVerb() {
+	public String getActionVerb() {
 		return actionVerb;
 	}
 
-	public final void setActionVerb(String actionverb) {
+	public void setActionVerb(String actionverb) {
 		this.actionVerb = actionverb;
 	}
 
-	public final String getActionObject() {
+	public String getActionObject() {
 		return actionObject;
 	}
 
-	public final void setActionObject(String actionobject) {
+	public void setActionObject(String actionobject) {
 		this.actionObject = actionobject;
 	}
 
-	public final Boolean getResourceAdminAction() {
+	public Boolean getResourceAdminAction() {
 		return resourceAdminAction;
 	}
 
-	public final void setResourceAdminAction(Boolean resourceAdminAction) {
+	public void setResourceAdminAction(Boolean resourceAdminAction) {
 		this.resourceAdminAction = resourceAdminAction;
 	}
 
-	public final long getSimpleDuration() {
+	public long getSimpleDuration() {
 		return simpleDuration;
 	}
 
-	public final void setSimpleDuration(long duration) {
+	public void setSimpleDuration(long duration) {
 		this.simpleDuration = duration;
 	}
 
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final String getGreatGrandParentResType() {
+	public String getGreatGrandParentResType() {
 		return greatGrandParentResType;
 	}
 
-	public final void setGreatGrandParentResType(String greatGrandParentResType) {
+	public void setGreatGrandParentResType(String greatGrandParentResType) {
 		this.greatGrandParentResType = greatGrandParentResType;
 	}
 
-	public final String getGreatGrandParentResId() {
+	public String getGreatGrandParentResId() {
 		return greatGrandParentResId;
 	}
 
-	public final void setGreatGrandParentResId(String greatGrandParentResId) {
+	public void setGreatGrandParentResId(String greatGrandParentResId) {
 		this.greatGrandParentResId = greatGrandParentResId;
 	}
 
-	public final String getGreatGrandParentResName() {
+	public String getGreatGrandParentResName() {
 		return greatGrandParentResName;
 	}
 
-	public final void setGreatGrandParentResName(String greatGrandParentResName) {
+	public void setGreatGrandParentResName(String greatGrandParentResName) {
 		this.greatGrandParentResName = greatGrandParentResName;
 	}
 
-	public final String getGrandParentResType() {
+	public String getGrandParentResType() {
 		return grandParentResType;
 	}
 
-	public final void setGrandParentResType(String grandParentResType) {
+	public void setGrandParentResType(String grandParentResType) {
 		this.grandParentResType = grandParentResType;
 	}
 
-	public final String getGrandParentResId() {
+	public String getGrandParentResId() {
 		return grandParentResId;
 	}
 
-	public final void setGrandParentResId(String grandParentResId) {
+	public void setGrandParentResId(String grandParentResId) {
 		this.grandParentResId = grandParentResId;
 	}
 
-	public final String getGrandParentResName() {
+	public String getGrandParentResName() {
 		return grandParentResName;
 	}
 
-	public final void setGrandParentResName(String grandParentResName) {
+	public void setGrandParentResName(String grandParentResName) {
 		this.grandParentResName = grandParentResName;
 	}
 
-	public final String getParentResType() {
+	public String getParentResType() {
 		return parentResType;
 	}
 
-	public final void setParentResType(String parentResType) {
+	public void setParentResType(String parentResType) {
 		this.parentResType = parentResType;
 	}
 
-	public final String getParentResId() {
+	public String getParentResId() {
 		return parentResId;
 	}
 
-	public final void setParentResId(String parentResId) {
+	public void setParentResId(String parentResId) {
 		this.parentResId = parentResId;
 	}
 
-	public final String getParentResName() {
+	public String getParentResName() {
 		return parentResName;
 	}
 
-	public final void setParentResName(String parentResName) {
+	public void setParentResName(String parentResName) {
 		this.parentResName = parentResName;
 	}
 
-	public final String getTargetResType() {
+	public String getTargetResType() {
 		return targetResType;
 	}
 
-	public final void setTargetResType(String targetResType) {
+	public void setTargetResType(String targetResType) {
 		this.targetResType = targetResType;
 	}
 
-	public final String getTargetResId() {
+	public String getTargetResId() {
 		return targetResId;
 	}
 
-	public final void setTargetResId(String targetResId) {
+	public void setTargetResId(String targetResId) {
 		this.targetResId = targetResId;
 	}
 
-	public final String getTargetResName() {
+	public String getTargetResName() {
 		return targetResName;
 	}
 
-	public final void setTargetResName(String targetResName) {
+	public void setTargetResName(String targetResName) {
 		this.targetResName = targetResName;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -9265 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof LoggingObject) {
+			LoggingObject logObject = (LoggingObject)obj;
+			return getKey() != null && getKey().equals(logObject.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

@@ -54,7 +54,7 @@ import org.olat.course.statistic.AsyncExportManager;
 import org.olat.home.HomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: Archives the user chosen courselogfiles
@@ -67,11 +67,16 @@ public class CourseLogsArchiveController extends BasicController {
 	private Panel myPanel;
 	private VelocityContainer myContent;
 	
-	private LogFileChooserForm logFileChooserForm;
 	private Link showFileButton;
 	private OLATResourceable ores;
 	
 	private CloseableModalController cmc;
+	private LogFileChooserForm logFileChooserForm;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private AsyncExportManager asyncExportManager;
 	
 	/**
 	 * Constructor for the course logs archive controller
@@ -90,15 +95,15 @@ public class CourseLogsArchiveController extends BasicController {
 		Identity identity = ureq.getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
 		
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
 		boolean isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re);
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
+		boolean isOresOwner = repositoryManager.isOwnerOfRepositoryEntry(identity, re);
+		boolean isOresInstitutionalManager = repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, re);
 		boolean aLogV = isOresOwner || isOresInstitutionalManager;
 		boolean uLogV = isOLATAdmin;
 		boolean sLogV = isOresOwner || isOresInstitutionalManager;
 		
-		if (AsyncExportManager.getInstance().asyncArchiveCourseLogOngoingFor(ureq.getIdentity())) {
+		if (asyncExportManager.asyncArchiveCourseLogOngoingFor(ureq.getIdentity())) {
 			// then show the ongoing feedback
 			showExportOngoing(false);
 		} else if (isOLATAdmin || aLogV || uLogV || sLogV){
@@ -114,102 +119,88 @@ public class CourseLogsArchiveController extends BasicController {
 			if (exportDir!=null && exportDir.exists() && exportDir.isDirectory()) {
 				exportDirExists = true;
 			}
-			myContent.contextPut("hascourselogarchive", new Boolean(exportDirExists));
+			myContent.contextPut("hascourselogarchive", Boolean.valueOf(exportDirExists));
 			myPanel.setContent(myContent);
 		} else {
-		    myContent.contextPut("hasLogArchiveAccess", new Boolean(false));
+		    myContent.contextPut("hasLogArchiveAccess", Boolean.valueOf(false));
 			myPanel.setContent(myContent);
 		}
 
 		putInitialPanel(myPanel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showFileButton){
-    	ICourse course = CourseFactory.loadCourse(ores);
-    	String personalFolderDir = CourseFactory.getPersonalDirectory(ureq.getIdentity()).getPath();
-    	String targetDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle()).getPath();
-    	
-    	String relPath = "";
-    	
-    	if (targetDir.startsWith(personalFolderDir)) {
-    		// that should always be the case
-    		
-    		relPath = targetDir.substring(personalFolderDir.length()).replace("\\", "/");
-    		targetDir = targetDir.substring(0, personalFolderDir.length());
-    	}
-    	
-    		VFSContainer targetFolder = new LocalFolderImpl(new File(targetDir));
-			FolderRunController bcrun = new FolderRunController(targetFolder, true, ureq, getWindowControl());
-			Component folderComponent = bcrun.getInitialComponent();
-			if (relPath.length()!=0) {
-				if (!relPath.endsWith("/")) {
-					relPath = relPath + "/";
-				}
-				bcrun.activatePath(ureq, relPath);
-			}
-			
-			String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), translate("close"), folderComponent, true, personalFolder
-			);
-			listenTo(cmc);
-			
-			cmc.activate();
+			doShowFiles(ureq);
 		}
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == logFileChooserForm) {
-			if (event == Event.DONE_EVENT) {	
-				final boolean logAdminChecked = logFileChooserForm.logAdminChecked();
-		    final boolean logUserChecked = logFileChooserForm.logUserChecked();
-		    final boolean logStatisticChecked = logFileChooserForm.logStatChecked();
-		    
-	    	final Date begin = logFileChooserForm.getBeginDate();
-	    	final Date end = logFileChooserForm.getEndDate();
-	    	
-	    	if (end != null) {
-	    		//shift time from beginning to end of day
-	    		end.setTime(end.getTime() + 24 * 60 * 60 * 1000);
-	    	}
-	    	
-		    UserManager um = UserManager.getInstance();
-		    final String charset = um.getUserCharset(ureq.getIdentity());
-		    
-		    ICourse course = CourseFactory.loadCourse(ores);
-		    final String courseTitle = course.getCourseTitle();
-				final String targetDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), courseTitle).getPath();
-		    
-		    final Long resId = ores.getResourceableId();
-				final Locale theLocale = ureq.getLocale();
-				final String email = ureq.getIdentity().getUser().getProperty(UserConstants.EMAIL, ureq.getLocale());
-				
-				
-				AsyncExportManager.getInstance().asyncArchiveCourseLogFiles(ureq.getIdentity(), new Runnable() {
-
-					@Override
-					public void run() {
-						showExportFinished();
-					}
-					
-				},
-				resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, charset, theLocale, email);
-
-			  showExportOngoing(true);
-			} else if (event == Event.DONE_EVENT) {
-				myPanel.setContent(myContent);
+			if (event == Event.DONE_EVENT) {
+				doStartLog();
+				showExportOngoing(true);
 			}
 		}
 	}
 	
-	private void showExportOngoing(final boolean thisCourse) {
+	private void doStartLog() {
+		final boolean logAdminChecked = logFileChooserForm.logAdminChecked();
+	    final boolean logUserChecked = logFileChooserForm.logUserChecked();
+	    final boolean logStatisticChecked = logFileChooserForm.logStatChecked();
+	    final Date begin = logFileChooserForm.getBeginDate();
+		final Date end = logFileChooserForm.getEndDate();
+    	
+		if (end != null) {
+			//shift time from beginning to end of day
+			end.setTime(end.getTime() + 24 * 60 * 60 * 1000);
+		}
+	    
+		ICourse course = CourseFactory.loadCourse(ores);
+	    final String courseTitle = course.getCourseTitle();
+	    final String targetDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseTitle).getPath();
+	    
+	    final Long resId = ores.getResourceableId();
+	    final Locale theLocale = getLocale();
+	    final String email = getIdentity().getUser().getProperty(UserConstants.EMAIL, getLocale());
+
+	    asyncExportManager.asyncArchiveCourseLogFiles(getIdentity(), this::showExportFinished,
+	    		resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, theLocale, email);
+	}
+	
+	private void doShowFiles(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(ores);
+		String personalFolderDir = CourseFactory.getPersonalDirectory(getIdentity()).getPath();
+		String targetDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), course.getCourseTitle()).getPath();
+	
+		String relPath = "";
+		if (targetDir.startsWith(personalFolderDir)) {
+			// that should always be the case
+			relPath = targetDir.substring(personalFolderDir.length()).replace("\\", "/");
+			targetDir = targetDir.substring(0, personalFolderDir.length());
+		}
+	
+		VFSContainer targetFolder = new LocalFolderImpl(new File(targetDir));
+		FolderRunController bcrun = new FolderRunController(targetFolder, true, ureq, getWindowControl());
+		Component folderComponent = bcrun.getInitialComponent();
+		if (relPath.length()!=0) {
+			if (!relPath.endsWith("/")) {
+				relPath = relPath + "/";
+			}
+			bcrun.activatePath(ureq, relPath);
+		}
+			
+		String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
+			
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderComponent, true, personalFolder);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void showExportOngoing(boolean thisCourse) {
 		VelocityContainer vcOngoing = createVelocityContainer("courselogs_ongoing");
 		if (thisCourse) {
 			vcOngoing.contextPut("body", translate("course.logs.ongoing"));			
@@ -218,14 +209,11 @@ public class CourseLogsArchiveController extends BasicController {
 			vcOngoing.contextPut("body", translate("course.logs.busy"));			
 		}
 		myPanel.setContent(vcOngoing);
-
-		// initialize polling 
-		//myPanel.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), 3000));
 	}
 
 	protected void showExportFinished() {
 		ICourse course = CourseFactory.loadCourse(ores);
-	  VelocityContainer vcFeedback = createVelocityContainer("courselogs_feedback");
+		VelocityContainer vcFeedback = createVelocityContainer("courselogs_feedback");
 		showFileButton = LinkFactory.createButton("showfile", vcFeedback, this);
 		vcFeedback.contextPut("body", translate("course.logs.feedback", course.getCourseTitle()));
 		myPanel.setContent(vcFeedback);
@@ -237,11 +225,9 @@ public class CourseLogsArchiveController extends BasicController {
 
 		showInfo("course.logs.finished", course.getCourseTitle());
 	}
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
+	@Override
 	protected void doDispose() {
 		//has nothing to dispose so far
 	}
-
 }

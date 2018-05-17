@@ -5,61 +5,6 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- 
-	.........................................................
-	Configuration of ExportManager - required for any version
-	.........................................................
-	
-	Cluster-Node:
-		An ExportManager must be configured on every host in a cluster,
-		plus an AsyncExportManager
-	 -->
-	 
-	<bean id="logExportManager"
-		class="org.olat.course.statistic.ExportManager">
-	
-		<property name="courseLogExporter">
-			<ref bean="courseLogExporter"/>
-		</property>
-	</bean>
-	
-	<bean id="asyncLogExportManager"
-		class="org.olat.course.statistic.AsyncExportManager">
-		<property name="taskExecutorManager" ref="taskExecutorManager"/>
-		<property name="concurrentExportsPerNode" value="2"/>
-	</bean>
-
-
-	<!-- 
-	........................................................................
-	Sample remaining configuration for SimpleLogExporter
-	........................................................................
-	 -->
-	<bean id="courseLogExporter" class="org.olat.course.statistic.export.SimpleLogExporter">
-		<property name="dbInstance" ref="database"/>
-		<property name="logLineConverter" ref="logLineConverter"/>
-	</bean>
-
-	<bean id="logLineConverter"
-		class="org.olat.course.statistic.export.LogLineConverter">
-		<property name="orderedExportedProperties">
-			<list>
-				<value>creationDate</value>
-				<value>userName</value>
-				<value>actionCrudType</value>
-				<value>actionVerb</value>
-				<value>actionObject</value>
-				<value>parentResName</value>
-				<value>targetResName</value>
-			</list>
-		</property>
-		<property name="anonymizedProperties">
-			<list>
-				<value>userName</value>
-			</list>		
-		</property>
-	</bean>
-
 	<!--  STATISTICS BEANS -->
 	<bean id="statisticsJdbcTemplate"
 		class="org.springframework.jdbc.core.JdbcTemplate">

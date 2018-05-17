@@ -31,25 +31,24 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.statistic.export.ICourseLogExporter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -59,27 +58,25 @@ import org.olat.course.statistic.export.ICourseLogExporter;
  * Initial Date:  19.11.2009 <br>
  * @author bja
  */
-public class ExportManager extends BasicManager {
+@Service
+public class ExportManager {
 	
-	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(ExportManager.class);
+	private static final OLog log = Tracing.createLoggerFor(ExportManager.class);
 
-	/** ExportManager is a singleton, configured by spring **/
-	private static ExportManager INSTANCE;
 
 	/**
 	 * filename used to store courseauthor's activities (personalized)
 	 */
-	private static final String FILENAME_ADMIN_LOG = "course_admin_log.csv";
+	private static final String FILENAME_ADMIN_LOG = "course_admin_log.xlsx";
 	/**
 	 * filename used to store all user's activities (personalized) in the course
 	 * only visible for OLAT-admins
 	 */
-	private static final String FILENAME_USER_LOG = "course_user_log.csv";
+	private static final String FILENAME_USER_LOG = "course_user_log.xlsx";
 	/** 
 	 * filename used to store all user's activities (anonymized) in the course
 	 */
-	private static final String FILENAME_STATISTIC_LOG = "course_statistic_log.csv";
+	private static final String FILENAME_STATISTIC_LOG = "course_statistic_log.xlsx";
 	/**
 	 * zip filename substring (archive log files)
 	 */
@@ -89,28 +86,8 @@ public class ExportManager extends BasicManager {
 	 */
 	public static final String COURSE_STATISTIC = "CourseStatistic";
 	
-	/** injected via spring **/
+	@Autowired
 	private ICourseLogExporter courseLogExporter;
-	
-	/** created via spring **/
-	private ExportManager() {
-		INSTANCE = this;
-	}
-	
-	/** injected via spring **/
-	public void setCourseLogExporter(ICourseLogExporter courseLogExporter) {
-		this.courseLogExporter = courseLogExporter;
-	}
-
-	/**
-	 * @return Singleton.
-	 */
-	public static final ExportManager getInstance() {
-		if (INSTANCE==null) {
-			throw new IllegalStateException("ExportManager bean not created via spring. Configuration error!");
-		}
-		return INSTANCE;
-	}
 	
 	/**
 	 * Archives the course log files
@@ -125,26 +102,29 @@ public class ExportManager extends BasicManager {
 	 * @param locale
 	 * @param email
 	 */
-	public void archiveCourseLogFiles(Long oresID, String exportDir, Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog, String charset, Locale locale, String email){
+	public void archiveCourseLogFiles(Long oresID, String exportDir, Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog,
+			Locale locale, String email, boolean isAdministrativeUser){
 		
 		String zipName = ExportUtil.createFileNameWithTimeStamp(ExportManager.COURSE_LOG_FILES, "zip");
 		Date date = new Date();
 		String tmpDirName = oresID + "-" + date.getTime();
-		final VFSContainer tmpDirVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), tmpDirName));
-		final File tmpDir = new File(WebappHelper.getTmpDir(), tmpDirName);
+		File tmpDir = new File(WebappHelper.getTmpDir(), tmpDirName);
+		if(!tmpDir.exists()) {
+			tmpDir.mkdirs();
+		}
 		
-		List<VFSItem> logFiles = new ArrayList<VFSItem>();
+		List<File> logFiles = new ArrayList<>();
 		if (adminLog) {
-			logFiles.add(createLogFile(oresID, begin, end, charset, tmpDirVFSContainer, tmpDir, FILENAME_ADMIN_LOG, true, false));
+			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_ADMIN_LOG, true, false, isAdministrativeUser));
 		}
 		if (userLog) {
-			logFiles.add(createLogFile(oresID, begin, end, charset, tmpDirVFSContainer, tmpDir, FILENAME_USER_LOG, false, false));
+			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_USER_LOG, false, false, isAdministrativeUser));
 		}
 		if (statisticLog) {
-			logFiles.add(createLogFile(oresID, begin, end, charset, tmpDirVFSContainer, tmpDir, FILENAME_STATISTIC_LOG, false, true));
+			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_STATISTIC_LOG, false, true, isAdministrativeUser));
 		}
 		
-		saveFile(exportDir, zipName, tmpDirVFSContainer, logFiles, email, "email.archive", locale);
+		saveFile(exportDir, zipName, tmpDir, logFiles, email, "email.archive", locale);
 	}
 	
 	/**
@@ -167,31 +147,24 @@ public class ExportManager extends BasicManager {
 	 * @param anonymize
 	 * @return
 	 */
-	private VFSItem createLogFile(Long oresID, Date begin, Date end, String charset, VFSContainer vfsContainer, File dir, String filename, boolean resourceAdminAction, boolean anonymize) {
+	private File createLogFile(Long oresID, Date begin, Date end, File dir, String filename,
+			boolean resourceAdminAction, boolean anonymize, boolean isAdministrativeUser) {
 		
 		File outFile = new File(dir, filename);
 		// trigger the course log exporter - it will store the file to outFile
-		log_.info("createLogFile: start exporting course log file "+outFile.getAbsolutePath());
-		courseLogExporter.exportCourseLog(outFile, charset, oresID, begin, end, resourceAdminAction, anonymize);
-		log_.info("createLogFile: finished exporting course log file "+outFile.getAbsolutePath());
-		VFSItem logFile = vfsContainer.resolve(filename);
-		if (logFile==null) {
-			log_.warn("createLogFile: could not resolve "+filename);
-		}
-		return logFile;
+		log.info("createLogFile: start exporting course log file "+outFile.getAbsolutePath());
+		courseLogExporter.exportCourseLog(outFile, oresID, begin, end, resourceAdminAction, anonymize, isAdministrativeUser);
+		log.info("createLogFile: finished exporting course log file "+outFile.getAbsolutePath());
+		return outFile;
 	}
 	
-	private void saveFile(String targetDir, String fileName, VFSContainer tmpDir, List<VFSItem> files, String email, String emailI18nSubkey, Locale locale) {
-		File file = new File(targetDir, fileName);
-    	VFSLeaf exportFile = new LocalFileImpl(file);
-    	if (!ZipUtil.zip(files, exportFile, true)) {
-			// cleanup zip file
-			exportFile.delete();				
-		} else {
-			// success
+	private void saveFile(String targetDir, String zipName, File tmpDir, List<File> files, String email, String emailI18nSubkey, Locale locale) {
+		File zipFile = new File(targetDir, zipName);
+		Set<String> filenames = files.stream().map(File::getName).collect(Collectors.toSet());
+		if (ZipUtil.zip(filenames, tmpDir, zipFile)) {
 			sendEMail(email, locale, emailI18nSubkey);
 		}
-		removeTemporaryFolder(tmpDir);
+		FileUtils.deleteDirsAndFiles(tmpDir, true, true);
 	}
 	
 	private void sendEMail(String email, Locale locale, String emailI18nSubkey) {
@@ -211,38 +184,13 @@ public class ExportManager extends BasicManager {
 
 			CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
 		} catch (Exception e) {
-			log_.error("Error sending information email to user that file was saved successfully.", e);
+			log.error("Error sending information email to user that file was saved successfully.", e);
 		}
 	}
-
-/*	private VFSItem createCourseStatisticFile(Long resourceableId, VFSContainer tmpDir, Date begin, Date end, List<ExtendedCondition> conditions, String groupByKey, boolean hasANDConnection, String charset, Locale locale) {
-		VFSLeaf statisticFile = tmpDir.createChildLeaf(FILENAME_COURSE_STATISTIC);
-		if(statisticFile == null) {
-			statisticFile = (VFSLeaf) tmpDir.resolve(FILENAME_COURSE_STATISTIC);
-		}
-		// Translator
-		Translator translator = new PackageTranslator(this.getClass().getPackage().getName(), locale);
-		
-		IStatistic simpleCourseStatistic = new SimpleCourseStatistic(begin, end, conditions, groupByKey, hasANDConnection, translator, resourceableId);
-		FileUtils.save(statisticFile.getOutputStream(true), simpleCourseStatistic.getResult(), charset);
-		
-		return statisticFile;
-	}
-	
-	public void createCourseStatistic(Long resourceableId, String targetDir, Date begin, Date end, List<ExtendedCondition> conditions, String groupByKey, boolean hasANDConnection, String charset, Locale locale, String email) {
-		String zipName = ExportUtil.createFileNameWithTimeStamp(ExportManager.COURSE_STATISTIC, "zip");
-		Date date = new Date();
-		String tmpDirName = resourceableId + "-" + date.getTime();
-		VFSContainer tmpDir = new OlatRootFolderImpl(FolderConfig.getRelativeTmpDir() + File.separator + tmpDirName, null);
-		List<VFSItem> statisticFiles = new ArrayList<VFSItem>();
-		statisticFiles.add(createCourseStatisticFile(resourceableId, tmpDir, begin, end, conditions, groupByKey, hasANDConnection, charset, locale));
-    saveFile(targetDir, zipName, tmpDir, statisticFiles, email, "email.statistic", locale);
-	}	*/
 
 	public File getLatestCourseStatisticFile(String targetDir) {
 		File courseStatisticsDir = new File(targetDir);
 		File[] exportedCourseStatisticZipFiles = courseStatisticsDir.listFiles(new FilenameFilter() {
-
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.startsWith(ExportManager.COURSE_STATISTIC) && name.endsWith(".zip");
@@ -268,13 +216,4 @@ public class ExportManager extends BasicManager {
 		
 		return newestFile;
 	}	
-
-	/**
-	 * remove temporary folder
-	 * @param tmpDir
-	 */
-	private void removeTemporaryFolder(VFSContainer tmpDir) {
-		tmpDir.delete();
-	}
-
 }

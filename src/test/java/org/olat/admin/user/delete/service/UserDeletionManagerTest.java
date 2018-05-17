@@ -29,7 +29,6 @@ package org.olat.admin.user.delete.service;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -39,6 +38,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -53,6 +53,8 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -71,6 +73,8 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private EPFrontendManager epFrontendManager;
 	@Autowired
@@ -103,11 +107,15 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(identity, "Forum");
 		dbInstance.commit();
 		Assert.assertNotNull(artefact);
-
 		//a group
 		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "Group", "Group", -1, -1, false, false, null);
 		Assert.assertNotNull(group);
+		dbInstance.commit();
+		//a course
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(identity);
 		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(username, course.getInitialAuthor());
+		Assert.assertTrue(repositoryService.hasRole(identity, false, GroupRoles.owner.name()));
 		
 		//delete the identity
 		userDeletionManager.deleteIdentity(identity);
@@ -131,6 +139,10 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		//check membership of group
 		boolean isMember = businessGroupService.isIdentityInBusinessGroup(deletedIdentity, group);
 		Assert.assertFalse(isMember);
+		RepositoryEntry reloadedCourse = repositoryService.loadByKey(course.getKey());
+		Assert.assertFalse(reloadedCourse.getInitialAuthor().equals(username));
+		boolean isOwner = repositoryService.hasRole(identity, false, GroupRoles.owner.name());
+		Assert.assertFalse(isOwner);
 		
 		User deletedUser = deletedIdentity.getUser();
 		String institutionalName = deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null);
@@ -142,35 +154,35 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testSetIdentityAsActiv() {
+	public void testSetIdentityAsActiv() throws InterruptedException {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity");
 		
 		final int maxLoop = 2000; // => 2000 x 11ms => 22sec => finished in 120sec
 		// Let two thread call UserDeletionManager.setIdentityAsActiv
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 
 		CountDownLatch latch = new CountDownLatch(4);
 		ActivThread[] threads = new ActivThread[4];
 		for(int i=0; i<threads.length;i++) {
-			threads[i] = new ActivThread(ident, maxLoop, latch, exceptionHolder);
+			threads[i] = new ActivThread(ident, maxLoop, latch);
 		}
 
 		for(int i=0; i<threads.length;i++) {
 			threads[i].start();
 		}
-		
-		try {
-			latch.await(120, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			exceptionHolder.add(e);
+
+		latch.await(120, TimeUnit.SECONDS);
+
+		List<Exception> exceptionsHolder = new ArrayList<>();
+		for(int i=0; i<threads.length;i++) {
+			exceptionsHolder.addAll(threads[i].exceptionHolder);
 		}
 		
 		// if not -> they are in deadlock and the db did not detect it
-		for (Exception exception : exceptionHolder) {
+		for (Exception exception : exceptionsHolder) {
 			System.err.println("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
-		assertTrue("Exceptions #" + exceptionHolder.size(), exceptionHolder.size() == 0);				
+		assertTrue("Exceptions #" + exceptionsHolder.size(), exceptionsHolder.isEmpty());				
 	}
 	
 	private static class ActivThread extends Thread {
@@ -178,15 +190,15 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		private final int maxLoop;
 		private final Identity identity;
 		private final CountDownLatch countDown;
-		private final List<Exception> exceptionHolder;
+		private final List<Exception> exceptionHolder = new ArrayList<>();
 		
-		public ActivThread(Identity identity, int maxLoop, CountDownLatch countDown, List<Exception> exceptionHolder) {
+		public ActivThread(Identity identity, int maxLoop, CountDownLatch countDown) {
 			this.identity = identity;
 			this.maxLoop = maxLoop;
 			this.countDown = countDown;
-			this.exceptionHolder = exceptionHolder;
 		}
 		
+		@Override
 		public void run() {
 			try {
 				sleep(10);
