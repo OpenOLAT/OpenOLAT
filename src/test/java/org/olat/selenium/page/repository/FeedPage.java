@@ -178,10 +178,9 @@ public class FeedPage {
 	 * @return
 	 */
 	public FeedPage clickFirstMonthOfPager() {
-		By monthBy = By.cssSelector("div.o_year_navigation ul.o_month>li.o_month>a.o_month");
-		List<WebElement> monthLinks = browser.findElements(monthBy);
-		Assert.assertFalse(monthLinks.isEmpty());
-		monthLinks.get(0).click();
+		By monthBy = By.xpath("//div[contains(@class,'o_year_navigation')]//li[contains(@class,'o_month')][1]/a");
+		OOGraphene.waitElement(monthBy, browser);
+		browser.findElement(monthBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
