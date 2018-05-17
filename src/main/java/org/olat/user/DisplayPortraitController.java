@@ -41,7 +41,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -139,7 +138,6 @@ public class DisplayPortraitController extends BasicController implements Generi
 		this.isDeletedUser = portraitIdent.getStatus().equals(Identity.STATUS_DELETED);
 		myContent = createVelocityContainer("displayportrait");
 		myContent.contextPut("canLinkToHomePage", (canLinkToHomePage && !isDeletedUser) ? Boolean.TRUE : Boolean.FALSE);
-		if (portraitIdent == null) throw new AssertException("identity can not be null!");
 
 		this.useLarge = useLarge;
 		this.portraitIdent = portraitIdent;
