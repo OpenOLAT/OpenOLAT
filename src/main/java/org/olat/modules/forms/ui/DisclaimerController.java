@@ -20,20 +20,15 @@
 package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -51,11 +46,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DisclaimerController extends FormBasicController implements EvaluationFormResponseController {
 	
 	private static final String ACCEPTED_KEY = "disclaimer.accepted";
+	private static final String[] ACCEPTED_KEYS = { ACCEPTED_KEY };
 	private static final String ACCEPTED_DB_KEY = "accepted";
 	
-	private FormLink openDisclaimerLink;
-	private MultipleSelectionElement disclaimerEl;
-	private DialogBoxController disclaimerTextCtr;
+	private StaticTextElement textEl;
+	private MultipleSelectionElement agreementEl;
 	
 	private final Disclaimer disclaimer;
 	private EvaluationFormResponse response;
@@ -77,43 +72,31 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		disclaimerEl = uifactory.addCheckboxesVertical("disclaimer_" + CodeHelper.getRAMUniqueID(), null, formLayout,
-				new String[] { ACCEPTED_KEY }, new String[] { translate(ACCEPTED_KEY) }, null, null, 1);
+		long sufix = CodeHelper.getRAMUniqueID();
 
-		openDisclaimerLink = uifactory.addFormLink("disclaimer_" + CodeHelper.getRAMUniqueID(), "disclaimer.open", null,
-				formLayout, Link.LINK);
-		openDisclaimerLink.setElementCssClass("o_eva_disc_open");
+		textEl = uifactory.addStaticTextElement("agreement_" + sufix, null, disclaimer.getText(), formLayout);
+		textEl.setElementCssClass("o_disclaimer o_disclaimer_content");
+		boolean hasText = StringHelper.containsNonWhitespace(disclaimer.getText());
+		textEl.setVisible(hasText);
+		
+		agreementEl = uifactory.addCheckboxesVertical("disclaimer_" + sufix, null, formLayout,
+				ACCEPTED_KEYS, new String[] { disclaimer.getAgreement() }, null, null, 1);
 	}
 	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == openDisclaimerLink) {
-			doOpenDisclaimer(ureq);
-		}
-		super.formInnerEvent(ureq, source, event);
+	void update() {
+		textEl.setValue(disclaimer.getText());
+		boolean hasText = StringHelper.containsNonWhitespace(disclaimer.getText());
+		textEl.setVisible(hasText);
+		agreementEl.setKeysAndValues(ACCEPTED_KEYS, new String[] { disclaimer.getAgreement() });
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (disclaimerTextCtr == source) {
-			boolean ok = DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event);
-			disclaimerEl.select(ACCEPTED_KEY, ok);
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void doOpenDisclaimer(UserRequest ureq) {
-		String title = translate("disclaimer.text.title");
-		disclaimerTextCtr = activateOkCancelDialog(ureq, title, disclaimer.getText(), disclaimerTextCtr);
-	}
-	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		disclaimerEl.clearError();
-		if (!disclaimerEl.isAtLeastSelected(1)) {
-			disclaimerEl.setErrorKey("disclaimer.not.accepted", null);
+		agreementEl.clearError();
+		if (!agreementEl.isAtLeastSelected(1)) {
+			agreementEl.setErrorKey("disclaimer.not.accepted", null);
 			allOk = false;
 		}
 		
@@ -132,7 +115,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 
 	@Override
 	public void setReadOnly(boolean readOnly) {
-		disclaimerEl.setEnabled(!readOnly);
+		agreementEl.setEnabled(!readOnly);
 	}
 
 	@Override
@@ -144,12 +127,12 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	public void loadResponse(EvaluationFormSessionRef session) {
 		response = evaluationFormManager.loadResponse(disclaimer.getId(), session);
 		boolean accepted = response != null && ACCEPTED_DB_KEY.equals(response.getStringuifiedResponse());
-		disclaimerEl.select(ACCEPTED_KEY, accepted);
+		agreementEl.select(ACCEPTED_KEY, accepted);
 	}
 
 	@Override
 	public void saveResponse(EvaluationFormSession session) {
-		boolean accepted = disclaimerEl.isAtLeastSelected(1);
+		boolean accepted = agreementEl.isAtLeastSelected(1);
 		if (accepted && response == null) {
 			response = evaluationFormManager.createStringResponse(disclaimer.getId(), session, ACCEPTED_DB_KEY);
 		} else if (!accepted && response != null) {

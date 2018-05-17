@@ -23,10 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -48,7 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GeneralInformationsController extends FormBasicController implements EvaluationFormResponseController {
 
-	List<GeneralInformationWrapper> generalInformationWrappers = new ArrayList<>();
+	private List<GeneralInformationWrapper> generalInformationWrappers = new ArrayList<>();
+	private FormLink fillInButton;
 	
 	private final GeneralInformations generalInformations;
 	private List<EvaluationFormResponse> responses;
@@ -79,13 +84,19 @@ public class GeneralInformationsController extends FormBasicController implement
 		for (GeneralInformationWrapper wrapper: generalInformationWrappers) {
 			flc.remove(wrapper.getName());
 		}
+		if (fillInButton != null) {
+			flc.remove(fillInButton);
+		}
 		
 		generalInformationWrappers = new ArrayList<>();
 		for (GeneralInformation generalInformation: generalInformations.asOrderedList()) {
 			GeneralInformationWrapper wrapper = createWrapper(generalInformation);
 			generalInformationWrappers.add(wrapper);
 		}
-//		flc.contextPut("wrappers", wrappers);
+		
+		fillInButton = uifactory.addFormLink("gi_" + CodeHelper.getRAMUniqueID(), "general.informations.fill.in",
+				"general.informations.fill.in.label", flc, Link.BUTTON);
+		fillInButton.addActionListener(FormEvent.ONCLICK);
 	}
 
 	private GeneralInformationWrapper createWrapper(GeneralInformation generalInformation) {
@@ -104,10 +115,35 @@ public class GeneralInformationsController extends FormBasicController implement
 			if (response != null) {
 				return response.getStringuifiedResponse();
 			}
-		} else {
-			return getInitialValue(generalInformation);
 		}
 		return null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == fillInButton) {
+			doFillIn();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	private void doFillIn() {
+		for (GeneralInformationWrapper wrapper: generalInformationWrappers) {
+			GeneralInformation generalInformation = wrapper.getGeneralInformation();
+			String initialValue = getInitialValue(generalInformation);
+			TextElement informationEl = wrapper.getInformationEl();
+			informationEl.setValue(initialValue);
+		}
 	}
 
 	private String getInitialValue(GeneralInformation generalInformation) {
@@ -124,20 +160,11 @@ public class GeneralInformationsController extends FormBasicController implement
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void setReadOnly(boolean readOnly) {
 		for (GeneralInformationWrapper wrapper: generalInformationWrappers) {
 			wrapper.getInformationEl().setEnabled(!readOnly);
 		}
+		fillInButton.setEnabled(!readOnly);
 	}
 
 	@Override
@@ -150,9 +177,11 @@ public class GeneralInformationsController extends FormBasicController implement
 		List<EvaluationFormResponse> loadedResponses = new ArrayList<>();
 		for (GeneralInformationWrapper wrapper: generalInformationWrappers) {
 			EvaluationFormResponse response = evaluationFormManager.loadResponse(wrapper.getGeneralInformation().getId(), session);
-			loadedResponses.add(response);
-			String value = response.getStringuifiedResponse();
-			wrapper.getInformationEl().setValue(value);
+			if (response != null) {
+				loadedResponses.add(response);
+				String value = response.getStringuifiedResponse();
+				wrapper.getInformationEl().setValue(value);
+			}
 		}
 		responses = loadedResponses;
 	}

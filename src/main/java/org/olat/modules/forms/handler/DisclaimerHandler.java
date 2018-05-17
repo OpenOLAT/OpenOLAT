@@ -97,11 +97,13 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		Translator translator = Util.createPackageTranslator(DisclaimerEditorController.class, locale);
-		String defaultText = translator.translate("disclaimer.default.text");
+		String agreement = translator.translate("disclaimer.default.agreement");
+		String text = translator.translate("disclaimer.default.text");
 	
 		Disclaimer disclaimer = new Disclaimer();
 		disclaimer.setId(UUID.randomUUID().toString());
-		disclaimer.setText(defaultText);
+		disclaimer.setAgreement(agreement);
+		disclaimer.setText(text);
 		return disclaimer;
 	}
 

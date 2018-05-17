@@ -31,11 +31,20 @@ public class Disclaimer extends AbstractElement {
 	
 	public static final String TYPE = "formdisclaimer";
 	
+	private String agreement;
 	private String text;
 
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	public String getAgreement() {
+		return agreement;
+	}
+
+	public void setAgreement(String agreement) {
+		this.agreement = agreement;
 	}
 
 	public String getText() {
