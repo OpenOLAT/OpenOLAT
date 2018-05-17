@@ -26,13 +26,10 @@
 package org.olat.admin.user.delete.service;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,11 +37,8 @@ import java.util.Map;
 import javax.persistence.TemporalType;
 
 import org.olat.admin.user.delete.SelectionController;
-import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
@@ -53,10 +47,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -66,25 +58,24 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.TemporaryKey;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.user.UserDataDeletable;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 /**
- * Manager for user-deletion.
+ * Manager for user-deletion. <br />
+ * User deletion works by implementing the UserDataDeletable interface and
+ * setting an optional delete priority. Use a high priority (890 - 510) to
+ * delete things first. The default priority is 500. Use a low priority (110 -
+ * 490) to delete at the.
  *
  * @author Christian Guretzki
  */
 @Service("userDeletionManager")
 public class UserDeletionManager extends BasicManager {
 
-	public static final String DELETED_USER_DELIMITER = "_bkp_";
 	/** Default value for last-login duration in month. */
 	private static final int DEFAULT_LAST_LOGIN_DURATION = 24;
 	/** Default value for delete-email duration in days. */
@@ -97,23 +88,17 @@ public class UserDeletionManager extends BasicManager {
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	private static final String USER_ARCHIVE_DIR = "archive_deleted_users";
 	private static final String USER_DELETED_ACTION = "userdeleted";
-	private static boolean keepUserLoginAfterDeletion;
-	private static boolean keepUserEmailAfterDeletion;
 
 
 	// Flag used in user-delete to indicate that all deletable managers are initialized
 	@Autowired
 	private RepositoryDeletionModule deletionModule;
 	@Autowired
-	private RegistrationManager registrationManager;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
 	private UserSessionManager userSessionManager;
-	@Autowired
-	private AuthenticationHistoryDAO suthenticationHistoryDao;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -264,111 +249,67 @@ public class UserDeletionManager extends BasicManager {
 
 	/**
 	 * Delete all user-data in registered deleteable resources.
+	 * 
 	 * @param identity
-	 * @return true
+	 * @return true: delete was successfull; false: delete could not finish
 	 */
-	public void deleteIdentity(Identity identity) {
-		logInfo("Start deleteIdentity for identity=" + identity);
-		
-		//logout
+	public boolean deleteIdentity(Identity identity) {
+		logInfo("Start deleteIdentity for identity=" + identity);		
+		if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
+			logInfo("Aborted deletion of identity=" + identity + ", identity is flagged as PERMANENT");					
+			return false;
+		}
+		// Logout user and start with delete process
 		userSessionManager.signOffAndClearAll(identity);
-
-		String newName = getBackupStringWithDate(identity.getName());
-
-		logInfo("Start Deleting user=" + identity);
+		
+		// Delete data of modules that implement the user data deletable
+		String anonymisedIdentityName = identity.getKey() + "";
 		File archiveFilePath = getArchivFilePath(identity);
 		Map<String,UserDataDeletable> userDataDeletableResourcesMap = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
 		List<UserDataDeletable> userDataDeletableResources = new ArrayList<>(userDataDeletableResourcesMap.values());
+		// Start with high priorities (900: user manager), then continue with
+		// others. Default priority is 500. End with low priorities (100: base
+		// security)
 		Collections.sort(userDataDeletableResources, new UserDataDeletableComparator());
 		for (UserDataDeletable element : userDataDeletableResources) {
-			logInfo("UserDataDeletable-Loop element=" + element);
-			element.deleteUserData(identity, newName, archiveFilePath);
-		}
-
-		// Delete all authentications for certain identity
-		List<Authentication> authentications = securityManager.getAuthentications(identity);
-		for (Authentication auth:authentications) {
-			logInfo("deleteAuthentication auth=" + auth);
-			securityManager.deleteAuthentication(auth);
-			logDebug("Delete auth=" + auth + "  of identity="  + identity);
-		}
-		// delete the authentication history
-		suthenticationHistoryDao.deleteAuthenticationHistory(identity);
-
-		//remove identity from its security groups
-		List<SecurityGroup> securityGroups = securityManager.getSecurityGroupsForIdentity(identity);
-		for (SecurityGroup secGroup : securityGroups) {
-			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
-			logInfo("Removing user=" + identity + " from security group="  + secGroup.toString());
-		}
-		//remove identity from groups
-		groupDao.removeMemberships(identity);
-
-		String key = identity.getUser().getProperty("emchangeKey", null);
-		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
-		if (tempKey != null) {
-			registrationManager.deleteTemporaryKey(tempKey);
-		}
-
-
-		identity = securityManager.loadIdentityByKey(identity.getKey());
-		//keep login-name only -> change email
-
-		User persistedUser = identity.getUser();
-		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getAllUserPropertyHandlers();
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			String actualProperty = userPropertyHandler.getName();
-			if (userPropertyHandler.isDeletable()
-					&& !(keepUserEmailAfterDeletion && UserConstants.EMAIL.equals(actualProperty))) {
-				persistedUser.setProperty(actualProperty, null);
-			}
-
-			if((!keepUserEmailAfterDeletion && UserConstants.EMAIL.equals(actualProperty))) {
-				String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
-				String newEmail = "";
-				if (StringHelper.containsNonWhitespace(oldEmail)){
-					newEmail = getBackupStringWithDate(oldEmail);
-				}
-				logInfo("Update user-property user=" + persistedUser);
-				userPropertyHandler.setUserProperty(persistedUser, newEmail);
+			try {
+				logInfo("UserDataDeletable-Loop for identity::" + identity.getKey() + " and element::" + element.getClass().getSimpleName());
+				element.deleteUserData(identity, anonymisedIdentityName, archiveFilePath);				
+			} catch (Exception e) {
+				logError("Error while deleting identity::" + identity.getKey() + " data for and element::"
+						+ element.getClass().getSimpleName()
+						+ ". Aboring delete process, user partially deleted, but not yet marked as deleted", e);
+				dbInstance.rollbackAndCloseSession();
+				return false;
 			}
 		}
-		UserManager.getInstance().updateUserFromIdentity(identity);
 
-		logInfo("deleteUserProperties user=" + persistedUser);
+		// Done with all modules that keep user data, now finish delete process
 		dbInstance.commit();
-		identity = securityManager.loadIdentityByKey(identity.getKey());
-		//keep email only -> change login-name
-		if (!keepUserEmailAfterDeletion) {
-			identity = securityManager.saveIdentityName(identity, newName, null);
-		}
+		
+		// Remove identity from all remaining groups and remove roles
+		int count = groupDao.removeMemberships(identity);
+		logInfo("Delete " + count + " group memberships/roles for identity::" + identity.getKey());
 
-		//keep everything, change identity.status to deleted
-		logInfo("Change stater identity=" + identity);
-		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_DELETED);
-
+		// Cleanup lifecycle data
+		LifeCycleManager.createInstanceFor(identity).markTimestampFor(USER_DELETED_ACTION, null);
 		LifeCycleManager.createInstanceFor(identity).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
-		LifeCycleManager.createInstanceFor(identity).markTimestampFor(USER_DELETED_ACTION, createLifeCycleLogDataFor(identity));
 
-		logAudit("User-Deletion: Delete all userdata for identity=" + identity);
-	}
+		// Anonymise identity to conform with data privacy law. The username is removed
+		// by default and replaced with an anonymous database key. The identity
+		// object itself must remain in the database since there are referenced
+		// objects such as undeletable forum entries linked to it
+		identity = securityManager.saveIdentityName(identity, anonymisedIdentityName, null);
+		logInfo("Replaced username with database key for identity::" + identity.getKey());
 
-	public String getBackupStringWithDate(String original){
-		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-		String dateStamp = dateFormat.format(new Date());
-		return dateStamp + DELETED_USER_DELIMITER + original;
-	}
+		// Finally mark user as deleted and we are done
+		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_DELETED);
+		logInfo("Data of identity deleted and state of identity::" + identity.getKey() + " changed to 'deleted'");
 
-	private String createLifeCycleLogDataFor(Identity identity) {
-		StringBuilder buf = new StringBuilder();
-		buf.append("<identity>");
-		buf.append("<username>").append(identity.getName()).append("</username>");
-		buf.append("<lastname>").append(identity.getName()).append("</lastname>");
-		buf.append("<firstname>").append(identity.getName()).append("</firstname>");
-		buf.append("<email>").append(identity.getName()).append("</email>");
-		buf.append("</identity>");
-		return buf.toString();
-	}
+		dbInstance.commit();
+		logAudit("User-Deletion: Deleted identity::" + identity.getKey());
+		return true;
+	}	
 
 	/**
 	 * Re-activate an identity, lastLogin = now, reset deleteemaildate = null.
@@ -436,27 +377,7 @@ public class UserDeletionManager extends BasicManager {
 		}
 		return archiveIdentityRootDir;
 	}
-
-	/**
-	 * Setter method used by spring
-	 * @param keepUserLoginAfterDeletion The keepUserLoginAfterDeletion to set.
-	 */
-	public void setKeepUserLoginAfterDeletion(boolean keepUserLoginAfterDeletion) {
-		UserDeletionManager.keepUserLoginAfterDeletion = keepUserLoginAfterDeletion;
-	}
-
-	/**
-	 * Setter method used by spring
-	 * @param keepUserEmailAfterDeletion The keepUserEmailAfterDeletion to set.
-	 */
-	public void setKeepUserEmailAfterDeletion(boolean keepUserEmailAfterDeletion) {
-		UserDeletionManager.keepUserEmailAfterDeletion = keepUserEmailAfterDeletion;
-	}
-
-	public static boolean isKeepUserLoginAfterDeletion() {
-		return keepUserLoginAfterDeletion;
-	}
-
+	
 	public static class UserDataDeletableComparator implements Comparator<UserDataDeletable> {
 		@Override
 		public int compare(UserDataDeletable o1, UserDataDeletable o2) {

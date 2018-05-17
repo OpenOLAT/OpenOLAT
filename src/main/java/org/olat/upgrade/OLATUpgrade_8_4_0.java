@@ -236,13 +236,8 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 	private boolean processDeletedIdentityEmail(User deletedUser, String property) {
 		String email = deletedUser.getProperty(property, null);
 		if(StringHelper.containsNonWhitespace(email)) {
-			int indexHat = email.indexOf('@');
-			int indexMark = email.indexOf(UserDeletionManager.DELETED_USER_DELIMITER);
-			if(indexHat > 0 && (indexMark < 0 || indexMark > indexHat)) {
-				String newEmail = userDeletionManager.getBackupStringWithDate(email);
-				deletedUser.setProperty(property, newEmail);
-				return true;
-			}
+			deletedUser.setProperty(property, null);
+			return true;
 		}
 		return false;
 	}

@@ -51,7 +51,6 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	
 	private String name; 
 	private String group;
-	private boolean deletable = true; // default
 	private String databaseColumnName;
 
 	/**
@@ -131,14 +130,6 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	}
 
 	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isDeletable()
-	 */
-	@Override
-	public boolean isDeletable() {
-		return deletable;
-	}
-
-	/**
 	 * @return The non-i18-ified raw value from the database
 	 */
 	protected String getInternalValue(User user) {
@@ -190,14 +181,6 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	@Override
 	public void setGroup(String group) {
 		this.group = group;
-	}
-
-	/**
-	 * Spring setter
-	 * @param isDeletable
-	 */
-	public void setDeletable(boolean deletable) {
-		this.deletable = deletable;
 	}
 
 	/**

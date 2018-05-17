@@ -26,6 +26,7 @@
 
 package org.olat.basesecurity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,6 +77,7 @@ import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
 
@@ -88,7 +90,7 @@ import org.olat.user.UserManager;
  * 
  * @author Felix Jost, Florian Gnaegi
  */
-public class BaseSecurityManager implements BaseSecurity {
+public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(BaseSecurityManager.class);
 	
@@ -2166,5 +2168,34 @@ public class BaseSecurityManager implements BaseSecurity {
 			guestIdentity = dbInstance.getCurrentEntityManager().merge(guestIdentity);
 		}
 		return guestIdentity;
+	}	
+	
+	@Override
+	public int deleteUserDataPriority() {
+		// delete with low priority at the end of the deletion process
+		return 10;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		// 1) delete all authentication tokens
+		List<Authentication> authentications = getAuthentications(identity);
+		for (Authentication auth:authentications) {
+			deleteAuthentication(auth);
+			log.info("Delete authentication provider::" + auth.getProvider() + "  of identity="  + identity);
+		}
+		
+		// 2) Delete the authentication history
+		authenticationHistoryDao.deleteAuthenticationHistory(identity);		
+
+		// 3) Remove legacy security group memberships
+		List<SecurityGroup> securityGroups = getSecurityGroupsForIdentity(identity);
+		for (SecurityGroup secGroup : securityGroups) {
+			removeIdentityFromSecurityGroup(identity, secGroup);
+			log.info("Removing identity::" + identity.getKey() + " from security group::" + secGroup.getKey()
+					+ ", resourceableTypeName::" + secGroup.getResourceableTypeName() + ", resourceableId"
+					+ secGroup.getResourceableId());
+		}
+		// new security groups / memberships are deleted in UserDeletionManager
 	}
 }

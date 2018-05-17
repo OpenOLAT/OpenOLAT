@@ -204,17 +204,11 @@ public class ReadyToDeleteController extends BasicController {
 	
 	private void deleteIdentities(List<Identity> identities, List<String> errors) {
 		for (Identity id:identities) {
-			try {
-				UserDeletionManager.getInstance().deleteIdentity( id );
-			} catch (Exception e) {
+			boolean success = UserDeletionManager.getInstance().deleteIdentity( id );
+			if (success) {
+				DBFactory.getInstance().intermediateCommit();				
+			} else {
 				errors.add(id.getName());
-				logError("", e);
-			} finally {
-				try {
-					DBFactory.getInstance().intermediateCommit();
-				} catch (Exception e) {
-					logError("", e);
-				}
 			}
 		}
 	}

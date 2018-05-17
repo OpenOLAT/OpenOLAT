@@ -861,7 +861,8 @@ public class UserWebService {
 	 * Delete an user from the system
 	 * @response.representation.200.doc The user is removed from the group
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.404.doc The identity not found
+	 * @response.representation.500.doc Unknown problem while deleting, see olat.log
 	 * @param identityKey The user key identifier
 	 * @param request The HTTP request
 	 * @return <code>Response</code> object. The operation status (success or fail)
@@ -877,7 +878,11 @@ public class UserWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		UserDeletionManager.getInstance().deleteIdentity(identity);
-		return Response.ok().build();
+		boolean success = UserDeletionManager.getInstance().deleteIdentity(identity);
+		if (success) {
+			return Response.ok().build();			
+		} else {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }
