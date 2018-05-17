@@ -414,7 +414,7 @@ public class WikiManager {
 		if (wikiCache == null) {
 			wikiCache =  coordinator.getCoordinator().getCacher().getCache(WikiManager.class.getSimpleName(), "wiki");
 		}
-		return wikiCache.computeIfAbsent(wikiKey, (key) -> {
+		return wikiCache.computeIfAbsent(wikiKey, key -> {
 			long start = 0;
 			// wiki not in cache load form filesystem
 			if (log.isDebug()) {
@@ -426,7 +426,6 @@ public class WikiManager {
 			// wiki folder structure does not yet exists, but resource does. Create
 			// wiki in group context
 			if (folder == null) {
-				// createWikiforExistingResource(ores);
 				createFolders(ores);
 				folder = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
 			}
@@ -475,8 +474,8 @@ public class WikiManager {
 				menuPage.setCreationTime(System.currentTimeMillis());
 				menuPage.setContent("* [[Index]]\n* [[Index|Your link]]");
 				wiki.addPage(menuPage);
-				saveWikiPage(ores, indexPage, false, wiki);
-				saveWikiPage(ores, menuPage, false, wiki);
+				saveWikiPage(ores, indexPage, false, wiki, false);
+				saveWikiPage(ores, menuPage, false, wiki, false);
 			}
 			
 			// add pages internally used for displaying dynamic data, they are not persisted
@@ -508,7 +507,7 @@ public class WikiManager {
 	 * @param ores
 	 * @param page
 	 */
-	public void saveWikiPage(OLATResourceable ores, WikiPage page, boolean incrementVersion, Wiki wiki) {
+	public void saveWikiPage(OLATResourceable ores, WikiPage page, boolean incrementVersion, Wiki wiki, boolean cache) {
 		//cluster_OK by guido
 		VFSContainer versionsContainer = getWikiContainer(ores, VERSION_FOLDER_NAME);
 		VFSContainer wikiContentContainer = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
@@ -528,7 +527,6 @@ public class WikiManager {
 		// container
 		item = wikiContentContainer.resolve(page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX);
 		if (item != null && incrementVersion) {
-			// TODO renaming and coping does not work. Bug?? felix fragen
 			if (page.getVersion() > 0) {
 				versionsContainer.copyFrom(item);
 				VFSItem copiedItem = versionsContainer.resolve(page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX);
@@ -549,18 +547,15 @@ public class WikiManager {
 		// update modification time
 		if (!page.getContent().equals("")) page.setModificationTime(System.currentTimeMillis());
 		Properties p = getPageProperties(page);
-		try {
-			OutputStream os = leaf.getOutputStream(false);
+		try(OutputStream os = leaf.getOutputStream(false)) {
 			p.store(os, "wiki page meta properties");
-			os.close();
-			// if (incrementVersion) page.incrementVersion();
 		} catch (IOException e) {
 			throw new OLATRuntimeException(WikiManager.class, "failed to save wiki page properties for page with id: " + page.getPageId() + " and olatresource: " + ores.getResourceableId(), e);
 		}
 		page.setViewCount(0); //reset view count of the page
 		
 		//update cache to inform all nodes about the change
-		if (wikiCache!=null) {
+		if (cache && wikiCache != null) {
 			wikiCache.update(OresHelper.createStringRepresenting(ores), wiki);
 		}
 		

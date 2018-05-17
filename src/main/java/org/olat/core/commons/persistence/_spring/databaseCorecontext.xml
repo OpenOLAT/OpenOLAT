@@ -29,6 +29,7 @@
 		        <prop key="hibernate.connection.url">jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</prop>
 		        <prop key="hibernate.connection.username">${db.user}</prop>
 		        <prop key="hibernate.connection.password">${db.pass}</prop>
+		        <prop key="hibernate.dialect.storage_engine">innodb</prop>
 		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
 	        </props>            
 		</constructor-arg>
@@ -40,6 +41,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
+		        <prop key="hibernate.dialect.storage_engine">innodb</prop>
 		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
         	</props>            
 		</constructor-arg>
@@ -135,7 +137,7 @@
 			<props>
 				<prop key="hibernate.cache.use_query_cache">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
-				<prop key="hibernate.cache.region.factory_class">org.olat.core.commons.persistence.JpaInfinispanRegionFactory</prop>
+				<prop key="hibernate.cache.region.factory_class">org.infinispan.hibernate.cache.v53.InfinispanRegionFactory</prop>
 				<prop key="hibernate.cache.infinispan.cfg">infinispan-config.xml</prop>
 				<prop key="hibernate.cache.infinispan.statistics">true</prop>
 				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>

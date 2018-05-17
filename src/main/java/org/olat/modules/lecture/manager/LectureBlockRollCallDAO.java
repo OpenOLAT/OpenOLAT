@@ -423,13 +423,12 @@ public class LectureBlockRollCallDAO {
 		//take in account: firstAddmissionDate and null
 		
 		Date now = new Date();
-		
-		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+
+		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
+		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
-				.getResultList();
-		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
-		for(Object[] rawObject:rawObjects) {
+				.getResultStream().forEach(rawObject -> {
 			int pos = 1;//jump roll call key
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
@@ -478,7 +477,7 @@ public class LectureBlockRollCallDAO {
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
-		}
+		});
 
 		List<LectureBlockStatistics> statisticsList = new ArrayList<>(stats.values());
 		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
@@ -586,9 +585,8 @@ public class LectureBlockRollCallDAO {
 		}
 
 		Date now = new Date();
-		List<Object[]> rawObjects = rawQuery.getResultList();
 		Map<Membership,LectureBlockIdentityStatistics> stats = new HashMap<>();
-		for(Object[] rawObject:rawObjects) {
+		rawQuery.getResultStream().forEach(rawObject -> {
 			int pos = 0;//jump roll call key
 			Long identityKey = (Long)rawObject[pos++];
 			String identityName = (String)rawObject[pos++];
@@ -652,7 +650,7 @@ public class LectureBlockRollCallDAO {
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
-		}
+		});
 		
 		List<LectureBlockIdentityStatistics> statisticsList = new ArrayList<>(stats.values());
 		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
@@ -734,20 +732,22 @@ public class LectureBlockRollCallDAO {
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" where block.entry.key=:entryKey and membership.role='").append(GroupRoles.participant.name()).append("'");
 
-		Date now = new Date();
-		Boolean repoCalculateRate = null;
-		Double repoRequiredRate = null;
+		final Date now = new Date();
+		final Boolean repoCalculateRate;
+		final Double repoRequiredRate;
 		if(config != null && config.isOverrideModuleDefault()) {
 			repoCalculateRate = config.getCalculateAttendanceRate();
 			repoRequiredRate = config.getRequiredAttendanceRate();
+		} else {
+			repoCalculateRate = null;
+			repoRequiredRate = null;
 		}
-		
-		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+
+		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
+		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("entryKey", entry.getKey())
-				.getResultList();
-		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
-		for(Object[] rawObject:rawObjects) {
+				.getResultStream().forEach(rawObject ->  {
 			int pos = 0;//jump roll call key
 			Long identityKey = (Long)rawObject[pos++];
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
@@ -791,7 +791,7 @@ public class LectureBlockRollCallDAO {
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
-		}
+		});
 		
 		List<LectureBlockStatistics> statisticsList = new ArrayList<>(stats.values());
 		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);

@@ -239,7 +239,7 @@
 			<property name="hibernate.max_fetch_depth" value="10"/>
 			<property name="hibernate.connection.handling_mode" value="DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"/>
 			<property name="hibernate.session_factory.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
-			<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2" />
+			<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.3" />
 		</properties>
 	</persistence-unit>
 </persistence>

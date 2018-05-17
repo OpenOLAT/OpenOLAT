@@ -43,6 +43,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.stat.Statistics;
+import org.infinispan.hibernate.cache.v53.InfinispanRegionFactory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.id.Persistable;
@@ -618,7 +619,7 @@ public class DBImpl implements DB, Destroyable {
 		EmbeddedCacheManager cm;
 		try {
 			Cache cache = emf.getCache();
-			JpaInfinispanRegionFactory region = cache.unwrap(JpaInfinispanRegionFactory.class);
+			InfinispanRegionFactory region = cache.unwrap(InfinispanRegionFactory.class);
 			cm = region.getCacheManager();
 		} catch (Exception e) {
 			log.error("", e);
