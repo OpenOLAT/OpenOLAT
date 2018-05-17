@@ -71,8 +71,10 @@ public class QEducationalContextDAO {
 	}
 	
 	public boolean delete(QEducationalContext level) {
+		if(level == null) return false;
+		
 		QEducationalContext reloadLevel = loadById(level.getKey());
-		if(reloadLevel.isDeletable()) {
+		if(reloadLevel != null && reloadLevel.isDeletable()) {
 			dbInstance.getCurrentEntityManager().remove(reloadLevel);
 			return true;
 		}

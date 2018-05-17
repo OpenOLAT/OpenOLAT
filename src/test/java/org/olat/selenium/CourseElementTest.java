@@ -572,6 +572,7 @@ public class CourseElementTest extends Deployments {
 		//the participant must see the new post after some click
 		participantFeed
 			.clickFirstMonthOfPager()
+			.clickFirstMonthOfPager()
 			.assertOnBlogPost(post2Title);
 	}
 	

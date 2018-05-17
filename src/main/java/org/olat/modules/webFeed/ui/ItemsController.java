@@ -20,6 +20,7 @@
 package org.olat.modules.webFeed.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +99,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private DialogBoxController confirmDialogCtr;
 	private Feed feedResource;
 	private List<Item> accessibleItems;
+	private List<Long> filteredItemKeys;
 	private Item currentItem;
 	private FeedViewHelper helper;
 	private FeedUIFactory uiFactory;
@@ -161,7 +163,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 		this.displayConfig = displayConfig;
 		this.feedResource = feed;
-		this.accessibleItems = feedManager.loadFilteredAndSortedItems(feed, callback, ureq.getIdentity());
+		this.accessibleItems = feedManager.loadFilteredAndSortedItems(feed, filteredItemKeys, callback, ureq.getIdentity());
 		this.helper = helper;
 		this.uiFactory = uiFactory;
 		this.callback = callback;
@@ -441,7 +443,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		// feed for this event and make sure the updated feed object is in the
 		// view
 		feedResource = feedManager.loadFeed(feedResource);
-		accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, callback, ureq.getIdentity());
+		accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, filteredItemKeys, callback, ureq.getIdentity());
 
 		if (source == addItemButton) {
 			currentItem = new ItemImpl(feedResource);
@@ -559,7 +561,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 
 		// Check if someone else added an item, reload everything
-		List<Item> items = feedManager.loadFilteredAndSortedItems(feedResource, callback, ureq.getIdentity());
+		List<Item> items = feedManager.loadFilteredAndSortedItems(feedResource, null, callback, ureq.getIdentity());
 		if (!isSameAllItems(items)) {
 			resetItems(ureq, feedResource);
 		}
@@ -570,7 +572,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		// reload feed for this event and make sure the updated feed object is
 		// in the view
 		feedResource = feedManager.loadFeed(feedResource);
-		accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, callback, ureq.getIdentity());
+		accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, filteredItemKeys, callback, ureq.getIdentity());
 
 		if (source == cmc) {
 			if (event.equals(CloseableModalController.CLOSE_MODAL_EVENT)) {
@@ -665,8 +667,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 								createCommentsAndRatingsLink(ureq, feedResource, currentItem);
 								// add it to the navigation controller
 								naviCtr.add(currentItem);
-								accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, callback,
-										ureq.getIdentity());
+								accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, null,
+										callback, ureq.getIdentity());
 								if (accessibleItems != null && accessibleItems.size() == 1) {
 									// First item added, show feed url (for
 									// subscription)
@@ -731,10 +733,11 @@ public class ItemsController extends BasicController implements Activateable2 {
 			externalUrlCtr = null;
 		} else if (source == naviCtr && event instanceof NavigationEvent) {
 			List<? extends Dated> selItems = ((NavigationEvent) event).getSelectedItems();
-			List<Item> items = new ArrayList<>();
-			for (Dated item : selItems) {
-				if (item instanceof Item) {
-					items.add((Item) item);
+			filteredItemKeys = new ArrayList<>();
+			for (Dated selItem : selItems) {
+				if (selItem instanceof Item) {
+					Item item = (Item) selItem;
+					filteredItemKeys.add(item.getKey());
 				}
 			}
 			if (callback.mayEditItems() || callback.mayCreateItems()) {
@@ -743,7 +746,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 			mainPanel.setContent(vcItems);
-
 		} else if (source == itemCtr) {
 			if (event == Event.BACK_EVENT) {
 				mainPanel.setContent(vcItems);
@@ -810,11 +812,15 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 */
 	public void resetItems(UserRequest ureq, Feed feed) {
 		feedResource = feedManager.loadFeed(feedResource);
-		accessibleItems = feedManager.loadFilteredAndSortedItems(feed, callback, ureq.getIdentity());
+		accessibleItems = feedManager.loadFilteredAndSortedItems(feed, filteredItemKeys, callback, ureq.getIdentity());
 		vcItems.contextPut("feed", feedResource);
 		vcItems.contextPut("items", accessibleItems);
 
-		naviCtr.setDatedObjects(accessibleItems);
+		List<Item> naviItems = accessibleItems;
+		if (filteredItemKeys != null && !filteredItemKeys.isEmpty()) {
+			naviItems = feedManager.loadFilteredAndSortedItems(feed, Collections.emptyList(), callback, ureq.getIdentity());
+		}
+		naviCtr.setDatedObjects(naviItems);
 		setAllItemIds(accessibleItems);
 		// Add item details page link
 		createItemLinks();

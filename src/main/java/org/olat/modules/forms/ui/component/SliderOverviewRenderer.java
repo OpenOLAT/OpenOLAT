@@ -59,7 +59,7 @@ public class SliderOverviewRenderer extends DefaultComponentRenderer {
 		Map<Double,Integer> counts = new HashMap<>();
 		if(values != null && values.size() > 0) {
 			for(SliderPoint val:values) {
-				double value = val.getValue();
+				double value = val.getValue() - min;
 				int count;
 				if(counts.containsKey(value)) {
 					count = counts.get(value).intValue() + 1;

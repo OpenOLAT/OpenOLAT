@@ -1,9 +1,8 @@
 <div class="o_visitingcard clearfix well"><div class="o_scrollblock">
 	<h2><i class="o_icon o_icon_visitingcard"> </i>$r.translate("menu.homepage") $userFullname</h2>
-	#if ($deleted) 
-		<p class="o_warning">$r.translate("user.deleted")</p>
-	#end
-
+#if ($deleted) 
+	<p class="o_warning">$r.translate("user.deleted")</p>
+#else 
 	<div class="o_visitingcard_content">
 		<div class="o_visitingcard_image o_block clearfix">	
 			<div class="pull-left">$r.render("image")</div>
@@ -55,8 +54,10 @@
 			#end
 		</table>
 	</div>
+#end
 </div></div>
 
+#if (!$deleted) 
 <div class="o_visitingcard_link o_extlink clearfix o_block_large_bottom">
 	<h5>$r.translate("extlink")</h5>
 	<div class="o_copy_code o_nowrap">
@@ -70,3 +71,4 @@
 		</script>
 	</div>
 </div>
+#end

@@ -23,6 +23,7 @@ package org.olat.modules.edubase.manager;
 import java.io.EOFException;
 import java.net.SocketTimeoutException;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -33,10 +34,12 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.edubase.BookDetails;
@@ -135,6 +138,27 @@ public class EdubaseManagerImpl implements EdubaseManager {
 			}
 		}
 		return url.toString();
+	}
+
+	@Override
+	public String getApplicationUrl(Identity identity) {
+		String readerUrl = edubaseModule.getReaderUrl();
+		if (edubaseModule.isReaderUrlUnique()) {
+			int protocolEnd = readerUrl.indexOf("//") + 2;
+			String protocol = readerUrl.substring(0, protocolEnd);
+			String host = readerUrl.substring(protocolEnd);
+			// Is OpenOLAT identity ok or should it be the getUserId(identEnv)?
+			String identityKey = String.valueOf(identity.getKey());
+			String identityHash = UUID.nameUUIDFromBytes(identityKey.getBytes()).toString().replace("-", "");
+			readerUrl = new StringBuilder()
+					.append(protocol)
+					.append(identityHash)
+					.append("-")
+					.append(WebappHelper.getInstanceId())
+					.append(".")
+					.append(host).toString();
+		}
+		return readerUrl;
 	}
 
 	@Override

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.edubase;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 
 /**
@@ -62,6 +63,15 @@ public interface EdubaseManager {
 	 * @return
 	 */
 	public String getLtiLaunchUrl(BookSection bookSection);
+
+	/**
+	 * The application url is the target url of the edubase reader. The url is
+	 * depending on the module configuration unique per identity.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public String getApplicationUrl(Identity identity);
 
 	/**
 	 * Request details of a book version from the Edubase InfoDocVers Service.

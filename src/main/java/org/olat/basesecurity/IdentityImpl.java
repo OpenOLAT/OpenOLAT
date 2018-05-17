@@ -196,6 +196,6 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 	 */
 	@Override
 	public String toString() {
-		return "Identity[name=" + name + "], " + super.toString();
+		return "Identity[key=" + key + "], " + super.toString();
 	}
 }

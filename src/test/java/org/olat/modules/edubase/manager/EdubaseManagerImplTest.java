@@ -209,5 +209,61 @@ public class EdubaseManagerImplTest {
 		String expectedLtiUrl = baseUrl + "/" + BOOK_ID + "/" + pageFrom;
 		assertThat(generatedLtiUrl).isEqualTo(expectedLtiUrl);
 	}
+	
+	@Test
+	public void shouldGetApplicationUrl() {
+		IdentityImpl identityImpl = new IdentityImpl();
+		String readerUrl = "https://reader.openolat.com";
+		when(edubaseModuleMock.getReaderUrl()).thenReturn(readerUrl);
+		when(edubaseModuleMock.isReaderUrlUnique()).thenReturn(Boolean.FALSE);
+		
+		String applicationUrl = sut.getApplicationUrl(identityImpl);
+		
+		assertThat(applicationUrl).isEqualTo(readerUrl);
+	}
+	
+	@Test
+	public void shouldGetApplicationUrlWithToken() {
+		IdentityImpl identityImpl = new IdentityImpl();
+		identityImpl.setKey(Long.valueOf("1"));
+		String readerUrl = "https://reader.openolat.com";
+		when(edubaseModuleMock.getReaderUrl()).thenReturn(readerUrl);
+		when(edubaseModuleMock.isReaderUrlUnique()).thenReturn(Boolean.TRUE);
+		
+		String applicationUrl = sut.getApplicationUrl(identityImpl);
+		
+		assertThat(applicationUrl).startsWith("https://").endsWith("reader.openolat.com");
+		assertThat(applicationUrl.length()).isGreaterThan(readerUrl.length());
+	}
+	
+	@Test
+	public void shouldGetAllwaysSameApplicationUrlForAUser() {
+		IdentityImpl identityImpl = new IdentityImpl();
+		identityImpl.setKey(Long.valueOf("1"));
+		String readerUrl = "https://reader.openolat.com";
+		when(edubaseModuleMock.getReaderUrl()).thenReturn(readerUrl);
+		when(edubaseModuleMock.isReaderUrlUnique()).thenReturn(Boolean.TRUE);
+		
+		String applicationUrl1 = sut.getApplicationUrl(identityImpl);
+		String applicationUrl2 = sut.getApplicationUrl(identityImpl);
+		
+		assertThat(applicationUrl1).isEqualTo(applicationUrl2);
+	}
+	
+	@Test
+	public void shouldGetDifferentApplicationUrlForDifferentUsers() {
+		IdentityImpl identityImpl1 = new IdentityImpl();
+		identityImpl1.setKey(Long.valueOf("1"));
+		IdentityImpl identityImpl2 = new IdentityImpl();
+		identityImpl2.setKey(Long.valueOf("2"));
+		String readerUrl = "https://reader.openolat.com";
+		when(edubaseModuleMock.getReaderUrl()).thenReturn(readerUrl);
+		when(edubaseModuleMock.isReaderUrlUnique()).thenReturn(Boolean.TRUE);
+		
+		String applicationUrl1 = sut.getApplicationUrl(identityImpl1);
+		String applicationUrl2 = sut.getApplicationUrl(identityImpl2);
+		
+		assertThat(applicationUrl1).isNotEqualTo(applicationUrl2);
+	}
 
 }

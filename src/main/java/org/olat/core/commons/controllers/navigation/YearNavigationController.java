@@ -53,6 +53,7 @@ import org.olat.core.gui.translator.Translator;
 public class YearNavigationController extends BasicController {
 
 	private YearNavigationModel model;
+	private int currentMonth = -1;
 	private Link next, previous, yearLink;
 	private VelocityContainer mainVC;
 	private StackedPanel mainPanel;
@@ -85,25 +86,29 @@ public class YearNavigationController extends BasicController {
 			yearLink.setUserObject(year);
 			mainVC.contextPut("year", year);
 			// Reestablish month links
-			monthLinks = new ArrayList<Link>();
+			monthLinks = new ArrayList<>();
 			for (Month month : year.getMonths()) {
 				Link monthLink = LinkFactory.createLink("month_" + month.getName(), mainVC, this);
-				monthLink.setCustomEnabledLinkCSS("o_month");
 				monthLink.setCustomDisplayText(model.getMonthName(month));
 				monthLink.setUserObject(month);
+				if (currentMonth == month.getMonth()) {
+					monthLink.setCustomEnabledLinkCSS("o_month o_selected");
+					currentMonth = -1;
+				} else {
+					monthLink.setCustomEnabledLinkCSS("o_month");
+				}
 				monthLinks.add(monthLink);
 			}
 			// enable/disable the navigation links
 			next.setEnabled(model.hasNext());
 			previous.setEnabled(model.hasPrevious());
+			mainVC.setDirty(true);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+	@Override
 	protected void doDispose() {
-	// nothing so far
+		// nothing so far
 	}
 
 	/**
@@ -115,6 +120,7 @@ public class YearNavigationController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == next) {
 			model.next();
+			currentMonth = -1;
 			createLinks();
 			Year year = (Year) yearLink.getUserObject();
 			Event navEvent = new NavigationEvent(year.getItems());
@@ -123,6 +129,7 @@ public class YearNavigationController extends BasicController {
 
 		} else if (source == previous) {
 			model.previous();
+			currentMonth = -1;
 			createLinks();
 			Year year = (Year) yearLink.getUserObject();
 			Event navEvent = new NavigationEvent(year.getItems());
@@ -148,18 +155,14 @@ public class YearNavigationController extends BasicController {
 				yearLink.setCustomEnabledLinkCSS("o_year");
 				showAll = true;
 			}
+			currentMonth = -1;
 
 		} else if (monthLinks.contains(source)) {
 			Link monthLink = (Link) source;
 			Month month = (Month) monthLink.getUserObject();
+			currentMonth = month.getMonth();
 			Event navEvent = new NavigationEvent(month.getItems());
 			fireEvent(ureq, navEvent);
-			// update GUI
-			yearLink.setCustomEnabledLinkCSS("o_year");
-			for (Link link : monthLinks) {
-				link.setCustomEnabledLinkCSS("o_month");
-			}
-			monthLink.setCustomEnabledLinkCSS("o_month o_selected");
 		}
 	}
 
@@ -191,7 +194,8 @@ public class YearNavigationController extends BasicController {
 			mainPanel.setContent(mainVC);
 		}
 		// Create new model model
-		model = new YearNavigationModel(datedObjects, getLocale());
+		Year currentYear = model != null? model.getCurrentYear(): null;;
+		model = new YearNavigationModel(datedObjects, getLocale(), currentYear);
 		allObjects = datedObjects;
 		showAll = true;
 		//

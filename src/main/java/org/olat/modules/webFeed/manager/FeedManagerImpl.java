@@ -351,7 +351,7 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public List<Item> loadItems(Feed feed) {
-		return itemDAO.loadItems(feed);
+		return itemDAO.loadItems(feed, null);
 	}
 
 	@Override
@@ -365,8 +365,8 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public List<Item> loadFilteredAndSortedItems(Feed feed, FeedSecurityCallback callback, Identity identity) {
-		List<Item> items = loadItems(feed);
+	public List<Item> loadFilteredAndSortedItems(Feed feed, List<Long> filteredItemIds, FeedSecurityCallback callback, Identity identity) {
+		List<Item> items = itemDAO.loadItems(feed, filteredItemIds);
 		List<Item> filteredItems = new ArrayList<>();
 		final Roles roles = securityManager.getRoles(identity);
 		if (roles != null && (roles.isOLATAdmin() || feed.isExternal())) {
@@ -709,7 +709,7 @@ public class FeedManagerImpl extends FeedManager {
 
 		// load the feed and the items from the database
 		Feed sourceFeed = feedDAO.loadFeed(sourceResource);
-		List<Item> items = itemDAO.loadItems(sourceFeed);
+		List<Item> items = itemDAO.loadItems(sourceFeed, Collections.emptyList());
 
 		// copy the feed in the database
 		Feed targetFeed = feedDAO.copyFeed(sourceResource, targetResource);

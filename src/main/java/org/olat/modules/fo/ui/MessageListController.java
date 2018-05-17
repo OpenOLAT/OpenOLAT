@@ -652,6 +652,10 @@ public class MessageListController extends BasicController implements GenericEve
 			visitingCardLink.setUserObject(creator);
 			LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
 			visitingCardLink.setPopup(settings);
+			if (creator.getStatus().equals(Identity.STATUS_DELETED)) {
+				// keep link to show something, but disable
+				visitingCardLink.setEnabled(false);
+			}
 		}
 
 		if(!isThreadClosed) {

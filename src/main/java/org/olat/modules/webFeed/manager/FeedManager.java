@@ -228,11 +228,12 @@ public abstract class FeedManager {
 	 * Load all Items of a feed and filter them in relation to the identity rights.
 	 *
 	 * @param feed
+	 * @param filteredItemIds only the items with this IDs are loaded. Null or an empty List does not filter by IDs.
 	 * @param callback
 	 * @param identity
 	 * @return
 	 */
-	public abstract List<Item> loadFilteredAndSortedItems(Feed feed, FeedSecurityCallback callback, Identity identity);
+	public abstract List<Item> loadFilteredAndSortedItems(Feed feed, List<Long> filteredItemIds, FeedSecurityCallback callback, Identity identity);
 
 	/**
 	 * Returns the feed with the provided id or null if not found.

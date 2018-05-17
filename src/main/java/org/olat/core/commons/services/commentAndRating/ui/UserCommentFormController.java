@@ -31,9 +31,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -64,6 +64,9 @@ public class UserCommentFormController extends FormBasicController {
 	private final String resSubPath;
 	private final OLATResourceable ores;
 	private final CommentAndRatingService commentAndRatingService;
+
+	@Autowired
+	private UserManager userManager;
 
 	/**
 	 * Constructor for a user comment form controller. Use the
@@ -98,8 +101,8 @@ public class UserCommentFormController extends FormBasicController {
 			UserRequest ureq) {
 		// Add parent and parent first / last name
 		if (parentComment != null) {
-			User parent = parentComment.getCreator().getUser();
-			String[] args = new String[] {parent.getProperty(UserConstants.FIRSTNAME, getLocale()), parent.getProperty(UserConstants.LASTNAME, getLocale())};
+			String name = userManager.getUserDisplayName(parentComment.getCreator());
+			String[] args = new String[] {name};
 			setFormTitle("comments.form.reply.title", args);
 		} else {
 			setFormTitle("comments.form.new.title");
