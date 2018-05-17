@@ -1,0 +1,1 @@
+alter table o_loggingtable drop username, drop userproperty1, drop userproperty2, drop userproperty3, drop userproperty4, drop userproperty5, drop userproperty6, drop userproperty7, drop userproperty8, drop userproperty9, drop userproperty10, drop userproperty11, drop userproperty12;

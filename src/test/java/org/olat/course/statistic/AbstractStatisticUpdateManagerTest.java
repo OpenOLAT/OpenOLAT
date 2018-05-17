@@ -123,7 +123,7 @@ abstract class AbstractStatisticUpdateManagerTest extends OlatTestCase {
 	
 	protected Calendar addLog(Long repositoryEntryKey, String courseNodeIdent, Calendar start, int dayInPast, int hour, int minute, int second) {
 		String sessionId = "session-" + CodeHelper.getGlobalForeverUniqueID();
-		LoggingObject logObj = new LoggingObject(sessionId, 123l, "logger", "u", "launch", "node");
+		LoggingObject logObj = new LoggingObject(sessionId, 123l, "u", "launch", "node");
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.YEAR, start.get(Calendar.YEAR));
@@ -137,8 +137,6 @@ abstract class AbstractStatisticUpdateManagerTest extends OlatTestCase {
 
 		logObj.setCreationDate(cal.getTime());
 		logObj.setResourceAdminAction(Boolean.FALSE);
-		logObj.setUserProperty2("OpenOLAT");
-		logObj.setUserProperty3("openolat@openolat.org");
 		logObj.setBusinessPath("[RepositoryEntry:" + repositoryEntryKey + "][CourseNode:" + courseNodeIdent + "]");
 		dbInstance.saveObject(logObj);
 		return cal;
