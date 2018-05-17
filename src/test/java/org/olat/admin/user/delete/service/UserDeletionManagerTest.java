@@ -138,8 +138,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		String institutionalId = deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
 		Assert.assertFalse(StringHelper.containsNonWhitespace(institutionalId));
 		String deletedEmail = deletedUser.getProperty(UserConstants.EMAIL, null);
-		Assert.assertNotNull(deletedEmail);
-		Assert.assertFalse(email.equals(deletedEmail));
+		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedEmail));
 	}
 
 	@Test

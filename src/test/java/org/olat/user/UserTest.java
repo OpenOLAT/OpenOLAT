@@ -389,9 +389,9 @@ public class UserTest extends OlatTestCase {
 		// find identity 1 not anymore
 		List<Identity> searchResult_10 = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		Assert.assertEquals(0, searchResult_10.size());
-		// find identity via first, last and instuser id (non-deletable fields)
+		// find identity via first, last and instuser id (fields as 12.5 deeleted too)
 		List<Identity> searchResult_11 = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null, null);
-		Assert.assertEquals(1, searchResult_11.size());
+		Assert.assertEquals(0, searchResult_11.size());
 		
 		// check using other methods
 		Identity loadByInstitutionalEmail = userManager.findUniqueIdentityByEmail(institutionalEmail);
