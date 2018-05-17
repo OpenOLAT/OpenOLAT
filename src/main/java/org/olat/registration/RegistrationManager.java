@@ -25,6 +25,7 @@
 
 package org.olat.registration;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -58,6 +59,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,7 +72,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Sabina Jeger
  */
 @Service("selfRegistrationManager")
-public class RegistrationManager {
+public class RegistrationManager implements UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(RegistrationManager.class);
 
@@ -280,6 +282,15 @@ public class RegistrationManager {
 				.executeUpdate();
 	}
 
+	private void deleteAllTemporaryKeys(Long identityKey) {
+		if (identityKey == null) return;		
+		dbInstance.getCurrentEntityManager()
+				.createNamedQuery("deleteTemporaryKeyByIdentity") 
+				.setParameter("identityKey", identityKey)
+				.executeUpdate();
+	}
+
+	
 	/**
 	 * returns an existing TemporaryKey by a given email address or null if none
 	 * found
@@ -439,5 +450,11 @@ public class RegistrationManager {
 	private String createRegistrationKey(String email, String ip) {
 		String random = UUID.randomUUID().toString();
 		return Encoder.md5hash(email + ip + random);
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		// Delete temporary keys used in change email or password workflow 
+		deleteAllTemporaryKeys(identity.getKey());
 	}
 }

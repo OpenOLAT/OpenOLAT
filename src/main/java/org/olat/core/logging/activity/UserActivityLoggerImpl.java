@@ -28,14 +28,10 @@ package org.olat.core.logging.activity;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,7 +46,6 @@ import org.olat.core.id.context.StackedBusinessControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
 
 /**
@@ -102,9 +97,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	
 	/** if not null this stickyActionType_ overwrites whatever comes as the ActionType in the ILoggingAction in log() **/
 	private ActionType stickyActionType_ = null;
-	
-	/** set user properties which needed for logging**/
-	private Set<String> userProperties_ = LogModule.getUserProperties();
 	
 	/** the identity - which this UserActivityLoggerImpl should later log into the database **/
 	private Identity identity_;
@@ -694,17 +686,9 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 						", actual: "+convertLoggingResourceableListToString(resourceInfos), new Exception("OLAT-4653"));
 			}
 		}
-
-		
-		String identityName;
-		if(isLogAnonymous_ && (actionType != ActionType.admin)) {
-			identityName = "";
-		} else {
-			identityName = identity.getName();
-		}
 		
 		// start creating the LoggingObject 
-		final LoggingObject logObj = new LoggingObject(sessionId, identityKey, identityName, crudAction.name().substring(0,1), actionVerb.name(), actionObject);
+		final LoggingObject logObj = new LoggingObject(sessionId, identityKey, crudAction.name().substring(0,1), actionVerb.name(), actionObject);
 
 		if (resourceInfos!=null && resourceInfos.size()!=0) {
 			// this should be the normal case - we do have LoggingResourceables which we can log
@@ -745,28 +729,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		logObj.setBusinessPath(businessPath_);
 		logObj.setSourceClass(callingClass.getCanonicalName());
 		logObj.setResourceAdminAction(actionType.equals(ActionType.admin)?true:false);
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		
-		//prepare the user properties, set them at once
-		List<String> tmpUserProperties = new ArrayList<>(12);
-		for(Iterator<String> iterator = userProperties_.iterator(); iterator.hasNext();) {
-			String userPropString = identity.getUser().getPropertyOrIdentityEnvAttribute(iterator.next(), locale);
-			boolean shorten = false;
-			try {
-				if (userPropString != null && userPropString.getBytes("UTF-8").length > 254) {
-					shorten = true;
-				}
-			} catch (UnsupportedEncodingException uee) {
-				log_.error("error while calculating real string length: unsupported encoding: ", uee);
-				shorten = true;
-			}
-			if (shorten){
-				log_.error("Userproperty was too long for logging-table (shortened automatically). check that nothing valueable is lost! value before cut: " + userPropString);
-				userPropString = userPropString.substring(0, 255);
-			}
-			tmpUserProperties.add(userPropString);
-		}
-		logObj.setUserProperties(tmpUserProperties);
 		
 		// and store it
 		DB db = DBFactory.getInstance();

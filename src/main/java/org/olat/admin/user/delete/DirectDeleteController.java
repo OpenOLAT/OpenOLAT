@@ -121,7 +121,7 @@ public class DirectDeleteController extends BasicController {
 			}
 		} else if (sourceController == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				deleteIdentities(toDelete);
+				boolean success = deleteIdentities(toDelete);
 				if (bdc != null) {
 					bdc.sendMail();
 				}
@@ -129,7 +129,10 @@ public class DirectDeleteController extends BasicController {
 				initializeUserSearchController(ureq);
 				initializeUserListForm(ureq);
 				
-				showInfo("deleted.users.msg");
+				if (success) {
+					showInfo("deleted.users.msg");					
+				}
+				// else error already shown
 			}
 		} else if (sourceController == bdc) {
 			toDelete = bdc.getToDelete();
@@ -171,12 +174,19 @@ public class DirectDeleteController extends BasicController {
 		return buf.toString();
 	}
 
-	private void deleteIdentities(List<Identity> toDeleteIdentities) {
+	private boolean deleteIdentities(List<Identity> toDeleteIdentities) {
+		boolean totalSuccess = true;
 		for (int i = 0; i < toDeleteIdentities.size(); i++) {
 			Identity identity = toDeleteIdentities.get(i);
-			UserDeletionManager.getInstance().deleteIdentity(identity);
-			DBFactory.getInstance().intermediateCommit();				
+			boolean success = UserDeletionManager.getInstance().deleteIdentity(identity);
+			if (success) {
+				DBFactory.getInstance().intermediateCommit();								
+			} else {
+				totalSuccess = false;
+				showError("error.delete", identity.getName());
+			}
 		}
+		return totalSuccess;
 	}
 
 	private void initializeUserSearchController(UserRequest ureq) {

@@ -215,11 +215,4 @@ public interface UserPropertyHandler {
 	 * @return The i18n key for the UserPropertyHandler column label
 	 */
 	public String i18nColumnDescriptorLabelKey();
-
-	/**
-	 * @return true: this field can be deleted when deleting a user; false: this
-	 *         field should be archived when deleting a user
-	 */
-	public boolean isDeletable();
-
 }

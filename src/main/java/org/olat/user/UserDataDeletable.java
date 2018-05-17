@@ -39,7 +39,8 @@ import org.olat.core.id.Identity;
 public interface UserDataDeletable {
 	
 	default public int deleteUserDataPriority() {
-		return 0;
+		// default is to delete with medium priority (0=very low, 1000=very high)
+		return 500;
 	}
 	
 	/**

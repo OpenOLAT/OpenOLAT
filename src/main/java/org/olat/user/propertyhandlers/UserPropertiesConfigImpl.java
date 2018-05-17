@@ -21,21 +21,16 @@ package org.olat.user.propertyhandlers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.LogModule;
 import org.olat.user.UserPropertiesConfig;
 
 /**
@@ -46,9 +41,8 @@ import org.olat.user.UserPropertiesConfig;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializable {
+public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 	private static final OLog log = Tracing.createLoggerFor(UserPropertiesConfigImpl.class);
-	private static final String USER_PROPERTY_LOG_CONFIGURATION = "userPropertyLogConfiguration";
 	public static final String PACKAGE = UserPropertiesConfigImpl.class.getPackage().getName(); 
 
 	
@@ -59,16 +53,6 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializ
 	private Map<String, UserPropertyUsageContext> userPropertyUsageContexts;
 
 	private int maxNumOfInterests;
-
-	@Override
-	public void init() {
-		List<UserPropertyHandler> userPropHandlers = getUserPropertyHandlersFor(USER_PROPERTY_LOG_CONFIGURATION, false);
-		Set<String> userProperties = new LinkedHashSet<String>();
-		for (Iterator<UserPropertyHandler> iterator = userPropHandlers.iterator(); iterator.hasNext();) {
-			userProperties.add(iterator.next().getName());
-		}
-		LogModule.setUserProperties(userProperties);
-	}
 
 	@Override
 	public int getMaxNumOfInterests() {

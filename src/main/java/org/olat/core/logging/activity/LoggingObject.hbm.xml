@@ -29,23 +29,10 @@
 
 
 <!--    ==================================================================================      -->
-<!--    Session and User Fields                                                                 -->
+<!--    Session and User Reference                                                              -->
 <!--    ==================================================================================      -->
 		<property name="sessionId"      column="sessionid"       type="string" length="255" not-null="true" />
 	    <property name="userId"         column="user_id"         type="long"/>
-		<property name="userName"       column="username"        type="string" length="255" not-null="false" />
-		<property name="userProperty1"  column="userproperty1"   type="string" length="255" not-null="false" />
-		<property name="userProperty2"  column="userproperty2"   type="string" length="255" not-null="false" />
-		<property name="userProperty3"  column="userproperty3"   type="string" length="255" not-null="false" />
-		<property name="userProperty4"  column="userproperty4"   type="string" length="255" not-null="false" />
-		<property name="userProperty5"  column="userproperty5"   type="string" length="255" not-null="false" />
-		<property name="userProperty6"  column="userproperty6"   type="string" length="255" not-null="false" />
-		<property name="userProperty7"  column="userproperty7"   type="string" length="255" not-null="false" />
-		<property name="userProperty8"  column="userproperty8"   type="string" length="255" not-null="false" />
-		<property name="userProperty9"  column="userproperty9"   type="string" length="255" not-null="false" />
-		<property name="userProperty10" column="userproperty10"  type="string" length="255" not-null="false" />
-		<property name="userProperty11" column="userproperty11"  type="string" length="255" not-null="false" />
-		<property name="userProperty12" column="userproperty12"  type="string" length="255" not-null="false" />
 <!--    ==================================================================================      -->
 
 

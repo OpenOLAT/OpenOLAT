@@ -416,7 +416,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public int deleteUserDataPriority() {
-		return 10;
+		// delete with high priority
+		return 850;
 	}
 
 	@Override

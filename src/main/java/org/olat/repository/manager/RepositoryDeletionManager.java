@@ -92,6 +92,7 @@ public class RepositoryDeletionManager implements UserDataDeletable {
 		for (Iterator<RepositoryEntry> iter = repoEntries.iterator(); iter.hasNext();) {
 			RepositoryEntry repositoryEntry = iter.next();
 			repositoryEntry.setInitialAuthor(deletionModule.getAdminUserIdentity().getName());
+			//FIXME DSGVO
 			log.info("Delete user-data, add Administrator-identity as initial-author of repositoryEntry=" + repositoryEntry.getDisplayname());
 		}
 		log.debug("All owner and initial-author entries in repository deleted for identity=" + identity);

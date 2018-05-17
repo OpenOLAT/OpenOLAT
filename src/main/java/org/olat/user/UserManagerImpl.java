@@ -19,6 +19,7 @@
  */
 package org.olat.user;
 
+import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ import org.olat.login.auth.AuthenticationProvider;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class UserManagerImpl extends UserManager {
+public class UserManagerImpl extends UserManager implements UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(UserManagerImpl.class);
 	
@@ -552,6 +554,31 @@ public class UserManagerImpl extends UserManager {
 		String issuer = authenticationProvider.getIssuerIdentifier(null);
 		String domain = issuer.startsWith("https://")? issuer.substring(8): issuer;
 		return domain;
+	}
+
+	@Override
+	public int deleteUserDataPriority() {
+		// delete with high priority
+		return 100;
+	}
+	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		identity = securityManager.loadIdentityByKey(identity.getKey());
+		User persistedUser = identity.getUser();
+		List<UserPropertyHandler> userPropertyHandlers = getAllUserPropertyHandlers();
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			String actualProperty = userPropertyHandler.getName();
+			if (UserConstants.USERNAME.equals(actualProperty)) {
+				// Skip, user name will be anonymised by BaseSecurityManager
+			} else {
+				persistedUser.setProperty(actualProperty, null);
+				log.debug("Deleted user-property::" + actualProperty + " for identity::+" + identity.getKey());
+			}
+		}
+		updateUserFromIdentity(identity);
+		log.info("deleteUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
+		dbInstance.commit();
 	}
 
 }

@@ -26,6 +26,7 @@
 
 package org.olat.basesecurity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,6 +70,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +86,7 @@ import org.springframework.stereotype.Service;
  * @author Felix Jost, Florian Gnaegi
  */
 @Service("baseSecurityManager")
-public class BaseSecurityManager implements BaseSecurity {
+public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(BaseSecurityManager.class);
 
@@ -1256,5 +1258,24 @@ public class BaseSecurityManager implements BaseSecurity {
 			guestIdentity = dbInstance.getCurrentEntityManager().merge(guestIdentity);
 		}
 		return guestIdentity;
+	}	
+	
+	@Override
+	public int deleteUserDataPriority() {
+		// delete with low priority at the end of the deletion process
+		return 10;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		// 1) delete all authentication tokens
+		List<Authentication> authentications = getAuthentications(identity);
+		for (Authentication auth:authentications) {
+			deleteAuthentication(auth);
+			log.info("Delete authentication provider::" + auth.getProvider() + "  of identity="  + identity);
+		}
+		
+		// 2) Delete the authentication history
+		authenticationHistoryDao.deleteAuthenticationHistory(identity);		
 	}
 }

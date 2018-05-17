@@ -56,7 +56,8 @@ import org.olat.core.id.Persistable;
 	@NamedQuery(name="loadTemporaryKeyByRegKey", query="select r from otemporarykey r where r.registrationKey=:regkey"),
 	@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where r.emailAddress=:email"),
 	@NamedQuery(name="loadTemporaryKeyByIdentity", query="select r from otemporarykey r where r.identityKey=:identityKey and action=:action"),
-	@NamedQuery(name="deleteTemporaryKeyByIdentityAndAction", query="delete from otemporarykey r where r.identityKey=:identityKey and action=:action")
+	@NamedQuery(name="deleteTemporaryKeyByIdentityAndAction", query="delete from otemporarykey r where r.identityKey=:identityKey and action=:action"),
+	@NamedQuery(name="deleteTemporaryKeyByIdentity", query="delete from otemporarykey r where r.identityKey=:identityKey")
 })
 public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 

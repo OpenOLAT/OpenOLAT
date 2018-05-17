@@ -81,6 +81,7 @@ public class SimpleLogExporter implements ICourseLogExporter {
 	@Override
 	public void exportCourseLog(File outFile, String charset, Long resourceableId, Date begin, Date end, boolean resourceAdminAction, boolean anonymize) {
 
+		//FIXME DSGVO join with user, config rows via user property context
 		
 		String query = "select v from org.olat.core.logging.activity.LoggingObject v " + "where v.resourceAdminAction = :resAdminAction "
 				+ "AND ( " 

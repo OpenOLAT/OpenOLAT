@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -35,6 +36,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +49,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class SecurityGroupDAO {
+public class SecurityGroupDAO implements UserDataDeletable {
+	
+	private static final OLog log = Tracing.createLoggerFor(SecurityGroupDAO.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -304,4 +310,20 @@ public class SecurityGroupDAO {
 		}
 	}
 
+	@Override
+	public int deleteUserDataPriority() {
+		return 10;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		// Remove legacy security group memberships
+		List<SecurityGroup> securityGroups = getSecurityGroupsForIdentity(identity);
+		for (SecurityGroup secGroup : securityGroups) {
+			removeIdentityFromSecurityGroup(identity, secGroup);
+			log.info("Removing identity::" + identity.getKey() + " from security group::" + secGroup.getKey()
+					+ ", resourceableTypeName::" + secGroup.getResourceableTypeName() + ", resourceableId"
+					+ secGroup.getResourceableId());
+		}
+	}
 }
