@@ -29,10 +29,15 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Handles asynchronous aspects of log export - including limiting the
@@ -41,56 +46,31 @@ import org.olat.core.logging.Tracing;
  * Initial Date:  13.01.2010 <br>
  * @author Stefan
  */
+@Service
 public class AsyncExportManager {
 
-	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(AsyncExportManager.class);
+	private static final OLog log = Tracing.createLoggerFor(AsyncExportManager.class);
 
-	/** AsyncExportManager is a singleton, configured by spring **/
-	private static AsyncExportManager INSTANCE;
+	private static final int concurrentExportsPerNode = 2;
 
-	/** set via spring **/
-	private int concurrentExportsPerNode_ = 1;
-	
+	@Autowired
+	private ExportManager exportManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private TaskExecutorManager taskExecutorManager;
 
 	/** the identities currently executing an export **/
-	private final Set<Identity> identitiesOfJobsCurrentlyRunning_ = new HashSet<Identity>();
+	private final Set<Identity> identitiesOfJobsCurrentlyRunning = new HashSet<>();
 
 	/** DEBUG ONLY: how many runnables are queued up - are we overloading the ThreadPoolTaskExecutor ? **/
-	private int waitingCnt_ = 0;
-	
-	/** created via spring **/
-	private AsyncExportManager() {
-		// this empty constructor is okay
-		INSTANCE = this;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param taskExecutorManager
-	 */
-	public void setTaskExecutorManager(TaskExecutorManager taskExecutorManager) {
-		this.taskExecutorManager = taskExecutorManager;
-	}
+	private int waitingCnt = 0;
 
-	/**
-	 * @return Singleton.
-	 */
-	public static final AsyncExportManager getInstance() {
-		if (INSTANCE==null) {
-			throw new IllegalStateException("AsyncExportManager bean not created via spring. Configuration error!");
-		}
-		return INSTANCE;
-	}
 	
-	/** called via spring, sets the number of concurrent exports within one node, default is 2 **/
-	public void setConcurrentExportsPerNode(int concurrentExportsPerNode) {
-		this.concurrentExportsPerNode_ = concurrentExportsPerNode;
-	}
-	
-	public void asyncArchiveCourseLogFiles(final Identity identity, final Runnable callback,
-			final Long oresID, final String exportDir, final Date begin, final Date end, final boolean adminLog, final boolean userLog, final boolean statisticLog, final String charset, final Locale locale, final String email){
+	public void asyncArchiveCourseLogFiles(Identity identity, Runnable callback, Long oresID, String exportDir,
+			Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog, Locale locale, String email){
 		// argument checks
 		if (identity==null) {
 			throw new IllegalArgumentException("identity must not be null");
@@ -100,11 +80,13 @@ public class AsyncExportManager {
 		}
 		
 		// DEBUG ONLY
-		synchronized(this) {
-			log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" wants to archive a course log. Already pending jobs: "+waitingCnt_);
-		}
+		log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " wants to archive a course log. Already pending jobs: " + waitingCnt);
+
+		Roles roles = securityManager.getRoles(identity);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		
-		CourseLogRunnable run = new CourseLogRunnable(identity, callback, oresID, exportDir, begin, end, adminLog, userLog, statisticLog, charset, locale, email);
+		CourseLogRunnable run = new CourseLogRunnable(identity, callback, oresID, exportDir, begin, end, adminLog, userLog, statisticLog,
+				locale, email, isAdministrativeUser, this, exportManager);
 		taskExecutorManager.execute(run);
 	}
 	
@@ -119,12 +101,15 @@ public class AsyncExportManager {
 		private final boolean adminLog;
 		private final boolean userLog;
 		private final boolean statisticLog;
-		private final String charset;
 		private final Locale locale;
 		private final String email;
+		private final boolean isAdministrativeUser;
+		private final ExportManager exportManager;
+		private final AsyncExportManager asyncExportManager;
 		
 		public CourseLogRunnable(Identity identity, Runnable callback, Long oresID, String exportDir, Date begin, Date end,
-				boolean adminLog, boolean userLog, boolean statisticLog, String charset, Locale locale, String email) {
+				boolean adminLog, boolean userLog, boolean statisticLog, Locale locale, String email, boolean isAdministrativeUser,
+				AsyncExportManager asyncExportManager, ExportManager exportManager) {
 			this.identity = identity;
 			this.callback = callback;
 			this.oresID = oresID;
@@ -134,50 +119,52 @@ public class AsyncExportManager {
 			this.adminLog = adminLog;
 			this.userLog = userLog;
 			this.statisticLog = statisticLog;
-			this.charset = charset;
 			this.locale = locale;
 			this.email = email;
+			this.isAdministrativeUser = isAdministrativeUser;
+			this.asyncExportManager = asyncExportManager;
+			this.exportManager = exportManager;
 		}
 
 		@Override
 		public void run() {
 			try{
-				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" aquires lock for archiving course log");
-				AsyncExportManager.getInstance().waitForSlot(identity);
-				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" starts archiving...");
-				ExportManager.getInstance().archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, charset, locale, email);
-				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" finished archiving...");
+				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " aquires lock for archiving course log");
+				asyncExportManager.waitForSlot(identity);
+				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " starts archiving...");
+				exportManager.archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, locale, email, isAdministrativeUser);
+				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " finished archiving...");
 			} finally {
-				AsyncExportManager.getInstance().returnSlot(identity);
-				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" releases lock for archiving course log");
+				asyncExportManager.returnSlot(identity);
+				log.info("asyncArchiveCourseLogFiles: user " + identity.getKey() + " releases lock for archiving course log");
 				callback.run();
 			}
 		}
 	}
 	
 	public synchronized boolean asyncArchiveCourseLogOngoingFor(Identity identity) {
-		return identitiesOfJobsCurrentlyRunning_.contains(identity);
+		return identitiesOfJobsCurrentlyRunning.contains(identity);
 	}
 
 	/** internal counter method **/
 	private synchronized void waitForSlot(Identity identity) {
-		waitingCnt_++;
-		while(identitiesOfJobsCurrentlyRunning_.size()>concurrentExportsPerNode_ || identitiesOfJobsCurrentlyRunning_.contains(identity)) {
+		waitingCnt++;
+		while(identitiesOfJobsCurrentlyRunning.size()>concurrentExportsPerNode || identitiesOfJobsCurrentlyRunning.contains(identity)) {
 			try{
-				log_.info("waitForSlot: user "+identity.getName()+" wants to archive a course log, but the queue is full. Running count: "+identitiesOfJobsCurrentlyRunning_.size()+". Total pending jobs: "+waitingCnt_);
+				log.info("waitForSlot: user "+identity.getName()+" wants to archive a course log, but the queue is full. Running count: "+identitiesOfJobsCurrentlyRunning.size()+". Total pending jobs: "+waitingCnt);
 				wait();
 			} catch(InterruptedException ie) {
 				// this empty catch is ok
 			}
 		}
-		waitingCnt_--;
-		identitiesOfJobsCurrentlyRunning_.add(identity);
+		waitingCnt--;
+		identitiesOfJobsCurrentlyRunning.add(identity);
 	}
 	
 	/** internal counter method **/
 	private synchronized void returnSlot(Identity identity) {
-		identitiesOfJobsCurrentlyRunning_.remove(identity);
-		log_.info("returnSlot: user "+identity.getName()+" returns a slot. Running count: "+identitiesOfJobsCurrentlyRunning_.size()+", Total pending jobs: "+waitingCnt_);
+		identitiesOfJobsCurrentlyRunning.remove(identity);
+		log.info("returnSlot: user "+identity.getName()+" returns a slot. Running count: "+identitiesOfJobsCurrentlyRunning.size()+", Total pending jobs: "+waitingCnt);
 		notifyAll();
 	}
 }

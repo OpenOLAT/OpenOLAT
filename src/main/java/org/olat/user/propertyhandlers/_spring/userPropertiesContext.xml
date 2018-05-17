@@ -1515,6 +1515,24 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.course.statistic.export.LogLineConverter">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties used in the course log archive" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
 				<!-- User properties added to o_info JS variable -->
 				<entry key="org.olat.core.commons.fullWebApp.BaseFullWebappController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

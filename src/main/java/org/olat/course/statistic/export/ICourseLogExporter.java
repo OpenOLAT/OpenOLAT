@@ -56,6 +56,6 @@ public interface ICourseLogExporter {
 	 * @param resourceAdminAction
 	 * @return
 	 */
-	public void exportCourseLog(File outFile, String charset, Long resourceableId, Date begin, Date end, boolean resourceAdminAction, boolean anonymize);
+	public void exportCourseLog(File outFile, Long resourceableId, Date begin, Date end, boolean resourceAdminAction, boolean anonymize, boolean isAdministrativeUser);
 	
 }

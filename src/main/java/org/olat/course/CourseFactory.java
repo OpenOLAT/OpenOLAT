@@ -695,15 +695,10 @@ public class CourseFactory {
 
 		// make an intermediate commit here to make sure long running course log export doesn't
 		// cause db connection timeout to be triggered
-		//@TODO transactions/backgroundjob:
 		// rework when backgroundjob infrastructure exists
 		DBFactory.getInstance().intermediateCommit();
-		AsyncExportManager.getInstance().asyncArchiveCourseLogFiles(archiveOnBehalfOf, new Runnable() {
-			@Override
-			public void run() {
-				// that's fine, I dont need to do anything here
-			};
-		}, course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, charset, null, null);
+		CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf, () -> { /* nothing to do */ },
+				course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
 

@@ -27,8 +27,7 @@
 package org.olat.course.statistic.export;
 
 import java.io.File;
-import java.io.Writer;
-import java.nio.charset.Charset;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Calendar;
@@ -39,10 +38,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -57,51 +63,38 @@ import org.olat.core.logging.activity.LoggingObject;
  * Initial Date:  09.12.2009 <br>
  * @author bja
  */
+@Service("courseLogExporter")
 public class SimpleLogExporter implements ICourseLogExporter {
 
 	private static final OLog log = Tracing.createLoggerFor(SimpleLogExporter.class);
-	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	
+	@Autowired
 	private DB dbInstance;
-	private LogLineConverter logLineConverter_;
+	@Autowired
+	private LogLineConverter logLineConverter;
 	
-	private SimpleLogExporter() {
-		// this empty constructor is ok - instantiated via spring
-	}
-	
-	/** injected by spring **/
-	public void setLogLineConverter(LogLineConverter logLineConverter) {
-		logLineConverter_ = logLineConverter;
-	}
-	
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
 
 	@Override
-	public void exportCourseLog(File outFile, String charset, Long resourceableId, Date begin, Date end, boolean resourceAdminAction, boolean anonymize) {
-
-		//FIXME DSGVO join with user, config rows via user property context
-		
-		String query = "select v from org.olat.core.logging.activity.LoggingObject v " + "where v.resourceAdminAction = :resAdminAction "
-				+ "AND ( " 
-				+ "(v.targetResId = :resId) OR " 
-				+ "(v.parentResId = :resId) OR " 
-				+ "(v.grandParentResId = :resId) OR "
-				+ "(v.greatGrandParentResId = :resId) " 
-				+ ")";
+	public void exportCourseLog(File outFile, Long resourceableId, Date begin, Date end, boolean resourceAdminAction,
+			boolean anonymize, boolean isAdministrativeUser) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select v, ident, identUser from loggingobject as v")
+		  .append(" left join ").append(IdentityImpl.class.getCanonicalName()).append(" as ident on (ident.key=v.userId)")
+		  .append(" left join ident.user as identUser")
+		  .append(" where v.resourceAdminAction=:resAdminAction")
+		  .append(" and ((v.targetResId = :resId) or (v.parentResId = :resId) or (v.grandParentResId = :resId) or (v.greatGrandParentResId = :resId))");
 
 		if (begin != null) {
-			query = query.concat(" AND (v.creationDate >= :createdAfter)");
+			sb.append(" and (v.creationDate >= :createdAfter)");
 		}
 		if (end != null) {
-			query = query.concat(" AND (v.creationDate <= :createdBefore)");
+			sb.append(" and (v.creationDate <= :createdBefore)");
 		}
 		
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		em.clear();
 
-		TypedQuery<LoggingObject> dbQuery = em.createQuery(query, LoggingObject.class)
+		TypedQuery<Object[]> dbQuery = em.createQuery(sb.toString(), Object[].class)
 				.setParameter("resAdminAction", resourceAdminAction)
 				.setParameter("resId", Long.toString(resourceableId));
 		if (begin != null) {
@@ -115,16 +108,20 @@ public class SimpleLogExporter implements ICourseLogExporter {
 			dbQuery.setParameter("createdBefore", end, TemporalType.DATE);
 		}
 		
-		try(Writer out = Files.newBufferedWriter(outFile.toPath(), Charset.forName("UTF-8"), StandardOpenOption.CREATE_NEW)) {
-			out.append(logLineConverter_.getCSVHeader());
-			out.append(LINE_SEPARATOR);
+		try(OutputStream out = Files.newOutputStream(outFile.toPath(), StandardOpenOption.CREATE_NEW);
+				OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			logLineConverter.setHeader(sheet, anonymize, isAdministrativeUser);
 			
 			int count = 0;
-			List<LoggingObject> queryResult = dbQuery.getResultList();
-			for (LoggingObject loggingObject : queryResult) {
-				out.append(logLineConverter_.getCSVRow(loggingObject, anonymize, resourceableId));
-				out.append(LINE_SEPARATOR);
-				if(count % 1000 == 0) {
+			List<Object[]> queryResult = dbQuery.getResultList();
+			for (Object[] rawObject : queryResult) {
+				LoggingObject loggingObject = (LoggingObject)rawObject[0];
+				Identity identity = (Identity)rawObject[1];
+				User user = (User)rawObject[2];
+				
+				logLineConverter.setRow(workbook, sheet, loggingObject, identity, user, anonymize, resourceableId, isAdministrativeUser);
+				if(count++ % 1000 == 0) {
 					out.flush();
 					em.clear();
 				}
