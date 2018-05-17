@@ -155,9 +155,9 @@ public class DialogElementListController extends FormBasicController implements 
 		}
 				
 		tableModel = new DialogElementsTableModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "dialog.elements");
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setPageSize(25);
+		tableEl.setAndLoadPersistedPreferences(ureq, "dialog.elements.v2");
 	}
 	
 	protected void loadModel() {
