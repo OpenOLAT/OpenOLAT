@@ -231,7 +231,7 @@ public class MembersMailController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
@@ -245,6 +245,16 @@ public class MembersMailController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		allOk &= validateRecipients();
+		
+		return allOk;
+	}
+	
+	private boolean validateRecipients() {
+		boolean allOk = true;
+		
+		boolean atLeastOne = false;
+		
 		externalAddressesEl.clearError();
 		if(externalEl != null && externalEl.isAtLeastSelected(1)) {
 			String value = externalAddressesEl.getValue();
@@ -257,6 +267,7 @@ public class MembersMailController extends FormBasicController {
 						errors.append(email);
 					}
 				}
+				atLeastOne |= true;
 			}
 			
 			if(errors.length() > 0) {
@@ -265,7 +276,46 @@ public class MembersMailController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		
+		if(ownerEl != null) ownerEl.clearError();
+		if(coachEl != null) coachEl.clearError();
+		if(participantEl != null) participantEl.clearError();
+		if(waitingEl != null) waitingEl.clearError();
+		if(individualEl != null) individualEl.clearError();
+		
+		if((ownerEl != null && ownerEl.isAtLeastSelected(1))
+				|| (coachEl != null && coachEl.isAtLeastSelected(1))
+				|| (participantEl != null && participantEl.isAtLeastSelected(1))
+				|| (waitingEl != null && waitingEl.isAtLeastSelected(1))) {
+			atLeastOne |= true;
+		}
+		
+		//check if there is an individual email
+		if(!atLeastOne && individualEl != null && individualEl.isAtLeastSelected(1) && !selectedMembers.isEmpty()) {
+			atLeastOne |= true;
+		}
+		
+		if(!atLeastOne) {
+			if(externalEl != null && externalEl.isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(externalAddressesEl.getValue())) {
+				externalEl.setErrorKey("at.least.one.recipient", null);
+			} else if(individualEl != null && individualEl.isAtLeastSelected(1) && selectedMembers.isEmpty()) {
+				individualEl.setErrorKey("at.least.one.recipient", null);
+			} else if(ownerEl != null && !ownerEl.isAtLeastSelected(1)) {
+				ownerEl.setErrorKey("at.least.one.recipient", null);
+			} else if(coachEl != null && !coachEl.isAtLeastSelected(1)) {
+				coachEl.setErrorKey("at.least.one.recipient", null);
+			} else if(participantEl != null && !participantEl.isAtLeastSelected(1)) {
+				participantEl.setErrorKey("at.least.one.recipient", null);
+			} else if(waitingEl != null && !waitingEl.isAtLeastSelected(1)) {
+				waitingEl.setErrorKey("at.least.one.recipient", null);
+			} else if (individualEl != null && !individualEl.isAtLeastSelected(1)) {
+				individualEl.setErrorKey("at.least.one.recipient", null);
+			} else if (externalEl != null && !externalEl.isAtLeastSelected(1)) {
+				individualEl.setErrorKey("at.least.one.recipient", null);
+			}
+		}
+		
+		return allOk && atLeastOne;
 	}
 	
 	private File[] getAttachments() {
