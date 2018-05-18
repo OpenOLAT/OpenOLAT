@@ -288,7 +288,7 @@ public class PortfolioServiceImpl implements PortfolioService, DeletableGroupDat
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
-		List<Binder> ownedBinders = binderDao.getOwnedBinders(identity);
+		List<Binder> ownedBinders = binderDao.getAllBindersAsOwner(identity);
 		for(Binder ownedBinder:ownedBinders) {
 			OLATResource resource = ((BinderImpl)ownedBinder).getOlatResource();
 			if(resource != null) {
