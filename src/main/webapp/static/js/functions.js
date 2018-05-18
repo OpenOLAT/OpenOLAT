@@ -1064,8 +1064,6 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 		var colsHeight = OPOL.getMainColumnsMaxHeight() - 110;
 		var potentialHeight = o_viewportHeight() - 100;// remove some padding etc.
 		potentialHeight = potentialHeight - theIframe.offset().top;
-		var elem = jQuery('#b_footer');
-		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.outerHeight(true);
 		// resize now
 		var height = (potentialHeight > colsHeight ? potentialHeight : colsHeight);
 		theIframe.height(height);

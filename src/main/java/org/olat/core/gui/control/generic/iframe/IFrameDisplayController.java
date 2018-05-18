@@ -218,7 +218,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);
 		}
 		
-		boolean a = log.isDebug();
 		myContent.contextPut("debug", Boolean.valueOf(log.isDebug()));
 
 		// Add us as cycle listener to be notified when current dispatch cycle is
