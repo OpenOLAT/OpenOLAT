@@ -304,11 +304,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
 			organisationService.addMember(organisation, updatedIdentity, role);
-			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getName(), null);
+			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getKey(), null);
 		} else if (hasBeen && !isNow) {
 			// user not anymore in security group, remove him
 			organisationService.removeMember(organisation, updatedIdentity, role);
-			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getName(), null);
+			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getKey(), null);
 		}
 	}
 
@@ -861,7 +861,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		dbInstance.getCurrentEntityManager().persist(auth);
 		updateAuthenticationHistory(auth, ident);
 		dbInstance.commit();
-		log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
+		log.audit("Create " + provider + " authentication (login=" + ident.getKey() + ",authusername=" + authUserName + ")");
 		return auth;
 	}
 	

@@ -453,7 +453,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			}
 			
 			editedIdentity = securityManager.saveIdentityStatus(editedIdentity, newStatus);
-			logAudit("User::" + getIdentity().getName() + " changed account status for user::" + editedIdentity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
+			logAudit("User::" + getIdentity().getKey() + " changed account status for user::" + editedIdentity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
 		}
 	}
 	

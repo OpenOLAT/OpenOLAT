@@ -229,8 +229,7 @@ public class AuthHelper {
 			locale = I18nModule.getDefaultLocale();
 		}
 		Identity guestIdent = BaseSecurityManager.getInstance().getAndUpdateAnonymousUserForLanguage(locale);
-		int loginStatus = doLogin(guestIdent, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
-		return loginStatus;
+		return doLogin(guestIdent, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 	}
 
 	public static int doInvitationLogin(String invitationToken, UserRequest ureq, Locale locale) {
@@ -312,7 +311,7 @@ public class AuthHelper {
 		// check if loginDenied or maxSession (only for non-admin)
 		if ( (loginBlocked && !usess.getRoles().isOLATAdmin())
 				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (sessionManager.getUserSessionsCnt() >= maxSessions)) && !usess.getRoles().isOLATAdmin() ) ) {
-			log.audit("Login was blocked for username=" + usess.getIdentity().getName() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
+			log.audit("Login was blocked for identity=" + usess.getIdentity().getKey() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
 			sessionManager.signOffAndClear(usess);
 			return LOGIN_NOTAVAILABLE;
 		}
@@ -392,9 +391,6 @@ public class AuthHelper {
 		Cookie cookie = null;
 		if (cookies != null) {
 			for (int i = 0; i < cookies.length; i++) {
-				/*if(log.isDebug()) {
-					log.info("found cookie with name: " + cookies[i].getName() + " and value: " + cookies[i].getValue());
-				}*/
 				if (cookies[i].getName().indexOf("shibsession")!=-1) { //contains "shibsession"
 					cookie = cookies[i];
 					break;
@@ -440,7 +436,7 @@ public class AuthHelper {
 		UserSession usess = ureq.getUserSession();
 		usess.setSessionInfo(sinfo);
 		// For Usertracking, let the User object know about some desired/specified infos from the sessioninfo
-		Map<String,String> sessionInfoForUsertracking = new HashMap<String, String>();
+		Map<String,String> sessionInfoForUsertracking = new HashMap<>();
 		sessionInfoForUsertracking.put(ATTRIBUTE_LANGUAGE, usess.getLocale().toString());
 		sessionInfoForUsertracking.put(ATTRIBUTE_AUTHPROVIDER, authProvider);
 		sessionInfoForUsertracking.put(ATTRIBUTE_IS_WEBDAV, String.valueOf(sinfo.isWebDAV()));

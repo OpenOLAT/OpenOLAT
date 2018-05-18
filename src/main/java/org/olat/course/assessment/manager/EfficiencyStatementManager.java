@@ -211,12 +211,12 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
 				dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
 				if (debug) {
-					log.debug("creating new efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
+					log.debug("creating new efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getKey() + " repoEntry::" + repoEntry.getKey());
 				}				
 			} else {
 				// update existing
 				if (debug) {
-					log.debug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
+					log.debug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getKey() + " repoEntry::" + repoEntry.getKey());
 				}
 				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
 				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
@@ -227,7 +227,7 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 			if (efficiencyProperty != null) {
 				// remove existing since now empty efficiency statements
 				if (debug) {
-					log.debug("removing efficiency statement property::" + efficiencyProperty.getKey() + " for id::"	+ assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey() + " since empty");
+					log.debug("removing efficiency statement property::" + efficiencyProperty.getKey() + " for id::"	+ assessedIdentity.getKey() + " repoEntry::" + repoEntry.getKey() + " since empty");
 				}
 				dbInstance.getCurrentEntityManager().remove(efficiencyProperty);
 			}

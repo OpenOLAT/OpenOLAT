@@ -297,7 +297,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   	try {
   		url = uri.toURL();
   	} catch (MalformedURLException e) {
-  		logWarn("Cannot create access URL to Adobe Connect meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getName() + "\"", e);
+  		logWarn("Cannot create access URL to Adobe Connect meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getKey() + "\"", e);
   	}
   	return url;
   }
@@ -310,7 +310,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   	try {
   		url = uri.toURL();
   	} catch (MalformedURLException e) {
-  		logWarn("Cannot create access URL to Adobe Connect meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getName() + "\"", e);
+  		logWarn("Cannot create access URL to Adobe Connect meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getKey() + "\"", e);
   	}
   	return url;
   }
@@ -367,7 +367,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   @Override
   public boolean createModerator(Identity identity, String roomId) {
   	if(!loginAdmin()) return false;
-  	Map<String, String> parameters = new HashMap<String, String>();
+  	Map<String, String> parameters = new HashMap<>();
   	// create user
   	parameters.put("action", "principal-update");
   	parameters.put("first-name", identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
@@ -450,7 +450,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   @Override
   public boolean login(Identity identity, String password) {
   	if(cookie == null) createCookie();
-    Map<String,String> parameters = new HashMap<String, String>();
+    Map<String,String> parameters = new HashMap<>();
     parameters.put("action", "login");
     if(accountId != null) parameters.put("account-id", accountId);
     parameters.put("login", PREFIX + identity.getName());
@@ -462,7 +462,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
 
   private boolean loginAdmin() {
     if(cookie == null) createCookie();
-    Map<String,String> parameters = new HashMap<String, String>();
+    Map<String,String> parameters = new HashMap<>();
     parameters.put("action", "login");
     if(accountId != null) parameters.put("account-id", accountId);
     parameters.put("login", adminLogin);
@@ -486,7 +486,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   }
 
   private boolean createCookie() {
-    Map<String, String> parameters = new HashMap<String, String>();
+    Map<String, String> parameters = new HashMap<>();
     parameters.put("action", "common-info");
     String response = sendRequest(parameters);
 
@@ -501,7 +501,7 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   }
   
   private String getPrincipalIdFor(Identity identity) {
-  	Map<String, String> parameters = new HashMap<String, String>();
+  	Map<String, String> parameters = new HashMap<>();
     parameters.put("action", "principal-list");
     parameters.put("filter-type", userType);
     parameters.put("filter-type", "user");

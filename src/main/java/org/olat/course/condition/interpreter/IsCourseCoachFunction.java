@@ -71,7 +71,7 @@ public class IsCourseCoachFunction extends AbstractFunction {
 		}
 		if (log.isDebug()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-			log.debug("identity "+ident.getName()+", coursecoach:"+isCourseCoach+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
+			log.debug("identity "+ident.getKey()+", coursecoach:"+isCourseCoach+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}
 		return isCourseCoach ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}

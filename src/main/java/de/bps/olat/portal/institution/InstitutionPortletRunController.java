@@ -62,9 +62,9 @@ public class InstitutionPortletRunController extends BasicController {
 			ipe = null;
 		}
 		
-		this.portletVC.contextPut("hasInstitution", new Boolean(ipe != null));
+		this.portletVC.contextPut("hasInstitution", Boolean.valueOf(ipe != null));
 		if (ipe == null) {
-			logWarn("unknown institution (" + userinst + ") for user " + ureq.getIdentity().getName(), null);
+			logWarn("unknown institution (" + userinst + ") for identity " + ureq.getIdentity().getKey(), null);
 		} else {
 			this.portletVC.contextPut("iname", ipe.getInstitutionName());
 			this.portletVC.contextPut("iurl", ipe.getInstitutionUrl());

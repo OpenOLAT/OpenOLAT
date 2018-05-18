@@ -711,7 +711,7 @@ public class CourseWebService {
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
 			organisationService.addMember(author, OrganisationRoles.author);
-			log.audit("User::" + identity.getName() + " added system role::" + OrganisationRoles.author + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
+			log.audit("User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API", null);
 		}
 		
 		//add the author as owner of the course
@@ -742,7 +742,7 @@ public class CourseWebService {
 			if(!hasBeenAuthor) {
 				//not an author already, add this identity to the security group "authors"
 				organisationService.addMember(author, OrganisationRoles.author);
-				log.audit("User::" + identity.getName() + " added system role::" + OrganisationRoles.author + " to user::" + author.getName() + " via addAuthor method in course REST API", null);
+				log.audit("User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API", null);
 			}
 		}
 		

@@ -142,6 +142,14 @@ public class MediaDAO {
 		return query.getResultList();
 	}
 	
+	public List<Media> load(IdentityRef author) {
+		String query = "select media from pfmedia as media where media.author.key=:authorKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Media.class)
+				.setParameter("authorKey", author.getKey())
+				.getResultList();
+	}
+	
 	public List<BinderPageUsage> usedInBinders(MediaLight media) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, page.key, page.title, page.status")
@@ -166,7 +174,23 @@ public class MediaDAO {
 			usage.add(new BinderPageUsage(binderKey, binderTitle, pageKey, pageTitle, pageStatus));
 		}
 		return usage;
+	}
+	
+	public boolean isUsed(MediaLight media) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page.key")
+		  .append(" from pfpage as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join pageBody.parts as bodyPart")
+		  .append(" where bodyPart.media.key=:mediaKey");
 		
+		List<Long> pageKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("mediaKey", media.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return pageKey != null && !pageKey.isEmpty() && pageKey.get(0) != null;
 	}
 	
 	public void deleteMedia(Media media) {

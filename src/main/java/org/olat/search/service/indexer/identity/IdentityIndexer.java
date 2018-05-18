@@ -74,7 +74,7 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 					continue;
 				}
 
-				if (isLogDebugEnabled()) logDebug("Indexing identity::" + identity.getName() + " and counter::" + counter);  	  	
+				if (isLogDebugEnabled()) logDebug("Indexing identity::" + identity.getKey() + " and counter::" + counter);  	  	
 				// Create a search context for this identity. The search context will open the users visiting card in a new tab
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey()));

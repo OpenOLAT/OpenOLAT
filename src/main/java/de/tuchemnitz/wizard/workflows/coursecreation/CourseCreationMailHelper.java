@@ -78,7 +78,7 @@ public class CourseCreationMailHelper {
 	 */
 	public static final MailerResult sentNotificationMail(final UserRequest ureq, final CourseCreationConfiguration config) {
 		Translator translator = Util.createPackageTranslator(CourseCreationMailHelper.class, ureq.getLocale());
-		log.info("Course creation with wizard finished. [User: " + ureq.getIdentity().getName() + "] [Course name: " + config.getCourseTitle() + "]");
+		log.info("Course creation with wizard finished. [identity: " + ureq.getIdentity().getKey() + "] [Course name: " + config.getCourseTitle() + "]");
 		String subject = translator.translate("mail.subject", new String[] {config.getCourseTitle()});
 		String body = translator.translate("mail.body.0", new String[] {config.getCourseTitle()});
 		body += translator.translate("mail.body.1");

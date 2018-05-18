@@ -402,7 +402,7 @@ public class Tracing {
 			sb.append(SEPARATOR);
 			sb.append(callingClass == null ? N_A : callingClass.getPackage().getName());
 			sb.append(SEPARATOR);
-			sb.append(identity == null ? N_A : identity.getName());
+			sb.append(identity == null ? N_A : identity.getKey());
 			sb.append(SEPARATOR);
 			sb.append(remoteIp == null ? N_A : remoteIp);
 			sb.append(SEPARATOR);
@@ -422,8 +422,7 @@ public class Tracing {
 		HttpServletRequest ureq = null;
 		if(tld != null){
 			//thread local data is not initialized so far if Tracing is called from
-			//e.g. a worker thread like in Search or UpdateEfficiency worker
-			//TODO:pb:check if this was also a problem with IM threads.
+			//e.g. a worker thread like in Search or UpdateEfficiency worke
 			ureq = tld.getHttpServletRequest();
 		}
 		UserSession usess = null;
@@ -460,7 +459,7 @@ public class Tracing {
 			sb.append(SEPARATOR);
 			sb.append(callingClass == null ? N_A : callingClass.getPackage().getName());
 			sb.append(SEPARATOR);
-			sb.append(identity == null ? N_A : identity.getName());
+			sb.append(identity == null ? N_A : identity.getKey());
 			sb.append(SEPARATOR);
 			sb.append(remoteIp == null ? N_A : remoteIp);
 			sb.append(SEPARATOR);

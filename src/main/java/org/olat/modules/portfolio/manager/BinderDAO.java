@@ -344,6 +344,30 @@ public class BinderDAO {
 		return dbInstance.getCurrentEntityManager().merge(binder);
 	}
 	
+	/**
+	 * @param owner The owner
+	 * @return All the binder where the specified identity as the role owner
+	 */
+	public List<Binder> getAllBindersAsOwner(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join fetch binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join fetch binder.olatResource as resource")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("identityKey", owner.getKey())
+			.setParameter("role", PortfolioRoles.owner.name())
+			.getResultList();
+	}
+	
+	/**
+	 * 
+	 * @param owner The owner
+	 * @return The binder where the specified identity has the role 'owner' and the binder is still open.
+	 */
 	public List<Binder> getOwnedBinders(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder from pfbinder as binder")

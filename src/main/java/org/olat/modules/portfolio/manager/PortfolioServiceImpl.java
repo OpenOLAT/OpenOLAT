@@ -124,6 +124,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -137,7 +138,7 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 @Service
-public class PortfolioServiceImpl implements PortfolioService, DeletableGroupData {
+public class PortfolioServiceImpl implements PortfolioService, DeletableGroupData, UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(PortfolioServiceImpl.class);
 	
@@ -285,6 +286,37 @@ public class PortfolioServiceImpl implements PortfolioService, DeletableGroupDat
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		List<Binder> ownedBinders = binderDao.getAllBindersAsOwner(identity);
+		for(Binder ownedBinder:ownedBinders) {
+			OLATResource resource = ((BinderImpl)ownedBinder).getOlatResource();
+			if(resource != null) {
+				continue;// this is a template
+			}
+
+			List<Identity> owners = binderDao.getMembers(ownedBinder, PortfolioRoles.owner.name());
+			if(owners.size() == 1 && owners.get(0).getKey().equals(identity.getKey())) {
+				try {
+					deleteBinder(ownedBinder);
+					dbInstance.commit();
+				} catch (Exception e) {
+					log.error("Cannot delete binder: " + ownedBinder.getKey());
+					dbInstance.rollbackAndCloseSession();
+				}
+			}
+		}
+
+		List<Media> medias = mediaDao.load(identity);
+		for(Media media:medias) {
+			if(mediaDao.isUsed(media)) {
+				log.audit("Cannot delete media because used: " + media.getKey());
+			} else {
+				deleteMedia(media);
+			}
+		}
 	}
 
 	@Override

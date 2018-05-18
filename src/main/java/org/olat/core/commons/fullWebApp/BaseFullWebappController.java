@@ -1463,7 +1463,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		if(isAdmin) {
 			lock = false;
 		} else if(lockResource == null) {
-			logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+			logAudit("Async lock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")", null);
 			lockResource(mode.getResource());
 			lock = true;
 			lockMode = mode;
@@ -1485,7 +1485,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private boolean asyncUnlockResource(TransientAssessmentMode mode) {
 		boolean unlock;
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
-			logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+			logAudit("Async unlock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")", null);
 			unlockResource();
 			if(lockMode != null) {
 				//check if there is a locked resource first

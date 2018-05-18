@@ -61,7 +61,7 @@ public class LockImpl extends PersistentObject {
 
 	@Override
 	public String toString() {
-		return "Lock[owner="+(owner==null ? "null" : owner.getName())+",asset="+asset+",nodeId="+nodeId+"]";
+		return "Lock[owner="+(owner==null ? "null" : owner.getKey())+",asset="+asset+",nodeId="+nodeId+"]";
 	}
 
 	public String getAsset() {

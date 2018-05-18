@@ -249,7 +249,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		try {
 			url = uri.toURL();
 		} catch (MalformedURLException e) {
-			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getName() + "\" ("+identity.getKey()+")", e);
+			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getKey() + "\" ("+identity.getKey()+")", e);
 		}
 		
 		return url;
@@ -527,7 +527,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		try {
 			url = uri.toURL();
 		} catch (MalformedURLException e) {
-			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + recordingId + "\" and user \"" + identity.getName() + "\" ("+identity.getKey()+")", e);
+			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + recordingId + "\" and user \"" + identity.getKey() + "\" ("+identity.getKey()+")", e);
 		}
 		
 		return url;

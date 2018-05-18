@@ -60,7 +60,7 @@ public class SessionInfo implements Serializable {
 	private boolean secure;
 	private long timestmp=-1;
 	private long creationTime=-1;
-	private static final String FORMATTED = "login: [%s] first: [%s] last: [%s] fromIP: [%s] fromFQN: [%s] authProvider: [%s] webdav: [%s] REST: [%s] secure: [%s] webMode: [%s] duration: [%d]s";
+	private static final String FORMATTED = "identity: [%s] first: [%s] last: [%s] fromIP: [%s] fromFQN: [%s] authProvider: [%s] webdav: [%s] REST: [%s] secure: [%s] webMode: [%s] duration: [%d]s";
 	
 	/**
 	 * @param login
@@ -89,7 +89,7 @@ public class SessionInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format(FORMATTED, login, firstname, lastname, fromIP, fromFQN, authProvider, isWebDAV, isREST, isSecure(), getWebMode(),
+		return String.format(FORMATTED, identityKey, firstname, lastname, fromIP, fromFQN, authProvider, isWebDAV, isREST, isSecure(), getWebMode(),
 				getSessionDuration() / 1000);
 	}
 	/**

@@ -271,7 +271,7 @@ public class UserSessionManager implements GenericEventListener {
 				UserSession invalidatedSession = null;
 
 				if(isDebug) {
-					log.debug("signOn() authUsersNamesOtherNodes.contains " + identity.getName() + ": " + authUsersNamesOtherNodes.contains(identity.getKey()));
+					log.debug("signOn() authUsersNamesOtherNodes.contains " + identity.getKey() + ": " + authUsersNamesOtherNodes.contains(identity.getKey()));
 				}
 					
 			    // check if already a session exist for this user
@@ -292,7 +292,7 @@ public class UserSessionManager implements GenericEventListener {
 				// user can choose upercase letters in identity name, but this has no effect on the
 				// database queries, the login form or the IM account. IM works only with lowercase
 				// characters -> map stores values as such
-				if(isDebug) log.debug("signOn() adding to userNameToIdentity: "+identity.getName().toLowerCase());
+				if(isDebug) log.debug("signOn() adding to userNameToIdentity: " + identity.getKey());
 				userNameToIdentity.add(identity.getKey());
 				userSessionCache.put(identity.getKey(), new Integer(Settings.getNodeId()));
 			
@@ -308,7 +308,7 @@ public class UserSessionManager implements GenericEventListener {
 				if (invalidatedSession != null || authUsersNamesOtherNodes.contains(identity.getKey())) {
 					// put flag killed-existing-session into session-store to show info-message 'only one session for each user' on user-home screen
 					usess.putEntry(STORE_KEY_KILLED_EXISTING_SESSION, Boolean.TRUE);
-					if(isDebug) log.debug("signOn() removing from authUsersNamesOtherNodes: "+identity.getName());
+					if(isDebug) log.debug("signOn() removing from authUsersNamesOtherNodes: " + identity.getKey());
 					authUsersNamesOtherNodes.remove(identity.getKey());
 					//OLAT-3381 & OLAT-3382
 					if(invalidatedSession != null) {
@@ -458,7 +458,7 @@ public class UserSessionManager implements GenericEventListener {
 			//see also SIDEEFFECT!! line in signOn(..)
 			Identity previousSignedOn = identityEnvironment.getIdentity();
 			if (previousSignedOn != null && previousSignedOn.getKey() != null) {
-				if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: "+previousSignedOn.getName().toLowerCase());
+				if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: " + previousSignedOn.getKey());
 				userNameToIdentity.remove(previousSignedOn.getKey());
 				userSessionCache.remove(previousSignedOn.getKey());
 			}

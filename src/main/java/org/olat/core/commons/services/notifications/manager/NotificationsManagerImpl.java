@@ -434,7 +434,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto) {
 		if(veto) {
 			if(latestSub != null) {
-				logAudit(latestSub.getIdentity().getName() + " already received notification email within prefs interval");
+				logAudit(latestSub.getIdentity().getKey() + " already received notification email within prefs interval");
 			}
 		} else if (items.size() > 0) {
 			Identity curIdent = latestSub.getIdentity();
@@ -451,10 +451,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				}
 			  
 				StringBuilder mailLog = new StringBuilder();
-				mailLog.append("Notifications mailed for ").append(curIdent.getName()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
+				mailLog.append("Notifications mailed for ").append(curIdent.getKey()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
 				logAudit(mailLog.toString());
 			} else {
-				logAudit("Error sending notification email to : " + curIdent.getName());
+				logAudit("Error sending notification email to : " + curIdent.getKey());
 			}
 		}
 		//collecting the SubscriptionItem can potentially make a lot of DB calls
@@ -496,7 +496,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public String getUserIntervalOrDefault(Identity ident){
 		if(ident == null || ident.getUser() == null || ident.getUser().getPreferences() == null) {
-			logWarn("User " + (ident == null ? "NULL" : ident.getName()) + " has no preferences invalid", null);
+			logWarn("Identity " + (ident == null ? "NULL" : ident.getKey()) + " has no preferences invalid", null);
 			return getDefaultNotificationInterval();
 		}
 		
@@ -504,7 +504,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (!StringHelper.containsNonWhitespace(userInterval)) userInterval = getDefaultNotificationInterval();
 		List<String> avIntvls = getEnabledNotificationIntervals();
 		if (!avIntvls.contains(userInterval)) {
-			logWarn("User " + ident.getName() + " has an invalid notification-interval (not found in config): " + userInterval, null);
+			logWarn("Identity " + ident.getKey() + " has an invalid notification-interval (not found in config): " + userInterval, null);
 			userInterval = getDefaultNotificationInterval();
 		}
 		return userInterval;
@@ -603,9 +603,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		} 
 		if (result == null || result.getReturnCode() > 0) {
 			if(result!=null)
-				log.warn("Could not send email to identity " + to.getName() + ". (returncode=" + result.getReturnCode() + ", to=" + to + ")");
+				log.warn("Could not send email to identity " + to.getKey() + ". (returncode=" + result.getReturnCode() + ", to=" + to + ")");
 			else
-				log.warn("Could not send email to identity " + to.getName() + ". (returncode = null) , to=" + to + ")");
+				log.warn("Could not send email to identity " + to.getKey() + ". (returncode = null) , to=" + to + ")");
 			return false;
 		} else {
 			return true;
@@ -867,7 +867,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public void markSubscriberRead(Identity identity, SubscriptionContext subsContext) {
 		Publisher p = getPublisher(subsContext);
-		if (p == null) throw new AssertException("cannot markRead for identity " + identity.getName()
+		if (p == null) throw new AssertException("cannot markRead for identity " + identity.getKey()
 				+ ", since the publisher for the given subscriptionContext does not exist: subscontext = " + subsContext);
 
 		markSubscriberRead(identity, p);
@@ -1055,7 +1055,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			if (s != null) {
 				deleteSubscriber(s);
 			} else {
-				logWarn("could not unsubscribe " + identity.getName() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+				logWarn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
 			}
 		}
 		dbInstance.commit();
@@ -1072,7 +1072,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				if (s != null) {
 					deleteSubscriber(s);
 				} else {
-					logWarn("could not unsubscribe " + identity.getName() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+					logWarn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
 				}
 			}
 		}
@@ -1089,7 +1089,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (foundSub != null) {
 			deleteSubscriber(foundSub);
 		} else {
-			logWarn("could not unsubscribe " + s.getIdentity().getName() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier(), null);
+			logWarn("could not unsubscribe " + s.getIdentity().getKey() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier(), null);
 		}
 	}
 

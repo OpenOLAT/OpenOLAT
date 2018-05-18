@@ -1250,7 +1250,7 @@ public class RepositoryManager {
 				}
 
 				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.addOwner, mailing);
-				log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+				log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
 						+ "' to repoentry with key " + re.getKey());
 			}//else silently ignore already owner identities
 		}
@@ -1297,7 +1297,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 				+ "' from repositoryentry with key " + re.getKey());
 	}
 
@@ -1380,7 +1380,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
 				+ "' to repositoryentry with key " + re.getKey());
 	}
 
@@ -1414,7 +1414,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 				+ "' from repositoryentry with key " + re.getKey());
 	}
 
@@ -1480,7 +1480,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
 				+ "' to repositoryentry with key " + re.getKey());
 	}
 
@@ -1516,7 +1516,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 				+ "' from repositoryentry with key " + re.getKey());
 	}
 
@@ -1565,7 +1565,7 @@ public class RepositoryManager {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Identity(.key):").append(ureqIdentity.getKey()).append("removed multiple identities from security groups. Identities:: " );
 			for (Identity member : members) {
-				sb.append(member.getName()).append(", ");
+				sb.append(member.getKey()).append(", ");
 			}
 			log.audit(sb.toString());
 		}

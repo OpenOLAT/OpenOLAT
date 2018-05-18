@@ -86,7 +86,7 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 			StringOutput sb = new StringOutput(255);
 			sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
 			if(candidateSession.getIdentity() != null) {
-				sb.append(candidateSession.getIdentity().getKey()).append("/").append(candidateSession.getIdentity().getName());
+				sb.append(candidateSession.getIdentity().getKey());
 			} else {
 				sb.append(candidateSession.getAnonymousIdentifier());
 			}
@@ -103,11 +103,11 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 		StringBuilder sb = new StringBuilder(255);
 		sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
 		if(candidateSession.getIdentity() != null) {
-			sb.append(candidateSession.getIdentity().getKey()).append("/").append(candidateSession.getIdentity().getName());
+			sb.append(candidateSession.getIdentity().getKey());
 		} else {
 			sb.append(candidateSession.getAnonymousIdentifier());
 		}
-		sb.append(" ) retrieved by coach ").append(coach.getKey()).append("/").append(coach.getName());
+		sb.append(" ) retrieved by coach ").append(coach.getKey());
 		log.audit(sb.toString());
 	}
 	
@@ -118,11 +118,11 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 		StringBuilder sb = new StringBuilder(255);
 		sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
 		if(candidateSession.getIdentity() != null) {
-			sb.append(candidateSession.getIdentity().getKey()).append("/").append(candidateSession.getIdentity().getName());
+			sb.append(candidateSession.getIdentity().getKey());
 		} else {
 			sb.append(candidateSession.getAnonymousIdentifier());
 		}
-		sb.append(" ) reopened by coach ").append(coach.getKey()).append("/").append(coach.getName());
+		sb.append(" ) reopened by coach ").append(coach.getKey());
 		log.audit(sb.toString());
 	}
 
@@ -131,11 +131,11 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 		StringBuilder sb = new StringBuilder(255);
 		sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
 		if(candidateSession.getIdentity() != null) {
-			sb.append(candidateSession.getIdentity().getKey()).append("/").append(candidateSession.getIdentity().getName());
+			sb.append(candidateSession.getIdentity().getKey());
 		} else {
 			sb.append(candidateSession.getAnonymousIdentifier());
 		}
-		sb.append(" ) extended of ").append(extraTime).append(" by coach ").append(coach.getKey()).append("/").append(coach.getName());
+		sb.append(" ) extended of ").append(extraTime).append(" by coach ").append(coach.getKey());
 		log.audit(sb.toString());
 	}
 

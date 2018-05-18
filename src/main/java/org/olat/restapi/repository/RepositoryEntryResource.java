@@ -766,7 +766,7 @@ public class RepositoryEntryResource {
 				}
 				frm.unzipFileResource(re.getOlatResource());
 			}
-			log.audit("Resource: " + re.getOlatResource() + " replaced by " + identity.getName());
+			log.audit("Resource: " + re.getOlatResource() + " replaced by " + identity.getKey());
 			return re;
 		}
 

@@ -25,9 +25,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for Author
+ *
  * 
  * <P>
  * Initial Date:  15 mars 2011 <br>
@@ -46,13 +44,13 @@ public class Author {
 	public Author(Identity identity) {
 		firstname = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
 		surname = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-		link = "[Identity:" + identity.getKey() + "][Username:" + identity.getName() + "]";
+		link = "[Identity:" + identity.getKey() + "]";
 	}
 	
 	public Long extractKey() {
 		if(StringHelper.containsNonWhitespace(link)) {
 			int indexId = link.indexOf("[Identity:");
-			int indexUsername = link.indexOf("][Username:");
+			int indexUsername = link.indexOf(']');
 			if(indexId >= 0 && indexUsername > indexId) {
 				String keyString = link.substring(indexId + 10, indexUsername);
 				return Long.parseLong(keyString);

@@ -36,7 +36,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -75,7 +76,9 @@ import org.springframework.stereotype.Service;
  * @author Christian Guretzki
  */
 @Service("enrollmentManager")
-public class EnrollmentManager extends BasicManager {
+public class EnrollmentManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(EnrollmentManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -91,13 +94,13 @@ public class EnrollmentManager extends BasicManager {
 			WindowControl wControl, Translator trans, List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
 		
 		final EnrollStatus enrollStatus = new EnrollStatus();
-		if (isLogDebugEnabled()) logDebug("doEnroll");
+		if (log.isDebug()) log.debug("doEnroll");
 		// check if the user is able to be enrolled
 		int groupsEnrolledCount = getBusinessGroupsWhereEnrolled(identity, groupKeys, areaKeys, cgm.getCourseEntry()).size();
 		int waitingListCount = getBusinessGroupsWhereInWaitingList(identity, groupKeys, areaKeys).size();
 		int enrollCountConfig = enNode.getModuleConfiguration().getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
 		if ( (groupsEnrolledCount + waitingListCount) < enrollCountConfig ) {
-			if (isLogDebugEnabled()) logDebug("Identity is not enrolled identity=" + identity.getName() + "  group=" + group.getName());
+			if (log.isDebug()) log.debug("Identity is not enrolled identity=" + identity.getKey() + "  group=" + group.getName());
 			// 1. Check if group has max size defined. If so check if group is full
 			// o_clusterREVIEW cg please review it - also where does the group.getMaxParticipants().equals("") come from??
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
@@ -119,21 +122,21 @@ public class EnrollmentManager extends BasicManager {
 		} else {
 			enrollStatus.setErrorMessage(trans.translate("error.group.already.enrolled"));
 		}
-		if (isLogDebugEnabled()) logDebug("doEnroll finished");
+		if (log.isDebug()) log.debug("doEnroll finished");
 		return enrollStatus;
 	}
 
 	public void doCancelEnrollment(final Identity identity, final BusinessGroup enrolledGroup, final ENCourseNode enNode,
 			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
-		if (isLogDebugEnabled()) logDebug("doCancelEnrollment");
+		if (log.isDebug()) log.debug("doCancelEnrollment");
 		// 1. Remove group membership, fire events, do loggin etc.
 		// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 		// and move the users accordingly
 		MailPackage doNotSendmailPackage = new MailPackage(false);
 		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, doNotSendmailPackage);
-		logInfo(" doCancelEnrollment in group " + enrolledGroup, identity.getName());
+		log.info(" doCancelEnrollment in group " + enrolledGroup, identity.getKey().toString());
 
-		logInfo(" doCancelEnrollment in group " + enrolledGroup, identity.getName());
+		log.info(" doCancelEnrollment in group " + enrolledGroup, identity.getKey().toString());
 		// 2. Remove enrollmentdate property
 		// only remove last time date, not firsttime
 		Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);

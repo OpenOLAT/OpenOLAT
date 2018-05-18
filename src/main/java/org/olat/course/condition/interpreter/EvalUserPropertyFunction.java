@@ -178,7 +178,7 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 		}
 
 		if (debug) {
-			log.debug("identity '" + ident.getName() + "' tested on properties '" + propName + "' to have value '" +
+			log.debug("identity '" + ident.getKey() + "' tested on properties '" + propName + "' to have value '" +
 					searchValue + "' user's value was '" + userValue + "', match=" + match);
 		}
 		return match ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE;

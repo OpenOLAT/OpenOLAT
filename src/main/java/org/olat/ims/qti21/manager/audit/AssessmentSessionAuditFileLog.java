@@ -117,7 +117,7 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach) {
 		try {
 			AuditLogFormatter.logDate(writer);
-			writer.write("Test session retrieved by " + coach.getKey() + "/" + coach.getName());
+			writer.write("Test session retrieved by " + coach.getKey());
 			writer.write("\n");
 			writer.flush();
 			debugLog.logTestRetrieved(candidateSession, coach);
@@ -132,7 +132,7 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 	public void logTestReopen(AssessmentTestSession candidateSession, Identity coach) {
 		try {
 			AuditLogFormatter.logDate(writer);
-			writer.write("Test session reopened by " + coach.getKey() + "/" + coach.getName());
+			writer.write("Test session reopened by " + coach.getKey());
 			writer.write("\n");
 			writer.flush();
 			debugLog.logTestRetrieved(candidateSession, coach);
@@ -145,7 +145,7 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, Identity coach) {
 		try {
 			AuditLogFormatter.logDate(writer);
-			writer.write("Test session extened " + extraTime + " by " + coach.getKey() + "/" + coach.getName());
+			writer.write("Test session extened " + extraTime + " by " + coach.getKey());
 			writer.write("\n");
 			writer.flush();
 			debugLog.logTestRetrieved(candidateSession, coach);

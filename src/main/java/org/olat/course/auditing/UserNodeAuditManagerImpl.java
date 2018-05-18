@@ -104,7 +104,7 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		sb.append(LOG_DELIMITER)
 		  .append("Date: ").append(date).append("\n");
 		if(identity != null) {
-			sb.append("User: ").append(identity.getName()).append("\n");
+			sb.append("Identity: ").append(identity.getKey()).append("\n");
 		}
 		sb.append(logText).append("\n");
 		return sb.toString();

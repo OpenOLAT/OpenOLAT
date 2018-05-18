@@ -89,7 +89,7 @@ public class UserSessionInformationsController extends BasicController {
 			Identity iden = usess.getIdentity();
 			sb.append("authusersession (").append(usess.hashCode()).append(") of ");
 			if (iden != null) {
-				sb.append(iden.getName()).append(" ").append(iden.getKey());
+				sb.append(iden.getKey()).append(" ").append(iden.getKey());
 			} else {
 				sb.append(" - ");
 			}

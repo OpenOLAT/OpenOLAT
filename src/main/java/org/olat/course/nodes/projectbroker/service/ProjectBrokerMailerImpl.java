@@ -202,7 +202,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		if(bundle != null) {
 			mailManager.sendMessage(bundle);
 		}
-		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getName() + " , mailerResult.returnCode=" + result.getReturnCode());
+		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getKey() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
 	}
 

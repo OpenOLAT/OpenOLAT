@@ -85,7 +85,7 @@ public class DeleteUserDataTask implements LongRunnable {
 		File userTempQtiEditorDir = new File(QTIEditorPackageImpl.getQTIEditorBaseDir(), newDeletedUserName);
 		if (userTempQtiEditorDir.exists()) {
 			FileUtils.deleteDirsAndFiles(userTempQtiEditorDir, true, true); 
-			log.audit("User-Deletion: identity=" + identity.getName() +" : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());
+			log.audit("User-Deletion: identity=" + identity.getKey() + " : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());
 		}
 	}
 
@@ -100,7 +100,7 @@ public class DeleteUserDataTask implements LongRunnable {
 		if(metaHomeUserDir.exists()) {
 			// the meta-data under home/<USER> can be deleted and must not be renamed
 			FileUtils.deleteDirsAndFiles(metaHomeUserDir, true, true); 			
-			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getName()+ " directory=" + metaHomeUserDir.getAbsolutePath());
+			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
 		}
 
 		File versionHomeDir = new File(FolderConfig.getCanonicalVersionRoot(), userHome);
@@ -108,7 +108,7 @@ public class DeleteUserDataTask implements LongRunnable {
 		if(versionHomeUserDir.exists()) {
 			// the meta-data under home/<USER> can be deleted and must not be renamed
 			FileUtils.deleteDirsAndFiles(versionHomeUserDir, true, true); 			
-			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getName()+ " directory=" + metaHomeUserDir.getAbsolutePath());
+			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
 		}
 	}
 
@@ -142,7 +142,7 @@ public class DeleteUserDataTask implements LongRunnable {
 				File userDir = new File(nodeDir, "person_" + identity.getKey());
 				if(userDir.exists()) {
 					FileUtils.deleteDirsAndFiles(userDir, true, true); 
-					log.audit("User-Deletion: identity=" + identity.getName() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+					log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
 				}
 			}
 		}
@@ -213,7 +213,7 @@ public class DeleteUserDataTask implements LongRunnable {
 		if (userDir.exists()) {
 			// ok found a directory of a user => delete it
 			FileUtils.deleteDirsAndFiles(userDir, true, true); 
-			log.audit("User-Deletion: identity=" + identity.getName() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+			log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
 		}
 	}
 	

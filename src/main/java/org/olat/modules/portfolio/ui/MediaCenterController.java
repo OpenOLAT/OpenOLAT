@@ -255,7 +255,7 @@ public class MediaCenterController extends FormBasicController
 		String searchString = tableEl.getQuickSearchString();
 		List<String> tagNames = getSelectedTagNames();
 		Map<Long,MediaRow> currentMap = model.getObjects()
-				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));
+				.stream().collect(Collectors.toMap(MediaRow::getKey, r -> r));
 
 		List<MediaLight> medias = portfolioService.searchOwnedMedias(getIdentity(), searchString, tagNames);
 		List<MediaRow> rows = new ArrayList<>(medias.size());

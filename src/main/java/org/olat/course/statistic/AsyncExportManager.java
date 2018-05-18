@@ -151,7 +151,7 @@ public class AsyncExportManager {
 		waitingCnt++;
 		while(identitiesOfJobsCurrentlyRunning.size()>concurrentExportsPerNode || identitiesOfJobsCurrentlyRunning.contains(identity)) {
 			try{
-				log.info("waitForSlot: user "+identity.getName()+" wants to archive a course log, but the queue is full. Running count: "+identitiesOfJobsCurrentlyRunning.size()+". Total pending jobs: "+waitingCnt);
+				log.info("waitForSlot: identity " + identity.getKey() + " wants to archive a course log, but the queue is full. Running count: "+identitiesOfJobsCurrentlyRunning.size()+". Total pending jobs: "+waitingCnt);
 				wait();
 			} catch(InterruptedException ie) {
 				// this empty catch is ok
@@ -164,7 +164,7 @@ public class AsyncExportManager {
 	/** internal counter method **/
 	private synchronized void returnSlot(Identity identity) {
 		identitiesOfJobsCurrentlyRunning.remove(identity);
-		log.info("returnSlot: user "+identity.getName()+" returns a slot. Running count: "+identitiesOfJobsCurrentlyRunning.size()+", Total pending jobs: "+waitingCnt);
+		log.info("returnSlot: identity " + identity.getKey() + " returns a slot. Running count: "+identitiesOfJobsCurrentlyRunning.size()+", Total pending jobs: "+waitingCnt);
 		notifyAll();
 	}
 }

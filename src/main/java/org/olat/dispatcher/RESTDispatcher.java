@@ -165,7 +165,7 @@ public class RESTDispatcher implements Dispatcher {
 				if (restIdentity == null)
 					log.debug("Found SSO token " + RestSecurityHelper.SEC_TOKEN + " in url, but token is not bound to an identity");
 				else
-					log.debug("Found SSO token " + RestSecurityHelper.SEC_TOKEN + " in url which is bound to identity::" + restIdentity.getName());
+					log.debug("Found SSO token " + RestSecurityHelper.SEC_TOKEN + " in url which is bound to identity::" + restIdentity.getKey());
 			}
 			//
 			if (restIdentity != null) {

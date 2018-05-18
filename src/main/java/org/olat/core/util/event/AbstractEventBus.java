@@ -241,7 +241,7 @@ public abstract class AbstractEventBus implements EventBus {
 	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
 	 */
 	private static class EventAgency {
-		private WeakHashMap<GenericEventListener, String> listeners = new WeakHashMap<GenericEventListener, String>();
+		private WeakHashMap<GenericEventListener, Long> listeners = new WeakHashMap<>();
 		
 		/**
 		 * @param event
@@ -261,8 +261,8 @@ public abstract class AbstractEventBus implements EventBus {
 		 */
 		void addListener(GenericEventListener gel, Identity identity) {
 			if (!listeners.containsKey(gel)) {
-				String identityName = (identity != null? identity.getName() : null);
-				listeners.put(gel, identityName);
+				Long identityKey = (identity != null? identity.getKey() : null);
+				listeners.put(gel, identityKey);
 			}
 		}
 
