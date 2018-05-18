@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -138,12 +139,19 @@ public class RosterDAO {
 		return query.getResultList();
 	}
 	
-	public void deleteEntry(Identity identity, OLATResourceable ores) {
+	public void deleteEntry(IdentityRef identity, OLATResourceable ores) {
 		String del = "delete from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname";
 		dbInstance.getCurrentEntityManager().createQuery(del)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
+				.executeUpdate();
+	}
+	
+	public void deleteEntry(IdentityRef identity) {
+		String del = "delete from imrosterentry entry where entry.identityKey=:identityKey";
+		dbInstance.getCurrentEntityManager().createQuery(del)
+				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();
 	}
 }
