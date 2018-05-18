@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.id.Identity;
@@ -34,13 +35,17 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
+import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
@@ -65,6 +70,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	@Autowired
 	private PageDAO pageDao;
 	@Autowired
+	private MediaDAO mediaDao;
+	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
 	private AssignmentDAO assignmentDao;
@@ -74,6 +81,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	private PortfolioService portfolioService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 	
 	@Test
 	public void createNewOwnedPorfolio() {
@@ -1131,5 +1140,67 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertTrue(deletedPages.isEmpty());
 	}
 	
-	
+	/**
+	 * Check if the delete user method do its job.
+	 * 
+	 */
+	@Test
+	public void deleteUser() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-21");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+
+		// the user make a template
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef templateSectionRef = portfolioService.appendNewSection("1. section ", "Section 1", null, null, templateBinder);
+		dbInstance.commit();
+		Section templateSection = portfolioService.getSection(templateSectionRef);
+		Assignment assignment = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
+		Assert.assertNotNull(assignment);
+		dbInstance.commit();
+
+		// the user use the template
+		Binder binder = portfolioService.assignBinder(owner, templateBinder, templateEntry, null, null);
+		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
+		binder = synchedBinder.getBinder();
+		dbInstance.commitAndCloseSession();
+		
+		// add a media to a page
+		Section reloadedSection = portfolioService.getSections(binder).get(0);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
+		Media media = mediaDao.createMedia("To delete", "Binder", "A media to delete promptly", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, owner);
+		dbInstance.commitAndCloseSession();
+		MediaPart mediaPart = new MediaPart();
+		mediaPart.setMedia(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		
+		// add some markers
+		Identity permanentUser = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-22");
+		Media permanentMedia = mediaDao.createMedia("Permanent", "Binder", "A media to stay", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, permanentUser);
+		Binder permanentBinder = portfolioService.assignBinder(permanentUser, templateBinder, templateEntry, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		// delete the user
+		userDeletionManager.deleteIdentity(owner);
+		
+		// the template is a learn ressource and will not be deleted
+		Binder reloadedtemplateBinder = portfolioService.getBinderByKey(templateBinder.getKey());
+		Assert.assertNotNull(reloadedtemplateBinder);
+		// the binder 
+		Binder deletedBinder = portfolioService.getBinderByKey(binder.getKey());
+		Assert.assertNull(deletedBinder);
+		// the media
+		Media deletedMedia = portfolioService.getMediaByKey(media.getKey());
+		Assert.assertNull(deletedMedia);
+		
+		// check that the method doesn't delete stuff of other users
+		Binder reloadedPermanentBinder = portfolioService.getBinderByKey(permanentBinder.getKey());
+		Assert.assertNotNull(reloadedPermanentBinder);
+		// the media
+		Media reloadedPermanentMedia = portfolioService.getMediaByKey(permanentMedia.getKey());
+		Assert.assertNotNull(reloadedPermanentMedia);
+		
+	}
 }

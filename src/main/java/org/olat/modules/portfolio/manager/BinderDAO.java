@@ -349,8 +349,8 @@ public class BinderDAO {
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where membership.identity.key=:identityKey and membership.role=:role")
-		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
+		  .append(" left join fetch binder.olatResource as resource")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
