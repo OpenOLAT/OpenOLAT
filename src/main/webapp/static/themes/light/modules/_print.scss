@@ -115,7 +115,16 @@
 		.ui-slider-handle {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
+		}
+	}
+	.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+		.ui-slider-handle {
 			background-color: $o-slider-handler-background-color !important;
+		}
+	}
+	.o_no_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+		.ui-slider-handle {
+			border: none !important
 		}
 	}
 	

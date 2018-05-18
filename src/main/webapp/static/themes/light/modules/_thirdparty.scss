@@ -114,11 +114,20 @@
 	&.ui-state-disabled {
 		opacity: 0.65;
 	}
-	
+}
+
+.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
 	.ui-slider-handle {
 		border: 1px solid $o-slider-handler-border-color;
 		background-image: none;
 		background-color: $o-slider-handler-background-color;
+	}
+}
+
+.o_no_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+	.ui-slider-handle {
+		border: 3px solid $o-slider-handler-border-color;
+		background-image: none;
 	}
 }
 

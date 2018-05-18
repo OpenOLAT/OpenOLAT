@@ -37,6 +37,7 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new SliderElementRenderer();
 	
 	private double value;
+	private boolean hasValue = false;
 	private double minValue;
 	private double maxValue;
 	private int step;
@@ -57,7 +58,12 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	}
 	
 	public void setValue(double value) {
+		this.hasValue = true;
 		this.value = value;
+	}
+	
+	public boolean hasValue() {
+		return hasValue;
 	}
 	
 	public double getMinValue() {

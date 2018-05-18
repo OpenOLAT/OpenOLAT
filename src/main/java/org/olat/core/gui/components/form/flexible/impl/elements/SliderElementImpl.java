@@ -40,7 +40,6 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	private final SliderElementComponent component;
 	
 	private double value;
-	private boolean hasValue = false;
 	
 	public SliderElementImpl(String name) {
 		super(name);
@@ -84,14 +83,13 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 
 	@Override
 	public void setValue(double value) {
-		this.hasValue = true;
 		this.value = value;
 		component.setValue(value);
 	}
 
 	@Override
 	public boolean hasValue() {
-		return hasValue;
+		return component.hasValue();
 	}
 
 	@Override

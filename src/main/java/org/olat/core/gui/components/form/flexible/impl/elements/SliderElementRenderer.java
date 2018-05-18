@@ -44,44 +44,53 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		SliderElementComponent sec = (SliderElementComponent)source;
 		SliderElement sel = sec.getSliderElement();
 		String formDispatchFieldId = sel.getRootForm().getDispatchFieldId();
+		double value = sec.hasValue()
+				? sec.getValue()
+				: sec.getMinValue() + (sec.getMaxValue() - sec.getMinValue()) / 2;    // middle of slider
 		
 		String inputId = sec.getFormDispatchId().concat("_sinput");
 		
-		sb.append("<div id='").append(sec.getFormDispatchId()).append("_slider'> </div>");
+		sb.append("<div id='").append(sec.getFormDispatchId()).append("_slider' class='");
+		if (sec.hasValue()) {
+			sb.append("o_has_value");
+		} else {
+			sb.append("o_no_value");
+		}
+		sb.append("'> </div>");
 		sb.append("<input id='").append(inputId).append("' type='hidden' name='").append(sec.getFormDispatchId()).append("' value=''/>");
 		
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#").append(sec.getFormDispatchId()).append("_slider').slider({\n")
-		  .append("  value: ").append(sec.getValue()).append(",\n");
+		  .append("  value: ").append(value).append(",\n");
 		if(sec.getStep() > 0) {
 			sb.append("  step: ").append(sec.getStep()).append(",\n");
 		}
 		sb.append("  min: ").append(sec.getMinValue()).append(",\n")
 		  .append("  max: ").append(sec.getMaxValue()).append(",\n")
 		  .append("  slide: function(event, ui) {\n")
-          .append("    jQuery('#").append(inputId).append("').val(ui.value);\n")
-          .append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
+		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n")
+		  .append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
 		  .append("  },\n")
 		  .append("  stop: function(event, ui) {\n")
-          .append("    jQuery('#").append(inputId).append("').val(ui.value);\n");
+		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n");
 		if(sel.getAction() >= 0) {
 			sb.append("    ").append(FormJSHelper.getJSFnCallFor(sel.getRootForm(), sec.getFormDispatchId(), 2)).append(";\n");
 		}
-        sb.append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
+		sb.append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
 		  .append("  }\n")
 		  .append(" })");
-        if(!sec.isEnabled()) {
-        	sb.append(".slider('disable')");
-        }
-        if(sec.getStep() > 0) {
-        	sb.append(".slider('pips', {\n")
-        	  .append(" first:'pip',\n")
-        	  .append(" last:'pip',\n")
-        	  .append("})");
-        }
+		if(!sec.isEnabled()) {
+			sb.append(".slider('disable')");
+		}
+		if(sec.getStep() > 0) {
+			sb.append(".slider('pips', {\n")
+			  .append(" first:'pip',\n")
+			  .append(" last:'pip',\n")
+			  .append("})");
+		}
 		sb.append("\n");
-        
+		
 		sb.append("});\n")
 		  .append("/* ]]> */</script>\n");
 	}
