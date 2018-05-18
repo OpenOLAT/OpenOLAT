@@ -146,6 +146,13 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 		return userHomePage;
 	}
 
+	
+	@Override
+	public int deleteUserDataPriority() {
+		// must have lower priority than DisplayPortraitManager (otherwise portrait archive does not work)
+		return 600;
+	}
+
 	/**
 	 * Delete home-page config-file of a certain user.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
