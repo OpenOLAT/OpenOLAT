@@ -108,7 +108,7 @@ public class AssessmentHelper {
 	/** Lowest score value supported by OLAT * */
 	public static final float MIN_SCORE_SUPPORTED = -10000f;
 
-	private final static DecimalFormat scoreFormat = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
+	private static final DecimalFormat scoreFormat = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
 
 	/**
 	 * Wraps an identity and it's score evaluation / attempts in a wrapper object
@@ -133,8 +133,7 @@ public class AssessmentHelper {
 				// add to cache for later usage
 				localUserCourseEnvironmentCache.put(identity.getKey(), uce);
 				if (log.isDebug()){
-					log.debug("localUserCourseEnvironmentCache hit failed, adding course environment for user::"
-						+ identity.getName());
+					log.debug("localUserCourseEnvironmentCache hit failed, adding course environment for user::" + identity.getKey());
 				}
 			}
 			

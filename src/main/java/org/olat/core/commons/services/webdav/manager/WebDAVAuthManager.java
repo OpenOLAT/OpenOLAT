@@ -211,7 +211,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, authUsername, password, loginModule.getDefaultHashAlgorithm());
-				log.audit(doer.getName() + " created new WebDAV authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
+				log.audit(doer.getKey() + " created new WebDAV authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
 			} catch (DBRuntimeException e) {
 				log.error("Cannot create webdav password with provider " + provider + " for identity:" + identity, e);
 				dbInstance.commit();
@@ -220,7 +220,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 			try {
 				dbInstance.commit();
 				securityManager.updateCredentials(authentication, password, loginModule.getDefaultHashAlgorithm());
-				log.audit(doer.getName() + " set new WebDAV password for identity: " + identity.getKey() + " (" + authUsername + ")");
+				log.audit(doer.getKey() + " set new WebDAV password for identity: " + identity.getKey() + " (" + authUsername + ")");
 			} catch (Exception e) {
 				log.error("Cannot update webdav password with provider " + provider + " for identity:" + identity, e);
 				dbInstance.commit();
@@ -277,7 +277,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, authUsername, digestToken, Encoder.Algorithm.md5_noSalt);
-				log.audit(doer.getName() + " created new WebDAV (HA1) authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
+				log.audit(doer.getKey() + " created new WebDAV (HA1) authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
 			} catch(DBRuntimeException e) {
 				log.error("Cannot create digest password with provider " + provider + " for identity:" + identity, e);
 				dbInstance.commit();
@@ -289,7 +289,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 					authHa1.setCredential(md5DigestToken);
 					authHa1.setAuthusername(authUsername);
 					securityManager.updateAuthentication(authHa1);
-					log.audit(doer.getName() + " set new WebDAV (HA1) password for identity: " + identity.getKey() + " (" + authUsername + ")");
+					log.audit(doer.getKey() + " set new WebDAV (HA1) password for identity: " + identity.getKey() + " (" + authUsername + ")");
 				} catch (DBRuntimeException e) {
 					log.error("Cannot update digest password with provider " + provider + " for identity:" + identity, e);
 					dbInstance.commit();

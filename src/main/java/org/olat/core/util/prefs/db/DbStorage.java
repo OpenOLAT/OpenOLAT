@@ -112,7 +112,7 @@ public class DbStorage implements PreferencesStorage {
 			// OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
 			List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
 			if (guiPropertyList != null && guiPropertyList.size() > 0) {
-				 log.warn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
+				 log.warn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for identity " + identity.getKey() + ". Use first of them, deleting the others!", e); 
 				 Iterator<Property> iterator = guiPropertyList.iterator();
 				 guiProperty = iterator.next();
 				 while (iterator.hasNext()) { 

@@ -338,7 +338,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				SingleIdentityChosenEvent sce = (SingleIdentityChosenEvent)event;
 				Identity ident = sce.getChosenIdentity();
 				clusterLockManager.releaseAllLocksFor(ident.getKey());
-				showInfo("locks.released", ident.getName());
+				showInfo("locks.released", ident.getKey().toString());
 			}
 		}
 	}

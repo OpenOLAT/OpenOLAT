@@ -137,7 +137,7 @@ public class UserDeletionManager extends BasicManager {
 					template.setBodyTemplate(identityTranslator.translate(keyEmailBody));
 				}
 				template.putVariablesInMailContext(template.getContext(), identity);
-				logDebug(" Try to send Delete-email to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
+				logDebug(" Try to send Delete-email to identity=" + identity.getKey() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
 
 				MailerResult result = new MailerResult();
 				MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
@@ -154,14 +154,14 @@ public class UserDeletionManager extends BasicManager {
 				if (result.getReturnCode() != MailerResult.OK) {
 					buf.append(pT.translate("email.error.send.failed", new String[] {identity.getUser().getProperty(UserConstants.EMAIL, null), identity.getName()} )).append("\n");
 				}
-				logAudit("User-Deletion: Delete-email send to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
+				logAudit("User-Deletion: Delete-email send to identity=" + identity.getKey() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
 				markSendEmailEvent(identity);
 			}
 		} else {
 			// no template => User decides to sending no delete-email, mark only in lifecycle table 'sendEmail'
 			for (Iterator<Identity> iter = selectedIdentities.iterator(); iter.hasNext();) {
 				Identity identity = iter.next();
-				logAudit("User-Deletion: Move in 'Email sent' section without sending email, identity=" + identity.getName());
+				logAudit("User-Deletion: Move in 'Email sent' section without sending email, identity=" + identity.getKey());
 				markSendEmailEvent(identity);
 			}
 		}

@@ -312,7 +312,7 @@ class NewUserForm extends FormBasicController {
     // Create user on database
 		Identity s = doCreateAndPersistIdentity();
 		if (s != null) {			
-			log.audit(USER_CREATE_SUCCESS + s.getName());				
+			log.audit(USER_CREATE_SUCCESS + s.getKey());				
 			fireEvent(ureq, new SingleIdentityChosenEvent(s));
 		} else {
 			// Could not save form, display error

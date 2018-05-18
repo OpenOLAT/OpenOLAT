@@ -624,10 +624,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				}
 			}
 			if (olatPropertyMap.size() == 1 && olatPropertyMap.get(LDAPConstants.LDAP_USER_IDENTIFYER) != null) {
-				log.debug("propertymap for identity " + identity.getName() + " contains only userID, NOTHING TO SYNC!");
+				log.debug("propertymap for identity " + identity.getKey() + " contains only userID, NOTHING TO SYNC!");
 				return null;
 			} else {
-				log.debug("propertymap for identity " + identity.getName() + " contains " + olatPropertyMap.size() + " items (" + olatPropertyMap.keySet() + ") to be synced later on");
+				log.debug("propertymap for identity " + identity.getKey() + " contains " + olatPropertyMap.size() + " items (" + olatPropertyMap.keySet() + ") to be synced later on");
 				return olatPropertyMap;
 			}
 
@@ -727,7 +727,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 					break;
 				}
 			} catch (NamingException e) {
-				log.error("NamingException when trying to bind user with username::" + identity.getName() + " on ldapBase::" + ldapBase, e);
+				log.error("NamingException when trying to bind user with username::" + identity.getKey() + " on ldapBase::" + ldapBase, e);
 			}
 		}
 

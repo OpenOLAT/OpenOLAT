@@ -112,7 +112,7 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 		if (p == null) throw new AssertException("could not release lock: no lock in db, " + derivedLockString);
 		Identity ident = le.getOwner();
 		Long ownerKey = p.getLongValue();
-		if (!ownerKey.equals(ident.getKey())) throw new AssertException("user " + ident.getName()
+		if (!ownerKey.equals(ident.getKey())) throw new AssertException("user " + ident.getKey()
 				+ " cannot release lock belonging to user with key " + ownerKey + " on resourcestring " + derivedLockString);
 		pm.deleteProperty(p);
 	}

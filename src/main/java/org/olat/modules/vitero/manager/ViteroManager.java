@@ -259,7 +259,7 @@ public class ViteroManager implements UserDataDeletable {
 					updateVmsUser(identity, userId);
 					storePortrait(identity, userId);
 				} catch (Exception e) {
-					log.error("Cannot update user on vitero system:" + identity.getName(), e);
+					log.error("Cannot update user on vitero system:" + identity.getKey(), e);
 				}
 			}
 			
@@ -315,7 +315,7 @@ public class ViteroManager implements UserDataDeletable {
 					updateVmsUser(identity, userId);
 					storePortrait(identity, userId);
 				} catch (Exception e) {
-					log.error("Cannot update user on vitero system:" + identity.getName(), e);
+					log.error("Cannot update user on vitero system:" + identity.getKey(), e);
 				}
 			}
 
@@ -929,7 +929,7 @@ public class ViteroManager implements UserDataDeletable {
 					updateVmsUser(identity, userId);
 					//storePortrait(identity, userId);
 				} catch (Exception e) {
-					log.error("Cannot update user on vitero system:" + identity.getName(), e);
+					log.error("Cannot update user on vitero system:" + identity.getKey(), e);
 				}
 			}
 			
@@ -1392,7 +1392,7 @@ public class ViteroManager implements UserDataDeletable {
 						if(identity != null) {
 							authenticationCreated++;
 							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(user.getId()), null, null);
-							log.info("Recreate VMS authentication for: " + identity.getName());
+							log.info("Recreate VMS authentication for: " + identity.getKey());
 						}
 					}
 				}	

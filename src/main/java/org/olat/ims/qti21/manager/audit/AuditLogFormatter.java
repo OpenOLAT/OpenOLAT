@@ -152,7 +152,5 @@ public class AuditLogFormatter {
 		}
 		writer.append(" by ");
 		writer.append(coach.getKey().toString());
-		writer.append("/");
-		writer.append(coach.getName());
 	}
 }

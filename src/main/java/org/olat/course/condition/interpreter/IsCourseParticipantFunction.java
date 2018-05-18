@@ -74,7 +74,7 @@ public class IsCourseParticipantFunction extends AbstractFunction {
 		}
 		if (log.isDebug()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-			log.debug("identity "+ident.getName()+", coursecoach:"+isParticipant+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
+			log.debug("identity "+ident.getKey()+", coursecoach:"+isParticipant+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}
 		
 		return isParticipant ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;

@@ -465,7 +465,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			Identity ident = identityEnvironment.getIdentity();
 			CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(this);
 			if (log.isDebug()) {
-				log.debug("Closed UserSession: identity = " + (ident == null ? "n/a":ident.getName()));
+				log.debug("Closed UserSession: identity = " + (ident == null ? "n/a" : ident.getKey()));
 			}
 			//we do not have a request in the null case (app. server triggered) and user not yet logged in
 			//-> in this case we use the special empty activity logger

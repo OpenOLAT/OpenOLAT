@@ -192,7 +192,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		msg.contextPut("stacktrace", OLATRuntimeException.throwableToHtml(th));			
 		
 		Identity curIdent = ureq.getIdentity();
-		msg.contextPut("username", curIdent == null? "n/a" : curIdent.getName());
+		msg.contextPut("username", curIdent == null? "n/a" : curIdent.getKey());
 		msg.contextPut("allowBackButton", Boolean.valueOf(allowBackButton));
 		msg.contextPut("detailedmessage", detailedmessage);
 		// Cluster NodeId + E-Nr

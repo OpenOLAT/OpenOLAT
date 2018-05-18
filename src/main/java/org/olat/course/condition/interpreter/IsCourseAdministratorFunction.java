@@ -76,7 +76,7 @@ public class IsCourseAdministratorFunction extends AbstractFunction {
 		}
 		if(log.isDebug()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-			log.debug("identity "+ident.getName()+", courseadministrator:"+isCourseAdmin+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
+			log.debug("identity "+ident.getKey()+", courseadministrator:"+isCourseAdmin+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}
 		return isCourseAdmin ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}

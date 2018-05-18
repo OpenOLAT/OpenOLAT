@@ -208,7 +208,7 @@ public class SystemRolesAndRightsController extends BasicController {
 			}
 			
 			identity = securityManager.saveIdentityStatus(myIdentity, newStatus);
-			logAudit("User::" + getIdentity().getName() + " changed accout status for user::" + myIdentity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
+			logAudit("User::" + getIdentity().getKey() + " changed accout status for user::" + myIdentity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
 		}
 	}
 
@@ -224,11 +224,11 @@ public class SystemRolesAndRightsController extends BasicController {
 		if (!hasBeenInGroup && isNowInGroup) {
 			// user not yet in security group, add him
 			secMgr.addIdentityToSecurityGroup(myIdentity, securityGroup);
-			logAudit("User::" + getIdentity().getName() + " added system role::" + role + " to user::" + myIdentity.getName(), null);
+			logAudit("User::" + getIdentity().getKey() + " added system role::" + role + " to user::" + myIdentity.getKey(), null);
 		} else if (hasBeenInGroup && !isNowInGroup) {
 			// user not anymore in security group, remove him
 			secMgr.removeIdentityFromSecurityGroup(myIdentity, securityGroup);
-			logAudit("User::" + getIdentity().getName() + " removed system role::" + role + " from user::" + myIdentity.getName(), null);
+			logAudit("User::" + getIdentity().getKey() + " removed system role::" + role + " from user::" + myIdentity.getKey(), null);
 		}
 	}
 	

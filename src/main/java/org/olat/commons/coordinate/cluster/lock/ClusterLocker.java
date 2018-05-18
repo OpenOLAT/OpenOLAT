@@ -113,7 +113,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 					// already locked by a user.
 					// if that user is us, we can reacquire it
 					LockEntry le = new LockEntry(li.getAsset(), li.getCreationDate().getTime(), li.getOwner());
-					if (requestor.getName().equals(li.getOwner().getName())) {
+					if (requestor.getKey().equals(li.getOwner().getKey())) {
 						// that's us -> success (asset, owner is the same, and we leave creationdate to when the lock was originally acquired, not when it was reacquired.
 						lres = new LockResultImpl(true, le);				
 					} else {

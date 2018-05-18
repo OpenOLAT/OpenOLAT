@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,6 +61,8 @@ public class DirectDeleteController extends BasicController {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 	
@@ -168,7 +171,7 @@ public class DirectDeleteController extends BasicController {
 				dbInstance.intermediateCommit();								
 			} else {
 				totalSuccess = false;
-				showError("error.delete", identity.getName());
+				showError("error.delete", userManager.getUserDisplayName(identity));
 			}
 		}
 		return totalSuccess;

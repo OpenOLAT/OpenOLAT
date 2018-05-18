@@ -69,7 +69,7 @@ public abstract class AbstractUserNameCreationInterceptor implements UserNameCre
 			return proposedUsername;
 		}
 		
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new HashSet<>();
 		for(Identity identity:identities) {
 			names.add(identity.getName());
 		}

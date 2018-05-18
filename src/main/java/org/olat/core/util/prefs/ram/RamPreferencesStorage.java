@@ -43,23 +43,17 @@ import org.olat.core.util.prefs.PreferencesStorage;
  * @author Felix Jost
  */
 public class RamPreferencesStorage implements PreferencesStorage {
-	private Map<String, Preferences> identToPrefs;
+	
+	private final Map<Long, Preferences> identToPrefs = new HashMap<>();
 
-	public RamPreferencesStorage() {
-		identToPrefs = new HashMap<String, Preferences>();
-	}
-
-	/**
-	 * @see org.olat.core.util.prefs.PreferencesStorage#getPreferencesFor(org.olat.core.id.Identity,
-	 *      boolean)
-	 */
+	@Override
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences) {
 		Preferences p;
 		synchronized (this) {  //o_clusterOK by:fj is not persistent, for session only
-			p = identToPrefs.get(identity.getName());
+			p = identToPrefs.get(identity.getKey());
 			if (p == null) {
 				p = new RamPreferences();
-				identToPrefs.put(identity.getName(), p);
+				identToPrefs.put(identity.getKey(), p);
 			}
 		}
 		return p;
@@ -69,7 +63,4 @@ public class RamPreferencesStorage implements PreferencesStorage {
 	public void updatePreferencesFor(Preferences prefs, Identity identity) {
 		//
 	}
-	
-	
-
 }

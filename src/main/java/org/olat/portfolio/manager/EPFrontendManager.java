@@ -1181,7 +1181,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 				assessmentService.updateAssessmentEntry(owner, courseEntry, courseNode.getIdent(), referenceEntry, AssessmentEntryStatus.inReview);
 			}
 			assessmentNotificationsHandler.markPublisherNews(owner, course.getResourceableId());
-			log.audit("Map " + map + " from " + owner.getName() + " has been submitted.");
+			log.audit("Map " + map + " from " + owner.getKey() + " has been submitted.");
 		}
 	}
 	

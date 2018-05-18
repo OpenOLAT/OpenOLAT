@@ -206,12 +206,12 @@ public class UserBulkChangeManager implements InitializingBean {
 					// user not anymore in security group, remove him
 					if (isInGroup && thisRoleAction.equals("remove")) {
 						securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
-						log.audit("User::" + addingIdentity.getName() + " removed system role::" + securityGroup + " from user::" + identity.getName(), null);
+						log.audit("User::" + addingIdentity.getKey() + " removed system role::" + securityGroup + " from user::" + identity.getKey(), null);
 					}
 					// user not yet in security group, add him
 					if (!isInGroup && thisRoleAction.equals("add")) {
 						securityManager.addIdentityToSecurityGroup(identity, secGroup);
-						log.audit("User::" + addingIdentity.getName() + " added system role::" + securityGroup + " to user::" + identity.getName(), null);
+						log.audit("User::" + addingIdentity.getKey() + " added system role::" + securityGroup + " to user::" + identity.getKey(), null);
 					}
 				}
 			}
@@ -236,19 +236,19 @@ public class UserBulkChangeManager implements InitializingBean {
 					sendLoginDeniedEmail(identity);
 				}
 				identity = securityManager.saveIdentityStatus(identity, status);
-				log.audit("User::" + addingIdentity.getName() + " changed accout status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
+				log.audit("User::" + addingIdentity.getKey() + " changed accout status for user::" + identity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
 			}
 
 			// persist changes:
 			if (updateError) {
-				String errorOutput = identity.getName() + ": " + errorDesc;
+				String errorOutput = identity.getKey() + ": " + errorDesc;
 				log.debug("error during bulkChange of users, following user could not be updated: " + errorOutput);
 				notUpdatedIdentities.add(errorOutput); 
 			} else {
 				userManager.updateUserFromIdentity(identity);
 				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 				changedIdentities.add(identity);
-				log.audit("User::" + addingIdentity.getName() + " successfully changed account data for user::" + identity.getName() + " in bulk change", null);
+				log.audit("User::" + addingIdentity.getKey() + " successfully changed account data for user::" + identity.getKey() + " in bulk change", null);
 			}
 
 			// commit changes for this user

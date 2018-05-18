@@ -219,7 +219,7 @@ public class EvalAttributeFunction extends AbstractFunction {
 		}		
 
 		if (debug) {
-			log.debug("identity '" + ident.getName() + "' tested on attribute '" + attName + "' to have value '" +
+			log.debug("identity '" + ident.getKey() + "' tested on attribute '" + attName + "' to have value '" +
 					attValue + "' user's value was '" + value + "', match=" + match);
 		}
 		return match ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE;
