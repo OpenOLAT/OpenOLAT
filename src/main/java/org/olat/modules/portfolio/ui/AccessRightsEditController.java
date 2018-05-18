@@ -368,6 +368,10 @@ public class AccessRightsEditController extends FormBasicController {
 						page.setReviewer();
 					}
 				}
+				
+				for(PortfolioElementAccessRightsRow page:pages) {
+					page.recalculate();
+				}
 			}
 		}
 	}
