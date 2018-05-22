@@ -22,14 +22,17 @@ package org.olat.core.commons.services.commentAndRating.manager;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
+import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +49,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserCommentsDAOTest extends OlatTestCase {
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserCommentsDAO userCommentsDao;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 	
 	@Test
@@ -58,8 +67,8 @@ public class UserCommentsDAOTest extends OlatTestCase {
 	public void testCRUDComment() {
 		//init 
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
-		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("ucar-crud-1-" + UUID.randomUUID().toString());
-		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("ucar-crud-2-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ucar-crud-1");
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ucar-crud-2");
 				
 
 		//check if there is any comments
@@ -134,5 +143,50 @@ public class UserCommentsDAOTest extends OlatTestCase {
 		assertEquals(2, userCommentsDao.deleteAllCommentsIgnoringSubPath(ores));
 		assertEquals(0, userCommentsDao.countComments(ores, null));
 		assertEquals(0, userCommentsDao.countComments(ores, "blubli"));
+	}
+	
+	@Test
+	public void deleteUser() {
+		Identity identToDelete = JunitTestHelper.createAndPersistIdentityAsRndUser("ucom-del");
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ucom-ndel");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(ident);
+
+		// add comments
+		UserComment comment_del_1 = userCommentsDao.createComment(identToDelete, course, null, "Hello");
+		UserComment comment_ndel_2 = userCommentsDao.createComment(ident, course, null, "Hello ");
+		// add comments and replies
+		UserComment comment_ndel_3 = userCommentsDao.createComment(ident, course, null, "Reply");
+		UserComment comment_del_4 = userCommentsDao.replyTo(comment_ndel_3, identToDelete, "Hello, I reply");
+		// more
+		UserComment comment_del_5 = userCommentsDao.createComment(identToDelete, course, null, "To reply");
+		UserComment comment_ndel_6 = userCommentsDao.replyTo(comment_del_5, ident, "I replied");
+		dbInstance.commitAndCloseSession();
+		
+		// delete the first user
+		userDeletionManager.deleteIdentity(identToDelete);
+		dbInstance.commitAndCloseSession();
+		
+		// delete comments from first identity, and replace the comment if it has a reply
+		UserComment deletedComment_del_1 = userCommentsDao.reloadComment(comment_del_1);
+		Assert.assertNull(deletedComment_del_1);
+		UserComment reloadedComment_ndel_2 = userCommentsDao.reloadComment(comment_ndel_2);
+		Assert.assertNotNull(reloadedComment_ndel_2);
+
+		// 4 was a reply -> delete it
+		UserComment deletedComment_del_4 = userCommentsDao.reloadComment(comment_del_4);
+		Assert.assertNull(deletedComment_del_4);
+		UserComment reloadedComment_ndel_3 = userCommentsDao.reloadComment(comment_ndel_3);
+		Assert.assertNotNull(reloadedComment_ndel_3);
+
+		// 5 has a reply, don't delete it
+		UserComment deletedComment_del_5 = userCommentsDao.reloadComment(comment_del_5);
+		Assert.assertNotNull(deletedComment_del_5);
+		UserComment reloadedComment_ndel_6 = userCommentsDao.reloadComment(comment_ndel_6);
+		Assert.assertNotNull(reloadedComment_ndel_6);
+		
+		// check repository statistics
+		RepositoryEntry reloadedEntry = repositoryService.loadByKey(course.getKey());
+		RepositoryEntryStatistics entryStatistics = reloadedEntry.getStatistics();
+		Assert.assertEquals(4, entryStatistics.getNumOfComments());
 	}
 }

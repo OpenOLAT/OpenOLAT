@@ -115,14 +115,16 @@ public class UserAdminPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		//confirm
-		By usernameBy = By.xpath("//div[contains(@class,'modal-dialog')]//p[text()[contains(.,'" + lastName + "')]]");
+		By usernameBy = By.xpath("//div[contains(@class,'modal-dialog')]//div[@class='o_error']/strong[text()[contains(.,'" + lastName + "')]]");
 		List<WebElement> confirmUserEls = browser.findElements(usernameBy);
 		Assert.assertFalse(confirmUserEls.isEmpty());
 		
-		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-footer a.btn.btn-default");
-		List<WebElement> buttonEls = browser.findElements(buttonsBy);
-		Assert.assertEquals(2, buttonEls.size());
-		buttonEls.get(0).click();
+		By confirmCheckBy = By.cssSelector("div.o_sel_confirm_delete_user input[type='checkbox']");
+		WebElement confirmCheckEl = browser.findElement(confirmCheckBy);
+		OOGraphene.check(confirmCheckEl, Boolean.TRUE);
+		
+		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-body a.btn.o_sel_delete_user");
+		browser.findElement(buttonsBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;

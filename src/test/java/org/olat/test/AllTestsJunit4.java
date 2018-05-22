@@ -351,7 +351,7 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
-	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceImplTest.class,
+	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceTest.class,
 	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,

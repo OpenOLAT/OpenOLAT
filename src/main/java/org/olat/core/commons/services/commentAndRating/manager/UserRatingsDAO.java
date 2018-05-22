@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.UserRatingsDelegate;
 import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRating;
@@ -32,8 +33,6 @@ import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.commons.services.commentAndRating.model.UserRatingImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,9 +45,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("userRatingsDAO")
 public class UserRatingsDAO {
-	
-	private static final OLog log = Tracing.createLoggerFor(UserRatingsDAO.class);
-	
+
 	@Autowired
 	private DB dbInstance;
 	
@@ -129,8 +126,7 @@ public class UserRatingsDAO {
 			query.setMaxResults(maxResults);
 		}
 
-		List<OLATResourceableRating> mostRated = query.getResultList();
-		return mostRated;
+		return query.getResultList();
 	}
 	
 	public int countRatings(OLATResourceable ores, String resSubPath) {
@@ -227,14 +223,12 @@ public class UserRatingsDAO {
 	}
 
 	public UserRating reloadRating(UserRating rating) {
-		try {
-			return (UserRating)dbInstance.loadObject(rating);		
-		} catch (Exception e) {
-			// Huh, most likely the given object does not exist anymore on the
-			// db, probably deleted by someone else
-			log.warn("Tried to reload a user rating but got an exception. Probably deleted in the meantime", e);
-			return null;
-		}
+		String query = "select r from userrating as r where r.key=:ratingKey";
+		List<UserRating> ratings = dbInstance.getCurrentEntityManager()
+				.createQuery(query, UserRating.class)
+				.setParameter("ratingKey", rating.getKey())
+				.getResultList();
+		return ratings != null && !ratings.isEmpty() ? ratings.get(0) : null;
 	}
 	
 	private void updateDelegateRatings(UserRating rating) {
@@ -273,24 +267,63 @@ public class UserRatingsDAO {
 				} else {
 					long numOfRatings = ((Number)stats[0]).longValue();
 					long sumOfRatings = ((Number)stats[1]).longValue();
-					double rate = (sumOfRatings + rating.getRating().intValue()) / (numOfRatings + 1);
+					double rate = (sumOfRatings + rating.getRating().intValue()) / (numOfRatings + 1.0d);
 					delegate.update(ores, rating.getResSubPath(), rate, numOfRatings + 1);
 				}
 			}
 		}
 	}
-	
-	public int deleteRating(UserRating rating) {
-		// First reload parent from cache to prevent stale object or cache issues
-		UserRating ratingRef = dbInstance.getCurrentEntityManager().getReference(UserRatingImpl.class, rating.getKey());
-		if (ratingRef == null) {
-			// Original rating has been deleted in the meantime. Don't delete it again.
-			return 0;
-		}
-		// Delete this rating and finish
-		dbInstance.getCurrentEntityManager().remove(ratingRef);
-		return 1;
 
+	public int deleteRatings(IdentityRef identity) {
+		String query = "select r from userrating as r where r.creator.key=:creatorKey";
+		List<UserRating> ratings = dbInstance.getCurrentEntityManager()
+				.createQuery(query, UserRating.class)
+				.setParameter("creatorKey", identity.getKey())
+				.getResultList();
+
+		for(UserRating rating:ratings) {
+			dbInstance.getCurrentEntityManager().remove(rating);
+			dbInstance.commit();
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(rating.getResName(), rating.getResId());
+			recalculateDelegateRatings(ores, rating.getResSubPath());
+		}
+		return ratings.size();
+	}
+	
+	private void recalculateDelegateRatings(OLATResourceable ores, String resSubPath) {
+		if(delegates == null || delegates.isEmpty()) return;
+
+		for(UserRatingsDelegate delegate:delegates) {
+			if(delegate.accept(ores, resSubPath)) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("select count(rating.key), sum(rating.rating) from userrating as rating")
+				  .append(" where rating.resName=:resname and rating.resId=:resId");
+				if(resSubPath == null) {
+					sb.append(" and rating.resSubPath is null");
+				} else {
+					sb.append(" and rating.resSubPath=:resSubPath");
+				}
+	
+				TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Object[].class)
+				     .setParameter("resname", ores.getResourceableTypeName())
+				     .setParameter("resId", ores.getResourceableId());
+
+				if(resSubPath != null) {
+					query.setParameter("resSubPath", resSubPath);
+				}
+		
+				Object[] stats = query.getSingleResult();
+				if(stats == null || stats[0] == null || stats[1] == null) {
+					delegate.update(ores, resSubPath, 0.0d, 0l);
+				} else {
+					long numOfRatings = ((Number)stats[0]).longValue();
+					long sumOfRatings = ((Number)stats[1]).longValue();
+					double rate = sumOfRatings / (double)numOfRatings;
+					delegate.update(ores, resSubPath, rate, numOfRatings);
+				}
+			}
+		}
 	}
 
 	public int deleteAllRatings(OLATResourceable ores, String resSubPath) {

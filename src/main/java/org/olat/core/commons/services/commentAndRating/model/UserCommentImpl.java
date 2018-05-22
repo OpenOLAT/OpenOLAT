@@ -114,7 +114,8 @@ public class UserCommentImpl implements Persistable, CreateInfo, UserComment {
 		this.resId = ores.getResourceableId();
 		this.resSubPath = subpath;
 	}
-	
+
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -123,53 +124,36 @@ public class UserCommentImpl implements Persistable, CreateInfo, UserComment {
 		this.key = key;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getCreator()
-	 */
 	@Override
 	public Identity getCreator() {
 		return creator;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getComment()
-	 */
 	@Override
 	public String getComment() {
 		return comment;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getResId()
-	 */
 	@Override
 	public Long getResId() {
 		return this.resId;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getResName()
-	 */
 	@Override
 	public String getResName() {
 		return this.resName;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getResSubPath()
-	 */
 	@Override
 	public String getResSubPath() {
 		return this.resSubPath;
 	}
-	
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#getParent()
-	 */
+
 	@Override
 	public UserComment getParent() {
 		return parent;
@@ -199,23 +183,17 @@ public class UserCommentImpl implements Persistable, CreateInfo, UserComment {
 		this.resId = resId;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#setCreator(org.olat.core.id.Identity)
-	 */
+	@Override
 	public void setCreator(Identity creator) {
 		this.creator = creator;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#setComment(java.lang.String)
-	 */
+	@Override
 	public void setComment(String commentText) {
 		this.comment = commentText;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.model.UserComment#setParent(org.olat.core.commons.services.commentAndRating.model.UserComment)
-	 */
+	@Override
 	public void setParent(UserComment parentComment) {
 		this.parent = parentComment;
 	}

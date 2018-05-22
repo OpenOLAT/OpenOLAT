@@ -39,7 +39,7 @@ import org.olat.resource.OLATResource;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CommentAndRatingServiceImplTest {
+public class CommentAndRatingServiceTest {
 
 	private static final String RESOURCEABLE_TYPE_NAME = "resurcable type name";
 	private static final Long RESOURCABLE_ID = 5L;

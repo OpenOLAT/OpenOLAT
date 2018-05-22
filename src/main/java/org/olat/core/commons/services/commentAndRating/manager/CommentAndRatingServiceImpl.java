@@ -20,6 +20,7 @@
 
 package org.olat.core.commons.services.commentAndRating.manager;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
@@ -31,6 +32,9 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +50,9 @@ import org.springframework.stereotype.Service;
  * @author gnaegi
  */
 @Service
-public class CommentAndRatingServiceImpl implements CommentAndRatingService {
+public class CommentAndRatingServiceImpl implements CommentAndRatingService, UserDataDeletable {
+	
+	private static final OLog log = Tracing.createLoggerFor(CommentAndRatingServiceImpl.class);
 
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
@@ -58,7 +64,7 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 
 	@Override
 	public Long countRatings(OLATResourceable ores, String resSubPath) {
-		return new Long(userRatingsDao.countRatings(ores, resSubPath));
+		return Long.valueOf(userRatingsDao.countRatings(ores, resSubPath));
 	}
 
 	@Override
@@ -94,11 +100,6 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	@Override
 	public UserRating updateRating(UserRating rating, int newRatingValue) {
 		return userRatingsDao.updateRating(rating, newRatingValue);
-	}
-
-	@Override
-	public int deleteRating(UserRating rating) {
-		return userRatingsDao.deleteRating(rating);
 	}
 
 	@Override
@@ -153,9 +154,6 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 		return userCommentsDao.deleteComment(comment, deleteReplies);
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.CommentAndRatingService#deleteAll()
-	 */
 	@Override
 	public int deleteAll(OLATResourceable ores, String resSubPath) {
 		if (ores == null) {
@@ -166,10 +164,6 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 		return delCount;
 	}
 
-	/**
-	 *
-	 * @see org.olat.core.commons.services.commentAndRating.CommentAndRatingService#deleteAllIgnoringSubPath()
-	 */
 	@Override
 	public int deleteAllIgnoringSubPath(OLATResourceable ores) {
 		if (ores == null) {
@@ -178,6 +172,14 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 		int delCount = userCommentsDao.deleteAllCommentsIgnoringSubPath(ores);
 		delCount += userRatingsDao.deleteAllRatingsIgnoringSubPath(ores);
 		return delCount;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		int rows = userRatingsDao.deleteRatings(identity);
+		log.audit(rows + " rating deleted");
+		int comments = userCommentsDao.deleteAllComments(identity);
+		log.audit(comments + " rating erased");
 	}
 
 	private void markPublisherNews(UserComment comment) {

@@ -117,14 +117,6 @@ public interface CommentAndRatingService {
 	 *         in the meantime and could not be updated at all.
 	 */
 	public UserRating updateRating(UserRating rating, int newRatingValue);
-
-	/**
-	 * Delete a rating
-	 * 
-	 * @param rating
-	 * @param int number of deleted ratings
-	 */
-	public abstract int deleteRating(UserRating rating);
 	
 	/**
 	 * Return the most rated resources
