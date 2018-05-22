@@ -59,7 +59,7 @@ public interface LDAPLoginManager {
 	
 	public void syncUserGroups(Identity identity);
 	
-	public void deletIdentities(List<Identity> identityList);
+	public void deleteIdentities(List<Identity> identityList, Identity doer);
 
 	public boolean doBatchSync(LDAPError errors);
 	

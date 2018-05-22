@@ -18,15 +18,14 @@
 	<property  name="creationDate" column="creationdate" type="timestamp" />
  	<property  name="lastLogin" column="lastlogin" update="false" type="timestamp" />
  	<property  name="externalId" column="external_id" type="string" />
- 	
-    <property name="name" type="string">
-    	<column name="name" unique="true" length="128" not-null="true" index="name_idx2" />
-    </property>
-    <property name="status" type="integer">
-    	<column name="status" index="identstatus_idx"/>
-    </property>
- 
+    <property name="name" column="name" type="string" unique="true" not-null="true" />
+    <property name="status" column="status" type="integer" />
+    <property name="deletedDate" column="deleteddate" type="timestamp" />
+    <property name="deletedRoles" column="deletedroles" type="string" />
+    	<property name="deletedBy" column="deletedby" type="string" />
+
     <one-to-one name="user" property-ref="identity" class="org.olat.user.UserImpl" cascade="persist"/>
+    
 
   </class>
 

@@ -251,9 +251,9 @@ public class UserDeletionManager extends BasicManager {
 	 * Delete all user-data in registered deleteable resources.
 	 * 
 	 * @param identity
-	 * @return true: delete was successfull; false: delete could not finish
+	 * @return true: delete was successful; false: delete could not finish
 	 */
-	public boolean deleteIdentity(Identity identity) {
+	public boolean deleteIdentity(Identity identity, Identity doer) {
 		logInfo("Start deleteIdentity for identity=" + identity);		
 		if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
 			logInfo("Aborted deletion of identity=" + identity + ", identity is flagged as PERMANENT");					
@@ -261,9 +261,13 @@ public class UserDeletionManager extends BasicManager {
 		}
 		// Logout user and start with delete process
 		userSessionManager.signOffAndClearAll(identity);
+		// set some data
+		identity = securityManager.saveDeletedByData(identity, doer);
+		dbInstance.commit();
+		
 		
 		// Delete data of modules that implement the user data deletable
-		String anonymisedIdentityName = identity.getKey() + "";
+		String anonymisedIdentityName = identity.getKey().toString();
 		File archiveFilePath = getArchivFilePath(identity);
 		Map<String,UserDataDeletable> userDataDeletableResourcesMap = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
 		List<UserDataDeletable> userDataDeletableResources = new ArrayList<>(userDataDeletableResourcesMap.values());
@@ -303,7 +307,7 @@ public class UserDeletionManager extends BasicManager {
 		logInfo("Replaced username with database key for identity::" + identity.getKey());
 
 		// Finally mark user as deleted and we are done
-		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_DELETED);
+		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_DELETED, doer);
 		logInfo("Data of identity deleted and state of identity::" + identity.getKey() + " changed to 'deleted'");
 
 		dbInstance.commit();

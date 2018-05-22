@@ -1183,7 +1183,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// delete the user
-		userDeletionManager.deleteIdentity(owner);
+		userDeletionManager.deleteIdentity(owner, null);
 		
 		// the template is a learn ressource and will not be deleted
 		Binder reloadedtemplateBinder = portfolioService.getBinderByKey(templateBinder.getKey());

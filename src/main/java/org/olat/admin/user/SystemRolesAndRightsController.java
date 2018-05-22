@@ -207,7 +207,7 @@ public class SystemRolesAndRightsController extends BasicController {
 				userBulkChangeManager.sendLoginDeniedEmail(myIdentity);
 			}
 			
-			identity = securityManager.saveIdentityStatus(myIdentity, newStatus);
+			identity = securityManager.saveIdentityStatus(myIdentity, newStatus, getIdentity());
 			logAudit("User::" + getIdentity().getKey() + " changed accout status for user::" + myIdentity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
 		}
 	}

@@ -207,7 +207,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		
 		//delete user in OLAT
 		securityManager.removeIdentityFromSecurityGroup(identity, secGroup1);
-		UserDeletionManager.getInstance().deleteIdentity(identity);
+		UserDeletionManager.getInstance().deleteIdentity(identity, null);
 
 		// simulate closed session
 		DBFactory.getInstance().intermediateCommit();
@@ -373,7 +373,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		}
 
 		//delete all users
-		ldapManager.deletIdentities(deletedUserList);
+		ldapManager.deleteIdentities(deletedUserList, null);
 		
 		//check if users are deleted
 		deletedUserList = ldapManager.getIdentitysDeletedInLdap(ctx);

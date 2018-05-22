@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.admin.user.DeletedUsersController;
 import org.olat.admin.user.NewUsersNotificationsController;
 import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UserCreateController;
@@ -458,7 +459,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}		
 		else if (uobject.equals("deletedusers")) {
 			activatePaneInDetailView = "list.deletedusers";
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, null, null, null, null, Identity.STATUS_DELETED, false);
+			contentCtr = new DeletedUsersController(ureq, bwControl);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();

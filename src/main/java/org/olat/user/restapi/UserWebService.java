@@ -408,8 +408,9 @@ public class UserWebService {
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateStatus(@PathParam("identityKey") Long identityKey, StatusVO status, @Context HttpServletRequest request) {
 		try {
+			Identity actingIdentity = getIdentity(request);
 			boolean isUserManager = isUserManager(request);
-			if(!isUserManager) {
+			if(actingIdentity == null || !isUserManager) {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
@@ -418,7 +419,7 @@ public class UserWebService {
 			}
 			
 			Integer newStatus = status.getStatus();
-			identity = BaseSecurityManager.getInstance().saveIdentityStatus(identity, newStatus);
+			identity = BaseSecurityManager.getInstance().saveIdentityStatus(identity, newStatus, actingIdentity);
 			StatusVO reloadedStatus = new StatusVO();
 			reloadedStatus.setStatus(identity.getStatus());
 			return Response.ok(reloadedStatus).build();
@@ -870,7 +871,8 @@ public class UserWebService {
 	@DELETE
 	@Path("{identityKey}")
 	public Response delete(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		if(!isUserManager(request)) {
+		Identity actingIdentity = getIdentity(request);
+		if(actingIdentity == null || !isUserManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -878,7 +880,7 @@ public class UserWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		boolean success = UserDeletionManager.getInstance().deleteIdentity(identity);
+		boolean success = UserDeletionManager.getInstance().deleteIdentity(identity, actingIdentity);
 		if (success) {
 			return Response.ok().build();			
 		} else {

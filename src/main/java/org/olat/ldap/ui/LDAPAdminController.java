@@ -204,7 +204,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 								amountUsersToDelete = idToDelete.size();
 								// Delete all identities now and tell everybody that
 								// we are finished
-								ldapLoginManager.deletIdentities(idToDelete);
+								ldapLoginManager.deleteIdentities(idToDelete, getIdentity());
 								return StepsMainRunController.DONE_MODIFIED;
 							} else {
 								return StepsMainRunController.DONE_UNCHANGED;

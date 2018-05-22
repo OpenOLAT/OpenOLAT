@@ -1,3 +1,8 @@
+alter table o_bs_identity add deleteddate date;
+alter table o_bs_identity add deletedroles varchar(1024);
+alter table o_bs_identity add deletedby varchar(128);
+
+
 alter table o_loggingtable drop (username, userproperty1, userproperty2, userproperty3, userproperty4, userproperty5, userproperty6, userproperty7, userproperty8, userproperty9, userproperty10, userproperty11, userproperty12);
 
 update o_bs_identity set name=id where status=199;

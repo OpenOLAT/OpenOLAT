@@ -480,6 +480,48 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 	}
 
+	@Override
+	public List<String> getRolesSummaryWithResources(IdentityRef identity) {
+		List<String> openolatRoles = getRolesAsString(identity);
+		
+		//repository
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct membership.role from repositoryentry v ")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey");
+		List<String> repositoryRoles = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		for(String repositoryRole:repositoryRoles) {
+			if(repositoryRole.equals("owner")) {
+				openolatRoles.add(repositoryRole);
+			} else if(repositoryRole.equals("coach")) {
+				openolatRoles.add("repocoach");
+			}
+		}
+		
+		// business groups
+		StringBuilder gsb = new StringBuilder();
+		gsb.append("select distinct membership.role from businessgroup as bgroup ")
+		   .append(" inner join bgroup.baseGroup as baseGroup")
+		   .append(" inner join baseGroup.members as membership")
+		   .append(" where membership.identity.key=:identityKey");
+		List<String> groupRoles = dbInstance.getCurrentEntityManager()
+				.createQuery(gsb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		for(String groupRole:groupRoles) {
+			if(groupRole.equals("coach")) {
+				openolatRoles.add("bgroupcoach");
+			}
+		}
+
+		return openolatRoles;
+	}
+
 	/**
 	 * scalar query : select sgi, poi, ori
 	 * @param identity
@@ -2067,18 +2109,61 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return string;
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
-	 */
 	@Override
-	public Identity saveIdentityStatus(Identity identity, Integer status) {
-		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setStatus(status);
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
-		dbInstance.commit();
+	public Identity saveIdentityStatus(Identity identity, Integer status, Identity doer) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setStatus(status);
+			if(status.equals(Identity.STATUS_DELETED)) {
+				if(doer != null && reloadedIdentity.getDeletedBy() == null) {
+					reloadedIdentity.setDeletedBy(getDeletedByName(doer));
+				}
+				reloadedIdentity.setDeletedDate(new Date());
+			}
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+			dbInstance.commit();
+		}
+		return reloadedIdentity;
+	}
+
+	@Override
+	public Identity saveDeletedByData(Identity identity, Identity doer) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setDeletedBy(getDeletedByName(doer));
+			reloadedIdentity.setDeletedDate(new Date());
+			
+			List<String> deletedRoles = getRolesSummaryWithResources(reloadedIdentity);
+			StringBuilder deletedRoleBuffer = new StringBuilder();
+			for(String deletedRole:deletedRoles) {
+				if(deletedRoleBuffer.length() > 0) deletedRoleBuffer.append(",");
+				deletedRoleBuffer.append(deletedRole);
+			}
+
+			reloadedIdentity.setDeletedRoles(deletedRoleBuffer.toString());
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+			dbInstance.commit();
+		}
 		return reloadedIdentity;
 	}
 	
+	private String getDeletedByName(Identity doer) {
+		StringBuilder sb = new StringBuilder(128);
+		if(doer != null) {
+			if(StringHelper.containsNonWhitespace(doer.getUser().getLastName())) {
+				sb.append(doer.getUser().getLastName());
+			}
+			if(StringHelper.containsNonWhitespace(doer.getUser().getFirstName())) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(doer.getUser().getFirstName());
+			}
+		}
+		if(sb.length() > 128) {
+			sb.delete(128, sb.length());
+		}
+		return sb.toString();
+	}
+
 	@Override
 	public void setIdentityLastLogin(IdentityRef identity) {
 		dbInstance.getCurrentEntityManager()
@@ -2092,19 +2177,23 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public Identity saveIdentityName(Identity identity, String newName, String newExternalId) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setName(newName);
-		reloadedIdentity.setExternalId(newExternalId);
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
-		dbInstance.commit();
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setName(newName);
+			reloadedIdentity.setExternalId(newExternalId);
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+			dbInstance.commit();
+		}
 		return reloadedIdentity;
 	}
 	
 	@Override
 	public Identity setExternalId(Identity identity, String externalId) {
-		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setExternalId(externalId);
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
-		dbInstance.commit();
+		IdentityImpl reloadedIdentity = loadForUpdate(identity);
+		if(reloadedIdentity != null) {
+			reloadedIdentity.setExternalId(externalId);
+			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+			dbInstance.commit();
+		}
 		return reloadedIdentity;
 	}
 	

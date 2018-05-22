@@ -428,7 +428,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 * @param identityList List of Identities to delete
 	 */
 	@Override
-	public void deletIdentities(List<Identity> identityList) {
+	public void deleteIdentities(List<Identity> identityList, Identity doer) {
 		SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		
 		for (Identity identity:  identityList) {
@@ -438,7 +438,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			}
 			
 			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
-			userDeletionManager.deleteIdentity(identity);
+			userDeletionManager.deleteIdentity(identity, doer);
 			dbInstance.intermediateCommit();
 		}
 	}
@@ -1125,7 +1125,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 										+ "% tried to delete.");
 					} else {
 						// delete users
-						deletIdentities(deletedUserList);
+						deleteIdentities(deletedUserList, null);
 						log.info("LDAP batch sync: "
 								+ deletedUserList.size() + " users deleted"
 								+ sinceSentence);

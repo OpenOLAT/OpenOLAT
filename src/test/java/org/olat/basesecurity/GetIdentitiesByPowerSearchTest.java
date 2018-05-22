@@ -71,7 +71,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
 		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
-		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
+		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED, null);
 
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
@@ -118,7 +118,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
 		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
-		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
+		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED, null);
 
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
@@ -210,8 +210,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
 
 		// add some stats
-		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
-		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
+		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
+		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
 		
 		// check on those four default groups
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
@@ -275,8 +275,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
 
 		// add some stats
-		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
-		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
+		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
+		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
 		
 		// check on those four default groups
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
@@ -346,8 +346,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
 
 		// add some stats
-		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
-		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
+		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
+		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
 		
 		// check on those four default groups
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);

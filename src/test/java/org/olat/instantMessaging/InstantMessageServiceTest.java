@@ -175,7 +175,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Assert.assertNotNull(message);
 
 		// delete the user
-		userDeletionManager.deleteIdentity(chatter1);
+		userDeletionManager.deleteIdentity(chatter1, null);
 		dbInstance.commitAndCloseSession();
 		
 		// check preferences are deleted

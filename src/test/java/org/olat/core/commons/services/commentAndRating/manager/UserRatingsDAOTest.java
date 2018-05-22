@@ -205,7 +205,7 @@ public class UserRatingsDAOTest extends OlatTestCase {
 		Assert.assertEquals(3.0f, courseAverage, 0.001f);
 
 		// delete first user
-		userDeletionManager.deleteIdentity(identToDelete);
+		userDeletionManager.deleteIdentity(identToDelete, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check that rating of the first user are deleted

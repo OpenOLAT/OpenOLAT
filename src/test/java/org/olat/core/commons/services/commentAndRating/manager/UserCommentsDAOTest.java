@@ -163,7 +163,7 @@ public class UserCommentsDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// delete the first user
-		userDeletionManager.deleteIdentity(identToDelete);
+		userDeletionManager.deleteIdentity(identToDelete, null);
 		dbInstance.commitAndCloseSession();
 		
 		// delete comments from first identity, and replace the comment if it has a reply

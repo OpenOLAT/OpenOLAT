@@ -166,6 +166,9 @@ create table o_bs_identity (
    name varchar(128) not null unique,
    external_id varchar(64),
    status integer,
+   deleteddate timestamp,
+   deletedroles varchar(1024),
+   deletedby varchar(128),
    primary key (id)
 );
 create table o_csp_log (

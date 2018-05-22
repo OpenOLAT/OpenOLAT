@@ -166,7 +166,7 @@ public class DirectDeleteController extends BasicController {
 		boolean totalSuccess = true;
 		for (int i = 0; i < toDeleteIdentities.size(); i++) {
 			Identity identity = toDeleteIdentities.get(i);
-			boolean success = userDeletionManager.deleteIdentity(identity);
+			boolean success = userDeletionManager.deleteIdentity(identity, getIdentity());
 			if (success) {
 				dbInstance.intermediateCommit();								
 			} else {

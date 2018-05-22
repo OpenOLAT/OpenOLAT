@@ -55,6 +55,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -76,6 +77,8 @@ public class ReadyToDeleteController extends BasicController {
 	private boolean isAdministrativeUser;
 	private Translator propertyHandlerTranslator;
 
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 	/**
 	 * @param ureq
@@ -178,7 +181,7 @@ public class ReadyToDeleteController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
 		listenTo(tableCtr);
 		
-		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
+		List<Identity> l = userDeletionManager.getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
 		tdm = new UserDeleteTableModel(l, getLocale(), isAdministrativeUser);
 		tdm.addColumnDescriptors(tableCtr, null,"table.identity.deleteEmail");	
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.activate")));				
@@ -197,14 +200,14 @@ public class ReadyToDeleteController extends BasicController {
 	}
 
 	protected void updateUserList() {
-		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesReadyToDelete(UserDeletionManager.getInstance().getDeleteEmailDuration());		
+		List<Identity> l = userDeletionManager.getIdentitiesReadyToDelete(UserDeletionManager.getInstance().getDeleteEmailDuration());		
 		tdm.setObjects(l);	
 		tableCtr.setTableDataModel(tdm);
 	}
 	
 	private void deleteIdentities(List<Identity> identities, List<String> errors) {
 		for (Identity id:identities) {
-			boolean success = UserDeletionManager.getInstance().deleteIdentity( id );
+			boolean success = userDeletionManager.deleteIdentity(id, getIdentity());
 			if (success) {
 				DBFactory.getInstance().intermediateCommit();				
 			} else {
