@@ -137,6 +137,7 @@ public class EvaluationFormParticipationImpl implements EvaluationFormParticipat
 		return anonymous;
 	}
 
+	@Override
 	public void setAnonymous(boolean anonymous) {
 		this.anonymous = anonymous;
 	}

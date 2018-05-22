@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,36 +39,57 @@ import org.olat.modules.forms.model.xml.SingleChoice;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceBarSeriesDataSource implements BarSeriesDataSource {
+public class SingleChoiceDataSource implements CountDataSource, BarSeriesDataSource {
 
 	private final SingleChoice singleChoice;
 	private final List<? extends EvaluationFormSessionRef> sessions;
 	
+	private OWASPAntiSamyXSSFilter xssFilter;
 	private EvaluationFormReportDAO reportDAO;
 	
-	public SingleChoiceBarSeriesDataSource(SingleChoice singleChoice, List<? extends EvaluationFormSessionRef> sessions) {
+	public SingleChoiceDataSource(SingleChoice singleChoice, List<? extends EvaluationFormSessionRef> sessions) {
 		super();
 		this.singleChoice = singleChoice;
 		this.sessions = sessions;
+		this.xssFilter = new OWASPAntiSamyXSSFilter();
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 
 	@Override
-	public BarSeries getBarSeries() {
-		String responseIdentifier = singleChoice.getId();
-		List<CalculatedLong> counts = reportDAO.getCountByStringuifideResponse(responseIdentifier, sessions);
-		Map<String, Long> identToValue = counts.stream()
-				.collect(Collectors.toMap(CalculatedLong::getIdentifier, CalculatedLong::getValue));
+	public List<CountResult> getResponses() {
+		Map<String, Long> identToCount = loadIdentToCount();
+		List<CountResult> countResults = new ArrayList<>(identToCount.size());
 		
-		OWASPAntiSamyXSSFilter xssFilter = new OWASPAntiSamyXSSFilter();
+		for (Choice choice: singleChoice.getChoices().asList()) {
+			Long count = identToCount.get(choice.getId());
+			long value = count != null? (long) count: 0;
+			String name = xssFilter.filter(choice.getValue());
+			CountResult countResult = new CountResult(name, value);
+			countResults.add(countResult);
+		}
+		return countResults;
+	}
+
+	@Override
+	public BarSeries getBarSeries() {
+		Map<String, Long> identToCount = loadIdentToCount();
+		
 		BarSeries series = new BarSeries("o_eva_bar");
 		for (Choice choice: singleChoice.getChoices().asList()) {
-			Long count = identToValue.get(choice.getId());
+			Long count = identToCount.get(choice.getId());
 			double value = count != null? (double) count: 0;
 			Comparable<?> category = xssFilter.filter(choice.getValue());
 			series.add(value, category);
 		}
 		return series;
+	}
+
+	private Map<String, Long> loadIdentToCount() {
+		String responseIdentifier = singleChoice.getId();
+		List<CalculatedLong> counts = reportDAO.getCountByStringuifideResponse(responseIdentifier, sessions);
+		Map<String, Long> identToValue = counts.stream()
+				.collect(Collectors.toMap(CalculatedLong::getIdentifier, CalculatedLong::getValue));
+		return identToValue;
 	}
 
 }

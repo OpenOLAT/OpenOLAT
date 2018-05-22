@@ -17,43 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.model.jpa;
-
-import java.math.BigDecimal;
+package org.olat.modules.forms.ui.model;
 
 /**
  * 
- * Initial date: 04.05.2018<br>
+ * Initial date: 20.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CalculatedLong {
+public class CountResult {
 	
-	private final String identifier;
-	private final String subIdentifier;
-	private final long value;
+	private final String name;
+	private final long count;
 	
-	public CalculatedLong(String identifier, BigDecimal subIdentifier, long value) {
-		this(identifier, subIdentifier.toPlainString(), value);
-	}
-	
-	public CalculatedLong(String identifier, String subIdentifier, long value) {
+	public CountResult(String name, long count) {
 		super();
-		this.identifier = identifier;
-		this.subIdentifier = subIdentifier;
-		this.value = value;
+		this.name = name;
+		this.count = count;
 	}
 
-	public String getIdentifier() {
-		return identifier;
+	public String getName() {
+		return name;
 	}
 
-	public String getSubIdentifier() {
-		return subIdentifier;
-	}
-
-	public long getValue() {
-		return value;
+	public long getCount() {
+		return count;
 	}
 
 }

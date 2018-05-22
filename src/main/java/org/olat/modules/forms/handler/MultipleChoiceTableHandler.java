@@ -26,33 +26,33 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormSessionRef;
-import org.olat.modules.forms.model.xml.SingleChoice;
-import org.olat.modules.forms.ui.BarChartController;
+import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.ui.CountTableController;
 import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.model.BarSeriesDataSource;
-import org.olat.modules.forms.ui.model.SingleChoiceDataSource;
+import org.olat.modules.forms.ui.model.CountDataSource;
+import org.olat.modules.forms.ui.model.MultipleChoiceDataSource;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
  * 
- * Initial date: 04.05.2018<br>
+ * Initial date: 21.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceBarChartHandler implements EvaluationFormReportHandler {
+public class MultipleChoiceTableHandler implements EvaluationFormReportHandler {
 
 	@Override
 	public String getType() {
-		return "scbarchart";
+		return "mctablehandler";
 	}
 
 	@Override
-	public Component getReportComponent(UserRequest ureq, WindowControl windowControl,
-			PageElement element, List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
-		if (element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice) element;
-			BarSeriesDataSource dataSource = new SingleChoiceDataSource(singleChoice, sessions);
-			Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
+	public Component getReportComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+		if (element instanceof MultipleChoice) {
+			MultipleChoice multipleChoice = (MultipleChoice) element;
+			CountDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, sessions);
+			Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
 			return ctrl.getInitialComponent();
 		}
 		return null;

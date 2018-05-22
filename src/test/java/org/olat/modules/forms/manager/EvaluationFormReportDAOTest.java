@@ -135,6 +135,88 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldGetCountByIdentifiersAndNumResponse() {
+		String responseIdentifier1 = UUID.randomUUID().toString();
+		String responseIdentifier2 = UUID.randomUUID().toString();
+		String otherIdentifier = UUID.randomUUID().toString();
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		EvaluationFormSession session3 = evaTestHelper.createSession();
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		BigDecimal numberThreeTimes = BigDecimal.valueOf(1);
+		BigDecimal numberOnce = BigDecimal.valueOf(2);
+		
+		evaluationFormManager.createNumericalResponse(responseIdentifier1, otherSession, numberThreeTimes);
+		evaluationFormManager.createNoResponse(responseIdentifier1, session1);
+		evaluationFormManager.createNumericalResponse(otherIdentifier, session1, numberOnce);
+		evaluationFormManager.createNumericalResponse(responseIdentifier1, session1, numberThreeTimes);
+		evaluationFormManager.createNumericalResponse(responseIdentifier1, session1, numberOnce);
+		evaluationFormManager.createNumericalResponse(responseIdentifier2, session1, numberOnce);
+		evaluationFormManager.finishSession(session1);
+		evaluationFormManager.createNumericalResponse(responseIdentifier1, session2, numberThreeTimes);
+		evaluationFormManager.finishSession(session2);
+		// unfinished session counts as well
+		evaluationFormManager.createNumericalResponse(responseIdentifier1, session3, numberThreeTimes);
+		dbInstance.commit();
+		
+		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3);
+		List<CalculatedLong> counts = sut.getCountByIdentifiersAndNumerical(responseIdentifiers, sessions);
+		
+		assertThat(counts).hasSize(3);
+		assertThat(getValue(counts, responseIdentifier1, numberThreeTimes.toPlainString())).isEqualTo(3);
+		assertThat(getValue(counts, responseIdentifier1, numberOnce.toPlainString())).isEqualTo(1);
+		assertThat(getValue(counts, responseIdentifier2, numberOnce.toPlainString())).isEqualTo(1);
+	}
+	
+	private Long getValue(List<CalculatedLong> calculatedLongs, String identifier, String subidentifier) {
+		for (CalculatedLong calculatedLong: calculatedLongs) {
+			if (calculatedLong.getIdentifier().equals(identifier) && calculatedLong.getSubIdentifier().equals(subidentifier)) {
+				return calculatedLong.getValue();
+			}
+		}
+		return null;
+	}
+	
+	@Test
+	public void shouldGetCountNoResponsesByIdentifier() {
+		String responseIdentifier1 = UUID.randomUUID().toString();
+		String responseIdentifier2 = UUID.randomUUID().toString();
+		String otherIdentifier = UUID.randomUUID().toString();
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		EvaluationFormSession session3 = evaTestHelper.createSession();
+		EvaluationFormSession session4 = evaTestHelper.createSession();
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		String choice1 = UUID.randomUUID().toString();
+		
+		evaluationFormManager.createNoResponse(responseIdentifier1, session1);
+		evaluationFormManager.createNoResponse(responseIdentifier2, session1);
+		evaluationFormManager.finishSession(session1);
+		evaluationFormManager.createNoResponse(responseIdentifier1, session2);
+		evaluationFormManager.finishSession(session2);
+		evaluationFormManager.createNoResponse(responseIdentifier1, session3);
+		evaluationFormManager.createStringResponse(responseIdentifier2, session3, choice1);
+		evaluationFormManager.finishSession(session3);
+		// unfinished session counts as well
+		evaluationFormManager.createStringResponse(responseIdentifier1, session4, choice1);
+		evaluationFormManager.createNoResponse(responseIdentifier1, otherSession);
+		evaluationFormManager.createNoResponse(otherIdentifier, session1);
+		dbInstance.commit();
+
+		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3, session4);
+		List<CalculatedLong> counts = sut.getCountNoResponsesByIdentifiers(responseIdentifiers, sessions);
+		
+		assertThat(counts).hasSize(2);
+		Map<String, Long> identToValue = counts.stream()
+				.collect(Collectors.toMap(CalculatedLong::getIdentifier, CalculatedLong::getValue));
+		assertThat(identToValue.get(responseIdentifier1)).isEqualTo(3);
+		assertThat(identToValue.get(responseIdentifier2)).isEqualTo(1);
+	}
+
+	
+	@Test
 	public void shouldGetAvgByResponseIdentifiery() {
 		String responseIdentifier1 = UUID.randomUUID().toString();
 		String responseIdentifier2 = UUID.randomUUID().toString();

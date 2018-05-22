@@ -38,7 +38,7 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
-import org.olat.modules.forms.ui.EvaluationFormReportController;
+import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,8 +67,8 @@ public class SurveyReportingController extends BasicController {
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
 				EvaluationFormSessionStatus.done);
 
-		EvaluationFormReportController reportCtrl = new EvaluationFormReportController(ureq, wControl, form, sessions);
-		mainVC.put("report", reportCtrl.getInitialComponent());
+		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, sessions);
+		mainVC.put("report", reportsCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
 	}

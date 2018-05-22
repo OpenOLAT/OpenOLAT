@@ -303,6 +303,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private FormItem createContinousSliderEl() {
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
+		sliderEl.setMinValue(1);
+		sliderEl.setMaxValue(100);
 		return sliderEl;
 	}
 
@@ -487,7 +489,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		
 		public void setExampleText(String example) {
-			stepLabelEl.setExampleKey("rubic.scale.example.value", new String[] {example});
+			stepLabelEl.setExampleKey("rubric.scale.example.value", new String[] {example});
 		}
 
 		public void removeExampleText() {

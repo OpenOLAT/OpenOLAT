@@ -57,5 +57,9 @@ public class DefaultReportProvider implements EvaluationFormReportProvider {
 	public EvaluationFormReportHandler getReportHandler(PageElement element) {
 		return handlers.get(element.getType());
 	}
+	
+	public void put(String elementType, EvaluationFormReportHandler handler) {
+		handlers.put(elementType, handler);
+	}
 
 }

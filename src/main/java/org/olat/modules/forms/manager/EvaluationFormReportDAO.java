@@ -77,7 +77,7 @@ public class EvaluationFormReportDAO {
 			return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.stringuifiedResponse, count(response))");
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.stringuifiedResponse, '', count(response))");
 		sb.append("  from evaluationformresponse as response");
 		sb.append(" where response.responseIdentifier=:responseIdentifier");
 		sb.append("   and response.session.key in (:sessionKeys)");
@@ -91,6 +91,47 @@ public class EvaluationFormReportDAO {
 				.getResultList();
 	}
 	
+	public List<CalculatedLong> getCountByIdentifiersAndNumerical(List<String> responseIdentifiers,
+			List<? extends EvaluationFormSessionRef> sessions) {
+		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || sessions == null || sessions.isEmpty())
+			return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.responseIdentifier, response.numericalResponse, count(response))");
+		sb.append("  from evaluationformresponse as response");
+		sb.append(" where response.responseIdentifier in (:responseIdentifiers)");
+		sb.append("   and response.session.key in (:sessionKeys)");
+		sb.append("   and (response.noResponse is false or response.noResponse is null)");
+		sb.append(" group by response.responseIdentifier");
+		sb.append("        , response.numericalResponse");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CalculatedLong.class)
+				.setParameter("responseIdentifiers", responseIdentifiers)
+				.setParameter("sessionKeys", getSessionKeys(sessions))
+				.getResultList();
+	}
+
+	public List<CalculatedLong> getCountNoResponsesByIdentifiers(List<String> responseIdentifiers,
+			List<? extends EvaluationFormSessionRef> sessions) {
+		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || sessions == null || sessions.isEmpty())
+			return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.responseIdentifier, '', count(response))");
+		sb.append("  from evaluationformresponse as response");
+		sb.append(" where response.responseIdentifier in (:responseIdentifiers)");
+		sb.append("   and response.session.key in (:sessionKeys)");
+		sb.append("   and response.noResponse is true");
+		sb.append(" group by response.responseIdentifier");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CalculatedLong.class)
+				.setParameter("responseIdentifiers", responseIdentifiers)
+				.setParameter("sessionKeys", getSessionKeys(sessions))
+				.getResultList();
+	}
+
 	public List<CalculatedDouble> getAvgByResponseIdentifiers(List<String> responseIdentifiers,
 			List<? extends EvaluationFormSessionRef> sessions) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || sessions == null || sessions.isEmpty())

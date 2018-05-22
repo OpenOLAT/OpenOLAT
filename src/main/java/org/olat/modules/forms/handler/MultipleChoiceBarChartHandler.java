@@ -30,7 +30,7 @@ import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.BarChartController;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.BarSeriesDataSource;
-import org.olat.modules.forms.ui.model.MultipleChoiceBarSeriesDataSource;
+import org.olat.modules.forms.ui.model.MultipleChoiceDataSource;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
@@ -51,7 +51,7 @@ public class MultipleChoiceBarChartHandler  implements EvaluationFormReportHandl
 			PageElement element, List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof MultipleChoice) {
 			MultipleChoice multipleChoice = (MultipleChoice) element;
-			BarSeriesDataSource dataSource = new MultipleChoiceBarSeriesDataSource(multipleChoice, sessions);
+			BarSeriesDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, sessions);
 			Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
 			return ctrl.getInitialComponent();
 		}
