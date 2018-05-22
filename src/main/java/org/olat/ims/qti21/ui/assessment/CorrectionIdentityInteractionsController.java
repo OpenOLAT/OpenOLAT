@@ -54,9 +54,11 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
+import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.olat.repository.RepositoryEntry;
@@ -64,6 +66,7 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -74,6 +77,7 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -94,8 +98,10 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private StaticTextElement statusEl;
 	private FormLink viewSolutionButton;
 	private FormLink overrideScoreButton;
+	private FormLink viewCorrectSolutionButton;
 	private ItemBodyResultFormItem answerItem;
 	private ItemBodyResultFormItem solutionItem;
+	private FeedbackResultFormItem correctSolutionItem;
 	private MultipleSelectionElement toReviewEl;
 	private FormLayoutContainer overrideScoreCont;
 	
@@ -166,6 +172,16 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		solutionItem.setVisible(false);
 		solutionItem.setShowSolution(true);
 		formLayout.add("solution", solutionItem);
+		
+		if(hasCorrectSolution()) {
+			viewCorrectSolutionButton = uifactory.addFormLink("view.correct.solution", formLayout);
+			viewCorrectSolutionButton.setIconLeftCSS("o_icon o_icon_open_togglebox");
+			
+			correctSolutionItem = initFormCorrectSolution(testPlanNodeKey, testSessionState, testSession, formLayout);
+			correctSolutionItem.setVisible(false);
+			correctSolutionItem.setShowSolution(true);
+			formLayout.add("correctSolution", correctSolutionItem);
+		}
 
 		List<InteractionResultFormItem> responseItems = new ArrayList<>(interactions.size());
 		for(Interaction interaction:interactions) {
@@ -274,6 +290,33 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		return responseFormItem;
 	}
 	
+	private FeedbackResultFormItem initFormCorrectSolution(TestPlanNodeKey testPlanNodeKey,
+			TestSessionState testSessionState, AssessmentTestSession assessmentTestSession, FormItemContainer layoutCont) {
+		
+		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
+
+		String correctSolutionId = "correctSolutionItem" + count++;
+		FeedbackResultFormItem feedbackItem = new FeedbackResultFormItem(correctSolutionId, resolvedAssessmentItem);
+		feedbackItem.setItemSessionState(sessionState);
+		feedbackItem.setCandidateSessionContext(new TerminatedStaticCandidateSessionContext(assessmentTestSession));
+		feedbackItem.setResolvedAssessmentTest(resolvedAssessmentTest);
+		feedbackItem.setResourceLocator(inputResourceLocator);
+		feedbackItem.setAssessmentObjectUri(assessmentObjectUri);
+		feedbackItem.setMapperUri(mapperUri);
+		layoutCont.add(feedbackItem);
+		return feedbackItem;
+	}
+	
+	private boolean hasCorrectSolution() {
+		for(ModalFeedback modalFeedback:assessmentItem.getModalFeedbacks()) {
+			Identifier outcomeIdentifier = modalFeedback.getOutcomeIdentifier();
+			if(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(outcomeIdentifier)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	protected String getStatus() {
 		AssessmentItemSession itemSession = correction.getItemSession();
 		StringBuilder sb = new StringBuilder();
@@ -334,6 +377,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			doOverrideScore(ureq);
 		} else if(viewSolutionButton == source) {
 			doToggleSolution();
+		} else if(viewCorrectSolutionButton == source) {
+			doToggleCorrectSolution();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -422,6 +467,16 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		} else {
 			viewSolutionButton.setIconLeftCSS("o_icon o_icon_close_togglebox");
 			solutionItem.setVisible(true);
+		}
+	}
+	
+	private void doToggleCorrectSolution() {
+		if(correctSolutionItem.isVisible()) {
+			viewCorrectSolutionButton.setIconLeftCSS("o_icon o_icon_open_togglebox");
+			correctSolutionItem.setVisible(false);
+		} else {
+			viewCorrectSolutionButton.setIconLeftCSS("o_icon o_icon_close_togglebox");
+			correctSolutionItem.setVisible(true);
 		}
 	}
 	
