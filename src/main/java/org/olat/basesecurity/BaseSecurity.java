@@ -65,6 +65,15 @@ public interface BaseSecurity {
 	public List<String> getRolesAsString(IdentityRef identity, OrganisationRef organisation);
 	
 	/**
+	 * This method need several queries to catch all roles.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<String> getRolesSummaryWithResources(IdentityRef identity);
+	
+	
+	/**
 	 * Update the roles
 	 * @param actingIdentity The identity who is performing the change
 	 * @param updatedIdentity The identity that is changed
@@ -469,11 +478,14 @@ public interface BaseSecurity {
 			OrganisationRoles[] roles, String[] authProviders, Date createdAfter,
 			Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status);
 	
-	
-	/** Save an identity
-	 * @param identity  Save this identity
+	/**
+	 * 
+	 * @param identity The identity with a new status
+	 * @param status The status to set
+	 * @param doer The identity which is acting
+	 * @return
 	 */
-	public Identity saveIdentityStatus(Identity identity, Integer status);
+	public Identity saveIdentityStatus(Identity identity, Integer status, Identity doer);
 	
 	/**
 	 * Set the date of the last login
@@ -497,6 +509,16 @@ public interface BaseSecurity {
 	 * @return The reloaded and renamed identity
 	 */
 	public Identity saveIdentityName(Identity identity, String newName, String newExertnalId);
+	
+	/**
+	 * the method doesn't set the status deleted, it will set the user
+	 * who deleted the specified identity, the list of roles and the date.
+	 * 
+	 * @param identity The identity to set the data of
+	 * @param doer The identity which is acting
+	 * @return The merged identity
+	 */
+	public Identity saveDeletedByData(Identity identity, Identity doer);
 	
 	/**
 	 * Set an external id if the identity is managed by an external system.

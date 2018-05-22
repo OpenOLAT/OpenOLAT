@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
@@ -38,8 +39,6 @@ import org.olat.core.commons.services.commentAndRating.model.UserCommentsCount;
 import org.olat.core.commons.services.commentAndRating.model.UserCommentsCountImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -55,10 +54,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("userCommentsDAO")
 public class UserCommentsDAO {
-	
-	private static final OLog log = Tracing.createLoggerFor(UserCommentsDAO.class);
-	
-	
+
 	@Autowired
 	private DB dbInstance;
 	
@@ -72,7 +68,7 @@ public class UserCommentsDAO {
 	public UserComment createComment(Identity creator, OLATResourceable ores, String resSubPath, String commentText) {
 		UserComment comment = new UserCommentImpl(ores, resSubPath, creator, commentText);
 		dbInstance.getCurrentEntityManager().persist(comment);
-		updateDelegateRatings(ores, resSubPath);
+		updateDelegateRatings(ores, resSubPath, true);
 		
 		// do Logging
 		ThreadLocalUserActivityLogger.log(CommentAndRatingLoggingAction.COMMENT_CREATED, getClass(),
@@ -81,19 +77,12 @@ public class UserCommentsDAO {
 	}
 
 	public UserComment reloadComment(UserComment comment) {
-		try {
-			String q = "select comment from usercomment as comment where comment.key=:commentKey";
-			List<UserComment> comments = dbInstance.getCurrentEntityManager()
-			 		.createQuery(q, UserComment.class)
-			 		.setParameter("commentKey", comment.getKey())
-			 		.getResultList();
-			return comments.isEmpty() ? null : comments.get(0);
-		} catch (Exception e) {
-			// Huh, most likely the given object does not exist anymore on the
-			// db, probably deleted by someone else
-			log.warn("Tried to reload a user comment but got an exception. Probably deleted in the meantime", e);
-			return null;
-		}		
+		String q = "select comment from usercomment as comment where comment.key=:commentKey";
+		List<UserComment> comments = dbInstance.getCurrentEntityManager()
+		 		.createQuery(q, UserComment.class)
+		 		.setParameter("commentKey", comment.getKey())
+		 		.getResultList();
+		return comments.isEmpty() ? null : comments.get(0);
 	}
 	
 	public UserComment replyTo(UserComment originalComment, Identity creator, String replyCommentText) {
@@ -107,7 +96,7 @@ public class UserCommentsDAO {
 		UserCommentImpl reply = new UserCommentImpl(ores, originalComment.getResSubPath(), creator, replyCommentText);
 		reply.setParent(originalComment);
 		dbInstance.getCurrentEntityManager().persist(reply);
-		updateDelegateRatings(ores, originalComment.getResSubPath());
+		updateDelegateRatings(ores, originalComment.getResSubPath(), true);
 		return reply;
 	}
 
@@ -172,7 +161,7 @@ public class UserCommentsDAO {
 		dbInstance.getCurrentEntityManager().remove(comment);
 		// do Logging
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(comment.getResName(), comment.getResId());
-		updateDelegateRatings(ores, comment.getResSubPath());
+		updateDelegateRatings(ores, comment.getResSubPath(), true);
 		ThreadLocalUserActivityLogger.log(CommentAndRatingLoggingAction.COMMENT_DELETED, getClass(),
 				CoreLoggingResourceable.wrap(ores, OlatResourceableType.feedItem));
 		return counter+1;
@@ -195,8 +184,8 @@ public class UserCommentsDAO {
 				.setParameter("resId", ores.getResourceableId())
 				.getResultList();
 		
-		Set<String> countMap = new HashSet<String>();
-		List<UserCommentsCount> countList = new ArrayList<UserCommentsCount>();
+		Set<String> countMap = new HashSet<>();
+		List<UserCommentsCount> countList = new ArrayList<>();
 		for(Object[] count:counts) {
 			Object subPath = count[0] == null ? "" : count[0];
 			if(!countMap.contains(subPath)) {
@@ -223,9 +212,50 @@ public class UserCommentsDAO {
 			.getSingleResult().longValue();
 	}
 	
-	/**
-	 * @see org.olat.core.commons.services.commentAndRating.UserCommentsManager#deleteAllComments()
-	 */
+	public int deleteAllComments(IdentityRef identity) {
+		Set<Long> commentWithReplyKeys = getCommentKeysWithReply(identity);
+		
+		String query = "select comment.key from usercomment comment where comment.creator.key=:creatorKey";
+		List<Long> commentKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("creatorKey", identity.getKey())
+				.getResultList();
+
+		int count = 0;
+		for(Long commentKey:commentKeys) {
+			UserComment comment = dbInstance.getCurrentEntityManager()
+					.getReference(UserCommentImpl.class, commentKey);
+			if(commentWithReplyKeys.contains(commentKey)) {
+				comment.setComment("User has been deleted");
+				dbInstance.getCurrentEntityManager().merge(comment);
+			} else {
+				dbInstance.getCurrentEntityManager().remove(comment);
+			}
+			
+			if(count++ % 25 == 0) {
+				dbInstance.commitAndCloseSession();
+			} else {
+				dbInstance.commit();
+			}
+
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(comment.getResName(), comment.getResId());
+			updateDelegateRatings(ores, comment.getResSubPath(), false);
+		}
+		return commentKeys.size();
+	}
+	
+	private Set<Long> getCommentKeysWithReply(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select comment.key from usercomment as comment")
+		  .append(" inner join usercomment as reply on (comment.key=reply.parent.key)")
+		  .append(" where comment.creator.key=:creatorKey");
+		List<Long> commentWithReplyKeyList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("creatorKey", identity.getKey())
+				.getResultList();
+		return new HashSet<>(commentWithReplyKeyList);
+	}
+	
 	public int deleteAllComments(OLATResourceable ores, String resSubPath) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		// special query when sub path is null
@@ -258,7 +288,7 @@ public class UserCommentsDAO {
 				em.remove(comment);
 			}
 		}
-		updateDelegateRatings(ores, resSubPath);
+		updateDelegateRatings(ores, resSubPath, false);
 		return comments == null ? 0 : comments.size();
 	}
 
@@ -280,11 +310,11 @@ public class UserCommentsDAO {
 		for(UserCommentImpl comment:comments) {
 			em.remove(comment);
 		}
-		updateDelegateRatings(ores, null);
+		updateDelegateRatings(ores, null, false);
 		return comments.size();
 	}
 	
-	private void updateDelegateRatings(OLATResourceable ores, String resSubPath) {
+	private void updateDelegateRatings(OLATResourceable ores, String resSubPath, boolean newRating) {
 		if(delegates == null || delegates.isEmpty()) return;
 
 		for(UserCommentsDelegate delegate:delegates) {
@@ -308,7 +338,8 @@ public class UserCommentsDAO {
 		
 				Number count = query.getSingleResult();
 				if(count == null) {
-					delegate.update(ores, resSubPath, 1);
+					int val = newRating ? 1 : 0;
+					delegate.update(ores, resSubPath, val);
 				} else {
 					delegate.update(ores, resSubPath, count.intValue());
 				}

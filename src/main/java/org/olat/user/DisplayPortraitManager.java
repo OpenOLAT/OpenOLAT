@@ -376,11 +376,13 @@ public class DisplayPortraitManager implements UserDataDeletable {
 		}
 		return folder;
 	}
-	
-	/**
-	 * Delete home-page config-file of a certain user.
-	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
-	 */
+
+	@Override
+	public int deleteUserDataPriority() {
+		// must have higher priority than HomePageConfigManagerImpl
+		return 650;
+	}
+		
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		String userHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName()); 

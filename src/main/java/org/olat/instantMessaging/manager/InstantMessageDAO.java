@@ -25,6 +25,7 @@ import java.util.List;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -99,6 +100,17 @@ public class InstantMessageDAO {
 				.executeUpdate();
 		if(count > 0) {
 			log.audit(count + " IM messages delete for resource: " + ores);
+		}
+		return count;
+	}
+	
+	public int deleteMessages(IdentityRef identity) {
+		int count = dbInstance.getCurrentEntityManager()
+				.createQuery("delete from instantmessage msg where msg.fromKey=:identityKey")
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+		if(count > 0) {
+			log.audit(count + " IM messages delete for identity: " + identity.getKey());
 		}
 		return count;
 	}

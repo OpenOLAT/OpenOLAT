@@ -78,11 +78,13 @@ public class ConfirmDeleteUserController extends FormBasicController {
 			
 			String[] confirmValues = new String[] { translate("readyToDelete.delete.confirm.check") };
 			confirmEl = uifactory.addCheckboxesHorizontal("readyToDelete.delete.confirm.check.label", layoutCont, confirmKeys, confirmValues);
+			confirmEl.setElementCssClass("o_sel_confirm_delete_user");
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			deleteButton = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
+			deleteButton.setElementCssClass("o_sel_delete_user");
 		}
 	}
 	

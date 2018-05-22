@@ -29,6 +29,7 @@ package org.olat.admin.user.delete.service;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -39,9 +40,11 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -60,6 +63,7 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * Description: <br>
@@ -86,7 +90,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	private BusinessGroupService businessGroupService;
 	
 	@Test
-	public void testDeleteIdentity() {
+	public void deleteIdentity() {
 		String username = "id-to-del-" + UUID.randomUUID();
 		String email = username + "@frentix.com";
 		User user = userManager.createUser("first" + username, "last" + username, email);
@@ -119,7 +123,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		Assert.assertTrue(repositoryService.hasRole(identity, false, GroupRoles.owner.name()));
 		
 		//delete the identity
-		userDeletionManager.deleteIdentity(identity);
+		userDeletionManager.deleteIdentity(identity, null);
 		dbInstance.commit();
 
 		//check
@@ -146,6 +150,10 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		Assert.assertFalse(isOwner);
 		
 		User deletedUser = deletedIdentity.getUser();
+		// process keep first name last name from user with some "administrative"
+		Assert.assertEquals("first" + username, deletedUser.getProperty(UserConstants.FIRSTNAME, null));
+		Assert.assertEquals("last" + username, deletedUser.getProperty(UserConstants.LASTNAME, null));
+		// but not the other properties
 		String institutionalName = deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null);
 		Assert.assertFalse(StringHelper.containsNonWhitespace(institutionalName));
 		String institutionalId = deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
@@ -153,9 +161,52 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		String deletedEmail = deletedUser.getProperty(UserConstants.EMAIL, null);
 		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedEmail));
 	}
+	
+
+	/**
+	 * The test checked that all of the user properties are wiped out.
+	 * 
+	 */
+	@Test
+	public void deleteIdentity_noRoles() {
+		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("del-6");
+		
+		String username = "id-to-del-2-" + UUID.randomUUID();
+		String email = username + "@frentix.com";
+		User user = userManager.createUser("first" + username, "last" + username, email);
+		user.setProperty(UserConstants.COUNTRY, "");
+		user.setProperty(UserConstants.CITY, "Basel");
+		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
+		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		dbInstance.commitAndCloseSession();
+
+		//a group
+		Roles coachRolesId = securityManager.getRoles(groupCoach);
+		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Group", "Group", -1, -1, false, false, null);
+		dbInstance.commit();
+		businessGroupService.addParticipants(groupCoach, coachRolesId, Collections.singletonList(identity), group, null);
+		dbInstance.commit();
+		
+		//delete the identity
+		userDeletionManager.deleteIdentity(identity, groupCoach);
+		dbInstance.commit();
+		
+		IdentityImpl deletedIdentity = (IdentityImpl)securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertNotNull(deletedIdentity);
+		Assert.assertNotNull(deletedIdentity.getDeletedDate());
+		Assert.assertEquals(groupCoach.getUser().getLastName() + ", " + groupCoach.getUser().getFirstName(), deletedIdentity.getDeletedBy());
+
+		User deletedUser = deletedIdentity.getUser();
+		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.FIRSTNAME, null)));
+		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.LASTNAME, null)));
+		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null)));
+		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null)));
+		Assert.assertFalse(StringHelper.containsNonWhitespace(deletedUser.getProperty(UserConstants.EMAIL, null)));
+	}
 
 	@Test
-	public void testSetIdentityAsActiv() throws InterruptedException {
+	public void setIdentityAsActiv() throws InterruptedException {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity");
 		
 		final int maxLoop = 2000; // => 2000 x 11ms => 22sec => finished in 120sec

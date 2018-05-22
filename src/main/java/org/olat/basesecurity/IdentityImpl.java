@@ -56,6 +56,10 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 	/** status=[activ|deleted|permanent] */
 	private int status;
 	
+	private Date deletedDate;
+	private String deletedBy;
+	private String deletedRoles;
+	
 	/**
 	 * Maximum length of an identity's name.
 	 */
@@ -160,6 +164,30 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 	 */
 	public void setStatus(Integer status) {
 		this.status = status == null ? 0 : status.intValue();
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	public String getDeletedRoles() {
+		return deletedRoles;
+	}
+
+	public void setDeletedRoles(String deletedRoles) {
+		this.deletedRoles = deletedRoles;
+	}
+
+	public String getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(String deletedBy) {
+		this.deletedBy = deletedBy;
 	}
 
 	@Override

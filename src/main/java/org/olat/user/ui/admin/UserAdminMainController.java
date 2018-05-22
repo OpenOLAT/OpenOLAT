@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.admin.user.DeletedUsersController;
 import org.olat.admin.user.NewUsersNotificationsController;
 import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UserCreateController;
@@ -301,7 +302,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "usergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.user);
 			case "anonymousgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.guest);
 			case "logondeniedgroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_LOGIN_DENIED);
-			case "deletedusers": return createUserSearchController(ureq, bwControl, Identity.STATUS_DELETED);
+			case "deletedusers": return createDeletedUserController(ureq, bwControl);
 			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
 			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
 			case "created.sixmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -6);
@@ -371,6 +372,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				predefinedQuery.setOrganisations(allowedOrganisations);
 		}
 		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true);
+	}
+	
+	private DeletedUsersController createDeletedUserController(UserRequest ureq, WindowControl bwControl) {
+		return new DeletedUsersController(ureq, bwControl);
 	}
 	
 	private Controller getController(UserRequest ureq, GenericActionExtension ae) {

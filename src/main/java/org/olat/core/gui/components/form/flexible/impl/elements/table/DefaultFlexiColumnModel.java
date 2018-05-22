@@ -73,6 +73,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 				new TextFlexiCellRenderer());
 	}
 	
+	public DefaultFlexiColumnModel(boolean defVisible, FlexiSortableColumnDef def, FlexiCellRenderer renderer) {
+		this(defVisible, false, def.i18nHeaderKey(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT,
+				renderer);
+	}
+	
 	public DefaultFlexiColumnModel(FlexiSortableColumnDef def, String action) {
 		this(true, false, def.i18nHeaderKey(), def.ordinal(), action, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT, 
 				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
@@ -89,10 +94,6 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	
 	public DefaultFlexiColumnModel(FlexiSortableColumnDef def, FlexiCellRenderer renderer) {
 		this(true, false, def.i18nHeaderKey(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT, renderer);
-	}
-	
-	public DefaultFlexiColumnModel(boolean defVisible, FlexiSortableColumnDef def, FlexiCellRenderer renderer) {
-		this(defVisible, false, def.i18nHeaderKey(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
 	public DefaultFlexiColumnModel(FlexiColumnDef def, String action, FlexiCellRenderer renderer) {

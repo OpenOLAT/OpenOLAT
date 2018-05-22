@@ -68,6 +68,8 @@ public class InvitationDAO {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationDAO organisationDao;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 	
 	public Invitation createInvitation() {
 		InvitationImpl invitation = new InvitationImpl();
@@ -337,7 +339,7 @@ public class InvitationDAO {
 					//out of scope
 				} else {
 					//delete user
-					UserDeletionManager.getInstance().deleteIdentity(identity);
+					userDeletionManager.deleteIdentity(identity, null);
 				}
 			}
 			Invitation invitationRef = dbInstance.getCurrentEntityManager()

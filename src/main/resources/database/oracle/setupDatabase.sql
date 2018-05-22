@@ -187,6 +187,9 @@ CREATE TABLE o_bs_identity (
   name varchar2(128 char) NOT NULL,
   external_id varchar2(64 char),
   status number(11),
+  deleteddate date,
+  deletedroles varchar(1024),
+  deletedby varchar(128),
   CONSTRAINT u_o_bs_identity UNIQUE (name),
   PRIMARY KEY (id)
 );

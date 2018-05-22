@@ -36,10 +36,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityNames;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -552,8 +554,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable {
 	private String getDomain() {
 		AuthenticationProvider authenticationProvider = loginModule.getAuthenticationProvider("OLAT");
 		String issuer = authenticationProvider.getIssuerIdentifier(null);
-		String domain = issuer.startsWith("https://")? issuer.substring(8): issuer;
-		return domain;
+		return issuer.startsWith("https://")? issuer.substring(8): issuer;
 	}
 
 	@Override
@@ -565,6 +566,37 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable {
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		identity = securityManager.loadIdentityByKey(identity.getKey());
+		
+		String roles = ((IdentityImpl)identity).getDeletedRoles();
+		boolean isAdministrativeUser = roles != null && (roles.contains("admins") || roles.contains("authors")
+				|| roles.contains("groupmanagers") || roles.contains("poolsmanager")
+				|| roles.contains("owners") || roles.contains(GroupRoles.owner.name())
+				|| roles.contains("usermanagers") || roles.contains("poolsmanager")
+				|| roles.contains(OrganisationRoles.administrator.name()) || roles.contains(OrganisationRoles.author.name())
+				|| roles.contains(OrganisationRoles.curriculummanager.name()) || roles.contains(OrganisationRoles.groupmanager.name())
+				|| roles.contains(OrganisationRoles.learnresourcemanager.name()) || roles.contains(OrganisationRoles.poolmanager.name())
+				|| roles.contains(OrganisationRoles.sysadmin.name()) || roles.contains(OrganisationRoles.usermanager.name()));
+
+		User persistedUser = identity.getUser();
+		List<UserPropertyHandler> userPropertyHandlers = getAllUserPropertyHandlers();
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			String actualProperty = userPropertyHandler.getName();
+			if (UserConstants.USERNAME.equals(actualProperty)) {
+				// Skip, user name will be anonymised by BaseSecurityManager
+			} else if(isAdministrativeUser && (UserConstants.FIRSTNAME.equals(actualProperty) || UserConstants.LASTNAME.equals(actualProperty))) {
+				// Skip first name and last name of user with administrative functions
+			} else {
+				persistedUser.setProperty(actualProperty, null);
+				log.debug("Deleted user-property::" + actualProperty + " for identity::+" + identity.getKey());
+			}
+		}
+		updateUserFromIdentity(identity);
+		log.info("deleteUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
+		dbInstance.commit();
+	}
+
+	@Override
+	public void clearAllUserProperties(Identity identity) {
 		User persistedUser = identity.getUser();
 		List<UserPropertyHandler> userPropertyHandlers = getAllUserPropertyHandlers();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -577,8 +609,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable {
 			}
 		}
 		updateUserFromIdentity(identity);
-		log.info("deleteUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
+		log.info("clearUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
 		dbInstance.commit();
 	}
-
 }

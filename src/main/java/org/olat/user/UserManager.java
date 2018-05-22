@@ -177,6 +177,8 @@ public abstract class UserManager {
 	 * @return true if successful.
 	 */
 	public abstract boolean updateUserFromIdentity(Identity identity);
+	
+	public abstract void clearAllUserProperties(Identity identity);
 
 	/**
 	 * Saves or updates the stringValue of the user's charset property 

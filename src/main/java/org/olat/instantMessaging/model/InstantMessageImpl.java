@@ -108,6 +108,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public Long getFromKey() {
 		return fromKey;
 	}
@@ -138,6 +139,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.resourceId = resourceId;
 	}
 
+	@Override
 	public boolean isAnonym() {
 		return anonym;
 	}
@@ -146,6 +148,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.anonym = anonym;
 	}
 
+	@Override
 	public String getFromNickName() {
 		return fromNickName;
 	}
@@ -154,6 +157,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 		this.fromNickName = fromNickName;
 	}
 
+	@Override
 	public String getBody() {
 		return body;
 	}

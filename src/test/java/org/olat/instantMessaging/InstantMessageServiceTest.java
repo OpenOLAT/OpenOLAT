@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
@@ -39,6 +40,7 @@ import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
 import org.olat.instantMessaging.manager.RosterDAO;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyStats;
+import org.olat.instantMessaging.model.RosterEntryImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,32 +56,26 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private InstantMessageDAO imDao;
-	@Autowired
-	private InstantMessagePreferencesDAO preferencesDao;
-	@Autowired
 	private RosterDAO rosterDao;
 	@Autowired
+	private InstantMessageDAO imDao;
+	@Autowired
 	private InstantMessagingService imService;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private InstantMessagePreferencesDAO instantMessagePreferencesDao;
 
-	@Test
-	public void should_service_present() {
-		Assert.assertNotNull(dbInstance);
-		Assert.assertNotNull(imDao);
-		Assert.assertNotNull(preferencesDao);
-		Assert.assertNotNull(rosterDao);
-		Assert.assertNotNull(imService);
-	}
 	
 	@Test
 	public void testGetBuddiesListenTo() {
 		DummyListener dummyListener = new DummyListener();
-		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-1-" + UUID.randomUUID().toString());
-		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-2-" + UUID.randomUUID().toString());
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-1-");
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-2-");
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
 		imService.listenChat(chatter1, chatResource, null, false, false, dummyListener);
 		imService.listenChat(chatter2, chatResource, "Chatter-2", true, true, dummyListener);
@@ -106,7 +102,7 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	@Test
 	public void testGetBuddyStats_empty() {
 		//create a chat
-		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-3-" + UUID.randomUUID().toString());
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-3-");
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), chatter1.getKey());
 		imService.listenChat(chatter1, chatResource, null, false, false, new DummyListener());
 		dbInstance.commitAndCloseSession();
@@ -123,8 +119,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	@Test
 	public void testGetBuddyStats_mustBeEmpty() {
 		//create a group with owner and participant
-		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-4-" + UUID.randomUUID().toString());
-		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-5-" + UUID.randomUUID().toString());
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-4-");
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-5-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-1-", "testGetBuddyStats_mustBeEmpty", 0, 10, false, false, null);
 		businessGroupRelationDao.addRole(chatter1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(chatter2, group, GroupRoles.participant.name());
@@ -145,8 +141,8 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	@Test
 	public void testGetBuddyStats_visible() {
 		//create a group with owner and participant
-		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-6-" + UUID.randomUUID().toString());
-		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsUser("Chat-7-" + UUID.randomUUID().toString());
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-6-");
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-7-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Chat-2-", "testGetBuddyStats_visible", 0, 10, false, false, null);
 		businessGroupRelationDao.addRole(chatter1, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(chatter2, group, GroupRoles.participant.name());
@@ -159,6 +155,39 @@ public class InstantMessageServiceTest extends OlatTestCase {
 		Assert.assertNotNull(stats);
 		Assert.assertEquals(1, stats.getOfflineBuddies());
 		Assert.assertEquals(0, stats.getOnlineBuddies());
+	}
+	
+	@Test
+	public void deleteUser() {
+		Identity chatter1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-8");
+		Identity chatter2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Chat-9");
+
+		OLATResourceable chat = imService.getPrivateChatResource(chatter1.getKey(), chatter2.getKey());
+		imService.sendPresence(chatter1, "Me", false, true, chat);
+		imService.sendPresence(chatter2, "Me", false, true, chat);
+		ImPreferences preferences1 = imService.getImPreferences(chatter1);
+		ImPreferences preferences2 = imService.getImPreferences(chatter2);
+		dbInstance.commit();
+		Assert.assertNotNull(preferences1);
+		Assert.assertNotNull(preferences2);
+		InstantMessage message = imService.sendMessage(chatter1, "Me", false, "Hello", chat);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(message);
+
+		// delete the user
+		userDeletionManager.deleteIdentity(chatter1, null);
+		dbInstance.commitAndCloseSession();
+		
+		// check preferences are deleted
+		Assert.assertNull(instantMessagePreferencesDao.getStatus(chatter1.getKey()));
+		Assert.assertNotNull(instantMessagePreferencesDao.getStatus(chatter2.getKey()));
+		// check roster
+		List<RosterEntryImpl> entries = rosterDao.getRoster(chat, 0, -1);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(chatter2.getKey(), entries.get(0).getIdentityKey());
+		// check messages
+		InstantMessage deletedMessage = imDao.loadMessageById(message.getKey());
+		Assert.assertNull(deletedMessage);
 	}
 	
 	

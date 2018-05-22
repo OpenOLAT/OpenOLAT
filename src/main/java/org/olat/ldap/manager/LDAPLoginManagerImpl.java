@@ -437,14 +437,14 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 * @param identityList List of Identities to delete
 	 */
 	@Override
-	public void deletIdentities(List<Identity> identityList) {
+	public void deleteIdentities(List<Identity> identityList, Identity doer) {
 		for (Identity identity:  identityList) {
 			if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
 				log.audit(identity.getKey() + " was not deleted because is status is permanent.");
 				continue;
 			}
 			
-			userDeletionManager.deleteIdentity(identity);
+			userDeletionManager.deleteIdentity(identity, doer);
 		}
 	}
 
@@ -1153,7 +1153,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 										+ "% tried to delete.");
 					} else {
 						// delete users
-						deletIdentities(deletedUserList);
+						deleteIdentities(deletedUserList, null);
 						log.info("LDAP batch sync: " + deletedUserList.size() + " users deleted" + sinceSentence);
 					}
 				}

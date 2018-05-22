@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.instantMessaging.model.ImPreferencesImpl;
@@ -93,7 +94,7 @@ public class InstantMessagePreferencesDAO {
 	
 	public Map<Long,String> getBuddyStatus(List<Long> buddies) {
 		if(buddies == null || buddies.isEmpty()) {
-			return new HashMap<Long,String>();
+			return new HashMap<>();
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -101,7 +102,7 @@ public class InstantMessagePreferencesDAO {
 
 		int hibernateInBatch = 250;
 		int firstResult = 0;
-		Map<Long,String> statusMap = new HashMap<Long,String>();
+		Map<Long,String> statusMap = new HashMap<>();
 		do {
 			int toIndex = Math.min(firstResult + hibernateInBatch, buddies.size());
 			List<Long> inParameter = buddies.subList(firstResult, toIndex);
@@ -155,6 +156,16 @@ public class InstantMessagePreferencesDAO {
 				.executeUpdate();
 		if(updateRows == 0) {
 			createPreferences(identity, Presence.available.name(), visible);
+		}
+	}
+	
+	public void deletePreferences(IdentityRef identity) {
+		List<ImPreferencesImpl> prefs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMPreferencesByIdentity", ImPreferencesImpl.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		for(ImPreferencesImpl pref:prefs) {
+			dbInstance.getCurrentEntityManager().remove(pref);
 		}
 	}
 }

@@ -108,7 +108,7 @@ public class UserBulkChangeManager implements InitializingBean {
 
 	public void changeSelectedIdentities(List<Identity> selIdentities, UserBulkChanges userBulkChanges,
 			List<String> notUpdatedIdentities, boolean isAdministrativeUser,
-			Translator trans, Identity addingIdentity) {
+			Translator trans, Identity actingIdentity) {
 
 		Translator transWithFallback = userManager.getPropertyHandlerTranslator(trans);
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
@@ -201,12 +201,12 @@ public class UserBulkChangeManager implements InitializingBean {
 					// user not anymore in security group, remove him
 					if (isInGroup && thisRoleAction.equals("remove")) {
 						organisationService.removeMember(identity, organisationRole);
-						log.audit("User::" + addingIdentity.getKey() + " removed system role::" + organisationRole + " from user::" + identity.getKey(), null);
+						log.audit("User::" + actingIdentity.getKey() + " removed system role::" + organisationRole + " from user::" + identity.getKey(), null);
 					}
 					// user not yet in security group, add him
 					if (!isInGroup && thisRoleAction.equals("add")) {
 						organisationService.addMember(identity, organisationRole);
-						log.audit("User::" + addingIdentity.getKey() + " added system role::" + organisationRole + " to user::" + identity.getKey(), null);
+						log.audit("User::" + actingIdentity.getKey() + " added system role::" + organisationRole + " to user::" + identity.getKey(), null);
 					}
 				}
 			}
@@ -222,8 +222,8 @@ public class UserBulkChangeManager implements InitializingBean {
 				if(oldStatus != status && status == Identity.STATUS_LOGIN_DENIED && userBulkChanges.isSendLoginDeniedEmail()) {
 					sendLoginDeniedEmail(identity);
 				}
-				identity = securityManager.saveIdentityStatus(identity, status);
-				log.audit("User::" + addingIdentity.getKey() + " changed account status for user::" + identity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
+				identity = securityManager.saveIdentityStatus(identity, status, actingIdentity);
+				log.audit("User::" + actingIdentity.getKey() + " changed account status for user::" + identity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
 			}
 
 			// persist changes:
@@ -235,7 +235,7 @@ public class UserBulkChangeManager implements InitializingBean {
 				userManager.updateUserFromIdentity(identity);
 				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 				changedIdentities.add(identity);
-				log.audit("User::" + addingIdentity.getKey() + " successfully changed account data for user::" + identity.getKey() + " in bulk change", null);
+				log.audit("User::" + actingIdentity.getKey() + " successfully changed account data for user::" + identity.getKey() + " in bulk change", null);
 			}
 
 			// commit changes for this user
@@ -265,7 +265,7 @@ public class UserBulkChangeManager implements InitializingBean {
 			}
 
 			MailPackage mailing = new MailPackage();
-			businessGroupService.updateMemberships(addingIdentity, changes, mailing);
+			businessGroupService.updateMemberships(actingIdentity, changes, mailing);
 			dbInstance.commit();
 		}
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.instantMessaging.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -57,6 +58,7 @@ import org.olat.instantMessaging.model.BuddyStats;
 import org.olat.instantMessaging.model.InstantMessageImpl;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.instantMessaging.model.RosterEntryView;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,7 +70,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService, DeletableGroupData {
+public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService, DeletableGroupData, UserDataDeletable {
 	
 	@Autowired
 	private RosterDAO rosterDao;
@@ -95,6 +97,13 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		imDao.deleteMessages(group);
 		dbInstance.commit();
 		return true;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		imDao.deleteMessages(identity);
+		rosterDao.deleteEntry(identity);
+		prefsDao.deletePreferences(identity);
 	}
 
 	@Override
@@ -130,7 +139,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 			resName = identityKey1 + "-" + identityKey2;
 		}
 		long key = identityKey1.longValue() + identityKey2.longValue();
-		return OresHelper.createOLATResourceableInstance(resName, new Long(key));
+		return OresHelper.createOLATResourceableInstance(resName, Long.valueOf(key));
 	}
 
 	@Override
@@ -238,7 +247,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		//count all my buddies
 		Collection<Long> buddiesColl = contactDao.getDistinctGroupOwnersParticipants(me);
 		buddiesColl.remove(me.getKey());
-		List<Long> buddies = new ArrayList<Long>(buddiesColl);
+		List<Long> buddies = new ArrayList<>(buddiesColl);
 		stats.setOfflineBuddies(buddies.size());
 
 		//filter online users
@@ -263,9 +272,9 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 
 	@Override
 	public List<BuddyGroup> getBuddyGroups(Identity me, boolean offlineUsers) {
-		List<BuddyGroup> groups = new ArrayList<BuddyGroup>(25);
-		Map<Long,BuddyGroup> groupMap = new HashMap<Long,BuddyGroup>();
-		Map<Long, String> identityKeyToStatus = new HashMap<Long, String>();
+		List<BuddyGroup> groups = new ArrayList<>(25);
+		Map<Long,BuddyGroup> groupMap = new HashMap<>();
+		Map<Long, String> identityKeyToStatus = new HashMap<>();
 		List<ContactViewExtended> contactList = contactDao.getContactWithExtendedInfos(me);
 		collectMembersStatus(contactList, identityKeyToStatus);
 		for(ContactViewExtended contact:contactList) {
@@ -275,7 +284,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 	
 	private void collectMembersStatus(List<? extends BusinessGroupMemberView> members, Map<Long, String> identityKeyToStatus) {
-		Set<Long> loadStatus = new HashSet<Long>();
+		Set<Long> loadStatus = new HashSet<>();
 		for(BusinessGroupMemberView member:members) {
 			Long identityKey = member.getIdentityKey();
 			if(!identityKeyToStatus.containsKey(identityKey) && !loadStatus.contains(identityKey)) {
@@ -289,7 +298,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 		}
 		
 		if(loadStatus.size() > 0) {
-			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
 			Map<Long,String> statusMap = prefsDao.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
 				String status = statusMap.get(toLoad);
@@ -337,7 +346,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Override
 	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource) {
 		List<RosterEntryView> roster = rosterDao.getRosterView(chatResource, 0, -1);
-		List<Buddy> buddies = new ArrayList<Buddy>();
+		List<Buddy> buddies = new ArrayList<>();
 		if(roster != null) {
 			for(RosterEntryView entry:roster) {
 				String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();

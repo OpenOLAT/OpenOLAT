@@ -75,7 +75,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
 		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
-		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
+		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED, null);
 
 		organisationService.addMember(deletedIdent, OrganisationRoles.administrator);
 		dbInstance.commitAndCloseSession();
@@ -121,7 +121,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
 		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
-		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
+		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED, null);
 
 		organisationService.addMember(deletedIdent, OrganisationRoles.administrator);
 		dbInstance.commitAndCloseSession();
@@ -215,8 +215,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
 
 		// add some stats
-		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
-		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
+		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
+		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
 		organisationService.addMember(ident, OrganisationRoles.administrator);
 		organisationService.addMember(ident, OrganisationRoles.author);
 		organisationService.addMember(ident2, OrganisationRoles.administrator);
@@ -268,8 +268,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity ident2 = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		// add some stats
-		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV);
-		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV);
+		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
+		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
 		organisationService.addMember(ident, OrganisationRoles.administrator);
 		organisationService.addMember(ident, OrganisationRoles.author);
 		organisationService.addMember(ident2, OrganisationRoles.administrator);
