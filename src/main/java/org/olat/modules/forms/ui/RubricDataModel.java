@@ -79,22 +79,18 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 			return rubricRow.getNumberOfResponses();
 		}
 		if (col - offset == 2) {
-			return formatDouble(rubricRow.getMedian());
+			return EvaluationFormFormatter.formatDouble(rubricRow.getMedian());
 		}
 		if (col - offset == 3) {
-			return formatDouble(rubricRow.getAvg());
+			return EvaluationFormFormatter.formatDouble(rubricRow.getAvg());
 		}
 		if (col - offset == 4) {
-			return formatDouble(rubricRow.getVariance());
+			return EvaluationFormFormatter.formatDouble(rubricRow.getVariance());
 		}
 		if (col - offset == 5) {
-			return formatDouble(rubricRow.getSdtDev());
+			return EvaluationFormFormatter.formatDouble(rubricRow.getSdtDev());
 		}
 		return rubricRow.getStepCounts().get(col - 1);
-	}
-	
-	private String formatDouble(Double doubleValue) {
-		return doubleValue != null? String.format("%.2f", doubleValue): "";
 	}
 
 	@Override

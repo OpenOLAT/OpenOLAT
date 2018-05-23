@@ -60,7 +60,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("var placeholderwidth = jQuery('#d").append(cmpId).append("d3holder').width();\n")
 		  .append("var data = [").append(infos.getData()).append("];\n");
 
-		sb.append("var margin = {top: 20, right: 20, bottom: 30, left: 50},\n")
+		sb.append("var margin = {top: 20, right: 20, bottom: 40, left: 50},\n")
 		  .append("    width = placeholderwidth - margin.left - margin.right,\n")
 		  .append("    height = placeholderheight - margin.top - margin.bottom;\n")
 		  .append("\n")

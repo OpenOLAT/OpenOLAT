@@ -70,14 +70,13 @@ public class EvaluationFormReportDAO {
 				.getResultList();
 	}
 
-
 	public List<CalculatedLong> getCountByStringuifideResponse(String responseIdentifier,
 			List<? extends EvaluationFormSessionRef> sessions) {
 		if (sessions == null || sessions.isEmpty() || !StringHelper.containsNonWhitespace(responseIdentifier))
 			return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.stringuifiedResponse, '', count(response))");
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.stringuifiedResponse, count(response))");
 		sb.append("  from evaluationformresponse as response");
 		sb.append(" where response.responseIdentifier=:responseIdentifier");
 		sb.append("   and response.session.key in (:sessionKeys)");
@@ -118,7 +117,7 @@ public class EvaluationFormReportDAO {
 			return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.responseIdentifier, '', count(response))");
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.responseIdentifier, count(response))");
 		sb.append("  from evaluationformresponse as response");
 		sb.append(" where response.responseIdentifier in (:responseIdentifiers)");
 		sb.append("   and response.session.key in (:sessionKeys)");

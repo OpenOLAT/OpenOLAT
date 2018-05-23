@@ -19,16 +19,18 @@
  */
 package org.olat.modules.forms.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
-import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,19 @@ class EvaluationFormSessionDAO {
 		return session;
 	}
 	
+	List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessions) {
+		if (sessions == null || sessions.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from evaluationformsession as session");
+		sb.append(" where session.key in (:sessionKeys)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSession.class)
+				.setParameter("sessionKeys", getSessionKeys(sessions))
+				.getResultList();
+	}
+	
 	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
 		if (participation == null) return null;
 		
@@ -71,7 +86,7 @@ class EvaluationFormSessionDAO {
 	}
 
 	List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey, EvaluationFormSessionStatus status) {
-		if (survey == null || status == null) return null;
+		if (survey == null || status == null) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from evaluationformsession as session");
@@ -83,6 +98,10 @@ class EvaluationFormSessionDAO {
 				.setParameter("surveyKey", survey.getKey())
 				.setParameter("status", status.toString())
 				.getResultList();
+	}
+	
+	private List<Long> getSessionKeys(List<? extends EvaluationFormSessionRef> sessions) {
+		return sessions.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
 	}
 	
 	EvaluationFormSession makeAnonymous(EvaluationFormSession session) {
@@ -132,12 +151,13 @@ class EvaluationFormSessionDAO {
 	}
 	
 	EvaluationFormSession changeStatus(EvaluationFormSession session, EvaluationFormSessionStatus newStatus) {
-		if(session instanceof EvaluationFormSessionImpl) {
+		if (session instanceof EvaluationFormSessionImpl) {
 			EvaluationFormSessionImpl sessionImpl = (EvaluationFormSessionImpl) session;
+			EvaluationFormSessionStatus oldStatus = sessionImpl.getEvaluationFormSessionStatus();
 			sessionImpl.setEvaluationFormSessionStatus(newStatus);
-			if(newStatus == EvaluationFormSessionStatus.done && session.getEvaluationFormSessionStatus() != EvaluationFormSessionStatus.done) {
+			if (newStatus == EvaluationFormSessionStatus.done && oldStatus != EvaluationFormSessionStatus.done) {
 				sessionImpl.setSubmissionDate(new Date());
-				if(session.getFirstSubmissionDate() == null) {
+				if (session.getFirstSubmissionDate() == null) {
 					sessionImpl.setFirstSubmissionDate(sessionImpl.getSubmissionDate());
 				}
 			}
@@ -157,27 +177,6 @@ class EvaluationFormSessionDAO {
 				.createQuery(sb.toString())
 				.setParameter("surveyKey", survey.getKey())
 				.executeUpdate();
-	}
-	
-	int deleteSessionForPortfolioEvaluation(PageBody anchor) {
-		//delete responses
-		int rows = 0;
-		StringBuilder responseQ = new StringBuilder();
-		responseQ.append("delete from evaluationformresponse as response where response.session.key in (")
-                 .append(" select session.key from evaluationformsession session where session.pageBody.key=:bodyKey")
-		         .append(")");
-		rows += dbInstance.getCurrentEntityManager()
-				.createQuery(responseQ.toString())
-				.setParameter("bodyKey", anchor.getKey())
-				.executeUpdate();
-		
-		// delete sessions
-		String sessionQ = "delete from evaluationformsession session where session.pageBody.key=:bodyKey";
-		rows += dbInstance.getCurrentEntityManager()
-				.createQuery(sessionQ)
-				.setParameter("bodyKey", anchor.getKey())
-				.executeUpdate();
-		return rows;
 	}
 	
 }

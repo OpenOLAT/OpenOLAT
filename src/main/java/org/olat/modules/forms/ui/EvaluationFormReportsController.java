@@ -55,10 +55,12 @@ public class EvaluationFormReportsController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
+	private final Link overviewReportLink;
 	private final Link tableReportLink;
 	private final Link diagramReportLink;
 	
 	private final ReportHelper reportHelper;
+	private EvaluationFormOverviewController overviewCtrl;
 	private EvaluationFormReportController tableReportCtrl;
 	private EvaluationFormReportController diagramReportCtrl;
 	
@@ -76,10 +78,14 @@ public class EvaluationFormReportsController extends BasicController {
 		mainVC = createVelocityContainer("reports");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		overviewReportLink = LinkFactory.createLink("reports.table.overview", mainVC, this);
+		segmentView.addSegment(overviewReportLink, true);
 		tableReportLink = LinkFactory.createLink("reports.table.report", mainVC, this);
 		segmentView.addSegment(tableReportLink, false);
 		diagramReportLink = LinkFactory.createLink("reports.diagram.report", mainVC, this);
 		segmentView.addSegment(diagramReportLink, false);
+		
+		doOpenOverviewReport(ureq);
 		
 		putInitialPanel(mainVC);
 	}
@@ -90,7 +96,9 @@ public class EvaluationFormReportsController extends BasicController {
 			SegmentViewEvent sve = (SegmentViewEvent)event;
 			String segmentCName = sve.getComponentName();
 			Component clickedLink = mainVC.getComponent(segmentCName);
-			if (clickedLink == tableReportLink) {
+			if (clickedLink == overviewReportLink) {
+				doOpenOverviewReport(ureq);
+			} else if (clickedLink == tableReportLink) {
 				doOpenTableReport(ureq);
 			} else if (clickedLink == diagramReportLink) {
 				doOpenDiagramReport(ureq);
@@ -98,8 +106,15 @@ public class EvaluationFormReportsController extends BasicController {
 		}
 	}
 
+	private void doOpenOverviewReport(UserRequest ureq) {
+		if (overviewCtrl == null) {
+			overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, sessions);
+		}
+		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
+	}
+
 	private void doOpenTableReport(UserRequest ureq) {
-		if(tableReportCtrl == null) {
+		if (tableReportCtrl == null) {
 			DefaultReportProvider provider = new DefaultReportProvider();
 			provider.put(Rubric.TYPE, new RubricTableHandler());
 			provider.put(SingleChoice.TYPE, new SingleChoiceTableHandler());
@@ -111,7 +126,7 @@ public class EvaluationFormReportsController extends BasicController {
 	}
 	
 	private void doOpenDiagramReport(UserRequest ureq) {
-		if(diagramReportCtrl == null) {
+		if (diagramReportCtrl == null) {
 			DefaultReportProvider provider = new DefaultReportProvider();
 			diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
 			listenTo(diagramReportCtrl);

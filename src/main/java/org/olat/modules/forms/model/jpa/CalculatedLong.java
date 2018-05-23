@@ -21,6 +21,8 @@ package org.olat.modules.forms.model.jpa;
 
 import java.math.BigDecimal;
 
+import org.olat.modules.forms.EvaluationFormSessionStatus;
+
 /**
  * 
  * Initial date: 04.05.2018<br>
@@ -32,6 +34,14 @@ public class CalculatedLong {
 	private final String identifier;
 	private final String subIdentifier;
 	private final long value;
+	
+	public CalculatedLong(String identifier, long value) {
+		this(identifier, "", value);
+	}
+	
+	public CalculatedLong(EvaluationFormSessionStatus status, long value) {
+		this(status.name(), "", value);
+	}
 	
 	public CalculatedLong(String identifier, BigDecimal subIdentifier, long value) {
 		this(identifier, subIdentifier.toPlainString(), value);

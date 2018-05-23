@@ -1,0 +1,29 @@
+<div class="o_eva_overview">
+<div class="panel panel-default">
+	<div class="panel-heading"><h4>$r.translate("report.overview.figures.title")</h4></div>
+	<table class="table"><tbody>
+		<tr>
+			<th>$r.translate("report.overview.figures.number.done.session")</th>
+			<td>$numDoneSession</td>
+		</tr>
+		<tr>
+			<th>$r.translate("report.overview.figures.submission.period")</th>
+			<td>$submissionPeriod</td>
+		</tr>
+		<tr>
+			<th>$r.translate("report.overview.figures.average.duration")</th>
+			<td>$averageDuration</td>
+		</tr>
+	</tbody></table>
+</div>
+
+#if($r.available("report") && $r.visible("report"))
+	<h4>$r.translate("report.overview.total.title")</h4>
+	$r.render("report")
+#end
+#if($r.available("durationHistogram") && $r.visible("durationHistogram"))
+	<h4>$r.translate("report.overview.duration.title")</h4>
+	$r.render("durationHistogram")
+#end
+
+</div>

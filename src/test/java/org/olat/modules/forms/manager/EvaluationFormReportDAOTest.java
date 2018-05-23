@@ -95,7 +95,6 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 				.doesNotContain(responseOtherIdentifier, responseOtherSession, noResponse);
 	}
 
-	
 	@Test
 	public void shouldGetCountBySinguifiedResponse() {
 		String responseIdentifier = UUID.randomUUID().toString();

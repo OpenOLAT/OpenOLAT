@@ -21,6 +21,7 @@ package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -31,8 +32,6 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.manager.BinderDAO;
-import org.olat.modules.portfolio.manager.PageDAO;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,10 +45,6 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private PageDAO pageDao;
-	@Autowired
-	private BinderDAO binderDao;
 	@Autowired
 	private EvaluationFormSessionDAO sut;
 	@Autowired
@@ -87,6 +82,20 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		assertThat(anonymousSession.getParticipation()).isNull();
 	}
 
+	@Test
+	public void shouldLoadByKeys() {
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsByKey(sessions);
+		
+		assertThat(loadedSessions)
+				.containsExactlyInAnyOrder(session1, session2)
+				.doesNotContain(otherSession);
+	}
 	
 	@Test
 	public void shouldLoadByParticipation() {
@@ -113,11 +122,11 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> loadedSessions = sut.loadSessionsBySurvey(survey, EvaluationFormSessionStatus.done);
+		
 		assertThat(loadedSessions)
-				.contains(session1, session2)
+				.containsExactlyInAnyOrder(session1, session2)
 				.doesNotContain(openSession, otherSession);
 	}
-
 	
 	@Test
 	public void shouldCheckIfSurveyHasSessions() {

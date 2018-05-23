@@ -62,29 +62,4 @@ public class BarChartController extends BasicController {
 		//
 	}
 	
-	public final static class TextInputListingWrapper {
-		
-		private final String name;
-		private final String color;
-		private final String content;
-		
-		public TextInputListingWrapper(String name, String color, String content) {
-			this.name = name;
-			this.color = color;
-			this.content = content;
-		}
-		
-		public String getName() {
-			return name;
-		}
-
-		public String getColor() {
-			return color;
-		}
-
-		public String getContent() {
-			return content;
-		}
-	}
-
 }

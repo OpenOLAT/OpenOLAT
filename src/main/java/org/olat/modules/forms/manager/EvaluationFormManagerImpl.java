@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -39,6 +40,7 @@ import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -287,5 +289,48 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Override
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry) {
 		return evaluationFormSessionDao.hasSessions(formEntry);
+	}
+
+	@Override
+	public EvaluationFormStatistic getSessionsStatistic(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		EvaluationFormStatistic statistic = new EvaluationFormStatistic();
+		
+		List<EvaluationFormSession> sessions = evaluationFormSessionDao.loadSessionsByKey(sessionRefs);
+		int numOfDoneSessions = 0;
+		Date firstSubmission = null;
+		Date lastSubmission = null;
+		for (EvaluationFormSession session: sessions) {
+			if (EvaluationFormSessionStatus.done.equals(session.getEvaluationFormSessionStatus())) {
+				numOfDoneSessions++;
+				
+				if (firstSubmission == null || firstSubmission.after(session.getFirstSubmissionDate())) {
+					firstSubmission = session.getFirstSubmissionDate();
+				}
+				
+				if (lastSubmission == null || lastSubmission.before(session.getSubmissionDate())) {
+					lastSubmission = session.getSubmissionDate();
+				}
+			}
+		}
+		statistic.setNumOfDoneSessions(numOfDoneSessions);
+		statistic.setFirstSubmission(firstSubmission);
+		statistic.setLastSubmission(lastSubmission);
+		
+		long[] durations = new long[numOfDoneSessions];
+		int durationsIndex = 0;
+		long totalDuration = 0;
+		for (EvaluationFormSession session: sessions) {
+			if (EvaluationFormSessionStatus.done.equals(session.getEvaluationFormSessionStatus())) {
+				long duration = session.getSubmissionDate().getTime() - session.getCreationDate().getTime();
+				durations[durationsIndex++] = duration;
+				totalDuration += duration;
+			}
+		}
+		statistic.setDurations(durations);
+		
+		long averageDuration = Math.round(totalDuration / numOfDoneSessions);
+		statistic.setAverageDuration(averageDuration);
+		
+		return statistic;
 	}
 }

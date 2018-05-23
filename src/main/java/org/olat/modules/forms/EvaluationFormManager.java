@@ -161,5 +161,7 @@ public interface EvaluationFormManager {
 	 * @return
 	 */
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry);
+	
+	public EvaluationFormStatistic getSessionsStatistic(List<? extends EvaluationFormSessionRef> sessionRefs);
 
 }
