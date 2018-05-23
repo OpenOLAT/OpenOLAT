@@ -371,7 +371,7 @@ public class MultiEvaluationFormController extends BasicController {
 		}
 
 		@Override
-		public String getName(Identity identity) {
+		public String getName(EvaluationFormSession session, Identity identity) {
 			String name = identityToName.get(identity);
 			return StringHelper.containsNonWhitespace(name)? name: "???";
 		}

@@ -295,7 +295,7 @@ public class ReportHelperTest {
 	private final static class IdentityNameGenarator implements LegendNameGenerator {
 
 		@Override
-		public String getName(Identity identity) {
+		public String getName(EvaluationFormSession session, Identity identity) {
 			return identity.getName();
 		}
 		

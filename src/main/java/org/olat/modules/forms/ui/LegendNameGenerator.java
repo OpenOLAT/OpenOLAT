@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormSession;
 
 /**
  * 
@@ -29,6 +30,6 @@ import org.olat.core.id.Identity;
  */
 public interface LegendNameGenerator {
 	
-	public String getName(Identity identity);
+	public String getName(EvaluationFormSession session, Identity identity);
 
 }

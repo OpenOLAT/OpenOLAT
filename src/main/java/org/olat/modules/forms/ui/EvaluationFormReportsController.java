@@ -73,7 +73,11 @@ public class EvaluationFormReportsController extends BasicController {
 		this.form = form;
 		this.sessions = sessions;
 		
-		this.reportHelper = ReportHelper.builder(getLocale()).withColors().build();
+		LegendNameGenerator legendNameGenerator = new GeneralInformationLegendNameGenerator(form, sessions);
+		this.reportHelper = ReportHelper.builder(getLocale())
+				.withLegendNameGenrator(legendNameGenerator)
+				.withColors()
+				.build();
 		
 		mainVC = createVelocityContainer("reports");
 		

@@ -141,7 +141,6 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		sut.deleteResponses(keys);
 		dbInstance.commit();
 		
-		
 		responses = sut.loadResponses(responseIdentifier, session);
 		assertThat(responses).hasSize(0);
 	}

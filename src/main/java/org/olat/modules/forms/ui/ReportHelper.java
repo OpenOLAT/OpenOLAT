@@ -37,7 +37,7 @@ import org.olat.modules.forms.EvaluationFormSession;
  *
  */
 public class ReportHelper {
-	
+
 	private static final String DEFAULT_COLOR = "#777";
 	private static final String[] DEFAULT_COLORS = new String[]{
 			"#EDC951", "#CC333F", "#00A0B0", "#4E4E6C", "#8DC1A1",
@@ -60,12 +60,14 @@ public class ReportHelper {
 			Translator translator = Util.createPackageTranslator(ReportHelper.class, builder.locale);
 			anonymousName = translator.translate("report.anonymous.user");
 		}
+		
 		String anonymousColor;
 		if (StringHelper.containsNonWhitespace(builder.anonymousColor)) {
 			anonymousColor = builder.anonymousColor;
 		} else {
 			anonymousColor = DEFAULT_COLOR;
 		}
+		
 		this.anonymousLegend = new Legend(anonymousName, anonymousColor);
 		
 		String[] colors;
@@ -79,7 +81,7 @@ public class ReportHelper {
 		if (builder.legendNameGenerator != null) {
 			this.legendNameGenerator = builder.legendNameGenerator;
 		} else {
-			this.legendNameGenerator = new UserDisplayNameGenerator();
+			this.legendNameGenerator = new NullNameGenerator();
 		}
 	}
 	
@@ -103,9 +105,12 @@ public class ReportHelper {
 	
 	private Legend getLegendFromSession(EvaluationFormSession session) {
 		Legend legend = null;
+		Identity executor = null;
 		if (session.getParticipation() != null && session.getParticipation().getExecutor() != null) {
-			Identity executor = session.getParticipation().getExecutor();
-			String name = legendNameGenerator.getName(executor);
+			executor = session.getParticipation().getExecutor();
+		}
+		String name = legendNameGenerator.getName(session, executor);
+		if (StringHelper.containsNonWhitespace(name)) {
 			String color = colorGenerator.getColor();
 			legend = new Legend(name, color);
 		}
@@ -184,6 +189,15 @@ public class ReportHelper {
 		public String getColor() {
 			return color;
 		}
+	}
+	
+	public class NullNameGenerator implements LegendNameGenerator {
+
+		@Override
+		public String getName(EvaluationFormSession session, Identity identity) {
+			return null;
+		}
+
 	}
 
 }
