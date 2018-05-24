@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -63,6 +64,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -221,8 +223,9 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			if(archiveDir.exists()) {
 				archiveDir.delete();
 				if(archiveDir.mkdir()) {
-				  efficiencyStatementManager.archiveUserData(student, archiveDir);
-				  log.info("Archived EfficiencyStatement path: " + archiveDir.getAbsolutePath());
+					ManifestBuilder manifest = ManifestBuilder.createBuilder();
+					efficiencyStatementManager.export(student, manifest, archiveDir, Locale.GERMAN);
+					log.info("Archived EfficiencyStatement path: " + archiveDir.getAbsolutePath());
 				}
 			}
 		} catch (IOException e) {

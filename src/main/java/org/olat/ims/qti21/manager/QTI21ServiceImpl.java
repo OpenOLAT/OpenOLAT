@@ -421,7 +421,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		List<AssessmentTestSession> sessions = testSessionDao.getUserTestSessions(identity);
 		for(AssessmentTestSession session:sessions) {
 			testSessionDao.deleteTestSession(session);

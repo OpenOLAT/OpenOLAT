@@ -161,6 +161,8 @@ public class ViteroManager implements UserDataDeletable {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private DisplayPortraitManager portraitManager;
+	@Autowired
 	private DB dbInstance;
 	
 	private XStream xStream;
@@ -686,7 +688,7 @@ public class ViteroManager implements UserDataDeletable {
 	protected boolean storePortrait(Identity identity, int userId)
 	throws VmsNotAvailableException {
 		try {
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+			File portrait = portraitManager.getBigPortrait(identity.getName());
 			if(portrait != null && portrait.exists()) {
 				Mtom mtomWs = getMtomWebService();
 				
@@ -719,7 +721,7 @@ public class ViteroManager implements UserDataDeletable {
 	}
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		if(!viteroModule.isDeleteVmsUserOnUserDelete()) return;
 		
 		try {

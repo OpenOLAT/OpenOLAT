@@ -269,7 +269,6 @@
 
 	<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager"/>
 	<bean class="org.olat.user.DisplayPortraitManager"/>
-	<bean class="org.olat.user.HomePageConfigManagerImpl"/>
 	
 	<!--  user properties admin-gui -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

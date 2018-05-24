@@ -980,7 +980,7 @@
 					</bean>
 				</entry>
 
-				<entry key="org.olat.course.assessment.EfficiencyStatementArchiver">
+				<entry key="org.olat.course.assessment.manager.EfficiencyStatementArchiver">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>

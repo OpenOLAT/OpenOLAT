@@ -77,3 +77,20 @@ update o_user set u_organizationalunit=null from o_bs_identity where id=fk_ident
 update o_user set u_swissedupersonstudybranch1=null from o_bs_identity where id=fk_identity and status=199;
 update o_user set u_swissedupersonstudybranch2=null from o_bs_identity where id=fk_identity and status=199;
 update o_user set u_swissedupersonstudybranch3=null from o_bs_identity where id=fk_identity and status=199;
+
+
+-- user data export
+create table o_user_data_export (
+   id bigserial,
+   creationdate timestamp,
+   lastmodified timestamp,
+   u_directory varchar(255),
+   u_status varchar(16),
+   u_export_ids varchar(2000),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_usr_dataex_to_ident_idx on o_user_data_export (fk_identity);
+

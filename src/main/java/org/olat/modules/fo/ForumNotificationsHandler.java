@@ -131,7 +131,7 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 					}
 					
-					SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, ForumHelper.CSS_ICON_CLASS_MESSAGE);
+					SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, ForumUIFactory.CSS_ICON_CLASS_MESSAGE);
 					si.addSubscriptionListItem(subListItem);
 				}
 			} else {
@@ -190,7 +190,7 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 			checkPublisher(p);
 			title = translator.translate("notifications.header");
 		}
-		return new TitleItem(title, ForumHelper.CSS_ICON_CLASS_FORUM);
+		return new TitleItem(title, ForumUIFactory.CSS_ICON_CLASS_FORUM);
 	}
 
 	@Override

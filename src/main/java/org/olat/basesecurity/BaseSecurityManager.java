@@ -26,7 +26,6 @@
 
 package org.olat.basesecurity;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2266,7 +2265,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// 1) delete all authentication tokens
 		List<Authentication> authentications = getAuthentications(identity);
 		for (Authentication auth:authentications) {

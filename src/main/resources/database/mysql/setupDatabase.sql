@@ -339,6 +339,17 @@ create table if not exists o_userproperty (
    propvalue varchar(255),
    primary key (fk_user_id, propname)
 );
+create table o_user_data_export (
+   id bigint not null auto_increment,
+   creationdate datetime,
+   lastmodified datetime,
+   u_directory varchar(255),
+   u_status varchar(16),
+   u_export_ids varchar(2000),
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 create table if not exists o_message (
    message_id bigint not null,
    version mediumint unsigned not null,
@@ -2570,6 +2581,7 @@ alter table o_repositoryentry_cycle ENGINE = InnoDB;
 alter table o_lti_outcome ENGINE = InnoDB;
 alter table o_user ENGINE = InnoDB;
 alter table o_userproperty ENGINE = InnoDB;
+alter table o_user_data_export ENGINE = InnoDB;
 alter table o_message ENGINE = InnoDB;
 alter table o_temporarykey ENGINE = InnoDB;
 alter table o_bs_authentication ENGINE = InnoDB;
@@ -2800,6 +2812,8 @@ create index idx_user_creationdate_idx on o_user (creationdate);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- csp
 create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);

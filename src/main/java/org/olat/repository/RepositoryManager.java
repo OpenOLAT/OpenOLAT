@@ -587,35 +587,37 @@ public class RepositoryManager {
 			for(Object[] roleAndDef:roleAndDefs) {
 				String role = (String)roleAndDef[0];
 				Boolean def = (Boolean)roleAndDef[1];
-				switch(GroupRoles.valueOf(role)) {
-					case owner: {
-						isOwner = true;
-						break;
-					}
-					case coach: {
-						boolean d = (def == null ? false : def.booleanValue());
-						if(d) {
-							isCourseCoach = true;
-						} else {
-							isGroupCoach = true;
+				if(GroupRoles.isValueOf(role)) {
+					switch(GroupRoles.valueOf(role)) {
+						case owner: {
+							isOwner = true;
+							break;
 						}
-						break;
-					}
-					case participant: {
-						boolean d = (def == null ? false : def.booleanValue());
-						if(d) {
-							isCourseParticipant = true;
-						} else {
-							isGroupParticipant = true;
+						case coach: {
+							boolean d = (def == null ? false : def.booleanValue());
+							if(d) {
+								isCourseCoach = true;
+							} else {
+								isGroupCoach = true;
+							}
+							break;
 						}
-						break;
+						case participant: {
+							boolean d = (def == null ? false : def.booleanValue());
+							if(d) {
+								isCourseParticipant = true;
+							} else {
+								isGroupParticipant = true;
+							}
+							break;
+						}
+						case waiting: {
+							isGroupWaiting = true;
+							break;
+						}
+						case invitee: break;
+	
 					}
-					case waiting: {
-						isGroupWaiting = true;
-						break;
-					}
-					case invitee: break;
-
 				}
 			}
 

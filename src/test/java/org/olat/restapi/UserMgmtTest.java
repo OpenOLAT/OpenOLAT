@@ -153,6 +153,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DisplayPortraitManager portraitManager;
 	
 	@Before
 	@Override
@@ -1607,8 +1609,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		
 		//check if big and small portraits exist
-		DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
-		File bigPortrait = dps.getBigPortrait(id1.getName());
+		File bigPortrait = portraitManager.getBigPortrait(id1.getName());
 		assertNotNull(bigPortrait);
 		assertTrue(bigPortrait.exists());
 		assertTrue(bigPortrait.exists());
@@ -1627,7 +1628,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		assertEquals(-1, b);//up to end of file
 		assertTrue(count > 1000);//enough bytes
-		bigPortrait = dps.getBigPortrait(id1.getName());
+		bigPortrait = portraitManager.getBigPortrait(id1.getName());
 		assertNotNull(bigPortrait);
 		assertEquals(count, bigPortrait.length());
 
@@ -1643,7 +1644,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(datas);
 		assertTrue(datas.length > 0);
 		
-		File smallPortrait = dps.getSmallPortrait(id1.getName());
+		File smallPortrait = portraitManager.getSmallPortrait(id1.getName());
 		assertNotNull(smallPortrait);
 		assertEquals(datas.length, smallPortrait.length());
 		

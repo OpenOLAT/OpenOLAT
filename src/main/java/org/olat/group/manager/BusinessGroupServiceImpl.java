@@ -171,7 +171,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private DB dbInstance;
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// remove as Participant 
 		List<BusinessGroup> attendedGroups = findBusinessGroupsAttendedBy(identity);
 		for (Iterator<BusinessGroup> iter = attendedGroups.iterator(); iter.hasNext();) {

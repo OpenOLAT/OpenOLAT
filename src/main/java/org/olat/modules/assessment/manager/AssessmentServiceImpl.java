@@ -19,7 +19,6 @@
  */
 package org.olat.modules.assessment.manager;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -123,7 +122,7 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		assessmentEntryDao.deleteEntryForIdentity(identity);
 	}
 }

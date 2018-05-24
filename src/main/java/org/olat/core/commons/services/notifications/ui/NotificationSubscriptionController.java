@@ -41,6 +41,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.home.HomeMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -63,6 +64,9 @@ public class NotificationSubscriptionController extends BasicController {
 	private NotificationSubscriptionTableDataModel subscriptionsTableModel;
 	private DialogBoxController delYesNoC;
 	private Identity subscriberIdentity;
+	
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	public NotificationSubscriptionController(UserRequest ureq, WindowControl wControl,
 			Identity subscriberIdentity, boolean adminColumns) {
@@ -93,11 +97,10 @@ public class NotificationSubscriptionController extends BasicController {
 		// Load subscriptions from DB. Don't use the ureq.getIdentity() but the
 		// subscriberIdentity instead to make this controller also be usable in the
 		// admin environment (admins might change notifications for a user)
-		NotificationsManager man = NotificationsManager.getInstance();
-		List<Subscriber> subs = man.getSubscribers(subscriberIdentity);
+		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity);
 		for(Iterator<Subscriber> subIt=subs.iterator(); subIt.hasNext(); ) {
 			Subscriber sub = subIt.next();
-			if(!man.isPublisherValid(sub.getPublisher())) {
+			if(!notificationsManager.isPublisherValid(sub.getPublisher())) {
 				subIt.remove();
 			}
 		}
@@ -153,7 +156,7 @@ public class NotificationSubscriptionController extends BasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // ok
 				// Remove subscription and update data model
 				Subscriber sub = (Subscriber) delYesNoC.getUserObject();
-				NotificationsManager.getInstance().unsubscribe(sub);
+				notificationsManager.unsubscribe(sub);
 				updateSubscriptionsDataModel();
 				showInfo("info.notification.deleted");
 				// Notify parent controller

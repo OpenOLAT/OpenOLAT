@@ -110,9 +110,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	protected ChatController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String roomName,
 			Long privateReceiverKey, boolean highlightVip, int width, int height, int offsetX, int offsetY) {
 		super(ureq, wControl);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
-		portraitManager = DisplayPortraitManager.getInstance();
 		formatter = Formatter.getInstance(getLocale());
 		this.ores = ores;
 		this.privateReceiverKey = privateReceiverKey;
@@ -121,7 +118,7 @@ public class ChatController extends BasicController implements GenericEventListe
 
 		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
 		
-		allChats = new ArrayList<String>();
+		allChats = new ArrayList<>();
 		allChats.add(Integer.toString(hashCode()));
 		
 		mainVC = createVelocityContainer("chat");
@@ -365,7 +362,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		messageHistory.addLast(msg);
 
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
-		chatMsgFieldContent.contextPut("focus", new Boolean(focus));
+		chatMsgFieldContent.contextPut("focus", Boolean.valueOf(focus));
 	}
 	
 	private Long getAvatarKey(Long identityKey) {

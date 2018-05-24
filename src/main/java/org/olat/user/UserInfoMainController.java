@@ -120,6 +120,8 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	private CalendarModule calendarModule;
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private HomePageConfigManager homePageConfigManager;
 
 	/**
 	 * @param ureq
@@ -317,8 +319,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	private HomePageDisplayController doOpenHomepage(UserRequest ureq) {
 		removeAsListenerAndDispose(homePageDisplayController);
 		
-		HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
-		HomePageConfig homePageConfig = hpcm.loadConfigFor(chosenIdentity.getName());
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(chosenIdentity.getName());
 		removeAsListenerAndDispose(homePageDisplayController);
 		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), chosenIdentity, homePageConfig);
 		listenTo(homePageDisplayController);

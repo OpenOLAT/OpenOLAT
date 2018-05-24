@@ -26,6 +26,9 @@
 package org.olat.core.commons.services.notifications.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -85,10 +88,15 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserDataExportable;
+import org.olat.user.manager.ManifestBuilder;
 
 /**
  * Description: <br>
@@ -97,7 +105,7 @@ import org.olat.user.UserDataDeletable;
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
  */
-public class NotificationsManagerImpl extends NotificationsManager implements UserDataDeletable {
+public class NotificationsManagerImpl extends NotificationsManager implements UserDataDeletable, UserDataExportable {
 	private static final OLog log = Tracing.createLoggerFor(NotificationsManagerImpl.class);
 
 	private static final int PUB_STATE_OK = 0;
@@ -1277,11 +1285,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		
 		return titleSb.toString(); 
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getNoSubscriptionInfo()
-	 */
+
+	@Override
 	public SubscriptionInfo getNoSubscriptionInfo() {
 		return NOSUBSINFO;
 	}
@@ -1291,12 +1296,59 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param identity
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		List<Subscriber> subscribers = getSubscribers(identity);
-		for (Iterator<Subscriber> iter = subscribers.iterator(); iter.hasNext();) {
-			deleteSubscriber( iter.next() );
+		for (Subscriber subscriber:subscribers) {
+			deleteSubscriber(subscriber);
 		}
 		logDebug("All notification-subscribers deleted for identity=" + identity, null);
+	}
+
+	@Override
+	public String getExporterID() {
+		return "notifications";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File noteArchive = new File(archiveDirectory, "Notifications.xlsx");
+		try(OutputStream out = new FileOutputStream(noteArchive);
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			sheet.setHeaderRows(1);
+			
+			Row row = sheet.newRow();
+			row.addCell(0, "Type");
+			row.addCell(1, "Type");
+			row.addCell(2, "Creation date");
+			row.addCell(3, "Title");
+			
+			List<Subscriber> subscribers = getSubscribers(identity);
+			for(Subscriber subscriber:subscribers) {
+				exportSubscriberData(subscriber, sheet, workbook, locale);
+			}
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
+		}
+
+		manifest.appendFile("Notifications.xlsx");
+	}
+
+	private void exportSubscriberData(Subscriber subscriber, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook, Locale locale) {
+		Row row = sheet.newRow();
+		Publisher pub = subscriber.getPublisher();
+		
+		String innerType = NewControllerFactory.translateResourceableTypeName(pub.getType(), locale);
+		row.addCell(0, innerType);
+		String containerType = NewControllerFactory.translateResourceableTypeName(pub.getResName(), locale);
+		row.addCell(1, containerType);
+		row.addCell(2, subscriber.getCreationDate(), workbook.getStyles().getDateTimeStyle());
+		
+		NotificationsHandler handler = getNotificationsHandler(pub);
+		if(handler != null) {
+			String title = handler.createTitleInfo(subscriber, locale);
+			row.addCell(3, title);
+		}
 	}
 
 	/**
@@ -1305,7 +1357,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param notificationIntervals
 	 */
 	public void setNotificationIntervals(Map<String, Boolean> intervals) {
-		notificationIntervals = new ArrayList<String>();
+		notificationIntervals = new ArrayList<>();
 		for(String key : intervals.keySet()) {
 			if (intervals.get(key)) {
 				if(key.length() <= 16) {

@@ -95,7 +95,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyAvatarHandlers;
 
 	private final CourseEnvironment courseEnv;
-	private final DisplayPortraitManager portraitManager;
 	private final String avatarBaseURL;
 	
 	private Link printLink;
@@ -143,6 +142,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private UserSessionManager sessionManager;
 	@Autowired
 	private MembersExportManager exportManager;
+	@Autowired
+	private DisplayPortraitManager portraitManager;
 
 	private BusinessGroup businessGroup;
 	private RepositoryEntry repoEntry;
@@ -164,7 +165,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		userPropertyAvatarHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_AVATAR_ID, isAdministrativeUser);
 		
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
-		portraitManager = DisplayPortraitManager.getInstance();
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		// lists
 		this.owners = owners;
@@ -221,13 +221,13 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("showOwners", showOwners);
-			layoutCont.contextPut("hasOwners", new Boolean(!ownerList.isEmpty()));
+			layoutCont.contextPut("hasOwners", Boolean.valueOf(!ownerList.isEmpty()));
 			layoutCont.contextPut("showCoaches", showCoaches);
-			layoutCont.contextPut("hasCoaches", new Boolean(!coachList.isEmpty()));
+			layoutCont.contextPut("hasCoaches", Boolean.valueOf(!coachList.isEmpty()));
 			layoutCont.contextPut("showParticipants", showParticipants);
-			layoutCont.contextPut("hasParticipants", new Boolean(!participantList.isEmpty()));
+			layoutCont.contextPut("hasParticipants", Boolean.valueOf(!participantList.isEmpty()));
 			layoutCont.contextPut("showWaiting", showWaiting);
-			layoutCont.contextPut("hasWaiting", new Boolean(!waitingtList.isEmpty()));
+			layoutCont.contextPut("hasWaiting", Boolean.valueOf(!waitingtList.isEmpty()));
 		}
 	}
 	

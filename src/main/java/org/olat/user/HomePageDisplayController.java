@@ -72,6 +72,8 @@ public class HomePageDisplayController extends BasicController {
 	private UserManager userManager;
 	@Autowired
 	private InstantMessagingModule imModule;
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 
 	/**
 	 * @param ureq
@@ -94,7 +96,7 @@ public class HomePageDisplayController extends BasicController {
 		// add configured property handlers and the homepage config
 		// do the looping in the velocity context
 		List<UserPropertyHandler> userPropertyHandlers
-			= new ArrayList<UserPropertyHandler>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
+			= new ArrayList<>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
 		UserPropertyHandler userSearchedInterestsHandler = null;
 		UserPropertyHandler userInterestsHandler = null;
 		for(Iterator<UserPropertyHandler> propIt=userPropertyHandlers.iterator(); propIt.hasNext(); ) {
@@ -126,7 +128,7 @@ public class HomePageDisplayController extends BasicController {
 		mainVC.put("image", dpc.getInitialComponent());
 
 		if(userModule.isLogoByProfileEnabled()) {
-			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
+			File logo = displayPortraitManager.getBigLogo(homeIdentity.getName());
 			if (logo != null) {
 				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
 				logoCmp.setMedia(logo);

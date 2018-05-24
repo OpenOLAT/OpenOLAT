@@ -91,7 +91,7 @@ public class DBPersistentLockManagerTest extends OlatTestCase {
 		Assert.assertTrue(lock.isSuccess());
 		
 		//delete the owner
-		lockManager.deleteUserData(owner, "", null);
+		lockManager.deleteUserData(owner, "");
 		dbInstance.commit();
 		
 		//next can acquire the lock

@@ -25,7 +25,6 @@
 
 package org.olat.admin.user.delete.service;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -86,7 +85,6 @@ public class UserDeletionManager extends BasicManager {
 
 	private static UserDeletionManager INSTANCE;
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
-	private static final String USER_ARCHIVE_DIR = "archive_deleted_users";
 	private static final String USER_DELETED_ACTION = "userdeleted";
 
 
@@ -268,7 +266,6 @@ public class UserDeletionManager extends BasicManager {
 		
 		// Delete data of modules that implement the user data deletable
 		String anonymisedIdentityName = identity.getKey().toString();
-		File archiveFilePath = getArchivFilePath(identity);
 		Map<String,UserDataDeletable> userDataDeletableResourcesMap = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
 		List<UserDataDeletable> userDataDeletableResources = new ArrayList<>(userDataDeletableResourcesMap.values());
 		// Start with high priorities (900: user manager), then continue with
@@ -278,7 +275,7 @@ public class UserDeletionManager extends BasicManager {
 		for (UserDataDeletable element : userDataDeletableResources) {
 			try {
 				logInfo("UserDataDeletable-Loop for identity::" + identity.getKey() + " and element::" + element.getClass().getSimpleName());
-				element.deleteUserData(identity, anonymisedIdentityName, archiveFilePath);				
+				element.deleteUserData(identity, anonymisedIdentityName);				
 			} catch (Exception e) {
 				logError("Error while deleting identity::" + identity.getKey() + " data for and element::"
 						+ element.getClass().getSimpleName()
@@ -370,16 +367,6 @@ public class UserDeletionManager extends BasicManager {
 			property.setLongValue( new Long(value) );
 		}
 		PropertyManager.getInstance().saveProperty(property);
-	}
-
-	private File getArchivFilePath(Identity identity) {
-		String archiveFilePath = deletionModule.getArchiveRootPath() + File.separator + USER_ARCHIVE_DIR + File.separator + RepositoryDeletionModule.getArchiveDatePath()
-		     + File.separator + "del_identity_" + identity.getName();
-		File archiveIdentityRootDir = new File(archiveFilePath);
-		if (!archiveIdentityRootDir.exists()) {
-			archiveIdentityRootDir.mkdirs();
-		}
-		return archiveIdentityRootDir;
 	}
 	
 	public static class UserDataDeletableComparator implements Comparator<UserDataDeletable> {

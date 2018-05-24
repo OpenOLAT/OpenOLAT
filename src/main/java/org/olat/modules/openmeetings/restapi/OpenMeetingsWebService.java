@@ -26,7 +26,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -49,7 +48,7 @@ import org.olat.user.UserManager;
 @Path("openmeetings")
 public class OpenMeetingsWebService {
 
-	public static CacheControl cc = new CacheControl();
+	private static final CacheControl cc = new CacheControl();
 	
 	/**
 	 * Retrieves the portrait of an user
@@ -64,36 +63,31 @@ public class OpenMeetingsWebService {
 	@Path("{identityToken}/portrait")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityToken") String identityToken, @Context Request request) {
-		try {
-			OpenMeetingsModule module = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
-			if(!module.isEnabled()) {
-				return Response.serverError().status(Status.FORBIDDEN).build();
-			}
-
-			OpenMeetingsManager omm = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
-			Long identityKey = omm.getIdentityKey(identityToken);
-			if(identityKey == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			String username = CoreSpringFactory.getImpl(UserManager.class).getUsername(identityKey);
-			if(username == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-			
-			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(username);
-			if(portrait == null || !portrait.exists()) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			Date lastModified = new Date(portrait.lastModified());
-			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-			if(response == null) {
-				response = Response.ok(portrait).lastModified(lastModified).cacheControl(cc);
-			}
-			return response.build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		OpenMeetingsModule module = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
+		if(!module.isEnabled()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-	}
 
+		OpenMeetingsManager omm = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
+		Long identityKey = omm.getIdentityKey(identityToken);
+		if(identityKey == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		String username = CoreSpringFactory.getImpl(UserManager.class).getUsername(identityKey);
+		if(username == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getBigPortrait(username);
+		if(portrait == null || !portrait.exists()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		Date lastModified = new Date(portrait.lastModified());
+		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+		if(response == null) {
+			response = Response.ok(portrait).lastModified(lastModified).cacheControl(cc);
+		}
+		return response.build();
+	}
 }

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.manager;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -61,7 +60,7 @@ public class QuestionPoolUserDataDeletable implements UserDataDeletable {
 	private QuestionItemDAO questionItemDao;
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		if (!qpoolModule.isDeleteQuestionsWithoutAuthor()) return;
 			
 		List<QuestionItem> itemsWithOneAuthor = questionItemDao.getItemsWithOneAuthor(identity);

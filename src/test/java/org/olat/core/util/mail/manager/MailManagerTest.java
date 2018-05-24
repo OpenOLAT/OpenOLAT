@@ -258,10 +258,10 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//delete the 4 users datas
-		mailBoxExtension.deleteUserData(toId_1, "lalala", null);
-		mailBoxExtension.deleteUserData(toId_2, "lalala", null);
-		mailBoxExtension.deleteUserData(toId_3, "lalala", null);
-		mailBoxExtension.deleteUserData(fromId, "lalala", null);
+		mailBoxExtension.deleteUserData(toId_1, "lalala");
+		mailBoxExtension.deleteUserData(toId_2, "lalala");
+		mailBoxExtension.deleteUserData(toId_3, "lalala");
+		mailBoxExtension.deleteUserData(fromId, "lalala");
 		dbInstance.commitAndCloseSession();
 		
 		//check inbox / outbox
@@ -324,10 +324,10 @@ public class MailManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//delete the 4 users datas
-		mailBoxExtension.deleteUserData(fromId, "lalala", null);
-		mailBoxExtension.deleteUserData(toId_1, "lalala", null);
-		mailBoxExtension.deleteUserData(toId_2, "lalala", null);
-		mailBoxExtension.deleteUserData(toId_3, "lalala", null);
+		mailBoxExtension.deleteUserData(fromId, "lalala");
+		mailBoxExtension.deleteUserData(toId_1, "lalala");
+		mailBoxExtension.deleteUserData(toId_2, "lalala");
+		mailBoxExtension.deleteUserData(toId_3, "lalala");
 		dbInstance.commitAndCloseSession();
 
 		//check mail by meta id

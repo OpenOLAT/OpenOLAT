@@ -21,7 +21,6 @@ package org.olat.user;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,6 +40,8 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.IMPreferenceController;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.RegistrationModule;
+import org.olat.user.ui.data.UserDataController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,9 +53,11 @@ import org.olat.registration.RegistrationModule;
  */
 public class UserSettingsController extends BasicController implements Activateable2 {
 	
-
+	private Link webdavLink;
+	private Link imLink;
+	private Link disclaimerLink;
+	private final Link userDataLink;
 	private final Link preferencesLink;
-	private Link webdavLink, imLink, disclaimerLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
@@ -62,6 +65,14 @@ public class UserSettingsController extends BasicController implements Activatea
 	private DisclaimerController disclaimerCtrl;
 	private WebDAVPasswordController webdavCtrl;
 	private ChangePrefsController preferencesCtrl;
+	private UserDataController userDataCtrl;
+	
+	@Autowired
+	private WebDAVModule webDAVModule;
+	@Autowired
+	private InstantMessagingModule imModule;
+	@Autowired
+	private RegistrationModule registrationModule;
 
 	/**
 	 * @param ureq
@@ -76,21 +87,26 @@ public class UserSettingsController extends BasicController implements Activatea
 		preferencesLink = LinkFactory.createLink("tab.prefs", mainVC, this);
 		preferencesLink.setElementCssClass("o_sel_user_settings_prefs");
 		segmentView.addSegment(preferencesLink, true);
-		if(CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled()) {
+		if(webDAVModule.isEnabled()) {
 			webdavLink = LinkFactory.createLink("tab.pwdav", mainVC, this);
 			webdavLink.setElementCssClass("o_sel_user_settings_webdav");
 			segmentView.addSegment(webdavLink, false);
 		}
-		if(CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()){
+		if(imModule.isEnabled()) {
 			imLink = LinkFactory.createLink("tab.im", mainVC, this);
 			imLink.setElementCssClass("o_sel_user_settings_im");
 			segmentView.addSegment(imLink, false);
 		}
-		if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerEnabled()) {
+		if (registrationModule.isDisclaimerEnabled()) {
 			disclaimerLink = LinkFactory.createLink("tab.disclaimer", mainVC, this);
 			disclaimerLink.setElementCssClass("o_sel_user_settings_disclaimer");
 			segmentView.addSegment(disclaimerLink, false);
 		}
+		userDataLink = LinkFactory.createLink("tab.user.data", mainVC, this);
+		userDataLink.setElementCssClass("o_sel_user_data_download");
+		segmentView.addSegment(userDataLink, false);
+		
+		
 		mainVC.put("segments", segmentView);
 		doOpenPreferences(ureq);
 		putInitialPanel(mainVC);
@@ -101,9 +117,11 @@ public class UserSettingsController extends BasicController implements Activatea
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
+	}
+	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
@@ -119,6 +137,8 @@ public class UserSettingsController extends BasicController implements Activatea
 					doOpenIM(ureq);
 				} else if (clickedLink == disclaimerLink) {
 					doOpenDisclaimer(ureq);
+				} else if (clickedLink == userDataLink) {
+					doOpenUserData(ureq);
 				}
 			}
 		}
@@ -155,9 +175,13 @@ public class UserSettingsController extends BasicController implements Activatea
 		}
 		mainVC.put("segmentCmp", disclaimerCtrl.getInitialComponent());
 	}
-
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+	
+	private void doOpenUserData(UserRequest ureq) {
+		if(userDataCtrl == null) {
+			userDataCtrl = new UserDataController(ureq, getWindowControl(), getIdentity());
+			listenTo(userDataCtrl);
+		}
+		mainVC.put("segmentCmp", userDataCtrl.getInitialComponent());
 	}
+	
 }

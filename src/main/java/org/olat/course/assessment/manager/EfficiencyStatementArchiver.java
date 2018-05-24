@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.assessment;
+package org.olat.course.assessment.manager;
 
 import java.io.File;
 import java.util.List;
@@ -35,6 +35,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.nodes.CourseNode;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -51,7 +53,6 @@ public class EfficiencyStatementArchiver {
 	private static final String EOL = "\n";
 	private static final String EFFICIENCY_ARCHIVE_FILE = "efficiencyArchive.xls";
 
-	private static EfficiencyStatementArchiver instance = new EfficiencyStatementArchiver();
 	private Translator translator;
 	private List<UserPropertyHandler> userPropertyHandler;
 
@@ -67,14 +68,9 @@ public class EfficiencyStatementArchiver {
 		userPropertyHandler = UserManager.getInstance().getUserPropertyHandlersFor(EfficiencyStatementArchiver.class.getCanonicalName(), true);
 	}
 
-	public static EfficiencyStatementArchiver getInstance() {
-		return instance;
-	}
-
 	public void archive(List<EfficiencyStatement> efficiencyStatements, Identity identity, File archiveFile) {
 		FileUtils.save(new File(archiveFile, EFFICIENCY_ARCHIVE_FILE), toXls(efficiencyStatements, identity), "utf-8");
 	}
-
 
 	private String toXls(List<EfficiencyStatement> efficiencyStatements, Identity identity) {
 		StringBuilder buf = new StringBuilder();

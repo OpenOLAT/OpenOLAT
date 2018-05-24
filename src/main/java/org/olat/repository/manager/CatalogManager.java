@@ -650,7 +650,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove as owner
 		List<CatalogEntry> catalogEntries = getCatalogEntriesOwnedBy(identity);
 		for (CatalogEntry catalogEntry:catalogEntries) {

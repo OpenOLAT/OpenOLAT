@@ -25,7 +25,6 @@
 
 package org.olat.repository.manager;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -70,7 +69,7 @@ public class RepositoryDeletionManager implements UserDataDeletable {
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove as owner
 		Identity adminIdentity = deletionModule.getAdminUserIdentity();
 		List<RepositoryEntry> ownedRepoEntries = repositoryManager.queryByOwner(identity);

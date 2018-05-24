@@ -49,6 +49,9 @@ import org.olat.modules.fo.ui.ForumController;
  */
 public class ForumUIFactory {
 	
+	public static final String CSS_ICON_CLASS_FORUM = "o_fo_icon";
+	public static final String CSS_ICON_CLASS_MESSAGE = "o_forum_message_icon";
+	
 	/**
 	 * Provides a popable ForumController wrapped in a titled controller.
 	 * @param ureq
@@ -69,8 +72,7 @@ public class ForumUIFactory {
 		};
 		//wrap the content controller into a full header layout
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-		PopupBrowserWindow pbw = wControl.getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
-		return pbw;							
+		return wControl.getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);						
 	}
 	
 	/**
@@ -86,7 +88,7 @@ public class ForumUIFactory {
 		TitledWrapperController forumWrapperController = new TitledWrapperController(ureq, wControl, popupFoCtr, "o_course_run", titleInfo);
 		// Set CSS values to default forum icons if no values are set in the title info
 		if (!StringHelper.containsNonWhitespace(titleInfo.getIconCssClass())) {
-			forumWrapperController.setIconCssClass(ForumHelper.CSS_ICON_CLASS_FORUM);
+			forumWrapperController.setIconCssClass(CSS_ICON_CLASS_FORUM);
 		}
 		return forumWrapperController;							
 	}

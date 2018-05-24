@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
@@ -45,19 +46,19 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.user.manager.ManifestBuilder;
 
 /**
  * 
  * Initial Date: Sept 08, 2005 <br>
  * @author Alexander Schneider
  */
-public class DisplayPortraitManager implements UserDataDeletable {
+public class DisplayPortraitManager implements UserDataDeletable, UserDataExportable {
 	private static final OLog log = Tracing.createLoggerFor(DisplayPortraitManager.class);
-	
-	private static DisplayPortraitManager singleton;
 	
 	private static final String LOGO_PREFIX_FILENAME = "logo";
 	private static final String LOGO_BIG_FILENAME = LOGO_PREFIX_FILENAME + "_big";
@@ -91,22 +92,6 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	
 	public static final int WIDTH_LOGO_BIG = HEIGHT_BIG * 4;  // 4-8 kbytes (jpeg)
 	public static final int WIDTH_LOGO_SMALL = HEIGHT_SMALL * 4; // 2-4
-	
-	/**
-	 * [spring]
-	 */
-	private DisplayPortraitManager() {
-		singleton = this;
-	}
-	
-	/**
-	 * Singleton pattern
-	 * 
-	 * @return instance
-	 */
-	public static DisplayPortraitManager getInstance() {
-		return singleton;
-	}
 
 	public MediaResource getSmallPortraitResource(String username) {
 		return getPortraitResource(username, PORTRAIT_SMALL_FILENAME);
@@ -225,8 +210,8 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	}
 	
 	public boolean hasPortrait(String username) {
-		File portraitDir = getPortraitDir(username);
-		if(portraitDir != null) {
+		File portraitDir = getPortraitDir(username, false);
+		if(portraitDir != null && portraitDir.exists()) {
 			File[] portraits = portraitDir.listFiles();
 			if(portraits.length > 0) {
 				for(File file:portraits) {
@@ -240,7 +225,7 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	}
 
 	private File getPortraitFile(String username, String prefix) {
-		File portraitDir = getPortraitDir(username);
+		File portraitDir = getPortraitDir(username, true);
 		if(portraitDir != null) {
 			File[] portraits = portraitDir.listFiles();
 			if(portraits.length > 0) {
@@ -258,11 +243,9 @@ public class DisplayPortraitManager implements UserDataDeletable {
 		VFSContainer portraitDir = getPortraitFolder(username);
 		if(portraitDir != null) {
 			List<VFSItem> portraits = portraitDir.getItems();
-			if(portraits.size() > 0) {
-				for(VFSItem file:portraits) {
-					if(file.getName().startsWith(prefix) && file instanceof VFSLeaf) {
-						return (VFSLeaf)file;
-					}
+			for(VFSItem file:portraits) {
+				if(file.getName().startsWith(prefix) && file instanceof VFSLeaf) {
+					return (VFSLeaf)file;
 				}
 			}
 		}
@@ -284,7 +267,7 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	private void setImage(File file, String filename, String username, String prefix,
 			String masterImagePrefix, String largeImagePrefix, String smallImagePrefix,
 			int maxBigWidth, int maxSmallWidth) {
-		File directory = getPortraitDir(username);
+		File directory = getPortraitDir(username, true);
 		if(directory != null) {
 			for(File currentImage:directory.listFiles()) {
 				if(currentImage.equals(file)) {
@@ -330,7 +313,7 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	}
 	
 	private void deleteImages(Identity identity, String prefix) {
-		File directory = getPortraitDir(identity.getName());
+		File directory = getPortraitDir(identity.getName(), false);
 		if(directory != null && directory.exists()) {
 			for(File file:directory.listFiles()) {
 				String filename = file.getName();
@@ -361,11 +344,12 @@ public class DisplayPortraitManager implements UserDataDeletable {
 	 * @param identity
 	 * @return
 	 */
-	public File getPortraitDir(String identityName){
-		String portraitPath = FolderConfig.getCanonicalRoot() + 
-				FolderConfig.getUserHomePage(identityName) + "/portrait"; 
-		File portraitDir = new File(portraitPath);
-		portraitDir.mkdirs();
+	public File getPortraitDir(String identityName, boolean create) {
+		String portraitPath = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identityName); 
+		File portraitDir = new File(portraitPath, "portrait");
+		if(create) {
+			portraitDir.mkdirs();
+		}
 		return portraitDir;
 	}
 	
@@ -379,17 +363,33 @@ public class DisplayPortraitManager implements UserDataDeletable {
 
 	@Override
 	public int deleteUserDataPriority() {
-		// must have higher priority than HomePageConfigManagerImpl
+		// must have higher priority than HomePageConfigManager
 		return 650;
 	}
 		
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
-		String userHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName()); 
-		File portraitDir = new File(userHomePage, "portrait");
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		File portraitDir = getPortraitDir(identity.getName(), false);
 		if(portraitDir.exists()) {
 			FileUtils.deleteDirsAndFiles(portraitDir, true, true);
 		}
 		log.debug("Homepage-config file deleted for identity=" + identity);
+	}
+	@Override
+	public String getExporterID() {
+		return "display.portrait";
+	}
+	
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File portraitDir = getPortraitDir(identity.getName(), false);
+		if(portraitDir.exists()) {
+			File archivePortrait = new File(archiveDirectory, "portrait");
+			File[] portraits = portraitDir.listFiles(new SystemFilenameFilter(true, false));
+			for(File portrait:portraits) {
+				manifest.appendFile("portrait/" + portrait.getName());
+				FileUtils.copyFileToDir(portrait, archivePortrait, false, null, "Archive portrait");
+			}
+		}
 	}
 }
