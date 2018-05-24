@@ -555,12 +555,12 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortraitHead(@PathParam("identityKey") Long identityKey) {
-		IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+		IdentityShort identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityShortByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+		File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getBigPortrait(identity.getName());
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -581,12 +581,12 @@ public class UserWebService {
 	@Path("{identityKey}/portrait/{size}")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getOriginalPortraitHead(@PathParam("identityKey") Long identityKey, @PathParam("size") String size) {
-		IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+		IdentityShort identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityShortByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		DisplayPortraitManager portraitManager = DisplayPortraitManager.getInstance();
+		DisplayPortraitManager portraitManager = CoreSpringFactory.getImpl(DisplayPortraitManager.class);
 		
 		File portrait = null;
 		if("master".equals(size)) {
@@ -617,12 +617,12 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityKey") Long identityKey, @Context Request request) {
-		IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+		IdentityShort identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityShortByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+		File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getBigPortrait(identity.getName());
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -652,7 +652,7 @@ public class UserWebService {
 	public Response postPortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		MultipartReader partsReader = null;
 		try {
-			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+			IdentityShort identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityShortByKey(identityKey);
 			if(identity == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -664,7 +664,7 @@ public class UserWebService {
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
 			String filename = partsReader.getFilename();
-			DisplayPortraitManager.getInstance().setPortrait(tmpFile, filename, identity.getName());
+			CoreSpringFactory.getImpl(DisplayPortraitManager.class).setPortrait(tmpFile, filename, identity.getName());
 			return Response.ok().build();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -685,14 +685,14 @@ public class UserWebService {
 	@Path("{identityKey}/portrait")
 	public Response deletePortrait(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity authIdentity = getUserRequest(request).getIdentity();
-		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 	
-		DisplayPortraitManager.getInstance().deletePortrait(identity);
+		CoreSpringFactory.getImpl(DisplayPortraitManager.class).deletePortrait(identity);
 		return Response.ok().build();
 	}
 

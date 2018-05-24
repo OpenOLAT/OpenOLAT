@@ -6,9 +6,23 @@
 #if($r.visible("solution"))
 	<div class="o_assessmentitem_control_view_solution">$r.render("view.solution")</div>
 	<div class="o_qti_item_body clearfix">$r.render("solution")</div>
+	#if(!$r.visible("view.correct.solution"))
 	<div class="o_assessmentitem_controls"> </div>
+	#end
+#elseif($r.visible("view.correct.solution"))
+	<div class="o_assessmentitem_control_view_solution">$r.render("view.solution")</div>
 #else
 	<div class="o_assessmentitem_controls">$r.render("view.solution")</div>
+#end
+
+#if($r.visible("view.correct.solution"))
+	#if($r.visible("correctSolution"))
+		<div class="o_assessmentitem_control_view_solution">$r.render("view.correct.solution")</div>
+		<div class="o_qti_item_body clearfix">$r.render("correctSolution")</div>
+		<div class="o_assessmentitem_controls"> </div>
+	#else
+		<div class="o_assessmentitem_controls">$r.render("view.correct.solution")</div>
+	#end
 #end
 
 <div class="o_assessmentitem_scoring">

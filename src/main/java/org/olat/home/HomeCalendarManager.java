@@ -20,10 +20,13 @@
 package org.olat.home;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,6 +49,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
@@ -61,6 +65,9 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserDataDeletable;
+import org.olat.user.UserDataExportable;
+import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +78,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class HomeCalendarManager implements PersonalCalendarManager {
+public class HomeCalendarManager implements PersonalCalendarManager, UserDataDeletable, UserDataExportable {
 	
 	private static final OLog log = Tracing.createLoggerFor(HomeCalendarManager.class);
 	
@@ -158,15 +165,17 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 		return aggregatedFiles;
 	}
 	
+	//
+	
 	@Override
 	public List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {
 		if(!calendarModule.isEnabled()) {
-			return new ArrayList<KalendarRenderWrapper>();
+			return new ArrayList<>();
 		}
 		
 		Identity identity = ureq.getIdentity();
 		
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		Map<CalendarKey,CalendarUserConfiguration> configMap = calendarManager
 				.getCalendarUserConfigurationsMap(ureq.getIdentity());
 		appendPersonalCalendar(identity, calendars, configMap);
@@ -366,6 +375,50 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 		}
 	}
 	
+	@Override
+	public String getExporterID() {
+		return "calendars";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File calendars = new File(archiveDirectory, "calendars");
+		File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_USER, identity.getName());
+		if(iCalFile != null && iCalFile.exists()) {
+			FileUtils.copyFileToDir(iCalFile, calendars, false, "Archive calendar");
+			manifest.appendFile("calendars/" + iCalFile.getName());
+		}
+		List<CalendarFileInfos> importedCalendars = importCalendarManager.getImportedCalendarInfosForIdentity(identity, false);
+		for(CalendarFileInfos importedCalendar:importedCalendars) {
+			File importedCalFile = importedCalendar.getCalendarFile();
+			if(importedCalFile != null && importedCalFile.exists()) {
+				FileUtils.copyFileToDir(importedCalFile, calendars, false, "Archive calendar");
+				manifest.appendFile("calendars/" + importedCalFile.getName());
+			}
+		}
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_USER, identity.getName());
+		deleteCalendarFile(iCalFile);
+
+		List<CalendarFileInfos> importedCalendars = importCalendarManager.getImportedCalendarInfosForIdentity(identity, false);
+		for(CalendarFileInfos importedCalendar:importedCalendars) {
+			deleteCalendarFile(importedCalendar.getCalendarFile());
+		}
+	}
+	
+	private void deleteCalendarFile(File calendarFile) {
+		if(calendarFile != null && calendarFile.exists()) {
+			try {
+				Files.deleteIfExists(calendarFile.toPath());
+			} catch (IOException e) {
+				log.error("Cannot delete calendar: " + calendarFile);
+			}
+		}
+	}
+
 	private static class CalCourseNodeVisitor implements Visitor {
 		private boolean found = false;
 		

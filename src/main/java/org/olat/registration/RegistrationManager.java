@@ -25,7 +25,6 @@
 
 package org.olat.registration;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -453,7 +452,7 @@ public class RegistrationManager implements UserDataDeletable {
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Delete temporary keys used in change email or password workflow 
 		deleteAllTemporaryKeys(identity.getKey());
 	}

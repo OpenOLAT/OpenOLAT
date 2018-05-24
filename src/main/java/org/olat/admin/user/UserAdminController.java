@@ -35,7 +35,6 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,6 +48,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -70,7 +70,9 @@ import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.PropFoundEvent;
+import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
+import org.olat.user.ui.data.UserDataExportController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,15 +117,20 @@ public class UserAdminController extends BasicController implements Activateable
 	private DisplayPortraitController portraitCtr;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
+	private Link exportDataButton;
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
+	private CloseableModalController cmc;
+	private UserDataExportController exportDataCtrl;
 	private IdentityCompetencesController competencesCtrl;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
 	private final boolean isOlatAdmin;
 
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -154,6 +161,9 @@ public class UserAdminController extends BasicController implements Activateable
 		if (allowedToManageUser(ureq, myIdentity)) {
 			myContent = createVelocityContainer("udispatcher");
 			backLink = LinkFactory.createLinkBack(myContent, this);
+			exportDataButton = LinkFactory.createButton("export.user.data", myContent, this);
+			exportDataButton.setIconLeftCSS("o_icon o_icon_download");
+			
 			userShortDescrCtr = new UserShortDescription(ureq, wControl, identity);
 			listenTo(userShortDescrCtr);
 			myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
@@ -208,6 +218,8 @@ public class UserAdminController extends BasicController implements Activateable
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(exportDataButton == source) {
+			doExportData(ureq);
 		} else if (source == userTabP) {
 			userTabP.addToHistory(ureq, getWindowControl());
 		}
@@ -231,11 +243,38 @@ public class UserAdminController extends BasicController implements Activateable
 		} else if (source == userProfileCtr){
 			if (event == Event.DONE_EVENT){
 				//reload profile data on top
-				myIdentity = (Identity) DBFactory.getInstance().loadObject(myIdentity);
+				myIdentity = securityManager.loadIdentityByKey(myIdentity.getKey());
 				exposeUserDataToVC(ureq, myIdentity);
 				userProfileCtr.resetForm(ureq);
 			}
+		} else if(source == exportDataCtrl) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(exportDataCtrl);
+		removeAsListenerAndDispose(cmc);
+		exportDataCtrl = null;
+		cmc = null;
+	}
+	
+	private void doExportData(UserRequest ureq) {
+		if(exportDataCtrl != null) return;
+		
+		exportDataCtrl = new UserDataExportController(ureq, getWindowControl(), myIdentity);
+		listenTo(exportDataCtrl);
+		
+		String fullname = userManager.getUserDisplayName(myIdentity);
+		String title = translate("export.user.data.title", new String[] { fullname });
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportDataCtrl.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
+		
 	}
 
 	/**

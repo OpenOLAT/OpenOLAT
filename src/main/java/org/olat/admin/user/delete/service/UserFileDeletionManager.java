@@ -25,8 +25,6 @@
 
 package org.olat.admin.user.delete.service;
 
-import java.io.File;
-
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.user.UserDataDeletable;
@@ -46,7 +44,7 @@ public class UserFileDeletionManager implements UserDataDeletable {
 	private TaskExecutorManager taskExecutorManager;
 
 	@Override
-	public void deleteUserData(final Identity identity, final String newDeletedUserName, File archivePath) {
+	public void deleteUserData(final Identity identity, final String newDeletedUserName) {
 		taskExecutorManager.execute(new DeleteUserDataTask(identity.getKey(), identity.getName()));
 	}
 }

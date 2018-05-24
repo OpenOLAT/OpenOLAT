@@ -365,7 +365,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		messageHistory.addLast(msg);
 
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
-		chatMsgFieldContent.contextPut("focus", new Boolean(focus));
+		chatMsgFieldContent.contextPut("focus", Boolean.valueOf(focus));
 	}
 	
 	private Long getAvatarKey(Long identityKey) {

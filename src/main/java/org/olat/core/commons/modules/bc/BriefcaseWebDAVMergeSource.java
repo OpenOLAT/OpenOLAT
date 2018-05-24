@@ -83,7 +83,7 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 		if(super.getLocalSecurityCallback() == null) {
 			//set quota for this merge source
 			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
-			String path = PersonalFolderManager.getInstance().getRootPathFor(identity);
+			String path = PersonalFolderManager.getRootPathFor(identity);
 			Quota quota = qm.getCustomQuotaOrDefaultDependingOnRole(identity, roles, path);
 			FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(quota);
 			setLocalSecurityCallback(secCallback);
@@ -95,7 +95,7 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 	protected void init() {
 		super.init();
 		// mount /public
-		String rootPath = PersonalFolderManager.getInstance().getRootPathFor(identity);
+		String rootPath = PersonalFolderManager.getRootPathFor(identity);
 		OlatRootFolderImpl vfsPublic = new OlatRootFolderImpl(rootPath + "/public", this);
 		//vfsPublic.getBasefile().mkdirs(); // lazy initialize folders
 		// we do a little trick here and wrap it again in a NamedContainerImpl so

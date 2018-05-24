@@ -71,7 +71,7 @@ public class HomePageContextEntryControllerCreator extends DefaultContextEntryCo
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		Identity identity = extractIdentity(ce);
 		if (identity == null) return null;
-		return UserManagerImpl.getInstance().getUserDisplayName(identity);
+		return UserManager.getInstance().getUserDisplayName(identity);
 	}
 
 	/**

@@ -375,6 +375,16 @@ CREATE TABLE o_userproperty (
   PRIMARY KEY (fk_user_id, propname)
 );
 
+CREATE TABLE o_user_data_export (
+  id number(20) generated always as identity,
+   creationdate date,
+   lastmodified date,
+   u_directory varchar(255),
+   u_status varchar(16),
+   u_export_ids varchar(2000),
+   fk_identity number(20) not null,
+   PRIMARY KEY (id)
+);
 
 CREATE TABLE o_message (
   message_id number(20) NOT NULL,
@@ -2973,6 +2983,9 @@ create index propvalue_idx on o_userproperty (propvalue);
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_usr_dataex_to_ident_idx on o_user_data_export (fk_identity);
 
 -- csp
 create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);

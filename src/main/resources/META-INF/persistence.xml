@@ -233,6 +233,7 @@
 		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>
 		<class>org.olat.shibboleth.manager.ShibbolethAutoAccessMethod</class>
 		<class>org.olat.user.UserImpl</class>
+		<class>org.olat.user.model.UserDataExportImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

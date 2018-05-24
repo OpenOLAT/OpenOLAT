@@ -45,6 +45,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Sept 08, 2005
@@ -70,6 +71,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 	private final boolean displayPortraitImage;
 	
 	private boolean forceAnonymous;	
+	
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 
 	
 	/**
@@ -176,7 +180,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 			}
 			
 			if (useLarge) {
-				image = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
+				image = displayPortraitManager.getBigPortrait(portraitIdent.getName());
 				if (image != null && !forceAnonymous && !isDeletedUser) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);
 				} else if (isAnonymous || forceAnonymous || isDeletedUser) {
@@ -189,7 +193,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
 				}
 			} else {
-				image = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
+				image = displayPortraitManager.getSmallPortrait(portraitIdent.getName());
 				if (image != null && !forceAnonymous && !isDeletedUser) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
 				} else if (isAnonymous || forceAnonymous || isDeletedUser) {

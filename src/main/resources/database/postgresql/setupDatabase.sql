@@ -338,6 +338,17 @@ create table o_userproperty (
    propvalue varchar(255),
    primary key (fk_user_id, propname)
 );
+create table o_user_data_export (
+   id bigserial,
+   creationdate timestamp,
+   lastmodified timestamp,
+   u_directory varchar(255),
+   u_status varchar(16),
+   u_export_ids varchar(2000),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
 create table o_message (
    message_id int8 not null,
    version int4 not null,
@@ -2818,6 +2829,9 @@ create index propvalue_idx on o_userproperty (propvalue);
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_usr_dataex_to_ident_idx on o_user_data_export (fk_identity);
 
 -- csp
 create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);

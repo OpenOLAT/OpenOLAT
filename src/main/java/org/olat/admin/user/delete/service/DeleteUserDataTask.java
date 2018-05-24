@@ -28,7 +28,6 @@ import java.io.File;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.id.Identity;
@@ -44,7 +43,6 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
-import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -71,45 +69,8 @@ public class DeleteUserDataTask implements LongRunnable {
 	public void run() {
 		long startTime = System.currentTimeMillis();
 		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
-		deleteHomesMetaAndVersionDataOf(identity);
-		deleteAllTempQtiEditorFilesOf(identity);
 		deleteAllCoursesUserFilesOf(identity);
 		log.info("Finished UserFileDeletionManager thread for identity=" + identity + " in " + (System.currentTimeMillis() - startTime) + " (ms)");
-	}
-	
-	/**
-	 * Delete the temporary files of the QTI-editor File e.g. /usr/local/olatfs/olat/olatdata/tmp/qtieditor/schuessler
-	 * @param identity
-	 */
-	private void deleteAllTempQtiEditorFilesOf(Identity identity) {
-		File userTempQtiEditorDir = new File(QTIEditorPackageImpl.getQTIEditorBaseDir(), newDeletedUserName);
-		if (userTempQtiEditorDir.exists()) {
-			FileUtils.deleteDirsAndFiles(userTempQtiEditorDir, true, true); 
-			log.audit("User-Deletion: identity=" + identity.getKey() + " : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());
-		}
-	}
-
-	/**
-	 * Delete the meta and version data of the home.
-	 * @param identity
-	 */
-	private void deleteHomesMetaAndVersionDataOf(Identity identity) {
-		String userHome =  FolderConfig.getUserHomes().substring(1);
-		File metaHomeDir = new File(FolderConfig.getCanonicalMetaRoot(), userHome);
-		File metaHomeUserDir = new File(metaHomeDir, newDeletedUserName);
-		if(metaHomeUserDir.exists()) {
-			// the meta-data under home/<USER> can be deleted and must not be renamed
-			FileUtils.deleteDirsAndFiles(metaHomeUserDir, true, true); 			
-			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
-		}
-
-		File versionHomeDir = new File(FolderConfig.getCanonicalVersionRoot(), userHome);
-		File versionHomeUserDir = new File(versionHomeDir, newDeletedUserName);
-		if(versionHomeUserDir.exists()) {
-			// the meta-data under home/<USER> can be deleted and must not be renamed
-			FileUtils.deleteDirsAndFiles(versionHomeUserDir, true, true); 			
-			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
-		}
 	}
 
 	/**

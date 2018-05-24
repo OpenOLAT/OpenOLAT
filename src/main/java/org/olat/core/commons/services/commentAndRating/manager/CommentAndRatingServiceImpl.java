@@ -20,7 +20,6 @@
 
 package org.olat.core.commons.services.commentAndRating.manager;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
@@ -175,7 +174,7 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService, Use
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		int rows = userRatingsDao.deleteRatings(identity);
 		log.audit(rows + " rating deleted");
 		int comments = userCommentsDao.deleteAllComments(identity);

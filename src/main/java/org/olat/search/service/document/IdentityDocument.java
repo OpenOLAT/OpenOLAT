@@ -22,6 +22,7 @@ package org.olat.search.service.document;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -34,7 +35,6 @@ import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
-import org.olat.user.HomePageConfigManagerImpl;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -61,12 +61,11 @@ public class IdentityDocument extends OlatDocument {
 	 */
 	public static Document createDocument(SearchResourceContext searchResourceContext, Identity identity) {		
 
-		UserManager userMgr = UserManager.getInstance();
-		User user = identity.getUser();
-		
-		HomePageConfigManager homepageMgr = HomePageConfigManagerImpl.getInstance();
+		UserManager userMgr = CoreSpringFactory.getImpl(UserManager.class);
+		HomePageConfigManager homepageMgr = CoreSpringFactory.getImpl(HomePageConfigManager.class);
 		HomePageConfig publishConfig = homepageMgr.loadConfigFor(identity.getName());
 
+		User user = identity.getUser();
 		IdentityDocument identityDocument = new IdentityDocument();
 		identityDocument.setTitle(identity.getName());
 		identityDocument.setCreatedDate(user.getCreationDate());

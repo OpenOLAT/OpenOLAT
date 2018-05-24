@@ -19,7 +19,6 @@
  */
 package org.olat.modules.taxonomy.manager;
 
-import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -355,7 +354,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		taxonomyCompetenceDao.deleteCompetences(identity);
 	}
 }

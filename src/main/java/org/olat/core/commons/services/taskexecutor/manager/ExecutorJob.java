@@ -33,9 +33,6 @@ import org.quartz.JobExecutionContext;
  */
 public class ExecutorJob extends JobWithDB {
 	
-	/**
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
 	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {

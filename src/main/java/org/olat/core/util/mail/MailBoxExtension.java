@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.mail;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,16 +75,16 @@ public class MailBoxExtension implements MailContextResolver, UserDataDeletable,
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		//set as deleted all recipients
 		log.info("Delete intern messages");
 		
-		Collection<DBMailLight> inbox = new HashSet<DBMailLight>(mailManager.getInbox(identity, null, Boolean.FALSE, null, 0, 0));
+		Collection<DBMailLight> inbox = new HashSet<>(mailManager.getInbox(identity, null, Boolean.FALSE, null, 0, 0));
 		for(DBMailLight inMail:inbox) {
 			mailManager.delete(inMail, identity, true);
 		}
 
-		Collection<DBMailLight> outbox = new HashSet<DBMailLight>(mailManager.getOutbox(identity, 0, 0, false));
+		Collection<DBMailLight> outbox = new HashSet<>(mailManager.getOutbox(identity, 0, 0, false));
 		for(DBMailLight outMail:outbox) {
 			mailManager.delete(outMail, identity, true);
 		}

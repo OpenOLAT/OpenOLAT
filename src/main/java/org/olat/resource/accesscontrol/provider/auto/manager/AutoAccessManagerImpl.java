@@ -19,7 +19,6 @@
  */
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -222,7 +221,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		deleteAdvanceOrders(identity);
 	}
 

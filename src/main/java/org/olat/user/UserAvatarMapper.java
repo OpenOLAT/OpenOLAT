@@ -42,7 +42,7 @@ public class UserAvatarMapper implements Mapper {
 
 	public UserAvatarMapper(boolean useLargePortrait) {
 		useLarge = useLargePortrait;
-		portraitManager = DisplayPortraitManager.getInstance();
+		portraitManager = CoreSpringFactory.getImpl(DisplayPortraitManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 

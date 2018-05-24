@@ -19,7 +19,6 @@
  */
 package org.olat.basesecurity.manager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -316,7 +315,7 @@ public class SecurityGroupDAO implements UserDataDeletable {
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove legacy security group memberships
 		List<SecurityGroup> securityGroups = getSecurityGroupsForIdentity(identity);
 		for (SecurityGroup secGroup : securityGroups) {

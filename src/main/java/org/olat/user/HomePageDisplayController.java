@@ -82,6 +82,8 @@ public class HomePageDisplayController extends BasicController {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 
 	/**
 	 * @param ureq
@@ -156,7 +158,7 @@ public class HomePageDisplayController extends BasicController {
 	
 	private void exposeLogo(UserSession usess, Identity homeIdentity, VelocityContainer mainVC) {
 		if(userModule.isLogoByProfileEnabled()) {
-			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
+			File logo = displayPortraitManager.getBigLogo(homeIdentity.getName());
 			if (logo != null) {
 				ImageComponent logoCmp = new ImageComponent(usess, "logo");
 				logoCmp.setMedia(logo);

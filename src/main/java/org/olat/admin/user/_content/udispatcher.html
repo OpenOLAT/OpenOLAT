@@ -4,10 +4,13 @@
 #if($r.isTrue($showTitle))
 	<h4>$r.translate("content.usermgmt.userfound")</h4>
 #end
-<div class="o_user_infos row">
+<div class="o_user_infos">
 	<div class="o_user_portrait">$r.render("portrait")</div>
 	<div class="o_user_infos_inner">
 	$r.render("userShortDescription")
 	</div>
+</div>
+<div class="o_button_group o_button_group_right">
+	$r.render("export.user.data")
 </div>
 $r.render("userTabP")

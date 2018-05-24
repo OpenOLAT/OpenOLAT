@@ -86,6 +86,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private CoordinatorManager coordinator;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private DisplayPortraitManager portraitManager;
 
 	private CacheWrapper<String,Long> sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
@@ -121,7 +123,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			getRooms.setMax(2000);
 			getRooms.setSID(adminSID);
 			
-			Map<Long,RoomReturnInfo> realRooms = new HashMap<Long,RoomReturnInfo>();
+			Map<Long,RoomReturnInfo> realRooms = new HashMap<>();
 			
 			//get rooms on openmeetings
 			List<RoomReturn> roomsRet = roomWs.getRoomsWithCurrentUsersByListAndType(adminSID, 0, 2000, "name", true, getOpenOLATExternalType());
@@ -147,7 +149,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			List<OpenMeetingsRoomReference> props = openMeetingsDao.getReferences();
 			Map<Long,String> roomIdToResources = getResourceNames(props);
 
-			List<OpenMeetingsRoom> rooms = new ArrayList<OpenMeetingsRoom>();
+			List<OpenMeetingsRoom> rooms = new ArrayList<>();
 			for(OpenMeetingsRoomReference prop:props) {
 				Long roomId = new Long(prop.getRoomId());
 				RoomReturnInfo infos = realRooms.get(roomId);
@@ -171,8 +173,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private Map<Long,String> getResourceNames(List<OpenMeetingsRoomReference> properties) {
-		Map<Long,String> roomIdToResourceName = new HashMap<Long,String>();
-		Map<Long,List<Long>> resourceIdToRoomIds = new HashMap<Long,List<Long>>();
+		Map<Long,String> roomIdToResourceName = new HashMap<>();
+		Map<Long,List<Long>> resourceIdToRoomIds = new HashMap<>();
 		for(OpenMeetingsRoomReference prop:properties) {
 			long roomId = prop.getRoomId();
 			if(prop.getGroup() != null) {
@@ -254,7 +256,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private String getPortraitURL(Identity identity) {
-		File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+		File portrait = portraitManager.getBigPortrait(identity.getName());
 		if(portrait == null || !portrait.exists()) {
 			return "";
 		}
@@ -431,7 +433,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			RoomServicePortType roomWs = getRoomWebService();
 			List<FlvRecording> recordings = roomWs.getFlvRecordingByRoomId(adminSID, roomId);
 
-			List<OpenMeetingsRecording> recList = new ArrayList<OpenMeetingsRecording>();
+			List<OpenMeetingsRecording> recList = new ArrayList<>();
 			if(recordings != null) {
 				for(FlvRecording recording:recordings) {
 					if(recording != null) {
@@ -461,14 +463,12 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	throws OpenMeetingsException {
 		try {
 			String sid = adminLogin();
-
-			String url = UriBuilder.fromUri(openMeetingsModule.getOpenMeetingsURI()).path("DownloadHandler")
+			return UriBuilder.fromUri(openMeetingsModule.getOpenMeetingsURI()).path("DownloadHandler")
 				.queryParam("fileName", recording.getDownloadName())
 				.queryParam("moduleName", "lzRecorderApp")
 				.queryParam("parentPath", "")
 				.queryParam("room_id", Long.toString(recording.getRoomId()))
 				.queryParam("sid", sid).build().toString();
-			return url;
 		} catch (Exception e) {
 			log.error("", e);
 			throw translateException(e, 0);
@@ -557,8 +557,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		try {
 			String adminSID = adminLogin();
 			RoomServicePortType roomWs = getRoomWebService();
-			boolean resp = roomWs.deleteFlvRecording(adminSID, recording.getRecordingId());
-			return resp;
+			return roomWs.deleteFlvRecording(adminSID, recording.getRecordingId());
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -584,7 +583,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private List<OpenMeetingsUser> convert(List<RoomUser> clients) {
-		List<OpenMeetingsUser> users = new ArrayList<OpenMeetingsUser>();
+		List<OpenMeetingsUser> users = new ArrayList<>();
 		if(clients != null) {
 			for(RoomUser client:clients) {
 				OpenMeetingsUser user = convert(client);
@@ -611,8 +610,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public boolean removeUser(String publicSID) {
 		try {
 			String adminSID = adminLogin();
-			boolean kickResponse = getUserWebService().kickUserByPublicSID(adminSID, publicSID);
-			return kickResponse;
+			return getUserWebService().kickUserByPublicSID(adminSID, publicSID);
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -623,8 +621,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	public boolean removeUsersFromRoom(OpenMeetingsRoom room) {	
 		try {
 			String adminSID = adminLogin();
-			boolean kickResponse = getRoomWebService().kickUser(adminSID, room.getRoomId());
-			return kickResponse;
+			return getRoomWebService().kickUser(adminSID, room.getRoomId());
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -634,8 +631,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	private String getSessionID() {
 		try {
 			Sessiondata getSessionResponse = getUserWebService().getSession();
-			String sessionId = getSessionResponse.getSessionId();
-			return sessionId;
+			return getSessionResponse.getSessionId();
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -707,7 +703,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		//
 	}
 

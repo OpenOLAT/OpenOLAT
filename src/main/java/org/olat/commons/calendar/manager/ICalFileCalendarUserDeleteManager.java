@@ -19,8 +19,6 @@
  */
 package org.olat.commons.calendar.manager;
 
-import java.io.File;
-
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -46,7 +44,7 @@ public class ICalFileCalendarUserDeleteManager implements UserDataDeletable {
 	private ImportToCalendarManager importToCalendarManager;
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		importToCalendarManager.deletePersonalImportedCalendars(identity);
 		log.debug("Personal imported calendars deleted for identity=" + identity);
 		calendarManager.deletePersonalCalendar(identity);

@@ -77,3 +77,23 @@ update o_user inner join o_bs_identity on (id=fk_identity) set u_organizationalu
 update o_user inner join o_bs_identity on (id=fk_identity) set u_swissedupersonstudybranch1=null where status=199;
 update o_user inner join o_bs_identity on (id=fk_identity) set u_swissedupersonstudybranch2=null where status=199;
 update o_user inner join o_bs_identity on (id=fk_identity) set u_swissedupersonstudybranch3=null where status=199;
+
+
+-- user data export
+create table o_user_data_export (
+   id bigint not null auto_increment,
+   creationdate datetime,
+   lastmodifed datetime,
+   u_directory varchar(255),
+   u_status varchar(16),
+   u_export_ids varchar(2000),
+   fk_identity bigint not null,
+   primary key (id)
+);
+alter table o_user_data_export ENGINE = InnoDB;
+
+alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
+
+
+

@@ -78,3 +78,23 @@ update o_user set u_organizationalunit=null where exists (select id from o_bs_id
 update o_user set u_swissedupersonstudybranch1=null where exists (select id from o_bs_identity where id=fk_identity and status=199);
 update o_user set u_swissedupersonstudybranch2=null where exists (select id from o_bs_identity where id=fk_identity and status=199);
 update o_user set u_swissedupersonstudybranch3=null where exists (select id from o_bs_identity where id=fk_identity and status=199);
+
+
+-- user data export
+create table o_user_data_export (
+  id number(20) generated always as identity,
+   creationdate date,
+   lastmodified date,
+   u_directory varchar(255),
+   u_status varchar(16),
+   u_export_ids varchar(2000),
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
+alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_usr_dataex_to_ident_idx on o_user_data_export (fk_identity);
+
+
+
+

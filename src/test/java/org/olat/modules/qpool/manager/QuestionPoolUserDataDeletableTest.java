@@ -25,7 +25,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,8 +58,6 @@ public class QuestionPoolUserDataDeletableTest {
 	private QuestionItemAuditLogBuilder auditLogBuilderMock;
 	
 	@Mock
-	private File archivePathDummy;
-	@Mock
 	private Identity identityDummy;
 	@Mock
 	private List<QuestionItem> itemsDummy;
@@ -86,7 +83,7 @@ public class QuestionPoolUserDataDeletableTest {
 	public void shouldDeleteQuestionsOfUserIfEnabled() {
 		when(qpoolModuleMock.isDeleteQuestionsWithoutAuthor()).thenReturn(true);
 
-		sut.deleteUserData(identityDummy, newDeletedUserName, archivePathDummy);
+		sut.deleteUserData(identityDummy, newDeletedUserName);
 		
 		verify(qpoolServiceMock).deleteItems(itemsDummy);
 	}
@@ -95,7 +92,7 @@ public class QuestionPoolUserDataDeletableTest {
 	public void shouldNotDeleteQuestionsOfUserIfNotEnabled() {
 		when(qpoolModuleMock.isDeleteQuestionsWithoutAuthor()).thenReturn(false);
 
-		sut.deleteUserData(identityDummy, newDeletedUserName, archivePathDummy);
+		sut.deleteUserData(identityDummy, newDeletedUserName);
 		
 		verify(qpoolServiceMock, never()).deleteItems(itemsDummy);
 	}

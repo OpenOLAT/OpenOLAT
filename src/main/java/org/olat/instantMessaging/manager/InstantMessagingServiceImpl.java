@@ -19,7 +19,6 @@
  */
 package org.olat.instantMessaging.manager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -36,7 +35,6 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -70,7 +68,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InstantMessagingServiceImpl extends BasicManager implements InstantMessagingService, DeletableGroupData, UserDataDeletable {
+public class InstantMessagingServiceImpl implements InstantMessagingService, DeletableGroupData, UserDataDeletable {
 	
 	@Autowired
 	private RosterDAO rosterDao;
@@ -100,7 +98,7 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		imDao.deleteMessages(identity);
 		rosterDao.deleteEntry(identity);
 		prefsDao.deletePreferences(identity);

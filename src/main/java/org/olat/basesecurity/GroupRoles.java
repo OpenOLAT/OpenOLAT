@@ -39,6 +39,14 @@ public enum GroupRoles {
 	invitee,
 	waiting;
 	
+	public static boolean isValueOf(String val) {
+		for(GroupRoles role:values()) {
+			if(role.name().equals(val)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public static List<String> toList(String... roles) {
 		if(roles != null && roles.length > 0 && !(roles.length == 1 && roles[0] == null)) {

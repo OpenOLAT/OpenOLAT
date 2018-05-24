@@ -20,7 +20,6 @@
  */
 package org.olat.modules.lecture.manager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -346,7 +345,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		lectureParticipantSummaryDao.deleteSummaries(identity);
 		lectureBlockRollCallDao.deleteRollCalls(identity);
 		lectureBlockReminderDao.deleteReminders(identity);

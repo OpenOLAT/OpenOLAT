@@ -26,44 +26,80 @@
 package org.olat.user;
 
 import java.io.File;
+import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.user.manager.ManifestBuilder;
 
 /**
  * Manager for the personal-folder of a user.
  */
-public class PersonalFolderManager extends BriefcaseWebDAVProvider implements UserDataDeletable {
+public class PersonalFolderManager extends BriefcaseWebDAVProvider implements UserDataDeletable, UserDataExportable {
 	
 	private static final OLog log = Tracing.createLoggerFor(PersonalFolderManager.class);
 
-	private static PersonalFolderManager instance;
-
-	/**
-	 * [spring only]
-	 * @param userDeletionManager
-	 */
-	private PersonalFolderManager() {
-		instance = this;
+	@Override
+	public String getExporterID() {
+		return "personal.folders";
 	}
 
-	/**
-	 * @return Instance of a UserManager
-	 */
-	public static PersonalFolderManager getInstance() {
-		return instance;
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale lcoale) {
+		File folder = new File(archiveDirectory, "PersonalFolders");
+		String rootPath = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName();
+		export("PersonalFolders", new File(rootPath, "private"), manifest, new File(folder, "private"));
+		export("PersonalFolders", new File(rootPath, "public"), manifest, new File(folder, "public"));
+	}
+	
+	public void export(String path, File directory, ManifestBuilder manifest, File archive) {
+		File[] files = directory.listFiles();
+		if(files != null && files.length > 0) {
+			String currentPath = path + "/" + directory.getName();
+			for(File file:files) {
+				if(file.isHidden()) {
+					continue;
+				}
+				if(file.isDirectory()) {
+					File nextArchiveDir = new File(archive, file.getName());
+					nextArchiveDir.mkdirs();
+					export(currentPath, file, manifest, nextArchiveDir);
+				} else if(file.isFile()) {
+					FileUtils.copyFileToDir(file, archive, false, "Copy personal folder");
+					manifest.appendFile(currentPath + "/" + file.getName());
+				}
+			}
+		}
 	}
 
 	/**
 	 * Delete personal-folder homes/<username> (private & public) of an user.
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		new OlatRootFolderImpl(getRootPathFor(identity), null).deleteSilently();
-		log.debug("Personal-folder deleted for identity=" + identity);
-	}
+		log.audit("Personal-folder deleted for identity=" + identity.getKey());
+		
+		String userHome =  FolderConfig.getUserHomes().substring(1);
+		File metaHomeDir = new File(FolderConfig.getCanonicalMetaRoot(), userHome);
+		File metaHomeUserDir = new File(metaHomeDir, identity.getName());
+		if(metaHomeUserDir.exists()) {
+			// the meta-data under home/<USER> can be deleted and must not be renamed
+			FileUtils.deleteDirsAndFiles(metaHomeUserDir, true, true); 			
+			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
+		}
 
+		File versionHomeDir = new File(FolderConfig.getCanonicalVersionRoot(), userHome);
+		File versionHomeUserDir = new File(versionHomeDir, identity.getName());
+		if(versionHomeUserDir.exists()) {
+			// the meta-data under home/<USER> can be deleted and must not be renamed
+			FileUtils.deleteDirsAndFiles(versionHomeUserDir, true, true); 			
+			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
+		}
+	}
 }

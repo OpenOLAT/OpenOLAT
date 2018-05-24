@@ -19,7 +19,6 @@
  */
 package org.olat.user;
 
-import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -564,7 +563,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable {
 	}
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		
 		String roles = ((IdentityImpl)identity).getDeletedRoles();

@@ -24,8 +24,6 @@
 */
 package org.olat.core.util.coordinate;
 
-import java.io.File;
-
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -39,9 +37,7 @@ import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for DBPersistentLockManager
- * <P>
+ * 
  * Initial Date: 21.06.2006 <br>
  * 
  * @author patrickb
@@ -122,7 +118,7 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {		
+	public void deleteUserData(Identity identity, String newDeletedUserName) {		
 		String query = "delete from org.olat.properties.Property where category=:category and longValue=:val";
 		
 		DBFactory.getInstance().getCurrentEntityManager()

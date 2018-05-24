@@ -19,6 +19,7 @@
  */
 package org.olat.home.controllerCreators;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -37,9 +38,6 @@ import org.olat.user.PersonalFolderManager;
  */
 public class PersonalFolderControllerCreator extends AutoCreator  {
 
-	/**
-	 * @see org.olat.core.gui.control.creator.AutoCreator#getClassName()
-	 */
 	@Override
 	public String getClassName() {
 		return this.getClass().getCanonicalName();
@@ -48,14 +46,11 @@ public class PersonalFolderControllerCreator extends AutoCreator  {
 	public PersonalFolderControllerCreator() {
 		super();
 	}	
-	
-	/**
-	 * @see org.olat.core.gui.control.creator.ControllerCreator#createController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
+
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl lwControl) {
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		return new FolderRunController(PersonalFolderManager.getInstance().getContainer(identityEnv), true, true, true, ureq, lwControl);
+		
+		return new FolderRunController(CoreSpringFactory.getImpl(PersonalFolderManager.class).getContainer(identityEnv), true, true, true, ureq, lwControl);
 	}
 }

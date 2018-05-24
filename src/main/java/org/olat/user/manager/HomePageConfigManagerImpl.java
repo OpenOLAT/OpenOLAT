@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.user;
+package org.olat.user.manager;
 
 import java.io.File;
 
@@ -31,39 +31,22 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.user.HomePageConfig;
+import org.olat.user.HomePageConfigManager;
+import org.springframework.stereotype.Service;
 
 /**
- * Description: <br>
- * TODO: alex Class Description for HomePageConfigManagerImpl
- * <P>
  * 
  * Initial Date: Jun 3, 2005 <br>
  * @author Alexander Schneider
  */
-public class HomePageConfigManagerImpl extends BasicManager implements HomePageConfigManager {
+@Service
+public class HomePageConfigManagerImpl implements HomePageConfigManager {
 
-	private static OLog log = Tracing.createLoggerFor(HomePageConfigManagerImpl.class);
-	private static HomePageConfigManagerImpl singleton;
-
-	/**
-	 * [spring]
-	 * @param userDeletionManager
-	 */
-	private HomePageConfigManagerImpl() {
-		singleton = this;
-	}
-	/**
-	 * Singleton pattern
-	 * 
-	 * @return instance
-	 */
-	public static HomePageConfigManager getInstance() {
-		return singleton;
-	}
+	private static final OLog log = Tracing.createLoggerFor(HomePageConfigManagerImpl.class);
 
 	/**
 	 * 
@@ -85,7 +68,7 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 					retVal = (HomePageConfig) tmp;
 					retVal.resolveVersionIssues();
 					if (!retVal.hasResourceableId()) {
-						retVal.setResourceableId(new Long(CodeHelper.getForeverUniqueID()));
+						retVal.setResourceableId(Long.valueOf(CodeHelper.getForeverUniqueID()));
 					}
 					configFile = null;
 					saveConfigTo(userName, retVal);
@@ -158,12 +141,12 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
 		File userHomePage = new File(pathHomePage);
 		if(userHomePage.exists()) {
 			FileUtils.deleteDirsAndFiles(userHomePage, true, true);
 		}
-		logAudit("Homepage-config file and homepage-dir deleted for identity=" + identity);
+		log.audit("Homepage-config file and homepage-dir deleted for identity=" + identity);
 	}
 }

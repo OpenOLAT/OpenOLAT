@@ -25,8 +25,6 @@
 
 package org.olat.user;
 
-import java.io.File;
-
 import org.olat.core.id.Identity;
 
 
@@ -38,7 +36,7 @@ import org.olat.core.id.Identity;
  */
 public interface UserDataDeletable {
 	
-	default public int deleteUserDataPriority() {
+	public default int deleteUserDataPriority() {
 		// default is to delete with medium priority (0=very low, 1000=very high)
 		return 500;
 	}
@@ -47,5 +45,5 @@ public interface UserDataDeletable {
 	 * Delete user data for certain user
 	 * @param identity  Data for this identity will be deleted 
 	 */
-	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath);
+	public void deleteUserData(Identity identity, String newDeletedUserName);
 }

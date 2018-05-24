@@ -62,7 +62,7 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 		return getContainer(identityEnv.getIdentity(), identityEnv.getRoles());
 	}
 	
-	protected String getRootPathFor(Identity identity) {
+	protected static String getRootPathFor(Identity identity) {
 		return FolderConfig.getUserHomes() + "/" + identity.getName();
 	}
 }
