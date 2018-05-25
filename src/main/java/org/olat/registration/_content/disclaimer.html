@@ -4,6 +4,9 @@
 		<p>$r.translate("disclaimer.paragraph1")</p>
 		<p>$r.translate("disclaimer.paragraph2")</p>
 	</div>
+	<p class="pull-right o_noprint">
+		<a href="javascript:window.print()"><span><i class="o_icon o_icon-fw o_icon_print"> </i> $r.translate("print") "$r.translate("disclaimer.terms.of.usage")"</span></a>
+	</p>
 	#if ($r.available("disclaimer.additionallinktext"))
 		<p>$r.render("disclaimer.additionallinktext")</p>
 	#end
