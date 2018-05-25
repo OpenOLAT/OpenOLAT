@@ -20,6 +20,10 @@
 
 package org.olat.resource.accesscontrol.manager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -28,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +47,9 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -77,6 +85,9 @@ import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.user.UserDataExportable;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,7 +102,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("acService")
-public class ACFrontendManager implements ACService {
+public class ACFrontendManager implements ACService, UserDataExportable {
 
 	private static final OLog log = Tracing.createLoggerFor(ACFrontendManager.class);
 
@@ -169,7 +180,7 @@ public class ACFrontendManager implements ACService {
 		}
 
 		boolean member = repositoryService.isMember(forId, entry);
-		return isAccessible(entry, forId, new Boolean(member), allowNonInteractiveAccess);
+		return isAccessible(entry, forId, Boolean.valueOf(member), allowNonInteractiveAccess);
 	}
 
 	/**
@@ -252,8 +263,8 @@ public class ACFrontendManager implements ACService {
 		if(repoEntries == null || repoEntries.isEmpty()) {
 			return Collections.emptyList();
 		}
-		Set<String> resourceTypes = new HashSet<String>();
-		List<Long> resourceKeys = new ArrayList<Long>();
+		Set<String> resourceTypes = new HashSet<>();
+		List<Long> resourceKeys = new ArrayList<>();
 		for(RepositoryEntry entry:repoEntries) {
 			OLATResource ores = entry.getOlatResource();
 			resourceKeys.add(ores.getKey());
@@ -273,8 +284,8 @@ public class ACFrontendManager implements ACService {
 		if(resources == null || resources.isEmpty()) {
 			return Collections.emptyList();
 		}
-		Set<String> resourceTypes = new HashSet<String>();
-		List<Long> resourceKeys = new ArrayList<Long>();
+		Set<String> resourceTypes = new HashSet<>();
+		List<Long> resourceKeys = new ArrayList<>();
 		for(OLATResource resource:resources) {
 			resourceKeys.add(resource.getKey());
 			resourceTypes.add(resource.getResourceableTypeName());
@@ -305,7 +316,7 @@ public class ACFrontendManager implements ACService {
 	@Override
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys, String resourceType, boolean valid, Date atDate) {
 		if(resourceKeys == null || resourceKeys.isEmpty()) {
-			return new ArrayList<OLATResourceAccess>();
+			return new ArrayList<>();
 		}
 		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, null, valid, atDate);
 	}
@@ -559,8 +570,8 @@ public class ACFrontendManager implements ACService {
 			return Collections.emptyList();
 		}
 
-		List<OLATResource> groupResources = new ArrayList<OLATResource>(resources.size());
-		List<OLATResource> repositoryResources = new ArrayList<OLATResource>(resources.size());
+		List<OLATResource> groupResources = new ArrayList<>(resources.size());
+		List<OLATResource> repositoryResources = new ArrayList<>(resources.size());
 		for(OLATResource resource:resources) {
 			String resourceType = resource.getResourceableTypeName();
 			if("BusinessGroup".equals(resourceType)) {
@@ -570,10 +581,10 @@ public class ACFrontendManager implements ACService {
 			}
 		}
 
-		List<ACResourceInfo> resourceInfos = new ArrayList<ACResourceInfo>(resources.size());
+		List<ACResourceInfo> resourceInfos = new ArrayList<>(resources.size());
 		if(!groupResources.isEmpty()) {
-			List<Long> groupKeys = new ArrayList<Long>(groupResources.size());
-			Map<Long, OLATResource> groupMapKeys = new HashMap<Long, OLATResource>(groupResources.size() * 2 + 1);
+			List<Long> groupKeys = new ArrayList<>(groupResources.size());
+			Map<Long, OLATResource> groupMapKeys = new HashMap<>(groupResources.size() * 2 + 1);
 			for(OLATResource groupResource:groupResources) {
 				groupKeys.add(groupResource.getResourceableId());
 			}
@@ -753,4 +764,62 @@ public class ACFrontendManager implements ACService {
 		return CalendarUtils.removeTime(new Date());
 	}
 
+	@Override
+	public String getExporterID() {
+		return "bookings";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File noteArchive = new File(archiveDirectory, "Bookings.xlsx");
+		try(OutputStream out = new FileOutputStream(noteArchive);
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			sheet.setHeaderRows(1);
+			
+			Row row = sheet.newRow();
+			row.addCell(0, "Status");
+			row.addCell(1, "Booking number");
+			row.addCell(2, "Date");
+			row.addCell(3, "Content");
+			row.addCell(4, "Method");
+			row.addCell(5, "Total");
+			
+			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, 0, -1, null);
+			for(OrderTableItem order:orders) {
+				exportNoteData(order, sheet, workbook, locale);
+			}
+			
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
+		}
+		manifest.appendFile("Bookings.xlsx");
+	}
+
+	private void exportNoteData(OrderTableItem order, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook, Locale locale) {
+		int col = 0;
+		Row row = sheet.newRow();
+		Collection<AccessMethod> methods = order.getMethods();
+		
+		if(order.getOrderStatus() != null) {
+			row.addCell(col++, order.getOrderStatus().name());
+		}
+		row.addCell(col++, order.getOrderNr());
+		row.addCell(col++, order.getCreationDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(col++, order.getResourceDisplayname());
+		StringBuilder methodSb = new StringBuilder();
+		for(AccessMethod method:methods) {
+			AccessMethodHandler handler = accessModule.getAccessMethodHandler(method.getType());
+			if(handler != null) {
+				if(methodSb.length() > 0) methodSb.append(", ");
+				methodSb.append(handler.getMethodName(locale));
+			}
+		}
+		row.addCell(col++, methodSb.toString());
+		for(AccessMethod method:methods) {
+			if(method.isPaymentMethod()) {
+				row.addCell(col++, PriceFormat.fullFormat(order.getTotal()));
+			}
+		}
+	}
 }

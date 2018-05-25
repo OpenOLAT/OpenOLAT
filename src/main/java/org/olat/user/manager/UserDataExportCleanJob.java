@@ -17,44 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user;
+package org.olat.user.manager;
 
-import java.util.Set;
+import java.util.Calendar;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.user.UserDataExportService;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
  * 
- * Initial date: 23 mai 2018<br>
+ * Initial date: 24 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserDataExport extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
-	
-	public String getDirectory();
-	
-	public ExportStatus getStatus();
-	
-	public void setStatus(ExportStatus status);
-	
-	public Identity getIdentity();
-	
-	public Identity getRequestBy();
-	
-	public Set<String> getExportIds();
-	
-	
-	public enum ExportStatus {
-		
-		none,
-		requested,
-		processing,
-		ready
-		
-	}
+public class UserDataExportCleanJob extends JobWithDB {
 
+	@Override
+	public void executeWithDB(JobExecutionContext context)
+	throws JobExecutionException {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MONTH, -1);	
+		CoreSpringFactory.getImpl(UserDataExportService.class)
+			.deleteByDate(cal.getTime());
+	}
 }

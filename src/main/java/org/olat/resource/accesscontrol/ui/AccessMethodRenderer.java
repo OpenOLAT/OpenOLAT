@@ -53,19 +53,17 @@ public class AccessMethodRenderer implements CustomCellRenderer, FlexiCellRender
 		this.acModule = acModule;
 	}
 	
-	
-	
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		
 		if(val instanceof AccessTransaction) {
 			AccessTransaction transaction = (AccessTransaction)val;
-			Set<String> uniqueType = new HashSet<String>(3);
+			Set<String> uniqueType = new HashSet<>(3);
 			render(sb, transaction, uniqueType, translator.getLocale());
 		} else if (val instanceof Collection) {
 			Collection<?> transactions = (Collection<?>)val;
-			Set<String> uniqueType = new HashSet<String>((transactions.size() * 2) + 1);
+			Set<String> uniqueType = new HashSet<>((transactions.size() * 2) + 1);
 			for(Object transaction : transactions) {
 				if(transaction instanceof AccessTransaction) {
 					render(sb, (AccessTransaction)transaction, uniqueType, translator.getLocale());	
@@ -73,23 +71,20 @@ public class AccessMethodRenderer implements CustomCellRenderer, FlexiCellRender
 					render(sb, (AccessMethod)transaction, uniqueType, translator.getLocale());	
 					
 				}
-				
 			}
 		}
 	}
-
-
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		
 		if(val instanceof AccessTransaction) {
 			AccessTransaction transaction = (AccessTransaction)val;
-			Set<String> uniqueType = new HashSet<String>(3);
+			Set<String> uniqueType = new HashSet<>(3);
 			render(sb, transaction, uniqueType, locale);
 		} else if (val instanceof Collection) {
 			Collection<?> transactions = (Collection<?>)val;
-			Set<String> uniqueType = new HashSet<String>((transactions.size() * 2) + 1);
+			Set<String> uniqueType = new HashSet<>((transactions.size() * 2) + 1);
 			for(Object transaction : transactions) {
 				if(transaction instanceof AccessTransaction) {
 					render(sb, (AccessTransaction)transaction, uniqueType, locale);	

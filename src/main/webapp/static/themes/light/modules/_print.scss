@@ -28,6 +28,7 @@
 	#o_main_right,
 	#o_main_toolbar,
 	#jsMath_PrintWarning,
+	.o_segments,
 	.o_noti,
 	.o_opener,
 	.o_hide,
@@ -83,6 +84,15 @@
 	}
 	
 	/* When printing dialogs, hide everything below */
+	.modal-content {
+		border: 0;
+	}
+	.modal-header {
+		display: none;
+	}
+	.modal-body{
+		padding: 0;
+	}
 	.modal-dialog {
 		margin: 0 !important;
 		width: 100% !important;
@@ -158,6 +168,12 @@
 	h1, h2, h3, h4, h5, h6 {
 	  page-break-after: avoid;
 	}
+	
+	/* disclaimer formatting */
+	.o_disclaimer .o_disclaimer_content {
+		max-height: none;
+	}
+	
 }
 
 

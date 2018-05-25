@@ -83,16 +83,14 @@ public interface Preferences extends Serializable {
 	
 	/**
 	 * @return True if the user wants to receive a real e-mail too and not only a message in
-	 * the OLAT Inbox
+	 * the OpenOLAT Inbox
 	 */
-	//fxdiff VCRP-16: intern mail system
 	public String getReceiveRealMail();
 
 	/**
 	 * @param receiveRealMail Set if the user wants to receive a real e-mail
-	 * and not only a message in the OLAT intern Inbox.
+	 * and not only a message in the OpenOLAT intern Inbox.
 	 */
-	//fxdiff VCRP-16: intern mail system
 	public void setReceiveRealMail(String receiveRealMail);
 	
 	/**

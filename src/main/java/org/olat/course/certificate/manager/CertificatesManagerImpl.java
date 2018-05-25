@@ -114,7 +114,9 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserDataExportable;
 import org.olat.user.UserManager;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.DatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.DisposableBean;
@@ -131,7 +133,8 @@ import uk.ac.reload.diva.util.ZipUtils;
  *
  */
 @Service("certificatesManager")
-public class CertificatesManagerImpl implements CertificatesManager, MessageListener, InitializingBean, DisposableBean {
+public class CertificatesManagerImpl implements CertificatesManager, MessageListener,
+		InitializingBean, DisposableBean, UserDataExportable {
 	
 	private static final OLog log = Tracing.createLoggerFor(CertificatesManagerImpl.class);
 
@@ -512,6 +515,14 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
 				.setParameter("resourceKey", resource.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<Certificate> getCertificates(IdentityRef identity) {
+		String query = "select cer from certificate cer where cer.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Certificate.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
@@ -1159,17 +1170,33 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public Path getRasterizePath() {
-		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "rasterize.js");
-		return path;
+		return Paths.get(folderModule.getCanonicalRoot(), "certificates", "rasterize.js");
 	}
 	
 	public Path getQRCodeLibPath() {
-		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "qrcode.min.js");
-		return path;
+		return Paths.get(folderModule.getCanonicalRoot(), "certificates", "qrcode.min.js");
 	}
-	
 	
 	public VFSContainer getCertificateRootContainer() {
 		return new OlatRootFolderImpl(File.separator + "certificates" + File.separator + "users", null);
+	}
+
+	@Override
+	public String getExporterID() {
+		return "certificates";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		List<Certificate> certificates = getCertificates(identity);
+		if(!certificates.isEmpty()) {
+			File certificaleArchiveDir = new File(archiveDirectory, "certificates");
+			for(Certificate certificate:certificates) {
+				File certificateFile = getCertificateFile(certificate);
+				if(certificateFile != null && certificateFile.exists()) {
+					FileUtils.copyFileToDir(certificateFile, certificaleArchiveDir, true, "Archive certificate");
+				}
+			}
+		}
 	}
 }

@@ -111,7 +111,6 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 
 		List<OrderTableItem> rows = acService.findOrderItems(resource, delivery, refNo, from, to, states,
 				firstResult, maxResults, userPropertyHandlers, orderBy);
-		ResultInfos<OrderTableItem> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
-		return results;
+		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 	}
 }

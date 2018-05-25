@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.user.model;
 
 import java.util.Collections;
@@ -13,6 +32,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -32,6 +53,10 @@ import org.olat.user.UserDataExport;
  */
 @Entity(name="userdataexport")
 @Table(name="o_user_data_export")
+@NamedQueries({
+	@NamedQuery(name="loadUserExportDataByKey", query="select data from userdataexport data where data.key=:dataKey"),
+	@NamedQuery(name="loadUserExportDataByIdentity", query="select data from userdataexport data where data.identity.key=:identityKey")
+})
 public class UserDataExportImpl implements UserDataExport, Persistable {
 
 	private static final long serialVersionUID = 3359965105813614815L;
@@ -56,8 +81,12 @@ public class UserDataExportImpl implements UserDataExport, Persistable {
 	private String exporterIdList;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
     private Identity identity;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_request_by", nullable=true, insertable=true, updatable=false)
+    private Identity requestBy;
 
 	@Override
 	public Long getKey() {
@@ -148,6 +177,15 @@ public class UserDataExportImpl implements UserDataExport, Persistable {
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+
+	@Override
+	public Identity getRequestBy() {
+		return requestBy;
+	}
+
+	public void setRequestBy(Identity requestBy) {
+		this.requestBy = requestBy;
 	}
 
 	@Override

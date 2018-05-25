@@ -824,7 +824,9 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	@Override
 	public void export(Identity identity, ManifestBuilder manifest, File archiveDir, Locale locale) {
 		List<EfficiencyStatement> efficiencyStatements = findEfficiencyStatements(identity);
-		new EfficiencyStatementArchiver().archive(efficiencyStatements, identity, archiveDir);
+		File archiveFile = new EfficiencyStatementArchiver(locale)
+				.archive(efficiencyStatements, identity, archiveDir);
+		manifest.appendFile(archiveFile.getName());
 	}
 
 	/**

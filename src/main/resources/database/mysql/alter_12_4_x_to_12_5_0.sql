@@ -88,11 +88,13 @@ create table o_user_data_export (
    u_status varchar(16),
    u_export_ids varchar(2000),
    fk_identity bigint not null,
+   fk_request_by bigint,
    primary key (id)
 );
 alter table o_user_data_export ENGINE = InnoDB;
 
 alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_user_data_export add constraint usr_dataex_to_requ_idx foreign key (fk_request_by) references o_bs_identity (id);
 
 
 

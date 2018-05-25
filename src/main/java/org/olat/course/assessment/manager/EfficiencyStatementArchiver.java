@@ -26,15 +26,24 @@
 package org.olat.course.assessment.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.FileUtils;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.nodes.CourseNode;
@@ -46,139 +55,115 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author Christian Guretzki
  */
-
 public class EfficiencyStatementArchiver {
+	
+	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementArchiver.class);
+	
+	private final Translator translator;
+	private final List<UserPropertyHandler> userPropertyHandler;
 
-	private static final String DELIMITER = "\t";
-	private static final String EOL = "\n";
-	private static final String EFFICIENCY_ARCHIVE_FILE = "efficiencyArchive.xls";
-
-	private Translator translator;
-	private List<UserPropertyHandler> userPropertyHandler;
-
-	/**
-	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
-	 */
-	public EfficiencyStatementArchiver() {
-		Translator fallBackTranslator = Util.createPackageTranslator(CourseNode.class, I18nModule.getDefaultLocale());
-		translator = Util.createPackageTranslator(this.getClass(), I18nModule.getDefaultLocale(), fallBackTranslator);
+	public EfficiencyStatementArchiver(Locale locale) {
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		// fallback for user properties translation
-		translator = UserManager.getInstance().getPropertyHandlerTranslator(translator);		
+		translator = userManager.getPropertyHandlerTranslator(
+				Util.createPackageTranslator(EfficiencyStatement.class, locale,
+						Util.createPackageTranslator(CourseNode.class, locale)));		
 		// list of user property handlers used in this archiver
-		userPropertyHandler = UserManager.getInstance().getUserPropertyHandlersFor(EfficiencyStatementArchiver.class.getCanonicalName(), true);
+		userPropertyHandler = userManager.getUserPropertyHandlersFor(EfficiencyStatementArchiver.class.getCanonicalName(), true);
 	}
 
-	public void archive(List<EfficiencyStatement> efficiencyStatements, Identity identity, File archiveFile) {
-		FileUtils.save(new File(archiveFile, EFFICIENCY_ARCHIVE_FILE), toXls(efficiencyStatements, identity), "utf-8");
-	}
-
-	private String toXls(List<EfficiencyStatement> efficiencyStatements, Identity identity) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(translator.translate("efficiencystatement.title"));
-		appendIdentityIntro(buf, identity);
-		for (EfficiencyStatement efficiencyStatement: efficiencyStatements) {
-			buf.append(EOL);
-			buf.append(EOL);
-			appendIntro(buf, efficiencyStatement);
-			buf.append(EOL);
-			appendDetailsHeader(buf);
-			appendDetailsTable(buf, efficiencyStatement);
+	public File archive(List<EfficiencyStatement> efficiencyStatements, Identity identity, File archiveDir) {
+		File archiveFile = new File(archiveDir, "EfficiencyStatements.xlsx");
+		try(OutputStream out = new FileOutputStream(archiveFile);
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			
+			appendIdentityIntro(identity, sheet);
+			
+			for(EfficiencyStatement efficiencyStatement:efficiencyStatements) {
+				appendIntro(efficiencyStatement, sheet);
+				appendDetailsHeader(sheet);
+				appendDetailsTable(efficiencyStatement, sheet);
+				sheet.newRow();
+			}
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
 		}
-		return buf.toString();
+		return archiveFile;
 	}
 
-	private void appendDetailsHeader(StringBuilder buf) {
-		buf.append( translator.translate("table.header.node") );
-		buf.append(DELIMITER);
-		buf.append( translator.translate("table.header.details") );
-		buf.append(DELIMITER);
-		buf.append( translator.translate("table.header.type") ); 
-		buf.append(DELIMITER);
-		buf.append( translator.translate("table.header.attempts") );
-		buf.append(DELIMITER);
-		buf.append( translator.translate("table.header.score") );
-		buf.append(DELIMITER);
-		buf.append( translator.translate("table.header.passed") );
-		buf.append(EOL);	
+	private void appendDetailsHeader(OpenXMLWorksheet sheet) {
+		Row row = sheet.newRow();
+		row.addCell(0, translator.translate("table.header.node"));
+		row.addCell(1, translator.translate("table.header.details"));
+		row.addCell(2, translator.translate("table.header.type")); 
+		row.addCell(3, translator.translate("table.header.attempts"));
+		row.addCell(4, translator.translate("table.header.score"));
+		row.addCell(5, translator.translate("table.header.passed"));
 	}
 
-	private void appendDetailsTable(StringBuilder buf, EfficiencyStatement efficiencyStatement) {
+	private void appendDetailsTable(EfficiencyStatement efficiencyStatement, OpenXMLWorksheet sheet) {
 		for (Map<String,Object> nodeData : efficiencyStatement.getAssessmentNodes()) {
-			appendValue(buf, nodeData, AssessmentHelper.KEY_TITLE_SHORT);		
-			appendValue(buf, nodeData, AssessmentHelper.KEY_TITLE_LONG);
-			appendTypeValue(buf, nodeData, AssessmentHelper.KEY_TYPE);
-			appendValue(buf, nodeData, AssessmentHelper.KEY_ATTEMPTS);
-			appendValue(buf, nodeData, AssessmentHelper.KEY_SCORE);
-			appendValue(buf, nodeData, AssessmentHelper.KEY_PASSED);
-			buf.append(EOL);	
+			Row row = sheet.newRow();
+			appendValue(nodeData, AssessmentHelper.KEY_TITLE_SHORT, 0, row);		
+			appendValue(nodeData, AssessmentHelper.KEY_TITLE_LONG, 1, row);
+			appendTypeValue(nodeData, AssessmentHelper.KEY_TYPE, 2, row);
+			appendValue(nodeData, AssessmentHelper.KEY_ATTEMPTS, 3, row);
+			appendValue(nodeData, AssessmentHelper.KEY_SCORE, 4, row);
+			appendValue(nodeData, AssessmentHelper.KEY_PASSED, 5, row);
 		}
 	}
 
-	private void appendTypeValue(StringBuilder buf, Map<String,Object> nodeData, String key_type) {
-		Object value = nodeData.get(key_type);
+	private void appendTypeValue(Map<String,Object> nodeData, String key, int col, Row row) {
+		Object value = nodeData.get(key);
 		if (value != null && (value instanceof String)) {
 			String valueString = (String)value;
 			if (valueString.equals("st")) {
-				buf.append("");
+				//
 			} else {
-				buf.append( translator.translate("title_" + valueString) );
+				row.addCell(col,translator.translate("title_" + valueString));
 			}
-		} else {
-			buf.append("");
 		}
-		buf.append(DELIMITER);
 	}
 
-	private void appendIdentityIntro(StringBuilder buf, Identity identity) {
+	private void appendIdentityIntro(Identity identity, OpenXMLWorksheet sheet) {
 		for (UserPropertyHandler propertyHandler : userPropertyHandler) {
 			String label = translator.translate(propertyHandler.i18nColumnDescriptorLabelKey());
 			String value = propertyHandler.getUserProperty(identity.getUser(), translator.getLocale());
-			appendLine(buf, label, (StringHelper.containsNonWhitespace(value) ? value : ""));
+			appendLine(label, (StringHelper.containsNonWhitespace(value) ? value : ""), sheet);
 		}
 	}
 	
-	private void appendIntro(StringBuilder buf, EfficiencyStatement efficiencyStatement) {
-		buf.append(EOL);
-		appendLine(buf, translator.translate("course"), efficiencyStatement.getCourseTitle() + "  (" + efficiencyStatement.getCourseRepoEntryKey().toString() +")");
-		appendLine(buf, translator.translate("date"), StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), I18nModule.getDefaultLocale()) );
+	private void appendIntro(EfficiencyStatement efficiencyStatement, OpenXMLWorksheet sheet) {
+		appendLine(translator.translate("course"), efficiencyStatement.getCourseTitle() + "  (" + efficiencyStatement.getCourseRepoEntryKey().toString() +")", sheet);
+		appendLine(translator.translate("date"), StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), I18nModule.getDefaultLocale()), sheet);
 		
 		List<Map<String,Object>> nodeDataList = efficiencyStatement.getAssessmentNodes();
-		if(nodeDataList.size() > 0) {
+		if(!nodeDataList.isEmpty()) {
 			Map<String,Object> nodeData = nodeDataList.get(0);
 			if (nodeData != null) {
-				appendLabelValueLine(buf, nodeData, translator.translate("table.header.score"), AssessmentHelper.KEY_SCORE);
-				appendLabelValueLine(buf, nodeData, translator.translate("table.header.passed"), AssessmentHelper.KEY_PASSED);
+				appendLabelValueLine(nodeData, translator.translate("table.header.score"), AssessmentHelper.KEY_SCORE, sheet);
+				appendLabelValueLine(nodeData, translator.translate("table.header.passed"), AssessmentHelper.KEY_PASSED, sheet);
 			}
 		}
 	}
 
-	private void appendValue(StringBuilder buf, Map<String,Object> nodeData, String key) {
+	private void appendValue(Map<String,Object> nodeData, String key, int col, Row row) {
 		Object value = nodeData.get(key);
-		if (value != null) {
-			buf.append(value);		
-		} else {
-			buf.append("");
+		if(value instanceof String) {
+			row.addCell(col, (String)value);
 		}
-		buf.append(DELIMITER);
 	}
 
-	private void appendLabelValueLine(StringBuilder buf, Map<String,Object> nodeData, String label, String key) {
-		buf.append(label);
-		buf.append(DELIMITER);
-		Object value = nodeData.get(key);
-		if (value != null) {
-			buf.append(value.toString());		
-		} else {
-			buf.append("n/a");
-		}
-		buf.append(EOL);
+	private void appendLabelValueLine(Map<String,Object> nodeData, String label, String key, OpenXMLWorksheet sheet) {
+		Row row = sheet.newRow();
+		row.addCell(0, label);
+		appendValue(nodeData, key, 1, row);
 	}
 
-	private void appendLine(StringBuilder buf, String label, String value) {
-		buf.append(label);
-		buf.append(DELIMITER);
-		buf.append(value);
-		buf.append(DELIMITER);
-		buf.append(EOL);
+	private void appendLine(String label, String value, OpenXMLWorksheet sheet) {
+		Row row = sheet.newRow();
+		row.addCell(0, label);
+		row.addCell(1, value);
 	}
 }

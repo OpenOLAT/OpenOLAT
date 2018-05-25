@@ -370,7 +370,7 @@ public class PersistenceHelper {
 	 * @return
 	 */
 	public static List<Long> toKeys(Persistable... list) {
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		if(list != null && list.length > 0) {
 			for(Persistable obj:list) {
 				keys.add(obj.getKey());

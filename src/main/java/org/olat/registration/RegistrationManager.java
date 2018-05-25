@@ -25,6 +25,10 @@
 
 package org.olat.registration;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -49,9 +53,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
@@ -59,7 +66,9 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserDataExportable;
 import org.olat.user.UserManager;
+import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +80,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Sabina Jeger
  */
 @Service("selfRegistrationManager")
-public class RegistrationManager implements UserDataDeletable {
+public class RegistrationManager implements UserDataDeletable, UserDataExportable {
 	
 	private static final OLog log = Tracing.createLoggerFor(RegistrationManager.class);
 
@@ -455,5 +464,37 @@ public class RegistrationManager implements UserDataDeletable {
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Delete temporary keys used in change email or password workflow 
 		deleteAllTemporaryKeys(identity.getKey());
+	}
+
+	@Override
+	public String getExporterID() {
+		return "disclaimer";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		List<Property> disclaimerProperties = propertyManager.listProperties(identity, null, null, "user", "dislaimer_accepted");
+		if(disclaimerProperties.isEmpty()) return;
+		
+		Translator translator = Util.createPackageTranslator(RegistrationManager.class, locale);
+		File disclaimerArchive = new File(archiveDirectory, "Disclaimer.txt");
+		try(Writer out = new FileWriter(disclaimerArchive)) {
+			for(Property disclaimerProperty:disclaimerProperties) {
+				out.write(FilterFactory.getHtmlTagsFilter().filter(translator.translate("disclaimer.terms.of.usage")));
+				out.write('\n');
+				out.write("Accepted: " + Formatter.getInstance(locale).formatDateAndTime(disclaimerProperty.getCreationDate()));
+				out.write('\n');
+
+				StringBuilder sb = new StringBuilder();
+				sb.append(translator.translate("disclaimer.paragraph1"))
+				  .append("\n")
+				  .append(translator.translate("disclaimer.paragraph2"));
+				String disclaimer = new NekoHTMLFilter().filter(sb.toString(), true);
+				out.write(disclaimer);
+			}
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
+		}
+		manifest.appendFile(disclaimerArchive.getName());
 	}
 }
