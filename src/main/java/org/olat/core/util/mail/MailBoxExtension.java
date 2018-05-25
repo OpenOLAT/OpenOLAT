@@ -19,16 +19,13 @@
  */
 package org.olat.core.util.mail;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -37,13 +34,11 @@ import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.ui.MailContextResolver;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.home.HomeSite;
 import org.olat.repository.RepositoryManager;
-import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,12 +53,10 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("mailBoxExtension")
-public class MailBoxExtension implements MailContextResolver, UserDataDeletable, InitializingBean {
+public class MailBoxExtension implements MailContextResolver, InitializingBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(MailBoxExtension.class);
 
-	@Autowired
-	private MailManager mailManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -72,24 +65,6 @@ public class MailBoxExtension implements MailContextResolver, UserDataDeletable,
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Inbox", new InboxContextEntry());	
-	}
-
-	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		//set as deleted all recipients
-		log.info("Delete intern messages");
-		
-		Collection<DBMailLight> inbox = new HashSet<>(mailManager.getInbox(identity, null, Boolean.FALSE, null, 0, 0));
-		for(DBMailLight inMail:inbox) {
-			mailManager.delete(inMail, identity, true);
-		}
-
-		Collection<DBMailLight> outbox = new HashSet<>(mailManager.getOutbox(identity, 0, 0, false));
-		for(DBMailLight outMail:outbox) {
-			mailManager.delete(outMail, identity, true);
-		}
-		
-		log.info("Delete " + inbox.size() + " messages in INBOX and " + outbox.size() + " in OUTBOX");
 	}
 
 	@Override

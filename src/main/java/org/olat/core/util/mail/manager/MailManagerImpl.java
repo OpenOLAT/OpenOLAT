@@ -533,8 +533,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		if(firstResult > 0) {
 			query.setFirstResult(firstResult);
 		}
-		List<DBMailLight> mails = query.getResultList();
-		return mails;
+		return query.getResultList();
 	}
 
 	@Override
@@ -593,8 +592,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			query.setParameter("from", from, TemporalType.TIMESTAMP);
 		}
 
-		List<DBMailLight> mails = query.getResultList();
-		return mails;
+		return query.getResultList();
 	}
 
 	@Override
@@ -617,16 +615,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		if(!baseFolder.exists()) {
 			baseFolder.mkdirs();
 		}
-		OutputStream out = null;
-		try {
-			File templateFile = new File(baseFolder, "mail_template.html");
+		
+		File templateFile = new File(baseFolder, "mail_template.html");
+		try(OutputStream out = new FileOutputStream(templateFile);) {
 			StringReader reader = new StringReader(template);
-			out = new FileOutputStream(templateFile);
 			IOUtils.copy(reader, out, "UTF-8");
 		} catch (IOException e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(out);
 		}
 	}
 
@@ -643,7 +638,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Override
 	public MailBundle[] makeMailBundles(MailContext ctxt, List<Identity> recipientsTO,
 			MailTemplate template, Identity sender, String metaId, MailerResult result) {
-		List<MailBundle> bundles = new ArrayList<MailBundle>();
+		List<MailBundle> bundles = new ArrayList<>();
 		if(recipientsTO != null) {
 			for(Identity recipient: recipientsTO) {
 				MailBundle bundle =  makeMailBundle(ctxt, recipient, template, sender, metaId, result);
@@ -1012,18 +1007,15 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			List<File> attachments = content.getAttachments();
 			if(attachments != null && !attachments.isEmpty()) {
 				for(File attachment:attachments) {
-
-					FileInputStream in = null;
-					try {
+					try(FileInputStream in = new FileInputStream(attachment)) {
 						DBMailAttachment data = new DBMailAttachment();
 						data.setSize(attachment.length());
 						data.setName(attachment.getName());
 						
 						long checksum = FileUtils.checksum(attachment, new Adler32()).getValue();
-						data.setChecksum(new Long(checksum));
+						data.setChecksum(Long.valueOf(checksum));
 						data.setMimetype(WebappHelper.getMimeType(attachment.getName()));
-						
-						in = new FileInputStream(attachment);
+	
 						String path = saveAttachmentToStorage(data.getName(), data.getMimetype(), checksum, attachment.length(), in);
 						data.setPath(path);
 						data.setMail(mail);
@@ -1033,8 +1025,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 						log.error("File attachment not found: " + attachment, e);
 					} catch (IOException e) {
 						log.error("Error with file attachment: " + attachment, e);
-					} finally {
-						IOUtils.closeQuietly(in);
 					}
 				}
 			}
