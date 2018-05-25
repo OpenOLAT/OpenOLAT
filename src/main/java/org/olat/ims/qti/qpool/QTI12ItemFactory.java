@@ -44,6 +44,11 @@ public class QTI12ItemFactory implements QItemFactory {
 	public QTI12ItemFactory(Type type) {
 		this.type = type;
 	}
+	
+	@Override
+	public String getType() {
+		return "qti12_".concat(type.name());
+	}
 
 	@Override
 	public String getLabel(Locale locale) {
@@ -61,8 +66,7 @@ public class QTI12ItemFactory implements QItemFactory {
 	@Override
 	public QuestionItem createItem(Identity owner, String title, Locale locale) {
 		QTIQPoolServiceProvider spi = CoreSpringFactory.getImpl(QTIQPoolServiceProvider.class);
-		QuestionItem newItem = spi.createItem(owner, type, title, locale);
-		return newItem;
+		return spi.createItem(owner, type, title, locale);
 	}
 	
 	public enum Type {

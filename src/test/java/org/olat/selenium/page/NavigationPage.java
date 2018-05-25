@@ -27,6 +27,7 @@ import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.MyCoursesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
+import org.olat.selenium.page.qpool.QuestionPoolPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.CatalogAdminPage;
 import org.olat.selenium.page.repository.CatalogPage;
@@ -47,6 +48,7 @@ public class NavigationPage {
 	
 	private static final By navigationSitesBy = By.cssSelector("ul.o_navbar_sites");
 	private static final By authoringEnvTabBy = By.cssSelector("li.o_site_author_env > a");
+	private static final By questionPoolTabBy = By.cssSelector("li.o_site_qpool > a");
 	private static final By portalBy = By.cssSelector("li.o_site_portal > a");
 	private static final By myCoursesBy = By.cssSelector("li.o_site_repository > a");
 	private static final By userManagementBy = By.cssSelector("li.o_site_useradmin > a");
@@ -81,6 +83,12 @@ public class NavigationPage {
 		backToTheTop();
 		OOGraphene.closeBlueMessageWindow(browser);
 		return new AuthoringEnvPage(browser);
+	}
+	
+	public QuestionPoolPage openQuestionPool() {
+		navigate(questionPoolTabBy);
+		return new QuestionPoolPage(browser)
+				.assertOnQuestionPool();
 	}
 	
 	public PortalPage openPortal() {

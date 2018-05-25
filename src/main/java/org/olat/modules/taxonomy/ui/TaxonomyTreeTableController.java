@@ -120,6 +120,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		newLevelButton = uifactory.addFormLink("add.taxonomy.level", formLayout, Link.BUTTON);
+		newLevelButton.setElementCssClass("o_sel_taxonomy_new_level");
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
 		typeButton = uifactory.addFormLink("type.taxonomy.level", formLayout, Link.BUTTON);

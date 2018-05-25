@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.tabbedpane.TabCreator;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -86,6 +85,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		actionButton.setIconLeftCSS("o_icon o_icon_actions");
 		
 		tabPane = new TabbedPane("tabs", ureq.getLocale());
+		tabPane.setElementCssClass("o_sel_taxonomy_level_tabs");
 		tabPane.addListener(this);
 		
 		metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
@@ -100,22 +100,16 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 	
 	private void initTabPane() {
-		tabPane.addTab(translate("taxonomy.level.competences"), new TabCreator() {
-			@Override
-			public Component create(UserRequest uureq) {
-				competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
-				listenTo(competencesCtrl);
-				return competencesCtrl.getInitialComponent();
-			}
+		tabPane.addTab(translate("taxonomy.level.competences"), uureq -> {
+			competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
+			listenTo(competencesCtrl);
+			return competencesCtrl.getInitialComponent();
 		});
 		
-		tabPane.addTab(translate("taxonomy.level.relations"), new TabCreator() {
-			@Override
-			public Component create(UserRequest uureq) {
-				relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl(), taxonomyLevel);
-				listenTo(relationsCtrl);
-				return relationsCtrl.getInitialComponent();
-			}
+		tabPane.addTab(translate("taxonomy.level.relations"),  uureq -> {
+			relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl(), taxonomyLevel);
+			listenTo(relationsCtrl);
+			return relationsCtrl.getInitialComponent();
 		});
 	}
 	

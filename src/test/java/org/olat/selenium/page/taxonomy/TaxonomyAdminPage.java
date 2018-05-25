@@ -17,24 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.selenium.page.taxonomy;
 
-import java.util.Locale;
-
-import org.olat.core.id.Identity;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * 
- * Initial date: 26.06.2013<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QItemFactory {
+public class TaxonomyAdminPage {
+
+	private final WebDriver browser;
 	
-	public String getType();
+	public TaxonomyAdminPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
-	public String getLabel(Locale locale);
+	public TaxonomyAdminPage assertOnTaxonomyList() {
+		By taxonomyListBy = By.className("o_taxonomy_listing");
+		OOGraphene.waitElement(taxonomyListBy, browser);
+		return this;
+	}
 	
-	public QuestionItem createItem(Identity owner, String title, Locale locale);
+	public TaxonomyPage selectTaxonomy(String identifier) {
+		By selectBy = By.xpath("//div[@class='o_taxonomy_row'][div/div/h4/small[text()[contains(.,'" + identifier + "')]]]/div/div[@class='panel-body']/div[@class='pull-right']/a");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return new TaxonomyPage(browser);
+	}
 
 }

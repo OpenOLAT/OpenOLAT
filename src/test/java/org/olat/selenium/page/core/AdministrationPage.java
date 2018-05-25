@@ -24,6 +24,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
+import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
+import org.olat.selenium.page.taxonomy.TaxonomyAdminPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -162,5 +164,25 @@ public class AdministrationPage {
 		By licenseAdminBy = By.cssSelector(".o_sel_license_general");
 		OOGraphene.waitElement(licenseAdminBy, browser);
 		return new LicensesAdminstrationPage(browser);
+	}
+	
+	public QuestionPoolAdminPage openQuestionPool() {
+		selectAssessment();
+		
+		By poolBy = By.cssSelector(".o_sel_qpool span.o_tree_level_label_leaf>a");
+		browser.findElement(poolBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		return new QuestionPoolAdminPage(browser).assertOnConfiguration();
+	}
+	
+	public TaxonomyAdminPage openTaxonomy() {
+		selectModules();
+		
+		By taxonomyBy = By.cssSelector(".o_sel_taxonomy span.o_tree_level_label_leaf>a");
+		browser.findElement(taxonomyBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		return new TaxonomyAdminPage(browser).assertOnTaxonomyList();
 	}
 }
