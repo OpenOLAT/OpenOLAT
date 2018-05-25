@@ -187,7 +187,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 			log.error("", e);
 		}
 		
-		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
+		try {
 			Binder binder = portfolioService.getBinderByKey(binderRef.getKey());
 			String label = binder.getTitle();
 			String secureLabel = StringHelper.transformDisplayNameToFileSystemName(label);
@@ -195,7 +195,14 @@ public class ExportBinderAsCPResource implements MediaResource {
 			String file = secureLabel + ".zip";
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
-			
+			export(binder, hres.getOutputStream());
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	public void export(Binder binder, OutputStream out) {
+		try(ZipOutputStream zout = new ZipOutputStream(out)) {
 			//load pages
 			List<Section> sections = portfolioService.getSections(binder);
 			List<Page> pages = portfolioService.getPages(binder, null);
@@ -408,8 +415,6 @@ public class ExportBinderAsCPResource implements MediaResource {
 			 for(Map.Entry<String,String> replacement:replaces.entrySet()) {
 				 html = html.replace(replacement.getKey(), replacement.getValue());
 			 }
-		} catch (SAXException | IOException e) {
-			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
 		}

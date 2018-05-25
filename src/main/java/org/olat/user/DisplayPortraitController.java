@@ -41,6 +41,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -146,7 +147,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 		this.useLarge = useLarge;
 		this.portraitIdent = portraitIdent;
 		this.displayPortraitImage = displayPortraitImage;
-		this.isAnonymous = ureq.getUserSession().getRoles().isGuestOnly();
+		
+		UserSession usess = ureq.getUserSession();
+		isAnonymous = usess == null ? false : ureq.getUserSession().getRoles().isGuestOnly();// export data doesn't have a session
 
 		mapper = new UserAvatarMapper(useLarge);
 		mapperPath = registerMapper(ureq, mapper);
