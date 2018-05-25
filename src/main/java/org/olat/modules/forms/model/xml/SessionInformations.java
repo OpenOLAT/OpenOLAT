@@ -19,26 +19,33 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
  * Initial date: 14.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneralInformation {
+public class SessionInformations extends AbstractElement {
+
+	private static final long serialVersionUID = 8312618903131914158L;
 	
-	public enum Type {
-		USER_EMAIL(1),
-		USER_FIRSTNAME(2),
-		USER_LASTNAME(3),
-		USER_BIRTHDAY(4),
+	public static final String TYPE = "formsessioninformations";
+	
+	public enum InformationType {
+		USER_FIRSTNAME(1),
+		USER_LASTNAME(2),
+		USER_EMAIL(3),
+		AGE(4),
 		USER_GENDER(5),
 		USER_ORGUNIT(6),
 		USER_STUDYSUBJECT(7);
 		
 		private int order;
 		
-		private Type(int order) {
+		private InformationType(int order) {
 			this.order = order;
 		}
 		
@@ -46,31 +53,27 @@ public class GeneralInformation {
 			return order;
 		}
 	}
-
-	private String id;
-	private Type type;
 	
-	public String getId() {
-		return id;
-	}
+	private List<InformationType> informationTypes = new ArrayList<>();
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public Type getType() {
-		return type;
+	@Override
+	public String getType() {
+		return TYPE;
 	}
 	
-	public void setType(Type type) {
-		this.type = type;
+	public List<InformationType> getInformationTypes() {
+		return informationTypes;
 	}
-	
+
+	public void setInformationTypes(List<InformationType> informationTypes) {
+		this.informationTypes = informationTypes;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
 		return result;
 	}
 	
@@ -82,13 +85,13 @@ public class GeneralInformation {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		GeneralInformation other = (GeneralInformation) obj;
-		if (id == null) {
-			if (other.id != null)
+		SessionInformations other = (SessionInformations) obj;
+		if (getId() == null) {
+			if (other.getId() != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!getId().equals(other.getId()))
 			return false;
 		return true;
 	}
-
+	
 }

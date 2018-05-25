@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -152,8 +153,19 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormSession loadSessionByKey(EvaluationFormSessionRef sessionRef) {
+		return evaluationFormSessionDao.loadSessionByKey(sessionRef);
+	}
+
+	@Override
 	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
 		return evaluationFormSessionDao.loadSessionByParticipation(participation);
+	}
+
+	@Override
+	public List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessionRefs,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		return evaluationFormSessionDao.loadSessionsByKey(sessionRefs, firstResult, maxResults, orderBy);
 	}
 
 	@Override
@@ -163,18 +175,24 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormSession finishSession(EvaluationFormSession session) {
-		if (session == null) return null;
-		EvaluationFormSession finishedSesssion = session;
-		EvaluationFormParticipation participation = session.getParticipation();
+	public EvaluationFormSession updateSession(EvaluationFormSession session, String email, String firstname, String lastname,
+			String age, String gender, String orgUnit, String studySubject) {
+		return evaluationFormSessionDao.updateSession(session, email, firstname, lastname, age, gender, orgUnit, studySubject);
+	}
+
+	@Override
+	public EvaluationFormSession finishSession(EvaluationFormSessionRef sessionRef) {
+		if (sessionRef == null) return null;
+		EvaluationFormSession sesssion = evaluationFormSessionDao.loadSessionByKey(sessionRef);
+		EvaluationFormParticipation participation = sesssion.getParticipation();
 		if (participation != null) {
 			participation = evaluationFormParticipationDao.changeStatus(participation, EvaluationFormParticipationStatus.done);
 			if (participation.isAnonymous()) {
-				finishedSesssion = evaluationFormSessionDao.makeAnonymous(finishedSesssion);
+				sesssion = evaluationFormSessionDao.makeAnonymous(sesssion);
 			}
 		}
-		finishedSesssion = evaluationFormSessionDao.changeStatus(finishedSesssion, EvaluationFormSessionStatus.done);
-		return finishedSesssion;
+		sesssion = evaluationFormSessionDao.changeStatus(sesssion, EvaluationFormSessionStatus.done);
+		return sesssion;
 	}
 	
 	@Override
@@ -295,7 +313,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	public EvaluationFormStatistic getSessionsStatistic(List<? extends EvaluationFormSessionRef> sessionRefs) {
 		EvaluationFormStatistic statistic = new EvaluationFormStatistic();
 		
-		List<EvaluationFormSession> sessions = evaluationFormSessionDao.loadSessionsByKey(sessionRefs);
+		List<EvaluationFormSession> sessions = evaluationFormSessionDao.loadSessionsByKey(sessionRefs, 0, -1);
 		int numOfDoneSessions = 0;
 		Date firstSubmission = null;
 		Date lastSubmission = null;
@@ -328,7 +346,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		}
 		statistic.setDurations(durations);
 		
-		long averageDuration = Math.round(totalDuration / numOfDoneSessions);
+		long averageDuration = numOfDoneSessions > 0? Math.round(totalDuration / numOfDoneSessions): 0;
 		statistic.setAverageDuration(averageDuration);
 		
 		return statistic;

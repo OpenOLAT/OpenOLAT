@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -44,8 +45,8 @@ public class FormXStream {
 		xstream.alias("choices", Choices.class);
 		xstream.alias("singlechoice", SingleChoice.class);
 		xstream.alias("multiplechoice", MultipleChoice.class);
-		xstream.alias("generalinformation", GeneralInformation.class);
-		xstream.alias("generalinformations", GeneralInformations.class);
+		xstream.alias("sessioninformations", SessionInformations.class);
+		xstream.alias("informationType", InformationType.class);
 		xstream.alias("disclaimer", Disclaimer.class);
 	}
 	

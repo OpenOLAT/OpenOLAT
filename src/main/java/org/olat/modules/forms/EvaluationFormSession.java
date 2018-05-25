@@ -42,6 +42,20 @@ public interface EvaluationFormSession extends EvaluationFormSessionRef, CreateI
 
 	public EvaluationFormSessionStatus getEvaluationFormSessionStatus();
 	
+	public String getEmail();
+	
+	public String getFirstname();
+	
+	public String getLastname();
+	
+	public String getAge();
+	
+	public String getGender();
+	
+	public String getOrgUnit();
+	
+	public String getStudySubject();
+	
 	/**
 	 * Returns the participation of the session. The session does not know the
 	 * participation if it is an anonymous participation.

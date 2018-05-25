@@ -24,7 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
@@ -57,18 +60,107 @@ class EvaluationFormSessionDAO {
 		dbInstance.getCurrentEntityManager().persist(session);
 		return session;
 	}
-	
-	List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessions) {
-		if (sessions == null || sessions.isEmpty()) return new ArrayList<>();
+
+	EvaluationFormSession loadSessionByKey(EvaluationFormSessionRef sessionRef) {
+		if (sessionRef == null) return null;
 		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from evaluationformsession as session");
+		sb.append(" where session.key=:sessionKey");
+		
+		List<EvaluationFormSession> sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSession.class)
+				.setParameter("sessionKey", sessionRef.getKey())
+				.getResultList();
+		
+		return sessions.isEmpty()? null: sessions.get(0);
+	}
+	
+	List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessions, int firstResult,
+			int maxResults, SortKey... orderBy) {
+		if (sessions == null || sessions.isEmpty())
+			return new ArrayList<>();
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from evaluationformsession as session");
 		sb.append(" where session.key in (:sessionKeys)");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormSession.class)
-				.setParameter("sessionKeys", getSessionKeys(sessions))
-				.getResultList();
+		appendOrderBy(sb, orderBy);
+
+		TypedQuery<EvaluationFormSession> query = dbInstance.getCurrentEntityManager().
+				createQuery(sb.toString(), EvaluationFormSession.class)
+				.setParameter("sessionKeys", getSessionKeys(sessions));
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		
+		return query.getResultList();
+	}
+	
+	private void appendOrderBy(StringBuilder sb, SortKey... orderBy) {
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			String sortKey = orderBy[0].getKey();
+			boolean asc = orderBy[0].isAsc();
+			sb.append(" order by ");
+			sb.append(sortKey);
+			appendAsc(sb, asc);
+//			switch(sortKey) {
+//				case "itemType":
+//					sb.append(itemDbRef).append(".type.type ");
+//					appendAsc(sb, asc);
+//					break;
+//				case "marks":
+//					sb.append("marks");
+//					appendAsc(sb, asc);
+//					break;
+//				case "rating":
+//					sb.append("rating");
+//					appendAsc(sb, asc);
+//					sb.append(" nulls last");
+//					break;
+//				case "numberOfRatings":
+//					sb.append("numberOfRatingsTotal");
+//					appendAsc(sb, asc);
+//					sb.append(" nulls last");
+//					break;
+//				case "keywords":
+//				case "coverage":
+//				case "additionalInformations":
+//					sb.append("lower(").append(itemDbRef).append(".").append(sortKey).append(")");
+//					appendAsc(sb, asc);
+//					sb.append(" nulls last");
+//					break;
+//				case "taxonomyLevel":
+//					sb.append("lower(").append(taxonomyDbRef).append(".displayName)");
+//					appendAsc(sb, asc);
+//					sb.append(" nulls last");
+//					break;
+//				case "taxonomyPath":
+//					sb.append("lower(").append(taxonomyDbRef).append(".materializedPathIdentifiers)");
+//					appendAsc(sb, asc);
+//					sb.append(" nulls last");
+//					break;
+//				default:
+//					sb.append(itemDbRef).append(".").append(sortKey);
+//					appendAsc(sb, asc);
+//					sb.append(" nulls last");
+//					break;
+//			}
+		} else {
+			sb.append(" order by session.key asc ");
+		}
+	}
+	
+	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+		if(asc) {
+			sb.append(" asc");
+		} else {
+			sb.append(" desc");
+		}
+		return sb;
 	}
 	
 	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
@@ -102,6 +194,22 @@ class EvaluationFormSessionDAO {
 	
 	private List<Long> getSessionKeys(List<? extends EvaluationFormSessionRef> sessions) {
 		return sessions.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
+	}
+
+	EvaluationFormSession updateSession(EvaluationFormSession session, String email, String firstname,
+			String lastname, String age, String gender, String orgUnit, String studySubject) {
+		if (session instanceof EvaluationFormSessionImpl) {
+			EvaluationFormSessionImpl sessionImpl = (EvaluationFormSessionImpl) session;
+			sessionImpl.setEmail(email);
+			sessionImpl.setFirstname(firstname);
+			sessionImpl.setLastname(lastname);
+			sessionImpl.setAge(age);
+			sessionImpl.setGender(gender);
+			sessionImpl.setOrgUnit(orgUnit);
+			sessionImpl.setStudySubject(studySubject);
+			return update(sessionImpl);
+		}
+		return session;
 	}
 	
 	EvaluationFormSession makeAnonymous(EvaluationFormSession session) {

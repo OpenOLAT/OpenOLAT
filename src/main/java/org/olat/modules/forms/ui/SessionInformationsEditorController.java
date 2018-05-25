@@ -19,8 +19,10 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,9 +34,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
-import org.olat.modules.forms.model.xml.GeneralInformation;
-import org.olat.modules.forms.model.xml.GeneralInformation.Type;
-import org.olat.modules.forms.model.xml.GeneralInformations;
+import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 
@@ -44,19 +45,19 @@ import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneralInformationsEditorController extends FormBasicController implements PageElementEditorController {
-
-	private GeneralInformationsController generalInforamtionsCtrl;
+public class SessionInformationsEditorController extends FormBasicController implements PageElementEditorController {
+	
+	private SessionInformationsController sessionInforamtionsCtrl;
 	private MultipleSelectionElement informationsEl;
 	
-	private final GeneralInformations generalInformations;
+	private final SessionInformations sessionInformations;
 	private final boolean restrictedEdit;
 	private boolean editMode = false;
 	
-	public GeneralInformationsEditorController(UserRequest ureq, WindowControl wControl,
-			GeneralInformations generalInformations, boolean restrictedEdit) {
-		super(ureq, wControl, "general_informations_editor");
-		this.generalInformations = generalInformations;
+	public SessionInformationsEditorController(UserRequest ureq, WindowControl wControl,
+			SessionInformations sessionInformations, boolean restrictedEdit) {
+		super(ureq, wControl, "session_informations_editor");
+		this.sessionInformations = sessionInformations;
 		this.restrictedEdit = restrictedEdit;
 		
 		initForm(ureq);
@@ -64,8 +65,8 @@ public class GeneralInformationsEditorController extends FormBasicController imp
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		generalInforamtionsCtrl = new GeneralInformationsController(ureq, getWindowControl(), generalInformations);
-		formLayout.add("preview", generalInforamtionsCtrl.getInitialFormItem());
+		sessionInforamtionsCtrl = new SessionInformationsController(ureq, getWindowControl(), sessionInformations);
+		formLayout.add("preview", sessionInforamtionsCtrl.getInitialFormItem());
 
 		// settings
 		long postfix = CodeHelper.getRAMUniqueID();
@@ -74,11 +75,11 @@ public class GeneralInformationsEditorController extends FormBasicController imp
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
 		
-		String[] keys = GeneralInformationsUIFactory.getTypeKeys();
-		String[] values = GeneralInformationsUIFactory.getTranslatedTypes(getLocale());
+		String[] keys = SessionInformationsUIFactory.getTypeKeys();
+		String[] values = SessionInformationsUIFactory.getTranslatedTypes(getLocale());
 		informationsEl = uifactory.addCheckboxesVertical("gi_" + postfix,
-				"general.informations.informations", settingsCont, keys, values, null, null, 2);
-		for (String selectedKey: GeneralInformationsUIFactory.getSelectedTypeKeys(generalInformations)) {
+				"session.informations.informations", settingsCont, keys, values, null, null, 2);
+		for (String selectedKey: SessionInformationsUIFactory.getSelectedTypeKeys(sessionInformations)) {
 			informationsEl.select(selectedKey, true);
 		}
 		if (restrictedEdit) {
@@ -104,19 +105,23 @@ public class GeneralInformationsEditorController extends FormBasicController imp
 		if (source == informationsEl) {
 			doEnableInformations();
 		}
-		generalInforamtionsCtrl.update();
-		fireEvent(ureq, new ChangePartEvent(generalInformations));
+		sessionInforamtionsCtrl.update();
+		fireEvent(ureq, new ChangePartEvent(sessionInformations));
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	private void doEnableInformations() {
 		Collection<String> selectedKeys = informationsEl.getSelectedKeys();
-		Type[] types = GeneralInformation.Type.values();
+		List<InformationType> informationTypes = new ArrayList<>();
+		InformationType[] types = InformationType.values();
 		Arrays.sort(types, (t1, t2) -> Integer.compare(t1.getOrder(), t2.getOrder()));
-		for (GeneralInformation.Type type: types) {
+		for (InformationType type: types) {
 			boolean enabled = selectedKeys.contains(type.name());
-			generalInformations.setEnable(type, enabled);
+			if (enabled) {
+				informationTypes.add(type);
+			}
 		}
+		sessionInformations.setInformationTypes(informationTypes);
 	}
 
 	@Override

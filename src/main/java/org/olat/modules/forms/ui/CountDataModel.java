@@ -50,8 +50,8 @@ implements SortableFlexiTableDataModel<CountResult> {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CountResult advanceOrder = getObject(row);
-		return getValueAt(advanceOrder, col);
+		CountResult countResult = getObject(row);
+		return getValueAt(countResult, col);
 	}
 
 	@Override

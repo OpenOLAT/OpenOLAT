@@ -27,11 +27,13 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.ui.SessionSelectionModel.SessionSelectionCols;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,6 +74,29 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldUpdateSession() {
+		EvaluationFormSession session = evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		String email = "1";
+		String firstname = "2";
+		String lastname = "3";
+		String age = "4";
+		String gender = "5";
+		String orgUnit = "6";
+		String studySubject = "7";
+		EvaluationFormSession updatedSession = sut.updateSession(session, email, firstname, lastname, age, gender, orgUnit, studySubject);
+		
+		assertThat(updatedSession.getEmail()).isEqualTo(email);
+		assertThat(updatedSession.getFirstname()).isEqualTo(firstname);
+		assertThat(updatedSession.getLastname()).isEqualTo(lastname);
+		assertThat(updatedSession.getAge()).isEqualTo(age);
+		assertThat(updatedSession.getGender()).isEqualTo(gender);
+		assertThat(updatedSession.getOrgUnit()).isEqualTo(orgUnit);
+		assertThat(updatedSession.getStudySubject()).isEqualTo(studySubject);
+	}
+	
+	@Test
 	public void shouldMakeSessionAnonymous() {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
 		EvaluationFormSession session = sut.createSession(participation);
@@ -80,6 +105,16 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		EvaluationFormSession anonymousSession = sut.makeAnonymous(session);
 		
 		assertThat(anonymousSession.getParticipation()).isNull();
+	}
+	
+	@Test
+	public void shouldLoadByKey() {
+		EvaluationFormSession session = evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		EvaluationFormSession loadedSession = sut.loadSessionByKey(session);
+		
+		assertThat(loadedSession).isEqualTo(session);
 	}
 
 	@Test
@@ -90,11 +125,37 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
-		List<EvaluationFormSession> loadedSessions = sut.loadSessionsByKey(sessions);
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsByKey(sessions, 0, -1);
 		
 		assertThat(loadedSessions)
 				.containsExactlyInAnyOrder(session1, session2)
 				.doesNotContain(otherSession);
+	}
+	
+	@Test
+	public void shouldLoadByKeysPaged() {
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
+		List<EvaluationFormSession> unpaged = sut.loadSessionsByKey(sessions, 0, -1);
+		assertThat(unpaged) .hasSize(2);
+		
+		List<EvaluationFormSession> paged = sut.loadSessionsByKey(sessions, 1, 1);
+		assertThat(paged).hasSize(1);
+	}
+	
+	@Test
+	public void shouldLoadByPagedOrdered€() {
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		List<EvaluationFormSession> sessions = Arrays.asList(session1);
+		SortKey sortKey = new SortKey(SessionSelectionCols.email.name(), true);
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsByKey(sessions, 0, -1, sortKey);
+		
+		assertThat(loadedSessions).containsExactlyInAnyOrder(session1);
 	}
 	
 	@Test

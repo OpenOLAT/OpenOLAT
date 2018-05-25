@@ -71,6 +71,8 @@ public class EvaluationFormFormatter {
 	}
 
 	public static String period(Date firstSubmission, Date lastSubmission, Locale locale) {
+		if (firstSubmission == null || lastSubmission == null) return "";
+		
 		Formatter formatter = Formatter.getInstance(locale);
 		return new StringBuilder()
 				.append(formatter.formatDate(firstSubmission))

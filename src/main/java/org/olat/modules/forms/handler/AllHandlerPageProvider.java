@@ -49,7 +49,7 @@ public class AllHandlerPageProvider implements PageProvider {
 		handlers.add(new SingleChoiceHandler(false));
 		handlers.add(new MultipleChoiceHandler(false));
 		handlers.add(new DisclaimerHandler(false));
-		handlers.add(new GeneralInformationsHandler(false));
+		handlers.add(new SessionInformationsHandler(false));
 	}
 
 	@Override

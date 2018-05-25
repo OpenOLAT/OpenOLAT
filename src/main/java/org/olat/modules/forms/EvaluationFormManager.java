@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -99,19 +100,27 @@ public interface EvaluationFormManager {
 			EvaluationFormParticipationIdentifier identifier);
 
 	public EvaluationFormSession createSession(EvaluationFormParticipation participation);
+	
+	public EvaluationFormSession loadSessionByKey(EvaluationFormSessionRef sessionRef);
 
 	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation);
+	
+	public List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessionRefs,
+			int firstResult, int maxResults, SortKey... orderBy);
 
 	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey,
 			EvaluationFormSessionStatus status);
 
+	public EvaluationFormSession updateSession(EvaluationFormSession session, String email, String firstname, String lastname,
+			String age, String gender, String orgUnit, String studySubject);
+
 	/**
 	 * Finish a session and the correspondent participation.
 	 *
-	 * @param session
+	 * @param sessionRef
 	 * @return
 	 */
-	public EvaluationFormSession finishSession(EvaluationFormSession session);
+	public EvaluationFormSession finishSession(EvaluationFormSessionRef sessionRef);
 	
 	/**
 	 * Reopen a session and the correspondent participation. It is not possible to

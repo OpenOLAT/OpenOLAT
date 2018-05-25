@@ -78,6 +78,20 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 	private Date submissionDate;
 	@Column(name="e_first_submission_date", nullable=true, insertable=true, updatable=true)
 	private Date firstSubmissionDate;
+	@Column(name="e_email", nullable=true, insertable=true, updatable=true)
+	private String email;
+	@Column(name="e_firstname", nullable=true, insertable=true, updatable=true)
+	private String firstname;
+	@Column(name="e_lastname", nullable=true, insertable=true, updatable=true)
+	private String lastname;
+	@Column(name="e_age", nullable=true, insertable=true, updatable=true)
+	private String age;
+	@Column(name="e_gender", nullable=true, insertable=true, updatable=true)
+	private String gender;
+	@Column(name="e_org_unit", nullable=true, insertable=true, updatable=true)
+	private String orgUnit;
+	@Column(name="e_study_subject", nullable=true, insertable=true, updatable=true)
+	private String studySubject;
 	
 	@ManyToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=true)
@@ -168,6 +182,69 @@ public class EvaluationFormSessionImpl implements EvaluationFormSession, Persist
 
 	public void setFirstSubmissionDate(Date firstSubmissionDate) {
 		this.firstSubmissionDate = firstSubmissionDate;
+	}
+
+	@Override
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	@Override
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	@Override
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	@Override
+	public String getAge() {
+		return age;
+	}
+
+	public void setAge(String age) {
+		this.age = age;
+	}
+
+	@Override
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	@Override
+	public String getOrgUnit() {
+		return orgUnit;
+	}
+
+	public void setOrgUnit(String orgUnit) {
+		this.orgUnit = orgUnit;
+	}
+
+	@Override
+	public String getStudySubject() {
+		return studySubject;
+	}
+
+	public void setStudySubject(String studySubject) {
+		this.studySubject = studySubject;
 	}
 
 	@Override

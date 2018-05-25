@@ -206,6 +206,41 @@ public class ReportHelperTest {
 		}
 
 		@Override
+		public String getEmail() {
+			return null;
+		}
+
+		@Override
+		public String getFirstname() {
+			return null;
+		}
+
+		@Override
+		public String getLastname() {
+			return null;
+		}
+
+		@Override
+		public String getAge() {
+			return null;
+		}
+
+		@Override
+		public String getGender() {
+			return null;
+		}
+
+		@Override
+		public String getOrgUnit() {
+			return null;
+		}
+
+		@Override
+		public String getStudySubject() {
+			return null;
+		}
+
+		@Override
 		public EvaluationFormParticipation getParticipation() {
 			return particpation;
 		}

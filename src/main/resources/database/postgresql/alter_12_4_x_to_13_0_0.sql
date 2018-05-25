@@ -196,6 +196,13 @@ alter table o_eva_form_response add column e_no_response bool default false;
 
 alter table o_eva_form_session alter column fk_form_entry drop not null;
 alter table o_eva_form_session alter column fk_identity drop not null;
+alter table o_eva_form_session add column e_email varchar(1024);
+alter table o_eva_form_session add column e_firstname varchar(1024);
+alter table o_eva_form_session add column e_lastname varchar(1024);
+alter table o_eva_form_session add column e_age varchar(1024);
+alter table o_eva_form_session add column e_gender varchar(1024);
+alter table o_eva_form_session add column e_org_unit varchar(1024);
+alter table o_eva_form_session add column e_study_subject varchar(1024);
 alter table o_eva_form_session add column fk_survey bigint;
 alter table o_eva_form_session add column fk_participation bigint unique;
 

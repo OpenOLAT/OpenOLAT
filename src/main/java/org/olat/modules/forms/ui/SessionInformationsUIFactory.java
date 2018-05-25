@@ -28,8 +28,10 @@ import org.apache.log4j.Level;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
-import org.olat.modules.forms.model.xml.GeneralInformation;
-import org.olat.modules.forms.model.xml.GeneralInformations;
+import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -38,14 +40,14 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneralInformationsUIFactory {
+class SessionInformationsUIFactory {
 	
-	private GeneralInformationsUIFactory() {
+	private SessionInformationsUIFactory() {
 		// noninstantiable
 	}
 	
 	static final String[] getTypeKeys() {
-		GeneralInformation.Type[] enumVals = GeneralInformation.Type.values();
+		InformationType[] enumVals = InformationType.values();
 		Arrays.sort(enumVals, (t1, t2) -> Integer.compare(t1.getOrder(), t2.getOrder()));
 		String[] vals = new String[enumVals.length];
 		for(int i=enumVals.length; i-->0; ) {
@@ -55,7 +57,7 @@ public class GeneralInformationsUIFactory {
 	}
 	
 	static final String[] getTranslatedTypes(Locale locale) {
-		GeneralInformation.Type[] enumVals = GeneralInformation.Type.values();
+		InformationType[] enumVals = InformationType.values();
 		Arrays.sort(enumVals, (t1, t2) -> Integer.compare(t1.getOrder(), t2.getOrder()));
 		String[] names = new String[enumVals.length];
 		for(int i=enumVals.length; i-->0; ) {
@@ -64,16 +66,23 @@ public class GeneralInformationsUIFactory {
 		return names;
 	}
 	
-	public static final String getTranslatedType(GeneralInformation.Type type, Locale locale) {
-		if (type.name().startsWith("USER_")) {
-			return getTranslatedUserType(type, locale);
+	static final String getTranslatedType(InformationType informationType, Locale locale) {
+		if (informationType.name().startsWith("USER_")) {
+			return getTranslatedUserType(informationType, locale);
 		}
-		return "";
+		
+		Translator translator = Util.createPackageTranslator(SessionInformationsController.class, locale);
+		String i18nKey = "session.informations.type." + informationType.name().toLowerCase();
+		String translation = translator.translate(i18nKey);
+		if (i18nKey.equals(translation) || translation.length() > 256) {
+			translation = i18nKey;
+		}
+		return translation;
 	}
 	
-	private static final String getTranslatedUserType(GeneralInformation.Type type, Locale locale) {
+	private static final String getTranslatedUserType(InformationType informationType, Locale locale) {
 		Translator translator = Util.createPackageTranslator(UserPropertyHandler.class, locale);
-		String i18nKey = "form.name." + getUserProperty(type);
+		String i18nKey = "form.name." + getUserProperty(informationType);
 		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if(i18nKey.equals(translation) || translation.length() > 256) {
 			translation = "";
@@ -81,23 +90,33 @@ public class GeneralInformationsUIFactory {
 		return translation;
 	}
 	
-	static final String getUserProperty(GeneralInformation.Type type) {
-		switch (type) {
+	static final String getUserProperty(InformationType informationType) {
+		switch (informationType) {
 			case USER_EMAIL: return UserConstants.EMAIL;
 			case USER_FIRSTNAME: return UserConstants.FIRSTNAME;
 			case USER_LASTNAME: return UserConstants.LASTNAME;
 			case USER_GENDER: return UserConstants.GENDER;
-			case USER_BIRTHDAY: return UserConstants.BIRTHDAY;
 			case USER_ORGUNIT: return UserConstants.ORGUNIT;
 			case USER_STUDYSUBJECT: return UserConstants.STUDYSUBJECT;
 			default: return null;
 		}
 	}
 
-	public static final Collection<String> getSelectedTypeKeys(GeneralInformations generalInformations) {
-		return generalInformations.asCollection().stream()
-				.map(GeneralInformation::getType)
-				.map(GeneralInformation.Type::name)
+	static final Collection<String> getSelectedTypeKeys(SessionInformations sessionInformations) {
+		return sessionInformations.getInformationTypes().stream()
+				.map(SessionInformations.InformationType::name)
 				.collect(Collectors.toSet());
+	}
+
+	public static boolean hasInformationType(Form form, InformationType informationType) {
+		for (AbstractElement element: form.getElements()) {
+			if (element instanceof SessionInformations) {
+				SessionInformations sessionInforamtions = (SessionInformations) element;
+				if (sessionInforamtions.getInformationTypes().contains(informationType)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

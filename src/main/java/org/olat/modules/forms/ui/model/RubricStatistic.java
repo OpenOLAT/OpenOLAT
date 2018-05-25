@@ -167,6 +167,8 @@ public class RubricStatistic {
 		if (mean == null) return null;
 		
 		List<Double> scaledValues = getScaledValues(stepCounts);
+		if (scaledValues.size() < 2) return null;
+		
 		double temp = 0;
 		for(double a: scaledValues)
 			temp += (a-mean)*(a-mean);

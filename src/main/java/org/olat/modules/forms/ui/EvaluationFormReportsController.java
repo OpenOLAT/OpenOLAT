@@ -28,6 +28,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,11 +59,14 @@ public class EvaluationFormReportsController extends BasicController {
 	private final Link overviewReportLink;
 	private final Link tableReportLink;
 	private final Link diagramReportLink;
+	private final Link sessionSelectionLink;
 	
 	private final ReportHelper reportHelper;
 	private EvaluationFormOverviewController overviewCtrl;
 	private EvaluationFormReportController tableReportCtrl;
 	private EvaluationFormReportController diagramReportCtrl;
+	private BreadcrumbedStackedPanel stackedSessionPanel;
+	private EvaluationFormSessionSelectionController sessionSelectionCtrl;
 	
 	private final Form form;
 	private final List<? extends EvaluationFormSessionRef> sessions;
@@ -73,7 +77,7 @@ public class EvaluationFormReportsController extends BasicController {
 		this.form = form;
 		this.sessions = sessions;
 		
-		LegendNameGenerator legendNameGenerator = new GeneralInformationLegendNameGenerator(form, sessions);
+		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(sessions);
 		this.reportHelper = ReportHelper.builder(getLocale())
 				.withLegendNameGenrator(legendNameGenerator)
 				.withColors()
@@ -88,6 +92,8 @@ public class EvaluationFormReportsController extends BasicController {
 		segmentView.addSegment(tableReportLink, false);
 		diagramReportLink = LinkFactory.createLink("reports.diagram.report", mainVC, this);
 		segmentView.addSegment(diagramReportLink, false);
+		sessionSelectionLink = LinkFactory.createLink("reports.session.selection", mainVC, this);
+		segmentView.addSegment(sessionSelectionLink, false);
 		
 		doOpenOverviewReport(ureq);
 		
@@ -106,6 +112,8 @@ public class EvaluationFormReportsController extends BasicController {
 				doOpenTableReport(ureq);
 			} else if (clickedLink == diagramReportLink) {
 				doOpenDiagramReport(ureq);
+			} else if (clickedLink == sessionSelectionLink) {
+				doOpenSessionSelection(ureq);
 			}
 		}
 	}
@@ -137,6 +145,17 @@ public class EvaluationFormReportsController extends BasicController {
 		}
 		mainVC.put(SEGMENTS_CMP, diagramReportCtrl.getInitialComponent());
 	}
+
+	private void doOpenSessionSelection(UserRequest ureq) {
+		if (sessionSelectionCtrl == null) {
+			sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, sessions, reportHelper);
+			stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), sessionSelectionCtrl);
+			stackedSessionPanel.pushController(translate("reports.session.forms"), sessionSelectionCtrl);
+			sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);
+		}
+		mainVC.put(SEGMENTS_CMP, stackedSessionPanel);	
+	}
+
 	@Override
 	protected void doDispose() {
 		//
