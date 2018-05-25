@@ -288,6 +288,21 @@
 		</property>
 		<property name="parentTreeNodeIdentifier" value="sysAdminMenueNodeCustomizing" />
 		<property name="order" value="7411" />
-	</bean>	
+	</bean>
+	
+	<!-- Delete old user data export job -->
+	<bean id="deleteUserDataExportTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="deleteUserDataExportJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="25 23 5 * * ?" />
+		<property name="startDelay" value="60000" />
+	</bean>
 
+	<bean id="deleteUserDataExportJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.user.manager.UserDataExportCleanJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="deleteUserDataExportJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
 </beans>

@@ -160,7 +160,7 @@ public class ACOrderDAO {
 				.createQuery(sb.toString(), Order.class)
 				.setParameter("deliveryKey", delivery.getKey());
 		if(status != null && status.length > 0) {
-			List<String> statusStr = new ArrayList<String>();
+			List<String> statusStr = new ArrayList<>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}
@@ -223,7 +223,7 @@ public class ACOrderDAO {
 			query.setParameter("deliveryKey", delivery.getKey());
 		}
 		if(status != null && status.length > 0 && status[0] != null) {
-			List<String> statusStr = new ArrayList<String>();
+			List<String> statusStr = new ArrayList<>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}
@@ -355,7 +355,7 @@ public class ACOrderDAO {
 			query.setParameter("deliveryKey", delivery.getKey());
 		}
 		if(status != null && status.length > 0 && status[0] != null) {
-			List<String> statusStr = new ArrayList<String>();
+			List<String> statusStr = new ArrayList<>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}
@@ -440,7 +440,7 @@ public class ACOrderDAO {
 				.createQuery(sb.toString(), Order.class)
 				.setParameter("resourceKey", resource.getKey());
 		if(status != null && status.length > 0) {
-			List<String> statusStr = new ArrayList<String>();
+			List<String> statusStr = new ArrayList<>();
 			for(OrderStatus s:status) {
 				statusStr.add(s.name());
 			}

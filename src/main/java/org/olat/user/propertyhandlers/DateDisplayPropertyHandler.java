@@ -53,12 +53,9 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser, FormItemContainer formItemContainer) {
-
 		Date date = getDateValue(user);
 		String dateString = StringHelper.formatLocaleDate(date.getTime(), locale);
-		FormItem item = FormUIFactory.getInstance().addStaticTextElement(getName(), i18nFormElementLabelKey(), dateString, formItemContainer);
-
-		return item;
+		return FormUIFactory.getInstance().addStaticTextElement(getName(), i18nFormElementLabelKey(), dateString, formItemContainer);
 	}
 
 	/**

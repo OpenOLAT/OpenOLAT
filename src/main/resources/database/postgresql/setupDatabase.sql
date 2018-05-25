@@ -345,6 +345,7 @@ create table o_user_data_export (
    u_status varchar(16),
    u_export_ids varchar(2000),
    fk_identity int8 not null,
+   fk_request_by int8,
    primary key (id)
 );
 
@@ -2690,6 +2691,8 @@ alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
 
 alter table o_user_data_export add constraint usr_dataex_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_usr_dataex_to_ident_idx on o_user_data_export (fk_identity);
+alter table o_user_data_export add constraint usr_dataex_to_requ_idx foreign key (fk_request_by) references o_bs_identity (id);
+create index idx_usr_dataex_to_requ_idx on o_user_data_export (fk_request_by);
 
 -- csp
 create index idx_csp_log_to_ident_idx on o_csp_log (fk_identity);

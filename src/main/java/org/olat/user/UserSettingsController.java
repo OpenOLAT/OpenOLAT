@@ -34,8 +34,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.IMPreferenceController;
 import org.olat.registration.DisclaimerController;
@@ -119,7 +122,25 @@ public class UserSettingsController extends BasicController implements Activatea
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Preferences".equalsIgnoreCase(name)) {
+			doOpenPreferences(ureq);
+			segmentView.select(preferencesLink);
+		} else if("WebDAV".equalsIgnoreCase(name) && webdavLink != null && webDAVModule.isEnabled()) {
+			doOpenWebDAV(ureq);
+			segmentView.select(webdavLink);	
+		} else if("Chat".equalsIgnoreCase(name) && imLink != null && imModule.isEnabled()) {
+			doOpenIM(ureq);
+			segmentView.select(webdavLink);
+		} else if("Disclaimer".equalsIgnoreCase(name) && disclaimerLink != null && registrationModule.isDisclaimerEnabled()) {
+			doOpenDisclaimer(ureq);
+			segmentView.select(disclaimerLink);	
+		} else if("Data".equalsIgnoreCase(name)) {
+			doOpenUserData(ureq);
+			segmentView.select(userDataLink);	
+		}
 	}
 	
 	@Override
@@ -146,42 +167,56 @@ public class UserSettingsController extends BasicController implements Activatea
 	
 	private void doOpenPreferences(UserRequest ureq) {
 		if(preferencesCtrl == null) {
-			preferencesCtrl = new ChangePrefsController(ureq, getWindowControl(), getIdentity());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Preferences", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			preferencesCtrl = new ChangePrefsController(ureq, bwControl, getIdentity());
 			listenTo(preferencesCtrl);
 		}
 		mainVC.put("segmentCmp", preferencesCtrl.getInitialComponent());
+		addToHistory(ureq, preferencesCtrl);
 	}
 	
 	private void doOpenWebDAV(UserRequest ureq) {
 		if(webdavCtrl == null) {
-			webdavCtrl = new WebDAVPasswordController(ureq, getWindowControl());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("WebDAV", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			webdavCtrl = new WebDAVPasswordController(ureq, bwControl);
 			listenTo(webdavCtrl);
 		}
 		mainVC.put("segmentCmp", webdavCtrl.getInitialComponent());
+		addToHistory(ureq, webdavCtrl);
 	}
 	
 	private void doOpenIM(UserRequest ureq) {
 		if(imCtrl == null) {
-			imCtrl = new IMPreferenceController(ureq, getWindowControl(), getIdentity());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Chat", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			imCtrl = new IMPreferenceController(ureq, bwControl, getIdentity());
 			listenTo(imCtrl);
 		}
 		mainVC.put("segmentCmp", imCtrl.getInitialComponent());
+		addToHistory(ureq, imCtrl);
 	}
 	
 	private void doOpenDisclaimer(UserRequest ureq) {
 		if(disclaimerCtrl == null) {
-			disclaimerCtrl = new DisclaimerController(ureq, getWindowControl(), true);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Disclaimer", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			disclaimerCtrl = new DisclaimerController(ureq, bwControl, true);
 			listenTo(disclaimerCtrl);
 		}
 		mainVC.put("segmentCmp", disclaimerCtrl.getInitialComponent());
+		addToHistory(ureq, disclaimerCtrl);
 	}
 	
 	private void doOpenUserData(UserRequest ureq) {
 		if(userDataCtrl == null) {
-			userDataCtrl = new UserDataController(ureq, getWindowControl(), getIdentity());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Data", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			userDataCtrl = new UserDataController(ureq, bwControl, getIdentity());
 			listenTo(userDataCtrl);
 		}
 		mainVC.put("segmentCmp", userDataCtrl.getInitialComponent());
-	}
-	
+		addToHistory(ureq, userDataCtrl);
+	}	
 }

@@ -45,8 +45,8 @@ public class OrderTableItem {
 	
 	private static final OrderTableItemStatusComparator statusComparator = new OrderTableItemStatusComparator();
 	
-	private final Collection<AccessTransaction> transactions = new HashSet<AccessTransaction>();
-	private final Collection<PSPTransaction> pspTransactions = new HashSet<PSPTransaction>();
+	private final Collection<AccessTransaction> transactions = new HashSet<>();
+	private final Collection<PSPTransaction> pspTransactions = new HashSet<>();
 	
 	private final Long orderKey;
 	private final String orderNr;

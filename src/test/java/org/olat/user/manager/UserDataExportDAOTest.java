@@ -1,6 +1,26 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.user.manager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +51,8 @@ public class UserDataExportDAOTest extends OlatTestCase {
 	public void createExport() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("exp-1");
 		Collection<String> exporters = Collections.singletonList("test");
-		UserDataExport data = userDataExportDao.createExport(identity, exporters, UserDataExport.ExportStatus.requested);
+		UserDataExport data = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.requested, identity);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(data);
@@ -49,7 +70,8 @@ public class UserDataExportDAOTest extends OlatTestCase {
 	public void loadByKey() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("exp-1");
 		Collection<String> exporters = Collections.singletonList("test");
-		UserDataExport data = userDataExportDao.createExport(identity, exporters, UserDataExport.ExportStatus.requested);
+		UserDataExport data = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.requested, null);
 		dbInstance.commitAndCloseSession();
 		
 		UserDataExport reloadedData = userDataExportDao.loadByKey(data.getKey());
@@ -67,8 +89,10 @@ public class UserDataExportDAOTest extends OlatTestCase {
 	public void getUserDataExport() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("exp-1");
 		Collection<String> exporters = Collections.singletonList("test");
-		UserDataExport requestedData = userDataExportDao.createExport(identity, exporters, UserDataExport.ExportStatus.requested);
-		UserDataExport readyData = userDataExportDao.createExport(identity, exporters, UserDataExport.ExportStatus.ready);
+		UserDataExport requestedData = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.requested, identity);
+		UserDataExport readyData = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.ready, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<UserDataExport.ExportStatus> runningStatus = new ArrayList<>();
@@ -81,6 +105,46 @@ public class UserDataExportDAOTest extends OlatTestCase {
 		Assert.assertFalse(runningExports.contains(readyData));
 	}
 	
+	@Test
+	public void getUserDataExports() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("exp-1");
+		Collection<String> exporters = Collections.singletonList("test");
+		UserDataExport data = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.requested, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<UserDataExport> allDatas = userDataExportDao.getUserDataExports(identity);
+		Assert.assertNotNull(allDatas);
+		Assert.assertEquals(1, allDatas.size());
+		Assert.assertEquals(data, allDatas.get(0));
+	}
 
-
+	@Test
+	public void getLastUserDataExport() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("exp-5");
+		Collection<String> exporters = Collections.singletonList("test");
+		UserDataExport data = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.requested, null);
+		dbInstance.commitAndCloseSession();
+		
+		UserDataExport lastData = userDataExportDao.getLastUserDataExport(identity);
+		Assert.assertNotNull(lastData);
+		Assert.assertEquals(data, lastData);
+	}
+	
+	@Test
+	public void getUserDataExportBefore() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("exp-5");
+		Collection<String> exporters = Collections.singletonList("test");
+		UserDataExport data = userDataExportDao
+				.createExport(identity, exporters, UserDataExport.ExportStatus.requested, null);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, 10);
+		
+		List<UserDataExport> allDatas = userDataExportDao.getUserDataExportBefore(cal.getTime());
+		Assert.assertNotNull(allDatas);
+		Assert.assertTrue(allDatas.contains(data));
+	}
 }

@@ -25,17 +25,28 @@
 
 package org.olat.repository.manager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.MembershipInfos;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserDataExportable;
+import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,10 +59,10 @@ import org.springframework.stereotype.Service;
  * Comment:  
  * 
  */
-@Service("repositoryDeletionManager")
-public class RepositoryDeletionManager implements UserDataDeletable {
+@Service
+public class RepositoryUserDataManager implements UserDataDeletable, UserDataExportable {
 
-	private static final OLog log = Tracing.createLoggerFor(RepositoryDeletionManager.class);
+	private static final OLog log = Tracing.createLoggerFor(RepositoryUserDataManager.class);
 
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 
@@ -61,6 +72,8 @@ public class RepositoryDeletionManager implements UserDataDeletable {
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryDeletionModule deletionModule;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	/**
 	 * Remove identity as owner and initial author. Used in user-deletion.
@@ -95,5 +108,41 @@ public class RepositoryDeletionManager implements UserDataDeletable {
 			}
 		}
 		log.debug("All owner and initial-author entries in repository deleted for identity=" + identity);
+	}
+
+	@Override
+	public String getExporterID() {
+		return "repository.memberships";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File membershipsArchive = new File(archiveDirectory, "CourseMemberships.xlsx");
+		try(OutputStream out = new FileOutputStream(membershipsArchive);
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			
+			Row header = sheet.newRow();
+			header.addCell(0, "Type");
+			header.addCell(1, "Course");
+			header.addCell(2, "Created");
+			header.addCell(3, "First visit");
+			header.addCell(4, "Last visit");
+			header.addCell(5, "Number of visit");
+
+			List<MembershipInfos> memberships = repositoryEntryRelationDao.getMembership(identity);
+			for(MembershipInfos membership:memberships) {
+				Row row = sheet.newRow();
+				row.addCell(0, membership.getRole());
+				row.addCell(1, membership.getDisplayName());
+				row.addCell(2, membership.getCreationDate(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(3, membership.getInitialLaunch(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(4, membership.getRecentLaunch(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(5, membership.getVisit(), null);
+			}
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
+		}
+		manifest.appendFile(membershipsArchive.getName());
 	}
 }

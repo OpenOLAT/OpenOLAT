@@ -19,6 +19,10 @@
  */
 package org.olat.user;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -56,11 +60,15 @@ import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class UserManagerImpl extends UserManager implements UserDataDeletable {
+public class UserManagerImpl extends UserManager implements UserDataDeletable, UserDataExportable {
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
   private UserDisplayNameCreator userDisplayNameCreator;
@@ -587,6 +595,66 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable {
 		updateUserFromIdentity(identity);
 		logInfo("deleteUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
 		dbInstance.commit();
+	}
+
+	@Override
+	public String getExporterID() {
+		return "profile";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File profileArchive = new File(archiveDirectory, "UserProfile.xlsx");
+		try(OutputStream out = new FileOutputStream(profileArchive);
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			
+			Row row = sheet.newRow();
+			row.addCell(0, "Created");
+			row.addCell(1, identity.getCreationDate(), workbook.getStyles().getDateTimeStyle());
+			row.addCell(0, "User name");
+			row.addCell(1, identity.getName());
+			
+			User user = identity.getUser();
+			Translator translator = getPropertyHandlerTranslator(Util.createPackageTranslator(UserManager.class, locale));
+			List<UserPropertyHandler> userPropertyHandlers = getAllUserPropertyHandlers();
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				String actualProperty = userPropertyHandler.getName();
+				if(UserConstants.USERNAME.equals(actualProperty) || "creationDateDisplayProperty".equals(actualProperty)
+						|| "lastloginDateDisplayProperty".equals(actualProperty)) {
+					continue;//
+				}
+				String key = translator.translate("form.name." + actualProperty);
+				String value = user.getProperty(actualProperty, locale);
+				exportKeyValue(key, value, sheet);
+			}
+			
+			sheet.newRow();
+			row = sheet.newRow();
+			row.addCell(0, "Last login");
+			row.addCell(1, identity.getLastLogin(), workbook.getStyles().getDateTimeStyle());
+			exportKeyValue("External ID", identity.getExternalId(), sheet);
+
+			// preferences
+			sheet.newRow();
+			sheet.newRow().addCell(0, "Settings");
+			Preferences preferences = user.getPreferences();
+			exportKeyValue("Font size", preferences.getFontsize(), sheet);
+			exportKeyValue("Language", preferences.getLanguage(), sheet);
+			exportKeyValue("Notification", preferences.getNotificationInterval(), sheet);
+			exportKeyValue("Real mail", preferences.getReceiveRealMail(), sheet);
+		} catch (IOException e) {
+			logError("Unable to export xlsx", e);
+		}
+		manifest.appendFile(profileArchive.getName());
+	}
+	
+	private void exportKeyValue(String key, String value, OpenXMLWorksheet sheet) {
+		if(StringHelper.containsNonWhitespace(value)) {
+			Row row = sheet.newRow();
+			row.addCell(0, key);
+			row.addCell(1, value);
+		}
 	}
 
 	@Override

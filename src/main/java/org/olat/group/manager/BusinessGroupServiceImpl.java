@@ -106,7 +106,6 @@ import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.LeavingStatusList;
-import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -119,7 +118,6 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
-import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -130,7 +128,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("businessGroupService")
-public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataDeletable {
+public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private final OLog log = Tracing.createLoggerFor(BusinessGroupServiceImpl.class);
 
 	@Autowired
@@ -158,8 +156,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
-	private RepositoryDeletionModule deletionManager;
-	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private InfoMessageFrontendManager infoMessageManager;
@@ -169,40 +165,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private DB dbInstance;
-	
-	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		// remove as Participant 
-		List<BusinessGroup> attendedGroups = findBusinessGroupsAttendedBy(identity);
-		for (Iterator<BusinessGroup> iter = attendedGroups.iterator(); iter.hasNext();) {
-			businessGroupRelationDAO.removeRole(identity, iter.next(), GroupRoles.participant.name());
-		}
-		log.debug("Remove partipiciant identity=" + identity + " from " + attendedGroups.size() + " groups");
-		// remove from waitinglist 
-		List<BusinessGroup> waitingGroups = findBusinessGroupsWithWaitingListAttendedBy(identity, null);
-		for (Iterator<BusinessGroup> iter = waitingGroups.iterator(); iter.hasNext();) {
-			businessGroupRelationDAO.removeRole(identity, iter.next(), GroupRoles.waiting.name());
-		}
-		log.debug("Remove from waiting-list identity=" + identity + " in " + waitingGroups.size() + " groups");
-
-		// remove as owner
-		List<BusinessGroup> ownerGroups = findBusinessGroupsOwnedBy(identity);
-		for (Iterator<BusinessGroup> iter = ownerGroups.iterator(); iter.hasNext();) {
-			BusinessGroup businessGroup = iter.next();
-			businessGroupRelationDAO.removeRole(identity, businessGroup, GroupRoles.coach.name());
-			if (businessGroupRelationDAO.countRoles(businessGroup, GroupRoles.coach.name()) == 0) {
-				Identity admin = deletionManager.getAdminUserIdentity();
-				if(admin == null) {
-					log.info("Delete user-data, cannot add Administrator-identity as owner of businessGroup=" + businessGroup.getName() + ". Businesgroup is orphan");
-				} else {
-					businessGroupRelationDAO.addRole(admin, businessGroup, GroupRoles.coach.name());
-					log.info("Delete user-data, add Administrator-identity as owner of businessGroup=" + businessGroup.getName());
-				}
-			}
-		}
-		log.debug("Remove owner identity=" + identity + " from " + ownerGroups.size() + " groups");
-		log.debug("All entries in groups deleted for identity=" + identity);
-	}
 
 	@Override
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,

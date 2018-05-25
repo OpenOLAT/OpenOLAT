@@ -38,10 +38,12 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.model.MembershipInfos;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -640,5 +642,35 @@ public class RepositoryEntryRelationDAO {
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("ownerKey", owner.getKey())
 				.getResultList();
+	}
+	
+	public List<MembershipInfos> getMembership(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select v.key, v.displayname, reMember.role, reMember.creationDate,")
+		  .append(" userinfos.initialLaunch, userinfos.recentLaunch, userinfos.visit")
+		  .append(" from repositoryentry as v")
+		  .append(" inner join v.groups as rel")
+		  .append(" inner join rel.group as bGroup")
+		  .append(" inner join bGroup.members as reMember")
+		  .append(" left join usercourseinfos as userinfos on (v.olatResource.key=userinfos.resource.key)")
+		  .append(" where reMember.identity.key=:identityKey");
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		
+		List<MembershipInfos> memberhips = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			int col = 0;
+			Long entryKey = (Long)rawObject[col++];
+			String displayName = (String)rawObject[col++];
+			String role = (String)rawObject[col++];
+			Date creationDate = (Date)rawObject[col++];
+			Date initialLaunch = (Date)rawObject[col++];
+			Date recentLaunch = (Date)rawObject[col++];
+			Long visit =  PersistenceHelper.extractLong(rawObject, col);
+			memberhips.add(new MembershipInfos(identity.getKey(), entryKey, displayName, role, creationDate, initialLaunch, recentLaunch, visit));
+		}
+		return memberhips;
 	}
 }

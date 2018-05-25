@@ -51,6 +51,7 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipImpl;
+import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupRow;
@@ -339,6 +340,32 @@ public class BusinessGroupDAO {
 		}
 	}
 	
+	public List<BusinessGroupMembershipInfos> getMemberships(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select bgi.key, bgi.name, bmember.role, bmember.creationDate, bmember.lastModified")
+		  .append(" from businessgroup as bgi")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as bmember")
+		  .append(" where bmember.identity.key=:identityKey");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		List<BusinessGroupMembershipInfos> memberships = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			Long businessGroupKey = (Long)rawObject[0];
+			String businessGroupName = (String)rawObject[1];
+			String role = (String)rawObject[2];
+			Date lastModified = (Date)rawObject[3];
+			Date creationDate = (Date)rawObject[4];
+			
+			memberships.add(new BusinessGroupMembershipInfos(identity.getKey(), businessGroupKey, businessGroupName,
+					role, creationDate, lastModified));
+		}
+		return memberships;
+	}
+	
 	public int countMembershipInfoInBusinessGroups(Identity identity, List<Long> groupKeys) {
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select count(membership) from bgmembershipview as membership ")
@@ -358,7 +385,7 @@ public class BusinessGroupDAO {
 	}
 
 	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<BusinessGroup> groups, List<Identity> identities) {
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		for(BusinessGroup group:groups) {
 			groupKeys.add(group.getKey());
 		}

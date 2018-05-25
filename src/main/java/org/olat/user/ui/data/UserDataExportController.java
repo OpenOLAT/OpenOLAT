@@ -31,6 +31,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.user.UserDataExport;
+import org.olat.user.UserDataExport.ExportStatus;
 import org.olat.user.UserDataExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,35 +48,47 @@ public class UserDataExportController extends FormBasicController {
 	private MultipleSelectionElement exportEl;
 	
 	private final Identity identity;
+	private final UserDataExport currentDataExport;
 	
 	@Autowired
 	private UserDataExportService exportService;
 	
 	public UserDataExportController(UserRequest ureq, WindowControl wControl, Identity identity) {
-		super(ureq, wControl);
+		super(ureq, wControl, "user_data_export");
 		this.identity = identity;
+		currentDataExport = exportService.getCurrentData(identity);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("export.user.data.explain");
-		
-		List<String> exportIds = exportService.getExporterIds();
-		String[] keys = new String[exportIds.size()];
-		String[] values = new String[exportIds.size()];
-		for(int i=exportIds.size(); i-->0; ) {
-			String exportId = exportIds.get(i);
-			keys[i] = exportId;
-			values[i] = translate(exportId);
+		if(formLayout instanceof FormLayoutContainer) {
+			boolean processing = currentDataExport != null && (currentDataExport.getStatus() == ExportStatus.processing
+					|| currentDataExport.getStatus() == ExportStatus.requested);
+			((FormLayoutContainer)formLayout).contextPut("processing", Boolean.valueOf(processing));
+
+			boolean ready = currentDataExport != null && currentDataExport.getStatus() == ExportStatus.ready;
+			((FormLayoutContainer)formLayout).contextPut("ready", Boolean.valueOf(ready));
+			
+			String businessPath = exportService.getDownloadURL(identity);
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+			((FormLayoutContainer)formLayout).contextPut("dataBusinessPath", url);
+			
+			if(!processing) {
+				List<String> exportIds = exportService.getExporterIds();
+				String[] keys = new String[exportIds.size()];
+				String[] values = new String[exportIds.size()];
+				for(int i=exportIds.size(); i-->0; ) {
+					String exportId = exportIds.get(i);
+					keys[i] = exportId;
+					values[i] = translate(exportId);
+				}
+				exportEl = uifactory.addCheckboxesVertical("export.options", formLayout, keys, values, 1);
+				exportEl.setMandatory(true);
+				uifactory.addFormSubmitButton("export.start", formLayout);
+			}
 		}
-		exportEl = uifactory.addCheckboxesVertical("export.options", formLayout, keys, values, 1);
-		exportEl.setMandatory(true);
-		
-		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonCont);
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("export.start", buttonCont);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override
@@ -96,7 +111,7 @@ public class UserDataExportController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> exportIds = exportEl.getSelectedKeys();
-		exportService.requestExportData(identity, exportIds);
+		exportService.requestExportData(identity, exportIds, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

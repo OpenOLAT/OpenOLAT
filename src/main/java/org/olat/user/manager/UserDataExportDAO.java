@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.user.manager;
 
 import java.util.ArrayList;
@@ -5,6 +24,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.persistence.TemporalType;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -27,7 +48,8 @@ public class UserDataExportDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public UserDataExport createExport(Identity identity, Collection<String> exportIds, UserDataExport.ExportStatus status) {
+	public UserDataExport createExport(Identity identity, Collection<String> exportIds,
+			UserDataExport.ExportStatus status, Identity requestedBy) {
 		UserDataExportImpl data = new UserDataExportImpl();
 		data.setCreationDate(new Date());
 		data.setLastModified(data.getCreationDate());
@@ -40,6 +62,7 @@ public class UserDataExportDAO {
 			sb.append(exportId);
 		}
 		data.setExporterIdList(sb.toString());
+		data.setRequestBy(requestedBy);
 		dbInstance.getCurrentEntityManager().persist(data);
 		return data;
 	}
@@ -50,9 +73,8 @@ public class UserDataExportDAO {
 	}
 	
 	public UserDataExport loadByKey(Long key) {
-		String query = "select data from userdataexport data where data.key=:dataKey";
 		List<UserDataExport> datas = dbInstance.getCurrentEntityManager()
-				.createQuery(query, UserDataExport.class)
+				.createNamedQuery("loadUserExportDataByKey", UserDataExport.class)
 				.setParameter("dataKey", key)
 				.getResultList();
 		return datas == null || datas.isEmpty() ? null : datas.get(0);
@@ -70,6 +92,21 @@ public class UserDataExportDAO {
 				.createQuery(sb.toString(), UserDataExport.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("status", statusString)
+				.getResultList();
+	}
+	
+	public List<UserDataExport> getUserDataExportBefore(Date date) {
+		String query = "select data from userdataexport data inner join fetch data.identity as ident where data.creationDate<:date";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, UserDataExport.class)
+				.setParameter("date", date, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	public List<UserDataExport> getUserDataExports(IdentityRef identity) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadUserExportDataByIdentity", UserDataExport.class)
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
 	
@@ -93,6 +130,11 @@ public class UserDataExportDAO {
 		return datas == null || datas.isEmpty() ? null : datas.get(0);
 	}
 	
+	public void delete(UserDataExport dataExport) {
+		UserDataExport reloadedExport = dbInstance.getCurrentEntityManager()
+				.getReference(UserDataExportImpl.class, dataExport.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedExport);
+	}
 
 	
 	
