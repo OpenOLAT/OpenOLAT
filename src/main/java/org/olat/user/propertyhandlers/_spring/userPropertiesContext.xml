@@ -436,6 +436,13 @@
 								<ref bean="userPropertyInstitutionalEmail" />
 							</list>
 						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</set>
+						</property>
 					</bean>
 				</entry>
 
@@ -523,7 +530,9 @@
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyEmail" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
@@ -590,6 +599,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />
 								<ref bean="userPropertyTelPrivate" />
@@ -782,11 +792,33 @@
 							<set>
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
 							</set>
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyBirthDay" />
+								<ref bean="userPropertyGender" />
+								<ref bean="userPropertyTelPrivate" />
+								<ref bean="userPropertyTelMobile" />
+								<ref bean="userPropertyTelOffice" />
+								<ref bean="userPropertySkype" />
+								<ref bean="userPropertyMSN" />
+                                	<ref bean="userPropertyXing" />
+                                	<ref bean="userPropertyICQ" />
+								<ref bean="userPropertyHomepage" />
+								<ref bean="userPropertyStreet" />
+								<ref bean="userPropertyExtendedAddress" />
+								<ref bean="userPropertyPoBox" />
+								<ref bean="userPropertyZipCode" />
+								<ref bean="userPropertyRegion" />
+								<ref bean="userPropertyCity" />
+								<ref bean="userPropertyCountry" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+								<ref bean="userPropertyOrgUnit" />
+								<ref bean="userPropertyStudySubject" />
 							</set>
 						</property>
 					</bean>
@@ -851,7 +883,9 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
 							</set>
 						</property>
 					</bean>
@@ -897,6 +931,7 @@
 						</property>
 						<property name="adminViewOnlyProperties">
 							<set>
+								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />
 								<ref bean="userPropertyTelPrivate" />
@@ -1030,37 +1065,6 @@
 					</bean>
 				</entry>
 
-				<entry key="org.olat.group.ui.wizard.MemberListWizardController">
-					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="propertyHandlers">
-							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
-								<ref bean="userPropertyBirthDay" />
-								<ref bean="userPropertyGender" />
-								<ref bean="userPropertyTelPrivate" />
-								<ref bean="userPropertyTelMobile" />
-								<ref bean="userPropertyTelOffice" />
-								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyHomepage" />
-								<ref bean="userPropertyStreet" />
-								<ref bean="userPropertyExtendedAddress" />
-								<ref bean="userPropertyPoBox" />
-								<ref bean="userPropertyZipCode" />
-								<ref bean="userPropertyRegion" />
-								<ref bean="userPropertyCity" />
-								<ref bean="userPropertyCountry" />
-								<ref bean="userPropertyInstitutionalName" />
-								<ref bean="userPropertyInstitutionalUserIdentifier" />
-								<ref bean="userPropertyInstitutionalEmail" />
-								<ref bean="userPropertyOrgUnit" />
-								<ref bean="userPropertyStudySubject" />
-							</list>
-						</property>
-					</bean>
-				</entry>
-
 				<entry key="de.bps.olat.modules.cl.ChecklistManageCheckpointsController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="List of users in the check list course building block" />
@@ -1101,6 +1105,11 @@
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
 							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyEmail" />
+							</set>
 						</property>
 					</bean>
 				</entry>
