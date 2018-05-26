@@ -56,12 +56,21 @@ public class TaxonomyTreePage {
 		List<WebElement> tableEls = browser.findElements(tableBy);
 		if(tableEls.isEmpty()) {
 			newLevel(identifier, name);
+			clickBackInBreadcrumb();
 		}
+		return this;
+	}
+	
+	public TaxonomyTreePage clickBackInBreadcrumb() {
+		By backBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_back']/a[i[contains(@class,'o_icon_back')]]");
+		browser.findElement(backBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public TaxonomyLevelPage selectTaxonomyLevel(String identifier) {
 		By selectBy = By.xpath("//div[contains(@class,'o_sel_taxonomy_levels_tree')]//table//tr[td[text()[contains(.,'" + identifier + "')]]]/td/a[contains(@href,'select')]");
+		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
 		return new TaxonomyLevelPage(browser).assertOnTaxonomyLevel();
