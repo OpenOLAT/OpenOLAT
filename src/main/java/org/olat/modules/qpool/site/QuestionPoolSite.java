@@ -67,8 +67,7 @@ public class QuestionPoolSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("QPool", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = new QuestionPoolSiteMainController(ureq, bwControl);
-		return c;
+		return new QuestionPoolSiteMainController(ureq, bwControl);
 	}
 	
 	@Override

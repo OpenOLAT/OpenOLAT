@@ -67,6 +67,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_qpool_review_process_admin");
 		setFormTitle("admin.review.process.title");
 		
 		// decision provider
@@ -98,6 +99,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 		
 		String numberOfRatings = Integer.toString(qpoolModule.getReviewDecisionNumberOfRatings());
 		numberOfRatingsEl = uifactory.addTextElement("number.of.ratings", 5, numberOfRatings, formLayout);
+		numberOfRatingsEl.setElementCssClass("o_sel_qpool_num_of_reviews");
 		numberOfRatingsEl.setMandatory(true);
 		numberOfRatingsEl.setDisplaySize(5);
 
@@ -112,6 +114,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 				translate(FINAL_VISIBILITY_MANAGER),
 				translate(FINAL_VISIBILITY_MANAGER_TEACHER)};
 		finalVisibilityEl = uifactory.addDropdownSingleselect("final.visibility", formLayout, finalVisibilityKeys, finalVisibilityValues);
+		finalVisibilityEl.setElementCssClass("o_sel_qpool_final_visibility");
 		String selectedKey = qpoolModule.isFinalVisibleTeach()? FINAL_VISIBILITY_MANAGER_TEACHER: FINAL_VISIBILITY_MANAGER;
 		finalVisibilityEl.select(selectedKey, true);
 

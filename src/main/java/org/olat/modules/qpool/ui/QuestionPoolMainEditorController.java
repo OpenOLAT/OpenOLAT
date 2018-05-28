@@ -117,6 +117,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		
 		content = new Panel("list");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, content, "qpool");
+		columnLayoutCtr.addCssClassToMain("o_qpool");
 		
 		doSelectControllerTreeNode(ureq, treeModel.getMyNode(), null, null);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());

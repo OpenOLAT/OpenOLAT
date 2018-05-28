@@ -85,8 +85,10 @@ public class NewItemOptionsController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_new_item_form");
 		//title
 		titleEl = uifactory.addTextElement("general.title", "general.title", 128, "", formLayout);
+		titleEl.setElementCssClass("o_sel_item_title");
 
 		//type
 		List<QItemFactory> factories = new ArrayList<>();
@@ -100,7 +102,7 @@ public class NewItemOptionsController extends FormBasicController {
 		String[] typeKeys = new String[factories.size()];
 		String[] valueKeys = new String[factories.size()];
 		for(QItemFactory factory:factories) {
-			String typeKey = "item.type." + count;
+			String typeKey = factory.getType();
 			typeKeys[count] = typeKey;
 			keyToFactoryMap.put(typeKey, factory);
 			valueKeys[count] = factory.getLabel(getLocale());
@@ -108,6 +110,7 @@ public class NewItemOptionsController extends FormBasicController {
 		}
 
 		typeEl = uifactory.addDropdownSingleselect("question.type", "menu.admin.types", formLayout, typeKeys, valueKeys, null);
+		typeEl.setElementCssClass("o_sel_item_type");
 		
 		//subject
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
@@ -121,6 +124,7 @@ public class NewItemOptionsController extends FormBasicController {
 			}
 		}
 		taxonomyLevelEl.setVisible(qPoolSecurityCallback.canUseTaxonomy());
+		taxonomyLevelEl.setElementCssClass("o_sel_item_taxonomy_level");
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);

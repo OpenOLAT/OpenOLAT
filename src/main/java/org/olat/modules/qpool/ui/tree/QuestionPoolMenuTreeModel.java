@@ -295,6 +295,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		if(!taxonomyLevels.isEmpty()) {
 			reviewNode = new GenericTreeNode(translator.translate("menu.review"));
 			reviewNode.setTitle(translator.translate("menu.review"));
+			reviewNode.setCssClass("o_sel_qpool_review_taxonomy_levels");
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {

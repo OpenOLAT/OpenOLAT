@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.springframework.beans.factory.DisposableBean;
@@ -99,6 +100,9 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 
 	@Override
 	public void afterPropertiesSet()  {
+		if (!StringHelper.containsNonWhitespace(userDataDirectory)) {
+			userDataDirectory = System.getProperty("java.io.tmpdir") + "/olatdata";
+		}
 		moduleConfigProperties.setUserDataDirectory(userDataDirectory);
 		moduleConfigProperties.init();
 		initDefaultProperties();

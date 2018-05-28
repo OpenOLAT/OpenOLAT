@@ -1,11 +1,13 @@
-#if($r.available("add.competences"))
-<div class="o_button_group o_button_group_right">
-	$r.render("add.competences")
+<div class="o_sel_taxonomy_level_competences">
+	#if($r.available("add.competences"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.competences")
+	</div>
+	#end
+	$r.render("table")
+	#if($r.available("delete"))
+	<div class="o_button_group">
+		$r.render("delete")
+	</div>
+	#end
 </div>
-#end
-$r.render("table")
-#if($r.available("delete"))
-<div class="o_button_group">
-	$r.render("delete")
-</div>
-#end

@@ -43,6 +43,11 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 	public QTI21AssessmentItemFactory(QTI21QuestionType type) {
 		this.type = type;
 	}
+	
+	@Override
+	public String getType() {
+		return "qti21_".concat(type.name());
+	}
 
 	@Override
 	public String getLabel(Locale locale) {

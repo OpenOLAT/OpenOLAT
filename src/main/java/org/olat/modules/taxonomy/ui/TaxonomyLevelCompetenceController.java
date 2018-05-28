@@ -126,6 +126,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.haveCompetence)
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.targetCompetence)) {
 			addCompetencesButton = uifactory.addFormLink("add.competences", formLayout, Link.BUTTON);
+			addCompetencesButton.setElementCssClass("o_sel_competence_add");
 			removeCompetencesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			multiSelect = true;
 		}
@@ -216,7 +217,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 			} else if (event instanceof MultiIdentityChosenEvent) {
 				MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent)event;
 				List<Identity> toAdd = multiEvent.getChosenIdentities();
-				if(toAdd.size() > 0) {
+				if(!toAdd.isEmpty()) {
 					doAddCompetence(toAdd, (TaxonomyCompetenceTypes)userSearchCtrl.getUserObject());
 					loadModel();
 				}

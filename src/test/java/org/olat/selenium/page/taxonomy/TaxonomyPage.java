@@ -17,24 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.selenium.page.taxonomy;
 
-import java.util.Locale;
-
-import org.olat.core.id.Identity;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * 
- * Initial date: 26.06.2013<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QItemFactory {
+public class TaxonomyPage {
 	
-	public String getType();
+	private final WebDriver browser;
 	
-	public String getLabel(Locale locale);
+	public TaxonomyPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
-	public QuestionItem createItem(Identity owner, String title, Locale locale);
+	/**
+	 * Select the tab to manage the taxonomy levels.
+	 * 
+	 * @return The taxonomy tree page
+	 */
+	public TaxonomyTreePage selectTaxonomyTree() {
+		By selectLevelsBy = By.cssSelector("a.o_sel_taxonomy_levels");
+		OOGraphene.waitElement(selectLevelsBy, browser);
+		browser.findElement(selectLevelsBy).click();
+		return new TaxonomyTreePage(browser).assertOnTaxonomyTree();
+	}
 
 }

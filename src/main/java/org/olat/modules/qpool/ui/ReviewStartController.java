@@ -66,6 +66,7 @@ public class ReviewStartController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_qpool_confirm_start_form");
 		setFormDescription("process.start.review.description", new String[] {item.getTitle()});
 		
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, ignoreCompetences);

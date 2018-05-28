@@ -87,7 +87,7 @@
 	<!-- The e-Assessment parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7420" />
-		<property name="navigationKey" value="modules" />
+		<property name="navigationKey" value="eassessment" />
 		<property name="nodeIdentifierIfParent" value="eAssessmentParent" />
 		<property name="translationPackage" value="org.olat.admin" />
 		<property name="i18nActionKey" value="menu.eassessment" />
