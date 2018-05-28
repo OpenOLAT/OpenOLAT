@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
 import org.olat.core.commons.services.commentAndRating.UserCommentsDelegate;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
@@ -104,16 +103,24 @@ public class UserCommentsDAO {
 		TypedQuery<UserComment> query;
 		if (resSubPath == null) {
 			// special query when sub path is null
-			query = DBFactory.getInstance().getCurrentEntityManager()
+			query = dbInstance.getCurrentEntityManager()
 					.createQuery("select comment from usercomment as comment where resName=:resname AND resId=:resId AND resSubPath is NULL", UserComment.class);
 		} else {
-			query = DBFactory.getInstance().getCurrentEntityManager()
+			query = dbInstance.getCurrentEntityManager()
 					.createQuery("select comment from usercomment as comment where resName=:resname AND resId=:resId AND resSubPath=:resSubPath", UserComment.class)
 					.setParameter("resSubPath", resSubPath);
 		}
 		return query.setParameter("resname", ores.getResourceableTypeName())
 		     .setParameter("resId", ores.getResourceableId())
 		     .getResultList();
+	}
+	
+	public List<UserComment> getComments(IdentityRef identity) {
+		String  query = "select comment from usercomment as comment where comment.creator.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, UserComment.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 
 	public UserComment updateComment(UserComment comment, String newCommentText) {
@@ -200,10 +207,10 @@ public class UserCommentsDAO {
 		TypedQuery<Number> query;
 		if (resSubPath == null) {
 			// special query when sub path is null
-			query = DBFactory.getInstance().getCurrentEntityManager()
+			query = dbInstance.getCurrentEntityManager()
 					.createQuery("select count(*) from usercomment where resName=:resname AND resId=:resId AND resSubPath is NULL", Number.class);
 		} else {
-			query = DBFactory.getInstance().getCurrentEntityManager()
+			query = dbInstance.getCurrentEntityManager()
 					.createQuery("select count(*) from usercomment where resName=:resname AND resId=:resId AND resSubPath=:resSubPath", Number.class)
 					.setParameter("resSubPath", resSubPath);
 		}

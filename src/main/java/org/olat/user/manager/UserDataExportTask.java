@@ -20,7 +20,6 @@
 package org.olat.user.manager;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataExportService;
@@ -31,7 +30,7 @@ import org.olat.user.UserDataExportService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserDataExportTask implements LongRunnable {
+public class UserDataExportTask implements /* Long */ Runnable {
 
 	private static final long serialVersionUID = 6931074116105090545L;
 

@@ -85,6 +85,14 @@ public class UserRatingsDAO {
 		     .setHint("org.hibernate.cacheable", Boolean.TRUE)
 		     .getResultList();
 	}
+
+	public List<UserRating> getAllRatings(IdentityRef identity) {
+		String sb = "select rating from userrating as rating where rating.creator.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, UserRating.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
 	
 	public float getRatingAverage(OLATResourceable ores, String resSubPath) {
 		StringBuilder sb = new StringBuilder();

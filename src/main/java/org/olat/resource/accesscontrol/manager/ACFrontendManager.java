@@ -777,13 +777,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
 			
-			Row row = sheet.newRow();
-			row.addCell(0, "Status");
-			row.addCell(1, "Booking number");
-			row.addCell(2, "Date");
-			row.addCell(3, "Content");
-			row.addCell(4, "Method");
-			row.addCell(5, "Total");
+			Row header = sheet.newRow();
+			header.addCell(0, "Status");
+			header.addCell(1, "Booking number");
+			header.addCell(2, "Date");
+			header.addCell(3, "Content");
+			header.addCell(4, "Method");
+			header.addCell(5, "Total");
 			
 			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, 0, -1, null);
 			for(OrderTableItem order:orders) {
