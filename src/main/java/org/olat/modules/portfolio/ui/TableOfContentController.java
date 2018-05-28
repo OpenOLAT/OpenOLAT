@@ -171,7 +171,9 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	void updateSummaryView(UserRequest ureq) {
-		summaryCtrl.reload(ureq);
+		if(summaryCtrl != null) {
+			summaryCtrl.reload(ureq);
+		}
 	}
 	
 	private String getGuiPrefsKey(OLATResourceable binderOres) {
