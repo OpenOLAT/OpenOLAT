@@ -19,9 +19,32 @@
  */
 package org.olat.modules.portfolio.handler;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.gui.DefaultGlobalSettings;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.EmptyURLBuilder;
+import org.olat.core.gui.render.RenderResult;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.SyntheticUserRequest;
+import org.olat.core.gui.util.WindowControlMocker;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaInformations;
@@ -29,6 +52,8 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
+import org.olat.modules.portfolio.ui.MediaCenterController;
+import org.olat.modules.portfolio.ui.MediaMetadataController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
@@ -42,6 +67,8 @@ import org.olat.modules.portfolio.ui.editor.PageRunElement;
  *
  */
 public abstract class AbstractMediaHandler implements MediaHandler, PageElementHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(AbstractMediaHandler.class);
 	
 	private final String type;
 	
@@ -81,6 +108,64 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 			return getMediaController(ureq, wControl, mediaPart.getMedia(), new StandardMediaRenderingHints());
 		}
 		return null;
+	}
+
+	/**
+	 * A utility method to export media with content or a content component. The
+	 * attached files are added to the output as a list of links.
+	 * 
+	 * 
+	 * @param media The media to export
+	 * @param contentCmp Optional, if not present with simply print the content of the media
+	 * @param attachments Optional, a list of document to be attached to the media
+	 * @param mediaArchiveDirectory The directory where all the medias are exported
+	 * @param locale The language
+	 */
+	protected void exportContent(Media media, Component contentCmp, List<File> attachments, File mediaArchiveDirectory, Locale locale) {
+		String title = StringHelper.transformDisplayNameToFileSystemName(media.getTitle());
+		File mediaFile = new File(mediaArchiveDirectory, media.getKey() + "_" + title + ".html");
+		try(OutputStream out = new FileOutputStream(mediaFile)) {
+			String content = exportContent(media, contentCmp, attachments, locale);
+			out.write(content.getBytes("UTF-8"));
+			out.flush();
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		
+		if(attachments != null && !attachments.isEmpty()) {
+			File attachmentsDir = new File(mediaArchiveDirectory, media.getKey().toString());
+			attachmentsDir.mkdir();
+			for(File attachment:attachments) {
+				FileUtils.copyFileToDir(attachment, attachmentsDir, false, "Copy media artfacts");
+			}
+		}
+	}
+
+	private String exportContent(Media media, Component contentCmp, List<File> attachments, Locale locale) {
+		StringOutput sb = new StringOutput(10000);
+		Translator translator = Util.createPackageTranslator(MediaCenterController.class, locale);
+		String pagePath = Util.getPackageVelocityRoot(AbstractMediaHandler.class) + "/export_content.html";
+		VelocityContainer component = new VelocityContainer("html", pagePath, translator, null);
+		component.contextPut("media", media);
+		if(contentCmp != null) {
+			component.put("contentCmp", contentCmp);
+		} else {
+			component.contextPut("content", media.getContent());
+		}
+		component.contextPut("attachments", attachments);
+		
+		SyntheticUserRequest ureq = new SyntheticUserRequest(null, locale);
+		MediaMetadataController metadata = new MediaMetadataController(ureq, new WindowControlMocker(), media);
+		component.put("metadata", metadata.getInitialComponent());
+		
+		Renderer renderer = Renderer.getInstance(component, translator, new EmptyURLBuilder(), new RenderResult(), new DefaultGlobalSettings());
+		try(VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, component, sb)) {
+			component.contextPut("r", vrdec);
+			renderer.render(sb, component, null);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return sb.toString();
 	}
 
 	public final class Informations implements MediaInformations {

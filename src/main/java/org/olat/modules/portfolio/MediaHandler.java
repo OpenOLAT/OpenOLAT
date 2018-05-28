@@ -20,6 +20,9 @@
  */
 package org.olat.modules.portfolio;
 
+import java.io.File;
+import java.util.Locale;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -27,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.manager.ManifestBuilder;
 
 /**
  * 
@@ -57,5 +61,15 @@ public interface MediaHandler {
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints);
 	
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media);
+	
+	/**
+	 * Export the user data.
+	 * 
+	 * @param identity The identity
+	 * @param manifest A manifest for all the files added to the archive
+	 * @param archiveDirectory The directory where the files can be safely saved.
+	 * @param locale The language
+	 */
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale);
 
 }

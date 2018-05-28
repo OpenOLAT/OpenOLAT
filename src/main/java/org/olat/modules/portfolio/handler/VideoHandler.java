@@ -20,7 +20,10 @@
 package org.olat.modules.portfolio.handler;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -50,6 +53,7 @@ import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -172,5 +176,13 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectVideoMediaController(ureq, wControl);
+	}
+	
+	@Override
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		List<File> videos = new ArrayList<>();
+		File mediaDir = fileStorage.getMediaDirectory(media);
+		videos.add(new File(mediaDir, media.getRootFilename()));
+		super.exportContent(media, null, videos, mediaArchiveDirectory, locale);
 	}
 }

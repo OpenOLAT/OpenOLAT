@@ -21,6 +21,9 @@
  */
 package org.olat.modules.wiki.portfolio;
 
+import java.io.File;
+import java.util.Locale;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -39,6 +42,7 @@ import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,5 +127,10 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
+	}
+
+	@Override
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		super.exportContent(media, null, null, mediaArchiveDirectory, locale);
 	}
 }
