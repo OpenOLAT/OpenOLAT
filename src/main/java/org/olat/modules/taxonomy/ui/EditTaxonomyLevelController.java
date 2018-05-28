@@ -121,6 +121,8 @@ public class EditTaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_taxonomy_level_form");
+		
 		if(level == null || level.getKey() == null) {
 			String[] pathKeys;
 			String[] pathValues;
@@ -141,10 +143,12 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		String identifier = level == null ? "" : level.getIdentifier();
 		identifierEl = uifactory.addTextElement("level.identifier", "level.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.identifier));
+		identifierEl.setElementCssClass("o_sel_taxonomy_level_identifier");
 		identifierEl.setMandatory(true);
 
 		String displayName = level == null ? "" : level.getDisplayName();
 		displayNameEl = uifactory.addTextElement("level.displayname", "level.displayname", 255, displayName, formLayout);
+		displayNameEl.setElementCssClass("o_sel_taxonomy_level_name");
 		displayNameEl.setMandatory(true);
 		displayNameEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
 		if(!StringHelper.containsNonWhitespace(displayName)) {

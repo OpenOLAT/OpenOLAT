@@ -162,7 +162,7 @@ public class ExtManager extends LogDelegator {
 		for (Extension extension : extensionValues) {
 			if (!extension.isEnabled()) {
 				count_disabled++;
-				logInfo("* Disabled Extension got loaded :: " + extension + ".  Check that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);
+				logDebug("* Disabled Extension got loaded :: " + extension + ".  Check that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);
 			}
 			int orderKey = extension.getOrder();
 			

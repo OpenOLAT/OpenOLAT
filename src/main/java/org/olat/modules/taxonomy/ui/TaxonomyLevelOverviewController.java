@@ -85,6 +85,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		actionButton.setIconLeftCSS("o_icon o_icon_actions");
 		
 		tabPane = new TabbedPane("tabs", ureq.getLocale());
+		tabPane.setElementCssClass("o_sel_taxonomy_level_tabs");
 		tabPane.addListener(this);
 		
 		metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);

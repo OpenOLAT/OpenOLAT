@@ -73,6 +73,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.IPUtilsValidRangeTest.class,
 	org.olat.core.util.mail.EmailAddressValidatorTest.class,
 	org.olat.core.util.mail.manager.MailManagerTest.class,
+	org.olat.core.util.mail.manager.MailUserDataManagerTest.class,
 	org.olat.core.util.openxml.OpenXmlWorkbookTest.class,
 	org.olat.core.util.openxml.OpenXMLDocumentTest.class,
 	org.olat.core.util.xml.XMLDigitalSignatureUtilTest.class,

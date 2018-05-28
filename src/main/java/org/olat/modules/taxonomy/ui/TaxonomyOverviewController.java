@@ -69,14 +69,18 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		metadataLink = LinkFactory.createLink("taxonomy.metadata", mainVC, this);
+		metadataLink.setElementCssClass("o_sel_taxonomy_metadata");
 		segmentView.addSegment(metadataLink, true);
 		doOpenMetadata(ureq);
 		
 		typesLink = LinkFactory.createLink("taxonomy.types", mainVC, this);
+		typesLink.setElementCssClass("o_sel_taxonomy_types");
 		segmentView.addSegment(typesLink, false);
 		levelsLink = LinkFactory.createLink("taxonomy.levels", mainVC, this);
+		levelsLink.setElementCssClass("o_sel_taxonomy_levels");
 		segmentView.addSegment(levelsLink, false);
 		lostFoundLink = LinkFactory.createLink("taxonomy.lost.found", mainVC, this);
+		lostFoundLink.setElementCssClass("o_sel_taxonomy_lost_found");
 		segmentView.addSegment(lostFoundLink, false);
 
 		putInitialPanel(mainVC);

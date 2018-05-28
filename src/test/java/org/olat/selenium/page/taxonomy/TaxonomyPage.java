@@ -17,36 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user.manager;
+package org.olat.selenium.page.taxonomy;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.user.UserDataExportService;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * 
- * Initial date: 23 mai 2018<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserDataExportTask implements /* Long */ Runnable {
-
-	private static final long serialVersionUID = 6931074116105090545L;
-
-	private static final OLog log = Tracing.createLoggerFor(UserDataExportTask.class);
+public class TaxonomyPage {
 	
-	private final Long exportKey;
+	private final WebDriver browser;
 	
-	public UserDataExportTask(Long exportKey) {
-		this.exportKey = exportKey;
+	public TaxonomyPage(WebDriver browser) {
+		this.browser = browser;
 	}
 	
-	@Override
-	public void run() {
-		long startTime = System.currentTimeMillis();
-		UserDataExportService exportService = CoreSpringFactory.getImpl(UserDataExportService.class);
-		exportService.exportData(exportKey);
-		log.info("Finished data export thread for=" + exportKey + " in " + (System.currentTimeMillis() - startTime) + " (ms)");
+	/**
+	 * Select the tab to manage the taxonomy levels.
+	 * 
+	 * @return The taxonomy tree page
+	 */
+	public TaxonomyTreePage selectTaxonomyTree() {
+		By selectLevelsBy = By.cssSelector("a.o_sel_taxonomy_levels");
+		OOGraphene.waitElement(selectLevelsBy, browser);
+		browser.findElement(selectLevelsBy).click();
+		return new TaxonomyTreePage(browser).assertOnTaxonomyTree();
 	}
+
 }

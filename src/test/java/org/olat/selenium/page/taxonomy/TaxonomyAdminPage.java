@@ -17,36 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user.manager;
+package org.olat.selenium.page.taxonomy;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.user.UserDataExportService;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * 
- * Initial date: 23 mai 2018<br>
+ * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserDataExportTask implements /* Long */ Runnable {
+public class TaxonomyAdminPage {
 
-	private static final long serialVersionUID = 6931074116105090545L;
-
-	private static final OLog log = Tracing.createLoggerFor(UserDataExportTask.class);
+	private final WebDriver browser;
 	
-	private final Long exportKey;
-	
-	public UserDataExportTask(Long exportKey) {
-		this.exportKey = exportKey;
+	public TaxonomyAdminPage(WebDriver browser) {
+		this.browser = browser;
 	}
 	
-	@Override
-	public void run() {
-		long startTime = System.currentTimeMillis();
-		UserDataExportService exportService = CoreSpringFactory.getImpl(UserDataExportService.class);
-		exportService.exportData(exportKey);
-		log.info("Finished data export thread for=" + exportKey + " in " + (System.currentTimeMillis() - startTime) + " (ms)");
+	public TaxonomyAdminPage assertOnTaxonomyList() {
+		By taxonomyListBy = By.className("o_taxonomy_listing");
+		OOGraphene.waitElement(taxonomyListBy, browser);
+		return this;
 	}
+	
+	public TaxonomyPage selectTaxonomy(String identifier) {
+		By selectBy = By.xpath("//div[@class='o_taxonomy_row'][div/div/h4/small[text()[contains(.,'" + identifier + "')]]]/div/div[@class='panel-body']/div[@class='pull-right']/a");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return new TaxonomyPage(browser);
+	}
+
 }

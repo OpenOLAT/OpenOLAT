@@ -31,6 +31,8 @@ import org.olat.core.id.Identity;
  */
 public interface QItemFactory {
 	
+	public String getType();
+	
 	public String getLabel(Locale locale);
 	
 	public QuestionItem createItem(Identity owner, String title, Locale locale);

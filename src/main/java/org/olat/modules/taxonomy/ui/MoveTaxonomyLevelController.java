@@ -98,7 +98,9 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 		for(TaxonomyLevel levelToMove:levelsToMove) {
 			TreeNode nodeToMove = taxonomyModel
 					.getNodeById(TaxonomyAllTreesBuilder.nodeKey(levelToMove));
-			nodeToMove.removeAllChildren();
+			if(nodeToMove != null) {
+				nodeToMove.removeAllChildren();
+			}
 		}
 		
 		// remove the level with

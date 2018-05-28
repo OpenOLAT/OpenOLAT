@@ -51,10 +51,12 @@ public class ReviewProcessActivationController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_qpool_reset_status_form");
 		uifactory.addStaticTextElement("description", "", translate("review.process.confirm.enable.description"), formLayout);
 		
 		String[] resetValues = new String[] { translate("reset.status") };
 		resetStatusaEl = uifactory.addCheckboxesHorizontal("reset.status", "", formLayout, resetKeys, resetValues);
+		resetStatusaEl.setElementCssClass("o_sel_qpool_reset_status");
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

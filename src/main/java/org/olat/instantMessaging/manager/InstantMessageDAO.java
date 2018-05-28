@@ -75,6 +75,14 @@ public class InstantMessageDAO {
 		}
 		return msgs.get(0);
 	}
+	
+	public List<InstantMessage> loadMessageBy(IdentityRef identity) {
+		String query = "select msg from instantmessage msg where msg.fromKey=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, InstantMessage.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
 
 	public List<InstantMessage> getMessages(OLATResourceable ores, Date from, int firstResult, int maxResults) {
 		String queryName = (from == null ? "loadIMessageByResource" : "loadIMessageByResourceAndDate");

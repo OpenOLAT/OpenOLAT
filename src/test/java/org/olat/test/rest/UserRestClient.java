@@ -100,14 +100,22 @@ public class UserRestClient {
 		
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);
+		updateRoles(restConnection, user, roles);
+
+		restConnection.shutdown();
+		return user;
+	}
+	
+	public UserVO createPoolManager(String name)
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(username, password));
 		
-		//update roles of author
-		URI request = getUsersURIBuilder().path(user.getKey().toString()).path("roles").build();
-		HttpPost method = restConnection.createPost(request, MediaType.APPLICATION_JSON);
-		restConnection.addJsonEntity(method, roles);
-		HttpResponse response = restConnection.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		UserVO user = createUser(restConnection, name, "Auth");
+		
+		RolesVO roles = new RolesVO();
+		roles.setPoolAdmin(true);
+		updateRoles(restConnection, user, roles);
 
 		restConnection.shutdown();
 		return user;
@@ -148,6 +156,20 @@ public class UserRestClient {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	/**
+	 * Update roles
+	 */
+	private void updateRoles(RestConnection restConnection, UserVO user, RolesVO roles)
+	throws URISyntaxException, IOException {
+		//update roles of pool manager
+		URI request = getUsersURIBuilder().path(user.getKey().toString()).path("roles").build();
+		HttpPost method = restConnection.createPost(request, MediaType.APPLICATION_JSON);
+		restConnection.addJsonEntity(method, roles);
+		HttpResponse response = restConnection.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 	}
 	
 	private UriBuilder getUsersURIBuilder()

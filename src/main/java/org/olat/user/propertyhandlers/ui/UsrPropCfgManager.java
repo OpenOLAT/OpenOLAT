@@ -171,7 +171,7 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 				// -->set it as active
 				// (note: if you delete persistedProperties-conf-file, all handlers are
 				// "new" and therefore should be active)
-				log.info("UserPropertyHandler "+handler.getName()+" unknown in config, set Property as active.");
+				log.debug("UserPropertyHandler "+handler.getName()+" unknown in config, set Property as active.");
 				cfgObject.setHandlerAsActive(handler, true);
 			}
 		}
@@ -189,7 +189,7 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 			String handlerNameInConfig = props.getProperty(contextName, null);
 			if (handlerNameInConfig == null) {// our config doesn't know this context,
 																				// leave it as is!
-				log.info("UserPropertyUsageContext "+contextName+" unknown in config, leave Context untouched.");
+				log.debug("UserPropertyUsageContext "+contextName+" unknown in config, leave Context untouched.");
 				continue;
 			}
 			// this list from the persistedProperties has the correct order of handlers!

@@ -54,7 +54,7 @@ public class ElementToReviewCellRenderer implements FlexiCellRenderer {
 			List<String> elements = rowToReview.getSubIndents();
 			if(elements.size() == 1) {
 				String msg = nodeIdentToNodeShortTitles.get(elements.get(0));
-				target.append(msg);
+				target.append(msg != null ? msg : "");
 			} else {
 				String msg = translator.translate("elements.to.review", new String[]{ Integer.toString(elements.size()) });
 				target.append("<i class='o_icon o_icon_important'> </i> ");

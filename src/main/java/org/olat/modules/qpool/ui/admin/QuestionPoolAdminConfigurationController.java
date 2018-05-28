@@ -103,6 +103,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer moduleCont = FormLayoutContainer.createDefaultFormLayout("module", getTranslator());
+		moduleCont.setElementCssClass("o_sel_qpool_configuration");
 		moduleCont.setFormTitle(translate("admin.configuration.title"));
 		moduleCont.setRootForm(mainForm);
 		formLayout.add("module", moduleCont);
@@ -110,6 +111,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		String[] onValues = new String[] { translate("on") };
 		reviewProcessEnabledEl = uifactory.addCheckboxesHorizontal("review.process.enabled", moduleCont, onKeys, onValues);
 		reviewProcessEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		reviewProcessEnabledEl.setElementCssClass("o_sel_qpool_review_process");
 		if (qpoolModule.isReviewProcessEnabled()) {
 			reviewProcessEnabledEl.select(onKeys[0], true);
 		}
@@ -196,6 +198,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		poolManagerRightsEl.select(POOL_MANAGER_EDUCATIONAL_CONTEXT, qpoolModule.isPoolAdminAllowedToConfigEducationalContext());
 		
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
+		buttonsWrapperCont.setElementCssClass("o_sel_qpool_buttons");
 		buttonsWrapperCont.setRootForm(mainForm);
 		formLayout.add("buttonsWrapper", buttonsWrapperCont);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

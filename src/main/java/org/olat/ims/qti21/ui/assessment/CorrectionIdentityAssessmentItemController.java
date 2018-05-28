@@ -159,6 +159,13 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= identityInteractionsCtrl.validateFormLogic(ureq);
+		return allOk;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -175,13 +182,17 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveNextQuestionButton == source) {
-			doSave();
-			fireEvent(ureq, Event.CHANGED_EVENT);
-			fireEvent(ureq, new NextAssessmentItemEvent());
+			if(identityInteractionsCtrl.validateFormLogic(ureq)) {
+				doSave();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+				fireEvent(ureq, new NextAssessmentItemEvent());
+			}
 		} else if(saveBackOverviewButton == source) {
-			doSave();
-			fireEvent(ureq, Event.CHANGED_EVENT);
-			fireEvent(ureq, Event.BACK_EVENT);
+			if(identityInteractionsCtrl.validateFormLogic(ureq)) {
+				doSave();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+				fireEvent(ureq, Event.BACK_EVENT);
+			}
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}

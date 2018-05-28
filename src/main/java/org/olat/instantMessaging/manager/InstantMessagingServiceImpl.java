@@ -19,6 +19,10 @@
  */
 package org.olat.instantMessaging.manager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -26,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,9 +40,15 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.group.BusinessGroup;
@@ -57,7 +68,9 @@ import org.olat.instantMessaging.model.InstantMessageImpl;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.instantMessaging.model.RosterEntryView;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserDataExportable;
 import org.olat.user.UserManager;
+import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +81,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class InstantMessagingServiceImpl implements InstantMessagingService, DeletableGroupData, UserDataDeletable {
+public class InstantMessagingServiceImpl implements InstantMessagingService, DeletableGroupData, UserDataDeletable, UserDataExportable {
+	
+	private static final OLog log = Tracing.createLoggerFor(InstantMessagingServiceImpl.class);
 	
 	@Autowired
 	private RosterDAO rosterDao;
@@ -102,6 +117,35 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		imDao.deleteMessages(identity);
 		rosterDao.deleteEntry(identity);
 		prefsDao.deletePreferences(identity);
+	}
+	
+	@Override
+	public String getExporterID() {
+		return "chat";
+	}
+
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		File chatArchive = new File(archiveDirectory, "Chat.xlsx");
+		try(OutputStream out = new FileOutputStream(chatArchive);
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			
+			Row header = sheet.newRow();
+			header.addCell(0, "Created");
+			header.addCell(1, "Message");
+			
+			List<InstantMessage> messages = imDao.loadMessageBy(identity);
+			dbInstance.commitAndCloseSession();
+			for (InstantMessage message : messages) {
+				Row row = sheet.newRow();
+				row.addCell(0, message.getCreationDate(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(1, Formatter.truncate(message.getBody(), 32000));
+			}
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
+		}
+		manifest.appendFile(chatArchive.getName());
 	}
 
 	@Override
@@ -295,7 +339,7 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 			}
 		}
 		
-		if(loadStatus.size() > 0) {
+		if(!loadStatus.isEmpty()) {
 			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
 			Map<Long,String> statusMap = prefsDao.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
