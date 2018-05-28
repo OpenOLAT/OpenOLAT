@@ -108,7 +108,7 @@ public class NewControllerFactory {
 		ContextEntryControllerCreator oldCreator = contextEntryControllerCreators.get(key);
 		contextEntryControllerCreators.put(key, controllerCreator);
 		// Add config logging to console
-		log.info("Adding context entry controller creator for key::" + key + " and value::" + controllerCreator.getClass().getCanonicalName() 
+		log.debug("Adding context entry controller creator for key::" + key + " and value::" + controllerCreator.getClass().getCanonicalName() 
 				+ (oldCreator == null ? "" : " replaceing existing controller creator ::" + oldCreator.getClass().getCanonicalName()), null);
 	}
 
