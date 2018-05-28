@@ -189,6 +189,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private WikiMediaHandler wikiMediaHandler;
 	@Autowired
 	private PortfolioV2Module portfolioModule;
+	@Autowired
+	private ForumManager forumManager;
 
 	public WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
 			WikiSecurityCallback securityCallback, String initialPageName) {
@@ -672,10 +674,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 **********************************************************************/
 			Forum forum = null;
 			if (page.getForumKey() > 0) {
-				forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
+				forum = forumManager.loadForum(Long.valueOf(page.getForumKey()));
 			}
 			if (forum == null) {
-				forum = ForumManager.getInstance().addAForum();
+				forum = forumManager.addAForum();
 				page.setForumKey(forum.getKey().longValue());
 				WikiManager.getInstance().updateWikiPageProperties(ores, page);
 			}

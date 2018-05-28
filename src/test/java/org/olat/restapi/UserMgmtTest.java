@@ -144,6 +144,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private ForumManager forumManager;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -223,10 +225,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		CollaborationTools g1CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
 		g1CTSMngr.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
 		Forum g1Forum = g1CTSMngr.getForum();//create the forum
-		Message m1 = ForumManager.getInstance().createMessage(g1Forum, id1, false);
+		Message m1 = forumManager.createMessage(g1Forum, id1, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		ForumManager.getInstance().addTopMessage(m1);
+		forumManager.addTopMessage(m1);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -259,10 +261,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 					if(demoForumNode == null) {
 						demoForumNode = (FOCourseNode)node;
 						Forum courseForum = demoForumNode.loadOrCreateForum(demoCourse.getCourseEnvironment());
-						Message message1 = ForumManager.getInstance().createMessage(courseForum, id1, false);
+						Message message1 = forumManager.createMessage(courseForum, id1, false);
 						message1.setTitle("Thread-1");
 						message1.setBody("Body of Thread-1");
-						ForumManager.getInstance().addTopMessage(message1);
+						forumManager.addTopMessage(message1);
 					}	
 				} else if (node instanceof BCCourseNode) {
 					if(demoBCCourseNode == null) {

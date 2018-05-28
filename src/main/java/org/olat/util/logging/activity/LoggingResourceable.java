@@ -29,6 +29,7 @@ package org.olat.util.logging.activity;
 import java.io.UnsupportedEncodingException;
 
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -447,7 +448,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 * @return a LoggingResourceable wrapping the given Forum
 	 */
 	public static LoggingResourceable wrap(Forum forum) {
-		final String name = ForumManager.getInstance().getForumNameForLogging(forum);
+		final String name = CoreSpringFactory.getImpl(ForumManager.class).getForumNameForLogging(forum);
 		return new LoggingResourceable(forum, OlatResourceableType.forum, forum.getResourceableTypeName(),
 				String.valueOf(forum.getResourceableId()), name, false);
 	}

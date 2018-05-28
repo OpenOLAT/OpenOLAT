@@ -110,6 +110,8 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private ForumManager forumManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private NotificationsManager notificationManager;
@@ -134,7 +136,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 			}
 			
 			//create a forum
-			forum = ForumManager.getInstance().addAForum();
+			forum = forumManager.addAForum();
 			Message m1 = createMessage(userSubscriberId, forum);
 			Assert.assertNotNull(m1);
 			
@@ -501,11 +503,10 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	private Message createMessage(Identity id, Forum fo) {
-		ForumManager fm = ForumManager.getInstance();
-		Message m1 = fm.createMessage(fo, id, false);
+		Message m1 = forumManager.createMessage(fo, id, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		fm.addTopMessage(m1);
+		forumManager.addTopMessage(m1);
 		return m1;
 	}
 	

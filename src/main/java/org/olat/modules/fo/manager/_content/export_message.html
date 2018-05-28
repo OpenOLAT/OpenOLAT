@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<title>$r.escapeHtml($message.title)</title>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	</head>
+	<body>
+		<div class="o_forum_message_header clearfix">
+			<h4 class="o_forum_message_title">$r.escapeHtml($message.title)</h4>
+			<div class="o_date">
+				$r.translate("msg.creationdate") $r.formatDateAndTime($message.creationDate)
+			</div>
+			#if($r.isNotEmpty($location.url))
+			<div class="o_path">
+				<a href="$location.url">$location.name <small>$location.url</small></a>
+			</div>
+			#end
+		</div>
+		<div class="o_forum_message_body o_user_content_block">
+			<div class="clearfix o_scrollblock">$r.formatLatexFormulas($message.body)</div>
+		</div>
+		
+		#if($r.isNotEmpty($attachments))
+		<div class="o_forum_message_attachments">
+			<h5>$r.translate("attachments"):</h5>
+			<ul class="list-inline">
+			#foreach($attachment in $attachments)
+				#set($fname = $attachment.getName())
+				<li class="o_attachment">
+					<a href="${message.forum.key}_${message.key}/${fname}" target="_blank"><span class="o_filename">$r.escapeHtml($fname)</span></a>		
+				</li>
+			#end 
+			</ul>
+		</div>
+		#end
+	</body>
+</html>

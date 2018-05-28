@@ -44,13 +44,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.velocity.VelocityContext;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.GlobalSettings;
+import org.olat.core.gui.DefaultGlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -340,7 +339,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		mainVC.put("results", results);
 		
 		//render VelocityContainer to StringOutPut
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new EmptyGlobalSettings());
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
 		try(StringOutput sb = new StringOutput(32000);
 				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
 			mainVC.contextPut("r", vrdec);
@@ -415,34 +414,5 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	@Override
 	public void release() {
 		//
-	}
-
-	private static class EmptyAJAXFlags extends AJAXFlags {
-		
-		public EmptyAJAXFlags() {
-			super(null);
-		}
-		
-		@Override
-		public boolean isIframePostEnabled() {
-			return false;
-		}
-	}
-	
-	private static class EmptyGlobalSettings implements GlobalSettings {
-		@Override
-		public int getFontSize() {
-			return 100;
-		}
-		
-		@Override
-		public AJAXFlags getAjaxFlags() {
-			return new EmptyAJAXFlags();
-		}
-		
-		@Override
-		public boolean isIdDivsForced() {
-			return false;
-		}
 	}
 }

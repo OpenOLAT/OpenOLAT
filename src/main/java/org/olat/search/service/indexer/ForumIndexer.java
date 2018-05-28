@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
@@ -48,7 +49,7 @@ public abstract class ForumIndexer extends AbstractHierarchicalIndexer {
 			return;
 		}
 		// loop over all messages of a forum
-		List<Message> messages = ForumManager.getInstance().getMessagesByForum(forum);
+		List<Message> messages = CoreSpringFactory.getImpl(ForumManager.class).getMessagesByForum(forum);
 		for(Message message : messages) {
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setBusinessControlFor(message);

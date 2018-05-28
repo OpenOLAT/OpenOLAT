@@ -60,6 +60,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -100,10 +101,11 @@ public class ForumWebService {
 	}
 	
 	private final Forum forum;
-	private final ForumManager fom = ForumManager.getInstance();
+	private final ForumManager fom;
 	
 	public ForumWebService(Forum forum) {
 		this.forum = forum;
+		fom = CoreSpringFactory.getImpl(ForumManager.class);
 	}
 	
 	/**

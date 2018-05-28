@@ -90,8 +90,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ForumManager {
 	private static final OLog log = Tracing.createLoggerFor(ForumManager.class);
-	
-	private static ForumManager INSTANCE;
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -102,20 +101,6 @@ public class ForumManager {
 	private UserManager userManager;
 	@Autowired
 	private MarkingService markingService;
-
-	/**
-	 * [spring]
-	 */
-	private ForumManager() {
-		INSTANCE = this;
-	}
-
-	/**
-	 * @return the singleton
-	 */
-	public static ForumManager getInstance() {
-		return INSTANCE;
-	}
 	
 	public int countThread(Long messageKey) {
 		String query = "select count(msg) from fomessage as msg where msg.key=:messageKey or msg.threadtop.key=:messageKey";
@@ -373,6 +358,19 @@ public class ForumManager {
 				.setParameter("messageKey", messageKey)
 				.getResultList();
 		return messages == null || messages.isEmpty() ? null : messages.get(0);
+	}
+	
+	public List<Message> getMessageByCreator(IdentityRef creator) {
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from fomessage as msg")
+		     .append(" inner join msg.creator as creator")
+		     .append(" inner join fetch msg.forum as forum")
+		     .append(" where msg.creator.key=:identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Message.class)
+				.setParameter("identityKey", creator.getKey())
+				.getResultList();
 	}
 
 	public boolean isPseudonymProtected(String pseudonym) {

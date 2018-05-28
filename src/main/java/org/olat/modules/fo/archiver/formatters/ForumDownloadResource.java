@@ -30,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
@@ -146,10 +147,10 @@ public class ForumDownloadResource implements MediaResource {
 			
 			ForumOpenXMLFormatter openXmlFormatter = new ForumOpenXMLFormatter(mediaContainer, locale);
 			if(topMessageId != null) {
-				ForumArchiveManager.getInstance()
+				CoreSpringFactory.getImpl(ForumArchiveManager.class)
 					.applyFormatterForOneThread(openXmlFormatter, forum.getKey(), topMessageId);
 			} else {
-				ForumArchiveManager.getInstance()
+				CoreSpringFactory.getImpl(ForumArchiveManager.class)
 					.applyFormatter(openXmlFormatter, forum.getKey(), foCallback);
 			}
 			

@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.manager.ForumManager;
 
@@ -65,7 +66,7 @@ public class ForumImportWebService {
 	 */
 	@Path("{forumKey}")
 	public ForumWebService getForumWebservice(@PathParam("forumKey") Long forumKey) {
-		ForumManager fom = ForumManager.getInstance();
+		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		Forum forum = fom.loadForum(forumKey);
 		return new ForumWebService(forum);
 	}

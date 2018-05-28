@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.apache.lucene.document.Document;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -90,7 +91,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 		}
 		
 		Long resourceableId = ce.getOLATResourceable().getResourceableId();
-		Message message = ForumManager.getInstance().loadMessage(resourceableId);
+		Message message = CoreSpringFactory.getImpl(ForumManager.class).loadMessage(resourceableId);
 		if(message != null) {
 			Message threadtop = message.getThreadtop();
 			if(threadtop == null) {
@@ -117,7 +118,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	 */
 	private void doIndexForum(SearchResourceContext parentResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (log.isDebug()) log.debug("Index Course Forum...");
-		ForumManager fom = ForumManager.getInstance();
+		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 
 		Property forumKeyProperty = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);

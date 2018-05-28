@@ -96,7 +96,7 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 					}
 				}
 				
-				final List<Message> mInfos = ForumManager.getInstance().getNewMessageInfo(forumKey, compareDate);
+				final List<Message> mInfos = CoreSpringFactory.getImpl(ForumManager.class).getNewMessageInfo(forumKey, compareDate);
 				final Translator translator = Util.createPackageTranslator(ForumNotificationsHandler.class, locale);
 				
 				businessControlString = p.getBusinessPath() + "[Message:";

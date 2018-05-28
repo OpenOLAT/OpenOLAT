@@ -216,8 +216,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//really saved?
 		boolean saved = false;
-		ForumManager fm = ForumManager.getInstance();
-		List<Message> allMessages = fm.getMessagesByForum(forum);
+		List<Message> allMessages = forumManager.getMessagesByForum(forum);
 		for(Message message:allMessages) {
 			if(message.getKey().equals(thread.getKey())) {
 				saved = true;
@@ -249,8 +248,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//really saved?
 		boolean saved = false;
-		ForumManager fm = ForumManager.getInstance();
-		List<Message> allMessages = fm.getMessagesByForum(forum);
+		List<Message> allMessages = forumManager.getMessagesByForum(forum);
 		for(Message msg:allMessages) {
 			if(msg.getKey().equals(message.getKey())) {
 				saved = true;
@@ -326,8 +324,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertEquals(200, attachResponse.getStatusLine().getStatusCode());
 		
 		//check if the file exists
-		ForumManager fm = ForumManager.getInstance();
-		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSContainer container = forumManager.getMessageContainer(message.getForumKey(), message.getKey());
 		VFSItem uploadedFile = container.resolve("portrait.jpg");
 		assertNotNull(uploadedFile);
 		assertTrue(uploadedFile instanceof VFSLeaf);
@@ -374,8 +371,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertEquals(200, attachCode.getStatusLine().getStatusCode());
 		
 		//check if the file exists
-		ForumManager fm = ForumManager.getInstance();
-		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSContainer container = forumManager.getMessageContainer(message.getForumKey(), message.getKey());
 		VFSItem uploadedFile = container.resolve("portrait64.jpg");
 		assertNotNull(uploadedFile);
 		assertTrue(uploadedFile instanceof VFSLeaf);
@@ -439,9 +435,8 @@ public class ForumTest extends OlatJerseyTestCase {
 		}
 		
 		
-		//check if the file exists
-		ForumManager fm = ForumManager.getInstance();
-		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		//check if the file existsforumManager
+		VFSContainer container = forumManager.getMessageContainer(message.getForumKey(), message.getKey());
 		VFSItem uploadedFile = container.resolve("portrait64.jpg");
 		assertNotNull(uploadedFile);
 		assertTrue(uploadedFile instanceof VFSLeaf);
@@ -493,8 +488,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertEquals(200, attachCode.getStatusLine().getStatusCode());
 		
 		//check if the file exists
-		ForumManager fm = ForumManager.getInstance();
-		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSContainer container = forumManager.getMessageContainer(message.getForumKey(), message.getKey());
 		VFSItem uploadedFile = container.resolve("portrait64vo.jpg");
 		assertNotNull(uploadedFile);
 		assertTrue(uploadedFile instanceof VFSLeaf);

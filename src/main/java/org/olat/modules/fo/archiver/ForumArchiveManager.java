@@ -39,26 +39,20 @@ import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
 import org.olat.modules.fo.manager.ForumManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *          Initial Date: Nov 11, 2005 <br>
  * @author Alexander Schneider
  */
-
+@Service
 public class ForumArchiveManager {
+	
 	private static final OLog log = Tracing.createLoggerFor(ForumArchiveManager.class);
-	private static final ForumArchiveManager instance = new ForumArchiveManager();
 	
-	private ForumArchiveManager() {
-		// private since singleton
-	}
-	
-	/**
-	 * @return the singleton
-	 */
-	public static ForumArchiveManager getInstance() {
-		return instance;
-	}
+	@Autowired
+	private ForumManager forumManager;
 	
 	/**
 	 * If the forumCallback is null no restriction applies to the forum archiver. 
@@ -98,10 +92,9 @@ public class ForumArchiveManager {
 	 */
 	private List<MessageNode> convertToThreadTrees(Long forumId, ForumCallback forumCallback){
 		List<MessageNode> topNodeList = new ArrayList<>();
-		ForumManager fm = ForumManager.getInstance();
-	
-		Forum f = fm.loadForum(forumId);
-		List<Message> messages = fm.getMessagesByForum(f);
+
+		Forum f = forumManager.loadForum(forumId);
+		List<Message> messages = forumManager.getMessagesByForum(f);
 		
 		for (Iterator<Message> iterTop = messages.iterator(); iterTop.hasNext();) {
 			Message msg = iterTop.next();
@@ -144,7 +137,7 @@ public class ForumArchiveManager {
 	 */
 	private MessageNode convertToThreadTree(Long topMessageId){
 		MessageNode topNode = null;
-		List<Message> messages = ForumManager.getInstance().getThread(topMessageId);
+		List<Message> messages = forumManager.getThread(topMessageId);
 		for (Iterator<Message> iterTop = messages.iterator(); iterTop.hasNext();) {
 			Message msg = iterTop.next();
 			if (msg.getParent() == null) {
