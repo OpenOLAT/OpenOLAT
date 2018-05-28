@@ -48,7 +48,7 @@ public class EvaluationFormMangerImplTest {
 	@Mock
 	private EvaluationFormSurveyDAO surveyDaoMock;
 	@Mock
-	private EvaluationFormParticipationDAO particopationDaoMock;
+	private EvaluationFormParticipationDAO participationDaoMock;
 	@Mock
 	private EvaluationFormSessionDAO sessionDaoMock;
 
@@ -86,6 +86,7 @@ public class EvaluationFormMangerImplTest {
 	@Test
 	public void shouldMakeSessionDoneWhenFinishingSession() {
 		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		when(sessionDaoMock.loadSessionByKey(sessionMock)).thenReturn(sessionMock);
 		
 		sut.finishSession(sessionMock);
 
@@ -97,11 +98,12 @@ public class EvaluationFormMangerImplTest {
 		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
 		when(sessionMock.getParticipation()).thenReturn(participationMock);
-		when(particopationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		when(participationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		when(sessionDaoMock.loadSessionByKey(sessionMock)).thenReturn(sessionMock);
 		
 		sut.finishSession(sessionMock);
 
-		verify(particopationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.done);
+		verify(participationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.done);
 	}
 	
 	@Test
@@ -110,7 +112,8 @@ public class EvaluationFormMangerImplTest {
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
 		when(participationMock.isAnonymous()).thenReturn(Boolean.TRUE);
 		when(sessionMock.getParticipation()).thenReturn(participationMock);
-		when(particopationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		when(participationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		when(sessionDaoMock.loadSessionByKey(sessionMock)).thenReturn(sessionMock);
 		
 		sut.finishSession(sessionMock);
 
@@ -123,7 +126,8 @@ public class EvaluationFormMangerImplTest {
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
 		when(participationMock.isAnonymous()).thenReturn(Boolean.FALSE);
 		when(sessionMock.getParticipation()).thenReturn(participationMock);
-		when(particopationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		when(participationDaoMock.changeStatus(participationMock, EvaluationFormParticipationStatus.done)).then(returnsFirstArg());
+		when(sessionDaoMock.loadSessionByKey(sessionMock)).thenReturn(sessionMock);
 		
 		sut.finishSession(sessionMock);
 
@@ -135,6 +139,7 @@ public class EvaluationFormMangerImplTest {
 		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
 		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		when(sessionDaoMock.loadSessionByKey(sessionMock)).thenReturn(sessionMock);
 		
 		sut.reopenSession(sessionMock);
 
@@ -149,7 +154,7 @@ public class EvaluationFormMangerImplTest {
 		
 		sut.reopenSession(sessionMock);
 
-		verify(particopationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
+		verify(participationDaoMock).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
 	}
 
 	@Test
@@ -161,7 +166,7 @@ public class EvaluationFormMangerImplTest {
 		sut.reopenSession(sessionMock);
 
 		verify(sessionDaoMock, never()).changeStatus(sessionMock, EvaluationFormSessionStatus.inProgress);
-		verify(particopationDaoMock, never()).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
+		verify(participationDaoMock, never()).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
 	}
 
 }
