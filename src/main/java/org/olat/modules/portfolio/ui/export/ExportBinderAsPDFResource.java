@@ -40,12 +40,11 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.gui.GlobalSettings;
+import org.olat.core.gui.DefaultGlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -225,7 +224,7 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		
 		StringOutput sb = new StringOutput(32000);
 		URLBuilder ubu = new URLBuilder("auth", "1", "0");
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new EmptyGlobalSettings());
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
 		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb);
 		mainVC.contextPut("r", vrdec);
 		renderer.render(sb, mainVC, null);
@@ -367,35 +366,6 @@ public class ExportBinderAsPDFResource implements MediaResource {
 				log.error("Error during copy of resource export", e);
 			}
 			return cleanedSrc;
-		}
-	}
-	
-	private static class EmptyGlobalSettings implements GlobalSettings {
-		@Override
-		public int getFontSize() {
-			return 100;
-		}
-		
-		@Override
-		public AJAXFlags getAjaxFlags() {
-			return new EmptyAJAXFlags();
-		}
-		
-		@Override
-		public boolean isIdDivsForced() {
-			return false;
-		}
-	};
-	
-	private static class EmptyAJAXFlags extends AJAXFlags {
-		
-		public EmptyAJAXFlags() {
-			super(null);
-		}
-		
-		@Override
-		public boolean isIframePostEnabled() {
-			return false;
 		}
 	}
 }

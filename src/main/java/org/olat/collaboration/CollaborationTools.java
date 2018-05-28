@@ -331,7 +331,7 @@ public class CollaborationTools implements Serializable {
 	}
 	
 	public Forum getForum() {
-		final ForumManager fom = ForumManager.getInstance();
+		final ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
 		Property forumProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
 		
@@ -639,7 +639,7 @@ public class CollaborationTools implements Serializable {
 		/*
 		 * delete the forum, if existing
 		 */
-		ForumManager fom = ForumManager.getInstance();
+		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		Property forumKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
 		if (forumKeyProperty != null) {
 			// if there was a forum, delete it
@@ -1009,7 +1009,7 @@ public class CollaborationTools implements Serializable {
 			String archiveForumName = "del_forum_" + forumKeyProperty.getLongValue();
 			VFSContainer archiveForumContainer = archiveContainer.createChildContainer(archiveForumName);
 			ForumFormatter ff = new ForumRTFFormatter(archiveForumContainer, false, I18nModule.getDefaultLocale());
-			ForumArchiveManager.getInstance().applyFormatter(ff, forumKeyProperty.getLongValue(), null);
+			CoreSpringFactory.getImpl(ForumArchiveManager.class).applyFormatter(ff, forumKeyProperty.getLongValue(), null);
 		}
 	}
 

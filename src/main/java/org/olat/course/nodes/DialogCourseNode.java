@@ -228,7 +228,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		diaNodeElemExportContainer.setLocalSecurityCallback(new FullAccessCallback());
 		diaNodeElemExportContainer.copyFrom(dialogFile);
 
-		ForumArchiveManager fam = ForumArchiveManager.getInstance();
+		ForumArchiveManager fam = CoreSpringFactory.getImpl(ForumArchiveManager.class);
 		ForumFormatter ff = new ForumRTFFormatter(diaNodeElemExportContainer, false, locale);
 		fam.applyFormatter(ff, element.getForum().getKey(), null);
 	}
@@ -264,7 +264,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 			ZipUtil.addToZip(item, exportDirName, exportStream);
 		}
 
-		ForumArchiveManager fam = ForumArchiveManager.getInstance();
+		ForumArchiveManager fam = CoreSpringFactory.getImpl(ForumArchiveManager.class);
 		ForumFormatter ff = new ForumStreamedRTFFormatter(exportStream, exportDirName, false, locale);
 		fam.applyFormatter(ff, element.getForum().getKey(), null);
 	}

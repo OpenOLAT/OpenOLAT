@@ -149,6 +149,10 @@ public class PortfolioFileStorage implements InitializingBean {
 		return null;
 	}
 	
+	public File getMediaDirectory(MediaLight media) {
+		return new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
+	}
+	
 	public VFSContainer getMediaContainer(MediaLight media) {
 		return new OlatRootFolderImpl("/" + media.getStoragePath(), null);
 	}

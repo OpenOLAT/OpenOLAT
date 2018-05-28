@@ -50,7 +50,7 @@ import org.olat.core.manager.BasicManager;
  */
 public class WindowManagerImpl extends BasicManager implements WindowManager {
 	
-	private List<WindowBackOfficeImpl> wbos = new ArrayList<WindowBackOfficeImpl>();
+	private List<WindowBackOfficeImpl> wbos = new ArrayList<>();
 	
 	private GlobalSettings globalSettings;
 	private boolean ajaxEnabled = false;

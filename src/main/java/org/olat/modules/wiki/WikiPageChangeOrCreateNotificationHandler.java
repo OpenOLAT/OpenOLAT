@@ -171,7 +171,7 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 					}
 					
 					long forumKey = element.getForumKey();
-					List<Message> mInfos = ForumManager.getInstance().getNewMessageInfo(forumKey, compareDate);
+					List<Message> mInfos = CoreSpringFactory.getImpl(ForumManager.class).getNewMessageInfo(forumKey, compareDate);
 					
 					for (Message mInfo : mInfos) {
 						String messageTitle = mInfo.getTitle();

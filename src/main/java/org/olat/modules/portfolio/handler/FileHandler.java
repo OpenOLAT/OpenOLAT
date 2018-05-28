@@ -20,6 +20,9 @@
 package org.olat.modules.portfolio.handler;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -51,6 +54,7 @@ import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -197,5 +201,15 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectFileMediaController(ureq, wControl);
+	}
+	
+	@Override
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		List<File> files = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(media.getStoragePath()) && StringHelper.containsNonWhitespace(media.getRootFilename())) {
+			File mediaDir = fileStorage.getMediaDirectory(media);
+			files.add(new File(mediaDir, media.getRootFilename()));
+		}
+		super.exportContent(media, null, files, mediaArchiveDirectory, locale);
 	}
 }

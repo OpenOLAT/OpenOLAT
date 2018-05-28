@@ -53,6 +53,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
@@ -388,7 +389,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property forumKeyProp = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);
 		Forum forum = null;
-		ForumManager fom = ForumManager.getInstance();
+		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		if(forumKeyProp!=null) {
       // Forum does already exist, load forum with key from properties
 		  Long forumKey = forumKeyProp.getLongValue();
@@ -455,7 +456,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			// create the forum
-			ForumManager fom = ForumManager.getInstance();
+			ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 			CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 			Forum forum = fom.addAForum();
 			Long forumKey = forum.getKey();

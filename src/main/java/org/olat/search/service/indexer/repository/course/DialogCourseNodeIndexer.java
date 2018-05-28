@@ -128,7 +128,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 
 	private void doIndexAllMessages(SearchResourceContext parentResourceContext, Forum forum, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		// loop over all messages of a forum
-		List<Message> messages = ForumManager.getInstance().getMessagesByForum(forum);
+		List<Message> messages = CoreSpringFactory.getImpl(ForumManager.class).getMessagesByForum(forum);
 		for(Message message:messages){
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setBusinessControlFor(message);
@@ -158,7 +158,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		} else if (ores.getResourceableTypeName().equals(OresHelper.calculateTypeName(Message.class))) {
 			// it is message => check message access
 			Long resourceableId = ores.getResourceableId();
-			Message message = ForumManager.getInstance().loadMessage(resourceableId);
+			Message message = CoreSpringFactory.getImpl(ForumManager.class).loadMessage(resourceableId);
 			Message threadtop = message.getThreadtop();
 			if(threadtop==null) {
 				threadtop = message;

@@ -128,8 +128,12 @@ public class CollectArtefactController extends FormBasicController {
 			//TODO
 		}
 
-		List<String> updatedCategories = categoriesEl.getValueList();
-		portfolioService.updateCategories(mediaReference, updatedCategories);
+		if(mediaReference != null) {
+			List<String> updatedCategories = categoriesEl.getValueList();
+			portfolioService.updateCategories(mediaReference, updatedCategories);
+		} else {
+			showError("ERROR");
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

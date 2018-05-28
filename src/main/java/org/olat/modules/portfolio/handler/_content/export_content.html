@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<title>$r.escapeHtml($media.title)</title>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	</head>
+	<body>
+		<fieldset>
+			<legend>$r.translate("metadata.title")</legend>
+			$r.render("metadata")
+		</fieldset>
+		<fieldset>
+			<legend>$r.translate("content.title")</legend>
+			#if($r.available("contentCmp"))
+			<div>$r.render("contentCmp")</div>
+			#else
+			<div>$media.content</div>
+			#end
+			#if($r.isNotEmpty($attachments))
+			<div class="o_attachments">
+				<h5>$r.translate("attachments"):</h5>
+				<ul class="list-inline">
+				#foreach($attachment in $attachments)
+					#set($fname = $attachment.getName())
+					<li class="o_attachment">
+						<a href="${media.key}/${fname}" target="_blank"><span class="o_filename">$r.escapeHtml($fname)</span></a>		
+					</li>
+				#end 
+				</ul>
+			</div>
+			#end
+		</fieldset>
+	</body>
+</html>

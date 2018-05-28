@@ -39,6 +39,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -65,7 +66,6 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	private static final OLog log = Tracing.createLoggerFor(ForumStreamedRTFFormatter.class);
 
 	private ZipOutputStream exportStream;
-	private ForumManager fm = ForumManager.getInstance();
 	
 	final Pattern PATTERN_HTML_BOLD = Pattern.compile("<strong>(.*?)</strong>", Pattern.CASE_INSENSITIVE);
 	final Pattern PATTERN_HTML_ITALIC = Pattern.compile("<em>(.*?)</em>", Pattern.CASE_INSENSITIVE);
@@ -82,6 +82,8 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	
 	private String HIDDEN_STR = "VERBORGEN";
 	private final String path;
+	
+	private final ForumManager forumManager;
 		
 	/**
 	 * 
@@ -92,6 +94,9 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	public ForumStreamedRTFFormatter(ZipOutputStream exportStream, String path, boolean filePerThread, Locale locale) {
 		// init String Buffer in ForumFormatter
 		super(locale);
+		
+		forumManager = CoreSpringFactory.getImpl(ForumManager.class);
+		
 		// where to write
 		this.exportStream = exportStream;
 		this.filePerThread = filePerThread;
@@ -152,7 +157,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 		}
 		sb.append(" \\par}");
 		// attachment(s)
-		VFSContainer msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
+		VFSContainer msgContainer = forumManager.getMessageContainer(getForumKey(), mn.getKey());
 		List<VFSItem> attachments = msgContainer.getItems();
 		if (attachments != null && attachments.size() > 0){
 			sb.append("{\\pard \\f0\\fs15 Attachment(s): ");

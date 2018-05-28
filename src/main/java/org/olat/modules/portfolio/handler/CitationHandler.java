@@ -19,6 +19,9 @@
  */
 package org.olat.modules.portfolio.handler;
 
+import java.io.File;
+import java.util.Locale;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -37,6 +40,7 @@ import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,5 +109,10 @@ public class CitationHandler extends AbstractMediaHandler implements Interactive
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectCitationMediaController(ureq, wControl);
+	}
+
+	@Override
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		super.exportContent(media, null, null, mediaArchiveDirectory, locale);
 	}
 }

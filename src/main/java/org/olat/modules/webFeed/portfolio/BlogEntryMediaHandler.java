@@ -20,6 +20,10 @@
 package org.olat.modules.webFeed.portfolio;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
@@ -27,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -44,6 +49,7 @@ import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -147,5 +153,13 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
+	}
+	
+	@Override
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		File mediaDir = fileStorage.getMediaDirectory(media);
+		File[] files = mediaDir.listFiles(new SystemFileFilter(true, false));
+		List<File> attachments = files == null ? Collections.emptyList() : Arrays.asList(files);
+		super.exportContent(media, null, attachments, mediaArchiveDirectory, locale);
 	}
 }

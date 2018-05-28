@@ -21,6 +21,7 @@ package org.olat.modules.fo.portfolio;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -51,7 +52,7 @@ public class ForumArtefactHandler extends EPAbstractHandler<ForumArtefact> {
 		super.prefillArtefactAccordingToSource(artefact, source);
 		if (source instanceof OLATResourceable){
 			OLATResourceable ores = (OLATResourceable) source;
-			ForumManager fMgr = ForumManager.getInstance();
+			ForumManager fMgr = CoreSpringFactory.getImpl(ForumManager.class);
 			Message fm = fMgr.loadMessage(ores.getResourceableId());
 			String thread = fm.getThreadtop() != null ? fm.getThreadtop().getTitle() + " - " : "";
 			artefact.setTitle(thread + fm.getTitle());

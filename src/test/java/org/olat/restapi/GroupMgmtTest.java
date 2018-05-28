@@ -61,7 +61,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -111,6 +110,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ForumManager forumManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -174,7 +175,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		// groups
 		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
 		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		// members
 		businessGroupRelationDao.addRole(owner1, g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(owner2, g4, GroupRoles.participant.name());
@@ -194,42 +195,41 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
 		collabTools2.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
     
-		DBFactory.getInstance().closeSession(); // simulate user clicks
+		dbInstance.closeSession(); // simulate user clicks
     
 		//4) fill forum for g1
 		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(g1);
 		Property forumKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_FORUM);
-		ForumManager fm = ForumManager.getInstance();
-		Forum forum = fm.loadForum(forumKeyProperty.getLongValue());
+		Forum forum = forumManager.loadForum(forumKeyProperty.getLongValue());
 		
-		m1 = fm.createMessage(forum, owner1, false);
+		m1 = forumManager.createMessage(forum, owner1, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		fm.addTopMessage(m1);
+		forumManager.addTopMessage(m1);
 		
-		m2 = fm.createMessage(forum, owner2, false);
+		m2 = forumManager.createMessage(forum, owner2, false);
 		m2.setTitle("Thread-2");
 		m2.setBody("Body of Thread-2");
-		fm.addTopMessage(m2);
+		forumManager.addTopMessage(m2);
 		
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		
-		m3 = fm.createMessage(forum, owner3, false);
+		m3 = forumManager.createMessage(forum, owner3, false);
 		m3.setTitle("Message-1.1");
 		m3.setBody("Body of Message-1.1");
-		fm.replyToMessage(m3, m1);
+		forumManager.replyToMessage(m3, m1);
 		
-		m4 = fm.createMessage(forum, part1, false);
+		m4 = forumManager.createMessage(forum, part1, false);
 		m4.setTitle("Message-1.1.1");
 		m4.setBody("Body of Message-1.1.1");
-		fm.replyToMessage(m4, m3);
+		forumManager.replyToMessage(m4, m3);
 		
-		m5 = fm.createMessage(forum, part2, false);
+		m5 = forumManager.createMessage(forum, part2, false);
 		m5.setTitle("Message-1.2");
 		m5.setBody("Body of Message-1.2");
-		fm.replyToMessage(m5, m1);
+		forumManager.replyToMessage(m5, m1);
 
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 	}
 	
 	@After

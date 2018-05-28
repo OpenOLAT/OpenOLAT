@@ -29,6 +29,7 @@ package org.olat.search.service.indexer.group;
 import java.io.IOException;
 
 import org.olat.collaboration.CollaborationTools;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -71,7 +72,7 @@ public class GroupForumIndexer extends ForumIndexer{
 		BusinessGroup businessGroup = (BusinessGroup)businessObj;
 		
 		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(businessGroup);
-		ForumManager fom = ForumManager.getInstance();
+		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 
 		Property forumKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_FORUM);
 		// Check if forum-property exist
@@ -100,7 +101,7 @@ public class GroupForumIndexer extends ForumIndexer{
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
 		Long resourceableId = ce.getOLATResourceable().getResourceableId();
-		Message message = ForumManager.getInstance().loadMessage(resourceableId);
+		Message message = CoreSpringFactory.getImpl(ForumManager.class).loadMessage(resourceableId);
 		if(message == null)  return false;
 
 		Message threadtop = message.getThreadtop();

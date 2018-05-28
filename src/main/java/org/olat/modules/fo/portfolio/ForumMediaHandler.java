@@ -21,7 +21,10 @@
 package org.olat.modules.fo.portfolio;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -51,6 +56,7 @@ import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -169,5 +175,18 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
+	}
+	
+	@Override
+	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
+		List<File> attachments = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(media.getStoragePath())) {
+			File mediaDir = fileStorage.getMediaDirectory(media);
+			if(mediaDir != null && mediaDir.exists()) {
+				File[] attachmentArr = mediaDir.listFiles(new SystemFileFilter(true, false));
+				attachments = Arrays.asList(attachmentArr);
+			}
+		}
+		super.exportContent(media, null, attachments, mediaArchiveDirectory, locale);
 	}
 }

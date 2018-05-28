@@ -21,6 +21,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.BinderImpl;
@@ -111,10 +112,29 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 	@Override
 	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
 		File portfolioArchive = new File(archiveDirectory, "Portfolios");
-		portfolioArchive.mkdirs();
+		portfolioArchive.mkdir();
+		exportBinders(identity, portfolioArchive, locale);
+		exportMedias(identity, manifest, portfolioArchive, locale);
+	}
+	
+	private void exportMedias(Identity identity, ManifestBuilder manifest, File portfolioArchive, Locale locale) {
+		File mediasArchive = new File(portfolioArchive, "Media");
+		mediasArchive.mkdir();
+		
+		List<Media> medias = mediaDao.load(identity);
+		dbInstance.commitAndCloseSession();
+		for(Media media:medias) {
+			MediaHandler handler = portfolioService.getMediaHandler(media.getType());
+			handler.export(media, manifest, mediasArchive, locale);
+		}
+	}
+	
+	private void exportBinders(Identity identity, File portfolioArchive, Locale locale) {
+		File bindersArchive = new File(portfolioArchive, "Binders");
+		bindersArchive.mkdir();
 		List<Binder> binders = binderDao.getOwnedBinders(identity);
 		for(Binder binder:binders) {
-			exportBinder(binder, identity, portfolioArchive, locale);
+			exportBinder(binder, identity, bindersArchive, locale);
 		}
 	}
 	

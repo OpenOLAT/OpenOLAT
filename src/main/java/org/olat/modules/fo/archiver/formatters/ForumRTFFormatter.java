@@ -40,6 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -72,7 +73,6 @@ public class ForumRTFFormatter extends ForumFormatter {
 
 	private VFSContainer container;
 	private VFSItem vfsFil = null;
-	private ForumManager fm = ForumManager.getInstance();
 	private VFSContainer tempContainer;
 	
 	final Pattern PATTERN_HTML_BOLD = Pattern.compile("<strong>(.*?)</strong>", Pattern.CASE_INSENSITIVE);
@@ -91,6 +91,8 @@ public class ForumRTFFormatter extends ForumFormatter {
 	//TODO: (LD) translate this!
 	private String HIDDEN_STR = "VERBORGEN";
 	
+	private final ForumManager forumManager;
+	
 	/**
 	 * 
 	 * @param container
@@ -103,6 +105,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		// where to write
 		this.container = container;
 		this.filePerThread = filePerThread;
+		forumManager = CoreSpringFactory.getImpl(ForumManager.class);
 	}
 
 	/**
@@ -167,7 +170,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		}
 		sb.append(" \\par}");
 		// attachment(s)
-		VFSContainer msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
+		VFSContainer msgContainer = forumManager.getMessageContainer(getForumKey(), mn.getKey());
 		List<VFSItem> attachments = msgContainer.getItems();
 		if (attachments != null && attachments.size() > 0){
 			VFSItem item = container.resolve("attachments");
