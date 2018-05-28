@@ -374,10 +374,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue())) {
-			Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
-			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
-			
 			try {
+				// check with the parse algorithm of BigDecimal first
+				new BigDecimal(el.getValue()).doubleValue();
+
+				Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
+				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+					
 				double score = parseDouble(el);
 				boolean boundariesOk = true;
 				if(minScore != null && score < minScore.doubleValue()) {
@@ -394,6 +397,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				}
 				allOk &= boundariesOk;
 			} catch (NumberFormatException e) {
+				logWarn("Cannot parse the score: " + el.getValue(), null);
 				el.setErrorKey("error.double.format", null);
 				allOk &= false;
 			}
