@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.Feed;
@@ -192,6 +193,13 @@ public class ItemDAO {
 			query.setParameter("filteredItemIds", filteredItemIds);
 		}
 		return query.getResultList();
+	}
+	
+	public List<Item> loadItemsByAuthor(IdentityRef author) {
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("loadItemsByAuthorWithFeed", Item.class)
+			.setParameter("authorKey", author.getKey())
+			.getResultList();
 	}
 	
 	/**
