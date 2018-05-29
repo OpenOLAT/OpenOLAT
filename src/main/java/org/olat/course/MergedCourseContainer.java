@@ -360,7 +360,7 @@ public class MergedCourseContainer extends MergeSource {
 			} else {
 				VFSContainer courseBase = course.getCourseBaseContainer();
 				rootFolder = (VFSContainer) courseBase.resolve("/coursefolder" + subpath);
-				if(rootFolder.getLocalSecurityCallback() != null) {
+				if(rootFolder != null && rootFolder.getLocalSecurityCallback() != null) {
 					SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
 					rootFolder.setLocalSecurityCallback(new OverrideSubscriptionSecurityCallback(rootFolder.getLocalSecurityCallback(), subContext));
 				}

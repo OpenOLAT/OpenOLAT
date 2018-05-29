@@ -78,6 +78,10 @@ update o_user inner join o_bs_identity on (id=fk_identity) set u_swissedupersons
 update o_user inner join o_bs_identity on (id=fk_identity) set u_swissedupersonstudybranch2=null where status=199;
 update o_user inner join o_bs_identity on (id=fk_identity) set u_swissedupersonstudybranch3=null where status=199;
 
+drop table o_stat_homeorg;
+drop table o_stat_orgtype;
+drop table o_stat_studylevel;
+drop table o_stat_studybranch3;
 
 -- user data export
 create table o_user_data_export (

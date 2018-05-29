@@ -335,7 +335,7 @@ insert into o_stat_hourofday (businesspath, resid, hour, value)
 							<value>
 							  <![CDATA[
 								create table o_stat_temptable as 
-								select creationdate, businesspath, userproperty2, userproperty4, userproperty10, userproperty3,
+								select creationdate, businesspath,
 								       to_number(substr(businesspath, instr(businesspath, ':') + 1, instr(businesspath, ']') - instr(businesspath, ':') - 1)) resid
 								from o_loggingtable
 								where actionverb='launch' and actionobject='node' and businesspath is not null 

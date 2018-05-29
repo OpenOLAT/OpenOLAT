@@ -21,6 +21,7 @@ package org.olat.course.nodes.dialog;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -39,6 +40,13 @@ public interface DialogElementsManager {
 	public DialogElement createDialogElement(RepositoryEntry entry, Identity identity, String filename, Long size, String subIdent);
 	
 	public List<DialogElement> getDialogElements(RepositoryEntryRef entry, String subIdent);
+	
+	/**
+	 * 
+	 * @param author The author of the elements
+	 * @return A list of dialog elements
+	 */
+	public List<DialogElement> getDialogElements(IdentityRef author);
 	
 	public DialogElement getDialogElementByForum(Long forumKey);
 	

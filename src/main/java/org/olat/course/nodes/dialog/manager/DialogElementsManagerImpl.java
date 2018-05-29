@@ -22,6 +22,7 @@ package org.olat.course.nodes.dialog.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -84,6 +85,20 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 			.createQuery(sb.toString(), DialogElement.class)
 			.setParameter("entryKey", entry.getKey())
 			.setParameter("subIdent", subIdent)
+			.getResultList();
+	}
+
+	@Override
+	public List<DialogElement> getDialogElements(IdentityRef author) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select element from dialogelement as element")
+		  .append(" inner join fetch element.entry entry")
+		  .append(" inner join element.author author")
+		  .append(" where author.key=:identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), DialogElement.class)
+			.setParameter("identityKey", author.getKey())
 			.getResultList();
 	}
 

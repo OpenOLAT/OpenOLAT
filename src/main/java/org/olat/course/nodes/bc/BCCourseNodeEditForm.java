@@ -66,6 +66,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 	private FormLink createFolder;
 	private BCCourseNodeEditCreateFolderForm createFolderForm;
 	private FormItem sharedFolderWarning, sharedFolderInfo;
+	private FormItem linkedFolderWarning;
 	private BCCourseNodeEditChooseFolderForm chooseForm;
 
 	public BCCourseNodeEditForm(UserRequest ureq, WindowControl wControl, BCCourseNode bcNode, ICourse course) {
@@ -89,12 +90,16 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 		sharedFolderWarning = uifactory.createSimpleErrorText("warning", translate("warning.no.sharedfolder"));
 		formLayout.add(sharedFolderWarning);
 
+		linkedFolderWarning = uifactory.createSimpleErrorText("warning2", translate("warning.no.linkedfolder"));
+		formLayout.add(linkedFolderWarning);
+
 		boolean isAuto = node.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER);
 
 		if(isAuto){
 			folderTargetChoose.select("autoPath", true);
 			subPath.setVisible(false);
 			sharedFolderWarning.setVisible(false);
+			linkedFolderWarning.setVisible(false);
 		}else{
 			folderTargetChoose.select("pathChoose", false);
 			String subpath = node.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
@@ -108,6 +113,12 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 				sharedFolderWarning.setVisible(true);
 			}else{
 				sharedFolderWarning.setVisible(false);
+			}
+
+			if(isLinkedFolderNotPresent()){
+				linkedFolderWarning.setVisible(true);
+			}else{
+				linkedFolderWarning.setVisible(false);
 			}
 
 
@@ -137,6 +148,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(folderTargetChoose.isSelected(0)){
 			sharedFolderWarning.setVisible(false);
+			linkedFolderWarning.setVisible(false);
 		}else{
 			if(isSharedfolderNotPresent()){
 				sharedFolderWarning.setVisible(true);
@@ -147,6 +159,11 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 				sharedFolderInfo.setVisible(course.getCourseConfig().isSharedFolderReadOnlyMount());
 			}else{
 				sharedFolderInfo.setVisible(false);
+			}
+			if(isLinkedFolderNotPresent()){
+				linkedFolderWarning.setVisible(true);
+			}else{
+				linkedFolderWarning.setVisible(false);
 			}
 		}
 		if(source == folderTargetChoose){
@@ -276,4 +293,10 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 		return false;
 	}
 
+	private boolean isLinkedFolderNotPresent(){
+		VFSContainer courseBase = course.getCourseBaseContainer();
+		String subpath = node.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
+		VFSContainer rootFolder = (VFSContainer) courseBase.resolve("/coursefolder" + subpath);
+		return rootFolder == null;
+	}
 }

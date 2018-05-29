@@ -29,7 +29,7 @@ import java.io.File;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.services.taskexecutor.LongRunnable;
+import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -52,7 +52,7 @@ import org.olat.resource.OLATResourceManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DeleteUserDataTask implements LongRunnable {
+public class DeleteUserDataTask implements LowPriorityRunnable {
 	private static final long serialVersionUID = 4278304131373256050L;
 
 	private static final OLog log = Tracing.createLoggerFor(DeleteUserDataTask.class);

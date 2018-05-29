@@ -555,19 +555,6 @@ create table if not exists o_loggingtable (
 	sourceclass varchar(255),
 	sessionid varchar(255) not null,
 	user_id bigint,
-	username varchar(255),
-	userproperty1 varchar(255),
-	userproperty2 varchar(255),
-	userproperty3 varchar(255),
-	userproperty4 varchar(255),
-	userproperty5 varchar(255),
-	userproperty6 varchar(255),
-	userproperty7 varchar(255),
-	userproperty8 varchar(255),
-	userproperty9 varchar(255),
-	userproperty10 varchar(255),
-	userproperty11 varchar(255),
-	userproperty12 varchar(255),
 	actioncrudtype varchar(1) not null,
 	actionverb varchar(16) not null,
 	actionobject varchar(32) not null,
@@ -753,62 +740,6 @@ create table if not exists o_stat_daily (
 
 );
 create index statday_resid_idx on o_stat_daily (resid);
-
-
--- insert into o_stat_homeorg (businesspath,resid,homeorg,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,userproperty2 homeorg,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,homeorg;
-create table if not exists o_stat_homeorg (
-
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	homeorg varchar(255) not null,
-	value int not null,
-	primary key (id)
-
-);
-create index stathor_resid_idx on o_stat_homeorg (resid);
-
-
--- insert into o_stat_orgtype (businesspath,resid,orgtype,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,userproperty4 orgtype,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,orgtype;
-create table if not exists o_stat_orgtype (
-
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	orgtype varchar(255),
-	value int not null,
-	primary key (id)
-
-);
-create index statorg_resid_idx on o_stat_orgtype (resid);
-
-
--- insert into o_stat_studylevel (businesspath,resid,studylevel,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,userproperty3 studylevel,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,studylevel;
-create table if not exists o_stat_studylevel (
-
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	studylevel varchar(255) not null,
-	value int not null,
-	primary key (id)
-
-);
-create index statstl_resid_idx on o_stat_studylevel (resid);
-
-
--- insert into o_stat_studybranch3 (businesspath,resid,studybranch3,value) select businesspath,substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,userproperty10 studybranch3,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,studybranch3;
-create table if not exists o_stat_studybranch3 (
-
-	id bigint unsigned not null auto_increment,
-	businesspath varchar(2048) not null,
-	resid bigint not null,
-	studybranch3 varchar(255),
-	value int not null,
-	primary key (id)
-
-);
-create index statstb_resid_idx on o_stat_studybranch3 (resid);
 
 
 create table if not exists o_mark (

@@ -101,6 +101,21 @@ public class PFManager {
 	private UserManager userManager;
 	
 	/**
+	 * Resolve an existing drop folder or return null
+	 * 
+	 * @param courseEnv The course environment
+	 * @param pfNode The course element
+	 * @param identity The identity which can drop files
+	 * @return
+	 */
+	public VFSContainer resolveDropFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity) {
+		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_DROPBOX); 
+		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+		VFSItem dropboxContainer = baseContainer.resolve(relPath.toString());
+		return dropboxContainer instanceof VFSContainer ? (VFSContainer)dropboxContainer : null;
+	}
+	
+	/**
 	 * Resolve or create drop folder.
 	 *
 	 * @param courseEnv

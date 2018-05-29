@@ -84,11 +84,12 @@ public class GTAUserDataManager implements DeletableGroupData, UserDataExportabl
 		File tasksArchiveDir = new File(archiveDirectory, "Tasks");
 		tasksArchiveDir.mkdir();
 		
+		int count = 0;
 		List<Task> tasks = gtaManager.getTasks(identity);
 		for(Task task:tasks) {
 			try {
 				TaskList taskList = task.getTaskList();
-				ICourse course = CourseFactory.loadCourse(taskList.getEntry());
+				ICourse course = CourseFactory.loadCourse(taskList.getEntry().getOlatResource().getResourceableId());
 				if(course == null) continue;
 				
 				CourseNode node = course.getRunStructure().getNode(taskList.getCourseNodeIdent());
@@ -97,8 +98,14 @@ public class GTAUserDataManager implements DeletableGroupData, UserDataExportabl
 					File taskArchiveDir = new File(tasksArchiveDir, archiveName); 
 					exportTask(identity, task, (GTACourseNode)node, course, taskArchiveDir);
 				}
+				if(count++ % 25 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
 			} catch (CorruptedCourseException e) {
 				log.warn("", e);
+			} catch (Exception e) {
+				log.error("", e);
+				dbInstance.rollbackAndCloseSession();
 			}
 		}
 	}

@@ -78,18 +78,13 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 			log_.info("updateStatistic: creating o_stat_temptable");
 			jdbcTemplate_.execute(
 					"create table o_stat_temptable (" +
-							"creationdate datetime not null," +
-							"businesspath varchar(2048) not null," +
-							"userproperty2 varchar(255)," +							// homeOrg
-							"userproperty4 varchar(255)," +							// orgType
-							"userproperty10 varchar(255)," +						// studyBranch3
-							"userproperty3 varchar(255)" +							// studyLevel
+						"creationdate datetime not null," +
+						"businesspath varchar(2048) not null" +
 					");");
 			
 			log_.info("updateStatistic: inserting logging actions from "+from+" until "+until);
 			
 			// same month optimization
-			String oLoggingTable = "o_loggingtable";
 			Calendar lastUpdatedCalendar = Calendar.getInstance();
 			lastUpdatedCalendar.setTime(from);
 			Calendar nowUpdatedCalendar = Calendar.getInstance();
@@ -99,13 +94,10 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 			long untilSeconds = until.getTime() / 1000l;
 
 			long numLoggingActions = jdbcTemplate_.update(
-					"insert into o_stat_temptable (creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3) " +
-						"select " +
-							"creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3 " +
-						"from " + 
-						oLoggingTable + 
-						" where " +
-							"actionverb='launch' and actionobject='node' and creationdate>from_unixtime('"+ fromSeconds +"') and creationdate<=from_unixtime('"+ untilSeconds +"');");
+					"insert into o_stat_temptable (creationdate,businesspath) " +
+						"select creationdate,businesspath" +
+						" from o_loggingtable" + 
+						" where actionverb='launch' and actionobject='node' and creationdate>from_unixtime('"+ fromSeconds +"') and creationdate<=from_unixtime('"+ untilSeconds +"');");
 			
 			log_.info("updateStatistic: insert done. number of logging actions: " + numLoggingActions);
 		} catch(RuntimeException e) {

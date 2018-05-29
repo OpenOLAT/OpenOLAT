@@ -461,7 +461,7 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		
 		List<Long> nothingTodos = persistentTaskDao.tasksToDo();
 		Assert.assertNotNull(nothingTodos);
-		Assert.assertFalse(nothingTodos.contains(task));
+		Assert.assertFalse(nothingTodos.contains(task.getKey()));
 	}
 	
 	@Test

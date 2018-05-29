@@ -152,7 +152,6 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 		Calendar cal = addLog(repositoryEntry.getKey(), courseNode.getIdent(), start, dayInPast, hour, minute, second);
 		
 		String week = getWeekString(cal);
-		System.out.println(cal.getTime() + " " + week);
 		incrementInMemoryStatistics(repositoryEntry.getKey(), courseNode.getIdent(), week);
 		cal.getTime();
 		return week;

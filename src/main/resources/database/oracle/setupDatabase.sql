@@ -615,19 +615,6 @@ CREATE TABLE o_loggingtable (
   sourceclass varchar2(255 char),
   sessionid varchar2(255 char) NOT NULL,
   user_id number(20),
-  username varchar2(255 char),
-  userproperty1 varchar2(255 char),
-  userproperty2 varchar2(255 char),
-  userproperty3 varchar2(255 char),
-  userproperty4 varchar2(255 char),
-  userproperty5 varchar2(255 char),
-  userproperty6 varchar2(255 char),
-  userproperty7 varchar2(255 char),
-  userproperty8 varchar2(255 char),
-  userproperty9 varchar2(255 char),
-  userproperty10 varchar2(255 char),
-  userproperty11 varchar2(255 char),
-  userproperty12 varchar2(255 char),
   actioncrudtype varchar2(1 char) NOT NULL,
   actionverb varchar2(16 char) NOT NULL,
   actionobject varchar2(32 char) NOT NULL,
@@ -1133,30 +1120,6 @@ CREATE TABLE o_stat_daily (
   businesspath varchar2(2048 char) NOT NULL,
   resid number(20) NOT NULL,
   day date NOT NULL,
-  value number(11) NOT NULL,
-  PRIMARY KEY (id)
-);
-
-
-CREATE SEQUENCE sq_o_stat_homeorg_id;
-
-CREATE TABLE o_stat_homeorg (
-  id number(20) NOT NULL,
-  businesspath varchar2(2048 char) NOT NULL,
-  resid number(20) NOT NULL,
-  homeorg varchar2(255 char) NOT NULL,
-  value number(11) NOT NULL,
-  PRIMARY KEY (id)
-);
-
-
-CREATE SEQUENCE sq_o_stat_orgtype_id;
-
-CREATE TABLE o_stat_orgtype (
-  id number(20) NOT NULL,
-  businesspath varchar2(2048 char) NOT NULL,
-  resid number(20) NOT NULL,
-  orgtype varchar2(255 char),
   value number(11) NOT NULL,
   PRIMARY KEY (id)
 );
@@ -2812,53 +2775,6 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE TRIGGER ai_o_stat_homeorg_id
-BEFORE INSERT ON o_stat_homeorg
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_homeorg_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_orgtype_id
-BEFORE INSERT ON o_stat_orgtype
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_orgtype_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_studylevel_id
-BEFORE INSERT ON o_stat_studylevel
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_studylevel_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
-
-CREATE OR REPLACE TRIGGER ai_o_stat_studybranch3_id
-BEFORE INSERT ON o_stat_studybranch3
-FOR EACH ROW WHEN (
- new.id IS NULL OR new.id = 0
-)
-BEGIN
- SELECT sq_o_stat_studybranch3_id.nextval
- INTO :new.id
- FROM dual;
-END;
-/
 
 
 -- rating
@@ -2908,10 +2824,6 @@ create index statdow_resid_idx on o_stat_dayofweek (resid);
 create index stathod_resid_idx on o_stat_hourofday (resid);
 create index statwee_resid_idx on o_stat_weekly (resid);
 create index statday_resid_idx on o_stat_daily (resid);
-create index stathor_resid_idx on o_stat_homeorg (resid);
-create index statorg_resid_idx on o_stat_orgtype (resid);
-create index statstl_resid_idx on o_stat_studylevel (resid);
-create index statstb_resid_idx on o_stat_studybranch3 (resid);
 
 -- group
 alter table o_bs_group_member add constraint member_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
