@@ -78,6 +78,7 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
@@ -114,6 +115,7 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Identity unassessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-12");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
@@ -267,6 +269,7 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-15");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-5");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
@@ -284,6 +287,8 @@ public class CertificationTest extends OlatJerseyTestCase {
 		
 		// check that there is a real certificate with its file
 		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Certificate lastCertificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
+		Assert.assertEquals(reloadedCertificate, lastCertificate);
 		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
 		Assert.assertNotNull(certificateFile);
 		Assert.assertTrue(certificateFile.exists());
