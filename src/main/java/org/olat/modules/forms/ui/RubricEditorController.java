@@ -409,6 +409,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 			Slider slider = sliderIt.next();
 			if(!StringHelper.containsNonWhitespace(slider.getStartLabel()) && !StringHelper.containsNonWhitespace(slider.getEndLabel())) {
 				sliderIt.remove();
+				sliders.removeIf(row -> row.getSlider().equals(slider));
+				flc.setDirty(true);
 			}
 		}
 		

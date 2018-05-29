@@ -1,0 +1,27 @@
+<div class="o_evaluation_block o_evaluation_rubric_diagrams">
+	#foreach($slider in $rubricWrapper.getSliders())
+		<div class="o_slider clearfix #if($rubricWrapper.isContinous()) o_continous #end">
+			<div class="row">
+				#if ($rubricWrapper.isWithEndLabel())
+					<div class="col-sm-6">
+						<table style="width: 100%;">
+							<tr><td class="o_start_label">$slider.startLabel</td>
+							<td class="o_end_label">$slider.endLabel</td></tr>
+						</table>
+					</div>
+					<div class="col-sm-3" />
+				#else
+					<div>$slider.startLabel</div>
+				#end
+			</div>
+			<div class="row">
+				<div class="col-sm-6 o_slider_chart">
+					$r.render($slider.chartName)
+				</div>
+				<div class="col-sm-3 o_slider_table">
+					$r.render($slider.tableName)
+				</div>
+			</div>
+		</div>
+	#end
+</div>

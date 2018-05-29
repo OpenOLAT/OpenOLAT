@@ -28,22 +28,20 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.RubricAvgSlidersController;
-import org.olat.modules.forms.ui.model.CalculatedDoubleDataSource;
-import org.olat.modules.forms.ui.model.RubricAvgDataSource;
+import org.olat.modules.forms.ui.RubricBarChartsController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
  * 
- * Initial date: 07.05.2018<br>
+ * Initial date: 25.05.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RubricAvgsSlidersHandler implements EvaluationFormReportHandler {
+public class RubricBarChartsHandler implements EvaluationFormReportHandler {
 
 	@Override
 	public String getType() {
-		return "ruavgsslider";
+		return "rubricbarcharts";
 	}
 
 	@Override
@@ -51,8 +49,7 @@ public class RubricAvgsSlidersHandler implements EvaluationFormReportHandler {
 			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof Rubric) {
 			Rubric rubric = (Rubric) element;
-			CalculatedDoubleDataSource dataSource = new RubricAvgDataSource(rubric, sessions);
-			Controller ctrl = new RubricAvgSlidersController(ureq, windowControl, rubric, dataSource);
+			Controller ctrl = new RubricBarChartsController(ureq, windowControl, rubric, sessions);
 			return ctrl.getInitialComponent();
 		}
 		return null;
