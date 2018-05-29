@@ -64,21 +64,17 @@ public class PostgreSQLTempStatTableCreator implements IStatisticUpdater {
 			log_.info("updateStatistic: creating o_stat_temptable");
 			jdbcTemplate.execute(
 					"create table o_stat_temptable (" +
-							"creationdate timestamp not null," +
-							"businesspath varchar(2048) not null," +
-							"userproperty2 varchar(255)," +							// homeOrg
-							"userproperty4 varchar(255)," +							// orgType
-							"userproperty10 varchar(255)," +						// studyBranch3
-							"userproperty3 varchar(255)" +							// studyLevel
+						"creationdate timestamp not null," +
+						"businesspath varchar(2048) not null" +
 					");");
 			
 			log_.info("updateStatistic: inserting logging actions from "+from+" until "+until);
 			
 			int numLoggingActions = jdbcTemplate.update(
-					"insert into o_stat_temptable (creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3) " +
-						"select creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3 " +
-						"from o_loggingtable " + 
-						"where actionverb='launch' and actionobject='node' and creationdate>? and creationdate<=?;",
+					"insert into o_stat_temptable (creationdate,businesspath) " +
+						"select creationdate,businesspath" +
+						" from o_loggingtable" + 
+						 " where actionverb='launch' and actionobject='node' and creationdate>? and creationdate<=?;",
 						new Object[]{ from, until }, new int[]{ Types.TIMESTAMP, Types.TIMESTAMP});
 
 			log_.info("updateStatistic: insert done. number of logging actions: " + numLoggingActions);

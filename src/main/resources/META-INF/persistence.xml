@@ -111,11 +111,7 @@
 		<class>org.olat.course.certificate.model.CertificateTemplateImpl</class>
 		<class>org.olat.course.statistic.daily.DailyStat</class>
 		<class>org.olat.course.statistic.dayofweek.DayOfWeekStat</class>
-		<class>org.olat.course.statistic.homeorg.HomeOrgStat</class>
 		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>
-		<class>org.olat.course.statistic.orgtype.OrgTypeStat</class>
-		<class>org.olat.course.statistic.studybranch3.StudyBranch3Stat</class>
-		<class>org.olat.course.statistic.studylevel.StudyLevelStat</class>
 		<class>org.olat.course.statistic.weekly.WeeklyStat</class>
 		<class>org.olat.group.model.ContactView</class>
 		<class>org.olat.group.model.ContactViewExtended</class>
