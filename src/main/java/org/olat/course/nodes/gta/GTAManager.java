@@ -271,6 +271,8 @@ public interface GTAManager {
 
 	public List<Task> getTasks(TaskList taskList, GTACourseNode gtaNode);
 	
+	public List<Task> getTasks(IdentityRef identity);
+	
 	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode);
 	
 	public List<TaskRevisionDate> getTaskRevisions(Task task);

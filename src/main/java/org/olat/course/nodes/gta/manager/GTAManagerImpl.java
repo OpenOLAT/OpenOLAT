@@ -90,7 +90,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.DeletableGroupData;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
@@ -117,7 +116,7 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 @Service
-public class GTAManagerImpl implements GTAManager, DeletableGroupData {
+public class GTAManagerImpl implements GTAManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(GTAManagerImpl.class);
 	
@@ -735,17 +734,6 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 		return tasks.isEmpty() ? null : tasks.get(0);
 	}
-	
-	@Override
-	public boolean deleteGroupDataFor(BusinessGroup group) {
-		log.audit("Delete tasks of business group: " + group.getKey());
-		String deleteTasks = "delete from gtatask as task where task.businessGroup.key=:groupKey";
-		dbInstance.getCurrentEntityManager()
-				.createQuery(deleteTasks)
-				.setParameter("groupKey", group.getKey())
-				.executeUpdate();
-		return true;
-	}
 
 	@Override
 	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode) {
@@ -811,6 +799,19 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		sb.append(" where tasklist.key=:taskListKey");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
 				.setParameter("taskListKey", taskList.getKey())
+				.getResultList();
+	}
+	
+	@Override
+	public List<Task> getTasks(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task from gtatask task")
+		  .append(" inner join task.taskList as tasklist")
+		  .append(" inner join tasklist.entry as entry")
+		  .append(" where task.identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Task.class)
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
 
