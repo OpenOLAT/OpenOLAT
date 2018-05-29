@@ -243,6 +243,12 @@ public class AssessmentHtmlBuilder {
 					video = true;
 					return;
 				}
+			} else if("u".equals(localName)) {
+				qName = "span";
+				AttributesImpl underlineAttributes = new AttributesImpl("");
+				underlineAttributes.addAttributes(attributes);
+				underlineAttributes.addAttribute("style", "text-decoration: underline;");
+				attributes = underlineAttributes;
 			}
 			super.startElement(uri, localName, qName, attributes);
 		}
@@ -337,6 +343,14 @@ public class AssessmentHtmlBuilder {
 		
 		public AttributesImpl(String uri) {
 			this.attributesUri = uri;
+		}
+		
+		public void addAttributes(Attributes attributes) {
+			for(int i=0; i<attributes.getLength(); i++) {
+				String name = attributes.getLocalName(i);
+				String value = attributes.getValue(i);
+				addAttribute(name, value);
+			}
 		}
 		
 		public void addAttribute(String name, String value) {
