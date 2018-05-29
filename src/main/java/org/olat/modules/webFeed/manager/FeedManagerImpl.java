@@ -99,9 +99,6 @@ public class FeedManagerImpl extends FeedManager {
 	// 10 minutes
 	private static final int EXTERNAL_FEED_ACTUALIZATION_MILLIS = 10*60*1000;
 
-	public static final String KIND_PODCAST = "podcast";
-	public static final String KIND_BLOG = "blog";
-
 	private RepositoryManager repositoryManager;
 	private Coordinator coordinator;
 	private OLATResourceManager resourceManager;

@@ -31,9 +31,6 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,9 +46,7 @@ import org.springframework.stereotype.Service;
  * @author gnaegi
  */
 @Service
-public class CommentAndRatingServiceImpl implements CommentAndRatingService, UserDataDeletable {
-	
-	private static final OLog log = Tracing.createLoggerFor(CommentAndRatingServiceImpl.class);
+public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
@@ -171,14 +166,6 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService, Use
 		int delCount = userCommentsDao.deleteAllCommentsIgnoringSubPath(ores);
 		delCount += userRatingsDao.deleteAllRatingsIgnoringSubPath(ores);
 		return delCount;
-	}
-
-	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		int rows = userRatingsDao.deleteRatings(identity);
-		log.audit(rows + " rating deleted");
-		int comments = userCommentsDao.deleteAllComments(identity);
-		log.audit(comments + " rating erased");
 	}
 
 	private void markPublisherNews(UserComment comment) {

@@ -50,11 +50,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.springframework.core.io.Resource;
 
 
@@ -135,6 +138,35 @@ public class FileUtils {
 	 */
 	public static boolean copyFileToDir(File sourceFile, File targetDir, String wt) {
 		return copyFileToDir(sourceFile, targetDir, false, null, wt);
+	}
+	
+	/**
+	 * 
+	 * @param source The source
+	 * @param targetDirectory The directory to copy the source in
+	 * @param wt A message
+	 * @return True if ok
+	 */
+	public static boolean copyItemToDir(VFSItem source, File targetDirectory, String wt) {
+		targetDirectory.mkdirs();
+
+		File target = new File(targetDirectory, source.getName());
+		if(source instanceof VFSLeaf) {
+			try(InputStream inStream = ((VFSLeaf)source).getInputStream();
+					OutputStream outStream = new FileOutputStream(target)) {
+				bcopy(inStream, outStream, wt);
+			} catch(IOException ex) {
+				log.error("", ex);
+				return false;
+			}
+		} else if(source instanceof VFSContainer) {
+			target.mkdir();
+			List<VFSItem> items = ((VFSContainer)source).getItems(new SystemItemFilter());
+			for(VFSItem item:items) {
+				copyItemToDir(item, target, wt);
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -403,23 +435,20 @@ public class FileUtils {
 		return true;
 	} // end copy
 	
-	public static boolean copyToFile(InputStream in, File targetFile, String wt) {
+	public static boolean copyToFile(InputStream in, File targetFile, String wt) throws IOException {
 		if (targetFile.isDirectory()) return false;
 		
 		// create target directories
 		targetFile.getParentFile().mkdirs(); // don't check for success... would return false on
-		
-		BufferedInputStream  bis = new BufferedInputStream(in);
-		try (OutputStream dst = new FileOutputStream(targetFile);
+
+		try(BufferedInputStream  bis = new BufferedInputStream(in);
+				OutputStream dst = new FileOutputStream(targetFile);
 				BufferedOutputStream bos = getBos (dst)) {
 			cpio (bis, bos, wt);
 			bos.flush();
 			return true;
 		} catch (IOException e) {
-			throw new RuntimeException("I/O error in cpio "+wt);
-		} finally {
-			IOUtils.closeQuietly(bis);
-			IOUtils.closeQuietly(in);
+			throw e;
 		}
 	}
 	
