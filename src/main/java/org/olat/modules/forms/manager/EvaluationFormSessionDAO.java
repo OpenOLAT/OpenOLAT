@@ -274,6 +274,20 @@ class EvaluationFormSessionDAO {
 		return session;
 	}
 
+	long getCountOfSessions(EvaluationFormSurvey survey) {
+		if (survey == null) return 0;
+	
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(session.key) from evaluationformsession as session");
+		sb.append(" where session.survey.key=:surveyKey");
+		
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("surveyKey", survey.getKey())
+				.getResultList();
+		return counts.get(0);
+	}
+	
 	void deleteSessions(EvaluationFormSurvey survey) {
 		if (survey == null) return;
 		
@@ -286,5 +300,5 @@ class EvaluationFormSessionDAO {
 				.setParameter("surveyKey", survey.getKey())
 				.executeUpdate();
 	}
-	
+
 }

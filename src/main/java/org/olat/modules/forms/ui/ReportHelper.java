@@ -48,7 +48,7 @@ public class ReportHelper {
 	private final ColorGenerator colorGenerator;
 	private final LegendNameGenerator legendNameGenerator;
 	
-	private final Map<EvaluationFormSession, Legend> sessionToData = new HashMap<>();
+	private final Map<EvaluationFormSession, Legend> sessionKeyToData = new HashMap<>();
 	private final Map<EvaluationFormParticipation, Legend> participationToLegend = new HashMap<>();
 	private final Map<Identity, Legend> executorToLegend = new HashMap<>();
 	
@@ -68,7 +68,7 @@ public class ReportHelper {
 			anonymousColor = DEFAULT_COLOR;
 		}
 		
-		this.anonymousLegend = new Legend(anonymousName, anonymousColor);
+		this.anonymousLegend = new Legend(anonymousName, anonymousColor, true);
 		
 		String[] colors;
 		if (builder.hasColors) {
@@ -86,7 +86,7 @@ public class ReportHelper {
 	}
 	
 	Legend getLegend(EvaluationFormSession session) {
-		Legend legend = sessionToData.get(session);
+		Legend legend = sessionKeyToData.get(session);
 		if (legend == null && session.getParticipation() != null) {
 			legend = participationToLegend.get(session.getParticipation());
 			if (legend == null && session.getParticipation().getExecutor() != null) {
@@ -112,14 +112,14 @@ public class ReportHelper {
 		String name = legendNameGenerator.getName(session, executor);
 		if (StringHelper.containsNonWhitespace(name)) {
 			String color = colorGenerator.getColor();
-			legend = new Legend(name, color);
+			legend = new Legend(name, color, false);
 		}
 		return legend ;
 	}
 
 	private void cacheLegend(EvaluationFormSession session, Legend legend) {
 		if (session != null && legend != null) {
-			sessionToData.put(session, legend);
+			sessionKeyToData.put(session, legend);
 			EvaluationFormParticipation participation = session.getParticipation();
 			if (participation != null) {
 				participationToLegend.put(participation, legend);
@@ -176,22 +176,28 @@ public class ReportHelper {
 		
 		private final String name;
 		private final String color;
+		private final boolean anonymous;
 		
-		public Legend(String name, String color) {
+		private Legend(String name, String color, boolean anonymous) {
 			this.name = name;
 			this.color = color;
+			this.anonymous = anonymous;
 		}
 
-		public String getName() {
+		String getName() {
 			return name;
 		}
 
-		public String getColor() {
+		String getColor() {
 			return color;
+		}
+
+		boolean isAnonymous() {
+			return anonymous;
 		}
 	}
 	
-	public class NullNameGenerator implements LegendNameGenerator {
+	private final static class NullNameGenerator implements LegendNameGenerator {
 
 		@Override
 		public String getName(EvaluationFormSession session, Identity identity) {

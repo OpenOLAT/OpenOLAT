@@ -86,8 +86,8 @@ public class SurveyConfigController extends FormBasicController {
 			REPORT_FOR_GUEST
 	};
 
-	private StaticTextElement questionnaireNotChoosen;
-	private FormLink questionnaireLink;
+	private StaticTextElement evaluationFormNotChoosen;
+	private FormLink evaluationFormLink;
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
@@ -121,11 +121,11 @@ public class SurveyConfigController extends FormBasicController {
 		setFormTitle("edit.title");
 		setFormContextHelp("Assessment#_survey");
 		
-		questionnaireNotChoosen = uifactory.addStaticTextElement("edit.questionnaire.not.choosen", "edit.questionnaire",
-				translate("edit.questionnaire.not.choosen"), formLayout);
-		questionnaireLink = uifactory.addFormLink("edit.questionnaire", "", translate("edit.questionnaire"), formLayout,
+		evaluationFormNotChoosen = uifactory.addStaticTextElement("edit.evaluation.form.not.choosen", "edit.evaluation.form",
+				translate("edit.evaluation.form.not.choosen"), formLayout);
+		evaluationFormLink = uifactory.addFormLink("edit.evaluation.form", "", translate("edit.evaluation.form"), formLayout,
 				Link.NONTRANSLATED);
-		questionnaireLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+		evaluationFormLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -169,12 +169,12 @@ public class SurveyConfigController extends FormBasicController {
 		
 		if (formEntry != null) {
 			String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());
-			questionnaireLink.setI18nKey(displayname);
+			evaluationFormLink.setI18nKey(displayname);
 			flc.setDirty(true);
 		}
-		questionnaireNotChoosen.setVisible(!hasRepoConfig);
+		evaluationFormNotChoosen.setVisible(!hasRepoConfig);
 		chooseLink.setVisible(!hasRepoConfig);
-		questionnaireLink.setVisible(hasRepoConfig);
+		evaluationFormLink.setVisible(hasRepoConfig);
 		replaceLink.setVisible(hasRepoConfig && replacePossible);
 		editLink.setVisible(hasRepoConfig);
 	}
@@ -185,7 +185,7 @@ public class SurveyConfigController extends FormBasicController {
 			doChooseQuestionnaire(ureq);
 		} else if (source == editLink) {
 			doEditQuestionnaire(ureq);
-		} else if (source == questionnaireLink) {
+		} else if (source == evaluationFormLink) {
 			doPreviewQuestionnaire(ureq);
 		} else if (source == executeRolesEl) {
 			doUpdateExecutionRoles(ureq);
@@ -222,10 +222,10 @@ public class SurveyConfigController extends FormBasicController {
 
 	private void doChooseQuestionnaire(UserRequest ureq) {
 		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("edit.choose.questionnaire"));
+				EvaluationFormResource.TYPE_NAME, translate("edit.choose.evaluation.form"));
 		this.listenTo(searchCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				searchCtrl.getInitialComponent(), true, translate("edit.choose.questionnaire"));
+				searchCtrl.getInitialComponent(), true, translate("edit.choose.evaluation.form"));
 		cmc.activate();
 	}
 

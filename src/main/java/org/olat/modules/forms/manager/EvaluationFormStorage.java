@@ -95,13 +95,24 @@ class EvaluationFormStorage {
 	}
 
 	void delete(Path relativePath) {
-		Path parentDir = relativePath.getParent();
-		Path absolutePath = getAbsolutePath(parentDir);
+		Path absolutePath = null;
 		try {
-		    Files.walk(absolutePath)
-		      .sorted(Comparator.reverseOrder())
-		      .map(Path::toFile)
-		      .forEach(File::delete);
+			Path parentDir = relativePath.getParent();
+			absolutePath = getAbsolutePath(parentDir);
+		} catch (Exception e) {
+			log.warn("Cannot find absolute path to delete file of evaluation form response file. Path: " + relativePath, e);
+		}
+		if (absolutePath != null) {
+			deleteFiles(relativePath);
+		}
+	}
+
+	private void deleteFiles(Path absolutePath) {
+		try {
+			Files.walk(absolutePath)
+					.sorted(Comparator.reverseOrder())
+					.map(Path::toFile)
+					.forEach(File::delete);
 		} catch (IOException e) {
 			log.warn("Cannot properly delete evaluation form response file. Path: " + absolutePath, e);
 		}

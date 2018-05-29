@@ -138,6 +138,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		loadResponses();
 		propagateReadOnly();
 		
+		boolean notAnonymous = session != null
+				&& session.getParticipation() != null
+				&& !session.getParticipation().isAnonymous();
+		boolean anonymous = !notAnonymous;
+		flc.contextPut("anonymous", Boolean.valueOf(showDoneButton && anonymous));
+
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		doneLink = uifactory.addFormLink("save.as.done", "save.as.done", null, flc, Link.BUTTON);
 		showHideButtons();
@@ -158,6 +164,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				flc.contextPut("messageNotDone", Boolean.TRUE);
 			}
 		}
+		
 	}
 
 	private void loadElements(UserRequest ureq) {

@@ -26,6 +26,7 @@ import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.Spacer;
 import org.olat.modules.forms.model.xml.TextInput;
@@ -51,6 +52,7 @@ public class DefaultReportProvider implements EvaluationFormReportProvider {
 		handlers.put(FileUpload.TYPE, new FileUploadListingHandler());
 		handlers.put(SingleChoice.TYPE, new SingleChoiceBarChartHandler());
 		handlers.put(MultipleChoice.TYPE, new MultipleChoiceBarChartHandler());
+		handlers.put(SessionInformations.TYPE, new SessionInformationsStatisticHandler());
 	}
 
 	@Override

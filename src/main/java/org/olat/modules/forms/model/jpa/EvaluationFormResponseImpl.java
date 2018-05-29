@@ -37,6 +37,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 
@@ -145,11 +146,11 @@ public class EvaluationFormResponseImpl implements EvaluationFormResponse, Persi
 
 	@Override
 	public Path getFileResponse() {
-		return fileResponsePath != null? Paths.get(fileResponsePath): null;
+		return StringHelper.containsNonWhitespace(fileResponsePath)? Paths.get(fileResponsePath): null;
 	}
 
 	public void setFileResponse(Path fileResponse) {
-		this.fileResponsePath = fileResponse != null? fileResponse.toString(): null;
+		this.fileResponsePath = StringHelper.containsNonWhitespace(null)? fileResponse.toString(): null;
 	}
 
 	@Override

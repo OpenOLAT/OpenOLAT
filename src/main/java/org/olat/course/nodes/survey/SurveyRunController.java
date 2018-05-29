@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.survey;
 
+import java.util.UUID;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +36,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -92,10 +95,13 @@ public class SurveyRunController extends BasicController {
 		}
 		
 		survey = evaluationFormManager.loadSurvey(ores, subIdent);
+		doShowView(ureq);
+	}
+
+	private void doShowView(UserRequest ureq) {
 		if (secCallback.canParticipate()) {
 			participation = loadOrCreateParticipation(ureq);
 		}
-		
 		if (secCallback.canViewReporting(participation)) {
 			doShowReporting(ureq);
 		} else if (secCallback.hasParticipated(participation)) {
@@ -111,11 +117,24 @@ public class SurveyRunController extends BasicController {
 
 	private EvaluationFormParticipation loadOrCreateParticipation(UserRequest ureq) {
 		if (secCallback.isGuestOnly()) {
-			String sessionId = ureq.getUserSession().getSessionInfo().getSession().getId();
-			EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier("course-node", sessionId);
+			UserSession usess = ureq.getUserSession();
+			String anonymousIdentifier = getAnonymousIdentifier(usess);
+			EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier("course-node", anonymousIdentifier);
 			return loadOrCreateParticipation(identifier);
 		}
 		return loadOrCreateParticipation(getIdentity());
+	}
+	
+	private String getAnonymousIdentifier(UserSession usess) {
+		String sessionId = usess.getSessionInfo().getSession().getId();
+		Object id = usess.getEntry(sessionId);
+		if (id instanceof String) {
+			return (String) id;
+		}
+
+		String newId = UUID.randomUUID().toString();
+		usess.putEntryInNonClearedStore(sessionId, newId);
+		return newId;
 	}
 
 	private EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormParticipationIdentifier identifier) {
@@ -156,7 +175,7 @@ public class SurveyRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl && event == Event.DONE_EVENT) {
-			doShowReporting(ureq);
+			doShowView(ureq);
 		} else if(source == commandsCtrl) {
 			calloutCtrl.deactivate();
 			if(SurveyRunCommandsController.EVENT_DELETE_ALL_DATA.equals(event.getCommand())) {
@@ -184,7 +203,8 @@ public class SurveyRunController extends BasicController {
 	}
 
 	private void doConfirmDeleteAllData(UserRequest ureq) {
-		deleteDataConfirmationCtrl = new SurveyDeleteDataConfirmationController(ureq, getWindowControl());
+		long countOfSessions = evaluationFormManager.getCountOfSessions(survey);
+		deleteDataConfirmationCtrl = new SurveyDeleteDataConfirmationController(ureq, getWindowControl(), countOfSessions);
 		listenTo(deleteDataConfirmationCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				deleteDataConfirmationCtrl.getInitialComponent(), true, translate("run.command.delete.data.all.title"), true);

@@ -39,9 +39,12 @@ public class SurveyDeleteDataConfirmationController extends FormBasicController 
 	private static final String[] confirmationKeys = new String[] { "confirm.delete" };
 
 	private MultipleSelectionElement confirmationEl;
-
-	public SurveyDeleteDataConfirmationController(UserRequest ureq, WindowControl wControl) {
+	
+	private final long numberOfSessions;
+	
+	public SurveyDeleteDataConfirmationController(UserRequest ureq, WindowControl wControl, long numberOfSessions) {
 		super(ureq, wControl, "delete_data_confirmation");
+		this.numberOfSessions = numberOfSessions;
 		initForm(ureq);
 	}
 
@@ -50,6 +53,8 @@ public class SurveyDeleteDataConfirmationController extends FormBasicController 
 		FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
+		
+		flc.contextPut("numSessions", String.valueOf(numberOfSessions));
 		
 		String[] conformationValues = new String[] { translate("run.command.delete.data.all.check") };
 		confirmationEl = uifactory.addCheckboxesHorizontal("confirm.delete", "", confirmCont, confirmationKeys, conformationValues);

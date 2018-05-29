@@ -130,6 +130,8 @@ public interface EvaluationFormManager {
 	 * @return
 	 */
 	public EvaluationFormSession reopenSession(EvaluationFormSession session);
+	
+	public long getCountOfSessions(EvaluationFormSurvey survey);
 
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
 			String value);

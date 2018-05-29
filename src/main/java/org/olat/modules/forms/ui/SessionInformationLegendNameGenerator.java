@@ -29,6 +29,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,11 +43,12 @@ public class SessionInformationLegendNameGenerator implements LegendNameGenerato
 
 	private final List<? extends EvaluationFormSessionRef> sessionRefs;
 	
-	private final EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public SessionInformationLegendNameGenerator(List<? extends EvaluationFormSessionRef> sessionRefs) {
 		this.sessionRefs = sessionRefs;
-		this.evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
