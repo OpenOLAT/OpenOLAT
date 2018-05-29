@@ -62,8 +62,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.0.3.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.3.0.Final</org.hibernate.version>
+		<org.springframework.version>5.0.6.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.3.1.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<jackson.version>1.9.13</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
