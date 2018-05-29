@@ -806,8 +806,9 @@ public class GTAManagerImpl implements GTAManager {
 	public List<Task> getTasks(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select task from gtatask task")
-		  .append(" inner join task.taskList as tasklist")
-		  .append(" inner join tasklist.entry as entry")
+		  .append(" inner join fetch task.taskList as tasklist")
+		  .append(" inner join fetch tasklist.entry as entry")
+		  .append(" inner join fetch entry.olatResource as res")
 		  .append(" where task.identity.key=:identityKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Task.class)

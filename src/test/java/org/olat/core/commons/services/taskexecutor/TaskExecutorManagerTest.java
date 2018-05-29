@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.services.taskexecutor.manager.TaskExecutorManagerImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TaskExecutorManagerTest extends OlatTestCase {
 	
 	@Autowired
-	private TaskExecutorManager taskExecutorManager;
+	private TaskExecutorManagerImpl taskExecutorManager;
 	
 	@Test
 	public void testRunTask() {

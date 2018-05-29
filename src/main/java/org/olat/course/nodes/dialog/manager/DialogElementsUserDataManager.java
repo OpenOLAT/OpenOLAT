@@ -73,7 +73,7 @@ public class DialogElementsUserDataManager implements UserDataExportable {
 		if(file != null && file.exists()) {
 			RepositoryEntry entry = element.getEntry();
 			String name = StringHelper.transformDisplayNameToFileSystemName(entry.getDisplayname()) +
-					"_" + getNodeName(element);
+					"_" + StringHelper.transformDisplayNameToFileSystemName(getNodeName(element));
 			File elementDir = new File(elementsArchiveDirectory, name);
 			elementDir.mkdirs();
 			FileUtils.copyItemToDir(file, elementDir, "Copy file dialog");

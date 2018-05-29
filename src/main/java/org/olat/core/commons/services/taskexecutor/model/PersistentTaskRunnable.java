@@ -71,4 +71,21 @@ public class PersistentTaskRunnable implements Runnable {
 			DBFactory.getInstance().rollbackAndCloseSession();
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		return taskKey == null ? 45786 : taskKey.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof PersistentTaskRunnable) {
+			PersistentTaskRunnable task = (PersistentTaskRunnable)obj;
+			return taskKey != null && taskKey.equals(task.taskKey);
+		}
+		return false;
+	}
 }
