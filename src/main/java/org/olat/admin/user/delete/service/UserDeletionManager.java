@@ -265,7 +265,7 @@ public class UserDeletionManager extends BasicManager {
 		
 		
 		// Delete data of modules that implement the user data deletable
-		String anonymisedIdentityName = identity.getKey().toString();
+		String anonymisedIdentityName = "del_" + identity.getKey().toString();
 		Map<String,UserDataDeletable> userDataDeletableResourcesMap = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
 		List<UserDataDeletable> userDataDeletableResources = new ArrayList<>(userDataDeletableResourcesMap.values());
 		// Start with high priorities (900: user manager), then continue with

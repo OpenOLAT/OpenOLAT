@@ -66,7 +66,7 @@ public class DeletedUsersTableModel extends DefaultFlexiTableDataSourceModel<Del
 	}
 	
 	public enum DeletedCols implements FlexiSortableColumnDef {
-		username("table.identity.name"),
+		username("table.identity.deleted.name"),
 		firstName("table.name.firstName"),
 		lastName("table.name.lastName"),
 		deletedDate("table.identity.deleteddate"),

@@ -99,7 +99,7 @@ public class DeletedUsersController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("error.no.user.found");
 		tableEl.setExportEnabled(false);
-		tableEl.setAndLoadPersistedPreferences(ureq, "deleted-user-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "deleted-user-list-v2");
 	}
 
 	@Override
