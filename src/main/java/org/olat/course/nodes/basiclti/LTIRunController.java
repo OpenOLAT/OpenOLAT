@@ -65,12 +65,14 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti.LTIModule;
 import org.olat.ims.lti.ui.PostDataMapper;
 import org.olat.ims.lti.ui.TalkBackMapper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -99,8 +101,12 @@ public class LTIRunController extends BasicController {
 	private ChiefController thebaseChief;
 	
 	private final Roles roles;
-	private final LTIManager ltiManager;
 	private final LTIDisplayOptions display;
+	
+	@Autowired
+	private LTIModule ltiModule;
+	@Autowired
+	private LTIManager ltiManager;
 	
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
 			CourseEnvironment courseEnv) {
@@ -110,7 +116,6 @@ public class LTIRunController extends BasicController {
 		this.roles = ureq.getUserSession().getRoles();
 		this.courseEnv = courseEnv;
 		display = LTIDisplayOptions.iframe;
-		ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
 
 		run = createVelocityContainer("run");
 		// push title and learning objectives, only visible on intro page
@@ -354,9 +359,10 @@ public class LTIRunController extends BasicController {
 		createExchangeDataProperties();
 		String dataExchangeHash = createHashFromExchangeDataProperties();
 		Boolean skipAcceptLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE);
-		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash) || (skipAcceptLaunchPage != null && skipAcceptLaunchPage.booleanValue()) ) {
+		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash)
+				|| (!ltiModule.isForceLaunchPage() && skipAcceptLaunchPage != null && skipAcceptLaunchPage.booleanValue()) ) {
 			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
-			if(skipLaunchPage != null && skipLaunchPage.booleanValue()) {
+			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
 				openBasicLTIContent(ureq);
 			} else {

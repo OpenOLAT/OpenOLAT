@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -56,9 +55,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti.LTIModule;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -153,6 +154,11 @@ public class LTIConfigForm extends FormBasicController {
 	private String[] userPropKeys;
 	private String[] userPropValues;
 	
+	@Autowired
+	private LTIModule ltiModule;
+	@Autowired
+	private UserManager userManager;
+	
 	/**
 	 * Constructor for the tunneling configuration form
 	 * @param name
@@ -164,7 +170,6 @@ public class LTIConfigForm extends FormBasicController {
 		this.config = config;
 		int configVersion = config.getConfigurationVersion();
 		
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		Translator userPropsTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
 		ltiRolesValues = new String[]{
@@ -268,12 +273,18 @@ public class LTIConfigForm extends FormBasicController {
 
 		String[] enableValues = new String[]{ translate("on") };	
 		skipLaunchPageEl = uifactory.addCheckboxesHorizontal("display.config.skipLaunchPage", formLayout, enabledKeys, enableValues);
-		if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE)) {
+		if(ltiModule.isForceLaunchPage()) {
+			skipLaunchPageEl.select(enabledKeys[0], true);
+			skipLaunchPageEl.setEnabled(false);
+		} else if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE)) {
 			skipLaunchPageEl.select(enabledKeys[0], true);
 		}
 			
 		skipAcceptLaunchPageEl = uifactory.addCheckboxesHorizontal("display.config.skipAcceptLaunchPage", formLayout, enabledKeys, enableValues);
-		if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE)) {
+		if(ltiModule.isForceLaunchPage()) {
+			skipAcceptLaunchPageEl.select(enabledKeys[0], true);
+			skipAcceptLaunchPageEl.setEnabled(false);
+		} else if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE)) {
 			skipAcceptLaunchPageEl.select(enabledKeys[0], true);
 		}
 		skipAcceptLaunchPageEl.setHelpTextKey("display.config.skipAcceptLaunchPageWarning", null);
@@ -499,10 +510,9 @@ public class LTIConfigForm extends FormBasicController {
 		return fullURL;
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) { 
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		try {
 			new URL(thost.getValue());
 		} catch (MalformedURLException e) {
@@ -511,7 +521,7 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		allOk &= validateFloat(cutValueEl);
 		allOk &= validateFloat(scaleFactorEl);
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateFloat(TextElement el) {
@@ -618,14 +628,14 @@ public class LTIConfigForm extends FormBasicController {
 		config.set(CONFIGKEY_PASS, tpass.getValue());
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
 		config.set(CONFIG_KEY_CUSTOM, getCustomConfig());
-		if (skipLaunchPageEl.isAtLeastSelected(1)) {
+		if (ltiModule.isForceLaunchPage() || skipLaunchPageEl.isAtLeastSelected(1)) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE, Boolean.TRUE);
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE, Boolean.FALSE);
 		}
 		config.set(CONFIG_KEY_SENDNAME, Boolean.toString(sendName.isSelected(0)));
 		config.set(CONFIG_KEY_SENDEMAIL, Boolean.toString(sendEmail.isSelected(0)));
-		if (skipAcceptLaunchPageEl.isAtLeastSelected(1) && (sendName.isSelected(0) || sendEmail.isSelected(0))) {
+		if ((ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1)) && (sendName.isSelected(0) || sendEmail.isSelected(0))) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.TRUE);
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.FALSE);
