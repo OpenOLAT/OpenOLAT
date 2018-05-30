@@ -1062,7 +1062,10 @@ public class RichTextConfiguration implements Disposable {
 		  .append("  {title: 'Mail', value: 'b_link_mailto'},\n")
 		  .append("  {title: 'Forward', value: 'b_link_forward'}\n")
 		  .append("],\n");
+ 		// predefined table styles selectable in a menu
  		tinyMenuSb.append("table_class_list: [\n")
+		  .append("  {title: 'No style', value: ''},\n")
+		  .append("  {title: 'Default', value: 'b_default'},\n")
  		  .append("  {title: 'Borderless', value: 'b_borderless'},\n")
 		  .append("  {title: 'Grid', value: 'b_grid'},\n")
 		  .append("  {title: 'Border', value: 'b_border'},\n")
@@ -1074,6 +1077,9 @@ public class RichTextConfiguration implements Disposable {
 		  .append("  {title: 'Blue', value: 'b_blue'},\n")
 		  .append("  {title: 'Yellow', value: 'b_yellow'}\n")
 		  .append("],\n");
+ 			
+ 		// default table style
+ 		tinyMenuSb.append("table_default_attributes: { class: 'b_default' },\n");
  		
 		if (tinyConfig.getTool1() != null) {
 			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");
