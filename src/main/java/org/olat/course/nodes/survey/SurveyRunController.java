@@ -38,7 +38,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -64,6 +67,8 @@ public class SurveyRunController extends BasicController {
 	private SurveyDeleteDataConfirmationController deleteDataConfirmationCtrl;
 	private EvaluationFormExecutionController executionCtrl;
 	
+	private final UserCourseEnvironment userCourseEnv;
+	private final SurveyCourseNode courseNode;
 	private final OLATResourceable ores;
 	private final String subIdent;
 	private final SurveyRunSecurityCallback secCallback;
@@ -73,10 +78,12 @@ public class SurveyRunController extends BasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public SurveyRunController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, SurveyCourseNode courseNode,
-			SurveyRunSecurityCallback secCallback) {
+	public SurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			SurveyCourseNode courseNode, SurveyRunSecurityCallback secCallback) {
 		super(ureq, wControl);
-		this.ores = ores;
+		this.userCourseEnv = userCourseEnv;
+		this.courseNode = courseNode;
+		this.ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.subIdent = courseNode.getIdent();
 		this.secCallback = secCallback;
 
@@ -175,7 +182,7 @@ public class SurveyRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl && event == Event.DONE_EVENT) {
-			doShowView(ureq);
+			doPostExecution(ureq);
 		} else if(source == commandsCtrl) {
 			calloutCtrl.deactivate();
 			if(SurveyRunCommandsController.EVENT_DELETE_ALL_DATA.equals(event.getCommand())) {
@@ -200,6 +207,13 @@ public class SurveyRunController extends BasicController {
 		commandsCtrl = null;
 		calloutCtrl = null;
 		cmc = null;
+	}
+
+	private void doPostExecution(UserRequest ureq) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		am.incrementNodeAttempts(courseNode, mySelf, userCourseEnv, Role.auto);
+		doShowView(ureq);
 	}
 
 	private void doConfirmDeleteAllData(UserRequest ureq) {

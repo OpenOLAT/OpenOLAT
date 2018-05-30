@@ -32,6 +32,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -52,10 +53,13 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 	private SurveyConfigController surveyConfigController;
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
+	
+	private final SurveyCourseNode surveyCourseNode;
 
 	public SurveyEditController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
 			ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
+		this.surveyCourseNode = surveyCourseNode;
 		
 		surveyConfigController = new SurveyConfigController(ureq, wControl, course, surveyCourseNode);
 		listenTo(surveyConfigController);
@@ -89,7 +93,13 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == surveyConfigController) {
+		if (source == accessibilityCondContr) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondContr.getCondition();
+				surveyCourseNode.setPreConditionAccess(cond);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == surveyConfigController) {
 			fireEvent(ureq, event);
 		}
 	}

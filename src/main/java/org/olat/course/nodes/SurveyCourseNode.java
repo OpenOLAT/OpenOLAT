@@ -26,7 +26,6 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -119,9 +118,8 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		OLATResourceable ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
-		Controller runCtrl = new SurveyRunController(ureq, wControl, ores, this, secCallback);
+		Controller runCtrl = new SurveyRunController(ureq, wControl, userCourseEnv, this, secCallback);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, SURVEY_ICON);
 		return new NodeRunConstructionResult(ctrl);
 	}
@@ -154,6 +152,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
+	
 	
 	public static RepositoryEntry getSurvey(ModuleConfiguration config) {
 		if (config == null) return null;
