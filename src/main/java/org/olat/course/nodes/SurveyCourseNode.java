@@ -19,13 +19,18 @@
  */
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -33,6 +38,7 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.survey.SurveyEditController;
 import org.olat.course.nodes.survey.SurveyRunController;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
@@ -40,8 +46,14 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * 
@@ -75,7 +87,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
-		return getSurvey(getModuleConfiguration());
+		return getEvaluationForm(getModuleConfiguration());
 	}
 
 	@Override
@@ -152,9 +164,54 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
+
+	@Override
+	public void exportNode(File exportDirectory, ICourse course) {
+		RepositoryEntry re = getEvaluationForm(getModuleConfiguration());
+		if (re == null) return;
+		
+		File fExportDirectory = new File(exportDirectory, getIdent());
+		fExportDirectory.mkdirs();
+		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+		reie.exportDoExport();
+	}
 	
+	@Override
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(withReferences && rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EvaluationFormResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+			setEvaluationFormReference(re, getModuleConfiguration());
+			postImportCopy(course);
+		} else {
+			removeEvaluationFormReference(getModuleConfiguration());
+		}
+	}
 	
-	public static RepositoryEntry getSurvey(ModuleConfiguration config) {
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
+		super.postCopy(envMapper, processType, course, sourceCrourse);
+		postImportCopy(course);
+	}
+
+	private void postImportCopy(ICourse course) {
+		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
+		if (survey == null) {
+			survey = evaluationFormManager.createSurvey(ores, getIdent(), formEntry);
+		} else {
+			boolean isFormUpdateable = evaluationFormManager.isFormUpdateable(survey);
+			if (isFormUpdateable) {
+				survey = evaluationFormManager.updateSurveyForm(survey, formEntry);
+			}
+		}
+	}
+	
+	public static RepositoryEntry getEvaluationForm(ModuleConfiguration config) {
 		if (config == null) return null;
 		
 		String repoSoftkey = config.getStringValue(CONFIG_KEY_REPOSITORY_SOFTKEY);
@@ -162,6 +219,14 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		
 		//TODO uh soft deletes?
 		return RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+	}
+	
+	public static void setEvaluationFormReference(RepositoryEntry re, ModuleConfiguration moduleConfig) {
+		moduleConfig.set(CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
+	}
+	
+	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		moduleConfig.remove(CONFIG_KEY_REPOSITORY_SOFTKEY);
 	}
 	
 }

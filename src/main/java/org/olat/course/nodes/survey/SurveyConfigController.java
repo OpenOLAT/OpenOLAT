@@ -184,9 +184,9 @@ public class SurveyConfigController extends FormBasicController {
 		if (source == chooseLink || source == replaceLink) {
 			doChooseQuestionnaire(ureq);
 		} else if (source == editLink) {
-			doEditQuestionnaire(ureq);
+			doEditevaluationForm(ureq);
 		} else if (source == evaluationFormLink) {
-			doPreviewQuestionnaire(ureq);
+			doPreviewEvaluationForm(ureq);
 		} else if (source == executeRolesEl) {
 			doUpdateExecutionRoles(ureq);
 		} else if (source == reportRolesEl) {
@@ -199,7 +199,7 @@ public class SurveyConfigController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (searchCtrl == source) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doReplaceQuestionnaire(ureq);
+				doReplaceEvaluationForm(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -229,7 +229,7 @@ public class SurveyConfigController extends FormBasicController {
 		cmc.activate();
 	}
 
-	private void doReplaceQuestionnaire(UserRequest ureq) {
+	private void doReplaceEvaluationForm(UserRequest ureq) {
 		RepositoryEntry formEntry = searchCtrl.getSelectedEntry();
 		if (formEntry != null) {
 			if (survey == null) {
@@ -242,14 +242,14 @@ public class SurveyConfigController extends FormBasicController {
 					showError("error.repo.entry.not.replaceable");
 				}
 			}
-			moduleConfiguration.set(SurveyCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, survey.getFormEntry().getSoftkey());
+			SurveyCourseNode.setEvaluationFormReference(formEntry, moduleConfiguration);
 			// fire event so the updated config is saved
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			updateUI();
 		}
 	}
 
-	private void doEditQuestionnaire(UserRequest ureq) {
+	private void doEditevaluationForm(UserRequest ureq) {
 		RepositoryEntry re = survey.getFormEntry();
 		if (re == null) {
 			showError("error.repo.entry.missing");
@@ -259,7 +259,7 @@ public class SurveyConfigController extends FormBasicController {
 		}
 	}
 
-	private void doPreviewQuestionnaire(UserRequest ureq) {
+	private void doPreviewEvaluationForm(UserRequest ureq) {
 		RepositoryEntry formEntry = survey.getFormEntry();
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
