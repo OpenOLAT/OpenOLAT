@@ -29,7 +29,9 @@ With regard to licensing and copyright please refer to the file [LICENSE](LICENS
 * [Installation](https://www.openolat.com/fileadmin/adminwiki/_START_.html)
 * [About OpenOLAT](https://www.openolat.com)
 * [Mailing list](https://groups.google.com/forum/#!forum/openolat)
- 
+* [Issues](https://jira.openolat.org/)
+* [OpenOLAT for the community](https://community.openolat.org) An OpenOLAT instance dedicated to the community
+
 
 ## Being a community member
 
@@ -37,7 +39,7 @@ We strongly suggest to participate in the OpenOLAT community membership program.
 Even though this software is free and open source, the development and management
 has to be funded by someone. If you like what we do and want the product to be
 maintained and developed in the long run you should consider purchasing a member
-ship.    
+ship: [Partner program](https://www.openolat.com/open-source/partner-program/?lang=en).
 
 ## Developers
 

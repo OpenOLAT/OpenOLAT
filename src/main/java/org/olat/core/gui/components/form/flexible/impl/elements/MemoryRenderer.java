@@ -42,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class MemoryRenderer extends DefaultComponentRenderer {
 	
-	private static final String[] bars = new String[]{ "progress-bar-success", "progress-bar-warning", "progress-bar-info"};
+	private static final String[] bars = new String[]{ "progress-bar-success", "progress-bar-warning", "progress-bar-info" };
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
@@ -98,14 +98,11 @@ public class MemoryRenderer extends DefaultComponentRenderer {
 				usedPercent = usedPercent - (totalUsedPercent - 100l);
 			}
 			
-			sb.append("<div class='progress-bar ").append(bars[count++]).append("' role='progressbar' ")
+			sb.append("<div class='progress-bar ").append(bars[count++ % bars.length]).append("' role='progressbar' ")
 			  .append(" aria-valuenow='").append(usedMB).append("'")
 			  .append(" aria-valuemin='0' style='width:").append(usedPercent).append("%;'><span")
 			  .append(" title=\"").append(usedMB).append("MB (").append(name).append(")\"")
 			  .append(">").append(usedMB).append("MB (").append(name).append(")</span></div>");
-			if(count > bars.length) {
-				count = 0;
-			}
 		}
 	}
 	

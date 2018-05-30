@@ -53,9 +53,12 @@ public class Card2BrainEditController extends ActivateableTabbableDefaultControl
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
 	
+	private final Card2BrainCourseNode courseNode;
+	
 	public Card2BrainEditController(UserRequest ureq, WindowControl wControl, 
 			Card2BrainCourseNode card2BrainCourseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
+		this.courseNode = card2BrainCourseNode;
 
 		card2BrainConfigController = new Card2BrainConfigController(ureq, wControl, card2BrainCourseNode.getModuleConfiguration());
 		listenTo(card2BrainConfigController);
@@ -89,7 +92,13 @@ public class Card2BrainEditController extends ActivateableTabbableDefaultControl
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == card2BrainConfigController && event.equals(Event.DONE_EVENT)) {
+		if (source == accessibilityCondContr) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondContr.getCondition();
+				courseNode.setPreConditionAccess(cond);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == card2BrainConfigController && event.equals(Event.DONE_EVENT)) {
 			card2BrainConfigController.getUpdatedConfig();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}

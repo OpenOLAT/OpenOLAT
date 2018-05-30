@@ -66,7 +66,7 @@ div.b_scrollblock {
 	td, th { 
 		padding: $padding-xs-vertical $padding-xs-horizontal;
 		background: $bgcolor;
-		border: 1px solid lighten($bgcolor,20%);
+		border: 1px solid lighten($bgcolor,5%);
 	}
 	thead td, th {
 		background: darken($bgcolor,10%);
@@ -81,6 +81,11 @@ table {
 		vertical-align: top;	
 	}
 	
+	&.b_default {
+		td, th { 
+			padding: $padding-xs-vertical $padding-xs-horizontal;
+		}
+	}
 	&.b_grid {
 		width: 99.5%; 
 		background: transparent;
