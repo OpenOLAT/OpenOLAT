@@ -52,10 +52,13 @@ public class EdubaseEditController extends ActivateableTabbableDefaultController
 	private ConditionEditController accessibilityCondContr;
 	private EdubaseConfigController edubaseConfigController;
 	private EdubaseBookSectionListController edubaseBookSectionListController;
+	
+	private final EdubaseCourseNode courseNode;
 
 	public EdubaseEditController(UserRequest ureq, WindowControl wControl, EdubaseCourseNode edubaseCourseNode,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
+		this.courseNode = edubaseCourseNode;
 
 		Condition accessCondition = edubaseCourseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv, accessCondition,
@@ -92,7 +95,13 @@ public class EdubaseEditController extends ActivateableTabbableDefaultController
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == edubaseConfigController && event.equals(Event.DONE_EVENT)) {
+		if (source == accessibilityCondContr) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondContr.getCondition();
+				courseNode.setPreConditionAccess(cond);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == edubaseConfigController && event.equals(Event.DONE_EVENT)) {
 			edubaseConfigController.getUpdatedConfig();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			edubaseBookSectionListController.dispatchEvent(ureq, edubaseConfigController, event);
