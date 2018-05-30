@@ -19,12 +19,16 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRepositoryEntryRelation;
 import org.olat.modules.curriculum.model.CurriculumRepositoryEntryRelationImpl;
 import org.olat.repository.RepositoryEntry;
@@ -83,5 +87,42 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.setParameter("elementKey", element.getKey())
 			.getResultList();
 	}
+	
+	/**
+	 * The method return all the elements of the curriculum and if
+	 * needed with an empty list of repository entries.
+	 * 
+	 * @param curriculum The curriculum
+	 * @return A map of curriculum element to their repository entries
+	 */
+	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(CurriculumRef curriculum) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el, rel.entry.key from curriculumelement el")
+		  .append(" inner join el.curriculum curriculum")
+		  .append(" left join fetch el.parent parentEl")
+		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")
+		  .append(" where curriculum.key=:curriculumKey");
+		
+		  //.append(" inner join fetch el.group as bGroup")
+		  //.append(" left join fetch el.parent as parentEl")
+		  //.append(" left join fetch el.type as elementType")
+		  //.append(" left join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		 // .append(" where el.curriculum.key=:curriculumKey");
 
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("curriculumKey", curriculum.getKey())
+			.getResultList();
+		
+		Map<CurriculumElement, List<Long>> map = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			CurriculumElement element = (CurriculumElement)rawObject[0];
+			Long repoKey = (Long)rawObject[1];
+			List<Long> entries = map.computeIfAbsent(element, el -> new ArrayList<>());
+			if(repoKey != null) {
+				entries.add(repoKey);
+			}
+		}
+		return map;
+	}
 }

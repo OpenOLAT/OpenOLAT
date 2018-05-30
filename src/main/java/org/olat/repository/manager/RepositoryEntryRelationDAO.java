@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -247,7 +248,7 @@ public class RepositoryEntryRelationDAO {
 	 * @param entry
 	 * @return
 	 */
-	public void filterMembership(IdentityRef identity, List<Long> entries) {
+	public void filterMembership(IdentityRef identity, Collection<Long> entries) {
 		if(entries == null || entries.isEmpty()) return;
 		
 		List<Object[]> membershipList = dbInstance.getCurrentEntityManager()

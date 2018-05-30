@@ -208,10 +208,7 @@ public class RepositoryEntryMyCourseQueries {
 
 		sb.append(" where ");
 		needIdentityKey |= appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
-		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
-			sb.append(" and v.key in (:repoEntryKeys) ");
-		}
-		
+
 		if(params.getClosed() != null) {
 			if(params.getClosed().booleanValue()) {
 				sb.append(" and v.statusCode>0");
@@ -225,9 +222,15 @@ public class RepositoryEntryMyCourseQueries {
 				needIdentityKey |= appendFiltersInWhereClause(filter, sb);
 			}
 		}
+
+		if(params.getCurriculum() != null) {
+			sb.append(" and exists (select el.key from curriculumelement el, repoentrytogroup rel")
+			  .append("   where el.curriculum.key=:curriculumKey and rel.entry.key=v.key and el.group.key=rel.group.key")
+			  .append(" )");
+		}
 		
 		if(params.getParentEntry() != null) {
-			sb.append(" and exists (select cei.parent.key from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+			sb.append(" and exists (select cei.parent.key from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
 			  .append("   where cei.parent.key=:parentCeiKey and cei.repositoryEntry.key=v.key")
 			  .append(" )");
 		}
@@ -319,8 +322,8 @@ public class RepositoryEntryMyCourseQueries {
 		if(params.getParentEntry() != null) {
 			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
 		}
-		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
-			dbQuery.setParameter("repoEntryKeys", params.getRepoEntryKeys());
+		if(params.getCurriculum() != null) {
+			dbQuery.setParameter("curriculumKey", params.getCurriculum().getKey());
 		}
 		if (params.isResourceTypesDefined()) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);

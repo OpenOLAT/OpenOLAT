@@ -150,7 +150,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 
-		List<RepositoryEntryRow> items = new ArrayList<RepositoryEntryRow>();
+		List<RepositoryEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
 
@@ -159,7 +159,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
 			}
 
-			List<PriceMethod> types = new ArrayList<PriceMethod>();
+			List<PriceMethod> types = new ArrayList<>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));

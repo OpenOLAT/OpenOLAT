@@ -19,14 +19,21 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -36,11 +43,15 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +68,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	private GroupDAO groupDao;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -196,5 +209,36 @@ public class CurriculumServiceImpl implements CurriculumService {
 		RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
 		repositoryEntryRelationDao.createRelation(element.getGroup(), repoEntry);
 		curriculumRepositoryEntryRelationDao.createRelation(repoEntry, element, master);
+	}
+
+	@Override
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum) {
+		if(curriculum == null) return Collections.emptyList();
+		
+		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao.getCurriculumElementsWithRepositoryEntryKeys(curriculum);
+		List<CurriculumElementRepositoryEntryViews> elements = new ArrayList<>(elementsMap.size());
+		if(!elementsMap.isEmpty()) {
+			SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
+			params.setCurriculum(curriculum);
+			List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
+			Map<Long, RepositoryEntryMyView> viewMap = new HashMap<>();
+			for(RepositoryEntryMyView view:views) {
+				viewMap.put(view.getKey(), view);
+			}
+			
+			for(Map.Entry<CurriculumElement, List<Long>> elementEntry:elementsMap.entrySet()) {
+				CurriculumElement element = elementEntry.getKey();
+				List<RepositoryEntryMyView> elementViews = new ArrayList<>(elementEntry.getValue().size());
+				Set<Long> deduplicatedEntryKeys = new HashSet<>(elementEntry.getValue());
+				for(Long entryKey:deduplicatedEntryKeys) {
+					RepositoryEntryMyView elementView = viewMap.get(entryKey);
+					if(elementView != null) {
+						elementViews.add(elementView);
+					}
+				}
+				elements.add(new CurriculumElementRepositoryEntryViews(element, elementViews));
+			}
+		}
+		return elements;
 	}
 }

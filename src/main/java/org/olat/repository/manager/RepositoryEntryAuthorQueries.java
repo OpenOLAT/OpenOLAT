@@ -175,10 +175,6 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(" exists (select ref.key from references as ref where ref.target.key=res.key)");
 		}
-		
-		if(params.getRepoEntryKeys() != null && !params.getRepoEntryKeys().isEmpty()) {
-			sb.append(" and v.key in (:repoEntryKeys)");
-		}
 
 		if (params.isResourceTypesDefined()) {
 			sb.append(" and res.resName in (:resourcetypes)");
@@ -276,9 +272,6 @@ public class RepositoryEntryAuthorQueries {
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
-		if(params.getRepoEntryKeys() != null && !params.getRepoEntryKeys().isEmpty()) {
-			dbQuery.setParameter("repoEntryKeys", params.getRepoEntryKeys());
-		}
 		if (params.isResourceTypesDefined()) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);
 		}

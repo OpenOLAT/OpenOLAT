@@ -178,7 +178,7 @@ public interface RepositoryService {
 	 */
 	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry);
 
-	public void filterMembership(IdentityRef identity, List<Long> entries);
+	public void filterMembership(IdentityRef identity, Collection<Long> entries);
 
 	public int countMembers(RepositoryEntryRef re, String... roles);
 

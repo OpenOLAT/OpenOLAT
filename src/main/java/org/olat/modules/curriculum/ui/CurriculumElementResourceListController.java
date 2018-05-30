@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -148,6 +150,13 @@ public class CurriculumElementResourceListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addResourcesButton == source) {
 			doChooseResources(ureq);
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("select".equals(se.getCommand())) {
+					doSelectRepositoryEntry(ureq, tableModel.getObject(se.getIndex()));
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -179,5 +188,12 @@ public class CurriculumElementResourceListController extends FormBasicController
 		for(RepositoryEntry entry:entries) {
 			curriculumService.addRepositoryEntry(curriculumElement, entry, false);
 		}
+	}
+	
+	private void doSelectRepositoryEntry(UserRequest ureq, RepositoryEntry entry) {
+		if(entry == null) return;
+		
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 }

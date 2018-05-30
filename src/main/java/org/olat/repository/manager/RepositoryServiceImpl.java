@@ -606,7 +606,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public void filterMembership(IdentityRef identity, List<Long> entries) {
+	public void filterMembership(IdentityRef identity, Collection<Long> entries) {
 		reToGroupDao.filterMembership(identity, entries);
 	}
 

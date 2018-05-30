@@ -51,7 +51,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private OrderBy orderBy;
 	private boolean orderByAsc;
 	private List<String> resourceTypes;
-	private List<Long> repoEntryKeys;
 	private Set<Long> licenseTypeKeys;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
@@ -105,14 +104,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	public List<Long> getRepoEntryKeys() {
-		return repoEntryKeys;
-	}
-
-	public void setRepoEntryKeys(List<Long> repoEntryKeys) {
-		this.repoEntryKeys = repoEntryKeys;
 	}
 
 	public OrderBy getOrderBy() {

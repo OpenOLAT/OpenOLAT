@@ -25,7 +25,9 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -188,5 +190,8 @@ public interface CurriculumService {
 	 * @param master If the relation is the master one
 	 */
 	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master);
+	
+	
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum);
 
 }

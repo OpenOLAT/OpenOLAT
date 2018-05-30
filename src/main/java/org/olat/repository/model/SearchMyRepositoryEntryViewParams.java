@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.CatalogEntry;
 
 /**
@@ -45,7 +46,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private List<Filter> filters;
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
-	private List<Long> repoEntryKeys;
+	private CurriculumRef curriculum;
 
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -74,12 +75,12 @@ public class SearchMyRepositoryEntryViewParams {
 		this.membershipMandatory = membershipMandatory;
 	}
 
-	public List<Long> getRepoEntryKeys() {
-		return repoEntryKeys;
+	public CurriculumRef getCurriculum() {
+		return curriculum;
 	}
 
-	public void setRepoEntryKeys(List<Long> repoEntryKeys) {
-		this.repoEntryKeys = repoEntryKeys;
+	public void setCurriculum(CurriculumRef curriculum) {
+		this.curriculum = curriculum;
 	}
 
 	public String getIdAndRefs() {
