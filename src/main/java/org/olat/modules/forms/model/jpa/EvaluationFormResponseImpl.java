@@ -150,7 +150,7 @@ public class EvaluationFormResponseImpl implements EvaluationFormResponse, Persi
 	}
 
 	public void setFileResponse(Path fileResponse) {
-		this.fileResponsePath = StringHelper.containsNonWhitespace(null)? fileResponse.toString(): null;
+		this.fileResponsePath = fileResponse != null? fileResponse.toString(): null;
 	}
 
 	@Override

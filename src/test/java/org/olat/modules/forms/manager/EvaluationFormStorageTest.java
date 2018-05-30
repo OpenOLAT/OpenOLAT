@@ -52,10 +52,10 @@ public class EvaluationFormStorageTest extends OlatTestCase {
 	public void clean() throws IOException {
 		Path responsesDir = sut.getResponsesRoot();
 		// Delete all files and directories
-	    Files.walk(responsesDir)
-	      .sorted(Comparator.reverseOrder())
-	      .map(Path::toFile)
-	      .forEach(File::delete);
+		Files.walk(responsesDir)
+			.sorted(Comparator.reverseOrder())
+			.map(Path::toFile)
+			.forEach(File::delete);
 	}
 	
 	@Test

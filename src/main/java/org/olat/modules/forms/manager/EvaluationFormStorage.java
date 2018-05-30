@@ -103,7 +103,7 @@ class EvaluationFormStorage {
 			log.warn("Cannot find absolute path to delete file of evaluation form response file. Path: " + relativePath, e);
 		}
 		if (absolutePath != null) {
-			deleteFiles(relativePath);
+			deleteFiles(absolutePath);
 		}
 	}
 
