@@ -39,7 +39,6 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -170,28 +169,30 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 	
 	private boolean isVersionsXmlFile(VFSLeaf fVersions) {
-		if(fVersions == null || !fVersions.exists()) {
+		if (fVersions == null || !fVersions.exists()) {
 			return false;
 		}
-		InputStream in = fVersions.getInputStream();
-		if(in == null) {
-			return false;
-		}
-		
-		Scanner scanner = new Scanner(in);
-		scanner.useDelimiter(TAG_PATTERN);
 		
 		boolean foundVersionsTag = false;
-		while (scanner.hasNext()) {
-      String tag = scanner.next();
-      if("versions".equals(tag)) {
-      	foundVersionsTag = true;
-      	break;
-      }
+		try(InputStream in = fVersions.getInputStream()) {
+			if (in == null) {
+				return false;
+			}
+	
+			Scanner scanner = new Scanner(in);
+			scanner.useDelimiter(TAG_PATTERN);
+			while (scanner.hasNext()) {
+				String tag = scanner.next();
+				if ("versions".equals(tag)) {
+					foundVersionsTag = true;
+					break;
+				}
+			}
+	
+			scanner.close();
+		} catch(IOException e) {
+			log.error("", e);
 		}
-
-		scanner.close();
-		IOUtils.closeQuietly(in);
 		return foundVersionsTag;
 	}
 
@@ -280,7 +281,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	
 	private boolean copyRevision(VFSRevision revision, VFSLeaf fNewVersions, VersionsFileImpl targetVersions) {
 		if(!(revision instanceof RevisionFileImpl)) {
-			logWarn("Copy only copy persisted revisions", null);
+			log.warn("Copy only copy persisted revisions", null);
 		}
 		
 		RevisionFileImpl revisionImpl = (RevisionFileImpl)revision;
@@ -743,7 +744,9 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			versions.setVersioned(isVersioned(item));
 			versions.setRevisionNr(getNextRevisionNr(versions));
 			VFSLeaf fVersions = localVersionContainer.createChildLeaf(fVersion.getName());
-			XStreamHelper.writeObject(mystream, fVersions, versions);
+			if(fVersions != null) {
+				XStreamHelper.writeObject(mystream, fVersions, versions);
+			}
 			return fVersions;
 		}
 		return null;

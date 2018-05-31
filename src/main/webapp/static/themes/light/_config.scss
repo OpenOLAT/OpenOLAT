@@ -436,6 +436,8 @@ $o-qti-match-border-radius							: $panel-border-radius !default;
 $o-qti-match-true-false-unanswered-bg				: lighten($gray-lighter, 5%) !default;
 $o-qti-match-true-false-right-bg						: lighten($brand-success, 40%) !default;
 $o-qti-match-true-false-wrong-bg						: lighten($brand-danger, 40%) !default;
+$o-qti-match-kprim-correct-bg						: lighten($brand-success, 40%) !default;
+$o-qti-match-kprim-wrong-bg							: lighten($brand-danger, 40%) !default;
 $o-qti-order-source-border-style						: dashed !default;
 $o-qti-order-sources-border-color					: $o-qti-run-infos-border-color !default;
 $o-qti-order-border-radius							: $panel-border-radius !default;

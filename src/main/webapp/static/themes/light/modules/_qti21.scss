@@ -818,6 +818,16 @@ tr.choiceinteraction {
 	border-bottom: 3px solid white;
 }
 
+table.o_qti_item_kprim {
+	td.o_qti_item_kprim_input_correct {
+		background-color: $o-qti-match-kprim-correct-bg;
+	}
+	
+	td.o_qti_item_kprim_input_wrong {
+		background-color: $o-qti-match-kprim-wrong-bg;
+	}
+}	
+
 .matchInteraction {
 	input[type='text'] {
 		display:inline;
