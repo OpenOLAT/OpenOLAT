@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -39,7 +38,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author srosse
  */
-public abstract class VersionsManager extends BasicManager {
+public abstract class VersionsManager {
 
 	protected static VersionsManager INSTANCE;
 
