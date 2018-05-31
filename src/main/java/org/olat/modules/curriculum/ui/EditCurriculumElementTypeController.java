@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCurriculumElementTypeController extends FormBasicController {
 	
+	private TextElement cssClassEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
 	private RichTextElement descriptionEl;
@@ -80,6 +81,10 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("type.displayname", "type.displayname", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
+		
+		String cssClass = curriculumElementType == null ? "" : curriculumElementType.getCssClass();
+		cssClassEl = uifactory.addTextElement("type.cssClass", "type.cssClass", 255, cssClass, formLayout);
+		cssClassEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.cssClass));
 		
 		String description = curriculumElementType == null ? "" : curriculumElementType.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("type.description", "type.description", description, 10, 60,
@@ -146,6 +151,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			curriculumElementType.setDisplayName(displayNameEl.getValue());
 			curriculumElementType.setDescription(descriptionEl.getValue());
 		}
+		curriculumElementType.setCssClass(cssClassEl.getValue());
 		
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();
 		List<CurriculumElementType> allowedSubTypes = new ArrayList<>();

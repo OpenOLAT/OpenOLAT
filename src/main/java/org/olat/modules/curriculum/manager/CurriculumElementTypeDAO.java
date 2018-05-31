@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.model.CurriculumElementTypeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,12 +53,37 @@ public class CurriculumElementTypeDAO {
 		return type;
 	}
 	
+	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef typeRef) {
+		CurriculumElementType reloadedType = loadByKey(typeRef.getKey());
+		
+		CurriculumElementTypeImpl clone = new CurriculumElementTypeImpl();
+		clone.setCreationDate(new Date());
+		clone.setLastModified(clone.getCreationDate());
+		clone.setIdentifier(reloadedType.getIdentifier() + " (Copy)");
+		clone.setDisplayName(reloadedType.getDisplayName());
+		clone.setDescription(reloadedType.getDescription());
+		clone.setCssClass(reloadedType.getCssClass());
+		dbInstance.getCurrentEntityManager().persist(clone);
+		return clone;
+	}
+	
 	public CurriculumElementType loadByKey(Long key) {
 		List<CurriculumElementType> types = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadCurriculumElementTypeByKey", CurriculumElementType.class)
 				.setParameter("key", key)
 				.getResultList();
 		return types == null || types.isEmpty() ? null : types.get(0);
+	}
+	
+	public boolean hasElements(CurriculumElementTypeRef typeRef) {
+		String query = "select el.key from curriculumelement el where el.type.key=:typeKey";
+		List<Long> types = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("typeKey", typeRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return types != null && !types.isEmpty() && types.get(0) != null && types.get(0).longValue() > 0;
 	}
 	
 	public List<CurriculumElementType> load() {
@@ -70,5 +96,10 @@ public class CurriculumElementTypeDAO {
 		((CurriculumElementTypeImpl)type).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(type);
 	}
-
+	
+	public void deleteCurriculumElementType(CurriculumElementTypeRef type) {
+		CurriculumElementType reloadedType = dbInstance.getCurrentEntityManager()
+				.getReference(CurriculumElementTypeImpl.class, type.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedType);
+	}
 }

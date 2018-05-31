@@ -1,0 +1,5 @@
+@for $i from 0 through 11 {
+	tr.o_curriculum_element_l#{$i} td {
+		padding: ($i * $o-tree-padding-steps-px); 
+	}
+}

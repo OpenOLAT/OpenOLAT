@@ -345,10 +345,10 @@ public class AssessmentHtmlBuilder {
 			this.attributesUri = uri;
 		}
 		
-		public void addAttributes(Attributes attributes) {
-			for(int i=0; i<attributes.getLength(); i++) {
-				String name = attributes.getLocalName(i);
-				String value = attributes.getValue(i);
+		public void addAttributes(Attributes attrs) {
+			for(int i=0; i<attrs.getLength(); i++) {
+				String name = attrs.getLocalName(i);
+				String value = attrs.getValue(i);
 				addAttribute(name, value);
 			}
 		}

@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -35,7 +37,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -47,6 +51,8 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.ui.CurriculumElementDataModel.ElementCols;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModel.ElementViewCols;
+import org.olat.modules.curriculum.ui.component.CurriculumElementDepthComparator;
+import org.olat.modules.curriculum.ui.component.CurriculumElementIndentRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryService;
@@ -60,6 +66,8 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+
 /**
  * This is a list of curriculum elements and repository entries
  * aimed to participants. The repository entries permissions
@@ -70,7 +78,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementListController extends FormBasicController {
+public class CurriculumElementListController extends FormBasicController implements FlexiTableCssDelegate {
 	
 	private FlexiTableElement tableEl;
 	private CurriculumElementWithViewsDataModel tableModel;
@@ -101,7 +109,7 @@ public class CurriculumElementListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementDisplayName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementDisplayName, new CurriculumElementIndentRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryDisplayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
@@ -110,9 +118,30 @@ public class CurriculumElementListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
+		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 	}
-	
+
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		CurriculumElementWithViewsRow rowWithView = tableModel.getObject(pos);
+		int count = 0;
+		for(CurriculumElementWithViewsRow parent=rowWithView.getParent(); parent != null; parent=parent.getParent()) {
+			count++;
+		}
+		return "o_curriculum_element_l" + count;
+	}
+
 	private void loadModel(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(getIdentity(), roles, curriculum);
@@ -137,18 +166,24 @@ public class CurriculumElementListController extends FormBasicController {
 			if(elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
 				rows.add(new CurriculumElementWithViewsRow(element));
 			} else if(elementWithViews.getEntries().size() == 1) {
-				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementWithViews.getEntries().get(0));
+				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementWithViews.getEntries().get(0), true);
 				forge(row, repoKeys, resourcesWithOffer);
 				rows.add(row);
 			} else {
 				rows.add(new CurriculumElementWithViewsRow(element));
 				for(RepositoryEntryMyView entry:elementWithViews.getEntries()) {
-					CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, entry);
+					CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, entry, false);
 					forge(row, repoKeys, resourcesWithOffer);
 					rows.add(row);
 				}
 			}
 		}
+
+		Map<Long,CurriculumElementWithViewsRow> keyToRow = rows.stream()
+				.collect(Collectors.toMap(CurriculumElementWithViewsRow::getKey, row -> row, (row1, row2) -> row1));
+		rows.forEach(row -> row.setParent(keyToRow.get(row.getParentKey())));
+		
+		Collections.sort(rows, new CurriculumElementDepthComparator());
 
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);

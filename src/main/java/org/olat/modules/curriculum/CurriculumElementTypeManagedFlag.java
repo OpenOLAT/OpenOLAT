@@ -37,6 +37,7 @@ public enum CurriculumElementTypeManagedFlag {
 	all,
 	 identifier(all),
 	 displayName(all),
+	 cssClass(all),
 	 description(all),
 	 externalId(all),
 	 subTypes(all),

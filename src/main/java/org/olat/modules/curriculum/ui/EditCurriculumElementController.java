@@ -154,7 +154,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		beginEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
 
 		Date end = element == null ? null : element.getEndDate();
-		endEl = uifactory.addDateChooser("start", "curriculum.element.end", end, formLayout);
+		endEl = uifactory.addDateChooser("end", "curriculum.element.end", end, formLayout);
 		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
 		
 		String description = element == null ? "" : element.getDescription();

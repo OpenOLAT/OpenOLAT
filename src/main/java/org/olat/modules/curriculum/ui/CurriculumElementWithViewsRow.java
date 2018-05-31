@@ -40,9 +40,11 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	private boolean hasChildren;
 	private CurriculumElementWithViewsRow parent;
 	
+	
 	private final Long parentKey;
 	private final CurriculumElement element;
-	
+
+	private boolean singleEntry;
 	private Long repositoryEntryKey;
 	private String repositoryEntryName;
 	private OLATResource olatResource;
@@ -57,11 +59,13 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	public CurriculumElementWithViewsRow(CurriculumElement element) {
 		this.element = element;
+		singleEntry = false;
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 	}
 	
-	public CurriculumElementWithViewsRow(CurriculumElement element, RepositoryEntryMyView repositoryEntryView) {
+	public CurriculumElementWithViewsRow(CurriculumElement element, RepositoryEntryMyView repositoryEntryView, boolean alone) {
 		this.element = element;
+		singleEntry = alone;
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		
 		isMembersOnly = repositoryEntryView.isMembersOnly();
@@ -77,11 +81,19 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	}
 	
 	public String getCurriculumElementIdentifier() {
-		return element.getIdentifier();
+		return repositoryEntryName == null || singleEntry ? element.getIdentifier() : null;
 	}
 	
 	public String getCurriculumElementDisplayName() {
-		return element.getDisplayName();
+		return repositoryEntryName == null || singleEntry ? element.getDisplayName() : null;
+	}
+	
+	public String getMaterializedPathKeys() {
+		return element.getMaterializedPathKeys();
+	}
+	
+	public boolean isSingleEntry() {
+		return singleEntry;
 	}
 	
 	public int getAccess() {

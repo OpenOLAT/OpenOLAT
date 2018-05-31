@@ -39,6 +39,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -136,14 +137,25 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
-	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef typeRef) {
-		// TODO Auto-generated method stub
-		return null;
+	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef elementType) {
+		CurriculumElementType clonedType = curriculumElementTypeDao.cloneCurriculumElementType(elementType);
+		List<CurriculumElementTypeToType> allowSubTypesToTypes = curriculumElementTypeToTypeDao.getAllowedSubTypes(elementType);
+		if(allowSubTypesToTypes.size() > 0) {
+			for(CurriculumElementTypeToType allowSubTypeToType:allowSubTypesToTypes) {
+				curriculumElementTypeToTypeDao.addAllowedSubType(clonedType, allowSubTypeToType.getAllowedSubType());
+			}
+		}
+		return clonedType;
 	}
 
 	@Override
-	public boolean deleteCurriculumElementType(CurriculumElementTypeRef typeRef) {
-		return false;
+	public boolean deleteCurriculumElementType(CurriculumElementTypeRef elementType) {
+		if(curriculumElementTypeDao.hasElements(elementType)) {
+			return false;
+		}
+		curriculumElementTypeToTypeDao.deleteAllowedSubTypes(elementType);
+		curriculumElementTypeDao.deleteCurriculumElementType(elementType);
+		return true;
 	}
 
 	@Override
