@@ -65,7 +65,7 @@ import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
-import org.olat.ims.qti.statistics.QTIType;
+import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -82,7 +82,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	private Condition preConditionVisibility;
 	private Condition preConditionAccess;
 	protected transient StatusDescription[] oneClickStatusCache = null;
-	protected List<AdditionalCondition> additionalConditions = new ArrayList<AdditionalCondition>();
+	protected List<AdditionalCondition> additionalConditions = new ArrayList<>();
 
 	/**
 	 * Generic course node constructor
@@ -158,12 +158,12 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	
 	@Override
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, QTIType... types) {
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type) {
 		return null;
 	}
 
 	@Override
-	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, QTIType... types) {
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, StatisticType type) {
 		return false;
 	}
 

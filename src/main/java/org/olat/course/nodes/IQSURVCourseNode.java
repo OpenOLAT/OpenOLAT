@@ -63,6 +63,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.course.statistic.StatisticType;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportFormatter;
@@ -72,7 +73,6 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
-import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
@@ -169,8 +169,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 
 	@Override
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, QTIType... types) {
-		if(!isQTITypeAllowed(types)) return null;
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type) {
+		if(!isStatisticTypeAllowed(type)) return null;
 		
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
@@ -193,25 +193,17 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	@Override
-	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, QTIType... types) {
-		return isQTITypeAllowed(types);
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, StatisticType type) {
+		return isStatisticTypeAllowed(type);
 	}
 	
-	private boolean isQTITypeAllowed(QTIType... types) {
-		if(types == null) return true;
-		if(types.length == 0 || (types.length == 1 && types[0] == null)) return true;
-		
-		for(QTIType type:types) {
-			if(QTIType.survey.equals(type)) {
-				return true;
-			}
+	private boolean isStatisticTypeAllowed(StatisticType type) {
+		if(StatisticType.SURVEY.equals(type)) {
+			return true;
 		}
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
 		/*

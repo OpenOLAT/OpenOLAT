@@ -77,6 +77,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.course.statistic.StatisticType;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
@@ -98,7 +99,6 @@ import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
-import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
@@ -313,8 +313,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 	@Override
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, QTIType... types) {
-		if(!isQTITypeAllowed(types)) return null;
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type) {
+		if(!isStatisticTypeAllowed(type)) return null;
 		
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
@@ -337,18 +337,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 	
 	@Override
-	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, QTIType... types) {
-		return isQTITypeAllowed(types);
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, StatisticType type) {
+		return isStatisticTypeAllowed(type);
 	}
 	
-	private boolean isQTITypeAllowed(QTIType... types) {
-		if(types == null) return true;
-		if(types.length == 0 || (types.length == 1 && types[0] == null)) return true;
-		
-		for(QTIType type:types) {
-			if(QTIType.test.equals(type) || QTIType.onyx.equals(type) || QTIType.qtiworks.equals(type)) {
-				return true;
-			}
+	private boolean isStatisticTypeAllowed(StatisticType type) {
+		if(StatisticType.TEST.equals(type)) {
+			return true;
 		}
 		return false;
 	}

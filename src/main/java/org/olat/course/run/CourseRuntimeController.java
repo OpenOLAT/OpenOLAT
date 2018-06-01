@@ -113,12 +113,12 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
 import org.olat.course.statistic.StatisticMainController;
+import org.olat.course.statistic.StatisticType;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
-import org.olat.ims.qti.statistics.QTIType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -511,9 +511,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				new TreeVisitor(new Visitor() {
 					@Override
 					public void visit(INode node) {
-						if(((CourseNode)node).isStatisticNodeResultAvailable(uce, QTIType.test, QTIType.onyx)) {
+						if(((CourseNode)node).isStatisticNodeResultAvailable(uce, StatisticType.TEST)) {
 							testNodes.incrementAndGet();
-						} else if(((CourseNode)node).isStatisticNodeResultAvailable(uce, QTIType.survey)) {
+						} else if(((CourseNode)node).isStatisticNodeResultAvailable(uce, StatisticType.SURVEY)) {
 							surveyNodes.incrementAndGet();
 						}
 					}
@@ -1570,7 +1570,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Activateable2 doAssessmentTestStatistics(UserRequest ureq) {
 		Activateable2 controller = null;
 		if(delayedClose == Delayed.assessmentTestStatistics || requestForClose(ureq)) {
-			controller = doAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", testStatisticLink, QTIType.test, QTIType.onyx);
+			controller = doAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", testStatisticLink, StatisticType.TEST);
 		} else {
 			delayedClose = Delayed.assessmentTestStatistics;
 		}
@@ -1580,7 +1580,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Activateable2 doAssessmentSurveyStatistics(UserRequest ureq) {
 		Activateable2 controller = null;
 		if(delayedClose == Delayed.assessmentSurveyStatistics || requestForClose(ureq)) {
-			controller = doAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", surveyStatisticLink, QTIType.survey);
+			controller = doAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics",
+					surveyStatisticLink, StatisticType.SURVEY);
 		} else {
 			delayedClose = Delayed.assessmentSurveyStatistics;
 		}
@@ -1596,14 +1597,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	 * @param types
 	 * @return
 	 */
-	private Activateable2 doAssessmentStatistics(UserRequest ureq, String i18nCrumbKey, String typeName, Link tool, QTIType... types) {
+	private Activateable2 doAssessmentStatistics(UserRequest ureq, String i18nCrumbKey, String typeName, Link tool, StatisticType type) {
 		OLATResourceable ores = OresHelper.createOLATResourceableType(typeName);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 			removeCustomCSS();
 			UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-			StatisticCourseNodesController ctrl = new StatisticCourseNodesController(ureq, swControl, toolbarPanel,  reSecurity, uce, types);
+			StatisticCourseNodesController ctrl = new StatisticCourseNodesController(ureq, swControl, toolbarPanel,  reSecurity, uce, type);
 			listenTo(ctrl);
 			statsToolCtr = pushController(ureq, translate(i18nCrumbKey), ctrl);
 			currentToolCtr = statsToolCtr;

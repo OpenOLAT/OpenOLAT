@@ -119,7 +119,7 @@ public class SurveyRunSecurityCallback {
 		return participation != null && isExecutor() && !hasParticipated(participation);
 	}
 	
-	boolean canViewReporting(EvaluationFormParticipation participation) {
+	public boolean canViewReporting(EvaluationFormParticipation participation) {
 		if (isReportViewer()) {
 			if (!isExecutor()) {
 				return true;

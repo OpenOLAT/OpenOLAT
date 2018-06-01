@@ -42,9 +42,13 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.survey.SurveyEditController;
 import org.olat.course.nodes.survey.SurveyRunController;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
+import org.olat.course.nodes.survey.SurveyStatisticResourceResult;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.statistic.StatisticResourceOption;
+import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -67,7 +71,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 
 	public static final String SURVEY_ICON = "o_survey_icon";
 
-	private static final String TYPE = "survey";
+	private static final String TYPE = "QTI_SURVEY";
 	
 	public static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
@@ -140,7 +144,31 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
 	}
-
+	
+	@Override
+	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type) {
+		if (isStatisticAllowed(type)) {
+			RepositoryEntry ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
+			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+			return new SurveyStatisticResourceResult(ores, getIdent(), identity, secCallback);
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, StatisticType type) {
+		return isStatisticAllowed(type);
+	}
+	
+	private boolean isStatisticAllowed(StatisticType type) {
+		if(StatisticType.SURVEY.equals(type)) {
+			return true;
+		}
+		return false;
+	}
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
@@ -230,3 +258,4 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 }
+
