@@ -1,14 +1,16 @@
-#if($r.available("run.commands"))
-	<div class="o_button_group o_button_group_right">
-		$r.render("run.commands")
-	</div>
-#end
-#if($r.available("message"))
-	$r.render("message")
-#end
-#if($r.available("execution"))
-	$r.render("execution")
-#end
-#if($r.available("reporting"))
-	$r.render("reporting")
-#end
+<div class="o_surv_run #if($withCmds) withCmds #end">
+	#if($r.available("run.reset"))
+		<div class="o_button_group_left">
+			$r.render("run.reset")
+		</div>
+	#end
+	#if($r.available("message"))
+		$r.render("message")
+	#end
+	#if($r.available("execution"))
+		$r.render("execution")
+	#end
+	#if($r.available("reporting"))
+		$r.render("reporting")
+	#end
+</div>

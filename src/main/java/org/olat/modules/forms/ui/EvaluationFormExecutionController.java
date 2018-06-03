@@ -92,26 +92,42 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EvaluationFormManager evaluationFormManager;
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, session, false, true);
+		this(ureq, wControl, null, session, false, true);
+	}
+	
+	/**
+	 * Optimized to avoid the loading of the form from the XML file.
+	 * 
+	 */
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session, Form form) {
+		this(ureq, wControl, form, session, false, true);
 	}
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton) {
+		this(ureq, wControl, null, session, readOnly, showDoneButton);
+	}
+	
+	private EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form,
+			EvaluationFormSession session, boolean readOnly, boolean showDoneButton) {
 		super(ureq, wControl, "execute");
 		
-		RepositoryEntry formEntry = session.getSurvey().getFormEntry();
-		File repositoryDir = new File(
-				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
-				FileResourceManager.ZIPDIR);
-		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+		if (form != null) {
+			this.form = form;
+		} else {
+			RepositoryEntry formEntry = session.getSurvey().getFormEntry();
+			File repositoryDir = new File(
+					FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
+					FileResourceManager.ZIPDIR);
+			File formFile = new File(repositoryDir, FORM_XML_FILE);
+			this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+		}
 		
 		this.session = session;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
 		
 		initForm(ureq);
-		
 	}
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile) {

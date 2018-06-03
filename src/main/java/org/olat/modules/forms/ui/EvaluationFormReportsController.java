@@ -25,51 +25,32 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.forms.EvaluationFormSessionRef;
-import org.olat.modules.forms.handler.DefaultReportProvider;
-import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
-import org.olat.modules.forms.handler.RubricTableHandler;
-import org.olat.modules.forms.handler.SingleChoiceTableHandler;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.model.xml.MultipleChoice;
-import org.olat.modules.forms.model.xml.Rubric;
-import org.olat.modules.forms.model.xml.SingleChoice;
 
 /**
  * 
- * Initial date: 18.05.2018<br>
+ * Initial date: 01.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class EvaluationFormReportsController extends BasicController {
 	
-	private static final String SEGMENTS_CMP = "segmentCmp";
+	private Link printLink;
+	private Link exportLink;
 	
-	private final VelocityContainer mainVC;
-	private final SegmentViewComponent segmentView;
-	
-	private final Link overviewReportLink;
-	private final Link tableReportLink;
-	private final Link diagramReportLink;
-	private final Link sessionSelectionLink;
-	
-	private final ReportHelper reportHelper;
-	private EvaluationFormOverviewController overviewCtrl;
-	private EvaluationFormReportController tableReportCtrl;
-	private EvaluationFormReportController diagramReportCtrl;
-	private BreadcrumbedStackedPanel stackedSessionPanel;
-	private EvaluationFormSessionSelectionController sessionSelectionCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
+	private EvaluationFormPrintSelectionController printSelectionCtrl;
 	
 	private final Form form;
 	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final ReportHelper reportHelper;
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form,
 			List<? extends EvaluationFormSessionRef> sessions) {
@@ -82,83 +63,65 @@ public class EvaluationFormReportsController extends BasicController {
 				.withLegendNameGenrator(legendNameGenerator)
 				.withColors()
 				.build();
-		
-		mainVC = createVelocityContainer("reports");
-		
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		overviewReportLink = LinkFactory.createLink("reports.table.overview", mainVC, this);
-		segmentView.addSegment(overviewReportLink, true);
-		tableReportLink = LinkFactory.createLink("reports.table.report", mainVC, this);
-		segmentView.addSegment(tableReportLink, false);
-		diagramReportLink = LinkFactory.createLink("reports.diagram.report", mainVC, this);
-		segmentView.addSegment(diagramReportLink, false);
-		sessionSelectionLink = LinkFactory.createLink("reports.session.selection", mainVC, this);
-		segmentView.addSegment(sessionSelectionLink, false);
-		
-		doOpenOverviewReport(ureq);
-		
+
+		VelocityContainer mainVC = createVelocityContainer("reports");
+
+		printLink = LinkFactory.createButtonSmall("report.print", mainVC, this);
+		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_print");
+
+		exportLink = LinkFactory.createButtonSmall("report.export", mainVC, this);
+		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
+
+		EvaluationFormReportSegmentsController segmentsController = new EvaluationFormReportSegmentsController(ureq,
+				getWindowControl(), form, sessions, reportHelper);
+		mainVC.put("segments", segmentsController.getInitialComponent());
+
 		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView && event instanceof SegmentViewEvent) {
-			SegmentViewEvent sve = (SegmentViewEvent)event;
-			String segmentCName = sve.getComponentName();
-			Component clickedLink = mainVC.getComponent(segmentCName);
-			if (clickedLink == overviewReportLink) {
-				doOpenOverviewReport(ureq);
-			} else if (clickedLink == tableReportLink) {
-				doOpenTableReport(ureq);
-			} else if (clickedLink == diagramReportLink) {
-				doOpenDiagramReport(ureq);
-			} else if (clickedLink == sessionSelectionLink) {
-				doOpenSessionSelection(ureq);
+		if(source instanceof Link) {
+			Link link = (Link) source;
+			String cmd = link.getCommand();
+			if (cmd.equals("report.print")) {
+				doOpenPrintSelection(ureq);
 			}
 		}
 	}
-
-	private void doOpenOverviewReport(UserRequest ureq) {
-		if (overviewCtrl == null) {
-			overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, sessions);
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == printSelectionCtrl) {
+			calloutCtrl.deactivate();
+			cleanUp();
 		}
-		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
-	}
-
-	private void doOpenTableReport(UserRequest ureq) {
-		if (tableReportCtrl == null) {
-			DefaultReportProvider provider = new DefaultReportProvider();
-			provider.put(Rubric.TYPE, new RubricTableHandler());
-			provider.put(SingleChoice.TYPE, new SingleChoiceTableHandler());
-			provider.put(MultipleChoice.TYPE, new MultipleChoiceTableHandler());
-			tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
-			listenTo(tableReportCtrl);
-		}
-		mainVC.put(SEGMENTS_CMP, tableReportCtrl.getInitialComponent());
+		super.event(ureq,  source,  event);
 	}
 	
-	private void doOpenDiagramReport(UserRequest ureq) {
-		if (diagramReportCtrl == null) {
-			DefaultReportProvider provider = new DefaultReportProvider();
-			diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
-			listenTo(diagramReportCtrl);
-		}
-		mainVC.put(SEGMENTS_CMP, diagramReportCtrl.getInitialComponent());
-	}
-
-	private void doOpenSessionSelection(UserRequest ureq) {
-		if (sessionSelectionCtrl == null) {
-			sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, sessions, reportHelper);
-			stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), sessionSelectionCtrl);
-			stackedSessionPanel.pushController(translate("reports.session.forms"), sessionSelectionCtrl);
-			sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);
-		}
-		mainVC.put(SEGMENTS_CMP, stackedSessionPanel);	
-	}
-
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(printSelectionCtrl);
+		printSelectionCtrl = null;
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = null;
+	}
+
+	private void doOpenPrintSelection(UserRequest ureq) {
+		if (printSelectionCtrl == null) {
+			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, sessions,
+					reportHelper);
+			listenTo(printSelectionCtrl);
+		}
+
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				printSelectionCtrl.getInitialComponent(), printLink, "", true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
 }

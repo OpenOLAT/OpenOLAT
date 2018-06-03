@@ -1,7 +1,15 @@
-<div class="clearfix">
-	$r.render("segments")<br/>
-
-	#if($r.available("segmentCmp"))
-		$r.render("segmentCmp")
-	#end
+<div class="o_eva_report">
+	<div class="clearfix o_block">
+		<div class="o_eva_report_cmds o_button_group_right">
+			<div class="btn-group">
+			#if($r.available("report.print"))
+				$r.render("report.print")
+			#end
+			#if($r.available("report.export"))
+				$r.render("report.export")
+			#end
+			</div>
+		</div>
+	</div>
+	$r.render("segments")
 </div>

@@ -144,7 +144,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
 		String legendName = reportHelper.getLegend(reloadedSession).getName();
 		EvaluationFormExecutionController controller = new EvaluationFormExecutionController(ureq, getWindowControl(),
-				reloadedSession);
+				reloadedSession, form);
 		stackPanel.pushController(legendName, controller);
 	}
 

@@ -659,11 +659,13 @@ $fa-css-prefix: "o_icon" !default;
 
 /* evaluation form and survey course node*/
 .o_icon_eva_disclaimer:before { content: $fa-var-gavel; }
+.o_icon_eva_export:before { content: $fa-var-download; }
+.o_icon_eva_print:before { content: $fa-var-print; }
 .o_icon_eva_session_info:before { content: $fa-var-info; }
 .o_icon_eva_mc:before { content: $fa-var-check-square-o; }
 .o_icon_eva_sc:before { content: $fa-var-dot-circle-o; }
-.o_icon_surv_commands:before { content: $fa-var-gear;}
-.o_icon_surv_delete_all_data:before { content: $fa-var-trash;}
+.o_icon_eva_sc:before { content: $fa-var-dot-circle-o; }
+.o_icon_surv_reset:before { content: $fa-var-eraser;}
 
 /* Licenses */
 .o_icon_lic_add:before { content: $fa-var-plus-circle;}
