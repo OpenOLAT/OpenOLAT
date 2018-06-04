@@ -33,7 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
 import org.olat.modules.forms.handler.RubricTableHandler;
@@ -68,11 +68,11 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	private EvaluationFormSessionSelectionController sessionSelectionCtrl;
 	
 	private final Form form;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	
 	public EvaluationFormReportSegmentsController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			List<EvaluationFormSession> sessions, ReportHelper reportHelper) {
 		super(ureq, wControl);
 		this.form = form;
 		this.sessions = sessions;

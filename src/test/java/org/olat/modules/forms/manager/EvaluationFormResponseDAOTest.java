@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -126,6 +128,26 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadResponsesBySessions() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session1 = evaTestHelper.createSession(survey);
+		EvaluationFormResponse response11 = evaTestHelper.createResponse(session1);
+		EvaluationFormResponse response12 = evaTestHelper.createResponse(session1);
+		EvaluationFormSession session2 = evaTestHelper.createSession(survey);
+		EvaluationFormResponse response21 = evaTestHelper.createResponse(session2);
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		EvaluationFormResponse otherResponse = evaTestHelper.createResponse(otherSession);
+		dbInstance.commit();
+		
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
+		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesBySessions(sessions);
+		
+		assertThat(loadedResponses)
+				.contains(response11, response12, response21)
+				.doesNotContain(otherResponse);
+	}
+	
+	@Test
 	public void shouldDeleteResponses() {
 		EvaluationFormSession session = evaTestHelper.createSession();
 		String responseIdentifier = UUID.randomUUID().toString();
@@ -134,14 +156,14 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		createResponse(session, responseIdentifier);
 		dbInstance.commit();
 		
-		List<EvaluationFormResponse> responses = sut.loadResponses(responseIdentifier, session);
+		List<EvaluationFormResponse> responses = sut.loadResponsesBySessions(Collections.singletonList(session));
 		assertThat(responses).hasSize(3);
 		
 		List<Long> keys = responses.stream().map(EvaluationFormResponse::getKey).collect(Collectors.toList());
 		sut.deleteResponses(keys);
 		dbInstance.commit();
 		
-		responses = sut.loadResponses(responseIdentifier, session);
+		responses = sut.loadResponsesBySessions(Collections.singletonList(session));
 		assertThat(responses).hasSize(0);
 	}
 	

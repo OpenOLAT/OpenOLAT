@@ -31,7 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.Form;
 
 /**
@@ -49,11 +49,11 @@ public class EvaluationFormReportsController extends BasicController {
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
 	
 	private final Form form;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions) {
+			List<EvaluationFormSession> sessions) {
 		super(ureq, wControl);
 		this.form = form;
 		this.sessions = sessions;

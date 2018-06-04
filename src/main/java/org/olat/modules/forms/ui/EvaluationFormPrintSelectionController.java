@@ -40,7 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.Form;
 
 /**
@@ -66,12 +66,12 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 	private Link printLink;
 
 	private final Form form;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormPrintSelection printSelection;
 
 	public EvaluationFormPrintSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			List<EvaluationFormSession> sessions, ReportHelper reportHelper) {
 		super(ureq, wControl, "report_print_selection");
 		this.form = form;
 		this.sessions = sessions;

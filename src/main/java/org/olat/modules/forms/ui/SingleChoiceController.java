@@ -33,7 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
@@ -120,8 +120,8 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSessionRef session) {
-		response = evaluationFormManager.loadResponse(singleChoice.getId(), session);
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+		response = responses.getResponse(session, singleChoice.getId());
 		if (response != null) {
 			for (Choice choice: singleChoice.getChoices().asList()) {
 				if (choice.getId().equals(response.getStringuifiedResponse())) {

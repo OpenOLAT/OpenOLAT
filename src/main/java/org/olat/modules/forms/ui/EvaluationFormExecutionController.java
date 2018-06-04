@@ -23,6 +23,7 @@ import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FIL
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,10 +49,10 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.handler.AllHandlerPageProvider;
 import org.olat.modules.forms.handler.EvaluationFormElementHandler;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
@@ -85,6 +86,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private boolean immediateSave = false;
 	
 	private EvaluationFormSession session;
+	private final EvaluationFormResponses responses;
 	
 	@Autowired
 	private DB dbInstance;
@@ -92,25 +94,31 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EvaluationFormManager evaluationFormManager;
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, null, session, false, true);
+		this(ureq, wControl, null, session, null, false, true);
 	}
 	
 	/**
-	 * Optimized to avoid the loading of the form from the XML file.
+	 * Optimized to use already loaded responses and form.
 	 * 
 	 */
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session, Form form) {
-		this(ureq, wControl, form, session, false, true);
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
+			EvaluationFormResponses responses, Form form) {
+		this(ureq, wControl, form, session, responses, false, true);
 	}
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton) {
-		this(ureq, wControl, null, session, readOnly, showDoneButton);
+		this(ureq, wControl, null, session, null, readOnly, showDoneButton);
 	}
 	
 	private EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form,
-			EvaluationFormSession session, boolean readOnly, boolean showDoneButton) {
+			EvaluationFormSession session, EvaluationFormResponses responses, boolean readOnly,
+			boolean showDoneButton) {
 		super(ureq, wControl, "execute");
+		
+		this.session = session;
+		this.readOnly = readOnly;
+		this.showDoneButton = showDoneButton;
 		
 		if (form != null) {
 			this.form = form;
@@ -123,9 +131,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		}
 		
-		this.session = session;
-		this.readOnly = readOnly;
-		this.showDoneButton = showDoneButton;
+		if (responses != null) {
+			this.responses = responses;
+		} else {
+			this.responses = evaluationFormManager.loadResponsesBySessions(Collections.singletonList(session));
+		}
 		
 		initForm(ureq);
 	}
@@ -136,6 +146,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		
 		this.session = null;
+		this.responses = null;
 		this.readOnly = false;
 		this.showDoneButton = false;
 		
@@ -205,7 +216,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (session == null) return;
 		
 		for (ExecutionFragment fragment: fragments) {
-			fragment.load(session);
+			fragment.initResponse(session, responses);
 		}
 	}
 	
@@ -351,8 +362,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			return executionElement.hasResponse();
 		}
 		
-		public void load(EvaluationFormSessionRef session) {
-			executionElement.loadResponse(session);
+		public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses){
+			executionElement.initResponse(session, responses);;
 		}
 		
 		public void save(EvaluationFormSession session) {

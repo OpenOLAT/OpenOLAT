@@ -33,11 +33,11 @@ import org.olat.core.util.CodeHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
 import org.olat.modules.forms.handler.RubricTableHandler;
 import org.olat.modules.forms.handler.SingleChoiceTableHandler;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -56,14 +56,14 @@ public class EvaluationFormPrintController extends BasicController {
 	private VelocityContainer mainVC;
 	
 	private final Form form;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper,
+			List<EvaluationFormSession> sessions, ReportHelper reportHelper,
 			EvaluationFormPrintSelection printSelection) {
 		super(ureq, wControl);
 		this.form = form;
@@ -101,19 +101,21 @@ public class EvaluationFormPrintController extends BasicController {
 
 	private List<SessionWrapper> createSessionWrappers(UserRequest ureq) {
 		List<SessionWrapper> wrappers = new ArrayList<>();
-		for (EvaluationFormSessionRef sessionRef: sessions) {
-			SessionWrapper wrapper = createSessionWrapper(ureq, sessionRef);
+		List<EvaluationFormSession> reloadedSessions = evaluationFormManager.loadSessionsByKey(sessions, 0, -1);
+		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(sessions);
+		for (EvaluationFormSession session: reloadedSessions) {
+			SessionWrapper wrapper = createSessionWrapper(ureq, session, responses);
 			wrappers.add(wrapper);
 		}
 		return wrappers;
 	}
 	
-	private SessionWrapper createSessionWrapper(UserRequest ureq, EvaluationFormSessionRef sessionRef) {
-		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(sessionRef);
+	private SessionWrapper createSessionWrapper(UserRequest ureq, EvaluationFormSession session,
+			EvaluationFormResponses responses) {
 		String componentName = "se_" + CodeHelper.getRAMUniqueID();
-		String legendName = reportHelper.getLegend(reloadedSession).getName();
-		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), reloadedSession,
-				form);
+		String legendName = reportHelper.getLegend(session).getName();
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), session,
+				responses, form);
 		mainVC.put(componentName, controller.getInitialComponent());
 		return new SessionWrapper(legendName, componentName);
 	}

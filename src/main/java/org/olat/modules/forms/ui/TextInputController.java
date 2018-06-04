@@ -34,7 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,8 +135,8 @@ public class TextInputController extends FormBasicController implements Evaluati
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSessionRef session) {
-		response = evaluationFormManager.loadResponse(textInput.getId(), session);
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+		response = responses.getResponse(session, textInput.getId());
 		if (response != null) {
 			if (singleRow) {
 				singleRowEl.setValue(response.getStringuifiedResponse());

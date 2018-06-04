@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,8 +124,8 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSessionRef session) {
-		response = evaluationFormManager.loadResponse(disclaimer.getId(), session);
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+		response = responses.getResponse(session, disclaimer.getId());
 		boolean accepted = response != null && ACCEPTED_DB_KEY.equals(response.getStringuifiedResponse());
 		agreementEl.select(ACCEPTED_KEY, accepted);
 	}

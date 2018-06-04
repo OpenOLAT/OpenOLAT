@@ -23,13 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,16 +35,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SessionInformationLegendNameGenerator implements LegendNameGenerator {
 	
-	private Map<Long, String> sessionKeyToName;
+	private Map<EvaluationFormSession, String> sessionKeyToName;
 
-	private final List<? extends EvaluationFormSessionRef> sessionRefs;
+	private final List<? extends EvaluationFormSession> sessions;
 	
-	@Autowired
-	private EvaluationFormManager evaluationFormManager;
-	
-	public SessionInformationLegendNameGenerator(List<? extends EvaluationFormSessionRef> sessionRefs) {
-		this.sessionRefs = sessionRefs;
-		CoreSpringFactory.autowireObject(this);
+	public SessionInformationLegendNameGenerator(List<EvaluationFormSession> sessions) {
+		this.sessions = sessions;
 	}
 
 	@Override
@@ -58,15 +50,14 @@ public class SessionInformationLegendNameGenerator implements LegendNameGenerato
 		if (sessionKeyToName == null) {
 			initSessionKeyToName();
 		}
-		return sessionKeyToName.get(session.getKey());
+		return sessionKeyToName.get(session);
 	}
 
 	private void initSessionKeyToName() {
 		sessionKeyToName = new HashMap<>();
-		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsByKey(sessionRefs, 0, -1);
 		for (EvaluationFormSession session: sessions) {
 			String name = conacatName(session.getFirstname(), session.getLastname());
-			sessionKeyToName.put(session.getKey(), name);
+			sessionKeyToName.put(session, name);
 		}
 	}
 

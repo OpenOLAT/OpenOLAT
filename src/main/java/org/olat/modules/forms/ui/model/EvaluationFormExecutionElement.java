@@ -21,7 +21,7 @@ package org.olat.modules.forms.ui.model;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 
 /**
@@ -40,7 +40,7 @@ public interface EvaluationFormExecutionElement extends PageRunElement {
 	
 	public boolean hasResponse();
 	
-	public void loadResponse(EvaluationFormSessionRef session);
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
 	
 	public void saveResponse(EvaluationFormSession session);
 

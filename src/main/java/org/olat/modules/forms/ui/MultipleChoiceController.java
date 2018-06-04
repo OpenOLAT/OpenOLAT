@@ -38,7 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
@@ -58,7 +58,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	private TextElement otherEl;
 	
 	private final MultipleChoice multipleChoice;
-	private List<EvaluationFormResponse> responses;
+	private List<EvaluationFormResponse> multipleChoiceResponses;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -140,13 +140,13 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 
 	@Override
 	public boolean hasResponse() {
-		return !responses.isEmpty();
+		return !multipleChoiceResponses.isEmpty();
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSessionRef session) {
-		responses = evaluationFormManager.loadResponses(multipleChoice.getId(), session);
-		for (EvaluationFormResponse response : responses) {
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+		multipleChoiceResponses = responses.getResponses(session, multipleChoice.getId());
+		for (EvaluationFormResponse response: multipleChoiceResponses) {
 			String key = response.getStringuifiedResponse();
 			if (multipleChoiceEl.getKeys().contains(key)) {
 				multipleChoiceEl.select(key, true);
@@ -160,14 +160,14 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 
 	@Override
 	public void saveResponse(EvaluationFormSession session) {
-		evaluationFormManager.deleteResponses(responses);
+		evaluationFormManager.deleteResponses(multipleChoiceResponses);
 
 		Collection<String> selectedChoises = new ArrayList<>(multipleChoiceEl.getSelectedKeys());
 		replaceOthersKeyWithValue(selectedChoises);
-		responses = new ArrayList<>();
+		multipleChoiceResponses = new ArrayList<>();
 		for (String choice: selectedChoises) {
 			EvaluationFormResponse response = evaluationFormManager.createStringResponse(multipleChoice.getId(), session, choice);
-			responses.add(response);
+			multipleChoiceResponses.add(response);
 		}
 	}
 

@@ -37,7 +37,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
@@ -160,16 +160,9 @@ public class SessionInformationsController extends FormBasicController implement
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSessionRef session) {
-		EvaluationFormSession loadedSession;
-		if (session instanceof EvaluationFormSession) {
-			loadedSession = (EvaluationFormSession) session;
-		} else {
-			loadedSession = evaluationFormManager.loadSessionByKey(session);
-		}
-		
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
 		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
-			String value = getValue(loadedSession, wrapper.getInformationType());
+			String value = getValue(session, wrapper.getInformationType());
 			wrapper.getInformationEl().setValue(value);
 		}
 	}

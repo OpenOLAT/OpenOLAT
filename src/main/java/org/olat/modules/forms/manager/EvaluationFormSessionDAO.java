@@ -107,48 +107,6 @@ class EvaluationFormSessionDAO {
 			sb.append(" order by ");
 			sb.append(sortKey);
 			appendAsc(sb, asc);
-//			switch(sortKey) {
-//				case "itemType":
-//					sb.append(itemDbRef).append(".type.type ");
-//					appendAsc(sb, asc);
-//					break;
-//				case "marks":
-//					sb.append("marks");
-//					appendAsc(sb, asc);
-//					break;
-//				case "rating":
-//					sb.append("rating");
-//					appendAsc(sb, asc);
-//					sb.append(" nulls last");
-//					break;
-//				case "numberOfRatings":
-//					sb.append("numberOfRatingsTotal");
-//					appendAsc(sb, asc);
-//					sb.append(" nulls last");
-//					break;
-//				case "keywords":
-//				case "coverage":
-//				case "additionalInformations":
-//					sb.append("lower(").append(itemDbRef).append(".").append(sortKey).append(")");
-//					appendAsc(sb, asc);
-//					sb.append(" nulls last");
-//					break;
-//				case "taxonomyLevel":
-//					sb.append("lower(").append(taxonomyDbRef).append(".displayName)");
-//					appendAsc(sb, asc);
-//					sb.append(" nulls last");
-//					break;
-//				case "taxonomyPath":
-//					sb.append("lower(").append(taxonomyDbRef).append(".materializedPathIdentifiers)");
-//					appendAsc(sb, asc);
-//					sb.append(" nulls last");
-//					break;
-//				default:
-//					sb.append(itemDbRef).append(".").append(sortKey);
-//					appendAsc(sb, asc);
-//					sb.append(" nulls last");
-//					break;
-//			}
 		} else {
 			sb.append(" order by session.key asc ");
 		}

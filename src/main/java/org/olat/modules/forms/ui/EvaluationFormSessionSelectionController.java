@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -38,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.forms.ui.SessionSelectionModel.SessionSelectionCols;
@@ -142,9 +144,10 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 
 	private void doShowQuickview(UserRequest ureq, SessionSelectionRow row) {
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
+		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(Collections.singletonList(reloadedSession));
 		String legendName = reportHelper.getLegend(reloadedSession).getName();
 		EvaluationFormExecutionController controller = new EvaluationFormExecutionController(ureq, getWindowControl(),
-				reloadedSession, form);
+				reloadedSession, responses, form);
 		stackPanel.pushController(legendName, controller);
 	}
 

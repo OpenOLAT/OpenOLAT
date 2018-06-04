@@ -43,6 +43,7 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -268,13 +269,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session) {
-		return evaluationFormResponseDao.loadResponse(responseIdentifier, session);
-	}
-
-	@Override
-	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session) {
-		return evaluationFormResponseDao.loadResponses(responseIdentifier, session);
+	public EvaluationFormResponses loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesBySessions(sessionRefs);
+		return new EvaluationFormResponses(responses);
 	}
 
 	@Override

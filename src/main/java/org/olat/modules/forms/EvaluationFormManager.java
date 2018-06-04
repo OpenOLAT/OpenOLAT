@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -153,9 +154,7 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
 
-	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session);
-
-	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session);
+	public EvaluationFormResponses loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs);
 
 	public File loadResponseFile(EvaluationFormResponse response);
 

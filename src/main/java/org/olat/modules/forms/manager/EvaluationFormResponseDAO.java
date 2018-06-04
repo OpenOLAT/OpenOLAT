@@ -22,22 +22,16 @@ package org.olat.modules.forms.manager;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.TypedQuery;
-
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
-import org.olat.modules.portfolio.PageBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -80,39 +74,6 @@ public class EvaluationFormResponseDAO {
 		return response;
 	}
 
-	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select response from evaluationformresponse as response")
-		  .append(" inner join response.session as session")
-		  .append(" where session.identity.key=:identityKey and session.pageBody.key=:bodyKey");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormResponse.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("bodyKey", anchor.getKey())
-				.getResultList();
-	}
-	
-	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status) {
-		if(identities == null || identities.isEmpty()) return Collections.emptyList();
-		
-		List<Long> identitiyKeys = identities.stream().map(i -> i.getKey()).collect(Collectors.toList());
-		StringBuilder sb = new StringBuilder();
-		sb.append("select response from evaluationformresponse as response")
-		  .append(" inner join response.session as session")
-		  .append(" where session.identity.key in (:identityKeys) and session.pageBody.key=:bodyKey");
-		if(status != null) {
-			sb.append(" and session.status=:status");
-		}
-		TypedQuery<EvaluationFormResponse> rQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormResponse.class)
-				.setParameter("identityKeys", identitiyKeys)
-				.setParameter("bodyKey", anchor.getKey());
-		if(status != null) {
-			rQuery.setParameter("status", status.name());
-		}
-		return rQuery.getResultList();
-	}
-	
 	public EvaluationFormResponse updateResponse(BigDecimal numericalValue, String stringuifiedResponse,
 			Path fileResponse, EvaluationFormResponse response) {
 		EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
@@ -144,22 +105,16 @@ public class EvaluationFormResponseDAO {
 				.executeUpdate();
 	}
 
-	public EvaluationFormResponse loadResponse(String responseIdentifier, EvaluationFormSessionRef session) {
-		List<EvaluationFormResponse> resultList = loadResponses(responseIdentifier, session);
-		return resultList.isEmpty()? null: resultList.get(0);
-	}
-
-	public List<EvaluationFormResponse> loadResponses(String responseIdentifier, EvaluationFormSessionRef session) {
-		String query = new StringBuilder()
-				.append("select response from evaluationformresponse as response")
-				.append(" inner join response.session as session")
-				.append(" where session.key=:sessionKey and response.responseIdentifier=:responseIdentifier")
-				.toString();
+	public List<EvaluationFormResponse> loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response from evaluationformresponse as response");
+		sb.append(" inner join fetch response.session as session");
+		sb.append("  left outer join fetch session.participation as participation");
+		sb.append(" where session.key in (:sessionKeys)");
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, EvaluationFormResponse.class)
-				.setParameter("sessionKey", session.getKey())
-				.setParameter("responseIdentifier", responseIdentifier)
+				.createQuery(sb.toString(), EvaluationFormResponse.class)
+				.setParameter("sessionKeys", getSessionKeys(sessionRefs))
 				.getResultList();
 	}
 
@@ -168,7 +123,8 @@ public class EvaluationFormResponseDAO {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from evaluationformresponse as response");
-		sb.append(" inner join response.session as session");
+		sb.append(" inner join fetch response.session as session");
+		sb.append("  left outer join fetch session.participation as participation");
 		sb.append(" inner join session.survey as survey");
 		sb.append(" where survey.key=:surveyKey");
 		
@@ -176,6 +132,10 @@ public class EvaluationFormResponseDAO {
 				.createQuery(sb.toString(), EvaluationFormResponse.class)
 				.setParameter("surveyKey", survey.getKey())
 				.getResultList();
+	}
+	
+	private List<Long> getSessionKeys(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		return sessionRefs.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
 	}
 
 }

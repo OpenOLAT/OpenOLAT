@@ -41,7 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -62,7 +62,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	
 	private final Rubric rubric;
 	private List<SliderWrapper> sliderWrappers;
-	private Map<String, EvaluationFormResponse> responses = new HashMap<>();
+	private Map<String, EvaluationFormResponse> rubricResponses = new HashMap<>();
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -234,10 +234,10 @@ public class RubricController extends FormBasicController implements EvaluationF
 	@Override
 	public boolean hasResponse() {
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
-			if (!responses.containsKey(sliderWrapper.getId())) {
+			if (!rubricResponses.containsKey(sliderWrapper.getId())) {
 				return false;
 			}
-			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+			EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
 			if (response == null || (!response.isNoResponse()) && response.getNumericalResponse() == null) {
 				return false;
 			}
@@ -246,11 +246,11 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
-	public void loadResponse(EvaluationFormSessionRef session) {
+	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
-			EvaluationFormResponse response = evaluationFormManager.loadResponse(sliderWrapper.getId(), session);
+			EvaluationFormResponse response = responses.getResponse(session, sliderWrapper.getId());
 			if (response != null) {
-				responses.put(sliderWrapper.getId(), response);
+				rubricResponses.put(sliderWrapper.getId(), response);
 				if (response.getNumericalResponse() != null) {
 					BigDecimal numericalResponse = response.getNumericalResponse();
 					setValue(sliderWrapper, numericalResponse);
@@ -261,7 +261,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	private void disableSliderIfNoResponse(SliderWrapper sliderWrapper) {
-		EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+		EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
 		if (response != null && response.isNoResponse()) {
 			MultipleSelectionElement noResponseEl = sliderWrapper.getNoResponseEl();
 			if (noResponseEl != null) {
@@ -322,13 +322,13 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 	
 	private void saveNoResponse(EvaluationFormSession session, SliderWrapper sliderWrapper) {
-		EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+		EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
 		if (response == null) {
 			response = evaluationFormManager.createNoResponse(sliderWrapper.getId(), session);
 		} else {
 			response = evaluationFormManager.updateNoResponse(response);
 		}
-		responses.put(sliderWrapper.getId(), response);
+		rubricResponses.put(sliderWrapper.getId(), response);
 	}
 	
 	private void saveSliderResponse(EvaluationFormSession session, SliderWrapper sliderWrapper) {
@@ -346,18 +346,18 @@ public class RubricController extends FormBasicController implements EvaluationF
 			}
 		}
 		if (value != null) {
-			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+			EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
 			if (response == null) {
 				response = evaluationFormManager.createNumericalResponse(sliderWrapper.getId(), session, value);
 			} else {
 				response = evaluationFormManager.updateNumericalResponse(response, value);
 			}
-			responses.put(sliderWrapper.getId(), response);
+			rubricResponses.put(sliderWrapper.getId(), response);
 		} else {
-			EvaluationFormResponse response = responses.get(sliderWrapper.getId());
+			EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
 			if (response != null) {
 				evaluationFormManager.deleteResponse(response);
-				responses.remove(sliderWrapper.getId());
+				rubricResponses.remove(sliderWrapper.getId());
 			}
 		}
 	}
