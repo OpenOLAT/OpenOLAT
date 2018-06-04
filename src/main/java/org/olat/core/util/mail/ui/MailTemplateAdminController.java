@@ -57,7 +57,7 @@ public class MailTemplateAdminController extends FormBasicController  {
 		setFormContextHelp("E-Mail Settings#_template");
 
 		String def = mailManager.getMailTemplate();
-		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", -1, 25, 50, true, def, formLayout);
+		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", -1, 25, 50, true, false, def, formLayout);
 
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

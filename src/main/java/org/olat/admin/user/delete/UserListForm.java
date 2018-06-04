@@ -73,7 +73,7 @@ public class UserListForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		userList = uifactory.addTextAreaElement("userlist", "delete.list", -1, 10, 35, true, "", formLayout);
+		userList = uifactory.addTextAreaElement("userlist", "delete.list", -1, 10, 35, true, false, "", formLayout);
 		userList.setExampleKey("delete.list.example", null);
 		userList.setMandatory(true);
 		

@@ -57,7 +57,7 @@ public class NewTaskController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_course_gta_upload_task_title");
 		titleEl.setMandatory(true);
 		
-		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, "", formLayout);
+		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, false, "", formLayout);
 
 		filenameEl = uifactory.addTextElement("fileName", "file.name", -1, "", formLayout);
 		filenameEl.setElementCssClass("o_sel_course_gta_doc_filename");

@@ -237,7 +237,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			overrideScoreButton = uifactory.addFormLink("override.score", overrideScoreCont, Link.BUTTON_SMALL);
 			overrideScoreButton.setDomReplacementWrapperRequired(false);
 		}
-		commentEl = uifactory.addTextAreaElement("commentItem", "comment", 2500, 4, 60, false, coachComment, scoreCont);
+		commentEl = uifactory.addTextAreaElement("commentItem", "comment", 2500, 4, 60, false, false, coachComment, scoreCont);
 		commentEl.setHelpText(translate("comment.help"));
 		IdentityAssessmentItemWrapper wrapper = new IdentityAssessmentItemWrapper(fullname, assessmentItem, correction, responseItems,
 				scoreEl, commentEl, statusEl);

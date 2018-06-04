@@ -76,7 +76,7 @@ public class EditHTMLTaskController extends FormBasicController {
 		titleEl.setMandatory(true);
 		
 		String description = task.getDescription() == null ? "" : task.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, description, formLayout);
+		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, false, description, formLayout);
 
 		contentEditor = new HTMLEditorController(ureq, getWindowControl(), taskContainer, task.getFilename(), null, "media", true, false, false, mainForm);
 		contentEditor.getRichTextConfiguration().disableMedia();

@@ -26,8 +26,11 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.control.JSAndCSSAdder;
+import org.olat.core.gui.render.ValidationResult;
 
 /**
  * Description:<br>
@@ -42,6 +45,7 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 	private int cols;
 	private int rows;
 	private boolean autoHeightEnabled = false;
+	private boolean fixedFontWidth = false;
 
 	/**
 	 * Constructor for a text area element
@@ -52,13 +56,15 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 	 *          available space
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
+	 * @param fixedFontWidth 
 	 */
-	public TextAreaElementComponent(TextAreaElementImpl element, int rows, int cols, boolean isAutoHeightEnabled) {
+	public TextAreaElementComponent(TextAreaElementImpl element, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth) {
 		super(element.getName());
 		this.element = element;
 		setCols(cols);
 		setRows(rows);
 		this.autoHeightEnabled = isAutoHeightEnabled;
+		this.fixedFontWidth = fixedFontWidth;
 	}
 
 	TextAreaElementImpl getTextAreaElementImpl() {
@@ -92,6 +98,20 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 
 	public boolean isAutoHeightEnabled() {
 		return autoHeightEnabled;
+	}
+
+	public boolean isFixedFontWidth() {
+		return fixedFontWidth;
+	}
+
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		if (fixedFontWidth) {
+			JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
+			jsa.addRequiredStaticJsFile("js/jquery/taboverride/taboverride-4.0.0.min.js");
+			jsa.addRequiredStaticJsFile("js/jquery/taboverride/jquery.taboverride.min.js");
+		}
 	}
 
 }

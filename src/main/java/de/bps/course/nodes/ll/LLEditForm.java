@@ -338,7 +338,7 @@ public class LLEditForm extends FormBasicController {
 		lDescriptionInputList.add(index, lDescription);
 		
 		// add link comment
-		TextElement lComment =uifactory.addTextAreaElement("comment" + counter, null, -1, 2, 50, true, link.getComment(), flc);
+		TextElement lComment =uifactory.addTextAreaElement("comment" + counter, null, -1, 2, 50, true, false, link.getComment(), flc);
 		lComment.setPlaceholderKey("ll.table.comment", null);
 		lComment.setDisplaySize(20);
 		lComment.setUserObject(link);

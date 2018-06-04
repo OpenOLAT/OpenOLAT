@@ -77,7 +77,7 @@ public class DisclaimerEditorController extends FormBasicController implements P
 		
 		long prefix = CodeHelper.getRAMUniqueID();
 		textEl = uifactory.addTextAreaElement("disclaimer_" + prefix, "disclaimer.text", 50000, 12, 72,
-				false, disclaimer.getText(), settingsCont);
+				false, false, disclaimer.getText(), settingsCont);
 		textEl.setEnabled(!restrictedEdit);
 		
 		agreementEl = uifactory.addTextElement("agreement_" + prefix, "disclaimer.agreement", 200,

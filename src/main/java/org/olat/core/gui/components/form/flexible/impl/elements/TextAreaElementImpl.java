@@ -53,8 +53,8 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
 	 */
-	public TextAreaElementImpl(String name, String predefinedValue, int rows, int cols, boolean isAutoHeightEnabled) {
-		this(name, rows, cols, isAutoHeightEnabled);
+	public TextAreaElementImpl(String name, String predefinedValue, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth) {
+		this(name, rows, cols, isAutoHeightEnabled, fixedFontWidth);
 		setValue(predefinedValue);
 	}
 
@@ -67,9 +67,9 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
 	 */
-	protected TextAreaElementImpl(String name, int rows, int cols, boolean isAutoHeightEnabled) {
+	protected TextAreaElementImpl(String name, int rows, int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth) {
 		super(name);
-		component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled);
+		component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled, fixedFontWidth);
 	}
 
 	/**

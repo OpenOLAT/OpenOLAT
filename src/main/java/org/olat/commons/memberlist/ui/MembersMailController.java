@@ -190,7 +190,7 @@ public class MembersMailController extends FormBasicController {
 		externalEl = uifactory.addCheckboxesHorizontal("contact.external", to, formLayout, keys, extValues);
 		externalEl.addActionListener(FormEvent.ONCHANGE);
 		
-		externalAddressesEl = uifactory.addTextAreaElement("contact.external.list", null, 4096, 3, 60, false, "", formLayout);
+		externalAddressesEl = uifactory.addTextAreaElement("contact.external.list", null, 4096, 3, 60, false, false, "", formLayout);
 		externalAddressesEl.setExampleKey("contact.external.list.example", null);
 		externalAddressesEl.setVisible(false);
 

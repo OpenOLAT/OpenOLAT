@@ -124,7 +124,7 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationLinkElement.select("on", registrationModule.isSelfRegistrationLinkEnabled());
 		
 		String example = generateExampleCode();
-		exampleElement = uifactory.addTextAreaElement("registration.link.example", "admin.registrationLinkExample", 64000, 4, 65, true, example, settingsContainer);
+		exampleElement = uifactory.addTextAreaElement("registration.link.example", "admin.registrationLinkExample", 64000, 4, 65, true, false, example, settingsContainer);
 		
 		//domain configuration
 		domainsContainer = FormLayoutContainer.createDefaultFormLayout("domains", getTranslator());
@@ -134,7 +134,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		uifactory.addStaticTextElement("admin.registration.domains.error", null, translate("admin.registration.domains.desc"), domainsContainer);
 		String domainsList = registrationModule.getDomainListRaw();
-		domainListElement = uifactory.addTextAreaElement("registration.domain.list", "admin.registration.domains", 64000, 10, 65, true, domainsList, domainsContainer);
+		domainListElement = uifactory.addTextAreaElement("registration.domain.list", "admin.registration.domains", 64000, 10, 65, true, false, domainsList, domainsContainer);
 
 		//static property
 		staticPropContainer = FormLayoutContainer.createDefaultFormLayout("propertiesmapping", getTranslator());
@@ -166,7 +166,7 @@ public class RegistrationAdminController extends FormBasicController {
 		formLayout.add(remoteLoginContainerContainer);
 		
 		String remoteExample = generateRemoteLoginExampleCode();
-		uifactory.addTextAreaElement("remotelogin.example", "admin.registrationLinkExample", 64000, 4, 65, true, remoteExample, remoteLoginContainerContainer);
+		uifactory.addTextAreaElement("remotelogin.example", "admin.registrationLinkExample", 64000, 4, 65, true, false, remoteExample, remoteLoginContainerContainer);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

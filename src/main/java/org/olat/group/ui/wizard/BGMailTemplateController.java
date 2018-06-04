@@ -176,7 +176,7 @@ public class BGMailTemplateController extends FormBasicController {
 			subjectElem.setDisplaySize(60);
 			subjectElem.setMandatory(true);
 		
-			bodyElem = uifactory.addTextAreaElement("bodyElem", "mailtemplateform.body", -1, 15, 60, true, template.getBodyTemplate(), formLayout);
+			bodyElem = uifactory.addTextAreaElement("bodyElem", "mailtemplateform.body", -1, 15, 60, true, false, template.getBodyTemplate(), formLayout);
 			bodyElem.setHelpText(translate("mailtemplateform.body.hover"));
 			bodyElem.setHelpUrlForManualPage("E-Mail");
 			bodyElem.setMandatory(true);

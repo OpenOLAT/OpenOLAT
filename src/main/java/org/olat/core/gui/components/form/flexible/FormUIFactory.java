@@ -666,7 +666,7 @@ public class FormUIFactory {
 	/**
 	 * Add a multi line text element, using the provided name as i18n key for the label, no max length check set, and fits content hight at maximium (100lnes).
 	 * 
-	 * @see FormUIFactory#addTextAreaElement(String, String, int, int, int, boolean, String, FormItemContainer)
+	 * @see FormUIFactory#addTextAreaElement(String, String, int, int, int, boolean, boolean, String, FormItemContainer)
 	 * @param name
 	 * @param rows
 	 * @param cols
@@ -675,7 +675,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public TextAreaElement addTextAreaElement(String name, final int rows, final int cols, String initialValue,	FormItemContainer formLayout) {
-		return addTextAreaElement(name, name, -1, rows, cols, true, initialValue, formLayout);
+		return addTextAreaElement(name, name, -1, rows, cols, true, false, initialValue, formLayout);
 	}
 	
 	/**
@@ -688,13 +688,14 @@ public class FormUIFactory {
 	 *          available space
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
+	 * @param fixedFontWidth TODO
 	 * @param initialValue Initial value
 	 * @param formLayout
 	 * @return
 	 */
-	public TextAreaElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols, boolean isAutoHeightEnabled, String initialValue,
-		FormItemContainer formLayout) {
-		TextAreaElement te = new TextAreaElementImpl(name, initialValue, rows, cols, isAutoHeightEnabled) {
+	public TextAreaElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols, boolean isAutoHeightEnabled, boolean fixedFontWidth,
+		String initialValue, FormItemContainer formLayout) {
+		TextAreaElement te = new TextAreaElementImpl(name, initialValue, rows, cols, isAutoHeightEnabled, fixedFontWidth) {
 			{
 				setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 				// the text.element.error.notlongerthan uses a variable {0} that

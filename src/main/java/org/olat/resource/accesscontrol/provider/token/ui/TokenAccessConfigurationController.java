@@ -65,7 +65,7 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 		if(link.getOffer() != null) {
 			desc = link.getOffer().getDescription();
 		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
 		String token = "";

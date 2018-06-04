@@ -396,7 +396,7 @@ class ImportStep00 extends BasicStep {
 			}
 			textContainer.contextPut("mandatoryProperties", mandatoryProperties);
 
-			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, "", formLayout);
+			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, "", formLayout);
 			textAreaElement.setMandatory(true);
 			textAreaElement.setNotEmptyCheck("error.emptyform");
 		}

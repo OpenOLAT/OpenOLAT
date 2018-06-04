@@ -202,7 +202,7 @@ public class MetaInfoFormController extends FormBasicController {
 
 		// comment/description
 		String commentVal = (meta != null ? meta.getComment() : null);
-		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, commentVal, formLayout);
+		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, false, commentVal, formLayout);
 		
 		// license
 		if (licenseModule.isEnabled(licenseHandler)) {

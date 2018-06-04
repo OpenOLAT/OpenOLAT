@@ -231,7 +231,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 			emailToAdresses = StringHelper.formatIdentitesAsEmailToString(eList, "\n");
 			wantEmail.select("xx", eList.size()>0);
 		}
-		teArElEmailToAdresses = uifactory.addTextAreaElement("email", "message.emailtoadresses", -1, 3, 60, true, emailToAdresses, formLayout);
+		teArElEmailToAdresses = uifactory.addTextAreaElement("email", "message.emailtoadresses", -1, 3, 60, true, false, emailToAdresses, formLayout);
 		teArElEmailToAdresses.setMandatory(true);
 		
 		// Course authors / owners

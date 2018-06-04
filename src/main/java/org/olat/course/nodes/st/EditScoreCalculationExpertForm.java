@@ -213,10 +213,10 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		tscoreexpr = uifactory.addTextAreaElement("tscoreexpr", "scorecalc.score", 5000, 6, 45, true, sc.getScoreExpression(), formLayout);
+		tscoreexpr = uifactory.addTextAreaElement("tscoreexpr", "scorecalc.score", 5000, 6, 45, true, false, sc.getScoreExpression(), formLayout);
 		tscoreexpr.setExampleKey("rules.example", EXAMPLE_SCORE);
 		
-		tpassedexpr = uifactory.addTextAreaElement("tpassedexpr", "scorecalc.passed", 5000, 6, 45, true, sc.getPassedExpression(), formLayout);
+		tpassedexpr = uifactory.addTextAreaElement("tpassedexpr", "scorecalc.passed", 5000, 6, 45, true, false, sc.getPassedExpression(), formLayout);
 		tpassedexpr.setExampleKey("rules.example", EXAMPLE_PASSED);
 
 		String[] failedTypeKeys = new String[]{

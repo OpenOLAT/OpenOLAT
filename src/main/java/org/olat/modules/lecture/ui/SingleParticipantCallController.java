@@ -122,7 +122,7 @@ public class SingleParticipantCallController extends FormBasicController {
 			}
 			
 			String reason = rollCall.getAbsenceReason();
-			absenceReasonEl = uifactory.addTextAreaElement("absence.reason", "authorized.absence.reason", 2000, 4, 36, false, reason, formLayout);
+			absenceReasonEl = uifactory.addTextAreaElement("absence.reason", "authorized.absence.reason", 2000, 4, 36, false, false, reason, formLayout);
 			absenceReasonEl.setDomReplacementWrapperRequired(false);
 			absenceReasonEl.setPlaceholderKey("authorized.absence.reason", null);
 			absenceReasonEl.setVisible(authorizedAbsencedEl.isAtLeastSelected(1));
@@ -130,7 +130,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		}
 		
 		String comment = rollCall.getComment();
-		commentEl = uifactory.addTextAreaElement("comment", "rollcall.comment", 2000, 4, 36, false, comment, formLayout);
+		commentEl = uifactory.addTextAreaElement("comment", "rollcall.comment", 2000, 4, 36, false, false, comment, formLayout);
 		commentEl.setPlaceholderKey("rollcall.comment", null);
 		
 		selectAllLink = uifactory.addFormLink("all", formLayout);

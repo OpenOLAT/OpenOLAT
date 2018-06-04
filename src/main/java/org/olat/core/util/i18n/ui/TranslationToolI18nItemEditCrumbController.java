@@ -187,11 +187,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		keysSelection.addActionListener(FormEvent.ONCHANGE);
 		keysSelection.select(currentItem.getKey(), true);
 		// Add reference box
-		referenceArea = uifactory.addTextAreaElement("referenceArea", "edit.referenceArea", -1, 1, -1, true, null, this.flc);
+		referenceArea = uifactory.addTextAreaElement("referenceArea", "edit.referenceArea", -1, 1, -1, true, false, null, this.flc);
 		referenceArea.setEnabled(false); // read only
 		// Add compare box
 		Boolean compareEnabledPrefs = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_COMPARE_LANG_ENABLED, Boolean.FALSE);
-		compareArea = uifactory.addTextAreaElement("compareArea", "edit.compareArea", -1, 1, -1, true, null, this.flc);
+		compareArea = uifactory.addTextAreaElement("compareArea", "edit.compareArea", -1, 1, -1, true, false, null, this.flc);
 		compareArea.setEnabled(false); // read only
 		compareArea.setVisible(compareEnabledPrefs.booleanValue());
 		
@@ -230,9 +230,9 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		// Add target box
 		flc.contextPut("targetLanguageKey", i18nModule.getLocaleKey(currentItem.getLocale()));
 		flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(i18nModule.getLocaleKey(currentItem.getLocale()), false));			
-		targetArea = uifactory.addTextAreaElement("targetArea", "edit.targetArea", -1, 5, -1, true, null, flc);
+		targetArea = uifactory.addTextAreaElement("targetArea", "edit.targetArea", -1, 5, -1, true, false, null, flc);
 		// Add annotation box
-		annotationArea = uifactory.addTextAreaElement("annotationArea", "edit.annotationArea", -1, 1, -1, true, null, flc);
+		annotationArea = uifactory.addTextAreaElement("annotationArea", "edit.annotationArea", -1, 1, -1, true, false, null, flc);
 		// Add progress bar
 		// init with values
 		progressBarBundle = new ProgressBar("progressBarBundle", 300, 1, bundlesList.size(), translate("generic.bundles"));

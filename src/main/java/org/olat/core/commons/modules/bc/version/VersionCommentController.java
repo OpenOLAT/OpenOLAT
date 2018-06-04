@@ -73,7 +73,7 @@ public class VersionCommentController extends FormBasicController {
 
 		if(comment) {
 			setFormDescription("version.comment.description");
-			commentElement = uifactory.addTextAreaElement("comment", "version.comment", -1, 3, 1, true, null, formLayout);
+			commentElement = uifactory.addTextAreaElement("comment", "version.comment", -1, 3, 1, true, false, null, formLayout);
 		}
 		
 		if(lock) {

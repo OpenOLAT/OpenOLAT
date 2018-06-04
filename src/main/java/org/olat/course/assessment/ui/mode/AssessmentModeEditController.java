@@ -320,7 +320,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		ipsEl.addActionListener(FormEvent.ONCHANGE);
 		ipsEl.setEnabled(status != Status.end);
 		String ipList = assessmentMode.getIpList();
-		ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 4096, 4, 60, false, ipList, formLayout);
+		ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 4096, 4, 60, false, false, ipList, formLayout);
 		ipListEl.setVisible(assessmentMode.isRestrictAccessIps());
 		ipListEl.setEnabled(status != Status.end);
 		
@@ -329,7 +329,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		safeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
 		safeExamBrowserEl.setEnabled(status != Status.end);
 		String key = assessmentMode.getSafeExamBrowserKey();
-		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 4096, 6, 60, false, key, formLayout);
+		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 4096, 6, 60, false, false, key, formLayout);
 		safeExamBrowserKeyEl.setVisible(assessmentMode.isSafeExamBrowser());
 		safeExamBrowserKeyEl.setEnabled(status != Status.end);
 		String hint = assessmentMode.getSafeExamBrowserHint();

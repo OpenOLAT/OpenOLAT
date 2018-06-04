@@ -54,7 +54,7 @@ public class ReasonController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String currentReason = row.getRollCall() == null ? "" : row.getRollCall().getAbsenceReason();
-		reasonEl = uifactory.addTextAreaElement("reason", "reason", 2048, 4, 36, false, currentReason, formLayout);
+		reasonEl = uifactory.addTextAreaElement("reason", "reason", 2048, 4, 36, false, false, currentReason, formLayout);
 		reasonEl.setEnabled(editable);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		if(editable) {

@@ -165,14 +165,14 @@ public class AssessmentForm extends FormBasicController {
 			if (comment == null) {
 				comment = "";
 			}
-			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, comment, formLayout);
+			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, comment, formLayout);
 		}
 
 		String coachCommentValue = assessmentEntry == null ? null : assessmentEntry.getCoachComment();
 		if (coachCommentValue == null) {
 			coachCommentValue = "";
 		}
-		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, coachCommentValue, formLayout);
+		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, formLayout);
 	
 		//why does the TextElement not use its default error key??? 
 		//userComment could be null for course elements of type Assessment (MSCourseNode)

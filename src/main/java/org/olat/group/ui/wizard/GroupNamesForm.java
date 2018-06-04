@@ -119,7 +119,7 @@ public class GroupNamesForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		groupNames = uifactory.addTextAreaElement("groupNames", "bgcopywizard.multiple.groupnames", -1, 4, 10, true, "", formLayout);
+		groupNames = uifactory.addTextAreaElement("groupNames", "bgcopywizard.multiple.groupnames", -1, 4, 10, true, false, "", formLayout);
 		bgMax = uifactory.addTextElement("fe_bgMax", "create.form.title.max", 3, "", formLayout);
 		if (defaultMaxValue != null) {
 			bgMax.setValue (defaultMaxValue.toString());

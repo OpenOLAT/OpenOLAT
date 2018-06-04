@@ -316,7 +316,7 @@ public class CalendarEntryForm extends FormBasicController {
 		boolean fb = readOnly && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;
 		String subject = fb ? translate("cal.form.subject.hidden") : event.getSubject();
 		if(subject != null && subject.length() > 64) {
-			subjectEl = uifactory.addTextAreaElement("subject", "cal.form.subject", -1, 3, 40, true, subject, formLayout);
+			subjectEl = uifactory.addTextAreaElement("subject", "cal.form.subject", -1, 3, 40, true, false, subject, formLayout);
 		} else {
 			subjectEl = uifactory.addTextElement("subject", "cal.form.subject", 255, subject, formLayout);
 		}
@@ -326,13 +326,13 @@ public class CalendarEntryForm extends FormBasicController {
 		subjectEl.setElementCssClass("o_sel_cal_subject");
 		
 		String description = event.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, description, formLayout);
+		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, description, formLayout);
 		descriptionEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.description));
 		descriptionEl.setElementCssClass("o_sel_cal_description");
 		
 		String location = fb ? translate("cal.form.location.hidden") : event.getLocation();
 		if(location != null && location.length() > 64) {
-			locationEl = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, location, formLayout);
+			locationEl = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, false, location, formLayout);
 		} else {
 			locationEl = uifactory.addTextElement("location", "cal.form.location", 255, location, formLayout);
 		}

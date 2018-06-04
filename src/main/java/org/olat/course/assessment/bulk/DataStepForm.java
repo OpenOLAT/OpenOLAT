@@ -127,7 +127,7 @@ public class DataStepForm extends StepFormBasicController {
 			}
 		}
 
-		dataEl = uifactory.addTextAreaElement("data", "data", -1, 6, 60, true, dataVal, formLayout);
+		dataEl = uifactory.addTextAreaElement("data", "data", -1, 6, 60, true, false, dataVal, formLayout);
 		dataEl.showLabel(false);
 
 		String[] values = new String[] {translate("form.step3.delimiter.tab"),translate("form.step3.delimiter.comma")};

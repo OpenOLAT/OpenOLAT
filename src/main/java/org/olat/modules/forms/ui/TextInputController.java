@@ -73,7 +73,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		singleRowEl = uifactory.addTextElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 1000, null, formLayout);
 
-		multiRowEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, 12, 72, true, "", formLayout);
+		multiRowEl = uifactory.addTextAreaElement("textinput_" + CodeHelper.getRAMUniqueID(), null, 56000, -1, 72, false, true, "", formLayout);
 		
 		update();
 	}
@@ -87,14 +87,10 @@ public class TextInputController extends FormBasicController implements Evaluati
 		}
 		multiRowEl.setRows(rows);
 		
-		updateUI();
-	}
-	
-	private void updateUI() {
 		singleRowEl.setVisible(singleRow);
 		multiRowEl.setVisible(!singleRow);
 	}
-
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -126,6 +122,9 @@ public class TextInputController extends FormBasicController implements Evaluati
 
 	@Override
 	public void setReadOnly(boolean readOnly) {
+		singleRowEl.setEnabled(!readOnly);
+		int rows = readOnly? -1: textInput.getRows();
+		multiRowEl.setRows(rows);
 		multiRowEl.setEnabled(!readOnly);
 	}
 

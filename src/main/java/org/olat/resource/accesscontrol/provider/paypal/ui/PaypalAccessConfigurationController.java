@@ -110,7 +110,7 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		if(link.getOffer() != null) {
 			desc = link.getOffer().getDescription();
 		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
 		
 		Price price = null;
 		if(link.getOffer() != null && link.getOffer().getPrice() != null) {

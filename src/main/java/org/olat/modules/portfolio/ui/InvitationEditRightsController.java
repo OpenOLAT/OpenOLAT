@@ -192,7 +192,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			subjectEl.setDisplaySize(60);
 			subjectEl.setMandatory(true);
 		
-			bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, mailTemplate.getBodyTemplate(), inviteeCont);
+			bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, false, mailTemplate.getBodyTemplate(), inviteeCont);
 			bodyEl.setHelpUrlForManualPage("E-Mail");
 			bodyEl.setMandatory(true);
 		}

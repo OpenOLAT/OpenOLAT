@@ -129,7 +129,7 @@ public class EditTrainingController extends FormBasicController {
 		nameEl = uifactory.addTextElement("training.name", "training.name", 128, name, formLayout);
 		nameEl.setMandatory(true);
 		String description = meeting == null ? "" : meeting.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("training.description", "training.description", 2000, 8, 72, false, description, formLayout);
+		descriptionEl = uifactory.addTextAreaElement("training.description", "training.description", 2000, 8, 72, false, false, description, formLayout);
 
 		Date startDate = meeting == null ? null : meeting.getStartDate();
 		startDateEl = uifactory.addDateChooser("training.start", "training.start", startDate, formLayout);

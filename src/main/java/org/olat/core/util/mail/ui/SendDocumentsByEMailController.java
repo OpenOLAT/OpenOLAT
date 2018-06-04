@@ -139,7 +139,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 		subjectElement = uifactory.addTextElement("tsubject", "send.mail.subject", 255, "", formLayout);
 
-		bodyElement = uifactory.addTextAreaElement("tbody", "send.mail.body", -1, 20, emailCols, false, "", formLayout);
+		bodyElement = uifactory.addTextAreaElement("tbody", "send.mail.body", -1, 20, emailCols, false, false, "", formLayout);
 
 		if (allowAttachments) {
 			String page = Util.getPackageVelocityRoot(MailModule.class) + "/sendattachments.html";

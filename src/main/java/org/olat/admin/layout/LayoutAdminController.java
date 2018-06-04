@@ -183,7 +183,7 @@ public class LayoutAdminController extends FormBasicController {
 		footerUrl.setPlaceholderKey("linkUrl.default", null);
 		
 		String oldFooterLine = layoutModule.getFooterLine();
-		footerLine = uifactory.addTextAreaElement("footerLine", "footerLine.description", -1, 3, 50, true, oldFooterLine, footerCont);
+		footerLine = uifactory.addTextAreaElement("footerLine", "footerLine.description", -1, 3, 50, true, false, oldFooterLine, footerCont);
 		footerLine.setPlaceholderKey("footerLine.default", null);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

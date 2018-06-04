@@ -93,7 +93,7 @@ public class MemberMailController extends StepFormBasicController {
 		subjectEl.setDisplaySize(60);
 		subjectEl.setMandatory(true);
 	
-		bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, mailTemplate.getBodyTemplate(), formLayout);
+		bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, false, mailTemplate.getBodyTemplate(), formLayout);
 		bodyEl.setHelpUrlForManualPage("E-Mail");
 		bodyEl.setMandatory(true);
 	}

@@ -145,7 +145,7 @@ public class MailTemplateForm extends FormBasicController {
 		subjectElem.setDisplaySize(60);
 		subjectElem.setMandatory(true);
 		
-		bodyElem = uifactory.addTextAreaElement("bodyElem", "mailtemplateform.body", -1, 15, 60, true, template.getBodyTemplate(), formLayout);
+		bodyElem = uifactory.addTextAreaElement("bodyElem", "mailtemplateform.body", -1, 15, 60, true, false, template.getBodyTemplate(), formLayout);
 		bodyElem.setMandatory(true);
 		
 		ccSender = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, 1);

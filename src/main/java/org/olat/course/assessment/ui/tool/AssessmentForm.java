@@ -566,7 +566,7 @@ public class AssessmentForm extends FormBasicController {
 		if (hasComment) {
 			// Use init variables from db, not available from wrapper
 			userCommentValue = assessableCourseNode.getUserUserComment(assessedUserCourseEnv);
-			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, userCommentValue, formLayout);
+			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, userCommentValue, formLayout);
 			userComment.setNotLongerThanCheck(2500, "input.toolong");
 		}
 		
@@ -583,7 +583,7 @@ public class AssessmentForm extends FormBasicController {
 		}
 		
 		coachCommentValue = assessableCourseNode.getUserCoachComment(assessedUserCourseEnv);
-		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, coachCommentValue, formLayout);
+		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, formLayout);
 		coachComment.setNotLongerThanCheck(2500, "input.toolong");
 		
 		String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };

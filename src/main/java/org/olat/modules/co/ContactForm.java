@@ -397,7 +397,7 @@ public class ContactForm extends FormBasicController {
 		tto.setEnabled(false);
 		tto.setVisible(false);
 	
-		ttoBig = uifactory.addTextAreaElement("ttoBig", NLS_CONTACT_TO, -1, 2, emailCols, true, "", formLayout);
+		ttoBig = uifactory.addTextAreaElement("ttoBig", NLS_CONTACT_TO, -1, 2, emailCols, true, false, "", formLayout);
 		ttoBig.setEnabled(false);
 		ttoBig.setVisible(false);
 		

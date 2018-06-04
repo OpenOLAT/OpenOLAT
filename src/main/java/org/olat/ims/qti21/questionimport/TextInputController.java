@@ -75,7 +75,7 @@ public class TextInputController extends StepFormBasicController {
 		String mapperURI = registerMapper(ureq, new ExampleMapper());
 		textContainer.contextPut("mapperURI", mapperURI);
 		
-		inputElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, "", formLayout);
+		inputElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, "", formLayout);
 		inputElement.setMandatory(true);
 		inputElement.setNotEmptyCheck("form.legende.mandatory");
 	}

@@ -57,7 +57,7 @@ public class EditCommentController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		commentEl = uifactory.addTextAreaElement("ucomment", "comment", 2500, 5, 40, true, row.getComment(), formLayout);
+		commentEl = uifactory.addTextAreaElement("ucomment", "comment", 2500, 5, 40, true, false, row.getComment(), formLayout);
 		commentEl.setElementCssClass("o_sel_course_gta_comment");
 
 		uifactory.addFormSubmitButton("save", formLayout);

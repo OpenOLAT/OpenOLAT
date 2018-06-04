@@ -110,7 +110,7 @@ public class DropboxForm extends FormBasicController {
 			config.set(TACourseNode.CONF_DROPBOX_CONFIRMATION, sConfirmation);
 		}
 		
-		confirmation = uifactory.addTextAreaElement("confirmation", "form.dropbox.confirmation", 2500, 4, 40, true, sConfirmation != null ? sConfirmation : "", formLayout);
+		confirmation = uifactory.addTextAreaElement("confirmation", "form.dropbox.confirmation", 2500, 4, 40, true, false, sConfirmation != null ? sConfirmation : "", formLayout);
 		
 		Boolean enableMail = (Boolean)config.get(TACourseNode.CONF_DROPBOX_ENABLEMAIL);
 		if(enableMail != null) {

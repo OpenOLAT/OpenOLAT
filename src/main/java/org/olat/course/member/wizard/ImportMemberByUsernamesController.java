@@ -60,7 +60,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		idata = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, " ", formLayout);
+		idata = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, true, false, " ", formLayout);
 		idata.setElementCssClass("o_sel_user_import");
 		idata.setExampleKey ("form.names.example", null);
 	}

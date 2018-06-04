@@ -89,7 +89,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		setFormDescription("form.token.new.description");
 		
 		String initialText = generateMailText();
-		mailText = uifactory.addTextAreaElement("mailtext", "form.token.new.text", 4000, 12, 255, false, initialText, formLayout);
+		mailText = uifactory.addTextAreaElement("mailtext", "form.token.new.text", 4000, 12, 255, false, false, initialText, formLayout);
 		
 		uifactory.addFormSubmitButton("submit", "form.token.new.title", formLayout);
 	}

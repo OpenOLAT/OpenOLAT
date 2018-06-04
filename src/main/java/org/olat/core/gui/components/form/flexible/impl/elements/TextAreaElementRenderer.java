@@ -86,7 +86,11 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 			  .append(" ><div id=\"")
 			  .append(id)
-			  .append("_disabled\" class='form-control textarea_disabled o_disabled o_form_element_disabled' style='");
+			  .append("_disabled\" class='form-control textarea_disabled o_disabled o_form_element_disabled");
+			if (teC.isFixedFontWidth()) {
+				sb.append(" o_fixed_font_with");
+			}
+			sb.append("' style='");
 			/* we do not add the width, not applied to text areas in oo despite configurable 
 			if (teC.getCols() != -1) {
 				sb.append(" width:").append(teC.getCols()).append("em;");
@@ -105,7 +109,11 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			  .append(id)
 			  .append("\" name=\"")
 			  .append(id)
-			  .append("\" class='form-control'");
+			  .append("\" class='form-control textarea");
+			if (teC.isFixedFontWidth()) {
+				sb.append(" o_fixed_font_with");
+			}
+			sb.append("'");
 			if (teC.getCols() != -1) {
 				sb.append(" cols=\"").append(teC.getCols()).append("\"");
 			}
@@ -148,6 +156,13 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
 			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());
+		}
+		
+		if (teC.isFixedFontWidth()) {
+			sb.append(FormJSHelper.getJSStart())
+			  .append("jQuery(function() {\n")
+			  .append(" jQuery('#").append(id).append("').tabOverride();})")
+			  .append(FormJSHelper.getJSEnd());
 		}
 	}
 }
