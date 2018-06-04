@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -34,13 +37,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class CurriculumManagerDataModel extends DefaultFlexiTableDataModel<CurriculumRow>
 implements SortableFlexiTableDataModel<CurriculumRow> {
 	
-	public CurriculumManagerDataModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public CurriculumManagerDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CurriculumRow> rows = new CurriculumManagerTableSort(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 	
 	@Override
@@ -62,7 +71,7 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 
 	@Override
 	public CurriculumManagerDataModel createCopyWithEmptyList() {
-		return new CurriculumManagerDataModel(getTableColumnModel());
+		return new CurriculumManagerDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum CurriculumCols implements FlexiSortableColumnDef {

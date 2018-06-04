@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -88,7 +89,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		this.secCallback = secCallback;
 		
 		initForm(ureq);
-		loadModel(true);
+		loadModel(null, true);
 	}
 	
 	@Override
@@ -111,15 +112,17 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
-		tableModel = new CurriculumManagerDataModel(columnsModel);
+		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
+		tableEl.setSearchEnabled(true);
 	}
 	
-	private void loadModel(boolean reset) {
+	private void loadModel(String searchString, boolean reset) {
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
+		params.setSearchString(searchString);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
 		List<CurriculumRow> rows = curriculums.stream()
 				.map(this::forgeRow).collect(Collectors.toList());
@@ -149,13 +152,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel(true);
+				loadModel(tableEl.getQuickSearchString(), true);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(editCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel(false);
+				loadModel(tableEl.getQuickSearchString(), false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -192,6 +195,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 					CurriculumRow row = tableModel.getObject(se.getIndex());
 					doSelectCurriculum(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				doSearch((FlexiTableSearchEvent)event);
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -201,6 +206,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			} 
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSearch(FlexiTableSearchEvent event) {
+		loadModel(event.getSearch(), true);
 	}
 	
 	private void doNewCurriculum(UserRequest ureq) {

@@ -32,6 +32,7 @@ import org.olat.core.id.OrganisationRef;
  */
 public class CurriculumSearchParameters {
 	
+	private String searchString;
 	private List<OrganisationRef> organisations;
 
 	public List<OrganisationRef> getOrganisations() {
@@ -44,7 +45,12 @@ public class CurriculumSearchParameters {
 	public void setOrganisations(List<OrganisationRef> organisations) {
 		this.organisations = organisations;
 	}
-	
-	
 
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
+	}
 }

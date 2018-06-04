@@ -425,8 +425,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getRelations() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+	public void getRelations_group() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-" );
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 
@@ -442,6 +442,40 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	    Assert.assertEquals(2, relations.size());
 		Assert.assertTrue(relations.get(0).getEntry().equals(re1) || relations.get(0).getEntry().equals(re2));
 		Assert.assertTrue(relations.get(1).getEntry().equals(re1) || relations.get(1).getEntry().equals(re2));
+	}
+	
+	@Test
+	public void getRelations_repositoryEntry() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "get relations", "tg", null, null, false, false, re);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    dbInstance.commitAndCloseSession();
+	    
+	    //get the relations from the business group's base group to the repository entry
+	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(re);
+	    Assert.assertNotNull(relations);
+	    Assert.assertEquals(3, relations.size());
+		Assert.assertTrue(relations.get(0).getEntry().equals(re));
+	}
+	
+	@Test
+	public void hasRelation() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry reMarker = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "get relations", "tg", null, null, false, false, re);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    dbInstance.commitAndCloseSession();
+	    
+	    // The repository entry has a relation with the business group
+	    boolean hasRelation = repositoryEntryRelationDao.hasRelation(group.getBaseGroup(), re);
+		Assert.assertTrue(hasRelation);
+	    // The marker repository entry doesn't have a relation with the business group
+	    boolean hasNotRelation = repositoryEntryRelationDao.hasRelation(group.getBaseGroup(), reMarker);
+		Assert.assertFalse(hasNotRelation);
 	}
 	
 	@Test

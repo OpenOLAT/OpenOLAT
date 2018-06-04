@@ -154,6 +154,15 @@ public interface CurriculumService {
 	public List<CurriculumElementMember> getMembers(CurriculumElement element);
 	
 	/**
+	 * The list of members of the specified curriculum element with the specified role.
+	 * 
+	 * @param element The curriculum element
+	 * @param role The role
+	 * @return The list of memberships
+	 */
+	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role);
+	
+	/**
 	 * Add a member with the specified role to the curriculum element. The
 	 * inheritance mode of the membership is per default "none".
 	 * 
@@ -172,12 +181,31 @@ public interface CurriculumService {
 	public void removeMember(CurriculumElement element, IdentityRef member);
 	
 	/**
+	 * Remove the membership of a user with the specified role.
+	 * 
+	 * @param element The curriculum element
+	 * @param member The identity which loose the membership
+	 * @param role The role
+	 */
+	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role);
+	
+	/**
 	 * The all list of repository entries hold by the specified curriculum element.
 	 * 
 	 * @param element The curriculum element
 	 * @return A list of repository entries
 	 */
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element);
+	
+	/**
+	 * Check if the repository entry is already in relation with the specified
+	 * curriculum element.
+	 * 
+	 * @param element The curriculum element
+	 * @param entry The repository entry
+	 * @return True if the repository entry and curriculum element share a group
+	 */
+	public boolean hasRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
 	
 	/**
 	 * This will add a relation between the curriculum element and the repository
@@ -190,6 +218,9 @@ public interface CurriculumService {
 	 * @param master If the relation is the master one
 	 */
 	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master);
+	
+
+	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
 	
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum);

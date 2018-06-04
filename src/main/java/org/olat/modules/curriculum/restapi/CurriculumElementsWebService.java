@@ -24,27 +24,38 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The security checks are done by the CurriculumsWebService.
@@ -55,10 +66,20 @@ import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
  */
 public class CurriculumElementsWebService {
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryService repositoryService;
+	
 	private final Curriculum curriculum;
 	
 	public CurriculumElementsWebService(Curriculum curriculum) {
 		this.curriculum = curriculum;
+		CoreSpringFactory.autowireObject(this);
 	}
 	
 	/**
@@ -76,7 +97,6 @@ public class CurriculumElementsWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElements() {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(curriculum);
 		List<CurriculumElementVO> voes = new ArrayList<>(elements.size());
 		for(CurriculumElement element:elements) {
@@ -101,7 +121,6 @@ public class CurriculumElementsWebService {
 	@Path("{curriculumElementKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, @Context HttpServletRequest httpRequest) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -190,8 +209,6 @@ public class CurriculumElementsWebService {
 	
 	
 	private CurriculumElement saveCurriculumElement(CurriculumElementVO curriculumElement) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
-		
 		CurriculumElement elementToSave = null;
 		CurriculumElementType type = null;
 		if(curriculumElement.getCurriculumElementTypeKey() != null) {
@@ -229,15 +246,430 @@ public class CurriculumElementsWebService {
 		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);
 		if(move) {
 			curriculumService.moveCurriculumElement(savedElement, parentElement);
-			CoreSpringFactory.getImpl(DB.class).commit();
+			dbInstance.commit();
 			savedElement = curriculumService.getCurriculumElement(savedElement);
 		}
 		return savedElement;
 	}
 	
-	public void checkCurriculum(CurriculumElement element) {
+	private void checkCurriculum(CurriculumElement element) {
 		if(element.getCurriculum() != null && !element.getCurriculum().getKey().equals(curriculum.getKey())) {
 			throw new WebApplicationException(Response.serverError().status(Status.CONFLICT).build());
 		}
+	}
+	
+	/**
+	 * Add a relation between a repository entry and a curriculum element.
+	 * 
+	 * @response.representation.200.doc The relation was added
+	 * @response.representation.304.doc There is already a relation, nothing changed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the repository entry was not found
+	 * @param curriculumElementKey The curriculum element
+	 * @param repositoryEntryKey The repository entry
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	public Response addRepositoryEntryToElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
+		if(entry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		if(!curriculumService.hasRepositoryEntry(curriculumElement, entry)) {
+			curriculumService.addRepositoryEntry(curriculumElement, entry, false);
+			return Response.ok().build();
+		}
+		return Response.ok().status(Status.NOT_MODIFIED).build();
+	}
+	
+	
+	/**
+	 * Remove a relation between a curriculum element and a repository entry.
+	 * 
+	 * @response.representation.200.doc The relation was successfully removed. 
+	 * @response.representation.304.doc There is no relation to remove
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the repository entry was not found
+	 * @param curriculumElementKey The curriculum element
+	 * @param repositoryEntryKey The repository entry
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	public Response removeRepositoryEntryToElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
+		if(entry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		if(curriculumService.hasRepositoryEntry(curriculumElement, entry)) {
+			curriculumService.removeRepositoryEntry(curriculumElement, entry);
+			return Response.ok().build();
+		}
+		return Response.ok().status(Status.NOT_MODIFIED).build();
+	}
+	
+	/**
+	 * Get the memberships informations of the specified curriculum element.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}curriculumElementMemberVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The curriculum element membership
+	 * @response.representation.200.example {@link org.olat.modules.curriculum.restapi.Examples#SAMPLE_CURRICULUMELEMENTMEMBERVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param httpRequest The HTTP request
+	 * @return The curriculum element
+	 */
+	@GET
+	@Path("{curriculumElementKey}/members")
+	public Response getMembers(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<CurriculumElementMember> members = curriculumService.getMembers(curriculumElement);
+		List<CurriculumElementMemberVO> voList = new ArrayList<>(members.size());
+		for(CurriculumElementMember member:members) {
+			voList.add(CurriculumElementMemberVO.valueOf(member));
+		}
+		return Response.ok(voList.toArray(new CurriculumElementMemberVO[voList.size()])).build();
+	}
+	
+	/**
+	 * Get all members of the specified curriculum element. A query parameter can
+	 * specify the role of them.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of authors
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{curriculumElementKey}/users")
+	public Response getUsers(@PathParam("curriculumElementKey") Long curriculumElementKey, @QueryParam("role") String role) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		if(role != null && !CurriculumRoles.isValueOf(role)) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		
+		List<Identity> members = curriculumService.getMembersIdentity(curriculumElement, CurriculumRoles.valueOf(role));
+		List<UserVO> voList = new ArrayList<>(members.size());
+		for(Identity member:members) {
+			voList.add(UserVOFactory.get(member));
+		}
+		return Response.ok(voList.toArray(new UserVO[voList.size()])).build();
+	}
+	
+	/**
+	 * Add a membership to the specified curriculum element.
+	 * 
+	 * @response.representation.qname {http://www.example.com}curriculumElementMemberVO
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc The curriculum element membership to persist
+	 * @response.representation.example {@link org.olat.modules.curriculum.restapi.Examples#SAMPLE_CURRICULUMELEMENTMEMBERVO}
+	 * @response.representation.200.doc The membership was persisted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @response.representation.409.doc The role is not allowed
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param membership The membership informations
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/members")
+	public Response putMembers(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			CurriculumElementMemberVO membership) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		Identity identity = securityManager.loadIdentityByKey(membership.getIdentityKey());
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		String role = membership.getRole();
+		if(!CurriculumRoles.isValueOf(role)) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		curriculumService.addMember(curriculumElement, identity, CurriculumRoles.valueOf(role));
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Remove all memberships of the identity from the specified curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumElementKey}/members/{identityKey}")
+	public Response deleteMembers(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		curriculumService.removeMember(curriculumElement, identity);
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Get all participants of the specified curriculum element.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of participants
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{curriculumElementKey}/participants")
+	public Response getParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		return getMembers(curriculumElementKey, CurriculumRoles.participant);
+	}
+	
+	/**
+	 * Get all coaches of the specified curriculum element.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of coaches
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{curriculumElementKey}/coaches")
+	public Response getCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		return getMembers(curriculumElementKey, CurriculumRoles.coach);
+	}
+	
+	private Response getMembers(Long curriculumElementKey, CurriculumRoles role) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		List<Identity> members = curriculumService.getMembersIdentity(curriculumElement, role);
+		List<UserVO> voList = new ArrayList<>(members.size());
+		for(Identity member:members) {
+			voList.add(UserVOFactory.get(member));
+		}
+		return Response.ok(voList.toArray(new UserVO[voList.size()])).build();
+	}
+	
+	/**
+	 * Make the specified user a participant of the curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was added
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to make a participant of
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/participants/{identityKey}")
+	public Response putParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.participant);
+	}
+	
+	/**
+	 * Make the specified user a coach of the curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was added
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to make a coach of
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/coaches/{identityKey}")
+	public Response putCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
+	}
+	
+	private Response putMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		curriculumService.addMember(curriculumElement, identity, role);
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Make the array of users participant of the specified curriculum element.
+	 * 
+	 * @response.representation.qname {http://www.example.com}userVO
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc The curriculum element membership to persist
+	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.doc The memberships was persisted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @response.representation.409.doc The role is not allowed
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param participants The future participants
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/participants")
+	public Response putParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] participants) {
+		return putMembers(curriculumElementKey, participants, CurriculumRoles.participant);
+	}
+	
+	/**
+	 * Make the array of users coach of the specified curriculum element.
+	 * 
+	 * @response.representation.qname {http://www.example.com}userVO
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc The curriculum element membership to persist
+	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.doc The memberships was persisted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @response.representation.409.doc The role is not allowed
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param participants The future coaches
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/coaches")
+	public Response putCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
+		return putMembers(curriculumElementKey, coaches, CurriculumRoles.coach);
+	}
+	
+	private Response putMembers(Long curriculumElementKey, UserVO[] members, CurriculumRoles role) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		for(UserVO member:members) {
+			Identity identity = securityManager.loadIdentityByKey(member.getKey());
+			if(identity != null) {
+				curriculumService.addMember(curriculumElement, identity, role);
+			}
+		}
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Remove the participant membership of the identity from the specified curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumElementKey}/participants/{identityKey}")
+	public Response deleteParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.participant);
+	}
+	
+	/**
+	 * Remove the coach membership of the identity from the specified curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumElementKey}/coaches/{identityKey}")
+	public Response deleteCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
+	}
+	
+	private Response deleteMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		curriculumService.removeMember(curriculumElement, identity, role);
+		return Response.ok().build();
 	}
 }

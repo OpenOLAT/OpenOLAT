@@ -17,31 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.curriculum.ui;
 
-import org.olat.core.util.StringHelper;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
- * Initial date: 9 mai 2018<br>
+ * Initial date: 4 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum CurriculumRoles {
+public class CurriculumManagerTableSort extends SortableFlexiTableModelDelegate<CurriculumRow> {
 	
-	supervisor,
-	owner, //same as GroupRoles
-	coach, //same as GroupRoles
-	participant; //same as GroupRoles
-	
-	public static final boolean isValueOf(String val) {
-		if(StringHelper.containsNonWhitespace(val)) {
-			for(CurriculumRoles role:values()) {
-				if(role.name().equals(val)) {
-					return true;
-				}
-			}
-		}
-		return false;
+	public CurriculumManagerTableSort(SortKey orderBy, CurriculumManagerDataModel model, Locale locale) {
+		super(orderBy, model, locale);
 	}
+
 }

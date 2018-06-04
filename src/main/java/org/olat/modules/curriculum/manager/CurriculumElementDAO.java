@@ -197,6 +197,7 @@ public class CurriculumElementDAO {
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
 		  .append(" where el.key=:elementKey");
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -214,6 +215,21 @@ public class CurriculumElementDAO {
 			members.add(new CurriculumElementMember(identity, role, inheritanceMode));
 		}
 		return members;
+	}
+	
+	public List<Identity> getMembersIdentity(CurriculumElementRef element, String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where el.key=:elementKey and membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("elementKey", element.getKey())
+				.setParameter("role", role)
+				.getResultList();
 	}
 	
 	private static class PathMaterializedPathLengthComparator implements Comparator<CurriculumElement> {

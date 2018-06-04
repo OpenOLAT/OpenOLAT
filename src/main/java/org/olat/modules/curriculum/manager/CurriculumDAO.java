@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -88,6 +89,25 @@ public class CurriculumDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" cur.organisation.key in (:organisationKeys)");
 		}
+		
+		Long key = null;
+		String ref = null;
+		String fuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
+			ref = params.getSearchString();
+			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
+			
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" (cur.externalId=:ref or ");
+			PersistenceHelper.appendFuzzyLike(sb, "cur.displayName", "fuzzyRef", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "cur.identifier", "fuzzyRef", dbInstance.getDbVendor());
+			if(StringHelper.isLong(ref)) {
+				key = Long.valueOf(ref);
+				sb.append(" or cur.key=:curriculumKey");
+			}
+			sb.append(")");	
+		}
 
 		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class);
@@ -95,6 +115,15 @@ public class CurriculumDAO {
 			List<Long> organisationKeys = params.getOrganisations()
 					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 			query.setParameter("organisationKeys", organisationKeys);
+		}
+		if(key != null) {
+			query.setParameter("curriculumKey", key);
+		}
+		if(ref != null) {
+			query.setParameter("ref", ref);
+		}
+		if(fuzzyRef != null) {
+			query.setParameter("fuzzyRef", fuzzyRef);
 		}
 		return query.getResultList();
 	}

@@ -35,6 +35,8 @@ public class Examples {
 	
 	public static final CurriculumElementTypeVO SAMPLE_CURRICULUMELEMENTTYPEVO = new CurriculumElementTypeVO();
 	
+	public static final CurriculumElementMemberVO SAMPLE_CURRICULUMELEMENTMEMBERVO = new CurriculumElementMemberVO();
+	
 	static {
 		SAMPLE_CURRICULUMVO.setKey(2l);
 		SAMPLE_CURRICULUMVO.setDisplayName("Dipl. engineer");
@@ -64,5 +66,9 @@ public class Examples {
 		SAMPLE_CURRICULUMELEMENTTYPEVO.setExternalId("CET-1001");
 		SAMPLE_CURRICULUMELEMENTTYPEVO.setDescription("This is the description of a type");
 		SAMPLE_CURRICULUMELEMENTTYPEVO.setManagedFlagsString("displayName");
+		
+		SAMPLE_CURRICULUMELEMENTMEMBERVO.setIdentityKey(111l);
+		SAMPLE_CURRICULUMELEMENTMEMBERVO.setInheritanceMode("none");
+		SAMPLE_CURRICULUMELEMENTMEMBERVO.setRole("participant");
 	}
 }
