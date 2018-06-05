@@ -71,7 +71,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 
 	public static final String SURVEY_ICON = "o_survey_icon";
 
-	private static final String TYPE = "QTI_SURVEY";
+	private static final String TYPE = "survey";
 	
 	public static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
