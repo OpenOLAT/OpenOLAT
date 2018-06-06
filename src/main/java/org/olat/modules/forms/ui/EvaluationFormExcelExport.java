@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
@@ -64,35 +66,55 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormExport extends OpenXMLWorkbookResource {
+public class EvaluationFormExcelExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormExport.class);
+	private static final OLog log = Tracing.createLoggerFor(EvaluationFormExcelExport.class);
 
+	private final String fileName;
 	private final Form form;
-	private final List<EvaluationFormSession> sessions;
+	private List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormResponses responses;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormExport(Form form, List<EvaluationFormSession> sessions, ReportHelper reportHelper, String surveyName) {
-		super(label(surveyName));
+	public EvaluationFormExcelExport(Form form, List<EvaluationFormSession> sessions, ReportHelper reportHelper, String surveyName) {
+		this.fileName = getFileName(surveyName);
 		this.form = form;
 		this.sessions = sessions;
 		this.reportHelper = reportHelper;
+
 		CoreSpringFactory.autowireObject(this);
 		responses = evaluationFormManager.loadResponsesBySessions(sessions);
 	}
 	
-	private static final String label(String surveyName) {
-		return StringHelper.transformDisplayNameToFileSystemName(surveyName)
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
-				+ ".xlsx";
+	private String getFileName(String surveyName) {
+		return new StringBuilder()
+				.append(StringHelper.transformDisplayNameToFileSystemName(surveyName))
+				.append("_")
+				.append(Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())))
+				.append(".xlsx")
+				.toString();
+	}
+	
+	public OpenXMLWorkbookResource createMediaResource() {
+		// refresh to avoid lazy instantiation exception
+		sessions = evaluationFormManager.loadSessionsByKey(sessions, 0, -1);
+		return new OpenXMLWorkbookResource(fileName) {
+			@Override
+			protected void generate(OutputStream out) {
+				createWorkbook(out);
+			}
+		};
+	}
+	
+	public void export(ZipOutputStream out) throws IOException {
+		out.putNextEntry(new ZipEntry(fileName));
+		createWorkbook(out);
 	}
 
-	@Override
-	protected void generate(OutputStream out) {
+	private void createWorkbook(OutputStream out) {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			addHeader(exportSheet);

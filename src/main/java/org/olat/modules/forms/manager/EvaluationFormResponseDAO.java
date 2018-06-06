@@ -110,6 +110,7 @@ public class EvaluationFormResponseDAO {
 		sb.append("select response from evaluationformresponse as response");
 		sb.append(" inner join fetch response.session as session");
 		sb.append("  left outer join fetch session.participation as participation");
+		sb.append("  left outer join fetch participation.executor as executor");
 		sb.append(" where session.key in (:sessionKeys)");
 		
 		return dbInstance.getCurrentEntityManager()
@@ -125,6 +126,7 @@ public class EvaluationFormResponseDAO {
 		sb.append("select response from evaluationformresponse as response");
 		sb.append(" inner join fetch response.session as session");
 		sb.append("  left outer join fetch session.participation as participation");
+		sb.append("  left outer join fetch participation.executor as executor");
 		sb.append(" inner join session.survey as survey");
 		sb.append(" where survey.key=:surveyKey");
 		

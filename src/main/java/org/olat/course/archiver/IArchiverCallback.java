@@ -80,4 +80,6 @@ public interface IArchiverCallback {
 	 * @return true if user has rights to archive project-broker data
 	 */
 	public boolean mayArchiveProjectBroker();
+
+	public boolean mayArchiveSurveys();
 }

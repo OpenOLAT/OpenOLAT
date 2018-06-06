@@ -91,4 +91,9 @@ public class FullAccessArchiverCallback implements IArchiverCallback {
 	public boolean mayArchiveProjectBroker() {
 		return true;
 	}
+
+	@Override
+	public boolean mayArchiveSurveys() {
+		return true;
+	}
 }

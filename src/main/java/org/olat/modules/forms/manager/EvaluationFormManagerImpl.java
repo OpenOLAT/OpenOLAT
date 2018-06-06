@@ -353,4 +353,5 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		
 		return statistic;
 	}
+
 }

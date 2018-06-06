@@ -58,6 +58,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 
@@ -83,7 +84,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	private static final String CMD_SCORM = "scorm";
 	private static final String CMD_CHECKLIST = "checklist";
 	private static final String CMD_PARTICIPANTFOLDER = "participantfolder";
-
+	private static final String CMD_SURVEY = "survey";
 	
 	
 	private IArchiverCallback archiverCallback;
@@ -120,7 +121,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		main.setContent(intro);
 
 		// Navigation menu
-		menuTree = new MenuTree("menuTree");				
+		menuTree = new MenuTree("menuTree");
 		TreeModel tm = buildTreeModel(ureq); 
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
@@ -131,9 +132,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == menuTree) {
@@ -183,6 +181,13 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			gtn.setTitle(translate("menu.qtiresults"));
 			gtn.setUserObject(CMD_QTISURVRESULTS);
 			gtn.setAltText(translate("menu.qtiresults.alt"));
+			root.addChild(gtn);
+		}
+		if (archiverCallback.mayArchiveSurveys()) {
+			gtn = new GenericTreeNode();		
+			gtn.setTitle(translate("menu.surveys"));
+			gtn.setUserObject(CMD_SURVEY);
+			gtn.setAltText(translate("menu.surveys.alt"));
 			root.addChild(gtn);
 		}
 		if (archiverCallback.mayArchiveQtiTestResults()) {
@@ -304,6 +309,9 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			if (menuCommand.equals(CMD_QTISURVRESULTS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new IQSURVCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
+			} else if (menuCommand.equals(CMD_SURVEY)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new SurveyCourseNode());
+				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_QTITESTRESULTS)) {
 				contentCtr = new TestArchiveController(ureq, getWindowControl(), ores, new IQTESTCourseNode(), new IQSELFCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
@@ -346,9 +354,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		}		
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// controllers disposed by BasicController:
 		columnLayoutCtr = null;
