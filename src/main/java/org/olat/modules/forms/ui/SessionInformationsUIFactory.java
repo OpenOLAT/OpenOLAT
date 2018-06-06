@@ -28,6 +28,7 @@ import org.apache.log4j.Level;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.SessionInformations;
@@ -108,7 +109,7 @@ class SessionInformationsUIFactory {
 				.collect(Collectors.toSet());
 	}
 
-	public static boolean hasInformationType(Form form, InformationType informationType) {
+	static boolean hasInformationType(Form form, InformationType informationType) {
 		for (AbstractElement element: form.getElements()) {
 			if (element instanceof SessionInformations) {
 				SessionInformations sessionInforamtions = (SessionInformations) element;
@@ -118,5 +119,26 @@ class SessionInformationsUIFactory {
 			}
 		}
 		return false;
+	}
+	
+	static String getValue(InformationType informationType, EvaluationFormSession session) {
+		switch (informationType) {
+		case USER_EMAIL:
+			return session.getEmail();
+		case USER_FIRSTNAME:
+			return session.getFirstname();
+		case USER_LASTNAME:
+			return session.getLastname();
+		case AGE:
+			return session.getAge();
+		case USER_GENDER:
+			return session.getGender();
+		case USER_ORGUNIT:
+			return session.getOrgUnit();
+		case USER_STUDYSUBJECT:
+			return session.getStudySubject();
+		default:
+			return null;
+		}
 	}
 }

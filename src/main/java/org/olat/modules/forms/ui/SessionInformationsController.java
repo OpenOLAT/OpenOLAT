@@ -162,29 +162,8 @@ public class SessionInformationsController extends FormBasicController implement
 	@Override
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
 		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
-			String value = getValue(session, wrapper.getInformationType());
+			String value = SessionInformationsUIFactory.getValue(wrapper.getInformationType(), session);
 			wrapper.getInformationEl().setValue(value);
-		}
-	}
-	
-	private String getValue(EvaluationFormSession session, InformationType informationType) {
-		switch (informationType) {
-		case USER_EMAIL:
-			return session.getEmail();
-		case USER_FIRSTNAME:
-			return session.getFirstname();
-		case USER_LASTNAME:
-			return session.getLastname();
-		case AGE:
-			return session.getAge();
-		case USER_GENDER:
-			return session.getGender();
-		case USER_ORGUNIT:
-			return session.getOrgUnit();
-		case USER_STUDYSUBJECT:
-			return session.getStudySubject();
-		default:
-			return null;
 		}
 	}
 

@@ -42,6 +42,9 @@ import org.olat.modules.forms.model.xml.Form;
  */
 public class EvaluationFormReportsController extends BasicController {
 	
+	private static final String CMD_PRINT = "report.print";
+	private static final String CMD_EXPORT = "report.export";
+	
 	private Link printLink;
 	private Link exportLink;
 	
@@ -66,10 +69,10 @@ public class EvaluationFormReportsController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("reports");
 
-		printLink = LinkFactory.createButtonSmall("report.print", mainVC, this);
+		printLink = LinkFactory.createButtonSmall(CMD_PRINT, mainVC, this);
 		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_print");
 
-		exportLink = LinkFactory.createButtonSmall("report.export", mainVC, this);
+		exportLink = LinkFactory.createButtonSmall(CMD_EXPORT, mainVC, this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
 		EvaluationFormReportSegmentsController segmentsController = new EvaluationFormReportSegmentsController(ureq,
@@ -84,8 +87,10 @@ public class EvaluationFormReportsController extends BasicController {
 		if(source instanceof Link) {
 			Link link = (Link) source;
 			String cmd = link.getCommand();
-			if (cmd.equals("report.print")) {
+			if (cmd.equals(CMD_PRINT)) {
 				doOpenPrintSelection(ureq);
+			} else if (cmd.equals(CMD_EXPORT)) {
+				doExport(ureq);
 			}
 		}
 	}
@@ -122,6 +127,12 @@ public class EvaluationFormReportsController extends BasicController {
 				printSelectionCtrl.getInitialComponent(), printLink, "", true, null);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
+	}
+
+	private void doExport(UserRequest ureq) {
+		String surveyName = "survey";
+		EvaluationFormExport export = new EvaluationFormExport(form, sessions, reportHelper, surveyName);
+		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 
 }
