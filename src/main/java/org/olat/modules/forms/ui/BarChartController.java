@@ -21,12 +21,12 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.chart.BarChartComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
 import org.olat.modules.forms.ui.model.BarSeriesDataSource;
 
 /**
@@ -44,7 +44,7 @@ public class BarChartController extends BasicController {
 		
 		mainVC = createVelocityContainer("bar_chart");
 		
-		BarChartComponent chart = new BarChartComponent("o_eve_bc_" + CodeHelper.getRAMUniqueID());
+		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent("o_eve_bc_" + CodeHelper.getRAMUniqueID());
 		chart.setYLegend(translate("chart.count"));
 		chart.addSeries(dataSource.getBarSeries());
 		mainVC.put("chart", chart);

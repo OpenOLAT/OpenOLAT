@@ -19,11 +19,11 @@
 
 #if($r.available("report") && $r.visible("report"))
 	<h4>$r.translate("report.overview.total.title")</h4>
-	$r.render("report")
+	<div class="o_eva_rubric">$r.render("report")</div>
 #end
 #if($r.available("durationHistogram") && $r.visible("durationHistogram"))
 	<h4>$r.translate("report.overview.duration.title")</h4>
-	$r.render("durationHistogram")
+	<div class="col-xs-12 col-sm-9 col-md-9 col-lg-6">$r.render("durationHistogram")</div>
 #end
 
 </div>

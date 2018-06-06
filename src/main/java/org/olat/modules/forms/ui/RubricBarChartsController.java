@@ -42,7 +42,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
-import org.olat.modules.forms.ui.component.SliderChartComponent;
+import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
 import org.olat.modules.forms.ui.model.RubricStatistic;
 import org.olat.modules.forms.ui.model.SliderStatistic;
 
@@ -91,7 +91,7 @@ public class RubricBarChartsController extends FormBasicController {
 
 	private String createChartAndGetName(SliderStatistic sliderStatistic) {
 		String barChartName = "o_eve_bc_" + CodeHelper.getRAMUniqueID();
-		SliderChartComponent chart = new SliderChartComponent(barChartName);
+		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent(barChartName);
 		chart.setYLegend(translate("chart.count"));
 		BarSeries barSeries = createBarSeries(sliderStatistic);
 		chart.addSeries(barSeries);
@@ -105,7 +105,8 @@ public class RubricBarChartsController extends FormBasicController {
 		for (int step = 1; step <= rubric.getSteps(); step++) {
 			Long count = stepCounts.get(step -1);
 			double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step);
-			series.add(count, stepValue);
+			String stepName = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
+			series.add(count, stepName);
 		}
 		return series;
 	}
@@ -132,9 +133,9 @@ public class RubricBarChartsController extends FormBasicController {
 		rows.add(new StatisticRow(translate("rubric.report.number.no.responses.title"), String.valueOf(sliderStatistic.getNumberOfNoResponses())));
 		rows.add(new StatisticRow(translate("rubric.report.number.responses.title"), String.valueOf(sliderStatistic.getNumberOfResponses())));
 		rows.add(new StatisticRow(translate("rubric.report.median.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getMedian())));
-		rows.add(new StatisticRow(translate("rubric.report.avg.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getAvg())));
 		rows.add(new StatisticRow(translate("rubric.report.variance.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getVariance())));
 		rows.add(new StatisticRow(translate("rubric.report.sdtdev.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getStdDev())));
+		rows.add(new StatisticRow(translate("rubric.report.avg.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getAvg())));
 		return rows;
 	}
 

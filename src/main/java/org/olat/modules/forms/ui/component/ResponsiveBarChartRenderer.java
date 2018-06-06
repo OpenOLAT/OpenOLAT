@@ -38,13 +38,13 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SliderChartRenderer extends DefaultComponentRenderer {
+public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		
-		SliderChartComponent chartCmp = (SliderChartComponent)source;
+		ResponsiveBarChartComponent chartCmp = (ResponsiveBarChartComponent)source;
 		List<BarSeries> seriesList = chartCmp.getSeries();
 		
 		String yLegend = chartCmp.getYLegend();
@@ -92,8 +92,7 @@ public class SliderChartRenderer extends DefaultComponentRenderer {
 		sb.append("svg.append('g')")
 		  .append("   .attr('class', 'x axis')")
 		  .append("   .attr('transform', 'translate(0,' + height + ')')")
-		  .append("   .call(xAxis)"); // geht aber besser mit css
-//		  .append("   .call(xAxis).selectAll('text').remove()"); // geht aber besser mit css
+		  .append("   .call(xAxis)");
 		if(StringHelper.containsNonWhitespace(xLegend)) {
 			sb.append("  .append('text')")
 			  .append("    .attr('y', (margin.bottom / 2))")
@@ -129,7 +128,7 @@ public class SliderChartRenderer extends DefaultComponentRenderer {
 		  .append("</script>");
 	}
 	
-	private void appendSeries(StringOutput sb, StringBuilder colors, SliderChartComponent chartCmp) {
+	private void appendSeries(StringOutput sb, StringBuilder colors, ResponsiveBarChartComponent chartCmp) {
 		if(colors.length() > 0) {
 			sb.append("var colors = [").append(colors).append("];");
 		}

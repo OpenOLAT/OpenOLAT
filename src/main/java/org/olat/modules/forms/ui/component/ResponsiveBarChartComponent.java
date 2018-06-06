@@ -32,9 +32,9 @@ import org.olat.core.gui.components.chart.DefaultD3Component;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SliderChartComponent extends DefaultD3Component {
+public class ResponsiveBarChartComponent extends DefaultD3Component {
 	
-	private static final ComponentRenderer renderer = new SliderChartRenderer();
+	private static final ComponentRenderer renderer = new ResponsiveBarChartRenderer();
 
 	private List<BarSeries> seriesList = new ArrayList<>();
 	
@@ -42,7 +42,7 @@ public class SliderChartComponent extends DefaultD3Component {
 	private String yLegend;
 	private String xLegend;
 	
-	public SliderChartComponent(String name) {
+	public ResponsiveBarChartComponent(String name) {
 		super(name);
 	}
 

@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.chart.BarChartComponent;
 import org.olat.core.gui.components.chart.BarSeries;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -37,6 +36,7 @@ import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,8 +85,8 @@ public class EvaluationFormOverviewController extends BasicController {
 		return false;
 	}
 
-	private BarChartComponent initDurationHistogram(long[] durations) {
-		BarChartComponent chart = new BarChartComponent("o_eve_duration_chart");
+	private ResponsiveBarChartComponent initDurationHistogram(long[] durations) {
+		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent("o_eve_duration_chart");
 		chart.setYLegend(translate("report.overview.duration.count"));
 		chart.setXLegend(translate("report.overview.duration"));
 

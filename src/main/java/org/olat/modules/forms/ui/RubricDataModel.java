@@ -82,13 +82,13 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 			return EvaluationFormFormatter.formatDouble(rubricRow.getMedian());
 		}
 		if (col - offset == 3) {
-			return EvaluationFormFormatter.formatDouble(rubricRow.getAvg());
-		}
-		if (col - offset == 4) {
 			return EvaluationFormFormatter.formatDouble(rubricRow.getVariance());
 		}
-		if (col - offset == 5) {
+		if (col - offset == 4) {
 			return EvaluationFormFormatter.formatDouble(rubricRow.getSdtDev());
+		}
+		if (col - offset == 5) {
+			return EvaluationFormFormatter.formatDouble(rubricRow.getAvg());
 		}
 		return rubricRow.getStepCounts().get(col - 1);
 	}
@@ -109,9 +109,9 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		numberOfNoResponses("rubric.report.number.no.responses.title"),
 		numberOfResponses("rubric.report.number.responses.title"),
 		median("rubric.report.median.title"),
-		avg("rubric.report.avg.title"),
 		variance("rubric.report.variance.title"),
-		stdDev("rubric.report.sdtdev.title");
+		stdDev("rubric.report.sdtdev.title"),
+		avg("rubric.report.avg.title");
 		
 		private final String i18nKey;
 		

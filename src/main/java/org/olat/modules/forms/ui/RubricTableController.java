@@ -75,43 +75,57 @@ public class RubricTableController extends FormBasicController {
 		if (!rubric.getSliderType().equals(SliderType.continuous)) {
 			ScaleType scaleType = rubric.getScaleType();
 			for (int step = 1; step <= rubric.getSteps(); step++) {
+				String label = rubric.getStepLabels().get(step -1).getLabel();
 				double stepValue = scaleType.getStepValue(rubric.getSteps(), step);
-				String header = String.valueOf(stepValue);
+				StringBuilder headerSb = new StringBuilder();
+				if (StringHelper.containsNonWhitespace(label)) {
+					headerSb.append(label).append("<br>");
+				}
+				headerSb.append("(").append(EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue)).append(")");
+				String header = headerSb.toString();
 				DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(header, columnIndex++);
 				columnModel.setHeaderLabel(header);
+				columnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 				columnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 				columnsModel.addFlexiColumnModel(columnModel);
 			}
 		}
 
 		if (hasEndLabel()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RubricReportCols.endLabel.i18nHeaderKey(), columnIndex++, false, null));
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(RubricReportCols.endLabel.i18nHeaderKey(), columnIndex++, false, null);
+			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		if (rubric.isNoResponseEnabled()) {
 			DefaultFlexiColumnModel noResponsesColumn = new DefaultFlexiColumnModel(RubricReportCols.numberOfNoResponses.i18nHeaderKey(), columnIndex++, false, null);
 			noResponsesColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			noResponsesColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 			columnsModel.addFlexiColumnModel(noResponsesColumn);
 		}
 		
 		DefaultFlexiColumnModel responsesColumn = new DefaultFlexiColumnModel(RubricReportCols.numberOfResponses.i18nHeaderKey(), columnIndex++, false, null);
 		responsesColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		responsesColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(responsesColumn);
 		
 		DefaultFlexiColumnModel medianColumn = new DefaultFlexiColumnModel(RubricReportCols.median.i18nHeaderKey(), columnIndex++, false, null);
 		medianColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		medianColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(medianColumn);
-		
-		DefaultFlexiColumnModel avgColumn = new DefaultFlexiColumnModel(RubricReportCols.avg.i18nHeaderKey(), columnIndex++, false, null);
-		avgColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
-		columnsModel.addFlexiColumnModel(avgColumn);
 		
 		DefaultFlexiColumnModel varianceColumn = new DefaultFlexiColumnModel(RubricReportCols.variance.i18nHeaderKey(), columnIndex++, false, null);
 		varianceColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		varianceColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(varianceColumn);
 		
 		DefaultFlexiColumnModel sdtDevColumn = new DefaultFlexiColumnModel(RubricReportCols.stdDev.i18nHeaderKey(), columnIndex++, false, null);
 		sdtDevColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		sdtDevColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(sdtDevColumn);
+		
+		DefaultFlexiColumnModel avgColumn = new DefaultFlexiColumnModel(RubricReportCols.avg.i18nHeaderKey(), columnIndex++, false, null);
+		avgColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		avgColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(avgColumn);
 
 		String footerHeader = translate("rubric.report.total", new String[] {rubric.getName()});
 		dataModel = new RubricDataModel(columnsModel, footerHeader);

@@ -34,6 +34,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 
 	private String headerKey;
 	private String headerLabel;
+	private Integer headerAlignment;
 	private String columnKey;
 	private int columnIndex;
 
@@ -216,6 +217,15 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 
 	public void setHeaderLabel(String headerLabel) {
 		this.headerLabel = headerLabel;
+	}
+
+	@Override
+	public Integer getHeaderAlignment() {
+		return headerAlignment;
+	}
+
+	public void setHeaderAlignment(int headerAlignment) {
+		this.headerAlignment = headerAlignment;
 	}
 
 	@Override

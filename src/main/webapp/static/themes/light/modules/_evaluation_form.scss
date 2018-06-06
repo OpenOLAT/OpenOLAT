@@ -45,7 +45,6 @@
 	
 	.o_evaluation_discrete_radio {
 		.o_slider {
-			
 			.o_evaluation_steps {
 				 label {
 					padding: 0;
@@ -129,20 +128,27 @@
 				}
 			}
 		}
-		.svg-container {
-			display: inline-block;
-			position: relative;
-			width: 100%;
-			padding-bottom: 50%;
-			vertical-align: top;
-			overflow: hidden;
+	}
+	
+	.o_ed_rubrictablehandler {
+		.table {
+			margin-top: 5px;
 		}
-		.svg-content-responsive {
-			display: inline-block;
-			position: absolute;
-			top: 10px;
-			left: 0;
-		}
+	}
+		
+	.svg-container {
+		display: inline-block;
+		position: relative;
+		width: 100%;
+		padding-bottom: 50%;
+		vertical-align: top;
+		overflow: hidden;
+	}
+	.svg-content-responsive {
+		display: inline-block;
+		position: absolute;
+		top: 10px;
+		left: 0;
 	}
 }
 
@@ -300,5 +306,15 @@
 .o_surv_run.withCmds {
 	.o_eva_report {
 		margin-top: -44px;
+	}
+}
+
+.o_eva_report {
+	.o_eva_overview {
+		.o_eva_rubric {
+			.table {
+				margin-top: 5px;
+			}
+		}
 	}
 }

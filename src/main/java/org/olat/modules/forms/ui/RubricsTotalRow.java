@@ -42,6 +42,7 @@ public class RubricsTotalRow {
 		return name;
 	
 	}
+	
 	Double getAverage() {
 		return average;
 	}

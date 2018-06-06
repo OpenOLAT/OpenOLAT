@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +35,7 @@ import org.olat.core.util.Formatter;
  */
 public class EvaluationFormFormatter {
 	
+	private static final NumberFormat ZERO_OR_ONE_DECIMAL = new DecimalFormat("#0.#");
 	private static final long hour = 60*60*1000;
 	private static final long day = 24*60*60*1000;
 
@@ -42,6 +45,11 @@ public class EvaluationFormFormatter {
 		}
 		return String.format("%.2f", value);
 	}
+	
+	public static String formatZeroOrOneDecimals(double value) {
+		return ZERO_OR_ONE_DECIMAL.format(value);
+	}
+	
 	public static String duration(long duration) {
 		if (duration >= day) {
 			return String.format("%d d %d h %d m %d s", 

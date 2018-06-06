@@ -81,9 +81,17 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 	private void renderHeader(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, Translator translator) {
 		String header = getHeader(fcm, translator);
 		sb.append("<th");
-		// append sort key to make column width set via css
-		if (fcm.getSortKey() != null) {
-			sb.append(" class='o_col_").append(fcm.getSortKey()).append("'");	
+		if (fcm.getSortKey() != null || fcm.getHeaderAlignment() != null) {
+			sb.append(" class='");
+			// append sort key to make column width set via css
+			if (fcm.getSortKey() != null) {
+				sb.append(" o_col_").append(fcm.getSortKey());	
+			}
+			if (fcm.getHeaderAlignment() != null) {
+				String alignmentCssClass = getAlignmentCssClass(fcm.getHeaderAlignment());
+				sb.append(" ").append(alignmentCssClass);
+			}
+			sb.append("'");
 		}
 		sb.append(">");
 		// sort is not defined
@@ -217,7 +225,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 
 		int alignment = fcm.getAlignment();
-		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
+		String cssClass = getAlignmentCssClass(alignment);
 
 		target.append("<td class=\"").append(cssClass).append(" ")
 		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex())
@@ -249,7 +257,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		}
 		target.append("</td>");
 	}
-	
+
 	@Override
 	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {
@@ -283,7 +291,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 						target.append("</th>");
 						footerHeader = true;
 					} else {
-						String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
+						String cssClass = getAlignmentCssClass(alignment);
 						target.append("<td class=\"").append(cssClass).append("\">");
 						fcm.getFooterCellRenderer().render(renderer, target, cellValue, 0, ftC, ubu, translator);
 						target.append("</td>");
@@ -292,5 +300,9 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			}
 			target.append("</tr>");
 		}
+	}
+
+	private String getAlignmentCssClass(int alignment) {
+		return alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center");
 	}
 }
