@@ -335,6 +335,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public List<Identity> getMembersIdentity(Organisation organisation, OrganisationRoles role) {
+		return organisationDao.getMembersIdentity(organisation, role.name());
+	}
+
+	@Override
 	public void setAsGuest(Identity identity) {
 		OrganisationImpl defOrganisation = (OrganisationImpl)getDefaultOrganisation();
 		if(!groupDao.hasRole(defOrganisation.getGroup(), identity, OrganisationRoles.guest.name())) {

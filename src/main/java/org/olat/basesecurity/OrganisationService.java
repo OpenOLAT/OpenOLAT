@@ -182,6 +182,8 @@ public interface OrganisationService {
 	public void setAsGuest(Identity identity);
 	
 	public List<OrganisationMember> getMembers(Organisation organisation);
+	
+	public List<Identity> getMembersIdentity(Organisation organisation, OrganisationRoles role);
 
 	
 	/**

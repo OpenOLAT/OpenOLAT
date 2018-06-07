@@ -475,6 +475,7 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/participants")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.participant);
 	}
@@ -493,8 +494,47 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/coaches")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.coach);
+	}
+	
+	/**
+	 * Get all owners of the specified curriculum element.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of coaches
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{curriculumElementKey}/owners")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getOwners(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		return getMembers(curriculumElementKey, CurriculumRoles.owner);
+	}
+	
+	/**
+	 * Get all curriculum managers of the specified curriculum element.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of coaches
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{curriculumElementKey}/curriculummanagers")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		return getMembers(curriculumElementKey, CurriculumRoles.curriculummanager);
 	}
 	
 	private Response getMembers(Long curriculumElementKey, CurriculumRoles role) {
@@ -545,6 +585,38 @@ public class CurriculumElementsWebService {
 		return putMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
 	}
 	
+	/**
+	 * Make the specified user a course owner of the curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was added
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to make a course owner of
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/owners/{identityKey}")
+	public Response putOwner(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.owner);
+	}
+	
+	/**
+	 * Make the specified user a curricullum manager of the curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was added
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to make a curriculum manager of
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/curriculummanagers/{identityKey}")
+	public Response putCurriculumManager(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.curriculummanager);
+	}
+	
 	private Response putMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
@@ -579,6 +651,7 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/participants")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] participants) {
 		return putMembers(curriculumElementKey, participants, CurriculumRoles.participant);
 	}
@@ -600,8 +673,53 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/coaches")
-	public Response putCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
 		return putMembers(curriculumElementKey, coaches, CurriculumRoles.coach);
+	}
+	
+	/**
+	 * Make the array of users course owner of the specified curriculum element.
+	 * 
+	 * @response.representation.qname {http://www.example.com}userVO
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc The curriculum element membership to persist
+	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.doc The memberships was persisted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @response.representation.409.doc The role is not allowed
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param participants The future course owners
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/owners")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putOwners(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
+		return putMembers(curriculumElementKey, coaches, CurriculumRoles.owner);
+	}
+	
+	/**
+	 * Make the array of users curriculum managers of the specified curriculum element.
+	 * 
+	 * @response.representation.qname {http://www.example.com}userVO
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc The curriculum element membership to persist
+	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.doc The memberships was persisted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @response.representation.409.doc The role is not allowed
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param participants The future curriculum manages
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumElementKey}/curriculummanagers")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
+		return putMembers(curriculumElementKey, coaches, CurriculumRoles.curriculummanager);
 	}
 	
 	private Response putMembers(Long curriculumElementKey, UserVO[] members, CurriculumRoles role) {
@@ -654,6 +772,40 @@ public class CurriculumElementsWebService {
 	public Response deleteCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
+	}
+	
+	/**
+	 * Remove the owner membership of the identity from the specified curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumElementKey}/owners/{identityKey}")
+	public Response deleteOwner(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.owner);
+	}
+	
+	/**
+	 * Remove the curriculum manager membership of the identity from the specified curriculum element.
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumElementKey}/curriculummanagers/{identityKey}")
+	public Response deleteCurriculumManager(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.curriculummanager);
 	}
 	
 	private Response deleteMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {

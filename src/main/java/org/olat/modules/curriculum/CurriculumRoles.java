@@ -29,7 +29,7 @@ import org.olat.core.util.StringHelper;
  */
 public enum CurriculumRoles {
 	
-	supervisor,
+	curriculummanager,
 	owner, //same as GroupRoles
 	coach, //same as GroupRoles
 	participant; //same as GroupRoles

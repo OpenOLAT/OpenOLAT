@@ -47,11 +47,11 @@ public class RoleFlexiCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof OrganisationRoles) {
 			OrganisationRoles role = (OrganisationRoles)cellValue;
-			target.append(translator.translate(role.name()));
+			target.append(translator.translate("role.".concat(role.name())));
 		} else if(cellValue instanceof String) {
 			String val = (String)cellValue;
 			if(OrganisationRoles.valid(val)) {
-				target.append(translator.translate(OrganisationRoles.valueOf(val).name()));
+				target.append(translator.translate("role.".concat(OrganisationRoles.valueOf(val).name())));
 			} else {
 				target.append(StringHelper.escapeHtml(val));
 			}
