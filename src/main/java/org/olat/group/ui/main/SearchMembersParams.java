@@ -21,6 +21,7 @@ package org.olat.group.ui.main;
 
 import java.util.Map;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.control.Event;
 
 /**
@@ -30,84 +31,49 @@ import org.olat.core.gui.control.Event;
 public class SearchMembersParams extends Event {
 	private static final long serialVersionUID = -8842738563007496141L;
 	
-	private boolean repoOwners;
-	private boolean repoTutors;
-	private boolean repoParticipants;
-	private boolean groupTutors;
-	private boolean groupParticipants;
-	private boolean groupWaitingList;
+	private GroupRoles[] roles;
 	private boolean pending;
 	
-	private boolean repoOrigin = true;
-	private boolean groupOrigin = true;
+	private Origin origin;
 	
 	private String login;
-	private String searchString;
 	private Map<String, String> userPropertiesSearch;
 	
 	public SearchMembersParams() {
 		super("search_members");
 	}
 	
-	public SearchMembersParams(boolean repoOwners, boolean repoTutors, boolean repoParticipants,
-			boolean groupTutors, boolean groupParticipants, boolean groupWaitingList,
-			boolean pending) {
+	public SearchMembersParams(boolean pending, GroupRoles... roles) {
 		this();
-		this.repoOwners = repoOwners;
-		this.repoTutors = repoTutors;
-		this.repoParticipants = repoParticipants;
-		this.groupTutors = groupTutors;
-		this.groupParticipants = groupParticipants;
-		this.groupWaitingList = groupWaitingList;
 		this.pending = pending;
+		this.roles = roles;
 	}
 	
-	public boolean isRepoOwners() {
-		return repoOwners;
+	public GroupRoles[] getRoles() {
+		return roles;
 	}
 	
-	public void setRepoOwners(boolean repoOwners) {
-		this.repoOwners = repoOwners;
+	public void setRole(GroupRoles role) {
+		if(role == null) {
+			roles = null;
+		} else {
+			roles = new GroupRoles[] { role };
+		}
 	}
 	
-	public boolean isRepoTutors() {
-		return repoTutors;
+	public void setRoles(GroupRoles[] roles) {
+		this.roles = roles;
 	}
 	
-	public void setRepoTutors(boolean repoTutors) {
-		this.repoTutors = repoTutors;
-	}
-	
-	public boolean isRepoParticipants() {
-		return repoParticipants;
-	}
-	
-	public void setRepoParticipants(boolean repoParticipants) {
-		this.repoParticipants = repoParticipants;
-	}
-	
-	public boolean isGroupTutors() {
-		return groupTutors;
-	}
-	
-	public void setGroupTutors(boolean groupTutors) {
-		this.groupTutors = groupTutors;
-	}
-	
-	public boolean isGroupParticipants() {
-		return groupParticipants;
-	}
-	
-	public void setGroupParticipants(boolean groupParticipants) {
-		this.groupParticipants = groupParticipants;
-	}
-	
-	public boolean isGroupWaitingList() {
-		return groupWaitingList;
-	}
-	
-	public void setGroupWaitingList(boolean groupWaitingList) {
-		this.groupWaitingList = groupWaitingList;
+	public boolean isRole(GroupRoles role) {
+		if(roles != null) {
+			for(GroupRoles r:roles) {
+				if(r == role) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public boolean isPending() {
@@ -118,20 +84,12 @@ public class SearchMembersParams extends Event {
 		this.pending = pending;
 	}
 
-	public boolean isRepoOrigin() {
-		return repoOrigin;
+	public Origin getOrigin() {
+		return origin == null ? Origin.all : origin;
 	}
 
-	public void setRepoOrigin(boolean repoOrigin) {
-		this.repoOrigin = repoOrigin;
-	}
-
-	public boolean isGroupOrigin() {
-		return groupOrigin;
-	}
-
-	public void setGroupOrigin(boolean groupOrigin) {
-		this.groupOrigin = groupOrigin;
+	public void setOrigin(Origin origin) {
+		this.origin = origin;
 	}
 
 	public String getLogin() {
@@ -142,19 +100,18 @@ public class SearchMembersParams extends Event {
 		this.login = login;
 	}
 
-	public String getSearchString() {
-		return searchString;
-	}
-
-	public void setSearchString(String searchString) {
-		this.searchString = searchString;
-	}
-
 	public Map<String, String> getUserPropertiesSearch() {
 		return userPropertiesSearch;
 	}
 
 	public void setUserPropertiesSearch(Map<String, String> userPropertiesSearch) {
 		this.userPropertiesSearch = userPropertiesSearch;
+	}
+	
+	public enum Origin {
+		all,
+		repositoryEntry,
+		businessGroup,
+		curriculum
 	}
 }

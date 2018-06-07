@@ -61,7 +61,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.ui.main.MemberListTableModel;
-import org.olat.group.ui.main.MemberView;
+import org.olat.group.ui.main.MemberRow;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitManager;
@@ -183,7 +183,7 @@ public class MembersListDisplayRunController extends BasicController {
 		Collections.sort(waiting, idComparator);
 		waitingtList = convertIdentitiesToMembers(waiting);
 		
-		Set<MemberView> duplicateCatcher = new HashSet<>();
+		Set<MemberRow> duplicateCatcher = new HashSet<>();
 		boolean userLastTimeVisible = cacheGroupMemberships(ureq);
 		
 		if (showOwners && !owners.isEmpty()) {

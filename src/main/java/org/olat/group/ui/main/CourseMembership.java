@@ -19,18 +19,26 @@
  */
 package org.olat.group.ui.main;
 
+import org.olat.basesecurity.GroupRoles;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CourseMembership {
 	
-	private boolean repoOwner;
-	private boolean repoTutor;
-	private boolean repoParticipant;
-	private boolean groupTutor;
-	private boolean groupParticipant;
-	private boolean groupWaiting;
+	private boolean repositoryEntryOwner;
+	private boolean repositoryEntryCoach;
+	private boolean repositoryEntryParticipant;
+	
+	private boolean businessGroupCoach;
+	private boolean businessGroupParticipant;
+	private boolean businessGroupWaiting;
+	
+	private boolean curriculumElementCoach;
+	private boolean curriculumElementParticipant;
+	private boolean curriculumElementOwner;
+	
 	private boolean pending;
 	private boolean managedMembersRepo;
 	
@@ -39,19 +47,27 @@ public class CourseMembership {
 	}
 
 	public boolean isOwner() {
-		return repoOwner;
+		return repositoryEntryOwner || curriculumElementOwner;
 	}
 	
-	public boolean isTutor() {
-		return repoTutor || groupTutor;
+	public boolean isCoach() {
+		return repositoryEntryCoach || businessGroupCoach || curriculumElementCoach;
 	}
 	
 	public boolean isParticipant() {
-		return repoParticipant || groupParticipant;
+		return repositoryEntryParticipant || businessGroupParticipant || curriculumElementParticipant;
+	}
+	
+	public boolean isRepositoryEntryMember() {
+		return repositoryEntryOwner || repositoryEntryCoach || repositoryEntryParticipant;
+	}
+	
+	public boolean isBusinessGroupMember() {
+		return businessGroupCoach || businessGroupParticipant || businessGroupWaiting;
 	}
 
 	public boolean isWaiting() {
-		return groupWaiting;
+		return businessGroupWaiting;
 	}
 
 	public boolean isPending() {
@@ -70,51 +86,106 @@ public class CourseMembership {
 		this.managedMembersRepo = managedMembersRepo;
 	}
 
-	public boolean isRepoOwner() {
-		return repoOwner;
+	public boolean isRepositoryEntryOwner() {
+		return repositoryEntryOwner;
+	}
+
+	public void setRepositoryEntryOwner(boolean repositoryEntryOwner) {
+		this.repositoryEntryOwner = repositoryEntryOwner;
+	}
+
+	public boolean isRepositoryEntryCoach() {
+		return repositoryEntryCoach;
+	}
+
+	public void setRepositoryEntryCoach(boolean repositoryEntryCoach) {
+		this.repositoryEntryCoach = repositoryEntryCoach;
+	}
+
+	public boolean isRepositoryEntryParticipant() {
+		return repositoryEntryParticipant;
+	}
+
+	public void setRepositoryEntryParticipant(boolean repositoryEntryParticipant) {
+		this.repositoryEntryParticipant = repositoryEntryParticipant;
 	}
 	
-	public void setRepoOwner(boolean repoOwner) {
-		this.repoOwner = repoOwner;
+	public void setRepositoryEntryRole(String role) {
+		if(GroupRoles.participant.name().equals(role)) {
+			setRepositoryEntryParticipant(true);
+		} else if(GroupRoles.coach.name().equals(role)) {
+			setRepositoryEntryCoach(true);
+		} else if(GroupRoles.owner.name().equals(role)) {
+			setRepositoryEntryOwner(true);
+		}
 	}
 
-	public boolean isRepoTutor() {
-		return repoTutor;
+	public boolean isBusinessGroupCoach() {
+		return businessGroupCoach;
 	}
 
-	public void setRepoTutor(boolean repoTutor) {
-		this.repoTutor = repoTutor;
+	public void setBusinessGroupCoach(boolean businessGroupCoach) {
+		this.businessGroupCoach = businessGroupCoach;
 	}
 
-	public boolean isRepoParticipant() {
-		return repoParticipant;
+	public boolean isBusinessGroupParticipant() {
+		return businessGroupParticipant;
 	}
 
-	public void setRepoParticipant(boolean repoParticipant) {
-		this.repoParticipant = repoParticipant;
+	public void setBusinessGroupParticipant(boolean businessGroupParticipant) {
+		this.businessGroupParticipant = businessGroupParticipant;
 	}
 
-	public boolean isGroupTutor() {
-		return groupTutor;
+	public boolean isBusinessGroupWaiting() {
+		return businessGroupWaiting;
 	}
 
-	public void setGroupTutor(boolean groupTutor) {
-		this.groupTutor = groupTutor;
+	public void setBusinessGroupWaiting(boolean businessGroupWaiting) {
+		this.businessGroupWaiting = businessGroupWaiting;
+	}
+	
+	public void setBusinessGroupRole(String role) {
+		if(GroupRoles.participant.name().equals(role)) {
+			setBusinessGroupParticipant(true);
+		} else if(GroupRoles.coach.name().equals(role)) {
+			setBusinessGroupCoach(true);
+		} else if(GroupRoles.waiting.name().equals(role)) {
+			setBusinessGroupWaiting(true);
+		}
 	}
 
-	public boolean isGroupParticipant() {
-		return groupParticipant;
+	public boolean isCurriculumElementOwner() {
+		return curriculumElementOwner;
 	}
 
-	public void setGroupParticipant(boolean groupParticipant) {
-		this.groupParticipant = groupParticipant;
+	public void setCurriculumElementOwner(boolean curriculumElementOwner) {
+		this.curriculumElementOwner = curriculumElementOwner;
 	}
 
-	public boolean isGroupWaiting() {
-		return groupWaiting;
+	public boolean isCurriculumElementCoach() {
+		return curriculumElementCoach;
 	}
 
-	public void setGroupWaiting(boolean groupWaiting) {
-		this.groupWaiting = groupWaiting;
+	public void setCurriculumElementCoach(boolean curriculumElementCoach) {
+		this.curriculumElementCoach = curriculumElementCoach;
 	}
+
+	public boolean isCurriculumElementParticipant() {
+		return curriculumElementParticipant;
+	}
+
+	public void setCurriculumElementParticipant(boolean curriculumElementParticipant) {
+		this.curriculumElementParticipant = curriculumElementParticipant;
+	}
+	
+	public void setCurriculumElementRole(String role) {
+		if(GroupRoles.participant.name().equals(role)) {
+			setCurriculumElementParticipant(true);
+		} else if(GroupRoles.coach.name().equals(role)) {
+			setCurriculumElementCoach(true);
+		} else if(GroupRoles.owner.name().equals(role)) {
+			setCurriculumElementOwner(true);
+		}
+	}
+
 }

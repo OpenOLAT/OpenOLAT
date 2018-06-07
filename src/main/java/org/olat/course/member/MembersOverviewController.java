@@ -21,6 +21,7 @@ package org.olat.course.member;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -432,7 +433,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_ALL_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(true, true, true, true, true, false, true);
+			SearchMembersParams searchParams = new SearchMembersParams(true, GroupRoles.owner, GroupRoles.coach, GroupRoles.participant);
 			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, null);
 			listenTo(allMemberListCtrl);
 		}
@@ -449,7 +450,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_OWNERS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(true, false, false, false, false, false, false);
+			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.owner);
 			String infos = translate("owners.infos");
 			ownersCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(ownersCtrl);
@@ -467,7 +468,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_TUTORS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(false, true, false, true, false, false, false);
+			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.coach);
 			String infos = translate("tutors.infos");
 			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(tutorsCtrl);
@@ -485,7 +486,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_PARTICIPANTS_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(false, false, true, false, true, false, true);
+			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.participant);
 			String infos = translate("participants.infos");
 			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(participantsCtrl);
@@ -503,7 +504,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_WAITING_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			SearchMembersParams searchParams = new SearchMembersParams(false, false, false, false, false, true, false);
+			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.waiting);
 			String infos = translate("waiting.infos");
 			waitingCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(waitingCtrl);

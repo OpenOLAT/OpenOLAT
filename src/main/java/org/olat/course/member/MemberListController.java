@@ -27,7 +27,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
-import org.olat.group.ui.main.MemberView;
+import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 
@@ -54,7 +54,7 @@ public class MemberListController extends AbstractMemberListController {
 	}
 
 	@Override
-	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberRow member) {
 		removeAsListenerAndDispose(identityAssessmentController);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());

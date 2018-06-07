@@ -21,6 +21,7 @@ package org.olat.group.ui.edit;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -97,7 +98,7 @@ public class BusinessGroupMembersController extends BasicController {
 		configForm.setMembershipConfiguration(businessGroup);
 		mainVC.put("configMembers", configForm.getInitialComponent());
 		
-		SearchMembersParams searchParams = new SearchMembersParams(false, false, false, true, true, true, true);
+		SearchMembersParams searchParams = new SearchMembersParams(true, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting);
 		membersController = new MemberListController(ureq, getWindowControl(), toolbarPanel, businessGroup, searchParams);
 		listenTo(membersController);
 		

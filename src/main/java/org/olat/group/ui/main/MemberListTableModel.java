@@ -33,7 +33,7 @@ import org.olat.instantMessaging.model.Presence;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView> implements SortableFlexiTableDataModel<MemberView> {
+public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow> {
 	
 	private final boolean onlineStatusEnabled;
 	
@@ -45,22 +45,22 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView>
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<MemberView> views = new MemberListTableSort(orderBy, this, null).sort();
+			List<MemberRow> views = new MemberListTableSort(orderBy, this, null).sort();
 			super.setObjects(views);
 		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		MemberView member = getObject(row);
+		MemberRow member = getObject(row);
 		return getValueAt(member, col);
 	}
 
 	@Override
-	public Object getValueAt(MemberView row, int col) {
+	public Object getValueAt(MemberRow row, int col) {
 		if(col >= 0 && col < Cols.values().length) {
 			switch(Cols.values()[col]) {
-				case username: return row.getIdentityName();
+				case username: return row.getView().getIdentityName();
 				case firstTime: return row.getFirstTime();
 				case lastTime: return row.getLastTime();
 				case role: return row.getMembership();
@@ -95,7 +95,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView>
 		}
 		
 		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
-		return row.getIdentityProp(propPos);
+		return row.getView().getIdentityProp(propPos);
 	}
 
 	@Override

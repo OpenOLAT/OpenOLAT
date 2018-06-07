@@ -20,14 +20,11 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,9 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -77,7 +72,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -88,11 +82,12 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
-import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -104,11 +99,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
-import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -161,6 +152,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private final boolean globallyManaged;
 	
 	@Autowired
+	private MemberViewQueries memberQueries;
+	@Autowired
 	protected UserManager userManager;
 	@Autowired
 	protected BaseSecurity securityManager;
@@ -176,8 +169,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private UserCourseInformationsManager userInfosMgr;
 	@Autowired
 	private BusinessGroupModule groupModule;
-	@Autowired
-	private ACService acService;
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
@@ -349,7 +340,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				MemberView row = memberListModel.getObject(se.getIndex());
+				MemberRow row = memberListModel.getObject(se.getIndex());
 				if(TABLE_ACTION_IM.equals(cmd)) {
 					doIm(ureq, row);
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
@@ -370,38 +361,38 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			}
 		} else if(editButton == source) {
-			List<MemberView> selectedItems = getMultiSelectedRows();
+			List<MemberRow> selectedItems = getMultiSelectedRows();
 			openEdit(ureq, selectedItems);
 		} else if(mailButton == source) {
-			List<MemberView> selectedItems = getMultiSelectedRows();
+			List<MemberRow> selectedItems = getMultiSelectedRows();
 			doSendMail(ureq, selectedItems);
 		} else if(removeButton == source) {
-			List<MemberView> selectedItems = getMultiSelectedRows();
+			List<MemberRow> selectedItems = getMultiSelectedRows();
 			confirmDelete(ureq, selectedItems);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
-				MemberView row = (MemberView)link.getUserObject();
+				MemberRow row = (MemberRow)link.getUserObject();
 				doOpenTools(ureq, row, link);
 			} else if("im".equals(cmd)) {
-				MemberView row = (MemberView)link.getUserObject();
+				MemberRow row = (MemberRow)link.getUserObject();
 				doIm(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private List<MemberView> getMultiSelectedRows() {
+	private List<MemberRow> getMultiSelectedRows() {
 		Set<Integer> selections = membersTable.getMultiSelectedIndex();
-		List<MemberView> rows = new ArrayList<>(selections.size());
+		List<MemberRow> rows = new ArrayList<>(selections.size());
 		if(selections.isEmpty()) {
 			//do nothing
 		} else {
 			for(Integer i:selections) {
 				int index = i.intValue();
 				if(index >= 0 && index < memberListModel.getRowCount()) {
-					MemberView row = memberListModel.getObject(index);
+					MemberRow row = memberListModel.getObject(index);
 					if(row != null) {
 						rows.add(row);
 					}
@@ -476,7 +467,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		editSingleMemberCtrl = null;
 	}
 	
-	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
+	protected void confirmDelete(UserRequest ureq, List<MemberRow> members) {
 		if(members.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {
@@ -485,8 +476,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 					: repositoryService.countMembers(repoEntry, GroupRoles.owner.name());
 			
 			int numOfRemovedOwner = 0;
-			List<Long> identityKeys = new ArrayList<Long>();
-			for(MemberView member:members) {
+			List<Long> identityKeys = new ArrayList<>();
+			for(MemberRow member:members) {
 				identityKeys.add(member.getIdentityKey());
 				if(member.getMembership().isOwner()) {
 					numOfRemovedOwner++;
@@ -507,7 +498,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 	}
 	
-	protected void openEdit(UserRequest ureq, MemberView member) {
+	protected void openEdit(UserRequest ureq, MemberRow member) {
 		if(editSingleMemberCtrl != null) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
@@ -519,7 +510,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		listenTo(cmc);
 	}
 	
-	protected void openEdit(UserRequest ureq, List<MemberView> members) {
+	protected void openEdit(UserRequest ureq, List<MemberRow> members) {
 		if(members.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {
@@ -542,16 +533,22 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected void doSearch(String search) {
-		getSearchParams().setSearchString(search);
+		Map<String,String> propertiesSearch = new HashMap<>();
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			propertiesSearch.put(handler.getName(), search);
+		}
+		getSearchParams().setUserPropertiesSearch(propertiesSearch);
+		getSearchParams().setLogin(search);
 		reloadModel();
 	}
 	
 	protected void doResetSearch() {
-		getSearchParams().setSearchString(null);
+		getSearchParams().setLogin(null);
+		getSearchParams().setUserPropertiesSearch(null);
 		reloadModel();
 	}
 	
-	private void doOpenTools(UserRequest ureq, MemberView row, FormLink link) {
+	private void doOpenTools(UserRequest ureq, MemberRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
@@ -569,7 +566,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	 * @param ureq
 	 * @param member
 	 */
-	protected void doIm(UserRequest ureq, MemberView member) {
+	protected void doIm(UserRequest ureq, MemberRow member) {
 		Buddy buddy = imService.getBuddyById(member.getIdentityKey());
 		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
@@ -634,7 +631,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		reloadModel();
 	}
 	
-	protected void doSendMail(UserRequest ureq, List<MemberView> members) {
+	protected void doSendMail(UserRequest ureq, List<MemberRow> members) {
 		List<Long> identityKeys = getMemberKeys(members);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
 		if(identities.isEmpty()) {
@@ -657,7 +654,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		listenTo(cmc);
 	}
 	
-	protected void doGraduate(List<MemberView> members) {
+	protected void doGraduate(List<MemberRow> members) {
 		if(businessGroup != null) {
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identitiesToGraduate = securityManager.loadIdentityByKeys(identityKeys);
@@ -666,7 +663,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		} else {
 			Map<Long, BusinessGroup> groupsMap = new HashMap<>();
 			Map<BusinessGroup, List<Identity>> graduatesMap = new HashMap<>();
-			for(MemberView member:members) {
+			for(MemberRow member:members) {
 				List<BusinessGroupShort> groups = member.getGroups();
 				if(groups != null && groups.size() > 0) {
 					Identity memberIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
@@ -699,7 +696,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		reloadModel();
 	}
 	
-	protected void doOpenVisitingCard(UserRequest ureq, MemberView member) {
+	protected void doOpenVisitingCard(UserRequest ureq, MemberRow member) {
 		removeAsListenerAndDispose(visitingCardCtrl);
 		Identity choosenIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
 		visitingCardCtrl = new UserInfoMainController(ureq, getWindowControl(), choosenIdentity, false, false);
@@ -709,7 +706,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		toolbarPanel.pushController(fullname, visitingCardCtrl);
 	}
 	
-	protected void doOpenContact(UserRequest ureq, MemberView member) {
+	protected void doOpenContact(UserRequest ureq, MemberRow member) {
 		removeAsListenerAndDispose(contactCtrl);
 		
 		Identity choosenIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
@@ -728,12 +725,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		toolbarPanel.pushController(fullname, contactCtrl);
 	}
 	
-	protected abstract void doOpenAssessmentTool(UserRequest ureq, MemberView member);
+	protected abstract void doOpenAssessmentTool(UserRequest ureq, MemberRow member);
 	
-	protected List<Long> getMemberKeys(List<MemberView> members) {
+	protected List<Long> getMemberKeys(List<MemberRow> members) {
 		List<Long> keys = new ArrayList<Long>(members.size());
 		if(members != null && !members.isEmpty()) {
-			for(MemberView member:members) {
+			for(MemberRow member:members) {
 				keys.add(member.getIdentityKey());
 			}
 		}
@@ -746,101 +743,36 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		updateTableModel(getSearchParams());
 	}
 
-	protected List<MemberView> updateTableModel(SearchMembersParams params) {
-		//course membership
-		boolean managedMembersRepo = 
-				RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
-		
-		List<RepositoryEntryMembership> repoMemberships =
-				repoEntry == null ? Collections.<RepositoryEntryMembership>emptyList()
-				: repositoryManager.getRepositoryEntryMembership(repoEntry);
-
-		//groups membership
-		List<BusinessGroup> groups = 
-				repoEntry == null ? Collections.singletonList(businessGroup)
-				: businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
-				
-		List<Long> groupKeys = new ArrayList<Long>();
-		Map<Long,BusinessGroupShort> keyToGroupMap = new HashMap<>();
-		for(BusinessGroup group:groups) {
-			groupKeys.add(group.getKey());
-			keyToGroupMap.put(group.getKey(), group);
+	protected List<MemberRow> updateTableModel(SearchMembersParams params) {
+		List<MemberView> memberViews;
+		if(repoEntry != null) {
+			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, userPropertyHandlers, getLocale());
+		} else if(businessGroup != null) {
+			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params, userPropertyHandlers, getLocale());
+		} else {
+			memberViews = Collections.emptyList();
 		}
 
-		List<BusinessGroupMembership> memberships = groups.isEmpty() ? Collections.<BusinessGroupMembership>emptyList() :
-			businessGroupService.getBusinessGroupsMembership(groups);
-
-		//get identities
-		Set<Long> identityKeys = new HashSet<>();
-		for(RepositoryEntryMembership membership: repoMemberships) {
-			identityKeys.add(membership.getIdentityKey());
-		}
-		for(BusinessGroupMembership membership:memberships) {
-			identityKeys.add(membership.getIdentityKey());
-		}
-		
-		List<Identity> identities;
-		if(identityKeys.isEmpty()) {
-			identities = new ArrayList<>(0);
-		} else  {
-			identities = filterIdentities(params, identityKeys);
-		}
-
-		Map<Long,MemberView> keyToMemberMap = new HashMap<>();
-		List<MemberView> memberList = new ArrayList<>();
-		Locale locale = getLocale();
-
-		//reservations
-		if(params.isPending()) {
-			List<OLATResource> resourcesForReservations = new ArrayList<>();
-			if(repoEntry != null) {
-				resourcesForReservations.add(repoEntry.getOlatResource());
-			}
-			for(BusinessGroup group:groups) {
-				resourcesForReservations.add(group.getResource());
-			}
-			List<ResourceReservation> reservations = acService.getReservations(resourcesForReservations);
-			List<Long> pendingIdentityKeys = new ArrayList<>(reservations.size());
-			for(ResourceReservation reservation:reservations) {
-				pendingIdentityKeys.add(reservation.getIdentity().getKey());
-			}
-			
-			if(StringHelper.containsNonWhitespace(params.getSearchString())
-					|| StringHelper.containsNonWhitespace(params.getLogin())
-					|| (params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty())) {
-				
-				List<Identity> pendingIdentities = filterIdentities(params, pendingIdentityKeys);
-				pendingIdentityKeys.retainAll(PersistenceHelper.toKeys(pendingIdentities));
-			}
-			
-			for(ResourceReservation reservation:reservations) {
-				Identity identity = reservation.getIdentity();
-				if(pendingIdentityKeys.contains(identity.getKey())) {
-					MemberView member = new MemberView(identity, userPropertyHandlers, locale);
-					member.getMembership().setPending(true);
-					memberList.add(member);
-					forgeLinks(member);
-					keyToMemberMap.put(identity.getKey(), member);
-				}
-			}
-		}
+		Map<Long,MemberRow> keyToMemberMap = new HashMap<>();
+		List<MemberRow> memberList = new ArrayList<>();
 		
 		Long me = getIdentity().getKey();
 		Set<Long> loadStatus = new HashSet<>();
-		for(Identity identity:identities) {
-			MemberView member = new MemberView(identity, userPropertyHandlers, locale);
+		for(MemberView memberView:memberViews) {
+			Long identityKey = memberView.getIdentityKey();
+			MemberRow member = new MemberRow(memberView);
 			if(chatEnabled) {
-				if(identity.getKey().equals(me)) {
+				if(identityKey.equals(me)) {
 					member.setOnlineStatus("me");
-				} else if(sessionManager.isOnline(identity.getKey())) {
-					loadStatus.add(identity.getKey());
+				} else if(sessionManager.isOnline(identityKey)) {
+					loadStatus.add(identityKey);
 				} else {
 					member.setOnlineStatus(Presence.unavailable.name());
 				}
 			}
 			memberList.add(member);
 			forgeLinks(member);
-			keyToMemberMap.put(identity.getKey(), member);
+			keyToMemberMap.put(identityKey, member);
 		}
 		
 		if(loadStatus.size() > 0) {
@@ -848,7 +780,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
 				String status = statusMap.get(toLoad);
-				MemberView member = keyToMemberMap.get(toLoad);
+				MemberRow member = keyToMemberMap.get(toLoad);
 				if(status == null) {
 					member.setOnlineStatus(Presence.available.name());	
 				} else {
@@ -856,105 +788,26 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			}
 		}
-
-		for(BusinessGroupMembership membership:memberships) {
-			Long identityKey = membership.getIdentityKey();
-			MemberView memberView = keyToMemberMap.get(identityKey);
-			if(memberView != null) {
-				memberView.setFirstTime(membership.getCreationDate());
-				memberView.setLastTime(membership.getLastModified());
-				if(membership.isOwner()) {
-					memberView.getMembership().setGroupTutor(true);
-				}
-				if(membership.isParticipant()) {
-					memberView.getMembership().setGroupParticipant(true);
-				}
-				if(membership.isWaiting()) {
-					memberView.getMembership().setGroupWaiting(true);
-				}
-				
-				Long groupKey = membership.getGroupKey();
-				BusinessGroupShort group = keyToGroupMap.get(groupKey);
-				memberView.addGroup(group);
-			}
-		}
 		
-		for(RepositoryEntryMembership membership:repoMemberships) {
-			Long identityKey = membership.getIdentityKey();
-			MemberView memberView = keyToMemberMap.get(identityKey);
-			if(memberView != null) {
-				memberView.setFirstTime(membership.getCreationDate());
-				memberView.setLastTime(membership.getLastModified());
-				memberView.getMembership().setManagedMembersRepo(managedMembersRepo);
-				if(membership.isOwner()) {
-					memberView.getMembership().setRepoOwner(true);
-				}
-				if(membership.isCoach()) {
-					memberView.getMembership().setRepoTutor(true);
-				}
-				if(membership.isParticipant()) {
-					memberView.getMembership().setRepoParticipant(true);
-				}
-			}
-		}
-		
-		if(repoEntry != null) {
+		if(repoEntry != null && isLastVisitVisible) {
 			Map<Long,Date> lastLaunchDates = userInfosMgr.getRecentLaunchDates(repoEntry.getOlatResource());
-			for(MemberView memberView:keyToMemberMap.values()) {
-				Long identityKey = memberView.getIdentityKey();
+			for(MemberRow memberView:keyToMemberMap.values()) {
+				Long identityKey = memberView.getView().getIdentityKey();
 				Date date = lastLaunchDates.get(identityKey);
 				memberView.setLastTime(date);
 			}
 		}
 		
 		//the order of the filter is important
-		filterByRoles(memberList, params);
-		filterByOrigin(memberList, params);
+		//filterByRoles(memberList, params);
+		//filterByOrigin(memberList, params);
 		
 		memberListModel.setObjects(memberList);
 		membersTable.reset(true, true, true);
 		return memberList;
 	}
 	
-	private List<Identity> filterIdentities(SearchMembersParams params, Collection<Long> identityKeys) {
-		SearchIdentityParams idParams = new SearchIdentityParams();
-		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
-			String searchString = params.getSearchString();
-			
-			Map<String,String> propertiesSearch = new HashMap<>();
-			for(UserPropertyHandler handler:userPropertyHandlers) {
-				propertiesSearch.put(handler.getName(), searchString);
-			}
-			idParams.setLogin(searchString);
-			idParams.setUserProperties(propertiesSearch);
-		} else {
-			if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
-				idParams.setUserProperties(params.getUserPropertiesSearch());
-			}
-			if(StringHelper.containsNonWhitespace(params.getLogin())) {
-				idParams.setLogin(params.getLogin());
-			}
-		}
-		
-		List<Long> identityKeyList = new ArrayList<>(identityKeys);
-		List<Identity> identities = new ArrayList<>(identityKeyList.size());
-
-		int count = 0;
-		int batch = 500;
-		do {
-			int toIndex = Math.min(count + batch, identityKeyList.size());
-			List<Long> toLoad = identityKeyList.subList(count, toIndex);
-			idParams.setIdentityKeys(toLoad);
-
-			List<Identity> batchOfIdentities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
-			identities.addAll(batchOfIdentities);
-			count += batch;
-		} while(count < identityKeyList.size());
-		
-		return identities;
-	}
-	
-	protected void forgeLinks(MemberView row) {
+	protected void forgeLinks(MemberRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		toolsLink.setUserObject(row);
@@ -964,95 +817,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
-	}
-	
-	private void filterByOrigin(List<MemberView> memberList, SearchMembersParams params) {
-		if(params.isGroupOrigin() && params.isRepoOrigin()) {
-			//do nothing not very useful :-)
-		} else if(params.isGroupOrigin()) {
-			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
-				CourseMembership m = it.next().getMembership();
-				if(!m.isGroupTutor() && !m.isGroupParticipant() && !m.isGroupWaiting()) {
-					it.remove();
-				}
-			}
-		} else if(params.isRepoOrigin()) {
-			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
-				CourseMembership m = it.next().getMembership();
-				if(!m.isRepoOwner() && !m.isRepoTutor() && !m.isRepoParticipant()) {
-					it.remove();
-				}
-			}
-		}
-	}
-	
-	/**
-	 * This filter method preserve the multiple roles of a member. If we want only the waiting list but
-	 * a member is in the waiting list and owner of the course, we want it to know.
-	 * @param memberList
-	 * @param params
-	 * @return
-	 */
-	private void filterByRoles(List<MemberView> memberList, SearchMembersParams params) {
-		List<MemberView> members = new ArrayList<MemberView>(memberList);
-
-		if(params.isRepoOwners()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isRepoOwner()) {
-					it.remove();
-				}
-			}
-		}
-		
-		if(params.isRepoTutors()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isRepoTutor()) {
-					it.remove();
-				}
-			}
-		}
-		
-		if(params.isRepoParticipants()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isRepoParticipant()) {
-					it.remove();
-				}
-			}
-		}
-		
-		if(params.isGroupTutors()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isGroupTutor()) {
-					it.remove();
-				}
-			}
-		}
-		
-		if(params.isGroupParticipants()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isGroupParticipant()) {
-					it.remove();
-				}
-			}
-		}
-		
-		if(params.isGroupWaitingList()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isGroupWaiting()) {
-					it.remove();
-				}
-			}
-		}
-		
-		if(params.isPending()) {
-			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().getMembership().isPending()) {
-					it.remove();
-				}
-			}
-		}
-		
-		memberList.removeAll(members);
 	}
 	
 	private class MailConfirmation {
@@ -1075,11 +839,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	private class ToolsController extends BasicController {
 		
-		private final MemberView row;
+		private final MemberRow row;
 		
 		private final VelocityContainer mainVC;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, MemberView row) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, MemberRow row) {
 			super(ureq, wControl);
 			this.row = row;
 			
@@ -1095,15 +859,16 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			
 			links.add("-");
 			
-			if(row.getMembership().isGroupWaiting() && !readOnly) {
+			if(row.getMembership().isBusinessGroupWaiting() && !readOnly) {
 				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon_graduate", links);
 			}
 
-			if(!readOnly) {
+			if(!readOnly && (row.getMembership().isRepositoryEntryMember() || row.getMembership().isBusinessGroupMember())) {
 				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
 			}
 			
-			if(!globallyManaged || overrideManaged) {
+			if((!globallyManaged || overrideManaged)
+					&& (row.getMembership().isRepositoryEntryMember() || row.getMembership().isBusinessGroupMember())) {
 				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon_remove", links);
 			}
 

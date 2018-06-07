@@ -35,14 +35,14 @@ import org.olat.group.ui.main.MemberListTableModel.Cols;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MemberListTableSort extends SortableFlexiTableModelDelegate<MemberView> {
+public class MemberListTableSort extends SortableFlexiTableModelDelegate<MemberRow> {
 
-	public MemberListTableSort(SortKey orderBy, SortableFlexiTableDataModel<MemberView> tableModel, Locale locale) {
+	public MemberListTableSort(SortKey orderBy, SortableFlexiTableDataModel<MemberRow> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
 
 	@Override
-	protected void sort(List<MemberView> rows) {
+	protected void sort(List<MemberRow> rows) {
 		int columnIndex = getColumnIndex();
 		if(columnIndex >= AbstractMemberListController.USER_PROPS_OFFSET) {
 			super.sort(rows);
@@ -62,12 +62,12 @@ public class MemberListTableSort extends SortableFlexiTableModelDelegate<MemberV
 		}
 	}
 
-	private static class RoleMemberViewComparator implements Comparator<MemberView> {
+	private static class RoleMemberViewComparator implements Comparator<MemberRow> {
 		
 		private final CourseMembershipComparator comparator = new CourseMembershipComparator();
 
 		@Override
-		public int compare(MemberView o1, MemberView o2) {
+		public int compare(MemberRow o1, MemberRow o2) {
 			return comparator.compare(o1.getMembership(), o2.getMembership());
 		}
 	}

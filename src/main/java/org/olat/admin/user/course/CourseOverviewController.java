@@ -233,14 +233,14 @@ public class CourseOverviewController extends BasicController  {
 			}
 			
 			//add the roles
-			if(!memberView.getMembership().isRepoOwner()) {
-				memberView.getMembership().setRepoOwner(membership.isOwner());
+			if(!memberView.getMembership().isRepositoryEntryOwner()) {
+				memberView.getMembership().setRepositoryEntryOwner(membership.isOwner());
 			}
-			if(!memberView.getMembership().isRepoTutor()) {
-				memberView.getMembership().setRepoTutor(membership.isCoach());
+			if(!memberView.getMembership().isRepositoryEntryCoach()) {
+				memberView.getMembership().setRepositoryEntryCoach(membership.isCoach());
 			}
-			if(!memberView.getMembership().isRepoParticipant()) {
-				memberView.getMembership().setRepoParticipant(membership.isParticipant());
+			if(!memberView.getMembership().isRepositoryEntryParticipant()) {
+				memberView.getMembership().setRepositoryEntryParticipant(membership.isParticipant());
 			}
 		}
 
@@ -279,9 +279,9 @@ public class CourseOverviewController extends BasicController  {
 					memberView.setLastTime(membership.getLastModified());
 				}
 				switch(membership.getMembership()) {
-					case owner: memberView.getMembership().setGroupTutor(true); break;
-					case participant: memberView.getMembership().setGroupParticipant(true); break;
-					case waiting: memberView.getMembership().setGroupWaiting(true); break;
+					case owner: memberView.getMembership().setBusinessGroupCoach(true); break;
+					case participant: memberView.getMembership().setBusinessGroupParticipant(true); break;
+					case waiting: memberView.getMembership().setBusinessGroupWaiting(true); break;
 				}
 			}
 		}
@@ -514,7 +514,7 @@ public class CourseOverviewController extends BasicController  {
 			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(view.getRepoKey());	
 			if(!RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement)) {
 				repoEntryToLeave.add(re);
-				if(view.getMembership().isRepoOwner()) {
+				if(view.getMembership().isRepositoryEntryOwner()) {
 					int numOfOwners = repositoryService.countMembers(re, GroupRoles.owner.name());
 					if(numOfOwners == 1) {
 						showError("error.atleastone", view.getDisplayName());
@@ -589,7 +589,7 @@ public class CourseOverviewController extends BasicController  {
 		for(CourseMemberView view:tableDataModel.getObjects()) {
 			if(repoEntry.getKey().equals(view.getRepoKey())) {
 				CourseMembership membership = view.getMembership();
-				return membership.isRepoOwner() || membership.isRepoTutor() || membership.isRepoParticipant();
+				return membership.isRepositoryEntryOwner() || membership.isRepositoryEntryCoach() || membership.isRepositoryEntryParticipant();
 			}
 		}
 		return false;
@@ -758,7 +758,7 @@ public class CourseOverviewController extends BasicController  {
 		
 		public boolean isFullyManaged() {
 			if(membership != null && !membership.isManagedMembersRepo() &&
-					(membership.isRepoOwner() || membership.isRepoTutor() || membership.isRepoParticipant())) {
+					(membership.isRepositoryEntryOwner() || membership.isRepositoryEntryCoach() || membership.isRepositoryEntryParticipant())) {
 				return false;
 			}
 
@@ -769,6 +769,8 @@ public class CourseOverviewController extends BasicController  {
 					}
 				}
 			}
+			
+			
 			return true;
 		}
 	}
@@ -780,27 +782,27 @@ public class CourseOverviewController extends BasicController  {
 				CourseMemberView membership = (CourseMemberView)val;
 				
 				boolean and = false;
-				if(membership.getMembership().isRepoOwner()) {
+				if(membership.getMembership().isRepositoryEntryOwner()) {
 					and = and(sb, and);
 					sb.append(translate("role.repo.owner"));
 				}
-				if(membership.getMembership().isRepoTutor()) {
+				if(membership.getMembership().isRepositoryEntryCoach()) {
 					and = and(sb, and);
 					sb.append(translate("role.repo.tutor"));
 				}
-				if(membership.getMembership().isRepoParticipant()) {
+				if(membership.getMembership().isRepositoryEntryParticipant()) {
 					and = and(sb, and);
 					sb.append(translate("role.repo.participant"));
 				}
-				if(membership.getMembership().isGroupTutor()) {
+				if(membership.getMembership().isBusinessGroupCoach()) {
 					and = and(sb, and);
 					sb.append(translate("role.group.tutor"));
 				}
-				if(membership.getMembership().isGroupParticipant()) {
+				if(membership.getMembership().isBusinessGroupParticipant()) {
 					and = and(sb, and);
 					sb.append(translate("role.group.participant"));
 				}
-				if(membership.getMembership().isGroupWaiting()) {
+				if(membership.getMembership().isBusinessGroupWaiting()) {
 					and = and(sb, and);
 					sb.append(translate("role.group.waiting"));
 				}

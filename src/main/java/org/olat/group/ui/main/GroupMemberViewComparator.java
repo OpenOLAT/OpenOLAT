@@ -32,7 +32,7 @@ import org.olat.group.BusinessGroupShort;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GroupMemberViewComparator implements Comparator<MemberView> {
+public class GroupMemberViewComparator implements Comparator<MemberRow> {
 	
 	private Collator collator;
 	
@@ -41,7 +41,7 @@ public class GroupMemberViewComparator implements Comparator<MemberView> {
 	}
 
 	@Override
-	public int compare(MemberView m1, MemberView m2) {
+	public int compare(MemberRow m1, MemberRow m2) {
 		List<BusinessGroupShort> g1 = m1.getGroups();
 		List<BusinessGroupShort> g2 = m2.getGroups();
 		
