@@ -37,8 +37,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,12 +48,17 @@ import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -64,6 +67,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(OrganisationsWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -83,8 +88,7 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<OrganisationVO> organisationVoes = parseOrganisationArray(body);
+		List<OrganisationVO> organisationVoes = parseOrganisationArray(response.getEntity());
 		
 		boolean found = false;
 		for(OrganisationVO organisationVo:organisationVoes) {
@@ -424,12 +428,12 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	protected List<OrganisationVO> parseOrganisationArray(InputStream body) {
-		try {
+	protected List<OrganisationVO> parseOrganisationArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<OrganisationVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<OrganisationVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

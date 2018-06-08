@@ -84,7 +84,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	}
 	
 	@Before
-	public void printBanner(){
+	public void printBanner() {
 		log.info("Method run: " + currentTestName.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
 		
 		if(started) {

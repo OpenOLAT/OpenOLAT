@@ -33,14 +33,13 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,6 +52,9 @@ import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementTypeVO;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -80,8 +82,7 @@ public class CurriculumElementTypesWebServiceTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CurriculumElementTypeVO> typeVoes = parseCurriculumElementTypeArray(body);
+		List<CurriculumElementTypeVO> typeVoes = parseCurriculumElementTypeArray(response.getEntity());
 		
 		CurriculumElementTypeVO foundVo = null;
 		for(CurriculumElementTypeVO typeVo:typeVoes) {
@@ -275,7 +276,7 @@ public class CurriculumElementTypesWebServiceTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<CurriculumElementTypeVO> typeVoList = parseCurriculumElementTypeArray(response.getEntity().getContent());
+		List<CurriculumElementTypeVO> typeVoList = parseCurriculumElementTypeArray(response.getEntity());
 		Assert.assertNotNull(typeVoList);
 		Assert.assertEquals(2, typeVoList.size());
 		
@@ -375,10 +376,10 @@ public class CurriculumElementTypesWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertTrue(found3);
 	}
 
-	protected List<CurriculumElementTypeVO> parseCurriculumElementTypeArray(InputStream body) {
-		try {
+	protected List<CurriculumElementTypeVO> parseCurriculumElementTypeArray(HttpEntity entity) {
+		try(InputStream in = entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<CurriculumElementTypeVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<CurriculumElementTypeVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

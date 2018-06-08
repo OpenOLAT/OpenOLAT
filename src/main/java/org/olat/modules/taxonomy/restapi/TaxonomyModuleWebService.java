@@ -34,6 +34,7 @@ import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -42,6 +43,7 @@ import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
  *
  */
 @Path("taxonomy")
+@Component
 public class TaxonomyModuleWebService {
 
 	

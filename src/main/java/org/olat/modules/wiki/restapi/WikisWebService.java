@@ -41,6 +41,7 @@ import org.olat.modules.wiki.restapi.vo.WikiVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -51,6 +52,7 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
  * 
  */
 @Path("repo/wikis")
+@Component
 public class WikisWebService {
 
 	/**

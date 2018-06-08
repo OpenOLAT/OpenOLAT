@@ -71,6 +71,7 @@ import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.FolderVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -81,6 +82,7 @@ import org.olat.restapi.support.vo.FolderVO;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("repo/courses/infos")
 public class CoursesInfosWebService {
 	

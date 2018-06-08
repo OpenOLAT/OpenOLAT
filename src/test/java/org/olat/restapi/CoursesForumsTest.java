@@ -76,7 +76,6 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");

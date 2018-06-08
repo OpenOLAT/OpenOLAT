@@ -403,7 +403,11 @@ public class RestApiLoginFilter implements Filter {
 			}
 			request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 			synchronized(uress) {
-				chain.doFilter(request, response);
+				try {
+					chain.doFilter(request, response);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		} else {
 			response.sendError(401);

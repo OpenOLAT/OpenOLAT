@@ -40,19 +40,21 @@ import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.ws.rs.core.UriBuilder;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.apache.http.HttpEntity;
 import org.junit.Before;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestApiLoginFilter;
-import org.olat.restapi.support.OlatRestApplication;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.LinkVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.WebApplicationContext;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.undertow.Undertow;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -86,44 +88,49 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	@Autowired
 	private RestModule restModule;
   
-	/**
-	 * @param arg0
-	 */
 	public OlatJerseyTestCase() {
 		super();
-		instantiateServer();
 	}
 	
 	/**
 	 * Instantiates the server
 	 */
-	private void instantiateServer() {
+	@Before
+	public void instantiateServer() {
 		if(webServer == null) {
 			try {
 				DeploymentInfo servletBuilder = deployment()
 				        .setClassLoader(OlatJerseyTestCase.class.getClassLoader())
 				        .setContextPath("/" + CONTEXT_PATH)
+				        
 				        .setDeploymentName("rest.war")
-				        .addServlets(
-				                servlet("REST Servlet",  com.sun.jersey.spi.container.servlet.ServletContainer.class)
-		        		        		.addInitParam("javax.ws.rs.Application", OlatRestApplication.class.getName())
-		        		        		.setMultipartConfig(new MultipartConfigElement((String)null))
-				                        .addMapping("/*"))
+				        .addServlets(servlet("CXF Servlet", org.apache.cxf.transport.servlet.CXFServlet.class)
+				        		.setMultipartConfig(new MultipartConfigElement((String)null))
+				        		.addMapping("/*")
+				        	)
 				        .addFilters(filter("REST security filter", RestApiLoginFilter.class))
 				        .addFilterUrlMapping("REST security filter", "/*", DispatcherType.REQUEST);
 
 				DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
 				manager.deploy();
+				manager.getDeployment()
+					.getServletContext()
+					.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
 
 				webServer = Undertow.builder()
 				        .addHttpListener(PORT, HOST)
 				        .setHandler(manager.start())
 				        .build();
-				webServer.start();
-				webServerStarted = true;
 			} catch (ServletException e) {
 				log.error("", e);
 			}
+		}
+		
+		restModule.setEnabled(true);
+		if(!webServerStarted) {
+			webServer.start();
+			webServerStarted = true;
+			log.info("Starting the Undertow...");
 		}
 	}
 	
@@ -135,42 +142,30 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 		return UriBuilder.fromUri(getBaseURI()).path(CONTEXT_PATH).build();
 	}
 	
-  @Before
-  public void setUp() throws Exception {
-  	//always enabled the REST API for testing
-	restModule.setEnabled(true);
-
-	if(!webServerStarted) {
-		log.info("Starting the Grizzly Web Container...");
-		webServer.start();
-		webServerStarted=true;
-	}
-  }
-	
-	protected List<ErrorVO> parseErrorArray(InputStream body) {
-		try {
+	protected List<ErrorVO> parseErrorArray(HttpEntity body) {
+		try(InputStream in=body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<ErrorVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<ErrorVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
-	protected List<LinkVO> parseLinkArray(InputStream body) {
-		try {
+	protected List<LinkVO> parseLinkArray(HttpEntity body) {
+		try(InputStream in = body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<LinkVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<LinkVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
-	protected List<FileVO> parseFileArray(InputStream body) {
-		try {
+	protected List<FileVO> parseFileArray(HttpEntity body) {
+		try(InputStream in = body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<FileVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<FileVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

@@ -75,7 +75,6 @@ public class CourseDBTest extends OlatJerseyTestCase {
 
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		// create course and persist as OLATResourceImpl
 		if(!initialized) {
 			auth = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");

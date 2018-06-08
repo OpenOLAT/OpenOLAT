@@ -42,14 +42,13 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,6 +65,9 @@ import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 /**
@@ -101,9 +103,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	 * @see org.olat.test.OlatJerseyTestCase#setUp()
 	 */
 	@Before
-	@Override
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		//create a course with learn group
 		
@@ -154,9 +154,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		List<GroupVO> vos = parseGroupArray(body);
+		List<GroupVO> vos = parseGroupArray(response.getEntity());
 		assertNotNull(vos);
 		assertEquals(4, vos.size());//g1, g2, g3, g4
 		
@@ -298,10 +296,10 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
 	
-	protected List<GroupVO> parseGroupArray(InputStream body) {
-		try {
+	protected List<GroupVO> parseGroupArray(HttpEntity body) {
+		try(InputStream in=body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<GroupVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<GroupVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

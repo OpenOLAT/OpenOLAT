@@ -40,14 +40,13 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -57,6 +56,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
@@ -72,6 +73,9 @@ import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * Description:<br>
@@ -82,6 +86,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class CatalogTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(CatalogTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -105,10 +111,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	private CatalogEntry entryToMove1, entryToMove2, subEntry13move;
 	
 	@Before
-	@Override
 	public void setUp() throws Exception {
-		super.setUp();
-
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-catalog-one");
 		JunitTestHelper.createAndPersistIdentityAsUser("rest-catalog-two");
 		admin = securityManager.findIdentityByName("administrator");
@@ -174,8 +177,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CatalogEntryVO> vos = parseEntryArray(body);
+		List<CatalogEntryVO> vos = parseEntryArray(response.getEntity());
 		assertNotNull(vos);
 		assertEquals(1, vos.size());//Root-1
 		
@@ -227,8 +229,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CatalogEntryVO> vos = parseEntryArray(body);
+		List<CatalogEntryVO> vos = parseEntryArray(response.getEntity());
 		assertNotNull(vos);
 		assertTrue(vos.size() >= 2);
 
@@ -546,8 +547,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<UserVO> voes = parseUserArray(body);
+		List<UserVO> voes = parseUserArray(response.getEntity());
 		assertNotNull(voes);
 		
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
@@ -663,22 +663,22 @@ public class CatalogTest extends OlatJerseyTestCase {
 		conn.shutdown();
 	}
 	
-	protected List<CatalogEntryVO> parseEntryArray(InputStream body) {
-		try {
+	protected List<CatalogEntryVO> parseEntryArray(HttpEntity body) {
+		try(InputStream in=body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<CatalogEntryVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<CatalogEntryVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
 	
-	protected List<UserVO> parseUserArray(InputStream body) {
-		try {
+	protected List<UserVO> parseUserArray(HttpEntity body) {
+		try(InputStream in=body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

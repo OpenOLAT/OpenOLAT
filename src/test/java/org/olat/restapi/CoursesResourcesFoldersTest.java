@@ -52,7 +52,8 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.util.FileUtils;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
@@ -64,6 +65,8 @@ import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(CoursesResourcesFoldersTest.class);
 
 	private static ICourse course1;
 	private static Identity admin;
@@ -75,7 +78,6 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");
@@ -106,13 +108,15 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix) throws IOException {
-		InputStream pageStream = CoursesElementsTest.class.getResourceAsStream(filename);
-		VFSLeaf item = container.createChildLeaf(prefix + filename);
-		OutputStream outStream = item.getOutputStream(false);
-		IOUtils.copy(pageStream, outStream);
-		FileUtils.closeSafely(pageStream);
-		FileUtils.closeSafely(outStream);
+	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix)
+	throws IOException {
+		VFSLeaf item = container.createChildLeaf(prefix + filename);	
+		try(InputStream pageStream = CoursesElementsTest.class.getResourceAsStream(filename);
+				OutputStream outStream = item.getOutputStream(false);) {
+			IOUtils.copy(pageStream, outStream);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 	
 	@Test
@@ -123,8 +127,7 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		InputStream body = response.getEntity().getContent();
-		List<LinkVO> links = parseLinkArray(body);
+		List<LinkVO> links = parseLinkArray(response.getEntity());
 		assertNotNull(links);
 		assertEquals(3, links.size());
 	}
@@ -137,8 +140,7 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		InputStream body = response.getEntity().getContent();
-		List<LinkVO> links = parseLinkArray(body);
+		List<LinkVO> links = parseLinkArray(response.getEntity());
 		assertNotNull(links);
 		assertEquals(1, links.size());
 		assertEquals("3_singlepage.html", links.get(0).getTitle());

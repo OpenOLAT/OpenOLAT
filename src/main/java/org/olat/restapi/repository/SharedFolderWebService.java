@@ -57,6 +57,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.LinkVO;
+import org.springframework.stereotype.Component;
 
 /**
  * Description:<br>
@@ -66,6 +67,7 @@ import org.olat.restapi.support.vo.LinkVO;
  * Initial Date:  5 may 2017 <br>
  * @author Stephan Clemenz, VCRP
  */
+@Component
 @Path("repo/sharedfolder")
 public class SharedFolderWebService {
 
@@ -126,12 +128,12 @@ public class SharedFolderWebService {
 	 * @param request The REST request
 	 * @return 
 	 */
-	@GET
+	/*@GET
 	@Path("{repoEntryKey}/{path:.*}")
 	public Response getSharedFiles(@PathParam("repoEntryKey") Long repoEntryKey, @PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(repoEntryKey, path, uriInfo, httpRequest, request);
-	}
+	}*/
 
 	/**
 	 * This retrieves the files in the shared folder and give full access to

@@ -22,6 +22,7 @@ package org.olat.restapi.support;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,13 +49,13 @@ public class MediaTypeVariants {
 	static {
 		Map<String, String> pagingSpec = new HashMap<>();
 		pagingSpec.put("pagingspec","1.0");
-		VARIANT_JSON = new Variant(APPLICATION_JSON, null, null);
+		VARIANT_JSON = new Variant(APPLICATION_JSON, (Locale)null, null);
 		APPLICATION_JSON_PAGED = new MediaType("application","json", pagingSpec);
-		VARIANT_JSON_PAGED = new Variant(APPLICATION_JSON_PAGED, null, null);
+		VARIANT_JSON_PAGED = new Variant(APPLICATION_JSON_PAGED, (Locale)null, null);
 
-		VARIANT_XML = new Variant(APPLICATION_XML, null, null);
+		VARIANT_XML = new Variant(APPLICATION_XML, (Locale)null, null);
 		APPLICATION_XML_PAGED = new MediaType("application","xml", pagingSpec);
-		VARIANT_XML_PAGED = new Variant(APPLICATION_XML_PAGED, null, null);
+		VARIANT_XML_PAGED = new Variant(APPLICATION_XML_PAGED, (Locale)null, null);
 		
 		variants.add(VARIANT_JSON);
 		variants.add(VARIANT_JSON_PAGED);

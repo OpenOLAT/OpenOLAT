@@ -67,6 +67,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.restapi.group.LearningGroupWebService;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -77,6 +78,7 @@ import org.olat.restapi.group.LearningGroupWebService;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
 

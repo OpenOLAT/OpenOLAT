@@ -51,6 +51,7 @@ import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -58,6 +59,7 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("curriculum")
 public class CurriculumsWebService {
 	
@@ -114,7 +116,7 @@ public class CurriculumsWebService {
 		return Response.ok(voes.toArray(new CurriculumVO[voes.size()])).build();
 	}
 	
-	@Path("types")
+
 	public CurriculumElementTypesWebService getCurriculumElementTypesWebService(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isOLATAdmin()) {

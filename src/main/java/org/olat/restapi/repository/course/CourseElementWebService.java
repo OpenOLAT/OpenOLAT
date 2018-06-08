@@ -81,6 +81,7 @@ import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.elements.SurveyConfigVO;
 import org.olat.restapi.support.vo.elements.TaskConfigVO;
 import org.olat.restapi.support.vo.elements.TestConfigVO;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -90,6 +91,7 @@ import org.olat.restapi.support.vo.elements.TestConfigVO;
  * 
  * @author cbuckley, srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/courses/{courseId}/elements")
 public class CourseElementWebService extends AbstractCourseNodeWebService {
 	private static final OLog log = Tracing.createLoggerFor(CourseElementWebService.class);

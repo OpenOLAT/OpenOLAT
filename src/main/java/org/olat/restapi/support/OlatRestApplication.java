@@ -25,8 +25,9 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
-import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 import org.olat.core.CoreSpringFactory;
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 /**
  * 

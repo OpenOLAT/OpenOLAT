@@ -102,9 +102,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Initial Date:  19.05.2009 <br>
  * @author patrickb, srosse, stephane.rosse@frentix.com
  */
-public class RepositoryEntryResource {
+public class RepositoryEntryWebService {
 
-  private static final OLog log = Tracing.createLoggerFor(RepositoryEntryResource.class);
+  private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebService.class);
 
   public static CacheControl cc = new CacheControl();
 
@@ -116,7 +116,7 @@ public class RepositoryEntryResource {
   private RepositoryService repositoryService;
   private BaseSecurity securityManager;
   
-  public RepositoryEntryResource(RepositoryManager repositoryManager, RepositoryService repositoryService, BaseSecurity securityManager) {
+  public RepositoryEntryWebService(RepositoryManager repositoryManager, RepositoryService repositoryService, BaseSecurity securityManager) {
   	this.repositoryManager = repositoryManager;
   	this.repositoryService = repositoryService;
   	this.securityManager = securityManager;

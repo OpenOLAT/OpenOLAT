@@ -39,6 +39,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.login.auth.OLATAuthManager;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -50,7 +51,8 @@ import org.olat.login.auth.OLATAuthManager;
  * @author srosse, stephane.rosse@frentix.com
  */
 @Path("auth")
-public class Authentication {
+@Component
+public class AuthenticationWebService {
 	
 	private static final String VERSION = "1.0";
 	

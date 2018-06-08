@@ -26,6 +26,7 @@ import javax.ws.rs.PathParam;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -34,6 +35,7 @@ import org.olat.core.util.resource.OresHelper;
  *
  */
 @Path("vitero")
+@Component
 public class ViteroWebService {
 	
 	@Path("{resourceName}/{resourceId}/{subIdentifier}")

@@ -65,6 +65,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.user.restapi.UserVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -74,6 +75,7 @@ import org.olat.user.restapi.UserVO;
  * Initial Date:  25 aug 2010 <br>
  * @author srosse, srosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("notifications")
 public class NotificationsWebService {
 

@@ -77,6 +77,7 @@ import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -87,6 +88,7 @@ import org.olat.user.restapi.UserVOFactory;
  * Initial Date:  23 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("groups")
 public class LearningGroupWebService {
 	

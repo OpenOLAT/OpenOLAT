@@ -55,6 +55,7 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -62,6 +63,7 @@ import org.olat.user.restapi.UserVOFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("qpool/items")
 public class QuestionPoolWebService {
 	

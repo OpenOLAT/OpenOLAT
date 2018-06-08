@@ -47,6 +47,7 @@ import org.olat.course.db.CourseDBEntry;
 import org.olat.course.db.CourseDBManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.KeyValuePair;
+import org.springframework.stereotype.Component;
 
 /**
  * Description:<br>
@@ -56,6 +57,7 @@ import org.olat.restapi.support.vo.KeyValuePair;
  * Initial Date:	 *7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/courses/{courseId}/db/{category}")
 public class CourseDbWebService {
 	

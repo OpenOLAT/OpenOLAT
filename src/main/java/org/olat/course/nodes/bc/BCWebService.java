@@ -74,6 +74,7 @@ import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -84,6 +85,7 @@ import org.olat.restapi.support.vo.FolderVOes;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("repo/courses/{courseId}/elements/folder")
 public class BCWebService extends AbstractCourseNodeWebService {
 	
@@ -242,7 +244,6 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@Path("{nodeId}")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
 	public Response updateFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,

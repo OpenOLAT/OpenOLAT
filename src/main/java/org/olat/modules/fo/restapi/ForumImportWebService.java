@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.manager.ForumManager;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -40,6 +41,7 @@ import org.olat.modules.fo.manager.ForumManager;
  * Initial Date:  26 aug. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("repo/forums")
 public class ForumImportWebService {
 	

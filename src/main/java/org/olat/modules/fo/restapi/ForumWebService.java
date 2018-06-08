@@ -61,6 +61,7 @@ import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -322,10 +323,12 @@ public class ForumWebService {
 	 */
 	@PUT
 	@Path("posts/{messageKey}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+		ServletUtil.printOutRequestHeaders(httpRequest);
 		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);
 	}
 	
@@ -348,8 +351,10 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, ReplyVO reply,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+		ServletUtil.printOutRequestHeaders(httpRequest);
 		return replyToPost(messageKey, reply, null, httpRequest, uriInfo);
 	}
+	
 		
 	private Response replyToPost(Long messageKey, ReplyVO reply, Long authorKey, HttpServletRequest httpRequest, UriInfo uriInfo) {
 		Identity identity = getIdentity(httpRequest);
@@ -581,13 +586,12 @@ public class ForumWebService {
 			attachment = container.createChildLeaf(filename);
 		}
 		
-		OutputStream out = attachment.getOutputStream(false);
-		try {
+
+		try(OutputStream out = attachment.getOutputStream(false)) {
 			IOUtils.copy(file, out);
 		} catch (IOException e) {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		} finally {
-			FileUtils.closeSafely(out);
 			FileUtils.closeSafely(file);
 		}
 		return Response.ok().build();

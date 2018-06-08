@@ -22,7 +22,6 @@ package org.olat.restapi;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -33,14 +32,13 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,6 +51,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.OrganisationTypeVO;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -80,8 +81,7 @@ public class OrganisationTypesWebServiceTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<OrganisationTypeVO> organisationTypeVoes = parseOrganisationTypeArray(body);
+		List<OrganisationTypeVO> organisationTypeVoes = parseOrganisationTypeArray(response.getEntity());
 		
 		boolean found = false;
 		for(OrganisationTypeVO organisationTypeVo:organisationTypeVoes) {
@@ -211,7 +211,7 @@ public class OrganisationTypesWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void updateOrganisationWithKey()
+	public void updateOrganisationTypeWithKey()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -275,7 +275,7 @@ public class OrganisationTypesWebServiceTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationTypeVO> typeVoList = parseOrganisationTypeArray(response.getEntity().getContent());
+		List<OrganisationTypeVO> typeVoList = parseOrganisationTypeArray(response.getEntity());
 		Assert.assertNotNull(typeVoList);
 		Assert.assertEquals(2, typeVoList.size());
 		
@@ -375,10 +375,10 @@ public class OrganisationTypesWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertTrue(found3);
 	}
 	
-	protected List<OrganisationTypeVO> parseOrganisationTypeArray(InputStream body) {
+	protected List<OrganisationTypeVO> parseOrganisationTypeArray(HttpEntity entity) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<OrganisationTypeVO>>(){/* */});
+			return mapper.readValue(entity.getContent(), new TypeReference<List<OrganisationTypeVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

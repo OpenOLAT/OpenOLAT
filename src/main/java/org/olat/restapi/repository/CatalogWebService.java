@@ -75,6 +75,7 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.UserManager;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Description:<br>
@@ -84,6 +85,7 @@ import org.olat.user.restapi.UserVOFactory;
  * Initial Date:  5 may 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("catalog")
 public class CatalogWebService {
 	
@@ -244,6 +246,7 @@ public class CatalogWebService {
 	 */
 	@PUT
 	@Path("{path:.*}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCatalogEntry(@PathParam("path") List<PathSegment> path,
 			@QueryParam("name") String name, @QueryParam("description") String description,
@@ -284,7 +287,8 @@ public class CatalogWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCatalogEntry(@PathParam("path") List<PathSegment> path, CatalogEntryVO entryVo,
-			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo)
+	throws WebApplicationException {
 		if(!isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -628,7 +632,8 @@ public class CatalogWebService {
 	@PUT
 	@Path("{path:.*}/owners/{identityKey}")
 	public Response addOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest httpRequest) {
+			@Context HttpServletRequest httpRequest)
+	throws WebApplicationException {
 		
 		Long key = getCatalogEntryKeyFromPath(path);
 		if(key == null) {

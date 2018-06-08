@@ -49,6 +49,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -56,6 +57,7 @@ import org.olat.core.id.Organisation;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("organisations")
 public class OrganisationsWebService {
 	

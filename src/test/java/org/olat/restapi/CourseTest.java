@@ -43,6 +43,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -50,8 +51,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -82,6 +81,9 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class CourseTest extends OlatJerseyTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(CourseTest.class);
@@ -106,7 +108,6 @@ public class CourseTest extends OlatJerseyTestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
@@ -330,11 +331,8 @@ public class CourseTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		assertNotNull(body);
-		
-		List<UserVO> authorVOs = parseUserArray(body);
-		assertNotNull(authorVOs);
+		List<UserVO> authorVOs = parseUserArray(response.getEntity());
+		Assert.assertNotNull(authorVOs);
 	}
 	
 	@Test
@@ -388,10 +386,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		Assert.assertNotNull(body);
-		
-		List<UserVO> tutorVOs = parseUserArray(body);
+		List<UserVO> tutorVOs = parseUserArray(response.getEntity());
 		Assert.assertNotNull(tutorVOs);
 		boolean found = false;
 		for(UserVO tutorVo:tutorVOs) {
@@ -486,10 +481,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		Assert.assertNotNull(body);
-		
-		List<UserVO> participantVOs = parseUserArray(body);
+		List<UserVO> participantVOs = parseUserArray(response.getEntity());
 		Assert.assertNotNull(participantVOs);
 		boolean found = false;
 		for(UserVO participantVo:participantVOs) {
@@ -666,12 +658,12 @@ public class CourseTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 	}
 	
-	protected List<UserVO> parseUserArray(InputStream body) {
-		try {
+	protected List<UserVO> parseUserArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

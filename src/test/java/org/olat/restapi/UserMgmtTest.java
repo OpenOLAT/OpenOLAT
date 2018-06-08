@@ -50,6 +50,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -57,8 +58,6 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +74,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -118,6 +119,9 @@ import org.olat.user.restapi.StatusVO;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * Description:<br>
@@ -128,6 +132,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class UserMgmtTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(UserMgmtTest.class);
 	
 	private static Identity owner1, id1, id2, id3;
 	private static BusinessGroup g1, g2, g3, g4;
@@ -158,9 +164,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	private DisplayPortraitManager portraitManager;
 	
 	@Before
-	@Override
 	public void setUp() throws Exception {
-		super.setUp();
 		if(setuped) return;
 		
 		//create identities
@@ -271,12 +275,11 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 						OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(demoBCCourseNode, demoCourse.getCourseEnvironment());
 						VFSItem example = container.resolve("singlepage.html");
 						if(example == null) {
-							try {
-								InputStream htmlUrl = UserMgmtTest.class.getResourceAsStream("singlepage.html");
+							try(InputStream htmlUrl = UserMgmtTest.class.getResourceAsStream("singlepage.html")) {
 								VFSLeaf htmlLeaf = container.createChildLeaf("singlepage.html");
 								IOUtils.copy(htmlUrl, htmlLeaf.getOutputStream(false));
 							} catch (IOException e) {
-								e.printStackTrace();
+								log.error("", e);
 							}
 						}
 					}
@@ -298,8 +301,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<UserVO> vos = parseUserArray(body);
+		List<UserVO> vos = parseUserArray(response.getEntity());
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
 		int voSize = vos.size();
@@ -323,8 +325,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<UserVO> vos = parseUserArray(body);
+		List<UserVO> vos = parseUserArray(response.getEntity());
 		
 		String[] authProviders = new String[]{"OLAT"};
 		List<Identity> identities = securityManager
@@ -357,7 +358,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<UserVO> vos = parseUserArray(response.getEntity().getContent());
+		List<UserVO> vos = parseUserArray(response.getEntity());
 
 		assertNotNull(vos);
 		assertEquals(1, vos.size());
@@ -378,8 +379,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		method.addHeader("Accept-Language", "en");
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<UserVO> vos = parseUserArray(body);
+		List<UserVO> vos = parseUserArray(response.getEntity());
 	
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
@@ -397,9 +397,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		List<UserVO> vos = parseUserArray(body);
+		List<UserVO> vos = parseUserArray(response.getEntity());
 	
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
@@ -461,7 +459,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<ManagedUserVO> managedUsers = parseManagedUserArray(response.getEntity().getContent());
+		List<ManagedUserVO> managedUsers = parseManagedUserArray(response.getEntity());
 
 		boolean found = false;
 		for(ManagedUserVO managedUser:managedUsers) {
@@ -723,9 +721,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertEquals(406, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		List<ErrorVO> errors = parseErrorArray(body);
+		List<ErrorVO> errors = parseErrorArray(response.getEntity());
  		assertNotNull(errors);
 		assertFalse(errors.isEmpty());
 		assertTrue(errors.size() >= 2);
@@ -1294,8 +1290,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> folders = parseFileArray(body);
+		List<FileVO> folders = parseFileArray(response.getEntity());
 
 		assertNotNull(folders);
 		assertFalse(folders.isEmpty());
@@ -1317,8 +1312,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> folders = parseFileArray(body);
+
+		List<FileVO> folders = parseFileArray(response.getEntity());
 
 		assertNotNull(folders);
 		assertFalse(folders.isEmpty());
@@ -1339,8 +1334,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> files = parseFileArray(body);
+		
+		List<FileVO> files = parseFileArray(response.getEntity());
 		
 		assertNotNull(files);
 		assertFalse(files.isEmpty());
@@ -1358,8 +1353,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> files = parseFileArray(body);
+		
+		List<FileVO> files = parseFileArray(response.getEntity());
 		
 		assertNotNull(files);
 		assertTrue(files.isEmpty());
@@ -1377,8 +1372,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> files = parseFileArray(body);
+		
+		List<FileVO> files = parseFileArray(response.getEntity());
 		
 		assertNotNull(files);
 		assertFalse(files.isEmpty());
@@ -1400,8 +1395,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = response.getEntity().getContent();
-		List<GroupVO> groups = parseGroupArray(body);
+		List<GroupVO> groups = parseGroupArray(response.getEntity());
 		assertNotNull(groups);
 		assertEquals(3, groups.size());//g1, g2 and g3
 		conn.shutdown();
@@ -1420,8 +1414,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = response.getEntity().getContent();
-		List<GroupVO> groups = parseGroupArray(body);
+		List<GroupVO> groups = parseGroupArray(response.getEntity());
 		assertNotNull(groups);
 		assertEquals(2, groups.size());//g1 and g3
 		conn.shutdown();
@@ -1440,8 +1433,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = response.getEntity().getContent();
-		List<GroupVO> groups = parseGroupArray(body);
+		List<GroupVO> groups = parseGroupArray(response.getEntity());
 		assertNotNull(groups);
 		assertEquals(1, groups.size());//g2
 		conn.shutdown();
@@ -1460,8 +1452,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = response.getEntity().getContent();
-		List<GroupVO> groups = parseGroupArray(body);
+		List<GroupVO> groups = parseGroupArray(response.getEntity());
 		assertNotNull(groups);
 		assertEquals(1, groups.size());
 		assertEquals(g1.getKey(), groups.get(0).getKey());
@@ -1746,32 +1737,32 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		EntityUtils.consume(headSmallResponse.getEntity());
 	}
 	
-	protected List<UserVO> parseUserArray(InputStream body) {
-		try {
+	protected List<UserVO> parseUserArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
 	
-	protected List<ManagedUserVO> parseManagedUserArray(InputStream body) {
-		try {
+	protected List<ManagedUserVO> parseManagedUserArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<ManagedUserVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<ManagedUserVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
 	
-	protected List<GroupVO> parseGroupArray(InputStream body) {
-		try {
+	protected List<GroupVO> parseGroupArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<GroupVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<GroupVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

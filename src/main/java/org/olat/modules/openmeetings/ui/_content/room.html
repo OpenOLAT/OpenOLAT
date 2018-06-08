@@ -30,6 +30,13 @@
 		$r.render("open.recordings")
 	#end
 	
+	<p />
+	<hr />
+	<h4>$r.translate("check.test")</h4>
+	<p>$r.translate("check.explanation")</p>
+	$r.render("check.test")
+	$r.render("check.email")
+
 	#if($r.available("open.room") || $r.available("room.members") || $r.available("edit"))
 		<p />
 		<hr />

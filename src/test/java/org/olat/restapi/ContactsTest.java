@@ -72,10 +72,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 	private OrganisationService organisationService;
 	
 	@Before
-	@Override
 	public void setUp() throws Exception {
-		super.setUp();
-		
 		if(initialized) return;
 			//create a course with learn group
 			

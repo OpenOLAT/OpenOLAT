@@ -38,8 +38,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -60,6 +58,9 @@ import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -177,7 +178,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		// check the response
 		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
 
-		LectureBlockVO blockVo = conn.parse(response.getEntity().getContent(), LectureBlockVO.class);
+		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
 		Assert.assertNotNull(blockVo);
 		Assert.assertEquals(entry.getKey(), blockVo.getRepoEntryKey());
 		Assert.assertEquals("New block", blockVo.getTitle());
@@ -243,7 +244,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		// check the response
 		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
 
-		LectureBlockVO blockVo = conn.parse(response.getEntity().getContent(), LectureBlockVO.class);
+		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
 		Assert.assertNotNull(blockVo);
 		
 		// check the database

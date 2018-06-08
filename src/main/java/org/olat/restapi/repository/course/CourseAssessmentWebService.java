@@ -87,6 +87,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.AssessableResultsVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -97,6 +98,7 @@ import org.olat.restapi.support.vo.AssessableResultsVO;
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/courses/{courseId}/assessments")
 public class CourseAssessmentWebService {
 	

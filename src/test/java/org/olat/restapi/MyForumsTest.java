@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -101,8 +100,7 @@ public class MyForumsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		ForumVOes forums = conn.parse(body, ForumVOes.class);
+		ForumVOes forums = conn.parse(response.getEntity(), ForumVOes.class);
 		Assert.assertNotNull(forums);
 		Assert.assertNotNull(forums.getForums());
 		Assert.assertEquals(0, forums.getForums().length);
@@ -128,8 +126,7 @@ public class MyForumsTest extends OlatJerseyTestCase {
 		HttpGet method2 = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response2 = conn.execute(method2);
 		assertEquals(200, response2.getStatusLine().getStatusCode());
-		InputStream body2 = response2.getEntity().getContent();
-		ForumVOes forums2 = conn.parse(body2, ForumVOes.class);
+		ForumVOes forums2 = conn.parse(response2.getEntity(), ForumVOes.class);
 		Assert.assertNotNull(forums2);
 		Assert.assertNotNull(forums2.getForums());
 		Assert.assertEquals(1, forums2.getForums().length);

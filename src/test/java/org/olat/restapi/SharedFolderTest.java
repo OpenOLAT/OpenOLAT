@@ -44,7 +44,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.util.FileUtils;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -65,6 +66,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class SharedFolderTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(SharedFolderTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -95,8 +98,7 @@ public class SharedFolderTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		InputStream body = response.getEntity().getContent();
-		List<LinkVO> links = parseLinkArray(body);
+		List<LinkVO> links = parseLinkArray(response.getEntity());
 		Assert.assertNotNull(links);
 		Assert.assertEquals(1, links.size());
 		Assert.assertTrue(links.get(0).getHref().contains("1_portrait.jpg"));
@@ -158,8 +160,7 @@ public class SharedFolderTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> links = parseFileArray(body);
+		List<FileVO> links = parseFileArray(response.getEntity());
 		
 		Assert.assertNotNull(links);
 		Assert.assertEquals(1, links.size());
@@ -233,8 +234,7 @@ public class SharedFolderTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = response.getEntity().getContent();
-		List<FileVO> links = parseFileArray(body);
+		List<FileVO> links = parseFileArray(response.getEntity());
 		
 		Assert.assertNotNull(links);
 		Assert.assertEquals(1, links.size());
@@ -293,12 +293,15 @@ public class SharedFolderTest extends OlatJerseyTestCase {
 			.build();
 	}
 	
-	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix) throws IOException {
-		InputStream pageStream = SharedFolderTest.class.getResourceAsStream(filename);
+	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix)
+	throws IOException {
 		VFSLeaf item = container.createChildLeaf(prefix + filename);
-		OutputStream outStream = item.getOutputStream(false);
-		IOUtils.copy(pageStream, outStream);
-		FileUtils.closeSafely(pageStream);
-		FileUtils.closeSafely(outStream);
+		try(InputStream pageStream = SharedFolderTest.class.getResourceAsStream(filename);
+				OutputStream outStream = item.getOutputStream(false)) {
+			IOUtils.copy(pageStream, outStream);
+		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
 	}
 }

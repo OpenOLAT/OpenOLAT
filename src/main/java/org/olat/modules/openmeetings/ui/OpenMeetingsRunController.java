@@ -49,6 +49,9 @@ import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 public class OpenMeetingsRunController extends BasicController {
 
 	private Link openLink, closeLink, startLink, startGuestLink, recordingLink, membersLink, editLink;
+//	<VCRP-OM>
+	private Link checkLink, checkEmailLink;
+//	</VCRP-OM>
 	private VelocityContainer mainVC;
 	
 	private CloseableModalController cmc;
@@ -129,6 +132,16 @@ public class OpenMeetingsRunController extends BasicController {
 			startLink.setTarget("openmeetings");
 			mainVC.put("start.room", startLink);
 		}
+
+//		<VCRP-OM>
+		checkLink = LinkFactory.createButton("check.test", mainVC, this);
+		checkLink.setTarget("openmeetings");
+		mainVC.put("check.test", checkLink);
+		
+		checkEmailLink = LinkFactory.createButton("check.email", mainVC, this);
+		checkEmailLink.setTarget("openmeetings");
+		mainVC.put("check.email", checkEmailLink);
+//		</VCRP-OM>
 		
 		updateState();
 	}
@@ -185,6 +198,12 @@ public class OpenMeetingsRunController extends BasicController {
 			doOpenMembers(ureq);
 		} else if(source == editLink) {
 			doEdit(ureq);
+//		<VCRP-OM>
+		} else if(source == checkLink) {
+			doCheck(ureq);
+		} else if(source == checkEmailLink) {
+			doEmail(ureq);
+//		</VCRP-OM>
 		}
 	}
 
@@ -323,4 +342,21 @@ public class OpenMeetingsRunController extends BasicController {
 			}
 		}
 	}
+
+//	<VCRP-OM>
+	private void doCheck(UserRequest ureq) {	
+		String url = openMeetingsModule.getOpenMeetingsURI().toString() + "/swf?swf=networktesting.swf10.swf";
+		RedirectMediaResource redirect = new RedirectMediaResource(url);
+		ureq.getDispatchResult().setResultingMediaResource(redirect);
+	}
+
+	private void doEmail(UserRequest ureq) {	
+		String id = "";
+		if (ores != null) id = "Kurs "+ores.getResourceableId().toString();
+		else if (group != null) id = "Gruppe "+group.getKey();
+		String url = "mailto:om-tickets@vcrp.de?subject=Probleme beim Aufruf von OpenMeetings aus "+id+"&body=BITTE HIER DAS PROBLEM BESCHREIBEN";
+		RedirectMediaResource redirect = new RedirectMediaResource(url);
+		ureq.getDispatchResult().setResultingMediaResource(redirect);
+	}
+//	</VCRP-OM>
 }

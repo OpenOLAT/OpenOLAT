@@ -44,6 +44,7 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.EfficiencyStatementVO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -51,6 +52,7 @@ import org.olat.resource.OLATResourceManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("repo/courses/{resourceKey}/statements")
 public class EfficiencyStatementWebService {
 	

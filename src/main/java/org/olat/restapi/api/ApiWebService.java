@@ -29,6 +29,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.springframework.stereotype.Component;
+
 /**
  * 
  * Description:<br>
@@ -39,6 +41,7 @@ import javax.ws.rs.core.Response.Status;
  * @author srosse, stephane.rosse@frentix.com
  */
 @Path("api")
+@Component
 public class ApiWebService {
 	
 	private String VERSION = "1.0";

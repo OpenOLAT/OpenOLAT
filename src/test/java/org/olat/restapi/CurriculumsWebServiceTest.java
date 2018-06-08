@@ -30,13 +30,12 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,6 +44,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
@@ -54,6 +55,9 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * Initial date: 15 mai 2018<br>
@@ -61,6 +65,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(CurriculumsWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -83,8 +89,7 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CurriculumVO> curriculumVoes = parseCurriculumArray(body);
+		List<CurriculumVO> curriculumVoes = parseCurriculumArray(response.getEntity());
 		
 		CurriculumVO foundVo = null;
 		for(CurriculumVO curriculumVo:curriculumVoes) {
@@ -292,12 +297,12 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals("Update B", updatedVoB.getIdentifier());
 	}
 	
-	protected List<CurriculumVO> parseCurriculumArray(InputStream body) {
-		try {
+	protected List<CurriculumVO> parseCurriculumArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<CurriculumVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<CurriculumVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

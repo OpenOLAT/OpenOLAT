@@ -42,8 +42,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +54,8 @@ import org.olat.commons.calendar.restapi.EventVOes;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -67,11 +67,16 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CalendarTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(CalendarTest.class);
 
 	private static ICourse course1, course2;
 	private static Identity id1, id2;
@@ -88,10 +93,10 @@ public class CalendarTest extends OlatJerseyTestCase {
 	@Before
 	public void startup() {
 		if(id1 == null) {
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("cal-1-" + UUID.randomUUID().toString());
+			id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cal-1");
 		}
 		if(id2 == null) {
-			id2 = JunitTestHelper.createAndPersistIdentityAsUser("cal-2-" + UUID.randomUUID().toString());
+			id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cal-2");
 		}
 		
 		if(course1 == null) {
@@ -592,23 +597,21 @@ public class CalendarTest extends OlatJerseyTestCase {
 	}
 	
 	protected List<CalendarVO> parseArray(HttpResponse response) {
-		try {
-			InputStream body = response.getEntity().getContent();
+		try(InputStream body = response.getEntity().getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<CalendarVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
 	
 	protected List<EventVO> parseEventArray(HttpResponse response) {
-		try {
-			InputStream body = response.getEntity().getContent();
+		try(InputStream body = response.getEntity().getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<EventVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

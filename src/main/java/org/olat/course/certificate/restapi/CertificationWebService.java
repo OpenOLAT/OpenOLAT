@@ -59,6 +59,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -66,6 +67,7 @@ import org.olat.restapi.support.ObjectFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("repo/courses/{resourceKey}/certificates")
 public class CertificationWebService {
 	
@@ -290,11 +292,18 @@ public class CertificationWebService {
 
 			OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 			OLATResource resource = resourceManager.findResourceById(resourceKey);
+			
+			Certificate certificate;
 			if(resource == null) {
-				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, resourceKey, tmpFile);
+				certificate = certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, resourceKey, tmpFile);
 			} else {
-				certificatesManager.uploadCertificate(assessedIdentity, creationDate, resource, tmpFile);
+				certificate = certificatesManager.uploadCertificate(assessedIdentity, creationDate, resource, tmpFile);
 			}
+			
+			
+			System.out.println("WS: " + Thread.currentThread().getName());
+			
+			//DBFactory.getInstance().commitAndCloseSession();
 
 			return Response.ok().build();
 		} catch (Throwable e) {

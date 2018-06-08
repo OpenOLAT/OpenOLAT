@@ -45,6 +45,7 @@ import org.olat.basesecurity.OrganisationTypeManagedFlag;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.CoreSpringFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -52,25 +53,10 @@ import org.olat.core.CoreSpringFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
+@Path("organisations/types")
 public class OrganisationTypesWebService {
-	
-	private static final String VERSION = "1.0";
-	
-	/**
-	 * The version of the User Web Service
-	 * @response.representation.200.mediaType text/plain
- 	 * @response.representation.200.doc The version of this specific Web Service
- 	 * @response.representation.200.example 1.0
-	 * @return The version number
-	 */
-	@GET
-	@Path("version")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response getVersion() {
-		return Response.ok(VERSION).build();
-	}
-	
-	
+
 	/**
 	 * List of organizations types.
 	 * 

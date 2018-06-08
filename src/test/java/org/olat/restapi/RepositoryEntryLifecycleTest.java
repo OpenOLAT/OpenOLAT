@@ -34,11 +34,10 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.junit.Assert;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.OLog;
@@ -48,6 +47,9 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -85,8 +87,7 @@ public class RepositoryEntryLifecycleTest extends OlatJerseyTestCase  {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<RepositoryEntryLifecycleVO> entryVoes = parseRepoArray(body);
+		List<RepositoryEntryLifecycleVO> entryVoes = parseRepoArray(response.getEntity());
 		assertNotNull(entryVoes);
 		
 		int found = 0;
@@ -103,10 +104,10 @@ public class RepositoryEntryLifecycleTest extends OlatJerseyTestCase  {
 	}
 
 
-	private List<RepositoryEntryLifecycleVO> parseRepoArray(InputStream body) {
-		try {
+	private List<RepositoryEntryLifecycleVO> parseRepoArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<RepositoryEntryLifecycleVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<RepositoryEntryLifecycleVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

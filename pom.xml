@@ -65,7 +65,8 @@
 		<org.springframework.version>5.0.6.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.3.1.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
-		<jackson.version>1.9.13</jackson.version>
+		<apache.cxf>3.2.4</apache.cxf>
+		<jackson.version>2.9.5</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.2</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
@@ -372,51 +373,25 @@
 				</dependency>
 				<!-- Jersey for tomcat -->
 				<dependency>
-					<groupId>javax.ws.rs</groupId>
-					<artifactId>jsr311-api</artifactId>
-					<version>1.1.1</version>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-jaxws</artifactId>
+					<version>${apache.cxf}</version>
 				</dependency>
 				<dependency>
-					<groupId>com.sun.jersey</groupId>
-					<artifactId>jersey-server</artifactId>
-					<version>${com.sun.jersey.version}</version>
-					<exclusions>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-core</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-beans</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-context</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-web</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-aop</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-jca</artifactId>
-						</exclusion>
-					</exclusions>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+					<version>${apache.cxf}</version>
 				</dependency>
 				<dependency>
-					<groupId>com.sun.jersey</groupId>
-					<artifactId>jersey-servlet</artifactId>
-					<version>${com.sun.jersey.version}</version>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-transports-http</artifactId>
+					<version>${apache.cxf}</version>
 				</dependency>
-				
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-rs-http-sci</artifactId>
+					<version>${apache.cxf}</version>
+				</dependency>
 				<dependency>
 					<groupId>dom4j</groupId>
 					<artifactId>dom4j</artifactId>
@@ -540,23 +515,6 @@
 						</exclusion>
 					</exclusions>
 				</dependency>
-				<!-- webservice stack -->
-				<dependency>
-	      			<groupId>com.sun.xml.ws</groupId>
-	      			<artifactId>jaxws-rt</artifactId>
-	      			<version>2.2.6</version>
-	      			<exclusions>
-	      				<exclusion>
-	      					<groupId>javax.activation</groupId>
-	      					<artifactId>activation</artifactId>
-	      				</exclusion>
-	      			</exclusions>
-	    		</dependency>
-	    		<dependency>
-	    			<groupId>com.sun.xml.fastinfoset</groupId>
-	    			<artifactId>FastInfoset</artifactId>
-	    			<version>1.2.8</version>
-	    		</dependency>
 			</dependencies>
 			
 			<build>
@@ -592,13 +550,6 @@
 					<version>1.1.1</version>
 					<scope>provided</scope>
 				</dependency>
-				<dependency>
-					<groupId>com.sun.jersey</groupId>
-					<artifactId>jersey-servlet</artifactId>
-					<version>${com.sun.jersey.version}</version>
-					<scope>test</scope>
-				</dependency>
-
 				<dependency>
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -1756,26 +1707,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	    <!-- <OLATCE-1322> -->
-	    <dependency>
-	      <groupId>com.sun.xml.ws</groupId>
-	      <artifactId>jaxws-rt</artifactId>
-	      <version>2.2.6</version>
-	      <scope>test</scope>
-	      <exclusions>
-	      	<exclusion>
-				<groupId>javax.activation</groupId>
-				<artifactId>activation</artifactId>
-	      	</exclusion>
-	      </exclusions>
-	    </dependency>
-	    <dependency>
-	    	<groupId>com.sun.xml.fastinfoset</groupId>
-	    	<artifactId>FastInfoset</artifactId>
-	    	<version>1.2.8</version>
-	    	<scope>test</scope>
-	    </dependency>
-	    <!-- </OLATCE-1322> -->
 		<dependency>
 			<!-- Used by SCORM implementation -->
 			<groupId>org.beanshell</groupId>
@@ -1859,7 +1790,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>openmeetingws</artifactId>
-			<version>2.1.1</version>
+			<version>3.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
@@ -2407,35 +2338,18 @@
 			</exclusions>
 		</dependency>
 		<!-- end Spring dependencies -->
-		<!-- Start Jersey dependency -->
+		<!-- Start Apache CXF dependency -->
 		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>jsr311-api</artifactId>
-			<version>1.1.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-core-asl</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-xc</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<!-- end jersey -->
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+		<!-- end Apache CXF -->
 		
 		<!-- paypal -->
 		<dependency>

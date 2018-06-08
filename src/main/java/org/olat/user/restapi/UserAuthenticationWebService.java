@@ -52,12 +52,14 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.restapi.support.vo.ErrorVO;
+import org.springframework.stereotype.Component;
 
 /**
  * This web service handles functionalities related to authentication credentials of users.
  * 
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("users/{username}/auth")
 public class UserAuthenticationWebService {
 	

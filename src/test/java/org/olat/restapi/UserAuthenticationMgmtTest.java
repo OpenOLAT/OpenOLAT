@@ -42,6 +42,7 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -49,8 +50,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
@@ -67,6 +66,9 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -98,8 +100,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<AuthenticationVO> vos = parseAuthenticationArray(body);
+		List<AuthenticationVO> vos = parseAuthenticationArray(response.getEntity());
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
 
@@ -250,10 +251,10 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		Assert.assertEquals(user, reloadedUser);
 	}
 	
-	private List<AuthenticationVO> parseAuthenticationArray(InputStream body) {
-		try {
+	private List<AuthenticationVO> parseAuthenticationArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<AuthenticationVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<AuthenticationVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("Cannot parse an array of AuthenticationVO", e);
 			return null;

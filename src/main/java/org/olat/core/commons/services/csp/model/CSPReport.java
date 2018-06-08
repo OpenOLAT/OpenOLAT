@@ -23,8 +23,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The mapping class used by Jackson to parse
@@ -34,12 +34,12 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreType(true)
 @XmlAccessorType(XmlAccessType.FIELD)
 public class CSPReport {
 	
 	@XmlAttribute(name = "blocked-uri")
-	@JsonProperty("blocked-uri")
+	@com.fasterxml.jackson.annotation.JsonProperty("blocked-uri")
 	private String blockedUri;
 	@XmlAttribute(name = "disposition")
 	@JsonProperty("disposition")

@@ -47,10 +47,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,6 +89,9 @@ import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.notification.UsersSubscriptionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * <h3>Description:</h3>
@@ -125,7 +127,6 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		if(!setup) {
 			userSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-1");
 			userAndForumSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-2");
@@ -174,8 +175,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<SubscriptionInfoVO> infos = parseUserArray(body);
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
@@ -200,8 +200,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<SubscriptionInfoVO> infos = parseUserArray(body);
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
@@ -231,7 +230,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response);
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		assertNotNull(infos);
 		assertTrue(2 <= infos.size());
 
@@ -247,8 +246,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<SubscriptionInfoVO> infos = parseUserArray(body);
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		
 		assertNotNull(infos);
 		assertTrue(1 <= infos.size());
@@ -273,8 +271,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<SubscriptionInfoVO> infos = parseUserArray(body);
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		
 		assertNotNull(infos);
 		assertTrue(infos.isEmpty());
@@ -310,7 +307,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity().getContent());
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -353,7 +350,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity().getContent());
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -402,7 +399,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity().getContent());
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -452,7 +449,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity().getContent());
+		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -520,17 +517,12 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		return m1;
 	}
 	
-	protected List<SubscriptionInfoVO> parseUserArray(HttpResponse response) throws IOException, URISyntaxException {
-		InputStream body = response.getEntity().getContent();
-		return parseUserArray(body);
-	}
-	
-	protected List<SubscriptionInfoVO> parseUserArray(InputStream body) {
-		try {
+	protected List<SubscriptionInfoVO> parseUserArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<SubscriptionInfoVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<SubscriptionInfoVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

@@ -127,7 +127,14 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 			roomTypeEl.setValue("");
 		}
 		roomTypeEl.setVisible(hasRoom);
-		roomSizeEl.setValue(hasRoom ? Long.toString(room.getSize()) : "");
+//		<VCRP-OM>
+		if(hasRoom) {
+			roomSizeEl.setValue(room.getSize()<1000 ? Long.toString(room.getSize()) : "");
+		}
+		else {
+			roomSizeEl.setValue("");
+		}
+//		</VCRP-OM>
 		roomSizeEl.setVisible(hasRoom);
 		
 		String modVal;

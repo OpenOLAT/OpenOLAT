@@ -63,6 +63,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -74,6 +75,7 @@ import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
  * @author srosse, stephane.rosse@frentix.com
  * @author Dirk Furrer
  */
+@Component
 @Path("repo/courses/{courseId}/elements/contact")
 public class COWebService extends AbstractCourseNodeWebService {
 	

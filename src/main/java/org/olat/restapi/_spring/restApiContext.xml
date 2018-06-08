@@ -2,60 +2,26 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
                         http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/context 
-                        http://www.springframework.org/schema/context/spring-context.xsd">
+                        http://www.springframework.org/schema/context/spring-context.xsd
+                        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
 
-	<context:component-scan base-package="org.olat.restapi" />
+	<jaxrs:server address="/" basePackages="org.olat">
+		<jaxrs:providers>
+			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+			<bean class="org.olat.restapi.security.OpenOLATContainerResponseFilter" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	<context:component-scan base-package="org.olat.restapi,org.olat.restapi.security,org.olat.restapi.system" />
 	
-	<bean id="org.olat.restapi.support.RestRegistrationService" class="org.olat.restapi.support.RestRegistrationServiceImpl">
-		<property name="classnames">
-			<list>
-				<value>org.olat.restapi.api.ApiWebService</value>
-				<value>org.olat.restapi.i18n.I18nWebService</value>
-				<value>org.olat.restapi.support.Ping</value>
-				<value>org.olat.restapi.security.Authentication</value>
-				<value>org.olat.user.restapi.UserWebService</value>
-				<value>org.olat.user.restapi.ContactsWebService</value>
-				<value>org.olat.user.restapi.OrganisationsWebService</value>
-				<value>org.olat.user.restapi.UserAuthenticationWebService</value>
-				<value>org.olat.restapi.group.LearningGroupWebService</value>
-				<value>org.olat.restapi.repository.CatalogWebService</value>
-				<value>org.olat.restapi.repository.RepositoryEntriesResource</value>
-				<value>org.olat.restapi.repository.RepositoryEntryLifecycleWebService</value>
-				<value>org.olat.restapi.repository.SharedFolderWebService</value>
-				<value>org.olat.restapi.repository.course.CourseWebService</value>
-				<value>org.olat.restapi.repository.course.CoursesWebService</value>
-				<value>org.olat.restapi.repository.course.CoursesInfosWebService</value>
-				<value>org.olat.restapi.repository.course.CourseElementWebService</value>
-				<value>org.olat.restapi.repository.course.CourseAssessmentWebService</value>
-				<value>org.olat.restapi.repository.course.CourseResourceFolderWebService</value>
-				<value>org.olat.course.nodes.co.COWebService</value>
-				<value>org.olat.course.nodes.en.ENWebService</value>
-				<value>org.olat.course.nodes.bc.BCWebService</value>
-				<value>org.olat.course.assessment.restapi.EfficiencyStatementWebService</value>
-				<value>org.olat.course.certificate.restapi.CertificationWebService</value>
-				<value>org.olat.modules.curriculum.restapi.CurriculumsWebService</value>
-				<value>org.olat.modules.docpool.restapi.DocumentPoolModuleWebService</value>
-				<value>org.olat.modules.qpool.restapi.QuestionPoolWebService</value>
-				<value>org.olat.modules.wiki.restapi.WikisWebService</value>
-				<value>org.olat.modules.fo.restapi.ForumImportWebService</value>
-				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
-				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>
-				<value>org.olat.modules.lecture.restapi.LectureBlocksRootWebService</value>
-				<value>org.olat.modules.openmeetings.restapi.OpenMeetingsWebService</value>
-				<value>org.olat.modules.taxonomy.restapi.TaxonomyModuleWebService</value>
-				<value>org.olat.modules.vitero.restapi.ViteroWebService</value>
-				<value>org.olat.core.commons.services.notifications.restapi.NotificationsWebService</value>
-				<value>org.olat.registration.restapi.RegistrationWebService</value>
-				<value>org.olat.registration.restapi.ChangePasswordWebService</value>
-				<value>org.olat.commons.calendar.restapi.UserCalendarWebService</value>
-				<value>org.olat.restapi.system.LogWebService</value>
-				<value>org.olat.restapi.system.SystemWebService</value>
-			</list>
-		</property>
+	<bean id="exceptionMapper" class="org.apache.cxf.jaxrs.impl.WebApplicationExceptionMapper">
+		<property name="addMessageToResponse" value="true" />
 	</bean>
+	
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	
 	<bean id="systemSamplerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="systemSamplerJob" />

@@ -86,8 +86,7 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	private BaseSecurity securityManager;
 	
 	@Before
-	public void setUp() throws Exception {
-		super.setUp();
+	public void setUp() throws Exception {;
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");

@@ -78,14 +78,16 @@ public class ContactVO {
 		this.lastName = lastName;
 	}
 
-
-
-
 	@Override
 	public String toString() {
-		return "UserVO[key=" + key + ":lastName=" + lastName + "]";
+		return "ContactVO[key=" + key + ":lastName=" + lastName + "]";
 	}
-	
+
+	@Override
+	public int hashCode() {
+		return key == null ? 345912 : key.hashCode();
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {

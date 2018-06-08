@@ -61,12 +61,13 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -193,12 +194,12 @@ public class RestConnection {
 	    return code == 200;
 	}
 	
-	public <T> T get(URI uri, Class<T> cl) throws IOException, URISyntaxException {
+	public <U> U get(URI uri, Class<U> cl) throws IOException, URISyntaxException {
 		HttpGet get = createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = execute(get);
 		if(200 == response.getStatusLine().getStatusCode()) {
 			HttpEntity entity = response.getEntity();
-			return parse(entity.getContent(), cl);
+			return parse(entity, cl);
 		} else {
 			EntityUtils.consume(response.getEntity());
 			log.error("get return: " + response.getStatusLine().getStatusCode());
@@ -316,11 +317,20 @@ public class RestConnection {
 	}
 	
 	public String stringuified(Object obj) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			StringWriter w = new StringWriter();
+		try(StringWriter w = new StringWriter()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			mapper.writeValue(w, obj);
 			return w.toString();
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public <U> U parse(HttpEntity entity, Class<U> cl) {
+		try(InputStream body = entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory);
+			return mapper.readValue(body, cl);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -330,19 +340,7 @@ public class RestConnection {
 	public <U> U parse(HttpResponse response, Class<U> cl) {
 		try(InputStream body = response.getEntity().getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			U obj = mapper.readValue(body, cl);
-			return obj;
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	public <U> U parse(InputStream body, Class<U> cl) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			U obj = mapper.readValue(body, cl);
-			return obj;
+			return mapper.readValue(body, cl);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

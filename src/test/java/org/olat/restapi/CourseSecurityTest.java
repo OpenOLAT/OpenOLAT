@@ -86,7 +86,6 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl

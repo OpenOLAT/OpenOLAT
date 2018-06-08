@@ -31,8 +31,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -49,6 +47,9 @@ import org.olat.modules.edubase.EdubaseModule;
 import org.olat.modules.edubase.model.BookDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 /**

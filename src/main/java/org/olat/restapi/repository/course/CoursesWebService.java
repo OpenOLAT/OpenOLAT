@@ -89,6 +89,7 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
+import org.springframework.stereotype.Component;
 
 /**
  *
@@ -99,6 +100,7 @@ import org.olat.restapi.support.vo.CourseVOes;
  * Initial Date:  27 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/courses")
 public class CoursesWebService {
 
@@ -201,10 +203,11 @@ public class CoursesWebService {
 	}
 
 	@Path("{courseId}")
-	public CourseWebService getCourse(@PathParam("courseId") Long courseId) {
+	public CourseWebService getCourse(@PathParam("courseId") Long courseId)
+	throws WebApplicationException {
 		ICourse course = loadCourse(courseId);
 		if(course == null) {
-			return null;
+			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 		OLATResource ores = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		return new CourseWebService(ores, course);
@@ -227,6 +230,7 @@ public class CoursesWebService {
 	 * @return It returns the id of the newly created Course
 	 */
 	@PUT
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
 			@QueryParam("displayName") String displayName, @QueryParam("description") String description,
@@ -320,8 +324,8 @@ public class CoursesWebService {
 	 * @return It returns the imported course
 	 */
 	@POST
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response importCourse(@QueryParam("ownerUsername") String ownerUsername, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

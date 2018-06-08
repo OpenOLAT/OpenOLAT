@@ -110,22 +110,23 @@
 	
 	<!-- Jersey REST Servlet -->
 	<servlet>
-		<servlet-name>RESTServletAdaptor</servlet-name>
-		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-		<init-param>
-			<param-name>com.sun.jersey.config.feature.Redirect</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<init-param>
+        <servlet-name>RESTServletAdaptor</servlet-name>
+        <display-name>CXF Servlet</display-name>
+        <servlet-class>
+            org.apache.cxf.transport.servlet.CXFServlet
+        </servlet-class>
+        <!--  
+        		<init-param>
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>org.olat.restapi.support.OlatRestApplication</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
-		<multipart-config>
+		-->
+        <load-on-startup>1</load-on-startup>
+        	<multipart-config>
 			<file-size-threshold>10240</file-size-threshold>
 		</multipart-config>
-	</servlet>
-	
+    </servlet>
+ 
 	<!-- RSS feed requests -->
 	<servlet>
 		<servlet-name>rss</servlet-name>

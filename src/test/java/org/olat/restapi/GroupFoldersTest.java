@@ -40,7 +40,6 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -48,8 +47,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,7 +60,10 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -91,6 +91,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GroupFoldersTest extends OlatJerseyTestCase {
 	
+	private static final OLog log = Tracing.createLoggerFor(GroupFoldersTest.class);
+	
 	private Identity owner1, owner2, part1, part2;
 	private BusinessGroup g1, g2;
 	private OLATResource course;
@@ -111,9 +113,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	 * @see org.olat.test.OlatJerseyTestCase#setUp()
 	 */
 	@Before
-	@Override
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		//create a course with learn group
 		
@@ -182,8 +182,8 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		assertNotNull(body);
+		String content = EntityUtils.toString(response.getEntity());
+		Assert.assertTrue(StringHelper.containsNonWhitespace(content));
 	}
 	
 	@Test
@@ -211,9 +211,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpGet method0 = conn.createGet(request0, MediaType.APPLICATION_JSON, true);
 		HttpResponse code0 = conn.execute(method0);
 		assertEquals(200, code0.getStatusLine().getStatusCode());
-		InputStream body0 = code0.getEntity().getContent();
-		assertNotNull(body0);
-		List<FileVO> fileVos0 = parseFileArray(body0);
+		List<FileVO> fileVos0 = parseFileArray(code0.getEntity());
 		assertNotNull(fileVos0);
 		assertEquals(1, fileVos0.size());
 		
@@ -222,9 +220,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpGet method1 = conn.createGet(request1, MediaType.APPLICATION_JSON, true);
 		HttpResponse code1 = conn.execute(method1);
 		assertEquals(200, code1.getStatusLine().getStatusCode());
-		InputStream body1 = code1.getEntity().getContent();
-		assertNotNull(body1);
-		List<FileVO> fileVos1 = parseFileArray(body1);
+		List<FileVO> fileVos1 = parseFileArray(code1.getEntity());
 		assertNotNull(fileVos1);
 		assertEquals(1, fileVos1.size());
 		
@@ -242,18 +238,15 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpGet method2 = conn.createGet(request2, MediaType.APPLICATION_JSON, true);
 		HttpResponse code2 = conn.execute(method2);
 		assertEquals(200, code2.getStatusLine().getStatusCode());
-		InputStream body2 = code2.getEntity().getContent();
-		assertNotNull(body2);
-		EntityUtils.consume(code2.getEntity());
+		String test2 = EntityUtils.toString(code2.getEntity());
+		Assert.assertTrue(StringHelper.containsNonWhitespace(test2));
 		
 		//get sub folder with end /
 		URI request3 = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/").build();
 		HttpGet method3 = conn.createGet(request3, MediaType.APPLICATION_JSON, true);
 		HttpResponse code3 = conn.execute(method3);
 		assertEquals(200, code3.getStatusLine().getStatusCode());
-		InputStream body3 = code3.getEntity().getContent();
-		assertNotNull(body3);
-		List<FileVO> fileVos3 = parseFileArray(body3);
+		List<FileVO> fileVos3 = parseFileArray(code3.getEntity());
 		assertNotNull(fileVos3);
 		assertEquals(1, fileVos3.size());
 	}
@@ -271,11 +264,12 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		VFSLeaf file = (VFSLeaf)newFolder1.resolve("portrait.jpg");
 		if(file == null) {
 			file = newFolder1.createChildLeaf("portrait.jpg");
-			OutputStream out = file.getOutputStream(true);
-			InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg");
-			FileUtils.copy(in, out);
-			FileUtils.closeSafely(in);
-			FileUtils.closeSafely(out);
+			try(OutputStream out = file.getOutputStream(true);
+					InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg")) {
+				FileUtils.copy(in, out);
+			} catch(IOException e) {
+				log.error("", e);
+			}
 		}
 		
 		// get the file
@@ -284,8 +278,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, "*/*", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		byte[] byteArr = IOUtils.toByteArray(body);
+		byte[] byteArr = EntityUtils.toByteArray(response.getEntity());
 		Assert.assertNotNull(byteArr);
 		Assert.assertEquals(file.getSize(), byteArr.length);
 	}
@@ -303,11 +296,12 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		VFSLeaf file = (VFSLeaf)newFolder1.resolve("portrait.jpg");
 		if(file == null) {
 			file = newFolder1.createChildLeaf("portrait.jpg");
-			OutputStream out = file.getOutputStream(true);
-			InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg");
-			FileUtils.copy(in, out);
-			FileUtils.closeSafely(in);
-			FileUtils.closeSafely(out);
+			try(OutputStream out = file.getOutputStream(true);
+					InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg")) {
+				FileUtils.copy(in, out);
+			} catch(IOException e) {
+				log.error("", e);
+			}
 		}
 		
 		// get the file
@@ -331,9 +325,8 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/New_folder_1_1_1").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		InputStream body = response.getEntity().getContent();
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		assertNotNull(body);
+		EntityUtils.consume(response.getEntity());
 	}
 
 	//@Test not working -> Jersey ignore the request and return 200 (why?)
@@ -365,26 +358,5 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		assertNotNull(file.getHref());
 		assertNotNull(file.getTitle());
 		assertEquals("New folder 1 2 3", file.getTitle());
-	}
-	
-	protected <T> T parse(InputStream body, Class<T> cl) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			T obj = mapper.readValue(body, cl);
-			return obj;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	protected List<FileVO> parseFileArray(InputStream body) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<FileVO>>(){/* */});
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 }

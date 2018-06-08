@@ -49,8 +49,6 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,6 +69,9 @@ import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -97,7 +98,6 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		try {
 			// create course and persist as OLATResourceImpl
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");

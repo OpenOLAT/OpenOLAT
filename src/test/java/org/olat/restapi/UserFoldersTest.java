@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -80,8 +79,6 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 	
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
-		
 		if(setup) return;
 		
 		URL courseUrl = UserFoldersTest.class.getResource("myCourseWS.zip");
@@ -111,8 +108,7 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FolderVOes folders = conn.parse(body, FolderVOes.class);
+		FolderVOes folders = conn.parse(response.getEntity(), FolderVOes.class);
 		Assert.assertNotNull(folders);
 		Assert.assertNotNull(folders.getFolders());
 		Assert.assertEquals(0, folders.getFolders().length);
@@ -138,8 +134,7 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 		HttpGet method2 = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response2 = conn.execute(method2);
 		assertEquals(200, response2.getStatusLine().getStatusCode());
-		InputStream body2 = response2.getEntity().getContent();
-		FolderVOes folders2 = conn.parse(body2, FolderVOes.class);
+		FolderVOes folders2 = conn.parse(response2.getEntity(), FolderVOes.class);
 		Assert.assertNotNull(folders2);
 		Assert.assertNotNull(folders2.getFolders());
 		Assert.assertEquals(1, folders2.getFolders().length);

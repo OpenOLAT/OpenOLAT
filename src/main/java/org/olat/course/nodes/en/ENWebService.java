@@ -54,6 +54,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.GroupVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -64,6 +65,7 @@ import org.olat.restapi.support.vo.GroupVO;
  * Initial Date:  10 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/courses/{courseId}/elements/enrollment")
 public class ENWebService extends AbstractCourseNodeWebService {
 

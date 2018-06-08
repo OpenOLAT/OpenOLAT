@@ -336,6 +336,7 @@ public class VFSWebservice {
 	 */
 	@PUT
 	@Path("{path:.*}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFolders(@Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
 		return createFolders(uriInfo, path);

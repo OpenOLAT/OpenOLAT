@@ -53,8 +53,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -62,7 +60,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
@@ -84,6 +81,9 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -94,6 +94,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	private static final Roles ADMIN_ROLES = new Roles(true, false, false, false, false, false, false);
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -101,8 +103,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
-	@Autowired
-	private DB dbInstance;
 
 	@Test
 	public void testGetEntries() throws IOException, URISyntaxException {
@@ -113,10 +113,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		
-		List<RepositoryEntryVO> entryVoes = parseRepoArray(body);
+		List<RepositoryEntryVO> entryVoes = parseRepoArray(response.getEntity());
 		assertNotNull(entryVoes);
 		
 		conn.shutdown();
@@ -174,7 +171,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<RepositoryEntryVO> entryVoes = parseRepoArray(response.getEntity().getContent());
+		List<RepositoryEntryVO> entryVoes = parseRepoArray(response.getEntity());
 		Assert.assertNotNull(entryVoes);
 		Assert.assertFalse(entryVoes.isEmpty());
 		//only repo entries with managed flags
@@ -823,22 +820,22 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Assert.assertFalse(participants.contains(participant));
 	}
 
-	private List<RepositoryEntryVO> parseRepoArray(InputStream body) {
-		try {
+	private List<RepositoryEntryVO> parseRepoArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<RepositoryEntryVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<RepositoryEntryVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
 	
 	private List<UserVO> parseUserArray(HttpEntity entity) {
-		try {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(entity.getContent(), new TypeReference<List<UserVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
@@ -848,12 +845,12 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		// create course and persist as OLATResourceImpl
 		
 		OLATResource r =  rm.createOLATResourceInstance("DummyType");
-		DBFactory.getInstance().saveObject(r);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.saveObject(r);
+		dbInstance.intermediateCommit();
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry d = repositoryService.create(null, displayName, "-", displayName, "Repo entry", r, 0, defOrganisation);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		return d;
 	}
 }

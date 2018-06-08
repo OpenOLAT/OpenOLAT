@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.restapi.system.vo.EnvironmentInformationsVO;
 import org.olat.restapi.system.vo.ReleaseInfosVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -48,11 +49,8 @@ import org.olat.restapi.system.vo.ReleaseInfosVO;
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
 @Path("system")
+@Component
 public class SystemWebService {
-
-	public SystemWebService() {
-		//make Spring happy
-	}
 	
 	@Path("log")
 	public LogWebService getLogsWS(@Context HttpServletRequest request) {
@@ -79,7 +77,6 @@ public class SystemWebService {
 		if(!isAdminOrSystem(request)) {
 			return null;
 		}
-		
 		OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
 		RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
 		EnvironmentInformationsVO vo = new EnvironmentInformationsVO(os, runtime);
@@ -103,7 +100,7 @@ public class SystemWebService {
 		if(!isAdminOrSystem(request)) {
 			return null;
 		}
-		
+
 		ReleaseInfosVO version = new ReleaseInfosVO();
 		if(StringHelper.containsNonWhitespace(WebappHelper.getRevisionNumber())) {
 			String v = WebappHelper.getRevisionNumber() + ":" + WebappHelper.getChangeSet();

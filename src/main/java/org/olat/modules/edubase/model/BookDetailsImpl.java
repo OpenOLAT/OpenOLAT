@@ -19,9 +19,10 @@
  */
 package org.olat.modules.edubase.model;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.edubase.BookDetails;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  *
@@ -30,7 +31,7 @@ import org.olat.modules.edubase.BookDetails;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class BookDetailsImpl implements BookDetails {
 
 	private String coverUrl;

@@ -39,6 +39,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyWebService;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -46,6 +47,7 @@ import org.olat.modules.taxonomy.restapi.TaxonomyWebService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("docpool")
 public class DocumentPoolModuleWebService {
 	

@@ -88,6 +88,7 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.stereotype.Component;
 
 /**
  * This web service handles functionalities related to <code>User</code>.
@@ -95,6 +96,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com
  */
 @Path("users")
+@Component
 public class UserWebService {
 	
 	private static final String VERSION = "1.0";

@@ -55,6 +55,7 @@ import org.olat.registration.RegistrationModule;
 import org.olat.registration.TemporaryKey;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -67,6 +68,7 @@ import org.olat.user.UserModule;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("registration")
 public class RegistrationWebService {
 	

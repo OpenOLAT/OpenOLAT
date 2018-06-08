@@ -74,6 +74,7 @@ import org.olat.restapi.repository.SharedFolderWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.LinkVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -86,6 +87,7 @@ import org.olat.restapi.support.vo.LinkVO;
  * Initial Date:  26 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/courses/{courseId}/resourcefolders")
 public class CourseResourceFolderWebService {
 

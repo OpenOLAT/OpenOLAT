@@ -38,6 +38,7 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -45,6 +46,7 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("openmeetings")
 public class OpenMeetingsWebService {
 

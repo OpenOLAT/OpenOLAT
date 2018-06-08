@@ -44,6 +44,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -53,6 +54,7 @@ import org.olat.core.id.OLATResourceable;
  * Initial Date:  29 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("infomessages")
 public class InfoMessagesWebService {
 	

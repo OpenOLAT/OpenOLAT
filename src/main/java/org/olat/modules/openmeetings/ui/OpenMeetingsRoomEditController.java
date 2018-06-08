@@ -19,11 +19,6 @@
  */
 package org.olat.modules.openmeetings.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -34,12 +29,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.RoomType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,13 +46,14 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	
 	private TextElement roomNameEl;
 	private SingleSelection roomTypeEl;
-	private SingleSelection roomSizeEl;
+//	<VCRP-OM>
+	private TextElement roomSizeEl;
+//	</VCRP-OM>
 	private SingleSelection avModeEl;
 	private SingleSelection moderationModeEl;
 	private TextElement commentEl;
 	
 	private final String[] roomTypeKeys;
-	private final String[] roomSizes;
 	private final String[] moderationModeKeys;
 	private final String[] avModeKeys;
 
@@ -67,9 +63,9 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	
 	private OpenMeetingsRoom room;
 	private OpenMeetingsRoom defaultSettings;
-	private final OpenMeetingsManager openMeetingsManager;
 	
-	private long[] sizes = {2, 4, 6, 8, 10, 12, 14, 16, 25, 50, 100, 150, 200, 1000};
+	@Autowired
+	private OpenMeetingsManager openMeetingsManager;
 
 	public OpenMeetingsRoomEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, OpenMeetingsRoom defaultSettings) {
@@ -87,47 +83,12 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		moderationModeKeys = new String[]{"yes", "no"};
 		avModeKeys = new String[]{"audio", "video"};
 		
-		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		try {
 			room = openMeetingsManager.getRoom(group, ores, subIdentifier);
 		} catch (OpenMeetingsException e) {
 			showError(e.i18nKey());
 		}
-
-		if(room != null && !isLegalSize(room.getSize())) {
-			roomSizes = toStringSizes(room.getSize());
-		} else {
-			roomSizes = toStringSizes();
-		}
 		initForm(ureq);
-	}
-	
-	private String[] toStringSizes(long... addSizes) {
-		List<Long> endSizes = new ArrayList<Long>(sizes.length + 2);
-		for(long size:sizes) {
-			endSizes.add(new Long(size));
-		}
-		if(addSizes != null && addSizes.length > 0) {
-			for(long size:addSizes) {
-				endSizes.add(new Long(size));
-			}
-		}
-		Collections.sort(endSizes);
-		String[] stringuifiedSizes = new String[endSizes.size()];
-		int count = 0;
-		for(Long endSize:endSizes) {
-			stringuifiedSizes[count++] = endSize.toString();
-		}
-		return stringuifiedSizes;
-	}
-	
-	private boolean isLegalSize(long roomSize) {
-		for(long size:sizes) {
-			if(size == roomSize) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	public OpenMeetingsRoom getRoom() {
@@ -153,14 +114,14 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			roomTypeEl.select(type, true);
 		}
 		
-		roomSizeEl = uifactory.addDropdownSingleselect("roomsize", "room.size", formLayout, roomSizes, roomSizes, null);
+//		<VCRP-OM>
+		roomSizeEl = uifactory.addTextElement("roomsize", "room.size", 5, "", formLayout);
 		if(room != null) {
-			String size = Long.toString(room.getSize());
-			roomSizeEl.select(size, true);
+			roomSizeEl.setValue(room.getSize()<1000 ? Long.toString(room.getSize()) : "");
 		} else if(defaultSettings != null && defaultSettings.getSize() > 0) {
-			String size = Long.toString(defaultSettings.getSize());
-			roomSizeEl.select(size, true);
+			roomSizeEl.setValue(defaultSettings.getSize()<1000 ? Long.toString(defaultSettings.getSize()) : "");
 		}
+//		</VCRP-OM>
 		 
 		String[]  moderationModeValues = new String[]{ translate("room.moderation.yes"), translate("room.moderation.no") };
 		moderationModeEl = uifactory.addDropdownSingleselect("moderationmode", "room.moderation.mode", formLayout, moderationModeKeys, moderationModeValues, null);
@@ -205,14 +166,14 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		room.setComment(commentEl.getValue());
 		room.setModerated(moderationModeEl.isOneSelected() && moderationModeEl.isSelected(0));
 		room.setName(roomNameEl.getValue());
-		if(roomSizeEl.isOneSelected()) {
-			String key = roomSizeEl.getSelectedKey();
-			if(StringHelper.isLong(key)) {
-				room.setSize(Long.parseLong(key));
-			} else {
-				room.setSize(16l);
-			}
-		}
+//		<VCRP-OM>
+		try {
+			room.setSize(Long.parseLong(roomSizeEl.getValue()));
+		} catch (Exception e) {
+			room.setSize(1000);
+			roomSizeEl.setValue("");
+ 		}
+//		</VCRP-OM>
 		room.setAudioOnly(avModeEl.isOneSelected() && avModeEl.isSelected(0));
 		if(roomTypeEl.isOneSelected()) {
 			String type = roomTypeEl.getSelectedKey();
@@ -227,6 +188,15 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			room = openMeetingsManager.addRoom(group, ores, subIdentifier, room);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
+	}
+	
+	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		// TODO Auto-generated method stub
+		return allOk;
 	}
 
 	@Override

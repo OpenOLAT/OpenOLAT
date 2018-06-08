@@ -38,6 +38,7 @@ import org.olat.core.id.Roles;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -45,6 +46,7 @@ import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("repo/lifecycle")
 public class RepositoryEntryLifecycleWebService {
 	

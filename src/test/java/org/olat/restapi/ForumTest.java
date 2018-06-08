@@ -47,18 +47,20 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -75,7 +77,12 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ForumTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(ForumTest.class);
 	
 	private static Forum forum;
 	private static Message m1, m2, m3, m4 ,m5;
@@ -86,7 +93,6 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-zero");
 		
@@ -132,8 +138,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<MessageVO> threads = parseMessageArray(body);
+		List<MessageVO> threads = parseMessageArray(response.getEntity());
 		
 		assertNotNull(threads);
 		assertFalse(threads.isEmpty());	
@@ -169,8 +174,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<MessageVO> threads = parseMessageArray(body);
+		List<MessageVO> threads = parseMessageArray(response.getEntity());
 		
 		assertNotNull(threads);
 		assertFalse(threads.isEmpty());
@@ -259,15 +263,51 @@ public class ForumTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testNewMessageWithEntity() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		ReplyVO vo = new ReplyVO();
+		vo.setTitle("Reply with attachment");
+		vo.setBody("Reply with attachment body");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		MessageVO message = conn.parse(response, MessageVO.class);
+		assertNotNull(message);
+		assertNotNull(message.getKey());
+		assertEquals(message.getForumKey(), forum.getKey());
+		assertEquals(message.getParentKey(), m1.getKey());
+		
+		//really saved?
+		boolean saved = false;
+		List<Message> allMessages = forumManager.getMessagesByForum(forum);
+		for(Message msg:allMessages) {
+			if(msg.getKey().equals(message.getKey())) {
+				saved = true;
+			}
+		}
+		assertTrue(saved);
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testGetAttachment() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		//set a attachment
-
+		VFSLeaf attachment = null;
 		VFSContainer container = forumManager.getMessageContainer(m1.getForum().getKey(), m1.getKey());
-		InputStream portraitIn = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
-		assertNotNull(portraitIn);
-		VFSLeaf attachment = container.createChildLeaf(UUID.randomUUID().toString().replace("-", "") + ".jpg");
-		FileUtils.bcopy(portraitIn, attachment.getOutputStream(false), "");
+		try(InputStream portraitIn = CoursesElementsTest.class.getResourceAsStream("portrait.jpg")) {
+			assertNotNull(portraitIn);
+			attachment = container.createChildLeaf(UUID.randomUUID().toString().replace("-", "") + ".jpg");
+			FileUtils.bcopy(portraitIn, attachment.getOutputStream(false), "");
+		} catch(IOException e) {
+			Assert.fail();
+			log.error("", e);
+		}
 
 		assertTrue(conn.login("administrator", "openolat"));
 
@@ -275,7 +315,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<FileVO> files = parseFileArray(response.getEntity().getContent());
+		List<FileVO> files = parseFileArray(response.getEntity());
 		assertNotNull(files);
 		
 		FileVO attachmentVO = null;
@@ -331,10 +371,13 @@ public class ForumTest extends OlatJerseyTestCase {
 				
 		//check if the image is still an image
 		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
-		InputStream uploadedStream = uploadedImage.getInputStream();
-		BufferedImage image = ImageIO.read(uploadedStream);
-		FileUtils.closeSafely(uploadedStream);
-		assertNotNull(image);
+		try(InputStream uploadedStream = uploadedImage.getInputStream()) {
+			BufferedImage image = ImageIO.read(uploadedStream);
+			assertNotNull(image);
+		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
 		
 		conn.shutdown();
 	}
@@ -354,12 +397,10 @@ public class ForumTest extends OlatJerseyTestCase {
 		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		
-		//attachment
-		InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
-		assertNotNull(portraitStream);
+		
 		//upload portrait
 		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
-		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
+		byte[] portraitBytes = getPortrait(); //attachment
 		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
 		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON);
 		
@@ -378,10 +419,13 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//check if the image is still an image
 		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
-		InputStream uploadedStream = uploadedImage.getInputStream();
-		BufferedImage image = ImageIO.read(uploadedStream);
-		FileUtils.closeSafely(uploadedStream);
-		assertNotNull(image);
+		try(InputStream uploadedStream = uploadedImage.getInputStream()) {
+			BufferedImage image = ImageIO.read(uploadedStream);
+			assertNotNull(image);
+		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
 
 		conn.shutdown();
 	}
@@ -397,15 +441,18 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		File64VO[] files = new File64VO[2];
 		//upload portrait
-		InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
-		assertNotNull(portraitStream);
-		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
+		byte[] portraitBytes = getPortrait(); //attachment 
+		
 		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
 		files[0] = new File64VO("portrait64.jpg", new String(portrait64));
 		//upload single page
-		InputStream  indexStream = ForumTest.class.getResourceAsStream("singlepage.html");
-		assertNotNull(indexStream);
-		byte[] indexBytes = IOUtils.toByteArray(indexStream);
+		byte[] indexBytes = null;
+		try(InputStream  indexStream = ForumTest.class.getResourceAsStream("singlepage.html")) {
+			indexBytes = IOUtils.toByteArray(indexStream);
+		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
 		byte[] index64 = Base64.encodeBase64(indexBytes, true);
 		files[1] = new File64VO("singlepage64.html", new String(index64));
 		vo.setAttachments(files);
@@ -443,10 +490,14 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//check if the image is still an image
 		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
-		InputStream uploadedStream = uploadedImage.getInputStream();
-		BufferedImage image = ImageIO.read(uploadedStream);
-		FileUtils.closeSafely(uploadedStream);
-		assertNotNull(image);
+		try(InputStream uploadedStream = uploadedImage.getInputStream()) {
+			BufferedImage image = ImageIO.read(uploadedStream);
+			FileUtils.closeSafely(uploadedStream);
+			assertNotNull(image);
+		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
 		
 		//check if the single page exists
 		VFSItem uploadedPage = container.resolve("singlepage64.html");
@@ -471,14 +522,14 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(message);
 		
 		//attachment
-		InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
-		assertNotNull(portraitStream);
+		byte[] portraitBytes = getPortrait();
+		
 		//upload portrait
 		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
 		HttpPut attachMethod = conn.createPut(attachUri, MediaType.APPLICATION_JSON, true);
 		attachMethod.addHeader("Content-Type", MediaType.APPLICATION_JSON);
 		
-		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
+		
 		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
 		File64VO fileVo = new File64VO();
 		fileVo.setFile(new String(portrait64));
@@ -495,10 +546,14 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		//check if the image is still an image
 		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
-		InputStream uploadedStream = uploadedImage.getInputStream();
-		BufferedImage image = ImageIO.read(uploadedStream);
-		FileUtils.closeSafely(uploadedStream);
-		assertNotNull(image);
+		try(InputStream uploadedStream = uploadedImage.getInputStream()) {
+			BufferedImage image = ImageIO.read(uploadedStream);
+			FileUtils.closeSafely(uploadedStream);
+			assertNotNull(image);
+		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
 		
 		conn.shutdown();
 	}
@@ -544,8 +599,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpGet loadMethod = conn.createGet(loadUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse loadResponse = conn.execute(loadMethod);
 		assertEquals(200, loadResponse.getStatusLine().getStatusCode());
-		InputStream loadBody = loadResponse.getEntity().getContent();
-		List<FileVO> files = parseFileArray(loadBody);
+		List<FileVO> files = parseFileArray(loadResponse.getEntity());
 		assertNotNull(files);
 		assertEquals(2, files.size());
 		
@@ -556,12 +610,21 @@ public class ForumTest extends OlatJerseyTestCase {
 		return UriBuilder.fromUri(getContextURI()).path("repo").path("forums").path(forum.getKey().toString());
 	}
 	
-	protected List<MessageVO> parseMessageArray(InputStream body) {
-		try {
+	private byte[] getPortrait() {
+		try(InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg")) {
+			return IOUtils.toByteArray(portraitStream);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	protected List<MessageVO> parseMessageArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<MessageVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<MessageVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

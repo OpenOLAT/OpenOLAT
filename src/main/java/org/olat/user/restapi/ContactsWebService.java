@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupService;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -47,6 +48,7 @@ import org.olat.group.BusinessGroupService;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Component
 @Path("contacts")
 public class ContactsWebService {
 	

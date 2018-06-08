@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -48,6 +49,7 @@ import org.olat.restapi.security.RestSecurityHelper;
  * @author srosse, stephane.rosse@frentix.com
  */
 @Path("i18n")
+@Component
 public class I18nWebService {
 	
 	private static final String VERSION = "1.0";

@@ -76,6 +76,7 @@ import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -86,6 +87,7 @@ import org.olat.restapi.security.RestSecurityHelper;
  * Initial Date:  20.12.2010 <br>
  * @author skoeber
  */
+@Component
 @Path("repo/courses/{courseId}/elements/forum")
 public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	

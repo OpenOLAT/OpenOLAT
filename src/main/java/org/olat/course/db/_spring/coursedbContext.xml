@@ -7,7 +7,7 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
-
+<!--  
 	<bean id="courseDbWebService" class="org.olat.course.db.restapi.CourseDbWebService" />
 
 	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
@@ -15,5 +15,6 @@
 		<property name="targetMethod" value="addSingleton" />
 		<property name="arguments" ref="courseDbWebService"/>
 	</bean>
+	-->
                         
 </beans>

@@ -79,6 +79,7 @@ import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
+import org.springframework.stereotype.Component;
 
 /**
  * Description:<br>
@@ -89,10 +90,11 @@ import org.olat.restapi.support.vo.RepositoryEntryVOes;
  * 
  * @author patrickb, srosse, stephane.rosse@frentix.com
  */
+@Component
 @Path("repo/entries")
-public class RepositoryEntriesResource {
+public class RepositoryEntriesWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntriesResource.class);
+	private static final OLog log = Tracing.createLoggerFor(RepositoryEntriesWebService.class);
 	private static final String VERSION = "1.0";
 	
 	/**
@@ -131,7 +133,7 @@ public class RepositoryEntriesResource {
 			sb.append("Course List\n");
 			for (RepositoryEntry repoE : coursRepos) {
 				UriBuilder baseUriBuilder = uriInfo.getBaseUriBuilder();
-				URI repoUri = baseUriBuilder.path(RepositoryEntriesResource.class)
+				URI repoUri = baseUriBuilder.path(RepositoryEntriesWebService.class)
 					.path(repoE.getKey().toString())
 					.build();
 				
@@ -383,10 +385,10 @@ public class RepositoryEntriesResource {
 	}
 	
 	@Path("{repoEntryKey}")
-	public RepositoryEntryResource getRepositoryEntryResource() {
+	public RepositoryEntryWebService getRepositoryEntryResource() {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		return new RepositoryEntryResource(rm, repositoryService, securityManager);
+		return new RepositoryEntryWebService(rm, repositoryService, securityManager);
 	}
 }

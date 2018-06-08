@@ -212,6 +212,7 @@ public class CertificationTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//check certificate
+		System.out.println("Test: " + Thread.currentThread().getName());
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
 		Assert.assertNotNull(certificate);
 		Assert.assertEquals(creationDate, certificate.getCreationDate());

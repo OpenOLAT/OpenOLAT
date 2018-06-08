@@ -40,9 +40,9 @@ import org.apache.openmeetings.axis.services.UserService;
 import org.apache.openmeetings.axis.services.UserServicePortType;
 import org.apache.openmeetings.axis.services.xsd.RoomReturn;
 import org.apache.openmeetings.axis.services.xsd.RoomUser;
-import org.apache.openmeetings.persistence.beans.basic.xsd.Sessiondata;
-import org.apache.openmeetings.persistence.beans.flvrecord.xsd.FlvRecording;
-import org.apache.openmeetings.persistence.beans.room.xsd.Room;
+import org.apache.openmeetings.db.dto.record.xsd.RecordingDTO;
+import org.apache.openmeetings.db.dto.room.xsd.RoomDTO;
+import org.apache.openmeetings.db.entity.server.xsd.Sessiondata;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -345,24 +345,24 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	throws OpenMeetingsException {
 		try {
 			RoomServicePortType roomWs = getRoomWebService();
-			Room omRoom = roomWs.getRoomById(sid, roomId);
+			RoomDTO omRoom = roomWs.getRoomById(sid, roomId);
 			if(omRoom != null) {
 				room.setComment(omRoom.getComment());
-				if(omRoom.isIsModeratedRoom() != null) {
-					room.setModerated(omRoom.isIsModeratedRoom());
+				if(omRoom.isModerated() != null) {
+					room.setModerated(omRoom.isModerated());
 				}
-				if(omRoom.isIsAudioOnly() != null) {
-					room.setAudioOnly(omRoom.isIsAudioOnly());
+				if(omRoom.isAudioOnly() != null) {
+					room.setAudioOnly(omRoom.isAudioOnly());
 				}
 				room.setName(omRoom.getName());
-				if(omRoom.getRoomsId() != null) {
-					room.setRoomId(omRoom.getRoomsId());
+				if(omRoom.getId() != null) {
+					room.setRoomId(omRoom.getId());
 				} else {
 					room.setRoomId(roomId);
 				}
 				room.setSize(omRoom.getNumberOfPartizipants());
 				room.setType(omRoom.getRoomtype().getRoomtypesId());
-				room.setClosed(omRoom.isIsClosed());
+				room.setClosed(omRoom.isClosed());
 				return room;
 			} else {
 				return null;
@@ -431,21 +431,21 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		try {
 			String adminSID = adminLogin();
 			RoomServicePortType roomWs = getRoomWebService();
-			List<FlvRecording> recordings = roomWs.getFlvRecordingByRoomId(adminSID, roomId);
+			List<RecordingDTO> recordings = roomWs.getFlvRecordingByRoomId(adminSID, roomId);
 
 			List<OpenMeetingsRecording> recList = new ArrayList<>();
 			if(recordings != null) {
-				for(FlvRecording recording:recordings) {
+				for(RecordingDTO recording:recordings) {
 					if(recording != null) {
 						OpenMeetingsRecording rec = new OpenMeetingsRecording();
 						rec.setRoomId(recording.getRoomId());
-						rec.setRecordingId(recording.getFlvRecordingId());
-						rec.setFilename(recording.getFileName());
-						rec.setDownloadName(recording.getFileHash());
-						rec.setDownloadNameAlt(recording.getAlternateDownload());
-						rec.setPreviewImage(recording.getPreviewImage());
-						rec.setWidth(recording.getFlvWidth());
-						rec.setHeight(recording.getFlvHeight());
+						rec.setRecordingId(recording.getId());
+						rec.setFilename(recording.getName());
+						rec.setDownloadName(recording.getFlvName());
+						rec.setDownloadNameAlt(recording.getAviName());
+						//rec.setPreviewImage(recording.getPreviewImage());
+						rec.setWidth(recording.getWidth());
+						rec.setHeight(recording.getHeight());
 						recList.add(rec);
 					}
 				}
@@ -683,7 +683,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			UserService ss = new UserService();
 			UserServicePortType port = ss.getUserServiceHttpSoap11Endpoint();
 			String endPoint = cleanUrl(url) + "/services/UserService?wsdl";
-	    ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+			((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
 			
 			Sessiondata sessiondata = port.getSession();
 			String sid = sessiondata.getSessionId();

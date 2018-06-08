@@ -43,6 +43,7 @@ import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -50,6 +51,7 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Component
 @Path("repo/lectures")
 public class LectureBlocksRootWebService {
 	

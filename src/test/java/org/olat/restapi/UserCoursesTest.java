@@ -29,10 +29,9 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -49,6 +48,9 @@ import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -86,8 +88,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(1, courses.size());
 
@@ -97,8 +98,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		HttpGet pagedMethod = conn.createGet(pagedRequest, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse pagedResponse = conn.execute(pagedMethod);
 		Assert.assertEquals(200, pagedResponse.getStatusLine().getStatusCode());
-		InputStream pagedBody = pagedResponse.getEntity().getContent();
-		CourseVOes pagedCourses = conn.parse(pagedBody, CourseVOes.class);
+		CourseVOes pagedCourses = conn.parse(pagedResponse.getEntity(), CourseVOes.class);
 		Assert.assertNotNull(pagedCourses);
 		Assert.assertEquals(1, pagedCourses.getTotalCount());
 		Assert.assertNotNull(pagedCourses.getCourses());
@@ -124,8 +124,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(1, courses.size());
 
@@ -135,8 +134,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		HttpGet pagedMethod = conn.createGet(pagedRequest, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse pagedResponse = conn.execute(pagedMethod);
 		Assert.assertEquals(200, pagedResponse.getStatusLine().getStatusCode());
-		InputStream pagedBody = pagedResponse.getEntity().getContent();
-		CourseVOes pagedCourses = conn.parse(pagedBody, CourseVOes.class);
+		CourseVOes pagedCourses = conn.parse(pagedResponse.getEntity(), CourseVOes.class);
 		Assert.assertNotNull(pagedCourses);
 		Assert.assertEquals(1, pagedCourses.getTotalCount());
 		Assert.assertNotNull(pagedCourses.getCourses());
@@ -162,8 +160,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(1, courses.size());
 		
@@ -173,8 +170,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		HttpGet pagedMethod = conn.createGet(pagedRequest, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse pagedResponse = conn.execute(pagedMethod);
 		Assert.assertEquals(200, pagedResponse.getStatusLine().getStatusCode());
-		InputStream pagedBody = pagedResponse.getEntity().getContent();
-		CourseVOes pagedCourses = conn.parse(pagedBody, CourseVOes.class);
+		CourseVOes pagedCourses = conn.parse(pagedResponse.getEntity(), CourseVOes.class);
 		Assert.assertNotNull(pagedCourses);
 		Assert.assertEquals(1, pagedCourses.getTotalCount());
 		Assert.assertNotNull(pagedCourses.getCourses());
@@ -184,10 +180,10 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 	}
 	
-	protected List<CourseVO> parseCourseArray(InputStream body) {
-		try {
+	protected List<CourseVO> parseCourseArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<CourseVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<CourseVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

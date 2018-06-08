@@ -53,8 +53,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -79,6 +77,9 @@ import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CoursesTest extends OlatJerseyTestCase {
 
@@ -107,7 +108,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
@@ -154,8 +154,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 2);
 
@@ -185,8 +184,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 1);
 
@@ -208,9 +206,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		assertNotNull("Course list cannot be null", courses);
 		assertEquals(1, courses.size());
 		CourseVO vo = courses.get(0);
@@ -228,8 +224,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 1);
 
@@ -251,8 +246,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 1);
 
@@ -270,8 +264,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		List<CourseVO> courses = parseCourseArray(body);
+		List<CourseVO> courses = parseCourseArray(response.getEntity());
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 1);
 
@@ -511,12 +504,12 @@ public class CoursesTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 	}
 
-	protected List<CourseVO> parseCourseArray(InputStream body) {
-		try {
+	protected List<CourseVO> parseCourseArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			return mapper.readValue(body, new TypeReference<List<CourseVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<CourseVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
