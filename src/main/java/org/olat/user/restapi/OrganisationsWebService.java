@@ -21,10 +21,12 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -36,13 +38,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 
 /**
@@ -201,7 +206,8 @@ public class OrganisationsWebService {
 	@Path("{organisationKey}")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postOrganisation(@PathParam("organisationKey") Long organisationKey, OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
+	public Response postOrganisation(@PathParam("organisationKey") Long organisationKey, OrganisationVO organisation,
+			@Context HttpServletRequest httpRequest) {
 		boolean isSystemAdministrator = isAdmin(httpRequest);
 		if(!isSystemAdministrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -262,6 +268,200 @@ public class OrganisationsWebService {
 	@Path("types")
 	public OrganisationTypesWebService getOrganisationTypes() {
 		return new OrganisationTypesWebService();
+	}
+	
+	/**
+	 * Get all members of the specified organisation with the specified role.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of members
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The organisation was not found
+	 * @response.representation.409.doc The rolle is not valid
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{organisationKey}/{role}")
+	public Response getMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
+			@Context HttpServletRequest httpRequest) {
+		boolean isSystemAdministrator = isAdmin(httpRequest);
+		if(!isSystemAdministrator) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return getMembers(organisationKey, getRoles(role));
+	}
+	
+	private Response getMembers(Long organisationKey, OrganisationRoles role) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		
+		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if(organisation == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(role == null) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+
+		List<Identity> members = organisationService.getMembersIdentity(organisation, role);
+		List<UserVO> voList = new ArrayList<>(members.size());
+		for(Identity member:members) {
+			voList.add(UserVOFactory.get(member));
+		}
+		return Response.ok(voList.toArray(new UserVO[voList.size()])).build();
+	}
+	
+	/**
+	 * Make the specified user a member of the specified organization
+	 * with the specified role.
+	 * 
+	 * @response.representation.200.doc The membership was added
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The organization or the identity was not found
+	 * @param organisationKey The organization primary key
+	 * @param role The role
+	 * @param identityKey The member to make a coach of
+	 * @param httpRequest The HTTP request
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{organisationKey}/{role}/{identityKey}")
+	public Response putMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		boolean isSystemAdministrator = isAdmin(httpRequest);
+		if(!isSystemAdministrator) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return putMember(organisationKey, identityKey, getRoles(role));
+	}
+	
+	private Response putMember(Long organisationKey, Long identityKey, OrganisationRoles role) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if(organisation == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(role == null) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		organisationService.addMember(organisation, identity, role);
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Add a membership to the specified curriculum element.
+	 * 
+	 * @response.representation.qname {http://www.example.com}curriculumElementMemberVO
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc The curriculum element membership to persist
+	 * @response.representation.example {@link org.olat.modules.curriculum.restapi.Examples#SAMPLE_CURRICULUMELEMENTMEMBERVO}
+	 * @response.representation.200.doc The membership was persisted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @response.representation.409.doc The role is not allowed
+	 * @param organisationKey The curriculum element primary key
+	 * @param role The membership informations
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{organisationKey}/{role}")
+	public Response putMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
+			UserVO[] members, @Context HttpServletRequest httpRequest) {
+		boolean isSystemAdministrator = isAdmin(httpRequest);
+		if(!isSystemAdministrator) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if(organisation == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+	
+		if(getRoles(role) == null) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		for(UserVO member:members) {
+			Identity identity = securityManager.loadIdentityByKey(member.getKey());
+			if(identity != null) {
+				organisationService.addMember(organisation, identity, getRoles(role));
+			}
+		}
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Remove the membership of the identity from the specified organization and role.
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The organization or the identity was not found
+	 * @param curriculumElementKey The curriculum element primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{organisationKey}/{role}/{identityKey}")
+	public Response deleteMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		boolean isSystemAdministrator = isAdmin(httpRequest);
+		if(!isSystemAdministrator) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		return deleteMember(organisationKey, identityKey, getRoles(role));
+	}
+	
+	private Response deleteMember(Long organisationKey, Long identityKey, OrganisationRoles role) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if(organisation == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(role == null) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		organisationService.removeMember(organisation, identity, role);
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Convert beautified role to enum.
+	 * 
+	 * @param role
+	 * @return The role enum or null
+	 */
+	private OrganisationRoles getRoles(String role) {
+		if(OrganisationRoles.isValue(role)) {
+			return OrganisationRoles.valueOf(role);
+		} else if("coaches".equals(role)) {
+			return OrganisationRoles.coach;
+		}
+		
+		if(role.endsWith("s")) {
+			role = role.substring(0, role.length() - 1);
+		}
+		if(OrganisationRoles.isValue(role)) {
+			return OrganisationRoles.valueOf(role);
+		}
+		return null;	
 	}
 	
 	

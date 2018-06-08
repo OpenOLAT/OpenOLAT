@@ -108,8 +108,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		
 		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
 
-		
 		initForm(ureq);
+		loadModel(true);
 	}
 
 	@Override

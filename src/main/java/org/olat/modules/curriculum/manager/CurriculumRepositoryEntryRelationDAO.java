@@ -59,6 +59,25 @@ public class CurriculumRepositoryEntryRelationDAO {
 		return relation;
 	}
 	
+	public List<CurriculumRepositoryEntryRelation> getRelations(RepositoryEntryRef entry, CurriculumElementRef element) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel from repoentrytocurriculumelement as rel")
+		  .append(" where rel.entry.key=:repoKey and rel.curriculumElement.key=:elementKey");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CurriculumRepositoryEntryRelation.class)
+			.setParameter("repoKey", entry.getKey())
+			.setParameter("elementKey", element.getKey())
+			.getResultList();
+	}
+	
+	public void deleteRelation(RepositoryEntryRef entry, CurriculumElementRef element) {
+		List<CurriculumRepositoryEntryRelation> relations = getRelations(entry, element);
+		for(CurriculumRepositoryEntryRelation relation:relations) {
+			dbInstance.getCurrentEntityManager().remove(relation);
+		}
+	}
+	
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement as el")

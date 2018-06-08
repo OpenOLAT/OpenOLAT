@@ -30,23 +30,31 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.OrganisationVO;
+import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -304,7 +312,117 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getRoot());
 	}
 	
+	@Test
+	public void getMembers_users()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-11");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-p-5-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		dbInstance.commit();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
+				.path("users").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> users = parseUserArray(response.getEntity());
+		Assert.assertNotNull(users);
+		Assert.assertEquals(1, users.size());
+		Assert.assertEquals(member.getKey(), users.get(0).getKey());
+	}
 	
+	@Test
+	public void addMember_principal()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-12");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 6", "REST-p-6-organisation", "", null, null);
+		dbInstance.commit();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
+				.path("principals").path(member.getKey().toString()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> principals = organisationService.getMembersIdentity(organisation, OrganisationRoles.principal);
+		Assert.assertNotNull(principals);
+		Assert.assertEquals(1, principals.size());
+		Assert.assertEquals(member, principals.get(0));
+	}
+	
+	@Test
+	public void addMembers_author()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-15");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null);
+		dbInstance.commit();
+		
+		
+		UserVO[] authors = new UserVO[] {
+				UserVOFactory.get(author1),
+				UserVOFactory.get(author2)
+			};
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
+				.path("authors").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, authors);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> authorList = organisationService.getMembersIdentity(organisation, OrganisationRoles.author);
+		Assert.assertNotNull(authorList);
+		Assert.assertEquals(2, authorList.size());
+	}
+	
+	
+	@Test
+	public void removeMember_administrator()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.administrator);
+		dbInstance.commit();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
+				.path("administrators").path(member.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> administators = organisationService.getMembersIdentity(organisation, OrganisationRoles.administrator);
+		Assert.assertNotNull(administators);
+		Assert.assertTrue(administators.isEmpty());
+	}
+	
+	protected List<UserVO> parseUserArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	protected List<OrganisationVO> parseOrganisationArray(InputStream body) {
 		try {

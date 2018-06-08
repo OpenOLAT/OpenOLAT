@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -110,5 +111,35 @@ public class CurriculumDAOTest extends OlatTestCase {
 		//check the fetch
 		Assert.assertEquals(organisation, curriculums.get(0).getOrganisation());
 		Assert.assertNotNull(((CurriculumImpl)curriculums.get(0)).getGroup().getKey());
+	}
+	
+	@Test
+	public void search_searchString() {
+		String identifier = UUID.randomUUID().toString();
+		String displayName = UUID.randomUUID().toString();
+		Curriculum curriculum = curriculumDao.createAndPersist(identifier, displayName, "Short desc.", null);
+		dbInstance.commitAndCloseSession();
+		
+		// search something which doesn't exists
+		CurriculumSearchParameters params = new CurriculumSearchParameters();
+		params.setSearchString("AAAAAAAA");
+		List<Curriculum> curriculums = curriculumDao.search(params);
+		Assert.assertTrue(curriculums.isEmpty());
+		
+		// search by identifier
+		params.setSearchString(identifier);
+		List<Curriculum> curriculumById = curriculumDao.search(params);
+		Assert.assertEquals(1, curriculumById.size());
+		Assert.assertEquals(curriculum, curriculumById.get(0));
+		
+		// search by identifier
+		params.setSearchString(displayName.substring(0, 25).toUpperCase());
+		List<Curriculum> curriculumByName = curriculumDao.search(params);
+		Assert.assertTrue(curriculumByName.contains(curriculum));
+		
+		// search by primary key
+		params.setSearchString(curriculum.getKey().toString());
+		List<Curriculum> curriculumByKey = curriculumDao.search(params);
+		Assert.assertTrue(curriculumByKey.contains(curriculum));
 	}
 }

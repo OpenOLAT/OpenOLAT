@@ -44,7 +44,7 @@ public class LeaveColumnDescriptor extends DefaultColumnDescriptor {
 	@Override
 	public String getAction(int row) {
 		int sortedRow = table.getSortedRow(row);
-		MemberView membership = (MemberView)table.getTableDataModel()
+		MemberRow membership = (MemberRow)table.getTableDataModel()
 				.getValueAt(sortedRow, MemberListTableModel.Cols.groups.ordinal());
 		
 		return membership.isFullyManaged() ? null : super.getAction(row);
@@ -53,7 +53,7 @@ public class LeaveColumnDescriptor extends DefaultColumnDescriptor {
 	@Override
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
 		int sortedRow = table.getSortedRow(row);
-		MemberView membership = (MemberView)table.getTableDataModel()
+		MemberRow membership = (MemberRow)table.getTableDataModel()
 				.getValueAt(sortedRow, MemberListTableModel.Cols.groups.ordinal());
 		
 		if(!membership.isFullyManaged()) {

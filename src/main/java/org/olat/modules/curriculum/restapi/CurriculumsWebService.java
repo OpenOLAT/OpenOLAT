@@ -214,6 +214,9 @@ public class CurriculumsWebService {
 			@Context HttpServletRequest httpRequest) {
 		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(curriculum == null) {
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
 		allowedOrganisation(curriculum.getOrganisation(), getRoles(httpRequest));
 		return new CurriculumElementsWebService(curriculum);
 	}

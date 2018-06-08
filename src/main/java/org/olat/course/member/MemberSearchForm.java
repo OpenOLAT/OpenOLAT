@@ -19,12 +19,13 @@
  */
 package org.olat.course.member;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -54,8 +56,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MemberSearchForm extends FormBasicController implements ExtendedFlexiTableSearchController {
 	
-	private String[] roleKeys = {"owner", "tutor", "attendee", "waiting"};
-	private String[] originKeys = new String[]{"all", "repo", "group"};
+	private String[] roleKeys = { GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name() };
+	private String[] originKeys = new String[]{ Origin.all.name(), Origin.repositoryEntry.name(), Origin.businessGroup.name(), Origin.curriculum.name() };
 	
 	private TextElement login;
 	private SingleSelection originEl;
@@ -124,7 +126,7 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 		for(int i=originKeys.length; i-->0; ) {
 			openValues[i] = translate("search." + originKeys[i]);
 		}
-		originEl = uifactory.addRadiosHorizontal("openBg", "search.origin", rightContainer, originKeys, openValues);
+		originEl = uifactory.addRadiosVertical("openBg", "search.origin", rightContainer, originKeys, openValues);
 		originEl.select("all", true);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createDefaultFormLayout("button_layout", getTranslator());
@@ -167,24 +169,19 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 	private void fireSearchEvent(UserRequest ureq) {
 		SearchMembersParams params = new SearchMembersParams();
 		//roles
-		Collection<String> selectedKeys = rolesEl.getSelectedKeys();
-		params.setRepoOwners(selectedKeys.contains("owner"));
-		params.setRepoTutors(selectedKeys.contains("tutor"));
-		params.setGroupTutors(selectedKeys.contains("tutor"));
-		params.setRepoParticipants(selectedKeys.contains("attendee"));
-		params.setGroupParticipants(selectedKeys.contains("attendee"));
-		params.setGroupWaitingList(selectedKeys.contains("waiting"));
+		List<String> selectedKeys = new ArrayList<>(rolesEl.getSelectedKeys());
+		GroupRoles[] roles = new GroupRoles[selectedKeys.size()];
+		for(int i=0; i<selectedKeys.size(); i++) {
+			roles[i] = GroupRoles.valueOf(selectedKeys.get(i));
+		}
+		
+		params.setRoles(roles);
 
 		//origin
-		if(!originEl.isOneSelected() || originEl.isSelected(0)) {
-			params.setRepoOrigin(true);
-			params.setGroupOrigin(true);
-		} else if(originEl.isSelected(1)) {
-			params.setRepoOrigin(true);
-			params.setGroupOrigin(false);
-		} else if(originEl.isSelected(2)) {
-			params.setRepoOrigin(false);
-			params.setGroupOrigin(true);
+		if(!originEl.isOneSelected()) {
+			params.setOrigin(Origin.all);
+		} else {
+			params.setOrigin(Origin.valueOf(originEl.getSelectedKey()));
 		}
 		
 		String loginVal = login.getValue();

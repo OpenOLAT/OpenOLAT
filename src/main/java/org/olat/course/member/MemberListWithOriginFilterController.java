@@ -32,8 +32,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
-import org.olat.group.ui.main.MemberView;
+import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -42,7 +43,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class MemberListWithOriginFilterController extends AbstractMemberListController {
 	
-	private static final  String[] originKeys = new String[]{"all", "repo", "group"};
+	private static final  String[] originKeys = new String[]{ Origin.all.name(), Origin.repositoryEntry.name(), Origin.businessGroup.name(), Origin.curriculum.name()};
 	
 	private SingleSelection originEl;
 	
@@ -78,15 +79,10 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(originEl == source) {
-			if(!originEl.isOneSelected() || originEl.isSelected(0)) {
-				searchParams.setRepoOrigin(true);
-				searchParams.setGroupOrigin(true);
-			} else if(originEl.isSelected(1)) {
-				searchParams.setRepoOrigin(true);
-				searchParams.setGroupOrigin(false);
-			} else if(originEl.isSelected(2)) {
-				searchParams.setRepoOrigin(false);
-				searchParams.setGroupOrigin(true);
+			if(!originEl.isOneSelected()) {
+				searchParams.setOrigin(Origin.all);
+			} else {
+				searchParams.setOrigin(Origin.valueOf(originEl.getSelectedKey()));
 			}
 			membersTable.deselectAll();
 			reloadModel();
@@ -96,7 +92,7 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 	}
 	
 	@Override
-	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberRow member) {
 		removeAsListenerAndDispose(identityAssessmentController);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());

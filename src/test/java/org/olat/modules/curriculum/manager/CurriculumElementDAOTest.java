@@ -225,7 +225,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, curriculum);
-		curriculumService.addMember(element, supervisor, CurriculumRoles.supervisor);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
 		List<CurriculumElementMember> members = curriculumElementDao.getMembers(element);
@@ -233,6 +233,20 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, members.size());
 		CurriculumElementMember member = members.get(0);
 		Assert.assertEquals(supervisor, member.getIdentity());
-		Assert.assertEquals(CurriculumRoles.supervisor.name(), member.getRole());
+		Assert.assertEquals(CurriculumRoles.curriculummanager.name(), member.getRole());
+	}
+	
+	@Test
+	public void getMembersIdentity() {
+		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, curriculum);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> members = curriculumElementDao.getMembersIdentity(element, CurriculumRoles.curriculummanager.name());
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		Assert.assertEquals(supervisor, members.get(0));
 	}
 }

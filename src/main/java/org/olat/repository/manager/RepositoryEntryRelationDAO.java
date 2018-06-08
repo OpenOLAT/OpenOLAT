@@ -637,6 +637,22 @@ public class RepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
+	public boolean hasRelation(Group group, RepositoryEntryRef re) {
+		if(re == null || group == null) return false;
+		
+		String query = "select rel.key from repoentrytogroup as rel where rel.entry.key=:repoKey and rel.group.key=:groupKey";
+
+		List<Long> relations = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("repoKey", re.getKey())
+			.setParameter("groupKey", group.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return relations != null && !relations.isEmpty() && relations.get(0) != null;
+	}
+	
+	
 	/**
 	 * Get the relation from a base group to the repository entries
 	 * 

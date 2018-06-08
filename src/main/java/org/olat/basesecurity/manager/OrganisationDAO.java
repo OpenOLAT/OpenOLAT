@@ -196,6 +196,21 @@ public class OrganisationDAO {
 		return members;
 	}
 	
+	public List<Identity> getMembersIdentity(OrganisationRef organisation, String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where org.key=:organisationKey and membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("organisationKey", organisation.getKey())
+				.setParameter("role", role)
+				.getResultList();
+	}
+	
 	public List<Identity> getIdentities(String organisationIdentifier, String role) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident from organisation org")

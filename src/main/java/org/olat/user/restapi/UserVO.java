@@ -30,8 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
- * Description:<br>
- * TODO: srosse Class Description for UserVO
  * 
  * <P>
  * Initial Date:  7 apr. 2010 <br>
@@ -52,7 +50,7 @@ public class UserVO {
 
 	@XmlElementWrapper(name="properties")
 	@XmlElement(name="property")
-	private List<UserPropertyVO> properties = new ArrayList<UserPropertyVO>();
+	private List<UserPropertyVO> properties = new ArrayList<>();
 
 	public UserVO() {
 		//make JAXB happy

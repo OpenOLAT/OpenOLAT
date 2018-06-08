@@ -63,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MembersManagementMainController extends MainLayoutBasicController  implements Activateable2 {
+public class MembersManagementMainController extends MainLayoutBasicController implements Activateable2 {
 	
 	private static final String CMD_MEMBERS = "Members";
 	private static final String CMD_GROUPS = "Groups";

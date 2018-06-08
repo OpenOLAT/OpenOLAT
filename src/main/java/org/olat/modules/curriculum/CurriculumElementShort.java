@@ -17,40 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.id.OrganisationRef;
+package org.olat.modules.curriculum;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 6 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumSearchParameters {
+public interface CurriculumElementShort extends CurriculumElementRef {
 	
-	private String searchString;
-	private List<OrganisationRef> organisations;
+	public String getDisplayName();
+	
+	public CurriculumElementManagedFlag[] getManagedFlags();
 
-	public List<OrganisationRef> getOrganisations() {
-		if(organisations == null) {
-			organisations = new ArrayList<>();
-		}
-		return organisations;
-	}
-
-	public void setOrganisations(List<OrganisationRef> organisations) {
-		this.organisations = organisations;
-	}
-
-	public String getSearchString() {
-		return searchString;
-	}
-
-	public void setSearchString(String searchString) {
-		this.searchString = searchString;
-	}
 }

@@ -1,0 +1,352 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.group.manager;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.persistence.TypedQuery;
+
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.model.MemberView;
+import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.group.ui.main.SearchMembersParams.Origin;
+import org.olat.repository.RepositoryEntry;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 
+ * Initial date: 6 juin 2018<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Service
+public class MemberViewQueries {
+	
+	@Autowired
+	private DB dbInstance;
+	
+	public List<MemberView> getBusinessGroupMembers(BusinessGroup businessGroup, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		if(businessGroup == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.key, membership.role, membership.creationDate, membership.lastModified, ident")
+		  .append(" from businessgroup as grp")
+		  .append(" inner join grp.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where grp.key=:businessGroupKey");
+		searchByIdentity(sb, params);
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("businessGroupKey", businessGroup.getKey());
+		searchByIdentity(query, params);
+		
+		List<Object[]> rawObjects = query.getResultList();
+		Map<Identity,MemberView> views = new HashMap<>();
+		for(Object[] objects:rawObjects) {
+			int pos = 1;// 0 is the membershipKey
+			String role = (String)objects[pos++];
+			Date creationDate = (Date)objects[pos++];
+			Date lastModified = (Date)objects[pos++];
+			
+			Identity identity = (Identity)objects[pos++];
+			MemberView view = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale, creationDate, lastModified));
+			view.addGroup(businessGroup);
+			view.getMemberShip().setBusinessGroupRole(role);
+		}
+
+		getPending(views, businessGroup, params, userPropertyHandlers, locale);
+		
+		List<MemberView> members = new ArrayList<>(views.values());
+		filterByRoles(members, params);
+		filterByOrigin(members, params);
+		return members;
+	}
+	
+	public List<MemberView> getRepositoryEntryMembers(RepositoryEntry entry, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		if(entry == null) return Collections.emptyList();
+
+		Map<Identity,MemberView> views = getMembersView(entry, params, userPropertyHandlers, locale);
+		getPending(views, entry, params, userPropertyHandlers, locale);
+		
+		List<MemberView> members = new ArrayList<>(views.values());
+		filterByRoles(members, params);
+		filterByOrigin(members, params);
+		return members;
+	}
+	
+	private Map<Identity,MemberView> getMembersView(RepositoryEntry entry, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.key, membership.role, membership.creationDate, membership.lastModified, ident, relGroup.defaultGroup,")
+		  .append("  grp.key, grp.name, grp.managedFlagsString,")
+		  .append("  curriculumEl.key, curriculumEl.displayName, curriculumEl.managedFlagsString")
+		  .append(" from repositoryentry as v ")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join businessgroup as grp on (grp.baseGroup.key=baseGroup.key)")
+		  .append(" left join curriculumelement as curriculumEl on (curriculumEl.group.key=baseGroup.key)")
+		  .append(" where v.key=:repoEntryKey");
+		searchByIdentity(sb, params);
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("repoEntryKey", entry.getKey());
+		searchByIdentity(query, params);
+		
+		List<Object[]> rawObjects = query.getResultList();
+		Map<Identity,MemberView> views = new HashMap<>();
+		for(Object[] objects:rawObjects) {
+			int pos = 1;// 0 is the membershipKey
+			String role = (String)objects[pos++];
+			Date creationDate = (Date)objects[pos++];
+			Date lastModified = (Date)objects[pos++];
+			Identity member = (Identity)objects[pos++];
+			MemberView view = views.computeIfAbsent(member, id -> new MemberView(id, userPropertyHandlers, locale, creationDate, lastModified));
+
+			Boolean defaultGroup = (Boolean)objects[pos++];
+
+			Long groupKey = (Long)objects[pos++];
+			String groupName = (String)objects[pos++];
+			String groupManagedflags = (String)objects[pos++];
+
+			Long curriculumElementKey = (Long)objects[pos++];
+			String curriculumElementName = (String)objects[pos++];
+			String curriculumElementManagedFlags = (String)objects[pos++];
+
+			if(defaultGroup != null && defaultGroup.booleanValue()) {
+				view.setRepositoryEntryDisplayName(entry.getDisplayname());
+				view.setManagedFlags(entry.getManagedFlags());
+				view.getMemberShip().setRepositoryEntryRole(role);
+			} else if(groupKey != null) {
+				view.addGroup(new MemberView.BusinessGroupShortImpl(groupKey, groupName, groupManagedflags));
+				view.getMemberShip().setBusinessGroupRole(role);
+			} else if(curriculumElementKey != null) {
+				view.addCurriculumElement(new MemberView.CurriculumElementShortImpl(curriculumElementKey, curriculumElementName, curriculumElementManagedFlags));
+				view.getMemberShip().setCurriculumElementRole(role);
+			}
+		}
+		return views;
+	}
+	
+	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from resourcereservation as reservation")
+		  .append(" inner join reservation.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
+		  .append(" or reservation.resource.key in (select grp.resource.key from businessgroup as grp")
+		  .append("   inner join repoentrytogroup as rel on (grp.baseGroup.key=rel.group.key)")
+		  .append("   where rel.entry.key=:repoEntryKey")
+		  .append(" )");
+		searchByIdentity(sb, params);
+
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Identity.class)
+			.setParameter("repoEntryKey", entry.getKey());
+		searchByIdentity(query, params);
+		
+		List<Identity> identities = query.getResultList();
+		for(Identity identity:identities) {
+			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).setPending(true);
+		}
+	}
+	
+	private void getPending(Map<Identity,MemberView> views, BusinessGroup entry, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from resourcereservation as reservation")
+		  .append(" inner join reservation.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" inner join businessgroup as grp on (reservation.resource.key = grp.resource.key)")
+		  .append(" where grp.key=:groupKey");
+		searchByIdentity(sb, params);
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Identity.class)
+			.setParameter("groupKey", entry.getKey());
+		searchByIdentity(query, params);
+		
+		List<Identity> identities = query.getResultList();
+		for(Identity identity:identities) {
+			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).setPending(true);
+		}
+	}
+	
+	private void searchByIdentity(StringBuilder sb, SearchMembersParams params) {
+		if (params.getLogin() == null && (params.getUserPropertiesSearch() == null || params.getUserPropertiesSearch().isEmpty())) return;
+
+		sb.append(" and (");			
+
+		// append query for login
+		boolean appendOr = false;
+		
+		if (params.getLogin() != null) {
+			appendOr = true;
+			if (params.getLogin().contains("_") && dbInstance.isOracle()) {
+				//oracle needs special ESCAPE sequence to search for escaped strings
+				sb.append("lower(ident.name) like :login ESCAPE '\\'");
+			} else if (dbInstance.isMySQL()) {
+				sb.append("ident.name like :login");
+			} else {
+				sb.append("lower(ident.name) like :login");
+			}
+		}
+
+		// append queries for user fields
+		if (params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
+			// add other fields
+			for (String key : params.getUserPropertiesSearch().keySet()) {
+				if(appendOr) {
+					sb.append(" or ");
+				} else {
+					appendOr = true;
+				}
+				
+				if(dbInstance.isMySQL()) {
+					sb.append("identUser.").append(key).append(" like :").append(key).append("_value");
+				} else {
+					sb.append("lower(identUser.").append(key).append(") like :").append(key).append("_value");
+				}
+				if(dbInstance.isOracle()) {
+					sb.append(" escape '\\'");
+				}
+			}
+		}
+
+		sb.append(" )");
+	}
+	
+	private void searchByIdentity(TypedQuery<?> query, SearchMembersParams params) {
+		if (params.getLogin() != null) {
+			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
+			query.setParameter("login", login.toLowerCase());
+		}
+
+		//	 add user properties attributes
+		if (params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
+			for (Map.Entry<String, String> entry : params.getUserPropertiesSearch().entrySet()) {
+				String value = entry.getValue();
+				value = PersistenceHelper.makeFuzzyQueryString(value);
+				query.setParameter(entry.getKey() + "_value", value.toLowerCase());
+			}
+		}
+	}
+	
+	private void filterByOrigin(List<MemberView> memberList, SearchMembersParams params) {
+		if(params.getOrigin() == Origin.businessGroup) {
+			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+				MemberView m = it.next();
+				if(m.getGroups() == null || m.getGroups().isEmpty()) {
+					it.remove();
+				}
+			}
+		} else if(params.getOrigin() == Origin.curriculum) {
+			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+				MemberView m = it.next();
+				if(m.getCurriculumElements() == null || m.getCurriculumElements().isEmpty()) {
+					it.remove();
+				}
+			}
+		} else if(params.getOrigin() == Origin.repositoryEntry) {
+			for(Iterator<MemberView> it=memberList.iterator(); it.hasNext(); ) {
+				if(!StringHelper.containsNonWhitespace(it.next().getRepositoryEntryDisplayName())) {
+					it.remove();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * This filter method preserve the multiple roles of a member. If we want only the waiting list but
+	 * a member is in the waiting list and owner of the course, we want it to know.
+	 * @param memberList
+	 * @param params
+	 * @return
+	 */
+	private void filterByRoles(Collection<MemberView> memberList, SearchMembersParams params) {
+		List<MemberView> members = new ArrayList<>(memberList);
+
+		if(params.isRole(GroupRoles.owner)) {
+			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
+				if(it.next().getMemberShip().isOwner()) {
+					it.remove();
+				}
+			}
+		}
+	
+		if(params.isRole(GroupRoles.participant)) {
+			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
+				if(it.next().getMemberShip().isParticipant()) {
+					it.remove();
+				}
+			}
+		}
+		
+		if(params.isRole(GroupRoles.coach)) {
+			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
+				if(it.next().getMemberShip().isCoach()) {
+					it.remove();
+				}
+			}
+		}
+		
+		if(params.isRole(GroupRoles.waiting)) {
+			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
+				if(it.next().getMemberShip().isBusinessGroupWaiting()) {
+					it.remove();
+				}
+			}
+		}
+
+		if(params.isPending()) {
+			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
+				if(it.next().isPending()) {
+					it.remove();
+				}
+			}
+		}
+		
+		memberList.removeAll(members);
+	}
+}

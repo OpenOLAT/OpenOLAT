@@ -21,6 +21,7 @@ package org.olat.repository.ui.author;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,7 +48,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
-import org.olat.group.ui.main.MemberView;
+import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -77,7 +78,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 						Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 
-		params = new SearchMembersParams(true, true, true, true, true, true, true);
+		params = new SearchMembersParams(true, GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting);
 		reloadModel();
 	}
 
@@ -128,7 +129,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	}
 	
 	@Override
-	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberRow member) {
 		//
 	}
 	

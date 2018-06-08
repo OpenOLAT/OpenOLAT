@@ -36,6 +36,7 @@ public enum OrganisationRoles {
 	groupmanager,
 	poolmanager,
 	curriculummanager,
+	principal,
 	author,
 	coach,
 	user,
@@ -71,6 +72,7 @@ public enum OrganisationRoles {
 				groupmanager,
 				poolmanager,
 				curriculummanager,
+				principal,
 				author,
 				user,
 			};

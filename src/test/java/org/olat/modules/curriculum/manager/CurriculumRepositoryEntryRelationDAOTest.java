@@ -84,7 +84,6 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(entry, entries.get(0));
 	}
 	
-	
 	@Test
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
@@ -101,5 +100,43 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(element, elements.get(0));
 	}
 	
-
+	@Test
+	public void getRelations() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-3", "Curriculum for relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumRepositoryEntryRelation> relations = curriculumRepositoryEntryRelationDao.getRelations(entry, element);
+		Assert.assertNotNull(relations);
+		Assert.assertEquals(1, relations.size());
+		Assert.assertEquals(element, relations.get(0).getCurriculumElement());
+		Assert.assertEquals(entry, relations.get(0).getEntry());
+	}
+	
+	@Test
+	public void deleteRelations() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-4", "Curriculum for relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+		
+		// check if the relation is really there.
+		List<CurriculumRepositoryEntryRelation> relations = curriculumRepositoryEntryRelationDao.getRelations(entry, element);
+		Assert.assertEquals(1, relations.size());
+		
+		// delete the relations
+		curriculumRepositoryEntryRelationDao.deleteRelation(entry, element);
+		dbInstance.commitAndCloseSession();
+		
+		// check that there isn't a relation left
+		List<CurriculumRepositoryEntryRelation> deletedRelations = curriculumRepositoryEntryRelationDao.getRelations(entry, element);
+		Assert.assertTrue(deletedRelations.isEmpty());
+	}
 }

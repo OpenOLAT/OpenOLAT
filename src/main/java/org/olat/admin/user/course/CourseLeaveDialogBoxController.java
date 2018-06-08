@@ -34,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,6 +53,9 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 	private final List<RepositoryEntry> repoEntriesToLeave;
 	private final List<BusinessGroup> groupsToLeave;
 	private final List<BusinessGroup> groupsToDelete;
+	
+	@Autowired
+	private UserManager userManager;
 	
 	public CourseLeaveDialogBoxController(UserRequest ureq, WindowControl wControl, Identity leavingIdentity,
 			List<RepositoryEntry> repoEntries, List<BusinessGroup> groupsToLeave, List<BusinessGroup> groupsToDelete) {
@@ -77,7 +81,7 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 			repoEntryToLeaveNames.append(entry.getDisplayname());
 		}
 		
-		String identityName = UserManager.getInstance().getUserDisplayName(leavingIdentity);
+		String identityName = userManager.getUserDisplayName(leavingIdentity);
 		String leaveText;
 		if(groupsToLeave.isEmpty()) {
 			leaveText = translate("unsubscribe.text", new String[]{identityName, repoEntryToLeaveNames.toString()});

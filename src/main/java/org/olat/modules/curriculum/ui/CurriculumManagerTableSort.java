@@ -17,40 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.modules.curriculum.ui;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.id.OrganisationRef;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 4 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumSearchParameters {
+public class CurriculumManagerTableSort extends SortableFlexiTableModelDelegate<CurriculumRow> {
 	
-	private String searchString;
-	private List<OrganisationRef> organisations;
-
-	public List<OrganisationRef> getOrganisations() {
-		if(organisations == null) {
-			organisations = new ArrayList<>();
-		}
-		return organisations;
+	public CurriculumManagerTableSort(SortKey orderBy, CurriculumManagerDataModel model, Locale locale) {
+		super(orderBy, model, locale);
 	}
 
-	public void setOrganisations(List<OrganisationRef> organisations) {
-		this.organisations = organisations;
-	}
-
-	public String getSearchString() {
-		return searchString;
-	}
-
-	public void setSearchString(String searchString) {
-		this.searchString = searchString;
-	}
 }

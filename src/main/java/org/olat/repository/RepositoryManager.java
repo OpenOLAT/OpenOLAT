@@ -1974,21 +1974,6 @@ public class RepositoryManager {
 		return new ArrayList<>(memberships.values());
 	}
 
-	public List<RepositoryEntryMembership> getOwnersMembership2(List<RepositoryEntry> res) {
-		if(res== null || res.isEmpty()) return Collections.emptyList();
-
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("select distinct membership from ").append(RepositoryEntryMembership.class.getName()).append(" membership ")
-		  .append(" where membership.repoKey in (:repoKey)");
-
-		List<Long> repoKeys = PersistenceHelper.toKeys(res);
-		TypedQuery<RepositoryEntryMembership> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryMembership.class)
-				.setParameter("repoKey", repoKeys);
-
-		return query.getResultList();
-	}
-
 	public void updateRepositoryEntryMemberships(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
 			List<RepositoryEntryPermissionChangeEvent> changes, MailPackage mailing) {
 

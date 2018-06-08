@@ -19,33 +19,33 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.group.model.MemberView;
+import org.olat.modules.curriculum.CurriculumElementShort;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberView extends UserPropertiesRow {
+public class MemberRow {
 	
 	private Date firstTime;
 	private Date lastTime;
-	private final CourseMembership membership = new CourseMembership();
-	private List<BusinessGroupShort> groups;
+	
 	private String onlineStatus;
 	private FormLink toolsLink, chatLink;
 	
-	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		super(identity, userPropertyHandlers, locale);
+	private final MemberView view;
+	
+	public MemberRow(MemberView view) {
+		this.view = view;
+		firstTime = view.getCreationDate();
+		lastTime = view.getLastModified();
 	}
 
 	public FormLink getToolsLink() {
@@ -71,40 +71,43 @@ public class MemberView extends UserPropertiesRow {
 	public void setOnlineStatus(String onlineStatus) {
 		this.onlineStatus = onlineStatus;
 	}
+	
+	public MemberView getView() {
+		return view;
+	}
+	
+	public Long getIdentityKey() {
+		return view.getIdentityKey();
+	}
 
 	public CourseMembership getMembership() {
-		return membership;
+		return view.getMemberShip();
 	}
 
 	public List<BusinessGroupShort> getGroups() {
-		return groups;
+		return view.getGroups();
 	}
 
-	public void setGroups(List<BusinessGroupShort> groups) {
-		this.groups = groups;
+
+	public List<CurriculumElementShort> getCurriculumElements() {
+		return view.getCurriculumElements();
 	}
 
-	public void addGroup(BusinessGroupShort group) {
-		if(group == null) return;
-		if(groups == null) {
-			groups = new ArrayList<BusinessGroupShort>(3);
-		}
-		groups.add(group);
-	}
-	
 	public boolean isFullyManaged() {
+		CourseMembership membership = getMembership();
 		if(membership != null && !membership.isManagedMembersRepo() &&
-				(membership.isRepoOwner() || membership.isRepoTutor() || membership.isRepoParticipant())) {
+				(membership.isRepositoryEntryOwner() || membership.isRepositoryEntryCoach() || membership.isRepositoryEntryParticipant())) {
 			return false;
 		}
 
-		if(groups != null) {
-			for(BusinessGroupShort group:groups) {
+		if(view.getGroups() != null) {
+			for(BusinessGroupShort group:view.getGroups()) {
 				if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
 					return false;
 				}
 			}
 		}
+		
 		return true;
 	}
 	
@@ -132,7 +135,7 @@ public class MemberView extends UserPropertiesRow {
 
 	@Override
 	public int hashCode() {
-		return getIdentityKey() == null ? 2878 : getIdentityKey().hashCode();
+		return view.getIdentityKey() == null ? 2878 : view.getIdentityKey().hashCode();
 	}
 
 	@Override
@@ -140,9 +143,9 @@ public class MemberView extends UserPropertiesRow {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof MemberView) {
-			MemberView member = (MemberView)obj;
-			return getIdentityKey() != null && getIdentityKey().equals(member.getIdentityKey());
+		if(obj instanceof MemberRow) {
+			MemberRow member = (MemberRow)obj;
+			return view.getIdentityKey() != null && view.getIdentityKey().equals(member.getView().getIdentityKey());
 		}
 		return false;
 	}
@@ -150,8 +153,7 @@ public class MemberView extends UserPropertiesRow {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("memberView[identityKey=").append(getIdentityKey() == null ? "" : getIdentityKey())
-			.append(":login=").append(getIdentityName()).append("]");
+		sb.append("memberView[identityKey=").append(view.getIdentityKey() == null ? "" : view.getIdentityKey()).append("]");
 		return sb.toString();
 	}
 }

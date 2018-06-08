@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 9 mai 2018<br>
@@ -27,6 +29,19 @@ package org.olat.modules.curriculum;
  */
 public enum CurriculumRoles {
 	
-	supervisor,
-
+	curriculummanager,
+	owner, //same as GroupRoles
+	coach, //same as GroupRoles
+	participant; //same as GroupRoles
+	
+	public static final boolean isValueOf(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			for(CurriculumRoles role:values()) {
+				if(role.name().equals(val)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

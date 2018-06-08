@@ -32,57 +32,66 @@ public class CourseMembershipComparator implements Comparator<CourseMembership> 
 
 	@Override
 	public int compare(CourseMembership m1, CourseMembership m2) {
-		if(m1.isRepoOwner()) {
-			if(m2.isRepoOwner()) {
+		if(m1.isRepositoryEntryOwner()) {
+			if(m2.isRepositoryEntryOwner()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isRepoOwner()) {
+		} else if(m2.isRepositoryEntryOwner()) {
 			return -1;
 		}
 		
-		if(m1.isGroupTutor()) {
-			if(m2.isGroupTutor()) {
+		if(m1.isCurriculumElementOwner()) {
+			if(m2.isCurriculumElementOwner()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isGroupTutor()) {
+		} else if(m2.isCurriculumElementOwner()) {
 			return -1;
 		}
 		
-		if(m1.isRepoTutor()) {
-			if(m2.isRepoTutor()) {
+		if(m1.isBusinessGroupCoach()) {
+			if(m2.isBusinessGroupCoach()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isRepoTutor()) {
+		} else if(m2.isBusinessGroupCoach()) {
 			return -1;
 		}
 		
-		if(m1.isGroupWaiting()) {
-			if(m2.isGroupWaiting()) {
+		if(m1.isRepositoryEntryCoach()) {
+			if(m2.isRepositoryEntryCoach()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isGroupWaiting()) {
+		} else if(m2.isRepositoryEntryCoach()) {
 			return -1;
 		}
 		
-		if(m1.isGroupParticipant()) {
-			if(m2.isGroupParticipant()) {
+		if(m1.isBusinessGroupWaiting()) {
+			if(m2.isBusinessGroupWaiting()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isGroupParticipant()) {
+		} else if(m2.isBusinessGroupWaiting()) {
 			return -1;
 		}
 		
-		if(m1.isRepoParticipant()) {
-			if(m2.isRepoParticipant()) {
+		if(m1.isBusinessGroupParticipant()) {
+			if(m2.isBusinessGroupParticipant()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isRepoParticipant()) {
+		} else if(m2.isBusinessGroupParticipant()) {
+			return -1;
+		}
+		
+		if(m1.isRepositoryEntryParticipant()) {
+			if(m2.isRepositoryEntryParticipant()) {
+				return 0;
+			}
+			return 1;
+		} else if(m2.isRepositoryEntryParticipant()) {
 			return -1;
 		}
 		return 0;

@@ -43,7 +43,7 @@ public class GraduateColumnDescriptor extends DefaultColumnDescriptor {
 		CourseMembership membership = (CourseMembership)table.getTableDataModel()
 				.getValueAt(sortedRow, MemberListTableModel.Cols.role.ordinal());
 		
-		if(membership.isGroupWaiting()) {
+		if(membership.isBusinessGroupWaiting()) {
 			return super.getAction(row);
 		}
 		return null;
@@ -56,7 +56,7 @@ public class GraduateColumnDescriptor extends DefaultColumnDescriptor {
 		CourseMembership membership = (CourseMembership)table.getTableDataModel()
 				.getValueAt(sortedRow, MemberListTableModel.Cols.role.ordinal());
 		
-		if(membership.isGroupWaiting()) {
+		if(membership.isBusinessGroupWaiting()) {
 			sb.append(translator.translate(getHeaderKey()));
 		}
 	}

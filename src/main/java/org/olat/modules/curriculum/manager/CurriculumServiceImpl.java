@@ -198,6 +198,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public List<CurriculumElementMember> getMembers(CurriculumElement element) {
 		return curriculumElementDao.getMembers(element);
 	}
+	
+	@Override
+	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role) {
+		return curriculumElementDao.getMembersIdentity(element, role.name());
+	}
 
 	@Override
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role) {
@@ -212,6 +217,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role) {
+		groupDao.removeMembership(element.getGroup(), member, role.name());
+	}
+
+	@Override
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
 		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(element);
 	}
@@ -221,6 +231,17 @@ public class CurriculumServiceImpl implements CurriculumService {
 		RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
 		repositoryEntryRelationDao.createRelation(element.getGroup(), repoEntry);
 		curriculumRepositoryEntryRelationDao.createRelation(repoEntry, element, master);
+	}
+
+	@Override
+	public boolean hasRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
+		return repositoryEntryRelationDao.hasRelation(element.getGroup(), entry);
+	}
+
+	@Override
+	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
+		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
+		curriculumRepositoryEntryRelationDao.deleteRelation(entry, element);
 	}
 
 	@Override
