@@ -34,8 +34,6 @@ import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
-import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -96,7 +94,8 @@ class SubmitDocumentsController extends FormBasicController {
 	private final File documentsDir;
 	private final VFSContainer documentsContainer;
 	private final ModuleConfiguration config;
-	private final SubscriptionContext subscriptionContext;
+	private final GTACourseNode gtaNode;
+	private final CourseEnvironment courseEnv;
 	
 	private boolean open = true;
 	private final boolean readOnly;
@@ -106,8 +105,6 @@ class SubmitDocumentsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private GTAManager gtaManager;
-	@Autowired
-	private NotificationsManager notificationsManager;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
@@ -121,7 +118,8 @@ class SubmitDocumentsController extends FormBasicController {
 		this.deadline = deadline;
 		this.readOnly = readOnly;
 		this.config = cNode.getModuleConfiguration();
-		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv, cNode);
+		this.gtaNode = cNode;
+		this.courseEnv = courseEnv;
 		initForm(ureq);
 		updateModel();
 	}
@@ -236,7 +234,7 @@ class SubmitDocumentsController extends FormBasicController {
 				String filename = document.getFile().getName();
 				doDelete(document);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.DELETE, filename));
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cleanUp();
 			checkDeadline(ureq);
@@ -245,7 +243,7 @@ class SubmitDocumentsController extends FormBasicController {
 				String filename = uploadCtrl.getUploadedFilename();
 				doUpload(ureq, uploadCtrl.getUploadedFile(), filename);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, filename));
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -255,7 +253,7 @@ class SubmitDocumentsController extends FormBasicController {
 				String filename = replaceCtrl.getUploadedFilename();
 				doReplace(ureq, replaceCtrl.getSolution(), replaceCtrl.getUploadedFile(), filename);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, filename));
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -274,7 +272,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, newDocumentEditorCtrl.getFilename()));
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -283,7 +281,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, editDocumentEditorCtrl.getFilename()));
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();

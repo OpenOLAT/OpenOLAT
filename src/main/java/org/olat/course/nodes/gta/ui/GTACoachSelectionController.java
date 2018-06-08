@@ -86,10 +86,6 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private final UserCourseEnvironment coachCourseEnv;
 	private final boolean markedOnly;
 	
-	protected PublisherData publisherData;
-	protected SubscriptionContext subsContext;
-	
-	
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
@@ -114,15 +110,11 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
 		downloadButton.setTranslator(getTranslator());
 		
-		if (!markedOnly) {
-			publisherData = gtaManager.getPublisherData(courseEnv, gtaNode);
-			subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode);
-			if (subsContext != null) {
-				ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
-				listenTo(contextualSubscriptionCtr);
-				mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
-			}
-		}
+		PublisherData publisherData = gtaManager.getPublisherData(courseEnv, gtaNode, markedOnly);
+		SubscriptionContext subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode, markedOnly);
+		ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
+		listenTo(contextualSubscriptionCtr);
+		mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 		
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {

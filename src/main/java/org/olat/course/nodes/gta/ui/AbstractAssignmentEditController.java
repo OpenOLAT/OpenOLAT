@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -95,7 +94,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	protected final GTACourseNode gtaNode;
 	protected final CourseEnvironment courseEnv;
 	protected final ModuleConfiguration config;
-	protected final SubscriptionContext subscriptionContext;
 	
 	private int linkCounter = 0;
 	
@@ -113,7 +111,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		this.courseEnv = courseEnv;
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
-		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv.getCourseGroupManager().getCourseResource(), gtaNode);
 		initForm(ureq);
 	}
 
@@ -182,7 +179,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel();
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -192,7 +189,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
 				updateModel();
 				//fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -210,7 +207,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				//fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -219,7 +216,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				gtaManager.updateTaskDefinition(null, editTaskEditorCtrl.getTask(), courseEnv, gtaNode);
 				updateModel();
 				//fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();

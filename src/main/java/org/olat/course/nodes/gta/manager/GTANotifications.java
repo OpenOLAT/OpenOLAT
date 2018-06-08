@@ -52,6 +52,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
+import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
@@ -86,6 +87,7 @@ class GTANotifications {
 	private TaskList taskList;
 	private String header;
 	private String displayName;
+	private boolean markedOnly;
 	private GTACourseNode gtaNode;
 	private CourseEnvironment courseEnv;
 	private Calendar cal = Calendar.getInstance();
@@ -99,7 +101,7 @@ class GTANotifications {
 	private final BusinessGroupService businessGroupService;
 	private final AssessmentEntryDAO courseNodeAssessmentDao;
 	
-	public GTANotifications(Subscriber subscriber, Locale locale, Date compareDate,
+	public GTANotifications(Subscriber subscriber, boolean markedOnly, Locale locale, Date compareDate,
 			RepositoryService repositoryService, GTAManager gtaManager,
 			BusinessGroupService businessGroupService, UserManager userManager,
 			AssessmentEntryDAO courseNodeAssessmentDao) {
@@ -108,7 +110,7 @@ class GTANotifications {
 		this.repositoryService = repositoryService;
 		this.businessGroupService = businessGroupService;
 		this.courseNodeAssessmentDao = courseNodeAssessmentDao;
-		
+		this.markedOnly = markedOnly;
 		this.subscriber = subscriber;
 		this.compareDate = compareDate;
 		formatter = Formatter.getInstance(locale);
@@ -126,13 +128,21 @@ class GTANotifications {
 		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			return translator.translate("notifications.group.header", new String[]{ displayName });
 		}
+		
+		if(markedOnly) {
+			return translator.translate("notifications.individual.favorite.header", new String[]{ displayName });
+		}
 		return translator.translate("notifications.individual.header", new String[]{ displayName });
 	}
 
 	public List<SubscriptionListItem> getItems() {
 		Publisher p = subscriber.getPublisher();
 		ICourse course = CourseFactory.loadCourse(p.getResId());
-		CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
+		String subIdentifier = p.getSubidentifier();
+		if(subIdentifier.startsWith("Marked::")) {
+			subIdentifier = subIdentifier.substring("Marked::".length(), subIdentifier.length());
+		}
+		CourseNode node = course.getRunStructure().getNode(subIdentifier);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if(entry.getRepositoryEntryStatus().isClosed() || entry.getRepositoryEntryStatus().isUnpublished()) {
 			return Collections.emptyList();
@@ -147,14 +157,25 @@ class GTANotifications {
 			if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 				createBusinessGroupsSubscriptionInfo(subscriber.getIdentity());
 			} else {
-				createIndividualSubscriptionInfo(subscriber.getIdentity());
+				Identity subscriberIdentity = subscriber.getIdentity();
+				Set<Long> marks = null;
+				if(markedOnly) {
+					List<IdentityMark> identityMarks = gtaManager.getMarks(entry, gtaNode, subscriberIdentity);
+					marks = new HashSet<>(identityMarks.size());
+					for(IdentityMark identityMark:identityMarks) {
+						if(identityMark.getParticipant() != null) {
+							marks.add(identityMark.getParticipant().getKey());
+						}
+					}
+				}
+				createIndividualSubscriptionInfo(subscriberIdentity, marks);
 			}
 		}
 		
 		return items;
 	}
 	
-	private void createIndividualSubscriptionInfo(Identity subscriberIdentity) {
+	private void createIndividualSubscriptionInfo(Identity subscriberIdentity, Set<Long> marks) {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<String> roles = repositoryService.getRoles(subscriberIdentity, entry);
 		
@@ -175,7 +196,8 @@ class GTANotifications {
 			}
 			
 			for(Identity participant:participants) {
-				if(!duplicateKiller.contains(participant)) {
+				if(!duplicateKiller.contains(participant)
+						&& (marks == null || marks.contains(participant.getKey()))) {
 					assessableIdentities.add(participant);
 					duplicateKiller.add(participant);
 				}
@@ -185,7 +207,8 @@ class GTANotifications {
 			if(repoTutor) {
 				List<Identity> courseParticipants = repositoryService.getMembers(entry, GroupRoles.participant.name());
 				for(Identity participant:courseParticipants) {
-					if(!duplicateKiller.contains(participant)) {
+					if(!duplicateKiller.contains(participant)
+							&& (marks == null || marks.contains(participant.getKey()))) {
 						assessableIdentities.add(participant);
 						duplicateKiller.add(participant);
 					}

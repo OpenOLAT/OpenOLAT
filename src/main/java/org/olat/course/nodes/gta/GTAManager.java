@@ -137,7 +137,7 @@ public interface GTAManager {
 	 * @param cNode The course element
 	 * @return The subscription context for this course and course element.
 	 */
-	public SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, GTACourseNode cNode);
+	public SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, GTACourseNode cNode, boolean markedOnly);
 	
 	/**
 	 * Create a subscription context.
@@ -145,9 +145,17 @@ public interface GTAManager {
 	 * @param cNode The course element
 	 * @return The subscription context for this course and course element.
 	 */
-	public SubscriptionContext getSubscriptionContext(OLATResource courseRes, GTACourseNode cNode);
+	public SubscriptionContext getSubscriptionContext(OLATResource courseRes, GTACourseNode cNode, boolean markedOnly);
 	
-	public PublisherData getPublisherData(CourseEnvironment courseEnv, GTACourseNode cNode);
+	public PublisherData getPublisherData(CourseEnvironment courseEnv, GTACourseNode cNode, boolean markedOnly);
+	
+	/**
+	 * Set the news on the publishers for standard and marked tasks.
+	 * 
+	 * @param courseEnv The course environment
+	 * @param cNode The course node
+	 */
+	public void markNews(CourseEnvironment courseEnv, GTACourseNode cNode);
 	
 	/**
 	 * Return the list of business groups configured in the course element

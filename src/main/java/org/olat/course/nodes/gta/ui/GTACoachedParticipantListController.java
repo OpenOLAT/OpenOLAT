@@ -137,7 +137,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.markedOnly = markedOnly;
 
 		assessableIdentities = new ArrayList<>();
-		collectIdentities((participant) ->
+		collectIdentities(participant ->
 				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale())));
 		
 		initForm(ureq);

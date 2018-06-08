@@ -85,9 +85,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected final ModuleConfiguration config;
 	protected final RepositoryEntry courseEntry;
 	
-	protected final boolean withSubscription;
-	protected final PublisherData publisherData;
-	protected final SubscriptionContext subsContext;
+	private final boolean withSubscription;
+	private final PublisherData publisherData;
+	private final SubscriptionContext subsContext;
 
 	protected final boolean withTitle;
 	protected final boolean withGrading;
@@ -147,8 +147,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 		businessGroupTask = GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
 		
 		taskList = gtaManager.createIfNotExists(courseEntry, gtaNode);
-		publisherData = gtaManager.getPublisherData(courseEnv, gtaNode);
-		subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode);
+		publisherData = gtaManager.getPublisherData(courseEnv, gtaNode, false);
+		subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode, false);
 		
 		stepPreferences = (GTAStepPreferences)ureq.getUserSession()
 				.getGuiPreferences()

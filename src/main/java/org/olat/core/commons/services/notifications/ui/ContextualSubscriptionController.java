@@ -100,10 +100,7 @@ public class ContextualSubscriptionController extends BasicController {
 		myContent.contextPut("subscribed", (isSubscribed ? Boolean.TRUE : Boolean.FALSE));
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == subscribeButton) {
 			notifManager.subscribe(ureq.getIdentity(), subscriptionContext, publisherData);
@@ -122,5 +119,4 @@ public class ContextualSubscriptionController extends BasicController {
 	protected void doDispose() {
 		// nothing to do
 	}
-
 }

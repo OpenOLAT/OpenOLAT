@@ -27,8 +27,6 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -83,7 +81,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final VFSContainer solutionContainer;
-	private final SubscriptionContext subscriptionContext;
 	
 	private int linkCounter = 0;
 	
@@ -91,8 +88,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private GTAManager gtaManager;
-	@Autowired
-	private NotificationsManager notificationsManager;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -102,7 +97,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		this.courseEnv = courseEnv;
 		solutionDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 		solutionContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
-		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv.getCourseGroupManager().getCourseResource(), gtaNode);
 		initForm(ureq);
 	}
 
@@ -176,7 +170,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel();
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -185,7 +179,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				gtaManager.updateSolution(editSolutionCtrl.getFilenameToReplace(), editSolutionCtrl.getSolution(), courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel();
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -198,19 +192,19 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
 				doCreateSolutionEditor(ureq, newSolution);
 				updateModel();
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 		} else if(newSolutionEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(editSolutionEditorCtrl == source) {
 			// edit solution cannot update the title or the description
-			notificationsManager.markPublisherNews(subscriptionContext, null, false);
+			gtaManager.markNews(courseEnv, gtaNode);
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {

@@ -520,21 +520,31 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public PublisherData getPublisherData(CourseEnvironment courseEnv, GTACourseNode cNode) {
+	public PublisherData getPublisherData(CourseEnvironment courseEnv, GTACourseNode cNode, boolean markedOnly) {
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 		String businessPath = "[RepositoryEntry:" + re.getKey() + "][CourseNode:" + cNode.getIdent() + "]";
-		return new PublisherData("GroupTask", "", businessPath);
+		String publisherType = markedOnly ? "MarkedGroupTask" : "GroupTask";
+		return new PublisherData(publisherType, "", businessPath);
 	}
 
 	@Override
-	public SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, GTACourseNode cNode) {
-		return new SubscriptionContext("CourseModule", courseEnv.getCourseResourceableId(), cNode.getIdent());
+	public SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, GTACourseNode cNode, boolean markedOnly) {
+		return getSubscriptionContext(courseEnv.getCourseGroupManager().getCourseResource(), cNode, markedOnly);
 	}
 
 	@Override
-	public SubscriptionContext getSubscriptionContext(OLATResource courseResource, GTACourseNode cNode) {
+	public SubscriptionContext getSubscriptionContext(OLATResource courseResource, GTACourseNode cNode, boolean markedOnly) {
 		Long courseResourceableId = courseResource.getResourceableId();
-		return new SubscriptionContext("CourseModule", courseResourceableId, cNode.getIdent());
+		String subIdentifier = (markedOnly ? "Marked::" : "") + cNode.getIdent();
+		return new SubscriptionContext("CourseModule", courseResourceableId, subIdentifier);
+	}
+
+	@Override
+	public void markNews(CourseEnvironment courseEnv, GTACourseNode cNode) {
+		SubscriptionContext markedCtxt = getSubscriptionContext(courseEnv, cNode, true);
+		notificationsManager.markPublisherNews(markedCtxt, null, false);
+		SubscriptionContext ctxt = getSubscriptionContext(courseEnv, cNode, false);
+		notificationsManager.markPublisherNews(ctxt, null, false);
 	}
 
 	@Override
@@ -1542,10 +1552,10 @@ public class GTAManagerImpl implements GTAManager {
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		syncAssessmentEntry(taskImpl, cNode, by);
 		
-		//update
+		// mark the publishers
 		OLATResource resource = taskImpl.getTaskList().getEntry().getOlatResource();
-		notificationsManager.markPublisherNews(getSubscriptionContext(resource, cNode), null, false);
-		
+		notificationsManager.markPublisherNews(getSubscriptionContext(resource, cNode, true), null, false);
+		notificationsManager.markPublisherNews(getSubscriptionContext(resource, cNode, false), null, false);
 		return taskImpl;
 	}
 	

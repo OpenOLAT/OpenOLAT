@@ -46,14 +46,14 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 11.03.2015<br>
+ * Initial date: 8 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class GTANotificationsHandler implements NotificationsHandler  {
+public class GTAMarkedNotificationsHandler implements NotificationsHandler  {
 	
-	private static final OLog log = Tracing.createLoggerFor(GTANotificationsHandler.class);
+	private static final OLog log = Tracing.createLoggerFor(GTAMarkedNotificationsHandler.class);
 	protected static final String CSS_CLASS_ICON = "o_gta_icon";
 	
 	@Autowired
@@ -80,7 +80,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 		// there could be news for me, investigate deeper
 		try {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				GTANotifications notifications = new GTANotifications(subscriber, false, locale, compareDate,
+				GTANotifications notifications = new GTANotifications(subscriber, true, locale, compareDate,
 						repositoryService, gtaManager, businessGroupService, userManager, courseNodeAssessmentDao);
 				List<SubscriptionListItem> items = notifications.getItems();
 				if(items.isEmpty()) {
@@ -108,7 +108,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 			Translator translator = Util.createPackageTranslator(GTARunController.class, locale);
 			Long resId = subscriber.getPublisher().getResId();
 			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
-			title = translator.translate("notifications.header", new String[]{ displayName });
+			title = translator.translate("notifications.marked.header", new String[]{ displayName });
 		} catch (Exception e) {
 			log.error("Error while creating task notifications for subscriber: " + subscriber.getKey(), e);
 			title = "-";
@@ -118,6 +118,6 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 
 	@Override
 	public String getType() {
-		return "GroupTask";
+		return "MarkedGroupTask";
 	}
 }

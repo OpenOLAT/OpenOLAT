@@ -736,7 +736,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		gtaManager.deleteTaskList(entry, this);
 		
 		//clean subscription
-		SubscriptionContext subscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this);
+		SubscriptionContext markedSubscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this, true);
+		NotificationsManager.getInstance().delete(markedSubscriptionContext);
+		SubscriptionContext subscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this, false);
 		NotificationsManager.getInstance().delete(subscriptionContext);
 	}
 
