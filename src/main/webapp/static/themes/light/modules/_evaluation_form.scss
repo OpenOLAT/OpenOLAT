@@ -17,11 +17,6 @@
 	.o_slider {
 		margin-bottom: $o-evaluation-slider-margin-bottom;
 			
-			.radio {
-				padding: 0;
-				min-height: unset;
-			}
-			
 			label {
 				padding: 0;
 			}
@@ -46,26 +41,37 @@
 	.o_evaluation_discrete_radio {
 		.o_slider {
 			.o_evaluation_steps {
-				 label {
+				display: flex;
+				justify-content: space-between;
+				
+				label {
 					padding: 0;
 					margin: 0;
 					text-align: center;
 				}
-				div.radio {
+				
+				.radio {
 					background-color: $o-evaluation-step-background-color;
+					padding: 0px;
 					margin-top: 0px;
-					display:inline-block;
 					text-align: center;
 					&:hover {
 						background-color: $o-evaluation-slider-hover-background-color;
 					}
 				}
 			}
+			
 			.o_evaluation_no_response {
 				div.checkbox {
 					margin-top: 0px;
+					margin-left: 8px;
 				}
 			}
+		}
+		
+		.o_evaluation_step_labels {
+			display: flex;
+			justify-content: space-between;
 		}
 	}
 	
@@ -78,7 +84,7 @@
 		font-weight: $o-evaluation-side-labels-font-weight;
 	}
 	
-	.o_evaluation_left_label_la {
+	.o_evaluation_left_label.o_evaluation_left_label_la {
 		text-align: left;
 		padding-left: 0px;
 		font-weight: $o-evaluation-side-labels-font-weight;
@@ -152,6 +158,10 @@
 	}
 }
 
+.d3chart {
+	.o_eva_bar { fill: $o-d3chart-default; }
+}
+
 .o_evaluation_discrete_slider {
 	.o_evaluation_step_labels {
 		position: relative;
@@ -171,39 +181,6 @@
 			position: absolute;
 			right: 0px;
 			text-align: right;
-		}
-	}
-}
-
-@media (max-width: $screen-sm-min) {
-	.o_evaluation_form {
-		.o_evaluation_left_label {
-			text-align: left;
-		}
-	
-		.o_evaluation_right_label {
-			text-align: right;
-		}
-		
-		.o_evaluation_no_response {
-			text-align: left;
-			.o_evaluation_no_resp_value {
-				font-weight: bold;
-			}
-		}
-		
-		.o_evaluation_slider {
-			.o_evaluation_no_response {
-				margin-top: 0.7em;
-			}	
-		}
-	}
-}
-
-@media (min-width: $screen-sm-min) {
-	.o_evaluation_form {
-		.o_evaluation_no_resp_value {
-			display:none;
 		}
 	}
 }
@@ -248,12 +225,13 @@
 	}
 	
 	.o_slider_descrete_radio {
-		div.radio {
+		display: flex;
+		justify-content: space-between;
+				
+		.radio {
 			background-color: $o-evaluation-step-background-color;
-			padding-top: 5px;
-			padding-bottom: -5px;
+			padding: 0px;
 			margin-top: 0px;
-			display:inline-block;
 			text-align: center;
 			&:hover {
 				background-color: $o-evaluation-slider-hover-background-color;
@@ -285,10 +263,39 @@
 	}
 }
 
-.d3chart {
-	.o_eva_bar { fill: $o-d3chart-default; }
+@media (max-width: $screen-sm-min) {
+	.o_evaluation_form {
+		.o_evaluation_left_label {
+			text-align: left;
+			margin-bottom: 0.5em;
+		}
+	
+		.o_evaluation_right_label {
+			text-align: right;
+		}
+		
+		.o_evaluation_no_response {
+			text-align: left;
+			.o_evaluation_no_resp_value {
+				font-weight: bold;
+			}
+		}
+		
+		.o_evaluation_slider {
+			.o_evaluation_no_response {
+				margin-top: 0.7em;
+			}	
+		}
+	}
 }
 
+@media (min-width: $screen-sm-min) {
+	.o_evaluation_form {
+		.o_evaluation_no_resp_value {
+			display:none;
+		}
+	}
+}
 
 /* Print styles */
 @media print {
