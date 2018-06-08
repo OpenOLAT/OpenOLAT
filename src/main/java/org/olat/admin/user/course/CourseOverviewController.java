@@ -31,6 +31,7 @@ import java.util.Map;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -59,6 +60,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
@@ -74,6 +76,7 @@ import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.CourseMembershipComparator;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -114,11 +117,15 @@ public class CourseOverviewController extends BasicController  {
 	private final Identity editedIdentity;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -278,10 +285,15 @@ public class CourseOverviewController extends BasicController  {
 						&& membership.getLastModified().after(memberView.getLastTime()))) {
 					memberView.setLastTime(membership.getLastModified());
 				}
-				switch(membership.getMembership()) {
-					case owner: memberView.getMembership().setBusinessGroupCoach(true); break;
-					case participant: memberView.getMembership().setBusinessGroupParticipant(true); break;
-					case waiting: memberView.getMembership().setBusinessGroupWaiting(true); break;
+				
+				if(membership.isOwner()) {
+					memberView.getMembership().setBusinessGroupCoach(true);
+				}
+				if(membership.isParticipant()) {
+					memberView.getMembership().setBusinessGroupParticipant(true);
+				}
+				if(membership.isWaiting()) {
+					memberView.getMembership().setBusinessGroupWaiting(true);
 				}
 			}
 		}
@@ -419,9 +431,7 @@ public class CourseOverviewController extends BasicController  {
 	}
 	
 	private void doConfirmChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, RepositoryEntry re) {
-		boolean groupChangesEmpty = e.getGroupChanges() == null || e.getGroupChanges().isEmpty();
-		boolean repoChangesEmpty = e.getRepoOwner() == null && e.getRepoParticipant() == null && e.getRepoTutor() == null;
-		if(groupChangesEmpty && repoChangesEmpty) {
+		if(e.size() == 0) {
 			//nothing to do
 			return;
 		}
@@ -438,8 +448,11 @@ public class CourseOverviewController extends BasicController  {
 	private void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, RepositoryEntry re, boolean sendMail) {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(re != null) {
+			Roles roles = ureq.getUserSession().getRoles();
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), re, changes, mailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, re, changes, mailing);
+			
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges());
 		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);

@@ -20,11 +20,18 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import javax.persistence.TypedQuery;
+
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -32,11 +39,15 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -153,6 +164,20 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public List<CurriculumElement> loadElements(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el from curriculumelement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" inner join fetch el.group bGroup")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" left join fetch curriculum.organisation org")
+		  .append(" where rel.entry.key=:entryKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+	}
+	
 	public List<CurriculumElement> getParentLine(CurriculumElement curriculumElement) {
 		StringBuilder sb = new StringBuilder(384);
 		sb.append("select el from curriculumelement as el")
@@ -230,6 +255,104 @@ public class CurriculumElementDAO {
 				.setParameter("elementKey", element.getKey())
 				.setParameter("role", role)
 				.getResultList();
+	}
+	
+	public List<CurriculumElementMembership> getMembershipInfos(Collection<CurriculumElement> elements, Identity... identities) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el.key, membership from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join fetch membership.identity ident");
+		boolean and = false;
+		if(identities != null && identities.length > 0) {
+			and = and(sb, and);
+			sb.append("ident.key in (:identIds) ");
+		}
+		if(elements != null && !elements.isEmpty()) {
+			and = and(sb, and);
+			sb.append("el.key in (:elementKeys)");
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(identities != null && identities.length > 0) {
+			List<Long> ids = new ArrayList<>(identities.length);
+			for(Identity id:identities) {
+				ids.add(id.getKey());
+			}
+			query.setParameter("identIds", ids);
+		}
+		if(elements != null && !elements.isEmpty()) {
+			List<Long> elementKeys = elements.stream()
+					.map(CurriculumElement::getKey).collect(Collectors.toList());
+			query.setParameter("elementKeys", elementKeys);
+		}
+
+		List<Object[]> rawObjects = query.getResultList();
+		Map<IdentityToElementKey, CurriculumElementMembershipImpl> memberships = new HashMap<>();
+		for(Object[] object:rawObjects) {
+			Long elementKey = (Long)object[0];
+			GroupMembership groupMembership = (GroupMembership)object[1];
+			Long identityKey = groupMembership.getIdentity().getKey();
+			String role = groupMembership.getRole();
+			
+			IdentityToElementKey key = new IdentityToElementKey(identityKey, elementKey);
+			CurriculumElementMembershipImpl membership = memberships
+					.computeIfAbsent(key, k -> new CurriculumElementMembershipImpl(k.getIdentityKey(), k.getCurriculumElementKey()));
+			
+			if(CurriculumRoles.curriculummanager.name().equals(role)) {
+				membership.setCurriculumManager(true);
+			} else if(CurriculumRoles.owner.name().equals(role)) {
+				membership.setRepositoryEntryOwner(true);
+			} else if(CurriculumRoles.coach.name().equals(role)) {
+				membership.setCoach(true);
+			} else if(CurriculumRoles.participant.name().equals(role)) {
+				membership.setParticipant(true);
+			}	
+		}
+		return new ArrayList<>(memberships.values());
+	}
+	
+	private final boolean and(StringBuilder sb, boolean and) {
+		if(and) sb.append(" and ");
+		else sb.append(" where ");
+		return true;
+	}
+	
+	private static class IdentityToElementKey {
+		
+		private final Long identityKey;
+		private final Long curriculumElementKey;
+		
+		public IdentityToElementKey(Long identityKey, Long curriculumElementKey) {
+			this.identityKey = identityKey;
+			this.curriculumElementKey = curriculumElementKey;
+		}
+
+		public Long getIdentityKey() {
+			return identityKey;
+		}
+
+		public Long getCurriculumElementKey() {
+			return curriculumElementKey;
+		}
+
+		@Override
+		public int hashCode() {
+			return identityKey.hashCode() + curriculumElementKey.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof IdentityToElementKey) {
+				IdentityToElementKey el = (IdentityToElementKey)obj;
+				return identityKey.equals(el.identityKey) && curriculumElementKey.equals(el.curriculumElementKey);
+			}
+			return false;
+		}
 	}
 	
 	private static class PathMaterializedPathLengthComparator implements Comparator<CurriculumElement> {

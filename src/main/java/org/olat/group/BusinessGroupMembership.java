@@ -21,7 +21,6 @@ package org.olat.group;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.group.model.BGMembership;
 
 /**
  * 
@@ -39,6 +38,5 @@ public interface BusinessGroupMembership extends CreateInfo, ModifiedInfo {
 
 	public boolean isWaiting();
 	
-	public BGMembership getMembership();
 
 }

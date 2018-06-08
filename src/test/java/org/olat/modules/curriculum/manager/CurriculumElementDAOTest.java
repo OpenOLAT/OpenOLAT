@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -28,11 +29,13 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +104,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadElements() {
+	public void loadElements_curricullum() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-6", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-6", "6.1 Element", null, null, null, null, curriculum);
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-6", "6.1.1 Element", null, null, element1, null, curriculum);
@@ -116,6 +119,21 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertTrue(elements.contains(element1));
 		Assert.assertTrue(elements.contains(element2));
 		Assert.assertTrue(elements.contains(element3));
+	}
+	
+	@Test
+	public void loadElements_repoEntry() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, true);
+		dbInstance.commit();
+		
+		List<CurriculumElement> relations = curriculumElementDao.loadElements(entry);
+		Assert.assertEquals(1, relations.size());
+		Assert.assertEquals(element, relations.get(0));
 	}
 
 	@Test
@@ -248,5 +266,24 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(supervisor, members.get(0));
+	}
+	
+	@Test
+	public void getMembershipInfos() {
+		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, curriculum);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(Collections.singletonList(element), supervisor);
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		Assert.assertEquals(supervisor.getKey(), members.get(0).getIdentityKey());
+		Assert.assertEquals(element.getKey(), members.get(0).getCurriculumElementKey());
+		Assert.assertTrue(members.get(0).isCurriculumManager());
+		Assert.assertFalse(members.get(0).isRepositoryEntryOwner());
+		Assert.assertFalse(members.get(0).isCoach());
+		Assert.assertFalse(members.get(0).isParticipant());
 	}
 }

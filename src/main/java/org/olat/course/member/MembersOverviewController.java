@@ -63,6 +63,8 @@ import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.DedupMembersConfirmationController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -111,6 +113,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -391,6 +395,10 @@ public class MembersOverviewController extends BasicController implements Activa
 		MailPackage mailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
 		MailHelper.printErrorsAndWarnings(result, getWindowControl(), roles.isOLATAdmin(), getLocale());
+		
+		//commit all changes to the curriculum memberships
+		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);
 		
 		switchToAllMembers(ureq);
 	}

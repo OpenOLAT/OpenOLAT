@@ -21,6 +21,7 @@ package org.olat.group.ui.main;
 
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -30,7 +31,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupMembership;
-import org.olat.group.model.BGMembership;
 
 /**
  * 
@@ -72,12 +72,13 @@ public class BGRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer
 				and = and(sb, and);
 				sb.append(trans.translate("search.waiting"));
 			}
-		} else if (val instanceof BGMembership) {
-			BGMembership membership = (BGMembership)val;
+		} else if (val instanceof GroupRoles) {
+			GroupRoles membership = (GroupRoles)val;
 			switch(membership) {
-				case owner: sb.append(trans.translate("owned.groups")); break;
+				case coach: sb.append(trans.translate("owned.groups")); break;
 				case participant: sb.append(trans.translate("search.attendee")); break;
 				case waiting: sb.append(trans.translate("search.waiting")); break;
+				default: break;
 			}
 		}
 	}

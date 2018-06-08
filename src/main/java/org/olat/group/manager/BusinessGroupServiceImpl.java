@@ -83,7 +83,6 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
-import org.olat.group.model.BGMembership;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
@@ -1361,7 +1360,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		//reservation has the highest priority over max participant or other settings
 		if(reservation != null) {
 			addParticipant(ureqIdentity, ureqRoles, identity, reloadedGroup, mailing, events);
-			enrollStatus.setEnrolled(BGMembership.participant);
+			enrollStatus.setEnrolled(GroupRoles.participant);
 			log.info("doEnroll (reservation) - setIsEnrolled ", identity.getKey().toString());
 			if(reservation != null) {
 				reservationDao.deleteReservation(reservation);
@@ -1375,7 +1374,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				// already full, show error and updated choose page again
 				if (reloadedGroup.getWaitingListEnabled().booleanValue()) {
 					addToWaitingList(ureqIdentity, identity, reloadedGroup, mailing, events);
-					enrollStatus.setEnrolled(BGMembership.waiting);
+					enrollStatus.setEnrolled(GroupRoles.waiting);
 				} else {
 					// No Waiting List => List is full
 					enrollStatus.setI18nErrorMessage("error.group.full");
@@ -1384,13 +1383,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			} else {
 				//enough place
 				addParticipant(ureqIdentity, ureqRoles, identity, reloadedGroup, mailing, events);
-				enrollStatus.setEnrolled(BGMembership.participant);
+				enrollStatus.setEnrolled(GroupRoles.participant);
 				log.info("doEnroll - setIsEnrolled ", identity.getKey().toString());
 			}
 		} else {
 			if (log.isDebug()) log.debug("doEnroll as participant beginTransaction");
 			addParticipant(ureqIdentity, ureqRoles, identity, reloadedGroup, mailing, events);
-			enrollStatus.setEnrolled(BGMembership.participant);						
+			enrollStatus.setEnrolled(GroupRoles.participant);						
 			if (log.isDebug()) log.debug("doEnroll as participant committed");
 		}
 

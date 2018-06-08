@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryMembership;
 
@@ -43,6 +45,24 @@ public class PermissionHelper {
 					p.setTutor(true);
 				}
 				if(membership.isParticipant() && re.getKey().equals(membership.getRepoKey())) {
+					p.setParticipant(true);
+				}
+			}
+		}
+		return p;
+	}
+	
+	public static final RepoPermission getPermission(CurriculumElement element, Identity id, List<CurriculumElementMembership> memberships) {
+		RepoPermission p = new RepoPermission();
+		if(id != null && memberships != null && !memberships.isEmpty()) {
+			for(CurriculumElementMembership membership:memberships) {
+				if(membership.isRepositoryEntryOwner() && element.getKey().equals(membership.getCurriculumElementKey())) {
+					p.setOwner(true);
+				}
+				if(membership.isCoach() && element.getKey().equals(membership.getCurriculumElementKey())) {
+					p.setTutor(true);
+				}
+				if(membership.isParticipant() && element.getKey().equals(membership.getCurriculumElementKey())) {
 					p.setParticipant(true);
 				}
 			}

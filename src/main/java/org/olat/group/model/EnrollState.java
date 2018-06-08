@@ -19,6 +19,8 @@
  */
 package org.olat.group.model;
 
+import org.olat.basesecurity.GroupRoles;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -27,7 +29,7 @@ public class EnrollState {
 	
 	private boolean failed = false;
 	private String i18nErrorMessage;
-	private BGMembership enrolled;
+	private GroupRoles enrolled;
 	
 	public boolean isFailed() {
 		return failed;
@@ -45,11 +47,11 @@ public class EnrollState {
 		this.i18nErrorMessage = i18nErrorMessage;
 	}
 
-	public BGMembership getEnrolled() {
+	public GroupRoles getEnrolled() {
 		return enrolled;
 	}
 
-	public void setEnrolled(BGMembership enrolled) {
+	public void setEnrolled(GroupRoles enrolled) {
 		this.enrolled = enrolled;
 	}
 }

@@ -56,7 +56,7 @@ public class RoleListController extends BasicController {
 	}
 	
 	private Link addLink(CurriculumRoles role, List<String> links) {
-		Link link = LinkFactory.createLink(role.name(), role.name(), getTranslator(), mainVC, this, Link.LINK);
+		Link link = LinkFactory.createLink("role.".concat(role.name()), role.name(), getTranslator(), mainVC, this, Link.LINK);
 		link.setUserObject(role);
 		mainVC.put(role.name(), link);
 		links.add(role.name());

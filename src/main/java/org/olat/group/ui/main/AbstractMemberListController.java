@@ -95,6 +95,9 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -167,6 +170,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupModule groupModule;
 	@Autowired
@@ -256,6 +261,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
 			for(BusinessGroup group:groups) {
 				managed &= BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.membersmanagement);
+			}
+			
+			List<CurriculumElement> elements = curriculumService.getCurriculumElements(repoEntry);
+			for(CurriculumElement element:elements) {
+				managed &= CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.members);
 			}
 		}
 		return managed;
@@ -368,7 +378,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			doSendMail(ureq, selectedItems);
 		} else if(removeButton == source) {
 			List<MemberRow> selectedItems = getMultiSelectedRows();
-			confirmDelete(ureq, selectedItems);
+			doConfirmRemoveMembers(ureq, selectedItems);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -407,7 +417,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		if (source == leaveDialogBox) {
 			if (Event.DONE_EVENT == event) {
 				List<Identity> members = leaveDialogBox.getIdentities();
-				doLeave(members, leaveDialogBox.isSendMail());
+				doRemoveMembers(ureq, members, leaveDialogBox.isSendMail());
 				reloadModel();
 			}
 			cmc.deactivate();
@@ -467,7 +477,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		editSingleMemberCtrl = null;
 	}
 	
-	protected void confirmDelete(UserRequest ureq, List<MemberRow> members) {
+	protected final void doConfirmRemoveMembers(UserRequest ureq, List<MemberRow> members) {
 		if(members.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {
@@ -573,9 +583,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected void doConfirmChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, List<Identity> members) {
-		boolean groupChangesEmpty = e.getGroupChanges() == null || e.getGroupChanges().isEmpty();
-		boolean repoChangesEmpty = e.getRepoOwner() == null && e.getRepoParticipant() == null && e.getRepoTutor() == null;
-		if(groupChangesEmpty && repoChangesEmpty) {
+		if(e.size() == 0) {
 			//nothing to do
 			return;
 		}
@@ -596,8 +604,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, boolean sendMail) {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
+			Roles roles = ureq.getUserSession().getRoles();
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, changes, mailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, changes, mailing);
+			
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges());
 		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
@@ -609,8 +620,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent changes, List<Identity> members, boolean sendMail) {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
+			Roles roles = ureq.getUserSession().getRoles();
 			List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, mailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, mailing);
+
+			curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, changes.getCurriculumChanges());
 		}
 
 		//commit all changes to the group memberships
@@ -620,9 +634,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		reloadModel();
 	}
 	
-	protected void doLeave(List<Identity> members, boolean sendMail) {
+	protected void doRemoveMembers(UserRequest ureq, List<Identity> members, boolean sendMail) {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			List<CurriculumElement> elements = curriculumService.getCurriculumElements(repoEntry);
+			elements = curriculumService.filterElementsWithoutManagerRole(elements, roles);
+			for(CurriculumElement element:elements) {
+				curriculumService.removeMembers(element, members);
+			}
 			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing);
 			repositoryManager.removeMembers(getIdentity(), members, repoEntry, mailing);
 		} else {
@@ -863,17 +883,22 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon_graduate", links);
 			}
 
-			if(!readOnly && (row.getMembership().isRepositoryEntryMember() || row.getMembership().isBusinessGroupMember())) {
+			if(!readOnly) {
 				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
 			}
 			
-			if((!globallyManaged || overrideManaged)
-					&& (row.getMembership().isRepositoryEntryMember() || row.getMembership().isBusinessGroupMember())) {
+			if(!globallyManaged || overrideManaged) {
 				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon_remove", links);
 			}
-
+			cleanSeparator(links);
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
+		}
+		
+		private void cleanSeparator(List<String> links) {
+			if(links.size() > 0 && links.get(links.size() - 1).equals("-")) {
+				links.remove(links.size() - 1);
+			}
 		}
 		
 		private void addLink(String name, String cmd, String iconCSS, List<String> links) {
@@ -901,7 +926,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 					openEdit(ureq, row);
 				} else if(TABLE_ACTION_REMOVE.equals(cmd)) {
-					confirmDelete(ureq, Collections.singletonList(row));
+					doConfirmRemoveMembers(ureq, Collections.singletonList(row));
 				} else if(TABLE_ACTION_HOME.equals(cmd)) {
 					doOpenVisitingCard(ureq, row);
 				} else if(TABLE_ACTION_CONTACT.equals(cmd)) {

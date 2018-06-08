@@ -17,17 +17,26 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.model;
+package org.olat.modules.curriculum;
 
 /**
  * 
+ * Initial date: 8 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public enum BGMembership {
+public interface CurriculumElementMembership {
 	
-	owner,
-	participant,
-	waiting
+	public Long getIdentityKey();
 	
+	public Long getCurriculumElementKey();
+
+	public boolean isRepositoryEntryOwner();
+
+	public boolean isCoach();
+	
+	public boolean isParticipant();
+	
+	public boolean isCurriculumManager();
 
 }

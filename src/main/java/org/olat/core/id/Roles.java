@@ -176,11 +176,35 @@ public class Roles implements Serializable {
 		return organisations;
 	}
 	
+	public List<OrganisationRef> getOrganisationsWithRoles(OrganisationRoles... roles) {
+		List<OrganisationRef> organisations = new ArrayList<>();
+		if(rolesByOrganisations != null) {
+			for(int i=rolesByOrganisations.size(); i--> 0; ) {
+				if(rolesByOrganisations.get(i).hasSomeRoles(roles)) {
+					organisations.add(rolesByOrganisations.get(i).getOrganisation());
+				}
+			}
+		}
+		return organisations;
+	}
+	
 	public boolean hasRole(OrganisationRef organisation, OrganisationRoles role) {
 		boolean foundRole = false;
 		if(rolesByOrganisations != null) {
 			for(int i=rolesByOrganisations.size(); i--> 0; ) {
 				if(rolesByOrganisations.get(i).matchOrganisation(organisation) && rolesByOrganisations.get(i).hasRole(role)) {
+					foundRole = true;
+				}
+			}
+		}
+		return foundRole;
+	}
+	
+	public boolean hasSomeRoles(OrganisationRef organisation, OrganisationRoles... roles) {
+		boolean foundRole = false;
+		if(rolesByOrganisations != null) {
+			for(int i=rolesByOrganisations.size(); i--> 0; ) {
+				if(rolesByOrganisations.get(i).matchOrganisation(organisation) && rolesByOrganisations.get(i).hasSomeRoles(roles)) {
 					foundRole = true;
 				}
 			}

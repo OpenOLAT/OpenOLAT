@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
-import org.olat.group.model.BGMembership;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -35,14 +35,14 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<Identity> {
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final List<Identity> addOwnerIdentities = new ArrayList<Identity>();
-	private final List<Identity> addParticipantIdentities = new ArrayList<Identity>();
-	private final List<Identity> addToWaitingList = new ArrayList<Identity>();
-	private final List<Identity> removedIdentities = new ArrayList<Identity>();
+	private final List<Identity> addCoachesIdentities = new ArrayList<>();
+	private final List<Identity> addParticipantIdentities = new ArrayList<>();
+	private final List<Identity> addToWaitingList = new ArrayList<>();
+	private final List<Identity> removedIdentities = new ArrayList<>();
 	
-	private final List<Identity> owners = new ArrayList<Identity>();
-	private final List<Identity> participants = new ArrayList<Identity>();
-	private final List<Identity> waitingList = new ArrayList<Identity>();
+	private final List<Identity> coaches = new ArrayList<>();
+	private final List<Identity> participants = new ArrayList<>();
+	private final List<Identity> waitingList = new ArrayList<>();
 	
 	public BGUserManagementGroupTableDataModel(Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
 		super(new ArrayList<Identity>());
@@ -50,12 +50,12 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 	
-	public List<Identity> getAddOwnerIdentities() {
-		return addOwnerIdentities;
+	public List<Identity> getAddCoachesIdentities() {
+		return addCoachesIdentities;
 	}
 
-	public void addOwners(List<Identity> identitiesToAdd) {
-		addOwnerIdentities.addAll(identitiesToAdd);
+	public void addCoaches(List<Identity> identitiesToAdd) {
+		addCoachesIdentities.addAll(identitiesToAdd);
 		addToObjects(identitiesToAdd);
 	}
 
@@ -82,7 +82,7 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 	}
 
 	public void remove(List<Identity> identitiesToRemove) {
-		addOwnerIdentities.removeAll(identitiesToRemove);
+		coaches.removeAll(identitiesToRemove);
 		addParticipantIdentities.removeAll(identitiesToRemove);
 		addToWaitingList.removeAll(identitiesToRemove);
 		removedIdentities.addAll(identitiesToRemove);
@@ -92,7 +92,7 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 		Identity identity = getObject(row);
 		switch(col) {
 			case 0: {
-				if(addOwnerIdentities.contains(identity)) {
+				if(addCoachesIdentities.contains(identity)) {
 					return Status.newOwner;
 				}
 				if(addParticipantIdentities.contains(identity)) {
@@ -107,14 +107,14 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 				return Status.current;		
 			}
 			case 1: {
-				if(owners.contains(identity) || addOwnerIdentities.contains(identity)) {
-					return BGMembership.owner;
+				if(coaches.contains(identity) || addCoachesIdentities.contains(identity)) {
+					return GroupRoles.coach;
 				}
 				if(participants.contains(identity) || addParticipantIdentities.contains(identity)) {
-					return BGMembership.participant;
+					return GroupRoles.participant;
 				}
 				if(waitingList.contains(identity) || addToWaitingList.contains(identity)) {
-					return BGMembership.waiting;
+					return GroupRoles.waiting;
 				}
 				return null;		
 			}
@@ -136,10 +136,10 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 		return new BGUserManagementGroupTableDataModel(getLocale(), userPropertyHandlers);
 	}
 
-	public void setMembers(List<Identity> owners,  List<Identity> participants, List<Identity> waitingList) {
-		this.owners.clear();
-		this.owners.addAll(owners);
-		addToObjects(owners);
+	public void setMembers(List<Identity> coaches,  List<Identity> participants, List<Identity> waitingList) {
+		this.coaches.clear();
+		this.coaches.addAll(coaches);
+		addToObjects(coaches);
 		this.participants.clear();
 		this.participants.addAll(participants);
 		addToObjects(participants);

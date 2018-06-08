@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 
 /**
@@ -36,13 +37,14 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 	private static final long serialVersionUID = 8499004967313689825L;
 
 	private List<BusinessGroupMembershipChange> groupChanges;
+	private List<CurriculumElementMembershipChange> curriculumChanges;
 	
 	public MemberPermissionChangeEvent(Identity member) {
 		super(member);
 	}
 	
 	public List<BusinessGroupShort> getGroups() {
-		List<BusinessGroupShort> groups = new ArrayList<BusinessGroupShort>();
+		List<BusinessGroupShort> groups = new ArrayList<>();
 		if(groupChanges != null && !groupChanges.isEmpty()) {
 			for(BusinessGroupMembershipChange change:groupChanges) {
 				BusinessGroupShort group = change.getGroup();
@@ -62,9 +64,20 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		this.groupChanges = changes;
 	}
 	
+
+	public List<CurriculumElementMembershipChange> getCurriculumChanges() {
+		return curriculumChanges;
+	}
+
+	public void setCurriculumChanges(List<CurriculumElementMembershipChange> curriculumChanges) {
+		this.curriculumChanges = curriculumChanges;
+	}
+
 	@Override
 	public int size() {
-		return (groupChanges == null ? 0 : groupChanges.size()) + super.size();
+		return (groupChanges == null ? 0 : groupChanges.size())
+				+ (curriculumChanges == null ? 0 : curriculumChanges.size())
+				+ super.size();
 	}
 	
 	public List<RepositoryEntryPermissionChangeEvent> generateRepositoryChanges(List<Identity> members) {
@@ -72,7 +85,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 			return Collections.emptyList();
 		}
 		
-		List<RepositoryEntryPermissionChangeEvent> repoChanges = new ArrayList<RepositoryEntryPermissionChangeEvent>();
+		List<RepositoryEntryPermissionChangeEvent> repoChanges = new ArrayList<>();
 		for(Identity member:members) {
 			repoChanges.add(new RepositoryEntryPermissionChangeEvent(member, this));
 		}
@@ -88,10 +101,28 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 			return Collections.emptyList();
 		}
 		
-		List<BusinessGroupMembershipChange> allModifications = new ArrayList<BusinessGroupMembershipChange>();
+		List<BusinessGroupMembershipChange> allModifications = new ArrayList<>();
 		for(BusinessGroupMembershipChange grChange:grChanges) {
 			for(Identity member:members) {
 				allModifications.add(new BusinessGroupMembershipChange(member, grChange));
+			}
+		}
+		return allModifications;
+	}
+	
+	public List<CurriculumElementMembershipChange> generateCurriculumElementMembershipChange(List<Identity> members) {
+		if(members == null || members.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<CurriculumElementMembershipChange> elementChanges = getCurriculumChanges();
+		if(elementChanges == null || elementChanges.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<CurriculumElementMembershipChange> allModifications = new ArrayList<>();
+		for(CurriculumElementMembershipChange grChange:elementChanges) {
+			for(Identity member:members) {
+				allModifications.add(new CurriculumElementMembershipChange(member, grChange));
 			}
 		}
 		return allModifications;

@@ -69,7 +69,7 @@ public class NotificationSubscriptionController extends BasicController {
 	private NotificationsManager notificationsManager;
 
 	public NotificationSubscriptionController(UserRequest ureq, WindowControl wControl,
-			Identity subscriberIdentity, boolean adminColumns) {
+			Identity subscriberIdentity, boolean adminColumns, boolean fieldSet) {
 		// use home fallback for rss translations
 		super(ureq, wControl, Util.createPackageTranslator(HomeMainController.class, ureq.getLocale()));
 		this.subscriberIdentity = subscriberIdentity;
@@ -83,7 +83,7 @@ public class NotificationSubscriptionController extends BasicController {
 		updateSubscriptionsDataModel();
 		listenTo(subscriptionsTableCtr);
 		// Main view is a velocity container
-		subscriptionsVC = createVelocityContainer("notificationsSubscriptions");
+		subscriptionsVC = createVelocityContainer(fieldSet ? "notificationsSubscriptionsField" : "notificationsSubscriptions");
 		subscriptionsVC.put("subscriptionsTableCtr", subscriptionsTableCtr.getInitialComponent());
 		putInitialPanel(subscriptionsVC);
 	}

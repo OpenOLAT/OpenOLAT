@@ -59,6 +59,7 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 		MemberPermissionChangeEvent e = new MemberPermissionChangeEvent(null);
 		permissionCtrl.collectRepoChanges(e);
 		permissionCtrl.collectGroupChanges(e);
+		permissionCtrl.collectCurriculumElementChanges(e);
 		addToRunContext("permissions", e);
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}
@@ -71,6 +72,7 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 		MemberPermissionChangeEvent e = new MemberPermissionChangeEvent(null);
 		permissionCtrl.collectRepoChanges(e);
 		permissionCtrl.collectGroupChanges(e);
+		permissionCtrl.collectCurriculumElementChanges(e);
 		int size = e.size();
 		flc.contextRemove("off_warn");
 		if(size == 0) {

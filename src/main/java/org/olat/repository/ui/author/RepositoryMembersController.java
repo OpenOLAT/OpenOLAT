@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
@@ -50,6 +51,8 @@ import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -68,6 +71,8 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private FormLink importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
 	
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -173,6 +178,8 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	}
 	
 	protected void addMembers(UserRequest ureq, StepsRunContext runContext) {
+		Roles roles = ureq.getUserSession().getRoles();
+		
 		@SuppressWarnings("unchecked")
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
@@ -182,12 +189,16 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-		repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
+		repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		MailPackage bgMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, bgMailing);
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), roles.isOLATAdmin(), getLocale());
+		
+		//commit all changes to the curriculum memberships
+		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);
 	}
 }

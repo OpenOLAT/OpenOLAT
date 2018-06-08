@@ -167,5 +167,25 @@ public class RolesByOrganisation implements Serializable {
 		}
 		return hasRole;
 	}
+	
+	/**
+	 * Check if the roles in this organization match at least one
+	 * of the specified wanted roles.
+	 * 
+	 * @param wantedRoles A list of roles to match (partially)
+	 * @return true if role matches
+	 */
+	public boolean hasSomeRoles(OrganisationRoles... wantedRoles) {
+		if(roles != null && roles.length > 0) {
+			for(int i=roles.length; i-->0; ) {
+				for(int j=wantedRoles.length; j-->0; ) {
+					if(roles[i] == wantedRoles[j]) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 }

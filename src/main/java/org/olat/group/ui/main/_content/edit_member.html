@@ -5,10 +5,16 @@
 		$r.render("repoRights")
 	</fieldset>
 #end
-#if($r.available("groupList"))
+#if($r.visible("groupList"))
 	<fieldset>
 		<legend>$r.translate("edit.member.groups")</legend>
 		$r.render("groupList")
+	</fieldset>
+#end
+#if($r.visible("curriculumList"))
+	<fieldset>
+		<legend>$r.translate("edit.member.curriculums")</legend>
+		$r.render("curriculumList")
 	</fieldset>
 #end
 </div>

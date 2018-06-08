@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -19,6 +20,7 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.repository.RepositoryEntry;
@@ -127,6 +130,15 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum);
+	
+	/**
+	 * Return all the curriculum elements linked to the specified repository entry.
+	 * The method fetch the curriculums and organizations associated with elements.
+	 * 
+	 * @param entry A repository entry
+	 * @return A list of curriculum elements 
+	 */
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry);
 
 	/**
 	 * Return the parent line of the specified curriculum element.
@@ -162,6 +174,10 @@ public interface CurriculumService {
 	 */
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role);
 	
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities);
+	
+	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes);
+	
 	/**
 	 * Add a member with the specified role to the curriculum element. The
 	 * inheritance mode of the membership is per default "none".
@@ -188,6 +204,15 @@ public interface CurriculumService {
 	 * @param role The role
 	 */
 	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role);
+	
+	/**
+	 * Remove the members of the curriculum elements linked to the repository entry.<br>
+	 * The method respect the managed flags!
+	 * 
+	 * @param entry The repository entry
+	 * @param members The memberss
+	 */
+	public void removeMembers(CurriculumElement element, List<Identity> members);
 	
 	/**
 	 * The all list of repository entries hold by the specified curriculum element.
@@ -221,6 +246,14 @@ public interface CurriculumService {
 	
 
 	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
+	
+	/**
+	 * Remove from the list the curriculum elements which are not manageable with the specified roles.
+	 * @param elements A list of curriculum elements with the organization loaded
+	 * @param roles The roles
+	 * @return The list of curriculum elements which can be managed
+	 */
+	public List<CurriculumElement> filterElementsWithoutManagerRole(List<CurriculumElement> elements, Roles roles);
 	
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum);

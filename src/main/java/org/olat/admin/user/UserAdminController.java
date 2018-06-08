@@ -412,7 +412,7 @@ public class UserAdminController extends BasicController implements Activateable
 		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
 		if (canSubscriptions.booleanValue() || isOlatAdmin) {
 			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS),  uureq -> {
-				Controller subscriptionsCtr = new NotificationSubscriptionController(uureq, getWindowControl(), identity, true);
+				Controller subscriptionsCtr = new NotificationSubscriptionController(uureq, getWindowControl(), identity, true, true);
 				listenTo(subscriptionsCtr);
 				return subscriptionsCtr.getInitialComponent();
 			});

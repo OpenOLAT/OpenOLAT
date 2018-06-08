@@ -264,7 +264,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		userSearchCtrl.setUserObject(role);
 		listenTo(userSearchCtrl);
 		
-		String title = translate("add.member.role", new String[] { translate(role.name()) });
+		String title = translate("add.member.role", new String[] { translate("role.".concat(role.name())) });
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

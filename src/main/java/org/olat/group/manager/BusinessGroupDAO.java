@@ -408,7 +408,7 @@ public class BusinessGroupDAO {
 		
 		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class);
 		if(identity != null && identity.length > 0) {
-			List<Long> ids = new ArrayList<Long>(identity.length);
+			List<Long> ids = new ArrayList<>(identity.length);
 			for(Identity id:identity) {
 				ids.add(id.getKey());
 			}
@@ -418,8 +418,7 @@ public class BusinessGroupDAO {
 			query.setParameter("groupKeys", groupKeys);
 		}
 		
-		List<BusinessGroupMembershipViewImpl> res = query.getResultList();
-		return res;
+		return query.getResultList();
 	}
 
 	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting, List<BusinessGroup> groups) {

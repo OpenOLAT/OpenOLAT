@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,12 +31,17 @@ import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
@@ -44,6 +50,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.repository.RepositoryEntry;
@@ -65,6 +72,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurriculumServiceImpl implements CurriculumService {
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -188,6 +197,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum) {
 		return curriculumElementDao.loadElements(curriculum);
 	}
+	
+	@Override
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
+		return curriculumElementDao.loadElements(entry);
+	}
 
 	@Override
 	public List<CurriculumElement> getCurriculumElementParentLine(CurriculumElement element) {
@@ -202,6 +216,63 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role) {
 		return curriculumElementDao.getMembersIdentity(element, role.name());
+	}
+	
+	@Override
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities) {
+		return curriculumElementDao.getMembershipInfos(elements, identities);
+	}
+	
+	
+
+	@Override
+	public void updateCurriculumElementMemberships(Identity doer, Roles roles,
+			List<CurriculumElementMembershipChange> changes) {
+		
+		int count = 0;
+		for(CurriculumElementMembershipChange change:changes) {
+			updateCurriculumElementMembership(change);
+			if(++count % 100 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes) {
+		CurriculumElement element = changes.getElement();
+		
+		if(changes.getCurriculumManager() != null) {
+			if(changes.getCurriculumManager().booleanValue()) {
+				addMember(element, changes.getMember(), CurriculumRoles.curriculummanager);
+			} else {
+				removeMember(element, changes.getMember(), CurriculumRoles.curriculummanager);
+			}
+		}
+		
+		if(changes.getRepositoryEntryOwner() != null) {
+			if(changes.getRepositoryEntryOwner().booleanValue()) {
+				addMember(element, changes.getMember(), CurriculumRoles.owner);
+			} else {
+				removeMember(element, changes.getMember(), CurriculumRoles.owner);
+			}
+		}
+
+		if(changes.getCoach() != null) {
+			if(changes.getCoach().booleanValue()) {
+				addMember(element, changes.getMember(), CurriculumRoles.coach);
+			} else {
+				removeMember(element, changes.getMember(), CurriculumRoles.coach);
+			}
+		}
+
+		if(changes.getParticipant() != null) {
+			if(changes.getParticipant().booleanValue()) {
+				addMember(element, changes.getMember(), CurriculumRoles.participant);
+			} else {
+				removeMember(element, changes.getMember(), CurriculumRoles.participant);
+			}
+		}
 	}
 
 	@Override
@@ -219,6 +290,15 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role) {
 		groupDao.removeMembership(element.getGroup(), member, role.name());
+	}
+
+	@Override
+	public void removeMembers(CurriculumElement element, List<Identity> members) {
+		if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.members)) {
+			for(Identity member:members) {
+				groupDao.removeMembership(element.getGroup(), member);
+			}
+		}
 	}
 
 	@Override
@@ -273,5 +353,28 @@ public class CurriculumServiceImpl implements CurriculumService {
 			}
 		}
 		return elements;
+	}
+
+	@Override
+	public List<CurriculumElement> filterElementsWithoutManagerRole(List<CurriculumElement> elements, Roles roles) {
+		if(elements == null || elements.isEmpty()) return elements;
+
+		List<CurriculumElement> allowedToManaged = new ArrayList<>();
+		List<OrganisationRef> uOrganisations = roles.getOrganisationsWithRoles(OrganisationRoles.curriculummanager, OrganisationRoles.administrator);
+		if(!uOrganisations.isEmpty()) {
+			for(CurriculumElement element:elements) {
+				Organisation org = element.getCurriculum().getOrganisation();
+				if(org != null) {
+					for(OrganisationRef uOrganisation:uOrganisations) {
+						if(uOrganisation.getKey().equals(org.getKey())) {
+							allowedToManaged.add(element);
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		return allowedToManaged;
 	}
 }

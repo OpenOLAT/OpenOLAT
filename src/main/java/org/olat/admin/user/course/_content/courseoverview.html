@@ -1,3 +1,8 @@
-<h3>$r.translate("add.courses.title")</h3>
-$r.render("add.course.owner") $r.render("add.course.tutor") $r.render("add.course.participant")<br/>
-$r.render("table.courses")
+<fieldset>
+	<legend><i class="o_icon o_CourseModule_icon"> </i> $r.translate("add.courses.title")</legend>
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.course.owner") $r.render("add.course.tutor") $r.render("add.course.participant")
+	</div>
+	$r.render("table.courses")
+</fieldset>
+

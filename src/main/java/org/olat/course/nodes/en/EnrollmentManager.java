@@ -55,7 +55,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.model.BGMembership;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -111,10 +110,10 @@ public class EnrollmentManager {
 			if(state.isFailed()) {
 				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
 			} else {
-				if(state.getEnrolled() == BGMembership.participant) {
+				if(state.getEnrolled() == GroupRoles.participant) {
 					addUserToParticipantList(identity, group, enNode, coursePropertyManager, wControl, trans);
 					enrollStatus.setIsEnrolled(true);
-				} else if(state.getEnrolled() == BGMembership.waiting) {
+				} else if(state.getEnrolled() == GroupRoles.waiting) {
 					addUserToWaitingList(identity, group, enNode, coursePropertyManager, wControl, trans);
 					enrollStatus.setIsInWaitingList(true);
 				}

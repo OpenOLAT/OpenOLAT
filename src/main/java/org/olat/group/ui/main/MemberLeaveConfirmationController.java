@@ -92,12 +92,9 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		mailEl = uifactory.addCheckboxesHorizontal("typ", "remove.send.mail.label", optionsCont, keys, values);
 		mailEl.select(keys[0], true);
 		mailEl.setEnabled(!mandatoryEmail);
-		
-		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonCont);
-		formLayout.add("buttons", buttonCont);
-		uifactory.addFormSubmitButton("ok", buttonCont);
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+
+		uifactory.addFormSubmitButton("confirm.leave", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	public boolean isSendMail() {

@@ -55,6 +55,7 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		this.identityKey = identityKey;
 	}
 
+	@Override
 	public Long getGroupKey() {
 		return groupKey;
 	}
@@ -63,6 +64,7 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		this.groupKey = groupKey;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -85,6 +87,7 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		}	
 	}
 
+	@Override
 	public boolean isOwner() {
 		return owner;
 	}
@@ -93,6 +96,7 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		this.owner = owner;
 	}
 
+	@Override
 	public boolean isParticipant() {
 		return participant;
 	}
@@ -101,26 +105,13 @@ public class BusinessGroupMembershipImpl implements BusinessGroupMembership {
 		this.participant = participant;
 	}
 
+	@Override
 	public boolean isWaiting() {
 		return waiting;
 	}
 
 	public void setWaiting(boolean waiting) {
 		this.waiting = waiting;
-	}
-
-	@Override
-	public BGMembership getMembership() {
-		if(isOwner()) {
-			return BGMembership.owner;
-		}
-		if(isParticipant()) {
-			return BGMembership.participant;
-		}
-		if(isWaiting()) {
-			return BGMembership.waiting;
-		}
-		return null;
 	}
 
 	@Override

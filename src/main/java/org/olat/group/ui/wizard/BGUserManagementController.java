@@ -49,7 +49,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.BGMembership;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.main.BGRoleCellRenderer;
 import org.olat.group.ui.main.BusinessGroupMembershipComparator;
@@ -140,11 +139,12 @@ public class BGUserManagementController extends BasicController {
 			cleanupPopup();
 		} else if (source == addCtrl) {
 			List<Identity> identitiesToAdd = extractIdentities(event);
-			BGMembership type = (BGMembership)addCtrl.getUserObject();
+			GroupRoles type = (GroupRoles)addCtrl.getUserObject();
 			switch(type) {
-				case owner: userTableModel.addOwners(identitiesToAdd); break;
+				case coach: userTableModel.addCoaches(identitiesToAdd); break;
 				case participant: userTableModel.addParticipants(identitiesToAdd); break;
 				case waiting: userTableModel.addToWaitingList(identitiesToAdd); break;
+				default: break;
 			}
 			usersCtrl.modelChanged();
 			cmc.deactivate();
@@ -164,11 +164,11 @@ public class BGUserManagementController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == addOwner) {
-			addMembership(ureq, BGMembership.owner);
+			addMembership(ureq, GroupRoles.coach);
 		} else if (source == addParticipant) {
-			addMembership(ureq, BGMembership.participant);
+			addMembership(ureq, GroupRoles.participant);
 		} else if (source == addToWaitingList) {
-			addMembership(ureq, BGMembership.waiting);
+			addMembership(ureq, GroupRoles.waiting);
 		} else if (source == okLink) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == cancelLink) {
@@ -176,7 +176,7 @@ public class BGUserManagementController extends BasicController {
 		}
 	}
 	
-	private void addMembership(UserRequest ureq, BGMembership type) {
+	private void addMembership(UserRequest ureq, GroupRoles type) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addCtrl);
 		
@@ -185,7 +185,7 @@ public class BGUserManagementController extends BasicController {
 		listenTo(addCtrl);
 		String title;
 		switch(type) {
-			case owner: title = translate("users.addowner"); break;
+			case coach: title = translate("users.addowner"); break;
 			case participant: title = translate("users.addparticipant"); break;
 			case waiting: title = translate("users.addwaiting"); break;
 			default: title = "";
@@ -201,7 +201,7 @@ public class BGUserManagementController extends BasicController {
 
 	public MembershipModification getModifications() {
 		MembershipModification mod = new MembershipModification();
-		mod.setAddOwners(userTableModel.getAddOwnerIdentities());
+		mod.setAddOwners(userTableModel.getAddCoachesIdentities());
 		mod.setAddParticipants(userTableModel.getAddParticipantIdentities());
 		mod.setAddToWaitingList(userTableModel.getAddToWaitingList());
 		mod.setRemovedIdentities(userTableModel.getRemovedIdentities());
