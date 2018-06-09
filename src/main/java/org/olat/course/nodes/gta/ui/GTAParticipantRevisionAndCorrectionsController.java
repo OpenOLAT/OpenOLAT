@@ -21,10 +21,12 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -46,6 +48,12 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -63,6 +71,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,13 +93,16 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	private Task assignedTask;
 	private final boolean businessGroupTask;
 	private final GTACourseNode gtaNode;
-	private final BusinessGroup assessedGroup;
+	private final ModuleConfiguration config;
 	private final CourseEnvironment courseEnv;
+	private final BusinessGroup assessedGroup;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final OLATResourceable taskListEventResource;
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private MailManager mailManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -99,6 +111,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			GTACourseNode gtaNode, BusinessGroup assessedGroup, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
+		config = gtaNode.getModuleConfiguration();
 		courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assignedTask = assignedTask;
@@ -345,6 +358,35 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			}
 		} else {
 			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.user);
+		}
+		
+		//do send e-mail
+		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION)) {
+			doSubmissionEmail(iteration);
+		}
+	}
+	
+	private void doSubmissionEmail(int iteration) {
+		String body = config.getStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT);
+		if(StringHelper.containsNonWhitespace(body)) {
+			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+			List<Identity> recipientsTO;
+			File submitDirectory;
+			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+				recipientsTO = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
+				submitDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			} else {
+				recipientsTO = Collections.singletonList(getIdentity());
+				submitDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			}
+			
+			String subject = translate("submission.mail.subject");
+			File[] files = TaskHelper.getDocuments(submitDirectory);
+			MailTemplate template = new GTAMailTemplate(subject, body, files, getIdentity(), getTranslator());
+			
+			MailerResult result = new MailerResult();
+			MailBundle[] bundles = mailManager.makeMailBundles(context, recipientsTO, template, null, UUID.randomUUID().toString(), result);
+			mailManager.sendMessage(bundles);
 		}
 	}
 }

@@ -171,7 +171,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			Long organisationKey = (Long)rawObject[0];
 			//String organisationId = (String)rawObject[1];
 			String role = (String)rawObject[2];
-
+			if(!OrganisationRoles.isValue(role)) {
+				continue;
+			}
 			List<OrganisationRoles> roleList = orgToRoles
 					.computeIfAbsent(new OrganisationRefImpl(organisationKey), key -> new ArrayList<>());
 			roleList.add(OrganisationRoles.valueOf(role));
