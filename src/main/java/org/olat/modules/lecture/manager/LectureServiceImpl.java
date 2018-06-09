@@ -22,6 +22,7 @@ package org.olat.modules.lecture.manager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -89,7 +91,9 @@ import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -135,6 +139,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private LectureBlockRollCallDAO lectureBlockRollCallDao;
 	@Autowired
 	private LectureBlockReminderDAO lectureBlockReminderDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
 	@Autowired
@@ -665,6 +671,27 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		dbInstance.commit();
 		
 		recalculateSummary(lectureBlock.getEntry());
+		dbInstance.commit();
+		
+		//send email
+		sendAutoCloseNotifications(lectureBlock);
+	}
+	
+	private void sendAutoCloseNotifications(LectureBlock lectureBlock) {
+		RepositoryEntry entry = lectureBlock.getEntry();
+		List<Identity> owners = repositoryEntryRelationDao
+				.getMembers(entry, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+		List<Identity> teachers = getTeachers(lectureBlock);
+		
+		for(Identity owner:owners) {
+			MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
+					owner, teachers, lectureBlock);
+			if(result.getReturnCode() == MailerResult.OK) {
+				log.audit("Notification of lecture auto-close: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+			} else {
+				log.error("Notification of lecture auto-close cannot be send: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+			}
+		}
 	}
 
 	@Override
@@ -690,31 +717,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 	
 	private void sendReminder(Identity teacher, LectureBlock lectureBlock) {
-		RepositoryEntry entry = lectureBlock.getEntry();
-		String language = teacher.getUser().getPreferences().getLanguage();
-		Locale locale = i18nManager.getLocaleOrDefault(language);
-		String startDate = Formatter.getInstance(locale).formatDate(lectureBlock.getStartDate());
-		
-		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
-		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey() + "/LectureBlock/" + lectureBlock.getKey();
-		String[] args = new String[]{
-				lectureBlock.getTitle(),					//{0}
-				startDate,									//{1}
-				entry.getDisplayname(),						//{2}
-				url,										//{3}
-				userManager.getUserDisplayName(teacher) 	//{4}	
-		};
-		
-		Translator trans = Util.createPackageTranslator(LectureAdminController.class, locale);
-		String subject = trans.translate("lecture.teacher.reminder.subject", args);
-		String body = trans.translate("lecture.teacher.reminder.body", args);
-
-		LectureReminderTemplate template = new LectureReminderTemplate(subject, body);
-		MailerResult result = new MailerResult();
-		MailBundle bundle = mailManager.makeMailBundle(context, teacher, template, null, null, result);
-		MailerResult sendResult = mailManager.sendMessage(bundle);
-		result.append(sendResult);
-
+		MailerResult result = sendMail("lecture.teacher.reminder.subject", "lecture.teacher.reminder.body",
+				teacher, Collections.singletonList(teacher), lectureBlock);
 		String status;
 		List<Identity> failedIdentities = result.getFailedIdentites();
 		if(failedIdentities != null && failedIdentities.contains(teacher)) {
@@ -724,6 +728,45 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 		
 		lectureBlockReminderDao.createReminder(lectureBlock, teacher, status);
+	}
+	
+	private MailerResult sendMail(String subjectI18nKey, String bodyI18nKey,
+			Identity recipient, List<Identity> teachers, LectureBlock lectureBlock) {
+		
+		RepositoryEntry entry = lectureBlock.getEntry();
+		String language = recipient.getUser().getPreferences().getLanguage();
+		Locale locale = i18nManager.getLocaleOrDefault(language);
+		String startDate = Formatter.getInstance(locale).formatDate(lectureBlock.getStartDate());
+		
+		StringBuilder sb = new StringBuilder();
+		if(teachers != null && !teachers.isEmpty()) {
+			for(Identity teacher:teachers) {
+				if(sb.length() > 0) sb.append(",");
+				sb.append(userManager.getUserDisplayName(teacher));
+			}
+		}
+		
+		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
+		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey() + "/LectureBlock/" + lectureBlock.getKey();
+		String[] args = new String[]{
+				lectureBlock.getTitle(),						//{0}
+				startDate,									//{1}
+				entry.getDisplayname(),						//{2}
+				url,											//{3}
+				userManager.getUserDisplayName(recipient), 	//{4} The recipient
+				sb.toString()								//{5} The teachers
+		};
+		
+		Translator trans = Util.createPackageTranslator(LectureAdminController.class, locale);
+		String subject = trans.translate(subjectI18nKey, args);
+		String body = trans.translate(bodyI18nKey, args);
+
+		LectureReminderTemplate template = new LectureReminderTemplate(subject, body);
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
+		MailerResult sendResult = mailManager.sendMessage(bundle);
+		result.append(sendResult);
+		return sendResult;
 	}
 
 	@Override
