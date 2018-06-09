@@ -38,7 +38,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -113,7 +112,7 @@ public class SharedFolderTest extends OlatJerseyTestCase {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test @Ignore //TODO Apache CXF
+	@Test
 	public void putDirectories_owner() throws IOException, URISyntaxException {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();

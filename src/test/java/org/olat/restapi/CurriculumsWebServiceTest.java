@@ -38,7 +38,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -253,7 +252,7 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 	}
 	
-	@Test @Ignore //TODO Apache CXF
+	@Test
 	public void updateCurriculum_authorizedOrNot()
 	throws IOException, URISyntaxException {
 		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-curriculum");

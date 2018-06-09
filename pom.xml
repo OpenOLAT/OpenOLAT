@@ -1790,7 +1790,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>openmeetingws</artifactId>
-			<version>3.0.7</version>
+			<version>3.0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
