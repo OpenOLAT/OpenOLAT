@@ -139,6 +139,16 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements 
 	 */
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry);
+	
+	/**
+	 * Search curriculum elements in all curriculums. The search is an exact match (think about Syncher).
+	 * 
+	 * @param externalId The external id (optional)
+	 * @param identifier The identifier (optional)
+	 * @param key The primary (optional)
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key);
 
 	/**
 	 * Return the parent line of the specified curriculum element.

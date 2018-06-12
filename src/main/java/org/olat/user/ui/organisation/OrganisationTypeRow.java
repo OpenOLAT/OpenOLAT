@@ -51,6 +51,10 @@ public class OrganisationTypeRow implements OrganisationTypeRef {
 		return type.getDisplayName();
 	}
 	
+	public String getExternalId() {
+		return type.getExternalId();
+	}
+	
 	public OrganisationType getType() {
 		return type;
 	}

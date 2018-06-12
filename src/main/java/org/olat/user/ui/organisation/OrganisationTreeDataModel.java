@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -57,7 +58,13 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 			case key: return organisation.getKey();
 			case displayName: return organisation.getDisplayName();
 			case identifier: return organisation.getIdentifier();
-			case typeIdentifier: return organisation.getTypeIdentifier();
+			case typeIdentifier: {
+				String typeIdentifier = organisation.getTypeIdentifier();
+				if(StringHelper.containsNonWhitespace(typeIdentifier)) {
+					typeIdentifier = organisation.getTypeDisplayName();
+				}
+				return typeIdentifier;
+			}
 			case tools: return organisation.getTools();
 			default: return "ERROR";
 		}

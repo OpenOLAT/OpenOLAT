@@ -24,12 +24,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
+
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for RepositoryEntryVO
- * 
- * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
@@ -60,6 +58,32 @@ public class RepositoryEntryVO {
 	
 	public RepositoryEntryVO() {
 		//
+	}
+	
+	public static RepositoryEntryVO valueOf(RepositoryEntry entry) {
+		RepositoryEntryVO vo = new RepositoryEntryVO();
+		vo.setKey(entry.getKey());
+		vo.setSoftkey(entry.getSoftkey());
+		vo.setResourcename(entry.getResourcename());
+		vo.setDisplayname(entry.getDisplayname());
+		vo.setDescription(entry.getDescription());
+		vo.setAuthors(entry.getAuthors());
+		vo.setLocation(entry.getLocation());
+		vo.setResourceableId(entry.getResourceableId());
+		vo.setResourceableTypeName(entry.getResourceableTypeName());
+		OLATResource resource = entry.getOlatResource();
+		if(resource != null) {
+			vo.setOlatResourceKey(resource.getKey());
+			vo.setOlatResourceId(resource.getResourceableId());
+			vo.setOlatResourceTypeName(resource.getResourceableTypeName());
+		}
+		vo.setExternalId(entry.getExternalId());
+		vo.setExternalRef(entry.getExternalRef());
+		vo.setManagedFlags(entry.getManagedFlagsString());
+		if(entry.getLifecycle() != null) {
+			vo.setLifecycle(new RepositoryEntryLifecycleVO(entry.getLifecycle()));
+		}
+		return vo;
 	}
 	
 	public Long getKey() {

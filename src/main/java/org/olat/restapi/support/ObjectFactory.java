@@ -54,7 +54,6 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
-import org.olat.restapi.support.vo.RepositoryEntryVO;
 
 /**
  * Description:<br>
@@ -148,32 +147,6 @@ public class ObjectFactory {
 		vo.setProvider(authentication.getProvider());
 		if(withCred) {
 			vo.setCredential(authentication.getCredential());
-		}
-		return vo;
-	}
-	
-	public static RepositoryEntryVO get(RepositoryEntry entry) {
-		RepositoryEntryVO vo = new RepositoryEntryVO();
-		vo.setKey(entry.getKey());
-		vo.setSoftkey(entry.getSoftkey());
-		vo.setResourcename(entry.getResourcename());
-		vo.setDisplayname(entry.getDisplayname());
-		vo.setDescription(entry.getDescription());
-		vo.setAuthors(entry.getAuthors());
-		vo.setLocation(entry.getLocation());
-		vo.setResourceableId(entry.getResourceableId());
-		vo.setResourceableTypeName(entry.getResourceableTypeName());
-		OLATResource resource = entry.getOlatResource();
-		if(resource != null) {
-			vo.setOlatResourceKey(resource.getKey());
-			vo.setOlatResourceId(resource.getResourceableId());
-			vo.setOlatResourceTypeName(resource.getResourceableTypeName());
-		}
-		vo.setExternalId(entry.getExternalId());
-		vo.setExternalRef(entry.getExternalRef());
-		vo.setManagedFlags(entry.getManagedFlagsString());
-		if(entry.getLifecycle() != null) {
-			vo.setLifecycle(new RepositoryEntryLifecycleVO(entry.getLifecycle()));
 		}
 		return vo;
 	}

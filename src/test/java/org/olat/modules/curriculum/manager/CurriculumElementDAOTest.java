@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.manager;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -180,6 +181,36 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(element1, parentLine.get(1));
 		Assert.assertEquals(element2, parentLine.get(2));
 		Assert.assertEquals(element3, parentLine.get(3));
+	}
+	
+	@Test
+	public void searchElements() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", null);
+		String externalId = UUID.randomUUID().toString();
+		String identifier = UUID.randomUUID().toString();
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element", null, null, null, null, curriculum);
+		dbInstance.commit();
+		element.setExternalId(externalId);
+		element = curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+		
+		//search by external id
+		List<CurriculumElement> elementsByExternalId = curriculumElementDao.searchElements(externalId, null, null);
+		Assert.assertNotNull(elementsByExternalId);
+		Assert.assertEquals(1, elementsByExternalId.size());
+		Assert.assertEquals(element, elementsByExternalId.get(0));
+		
+		//search by identifier 
+		List<CurriculumElement> elementsByIdentifier = curriculumElementDao.searchElements(null, identifier, null);
+		Assert.assertNotNull(elementsByIdentifier);
+		Assert.assertEquals(1, elementsByIdentifier.size());
+		Assert.assertEquals(element, elementsByIdentifier.get(0));
+		
+		// search by primary key
+		List<CurriculumElement> elementsByKey = curriculumElementDao.searchElements(null, null, element.getKey());
+		Assert.assertNotNull(elementsByKey);
+		Assert.assertEquals(1, elementsByKey.size());
+		Assert.assertEquals(element, elementsByKey.get(0));
 	}
 	
 	@Test

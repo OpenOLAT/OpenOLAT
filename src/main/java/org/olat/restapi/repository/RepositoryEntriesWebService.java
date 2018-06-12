@@ -54,8 +54,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
@@ -76,9 +74,9 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
-import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -96,6 +94,15 @@ public class RepositoryEntriesWebService {
 	
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntriesWebService.class);
 	private static final String VERSION = "1.0";
+	
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryHandlerFactory handlerFactory;
 	
 	/**
 	 * The version number of this web service
@@ -127,7 +134,7 @@ public class RepositoryEntriesWebService {
 			Identity identity = getIdentity(httpRequest);
 
 			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
-			List<RepositoryEntry> coursRepos = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(params, 0, -1, false);
+			List<RepositoryEntry> coursRepos = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("Course List\n");
@@ -209,7 +216,7 @@ public class RepositoryEntriesWebService {
 		int i=0;
 		RepositoryEntryVO[] entryVOs = new RepositoryEntryVO[coursRepos.size()];
 		for (RepositoryEntry repoE : coursRepos) {
-			entryVOs[i++] = ObjectFactory.get(repoE);
+			entryVOs[i++] = RepositoryEntryVO.valueOf(repoE);
 		}
 		return entryVOs;
 	}
@@ -273,7 +280,7 @@ public class RepositoryEntriesWebService {
 			int i=0;
 			RepositoryEntryVO[] reVOs = new RepositoryEntryVO[reposFound.size()];
 			for (RepositoryEntry re : reposFound) {
-				reVOs[i++] = ObjectFactory.get(re);
+				reVOs[i++] = RepositoryEntryVO.valueOf(re);
 			}
 			return Response.ok(reVOs).build();
 		} catch(Exception e) {
@@ -321,15 +328,13 @@ public class RepositoryEntriesWebService {
 				String organisationKey = partsReader.getValue("organisationkey");
 				Organisation organisation = null;
 				if(StringHelper.containsNonWhitespace(organisationKey)) {
-					organisation = CoreSpringFactory.getImpl(OrganisationService.class)
-							.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationKey)));
+					organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationKey)));
 				} else {
-					organisation = CoreSpringFactory.getImpl(OrganisationService.class)
-							.getDefaultOrganisation();
+					organisation = organisationService.getDefaultOrganisation();
 				}
 
 				RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access, organisation);
-				RepositoryEntryVO vo = ObjectFactory.get(re);
+				RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
 				return Response.ok(vo).build();
 			}
 			return Response.serverError().status(Status.NO_CONTENT).build();
@@ -343,9 +348,6 @@ public class RepositoryEntriesWebService {
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
 			String displayname, String softkey, int access, Organisation organisation) {
-
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryHandlerFactory handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
 		try {
 			RepositoryHandler handler = null;
 			for(String type:handlerFactory.getSupportedTypes()) {
@@ -386,9 +388,8 @@ public class RepositoryEntriesWebService {
 	
 	@Path("{repoEntryKey}")
 	public RepositoryEntryWebService getRepositoryEntryResource() {
-		RepositoryManager rm = RepositoryManager.getInstance();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		return new RepositoryEntryWebService(rm, repositoryService, securityManager);
+		RepositoryEntryWebService entrySW = new RepositoryEntryWebService();
+		CoreSpringFactory.autowireObject(entrySW);
+		return entrySW;
 	}
 }

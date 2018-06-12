@@ -33,6 +33,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -42,15 +43,16 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -64,6 +66,11 @@ import org.springframework.stereotype.Component;
 public class CurriculumsWebService {
 	
 	private static final String VERSION = "1.0";
+	
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	/**
 	 * The version of the User Web Service
@@ -98,7 +105,6 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		if(!roles.isOLATAdmin()) {
 			List<OrganisationRef> organisations = roles.getOrganisationsWithRole(OrganisationRoles.curriculummanager);
@@ -204,7 +210,6 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		allowedOrganisation(curriculum.getOrganisation(), roles);
 		CurriculumVO curriculumVo = CurriculumVO.valueOf(curriculum);
@@ -214,7 +219,6 @@ public class CurriculumsWebService {
 	@Path("{curriculumKey}/elements")
 	public CurriculumElementsWebService getCurriculumElementWebService(@PathParam("curriculumKey") Long curriculumKey,
 			@Context HttpServletRequest httpRequest) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		if(curriculum == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
@@ -261,14 +265,10 @@ public class CurriculumsWebService {
 		return Response.ok(CurriculumVO.valueOf(savedCurriculum)).build();
 	}
 	
-	
 	private Curriculum saveCurriculum(CurriculumVO curriculum, Roles roles) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
-		
 		Curriculum curriculumToSave = null;
 		Organisation organisation = null;
 		if(curriculum.getOrganisationKey() != null) {
-			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(curriculum.getOrganisationKey()));
 			allowedOrganisation(organisation, roles);//check if the user can manage this organisation's curriculum
 		}
@@ -304,5 +304,22 @@ public class CurriculumsWebService {
 		}
 
 		throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+	}
+	
+	@GET
+	@Path("elements")
+	public Response searchCurriculumElement(@QueryParam("externalId") String externalId, @QueryParam("identifier") String identifier,
+			@QueryParam("key") Long key, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<CurriculumElement> elements = curriculumService.searchCurriculumElements(externalId, identifier, key);
+		CurriculumElementVO[] voes = new CurriculumElementVO[elements.size()];
+		for(int i=elements.size(); i-->0; ) {
+			voes[i] = CurriculumElementVO.valueOf(elements.get(i));
+		}
+		return Response.ok(voes).build();
 	}
 }

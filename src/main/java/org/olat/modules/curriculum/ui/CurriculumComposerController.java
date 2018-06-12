@@ -110,6 +110,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalId));
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);

@@ -35,12 +35,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -53,6 +53,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("curriculum/types")
 public class CurriculumElementTypesWebService {
+	
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	/**
 	 * Return the curriculum element types used in the whole OpenOLAT instance.
@@ -68,7 +71,6 @@ public class CurriculumElementTypesWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getElementTypes() {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		List<CurriculumElementType> elementTypes = curriculumService.getCurriculumElementTypes();
 		List<CurriculumElementTypeVO> voes = new ArrayList<>(elementTypes.size());
 		for(CurriculumElementType elementType:elementTypes) {
@@ -159,7 +161,6 @@ public class CurriculumElementTypesWebService {
 	
 	private CurriculumElementType saveCurriculumElementType(CurriculumElementTypeVO elementTypeVo) {
 		CurriculumElementType elementType;
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		if(elementTypeVo.getKey() == null) {
 			elementType = curriculumService.createCurriculumElementType(elementTypeVo.getIdentifier(),
 					elementTypeVo.getDisplayName(), elementTypeVo.getDescription(), elementTypeVo.getExternalId());
@@ -191,7 +192,6 @@ public class CurriculumElementTypesWebService {
 	@Path("{curriculumElementTypeKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElementTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		CurriculumElementType elementType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		if(elementType == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -215,7 +215,6 @@ public class CurriculumElementTypesWebService {
 	@Path("{curriculumElementTypeKey}/allowedSubTypes")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAllowedSubTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		if(type == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -246,7 +245,6 @@ public class CurriculumElementTypesWebService {
 	@Path("{curriculumElementTypeKey}/allowedSubTypes/{subTypeKey}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response allowSubTaxonomyLevelType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @PathParam("subTypeKey") Long subTypeKey) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		CurriculumElementType subType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(subTypeKey));
 		if(type == null) {
@@ -270,7 +268,6 @@ public class CurriculumElementTypesWebService {
 	@DELETE
 	@Path("{curriculumElementTypeKey}/allowedSubTypes/{subTypeKey}")
 	public Response disalloweSubType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @PathParam("subTypeKey") Long subTypeKey) {
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		CurriculumElementType subType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(subTypeKey));
 		if(type == null || subType == null) {

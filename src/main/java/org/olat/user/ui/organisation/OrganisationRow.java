@@ -90,6 +90,10 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 		return type == null ? null : type.getIdentifier();
 	}
 	
+	public String getTypeDisplayName() {
+		return type == null ? null : type.getDisplayName();
+	}
+	
 	public FormLink getTools() {
 		return toolsLink;
 	}

@@ -93,6 +93,7 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -106,21 +107,19 @@ public class RepositoryEntryWebService {
 
   private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebService.class);
 
-  public static CacheControl cc = new CacheControl();
+	public static CacheControl cc = new CacheControl();
 
-  static {
-    cc.setMaxAge(-1);
-  }
-  
-  private RepositoryManager repositoryManager;
-  private RepositoryService repositoryService;
-  private BaseSecurity securityManager;
-  
-  public RepositoryEntryWebService(RepositoryManager repositoryManager, RepositoryService repositoryService, BaseSecurity securityManager) {
-  	this.repositoryManager = repositoryManager;
-  	this.repositoryService = repositoryService;
-  	this.securityManager = securityManager;
-  }
+	static {
+		cc.setMaxAge(-1);
+	}
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BaseSecurity securityManager;
+ 
 
   /**
    * get a resource in the repository
@@ -148,14 +147,14 @@ public class RepositoryEntryWebService {
       EntityTag eTag = ObjectFactory.computeEtag(re);
       response = request.evaluatePreconditions(eTag);
       if(response == null) {
-        RepositoryEntryVO vo = ObjectFactory.get(re);
+        RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
         response = Response.ok(vo).tag(eTag).lastModified(lastModified);
       }
     } else {
       EntityTag eTag = ObjectFactory.computeEtag(re);
       response = request.evaluatePreconditions(lastModified, eTag);
       if(response == null) {
-        RepositoryEntryVO vo = ObjectFactory.get(re);
+        RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
         response = Response.ok(vo).tag(eTag).lastModified(lastModified);
       }
     }
@@ -668,7 +667,7 @@ public class RepositoryEntryWebService {
     RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, vo.getDisplayname(), vo.getDescription(),
     		vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
     		lifecycle);
-    RepositoryEntryVO rvo = ObjectFactory.get(reloaded);
+    RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
     return Response.ok(rvo).build();
   }
 
@@ -733,7 +732,7 @@ public class RepositoryEntryWebService {
 	      			location, authors, externalId, externalRef, managedFlags, replacedRe.getLifecycle());
 	      }
       }
-      RepositoryEntryVO vo = ObjectFactory.get(replacedRe);
+      RepositoryEntryVO vo = RepositoryEntryVO.valueOf(replacedRe);
       return Response.ok(vo).build();
     } catch (Exception e) {
       log.error("Error while importing a file",e);

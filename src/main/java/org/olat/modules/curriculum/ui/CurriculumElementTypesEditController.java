@@ -94,8 +94,10 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		addRootTypeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.displayName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
 		editColumn.setExportable(false);

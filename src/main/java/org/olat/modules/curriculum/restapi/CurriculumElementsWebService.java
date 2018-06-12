@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -53,6 +54,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -256,6 +258,107 @@ public class CurriculumElementsWebService {
 		if(element.getCurriculum() != null && !element.getCurriculum().getKey().equals(curriculum.getKey())) {
 			throw new WebApplicationException(Response.serverError().status(Status.CONFLICT).build());
 		}
+	}
+
+	/**
+	 * Get the repository entries laying under the specified curriculum element.
+	 * 
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc Get the repository entries
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The repository entries
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the repository entry was not found
+	 * @param curriculumElementKey The curriculum element
+	 * @return An array of repository entries
+	 */
+	@GET
+	@Path("{curriculumElementKey}/entries")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getRepositoryEntriesInElement(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+		RepositoryEntryVO[] entriesVoes = new RepositoryEntryVO[entries.size()];
+		for(int i=entries.size(); i-->0; ) {
+			entriesVoes[i] = RepositoryEntryVO.valueOf(entries.get(i));
+		}
+		return Response.ok(entriesVoes).build();
+	}
+	
+	/**
+	 * To see if a repository entry is under the specified curriculum element.
+	 * 
+	 * @response.representation.200.doc The repository entry is there
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the repository entry was not found
+	 * @param curriculumElementKey The curriculum element
+	 * @param repositoryEntryKey The repository entry
+	 * @return Nothing
+	 */
+	@HEAD
+	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response headRepositoryEntryInElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+		for(RepositoryEntry entry:entries) {
+			if(entry.getKey().equals(repositoryEntryKey)) {
+				return Response.ok().build();
+			}
+		}
+		return Response.serverError().status(Status.NOT_FOUND).build();
+	}
+	
+	/**
+	 * Load the repository entry laying under the specified curriculum element.
+	 * 
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc Get the repository entries
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The repository entries
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the repository entry was not found
+	 * @param curriculumElementKey The curriculum element
+	 * @return An array of repository entries
+	 */
+	@GET
+	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getRepositoryEntryInElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+		for(RepositoryEntry entry:entries) {
+			if(entry.getKey().equals(repositoryEntryKey)) {
+				return Response.ok(RepositoryEntryVO.valueOf(entry)).build();
+			}
+		}
+		return Response.serverError().status(Status.NOT_FOUND).build();
 	}
 	
 	/**

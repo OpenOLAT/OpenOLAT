@@ -51,6 +51,10 @@ public class CurriculumElementTypeRow implements CurriculumElementTypeRef {
 		return type.getDisplayName();
 	}
 	
+	public String getExternalId() {
+		return type.getExternalId();
+	}
+	
 	public CurriculumElementType getType() {
 		return type;
 	}

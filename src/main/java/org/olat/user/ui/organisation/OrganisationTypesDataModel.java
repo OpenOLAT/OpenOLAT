@@ -19,6 +19,8 @@
  */
 package org.olat.user.ui.organisation;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -39,8 +41,11 @@ implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<OrganisationTypeRow> views = new OrganisationTypesDataModelSortDelegate(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
 	}
 	
 	@Override
@@ -55,6 +60,7 @@ implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 			case key: return row.getKey();
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
+			case externalId: return row.getExternalId();
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -67,8 +73,9 @@ implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 	
 	public enum TypeCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		identifier("table.header.type.identifier"),
-		displayName("table.header.type.displayName"),
+		identifier("table.type.header.type.identifier"),
+		displayName("table.type.header.type.displayName"),
+		externalId("table.type.header.type.externalId"),
 		tools("table.header.tools");
 		
 		private final String i18nHeaderKey;

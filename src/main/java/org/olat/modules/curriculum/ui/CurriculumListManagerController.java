@@ -107,6 +107,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId, "select"));
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
 		toolsCol.setExportable(false);
 		toolsCol.setAlwaysVisible(true);

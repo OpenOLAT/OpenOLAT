@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
@@ -59,6 +58,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -71,6 +71,12 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses/{resourceKey}/certificates")
 public class CertificationWebService {
 	
+	@Autowired
+	private BaseSecurity baseSecurity;
+	@Autowired
+	private CertificatesManager certificatesManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
 	
 	@HEAD
 	@Path("{identityKey}")
@@ -81,16 +87,12 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
-
 		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
-		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 		OLATResource resource = resourceManager.findResourceable(courseOres);
 		if(resource == null) {
 			resource = resourceManager.findResourceById(resourceKey);
@@ -132,9 +134,6 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
-
 		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -159,16 +158,12 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
-
 		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
-		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 		OLATResource resource = resourceManager.findResourceable(courseOres);
 		if(resource == null) {
 			resource = resourceManager.findResourceById(resourceKey);
@@ -212,13 +207,11 @@ public class CertificationWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 
-		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 		OLATResource resource = resourceManager.findResourceById(resourceKey);
 		if(resource == null) {
 			resource = resourceManager.findResourceable(resourceKey, "CourseModule");
@@ -227,8 +220,6 @@ public class CertificationWebService {
 		if(resource == null) {	
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		} else {
-			CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-			
 			ICourse course = CourseFactory.loadCourse(resource);
 			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
@@ -283,28 +274,17 @@ public class CertificationWebService {
 				creationDate = ObjectFactory.parseDate(creationDateStr);
 			}
 
-			CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-			BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
 			Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
 			if(assessedIdentity == null) {
 				return Response.serverError().status(Response.Status.NOT_FOUND).build();
 			}
 
-			OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 			OLATResource resource = resourceManager.findResourceById(resourceKey);
-			
-			Certificate certificate;
 			if(resource == null) {
-				certificate = certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, resourceKey, tmpFile);
+				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, resourceKey, tmpFile);
 			} else {
-				certificate = certificatesManager.uploadCertificate(assessedIdentity, creationDate, resource, tmpFile);
+				certificatesManager.uploadCertificate(assessedIdentity, creationDate, resource, tmpFile);
 			}
-			
-			
-			System.out.println("WS: " + Thread.currentThread().getName());
-			
-			//DBFactory.getInstance().commitAndCloseSession();
-
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

@@ -57,6 +57,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public String getDisplayName() {
 		return element.getDisplayName();
 	}
+	
+	public String getExternalId() {
+		return element.getExternalId();
+	}
 
 	@Override
 	public CurriculumElementRow getParent() {

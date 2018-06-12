@@ -57,8 +57,10 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 	@Override
 	public Object getValueAt(CurriculumElementTypeRow row, int col) {
 		switch(TypesCols.values()[col]) {
+			case key: return row.getKey();
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
+			case externalId: return row.getExternalId();
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -70,8 +72,10 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 	}
 	
 	public enum TypesCols implements FlexiSortableColumnDef {
-		identifier("table.header.type.identifier"),
-		displayName("table.header.type.displayName"),
+		key("table.header.key"),
+		identifier("table.type.header.type.identifier"),
+		displayName("table.type.header.type.displayName"),
+		externalId("table.type.header.type.externalId"),
 		tools("table.header.tools");
 		
 		private final String i18nHeaderKey;
@@ -82,7 +86,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

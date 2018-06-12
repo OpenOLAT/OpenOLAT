@@ -17,46 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
+package org.olat.user.ui.organisation;
 
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumRef;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
- * Initial date: 13 févr. 2018<br>
+ * Initial date: 11 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumRow implements CurriculumRef {
+public class OrganisationTypesDataModelSortDelegate extends SortableFlexiTableModelDelegate<OrganisationTypeRow> {
 	
-	private final Curriculum curriculum;
-	private final FormLink toolsLink;
-	
-	public CurriculumRow(Curriculum curriculum, FormLink toolsLink) {
-		this.curriculum = curriculum;
-		this.toolsLink = toolsLink;
-	}
-	
-	@Override
-	public Long getKey() {
-		return curriculum.getKey();
-	}
-	
-	public String getDisplayName() {
-		return curriculum.getDisplayName();
-	}
-	
-	public String getIdentifier() {
-		return curriculum.getIdentifier();
-	}
-	
-	public String getExternalId() {
-		return curriculum.getExternalId();
-	}
-	
-	public FormLink getTools() {
-		return toolsLink;
+	public OrganisationTypesDataModelSortDelegate(SortKey orderBy, OrganisationTypesDataModel tableModel, Locale locale) {
+		super(orderBy, tableModel, locale);
 	}
 }

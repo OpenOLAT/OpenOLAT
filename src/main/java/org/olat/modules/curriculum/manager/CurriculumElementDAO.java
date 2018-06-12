@@ -35,6 +35,7 @@ import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
@@ -176,6 +177,40 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
+	}
+	
+	public List<CurriculumElement> searchElements(String externalId, String identifier, Long key) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el from curriculumelement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" inner join fetch el.group bGroup")
+		  .append(" left join fetch curriculum.organisation org");
+		
+		boolean where = false;
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("el.externalId=:externalId");
+		}
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("el.identifier=:identifier");
+		}
+		if(key != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("el.key=:key");
+		}
+		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class);
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			query.setParameter("externalId", externalId);
+		}
+		if(StringHelper.containsNonWhitespace(identifier)) {
+			query.setParameter("identifier", identifier);
+		}
+		if(key != null) {
+			query.setParameter("key", key);
+		}
+		return query.getResultList();
 	}
 	
 	public List<CurriculumElement> getParentLine(CurriculumElement curriculumElement) {

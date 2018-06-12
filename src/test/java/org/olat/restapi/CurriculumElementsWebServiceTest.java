@@ -34,6 +34,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
@@ -55,6 +56,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementMemberVO;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
@@ -354,6 +356,99 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 	}
 	
+	@Test
+	public void getRepositoryEntriesInCurriculumElement()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", null, null, null, null, curriculum);
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+
+		// add the relation
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<RepositoryEntryVO> entries = parseRepositoryEntryArray(response.getEntity());
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(course.getKey(), entries.get(0).getKey());
+	}
+	
+	@Test
+	public void headRepositoryEntryInCurriculumElement()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", null, null, null, null, curriculum);
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+
+		// check the relation
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path(course.getKey().toString()).build();
+		HttpHead method = conn.createHead(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// check a non existing repository entry
+		URI notRequest = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path("32").build();
+		HttpHead notMethod = conn.createHead(notRequest, MediaType.APPLICATION_JSON, true);
+		HttpResponse notResponse = conn.execute(notMethod);
+		Assert.assertEquals(404, notResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(notResponse.getEntity());
+	}
+	
+	@Test
+	public void getRepositoryEntryInCurriculumElement()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11", null, null, null, null, curriculum);
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+
+		// check the relation
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path(course.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryVO entry = conn.parse(response.getEntity(), RepositoryEntryVO.class);
+		Assert.assertNotNull(entry);
+		Assert.assertEquals(course.getKey(), entry.getKey());
+		
+		// check a non existing repository entry
+		URI notRequest = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path("32").build();
+		HttpHead notMethod = conn.createHead(notRequest, MediaType.APPLICATION_JSON, true);
+		HttpResponse notResponse = conn.execute(notMethod);
+		Assert.assertEquals(404, notResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(notResponse.getEntity());
+	}
 	
 	@Test
 	public void addRepositoryEntryToCurriculumElement()
@@ -383,6 +478,14 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(course, entries.get(0));
+		
+		// very important -> not modified response if already added
+		URI twiceRequest = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path(course.getKey().toString()).build();
+		HttpPut twiceMethod = conn.createPut(twiceRequest, MediaType.APPLICATION_JSON, true);
+		HttpResponse twiceResponse = conn.execute(twiceMethod);
+		Assert.assertEquals(304, twiceResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(twiceResponse.getEntity());
 	}
 	
 	@Test
@@ -831,6 +934,16 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		try(InputStream in = body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	protected List<RepositoryEntryVO> parseRepositoryEntryArray(HttpEntity body) {
+		try(InputStream in = body.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<RepositoryEntryVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

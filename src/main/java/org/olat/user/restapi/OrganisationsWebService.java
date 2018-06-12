@@ -45,10 +45,10 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -62,6 +62,13 @@ import org.springframework.stereotype.Component;
 public class OrganisationsWebService {
 	
 	private static final String VERSION = "1.0";
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	/**
 	 * The version of the User Web Service
@@ -97,7 +104,6 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		List<Organisation> organisations = organisationService.getOrganisations();
 		OrganisationVO[] organisationVOes = toArrayOfVOes(organisations);
 		return Response.ok(organisationVOes).build();
@@ -180,7 +186,6 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		OrganisationVO organisationVo = OrganisationVO.valueOf(organisation);
 		return Response.ok(organisationVo).build();
@@ -226,8 +231,6 @@ public class OrganisationsWebService {
 	
 	
 	private Organisation saveOrganisation(OrganisationVO organisation) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-		
 		Organisation organisationToSave = null;
 		Organisation parentOrganisation = null;
 		if(organisation.getParentOrganisationKey() != null) {
@@ -261,7 +264,7 @@ public class OrganisationsWebService {
 		Organisation savedOrganisation = organisationService.updateOrganisation(organisationToSave);
 		if(move) {
 			organisationService.moveOrganisation(savedOrganisation, parentOrganisation);
-			CoreSpringFactory.getImpl(DB.class).commit();
+			dbInstance.commit();
 			savedOrganisation = organisationService.getOrganisation(savedOrganisation);
 		}
 		return savedOrganisation;
@@ -297,8 +300,6 @@ public class OrganisationsWebService {
 	}
 	
 	private Response getMembers(Long organisationKey, OrganisationRoles role) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-		
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -340,7 +341,6 @@ public class OrganisationsWebService {
 	}
 	
 	private Response putMember(Long organisationKey, Long identityKey, OrganisationRoles role) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -349,12 +349,10 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-
 		organisationService.addMember(organisation, identity, role);
 		return Response.ok().build();
 	}
@@ -383,17 +381,14 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-	
 		if(getRoles(role) == null) {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		for(UserVO member:members) {
 			Identity identity = securityManager.loadIdentityByKey(member.getKey());
 			if(identity != null) {
@@ -425,7 +420,6 @@ public class OrganisationsWebService {
 	}
 	
 	private Response deleteMember(Long organisationKey, Long identityKey, OrganisationRoles role) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -434,7 +428,6 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();

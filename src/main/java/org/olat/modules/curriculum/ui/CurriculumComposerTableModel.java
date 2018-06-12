@@ -56,6 +56,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			case key: return element.getKey();
 			case displayName: return element.getDisplayName();
 			case identifier: return element.getIdentifier();
+			case externalId: return element.getExternalId();
 			case tools: return element.getTools();
 			default: return "ERROR";
 		}
@@ -70,6 +71,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		key("table.header.key"),
 		displayName("table.header.displayName"),
 		identifier("table.header.identifier"),
+		externalId("table.header.external.id"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

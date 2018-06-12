@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -47,9 +48,11 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.curriculum.restapi.CurriculumVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -297,6 +300,80 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals("Update B", updatedVoB.getIdentifier());
 	}
 	
+	@Test
+	public void searchCurriculumElements_externalId()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Unkown", "Element 1", null, null, null, null, curriculum);
+		dbInstance.commit();
+		String externalId = UUID.randomUUID().toString();
+		element.setExternalId(externalId);
+		element = curriculumService.updateCurriculumElement(element);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// it cannot change something in organization A
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum/elements").queryParam("externalId", externalId).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CurriculumElementVO> elements = this.parseCurriculumElementArray(response.getEntity());
+		Assert.assertNotNull(elements);
+		Assert.assertEquals(1, elements.size());
+		Assert.assertEquals(element.getKey(), elements.get(0).getKey());
+	}
+	
+	@Test
+	public void searchCurriculumElements_identifier()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		String identifier = UUID.randomUUID().toString();
+		CurriculumElement element = curriculumService.createCurriculumElement(identifier, "Element 1", null, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// it cannot change something in organization A
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum/elements").queryParam("identifier", identifier).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CurriculumElementVO> elements = this.parseCurriculumElementArray(response.getEntity());
+		Assert.assertNotNull(elements);
+		Assert.assertEquals(1, elements.size());
+		Assert.assertEquals(element.getKey(), elements.get(0).getKey());
+	}
+	
+	@Test
+	public void searchCurriculumElements_elementKey()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("by-key", "Element 1", null, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// it cannot change something in organization A
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum/elements").queryParam("key", element.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CurriculumElementVO> elements = this.parseCurriculumElementArray(response.getEntity());
+		Assert.assertNotNull(elements);
+		Assert.assertEquals(1, elements.size());
+		Assert.assertEquals(element.getKey(), elements.get(0).getKey());
+	}
+	
 	protected List<CurriculumVO> parseCurriculumArray(HttpEntity entity) {
 		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
@@ -307,4 +384,13 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		}
 	}
 
+	protected List<CurriculumElementVO> parseCurriculumElementArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<CurriculumElementVO>>(){/* */});
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
 }

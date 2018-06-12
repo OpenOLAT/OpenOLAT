@@ -44,7 +44,7 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeManagedFlag;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
-import org.olat.core.CoreSpringFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -56,6 +56,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("organisations/types")
 public class OrganisationTypesWebService {
+	
+	@Autowired
+	private OrganisationService organisationService;
 
 	/**
 	 * List of organizations types.
@@ -75,7 +78,6 @@ public class OrganisationTypesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		List<OrganisationType> organisationtypes = organisationService.getOrganisationTypes();
 		OrganisationTypeVO[] organisationTypeVOes = toArrayOfVOes(organisationtypes);
 		return Response.ok(organisationTypeVOes).build();
@@ -174,7 +176,6 @@ public class OrganisationTypesWebService {
 	
 	private OrganisationType saveOrganisationType(OrganisationTypeVO organisationTypeVo) {
 		OrganisationType organisationType;
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		if(organisationTypeVo.getKey() == null) {
 			organisationType = organisationService.createOrganisationType(organisationTypeVo.getDisplayName(),
 					organisationTypeVo.getIdentifier(), organisationTypeVo.getDescription());
@@ -212,7 +213,6 @@ public class OrganisationTypesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		OrganisationType organisationType = organisationService.getOrganisationType(new OrganisationTypeRefImpl(organisationTypeKey));
 		if(organisationType == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -242,7 +242,6 @@ public class OrganisationTypesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		OrganisationType type = organisationService.getOrganisationType(new OrganisationTypeRefImpl(organisationTypeKey));
 		if(type == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -279,7 +278,6 @@ public class OrganisationTypesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		OrganisationType type = organisationService.getOrganisationType(new OrganisationTypeRefImpl(organisationTypeKey));
 		OrganisationType subType = organisationService.getOrganisationType(new OrganisationTypeRefImpl(subTypeKey));
 		if(type == null) {
@@ -309,7 +307,6 @@ public class OrganisationTypesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		OrganisationType type = organisationService.getOrganisationType(new OrganisationTypeRefImpl(organisationTypeKey));
 		OrganisationType subType = organisationService.getOrganisationType(new OrganisationTypeRefImpl(subTypeKey));
 		if(type == null || subType == null) {
