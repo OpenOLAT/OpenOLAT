@@ -157,7 +157,6 @@
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeToTypeImpl</class>
-		<class>org.olat.modules.curriculum.model.CurriculumRepositoryEntryRelationImpl</class>
 		<class>org.olat.modules.fo.model.ForumImpl</class>
 		<class>org.olat.modules.fo.model.MessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageRefImpl</class>

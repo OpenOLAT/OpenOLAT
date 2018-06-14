@@ -125,7 +125,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	private Reason reasonEffectiveEnd;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=true)
 	private RepositoryEntry entry;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)

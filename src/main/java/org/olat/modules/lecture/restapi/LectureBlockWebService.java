@@ -34,7 +34,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -44,6 +43,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,14 +58,16 @@ public class LectureBlockWebService {
 	private final RepositoryEntry entry;
 	private final LectureBlock lectureBlock;
 	
-	private final LectureService lectureService;
-	private final BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
-	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry, LectureService lectureService) {
+	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry) {
 		this.entry = entry;
 		this.lectureBlock = lectureBlock;
-		this.lectureService = lectureService;
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 	}
 	
 	/**
@@ -83,6 +85,19 @@ public class LectureBlockWebService {
 	public Response getLectureBlock() {
 		return Response.ok(new LectureBlockVO(lectureBlock, entry.getKey())).build();
 	}
+	
+	@POST
+	@Path("entry/{repositoryEntryKey}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response moveLectureBlock(@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
+		RepositoryEntry newEntry = repositoryService.loadByKey(repositoryEntryKey);
+		if(newEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		LectureBlock movedLectureBlock = lectureService.moveLectureBlock(lectureBlock, newEntry);
+		return Response.ok(new LectureBlockVO(movedLectureBlock, movedLectureBlock.getEntry().getKey())).build();
+	}
+	
 
 	/**
 	 * Delete a specific lecture blocks.
@@ -163,8 +178,7 @@ public class LectureBlockWebService {
 	@Path("participants/repositoryentry")
 	public Response addRepositoryEntryParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
-		Group defGroup = CoreSpringFactory.getImpl(RepositoryService.class)
-				.getDefaultGroup(entry);
+		Group defGroup = repositoryService.getDefaultGroup(entry);
 		List<Group> currentGroups = lectureService.getLectureBlockToGroups(reloadedBlock);
 		if(!currentGroups.contains(defGroup)) {
 			currentGroups.add(defGroup);
@@ -183,8 +197,7 @@ public class LectureBlockWebService {
 	@Path("participants/repositoryentry")
 	public Response deleteRepositoryEntryParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
-		Group defGroup = CoreSpringFactory.getImpl(RepositoryService.class)
-				.getDefaultGroup(entry);
+		Group defGroup = repositoryService.getDefaultGroup(entry);
 		List<Group> currentGroups = lectureService.getLectureBlockToGroups(reloadedBlock);
 		if(currentGroups.contains(defGroup)) {
 			currentGroups.remove(defGroup);

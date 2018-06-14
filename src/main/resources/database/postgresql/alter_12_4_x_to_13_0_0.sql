@@ -147,21 +147,6 @@ create index idx_cur_type_to_type_idx on o_cur_element_type_to_type (fk_type);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
 create index idx_cur_type_to_sub_type_idx on o_cur_element_type_to_type (fk_allowed_sub_type);
 
-create table o_re_to_curriculum_element (
-  id bigserial,
-  creationdate timestamp not null,
-  lastmodified timestamp not null,
-  c_master bool default false,
-  fk_entry int8 not null,
-  fk_curriculum_element int8 not null,
-  primary key (id)
-);
-
-alter table o_re_to_curriculum_element add constraint rel_cur_el_to_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_rel_cur_el_to_re_idx on o_re_to_curriculum_element (fk_entry);
-alter table o_re_to_curriculum_element add constraint rel_cur_el_to_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
-create index idx_rel_cur_el_to_cur_el_idx on o_re_to_curriculum_element (fk_curriculum_element);
-
 
 -- drop policy
 alter table o_bs_policy drop constraint FK9A1C5101E2E76DB;

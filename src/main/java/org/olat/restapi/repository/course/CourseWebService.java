@@ -116,11 +116,9 @@ public class CourseWebService {
 
 	private static final OLog log = Tracing.createLoggerFor(CourseWebService.class);
 	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
-	
-	private static final String VERSION = "1.0";
+
 	
 	public static CacheControl cc = new CacheControl();
-
 	static {
 		cc.setMaxAge(-1);
 	}
@@ -131,20 +129,6 @@ public class CourseWebService {
 	public CourseWebService(OLATResource courseOres, ICourse course) {
 		this.course = course;
 		this.courseOres = courseOres;
-	}
-
-	/**
-	 * The version of the Course Web Service
-	 * @response.representation.200.mediaType text/plain
-	 * @response.representation.200.doc The version of this specific Web Service
-	 * @response.representation.200.example 1.0
-	 * @return
-	 */
-	@GET
-	@Path("version")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response getVersion() {
-		return Response.ok(VERSION).build();
 	}
 	
 	@Path("groups")

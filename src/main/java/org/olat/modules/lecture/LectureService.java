@@ -180,6 +180,8 @@ public interface LectureService {
 	 */
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block);
 	
+	public LectureBlock moveLectureBlock(LectureBlockRef block, RepositoryEntry newEntry);
+	
 	/**
 	 * Delete the lecture block definitively, the roll calls...
 	 * 

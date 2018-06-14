@@ -19,6 +19,7 @@
  */
 package org.olat.user.restapi;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,14 +34,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryOrder;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.MediaTypeVariants;
+import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,12 +56,18 @@ import org.olat.restapi.support.vo.CourseVOes;
  */
 public class UserCoursesWebService {
 	
+	private static final OLog log = Tracing.createLoggerFor(UserCoursesWebService.class);
+	
 	private final Identity identity;
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public UserCoursesWebService(Identity identity) {
 		this.identity = identity;
 	}
-	
 	
 	/**
 	 * Retrieves the list of "My entries" but limited to courses.
@@ -76,10 +89,9 @@ public class UserCoursesWebService {
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
 			@Context Request request) {
 		
-		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, null, start, limit, RepositoryEntryOrder.nameAsc);
-			int totalCount= rm.countLearningResourcesAsStudent(identity);
+			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsStudent(identity, null, start, limit, RepositoryEntryOrder.nameAsc);
+			int totalCount= repositoryManager.countLearningResourcesAsStudent(identity);
 
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
@@ -87,7 +99,7 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, null, 0, -1, RepositoryEntryOrder.nameAsc);
+			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsStudent(identity, null, 0, -1, RepositoryEntryOrder.nameAsc);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
@@ -113,10 +125,9 @@ public class UserCoursesWebService {
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
 			@Context Request request) {
 		
-		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsTeacher(identity, start, limit, RepositoryEntryOrder.nameAsc);
-			int totalCount= rm.countLearningResourcesAsTeacher(identity);
+			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsTeacher(identity, start, limit, RepositoryEntryOrder.nameAsc);
+			int totalCount= repositoryManager.countLearningResourcesAsTeacher(identity);
 
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
@@ -124,7 +135,7 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsTeacher(identity, 0, -1);
+			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsTeacher(identity, 0, -1);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
@@ -151,15 +162,14 @@ public class UserCoursesWebService {
 			@Context Request request) {
 		
 		List<String> courseType = Collections.singletonList("CourseModule");
-		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, start, limit, RepositoryEntryOrder.nameAsc);
+			List<RepositoryEntry> repoEntries = repositoryManager.getFavoritLearningResourcesAsTeacher(identity, courseType, start, limit, RepositoryEntryOrder.nameAsc);
 			
 			int totalCount;
 			if(repoEntries.size() < limit) {
 				totalCount = repoEntries.size();
 			} else {
-				totalCount = rm.countFavoritLearningResourcesAsTeacher(identity, courseType);
+				totalCount = repositoryManager.countFavoritLearningResourcesAsTeacher(identity, courseType);
 			}
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
@@ -167,13 +177,29 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.getFavoritLearningResourcesAsTeacher(identity, courseType, 0, -1, RepositoryEntryOrder.nameAsc);
+			List<RepositoryEntry> repoEntries = repositoryManager.getFavoritLearningResourcesAsTeacher(identity, courseType, 0, -1, RepositoryEntryOrder.nameAsc);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
 	}
 	
 	private CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {
-		return CoursesWebService.toCourseVo(repoEntries);
+		List<CourseVO> voList = new ArrayList<>(repoEntries.size());
+
+		int count=0;
+		for (RepositoryEntry repoEntry : repoEntries) {
+			try {
+				ICourse course = CoursesWebService.loadCourse(repoEntry.getOlatResource().getResourceableId());
+				if(course != null) {
+					voList.add(ObjectFactory.get(repoEntry, course));
+				}
+				if(count % 33 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
+			} catch (Exception e) {
+				log.error("Cannot load the course with this repository entry: " + repoEntry, e);
+			}
+		}
+		return voList.toArray(new CourseVO[voList.size()]);
 	}
 }

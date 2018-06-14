@@ -315,7 +315,6 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master) {
 		RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
 		repositoryEntryRelationDao.createRelation(element.getGroup(), repoEntry);
-		curriculumRepositoryEntryRelationDao.createRelation(repoEntry, element, master);
 	}
 
 	@Override
@@ -326,7 +325,6 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
 		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
-		curriculumRepositoryEntryRelationDao.deleteRelation(entry, element);
 	}
 
 	@Override

@@ -48,11 +48,11 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -80,8 +80,6 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
@@ -89,6 +87,7 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -107,6 +106,22 @@ public class CoursesWebService {
 	private static final OLog log = Tracing.createLoggerFor(CoursesWebService.class);
 
 	private static final String VERSION = "1.0";
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService ;
+	@Autowired
+	private OLATResourceManager olatResourceManager;
+	@Autowired
+	private RepositoryHandlerFactory handlerFactory;
+
 
 	/**
 	 * The version of the Course Web Service
@@ -145,8 +160,6 @@ public class CoursesWebService {
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
 			@QueryParam("repositoryEntryKey") String repositoryEntryKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
-		RepositoryManager rm = RepositoryManager.getInstance();
-
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
@@ -167,22 +180,22 @@ public class CoursesWebService {
 		}
 
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params);
-			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
+			int totalCount = repositoryManager.countGenericANDQueryWithRolesRestriction(params);
+			List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, start, limit, true);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
 			voes.setCourses(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
+			List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
 	}
 
-	public static CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {
-		List<CourseVO> voList = new ArrayList<CourseVO>();
+	public CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {
+		List<CourseVO> voList = new ArrayList<>();
 
 		int count=0;
 		for (RepositoryEntry repoEntry : repoEntries) {
@@ -190,7 +203,7 @@ public class CoursesWebService {
 				ICourse course = loadCourse(repoEntry.getOlatResource().getResourceableId());
 				voList.add(ObjectFactory.get(repoEntry, course));
 				if(count % 33 == 0) {
-					DBFactory.getInstance().commitAndCloseSession();
+					dbInstance.commitAndCloseSession();
 				}
 			} catch (Exception e) {
 				log.error("Cannot load the course with this repository entry: " + repoEntry, e);
@@ -210,7 +223,9 @@ public class CoursesWebService {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 		OLATResource ores = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		return new CourseWebService(ores, course);
+		CourseWebService ws = new CourseWebService(ores, course);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 
 	/**
@@ -335,7 +350,7 @@ public class CoursesWebService {
 		Identity identity = null;
 		// Set the owner of the imported course to the user defined in the parameter
 		if (ownerUsername != null && !ownerUsername.isEmpty() && isAuthor(request)) {
-			identity = BaseSecurityManager.getInstance().findIdentityByName(ownerUsername);
+			identity = securityManager.findIdentityByName(ownerUsername);
 			if(identity == null) {
 				return Response.serverError().status(Status.BAD_REQUEST).build();
 			}
@@ -378,18 +393,6 @@ public class CoursesWebService {
 		return Response.ok(vo).build();
 	}
 
-	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
-		if(authorRightsMandatory && !isAuthor(request)) {
-			return false;
-		}
-
-		Identity identity = getIdentity(request);
-		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult result = acManager.isAccessible(entry, identity, false);
-		return result.isAccessible();
-	}
-
 	public static ICourse loadCourse(Long courseId) {
 		try {
 			return CourseFactory.loadCourse(courseId);
@@ -407,7 +410,6 @@ public class CoursesWebService {
 			displayName = "import-" + UUID.randomUUID().toString();
 		}
 		
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation organisation;
 		if(organisationKey == null) {
 			organisation = organisationService.getDefaultOrganisation();
@@ -415,7 +417,7 @@ public class CoursesWebService {
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		}
 
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
+		RepositoryHandler handler = handlerFactory.getRepositoryHandler(CourseModule.getCourseTypeName());
 		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, organisation, Locale.ENGLISH, fCourseImportZIP, null);
 
 		if(StringHelper.containsNonWhitespace(softKey)) {
@@ -444,17 +446,17 @@ public class CoursesWebService {
 			String managedFlags, CourseConfigVO courseConfigVO) {
 
 		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
-		RepositoryEntry src = RepositoryManager.getInstance().lookupRepositoryEntry(originalOresTrans, false);
+		RepositoryEntry src = repositoryManager.lookupRepositoryEntry(originalOresTrans, false);
 		if(src == null) {
-			src = RepositoryManager.getInstance().lookupRepositoryEntry(copyFrom, false);
+			src = repositoryManager.lookupRepositoryEntry(copyFrom, false);
 		}
 		if(src == null) {
 			log.warn("Cannot find course to copy from: " + copyFrom);
 			return null;
 		}
-		OLATResource originalOres = OLATResourceManager.getInstance().findResourceable(src.getOlatResource());
-		boolean isAlreadyLocked = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).isLocked(originalOres);
-		LockResult lockResult = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).acquireLock(originalOres, ureq.getIdentity());
+		OLATResource originalOres = olatResourceManager.findResourceable(src.getOlatResource());
+		boolean isAlreadyLocked = handlerFactory.getRepositoryHandler(src).isLocked(originalOres);
+		LockResult lockResult = handlerFactory.getRepositoryHandler(src).acquireLock(originalOres, ureq.getIdentity());
 
 		//check range of access
 		if(access < 1 || access > RepositoryEntry.ACC_USERS_GUESTS) {
@@ -462,9 +464,6 @@ public class CoursesWebService {
 		}
 
 		if(lockResult == null || (lockResult != null && lockResult.isSuccess()) && !isAlreadyLocked) {
-			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-
 			//create new repo entry
 			String name;
 			if(description == null || description.trim().length() == 0) {
@@ -490,11 +489,11 @@ public class CoursesWebService {
 			}
 
 			OLATResource sourceResource = src.getOlatResource();
-			OLATResource copyResource = OLATResourceManager.getInstance().createOLATResourceInstance(sourceResource.getResourceableTypeName());
+			OLATResource copyResource = olatResourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 			RepositoryEntry preparedEntry = repositoryService.create(initialAuthor, null, resName, name,
 					description, copyResource, RepositoryEntry.ACC_OWNERS, organisation);
 
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);
+			RepositoryHandler handler = handlerFactory.getRepositoryHandler(src);
 			preparedEntry = handler.copy(initialAuthor, src, preparedEntry);
 
 			preparedEntry.setCanDownload(src.getCanDownload());
@@ -527,10 +526,13 @@ public class CoursesWebService {
 			repositoryService.update(preparedEntry);
 
 			// copy image if available
-			RepositoryManager.getInstance().copyImage(src, preparedEntry);
+			repositoryManager.copyImage(src, preparedEntry);
+			
+			
+			
 
 			ICourse course = prepareCourse(preparedEntry,shortTitle, longTitle, courseConfigVO);
-			RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).releaseLock(lockResult);
+			handlerFactory.getRepositoryHandler(src).releaseLock(lockResult);
 			return course;
 		}
 
@@ -558,10 +560,6 @@ public class CoursesWebService {
 		}
 
 		try {
-
-			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-			
 			Organisation organisation;
 			if(organisationKey == null) {
 				organisation = organisationService.getDefaultOrganisation();
@@ -570,7 +568,7 @@ public class CoursesWebService {
 			}
 
 			// create a repository entry
-			OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
+			OLATResource resource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
 			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", reDisplayName, null, resource, 0, organisation);
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);

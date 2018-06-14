@@ -48,6 +48,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
@@ -88,6 +89,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
@@ -108,10 +110,11 @@ public class RepositoryEntryWebService {
   private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebService.class);
 
 	public static CacheControl cc = new CacheControl();
-
 	static {
 		cc.setMaxAge(-1);
 	}
+	
+	private RepositoryEntry entry;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -119,7 +122,12 @@ public class RepositoryEntryWebService {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BaseSecurity securityManager;
- 
+	@Autowired
+	private 	RepositoryEntryLifecycleDAO lifecycleDao;
+	
+	public RepositoryEntryWebService(RepositoryEntry entry) {
+		this.entry = entry;
+	}
 
   /**
    * get a resource in the repository
@@ -132,34 +140,28 @@ public class RepositoryEntryWebService {
    * @param request The REST request
    * @return
    */
-  @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response getById(@PathParam("repoEntryKey")String repoEntryKey, @Context Request request){
-    RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-    if(re == null) {
-      return Response.serverError().status(Status.NOT_FOUND).build();
-    }
-
-    Date lastModified = re.getLastModified();
-
-    Response.ResponseBuilder response;
-    if(lastModified == null) {
-      EntityTag eTag = ObjectFactory.computeEtag(re);
-      response = request.evaluatePreconditions(eTag);
-      if(response == null) {
-        RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
-        response = Response.ok(vo).tag(eTag).lastModified(lastModified);
-      }
-    } else {
-      EntityTag eTag = ObjectFactory.computeEtag(re);
-      response = request.evaluatePreconditions(lastModified, eTag);
-      if(response == null) {
-        RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
-        response = Response.ok(vo).tag(eTag).lastModified(lastModified);
-      }
-    }
-    return response.build();
-  }
+	@GET
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response getById(@Context Request request) {
+		Date lastModified = entry.getLastModified();
+		Response.ResponseBuilder response;
+		if (lastModified == null) {
+			EntityTag eTag = ObjectFactory.computeEtag(entry);
+			response = request.evaluatePreconditions(eTag);
+			if (response == null) {
+				RepositoryEntryVO vo = RepositoryEntryVO.valueOf(entry);
+				response = Response.ok(vo).tag(eTag).lastModified(lastModified);
+			}
+		} else {
+			EntityTag eTag = ObjectFactory.computeEtag(entry);
+			response = request.evaluatePreconditions(lastModified, eTag);
+			if (response == null) {
+				RepositoryEntryVO vo = RepositoryEntryVO.valueOf(entry);
+				response = Response.ok(vo).tag(eTag).lastModified(lastModified);
+			}
+		}
+		return response.build();
+	}
   
 	/**
 	 * To get the web service for the lecture blocks of a specific learning resource.
@@ -168,10 +170,9 @@ public class RepositoryEntryWebService {
 	 * @return The web service for lecture blocks.
 	 */
 	@Path("lectureblocks")
-	public LectureBlocksWebService getLectureBlocksWebService(@PathParam("repoEntryKey")String repoEntryKey) {
-	    RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-	    if(re == null) return null;
-		LectureBlocksWebService service = new LectureBlocksWebService(re);
+	public LectureBlocksWebService getLectureBlocksWebService()
+	throws WebApplicationException {
+		LectureBlocksWebService service = new LectureBlocksWebService(entry);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
@@ -190,14 +191,11 @@ public class RepositoryEntryWebService {
 	@GET
 	@Path("owners")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getOwners(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
-		RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-		if(repoEntry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!isAuthorEditor(repoEntry, request)) {
+	public Response getOwners(@Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(repoEntry, GroupRoles.owner.name());
+		return getIdentityInSecurityGroup(entry, GroupRoles.owner.name());
 	}
 	
 	/**
@@ -212,53 +210,35 @@ public class RepositoryEntryWebService {
 	 */
 	@PUT
 	@Path("owners/{identityKey}")
-	public Response addOwner(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			
-			Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
-			if(identityToAdd == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry, new MailPackage(false));
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to add an owner to a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response addOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		
+		Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
+		if(identityToAdd == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+		repositoryManager.addOwners(ureq.getIdentity(), iae, entry, new MailPackage(false));
+		return Response.ok().build();
 	}
 	
 	@PUT
 	@Path("owners")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response addOwners(UserVO[] owners, @PathParam("repoEntryKey") String repoEntryKey,
-			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			
-			List<Identity> identityToAdd = loadIdentities(owners);
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry, new MailPackage(false));
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to add an owner to a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response addOwners(UserVO[] owners, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		
+		List<Identity> identityToAdd = loadIdentities(owners);
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+		repositoryManager.addOwners(ureq.getIdentity(), iae, entry, new MailPackage(false));
+		return Response.ok().build();
 	}
 	
 	/**
@@ -273,12 +253,9 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Path("owners/{identityKey}")
-	public Response removeOwner(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+	public Response removeOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if (!isAuthorEditor(repoEntry, request)) {
+			if (!isAuthorEditor(entry, request)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 
@@ -288,7 +265,7 @@ public class RepositoryEntryWebService {
 			}
 
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeOwners(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, new MailPackage(false));
+			repositoryManager.removeOwners(ureq.getIdentity(), Collections.singletonList(identityToRemove), entry, new MailPackage(false));
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to remove an owner to a repository entry", e);
@@ -310,14 +287,11 @@ public class RepositoryEntryWebService {
 	@GET
 	@Path("coaches")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCoaches(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
-		RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-		if(repoEntry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!isAuthorEditor(repoEntry, request)) {
+	public Response getCoaches(@Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(repoEntry, GroupRoles.coach.name());
+		return getIdentityInSecurityGroup(entry, GroupRoles.coach.name());
 	}
 	
 	/**
@@ -332,53 +306,36 @@ public class RepositoryEntryWebService {
 	 */
 	@PUT
 	@Path("coaches/{identityKey}")
-	public Response addCoach(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
+	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			
-			Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
-			if(identityToAdd == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to add a coach to a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		if(!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		
+		Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
+		if(identityToAdd == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+		repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, entry, null);
+		return Response.ok().build();
 	}
 
 	@PUT
 	@Path("coaches")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response addCoach(UserVO[] coaches, @PathParam("repoEntryKey") String repoEntryKey,
-			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			
-			List<Identity> identityToAdd = loadIdentities(coaches);
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to add a coach to a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response addCoach(UserVO[] coaches, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		
+		List<Identity> identityToAdd = loadIdentities(coaches);
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+		repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, entry, null);
+		return Response.ok().build();
 	}
 	
 	/**
@@ -393,27 +350,19 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Path("coaches/{identityKey}")
-	public Response removeCoach(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if (!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-
-			Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
-			if(identityToRemove == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeTutors(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, new MailPackage(false));
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to remove a coach from a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response removeCoach(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		if (!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+
+		Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
+		if(identityToRemove == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		repositoryManager.removeTutors(ureq.getIdentity(), Collections.singletonList(identityToRemove), entry, new MailPackage(false));
+		return Response.ok().build();
 	}
 	
 	/**
@@ -430,14 +379,11 @@ public class RepositoryEntryWebService {
 	@GET
 	@Path("participants")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getParticipants(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
-		RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-		if(repoEntry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!isAuthorEditor(repoEntry, request)) {
+	public Response getParticipants( @Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(repoEntry, GroupRoles.participant.name());
+		return getIdentityInSecurityGroup(entry, GroupRoles.participant.name());
 	}
 	
 	/**
@@ -452,53 +398,35 @@ public class RepositoryEntryWebService {
 	 */
 	@PUT
 	@Path("participants/{identityKey}")
-	public Response addParticipant(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			
-			Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
-			if(identityToAdd == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to add a participant to a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response addParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		
+		Identity identityToAdd = securityManager.loadIdentityByKey(identityKey);
+		if(identityToAdd == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+		repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, entry, null);
+		return Response.ok().build();
 	}
 	
 	@PUT
 	@Path("participants")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response addParticipants(UserVO[] participants, @PathParam("repoEntryKey") String repoEntryKey,
-			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if(!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			
-			List<Identity> participantList = loadIdentities(participants);
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			IdentitiesAddEvent iae = new IdentitiesAddEvent(participantList);
-			repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to add a participant to a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response addParticipants(UserVO[] participants, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		
+		List<Identity> participantList = loadIdentities(participants);
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(participantList);
+		repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, entry, null);
+		return Response.ok().build();
 	}
 	
 	private List<Identity> loadIdentities(UserVO[] users) {
@@ -521,28 +449,19 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Path("participants/{identityKey}")
-	public Response removeParticipant(@PathParam("repoEntryKey") String repoEntryKey, @PathParam("identityKey") Long identityKey,
-			@Context HttpServletRequest request) {
-		try {
-			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
-			if(repoEntry == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			} else if (!isAuthorEditor(repoEntry, request)) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-
-			Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
-			if(identityToRemove == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, null, false);
-			return Response.ok().build();
-		} catch (Exception e) {
-			log.error("Trying to remove a participant from a repository entry", e);
-			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	public Response removeParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		if (!isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+
+		Identity identityToRemove = securityManager.loadIdentityByKey(identityKey);
+		if(identityToRemove == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		repositoryManager.removeParticipants(ureq.getIdentity(), Collections.singletonList(identityToRemove), entry, null, false);
+		return Response.ok().build();
 	}
 
   /**
@@ -563,26 +482,20 @@ public class RepositoryEntryWebService {
 	@GET
 	@Path("file")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
-	public Response getRepoFileById(@PathParam("repoEntryKey") String repoEntryKey,
-			@Context HttpServletRequest request, @Context HttpServletResponse response) {
-		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-		if (re == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-
-		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+	public Response getRepoFileById(@Context HttpServletRequest request, @Context HttpServletResponse response) {
+		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 		if (typeToDownload == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
+		OLATResource ores = OLATResourceManager.getInstance().findResourceable(entry.getOlatResource());
 		if (ores == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
 		Identity identity = getIdentity(request);
-		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
-		if (isAdmin(request) || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re)) {
+		boolean canDownload = entry.getCanDownload() && typeToDownload.supportsDownload();
+		if (isAdmin(request) || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, entry)) {
 			canDownload = true;
 		} else if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -599,7 +512,7 @@ public class RepositoryEntryWebService {
 			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
 				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
 				if (mr != null) {
-					repositoryService.incrementDownloadCounter(re);
+					repositoryService.incrementDownloadCounter(entry);
 					InputStream in = mr.getInputStream();
 					if(in == null) {
 						mr.prepare(response);
@@ -620,56 +533,49 @@ public class RepositoryEntryWebService {
 		}
 	}
   
-  @POST
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response updateEntry(@PathParam("repoEntryKey") String repoEntryKey,
-      RepositoryEntryVO vo, @Context HttpServletRequest request) {
-    if(!RestSecurityHelper.isAuthor(request)) {
-      return Response.serverError().status(Status.UNAUTHORIZED).build();
-    }
-    
-    final RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-    if(re == null) {
-      return Response.serverError().status(Status.NOT_FOUND).build();
-    }
-    
-    RepositoryEntryLifecycle lifecycle = null;
-    RepositoryEntryLifecycleVO lifecycleVo = vo.getLifecycle();
-    if(lifecycleVo != null) {
-    	RepositoryEntryLifecycleDAO lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
-    	if(lifecycleVo.getKey() != null) {
-    		lifecycle = lifecycleDao.loadById(lifecycleVo.getKey());
-    		if(lifecycle.isPrivateCycle()) {
-    			//check date
-      		String fromStr = lifecycleVo.getValidFrom();
-      		String toStr = lifecycleVo.getValidTo();
-      		String label = lifecycleVo.getLabel();
-      		String softKey = lifecycleVo.getSoftkey();
-    			Date from = ObjectFactory.parseDate(fromStr);
-      		Date to = ObjectFactory.parseDate(toStr);
-      		lifecycle.setLabel(label);
-      		lifecycle.setSoftKey(softKey);
-      		lifecycle.setValidFrom(from);
-      		lifecycle.setValidTo(to);
-    		}
-    	} else {
-    		String fromStr = lifecycleVo.getValidFrom();
-    		String toStr = lifecycleVo.getValidTo();
-    		String label = lifecycleVo.getLabel();
-    		String softKey = lifecycleVo.getSoftkey();
-    		Date from = ObjectFactory.parseDate(fromStr);
-    		Date to = ObjectFactory.parseDate(toStr);
-    		lifecycle = lifecycleDao.create(label, softKey, true, from, to);
-    	}
-    }
+	@POST
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response updateEntry(RepositoryEntryVO vo, @Context HttpServletRequest request) {
+		if (!RestSecurityHelper.isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 
-    RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, vo.getDisplayname(), vo.getDescription(),
-    		vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
-    		lifecycle);
-    RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
-    return Response.ok(rvo).build();
-  }
+		RepositoryEntryLifecycle lifecycle = null;
+		RepositoryEntryLifecycleVO lifecycleVo = vo.getLifecycle();
+		if (lifecycleVo != null) {
+			if (lifecycleVo.getKey() != null) {
+				lifecycle = lifecycleDao.loadById(lifecycleVo.getKey());
+				if (lifecycle.isPrivateCycle()) {
+					// check date
+					String fromStr = lifecycleVo.getValidFrom();
+					String toStr = lifecycleVo.getValidTo();
+					String label = lifecycleVo.getLabel();
+					String softKey = lifecycleVo.getSoftkey();
+					Date from = ObjectFactory.parseDate(fromStr);
+					Date to = ObjectFactory.parseDate(toStr);
+					lifecycle.setLabel(label);
+					lifecycle.setSoftKey(softKey);
+					lifecycle.setValidFrom(from);
+					lifecycle.setValidTo(to);
+				}
+			} else {
+				String fromStr = lifecycleVo.getValidFrom();
+				String toStr = lifecycleVo.getValidTo();
+				String label = lifecycleVo.getLabel();
+				String softKey = lifecycleVo.getSoftkey();
+				Date from = ObjectFactory.parseDate(fromStr);
+				Date to = ObjectFactory.parseDate(toStr);
+				lifecycle = lifecycleDao.create(label, softKey, true, from, to);
+			}
+		}
+
+		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
+				vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
+				lifecycle);
+		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
+		return Response.ok(rvo).build();
+	}
 
   /**
    * Replace a resource in the repository and update its display name. The implementation is
@@ -688,59 +594,53 @@ public class RepositoryEntryWebService {
    * @param request The HTTP request
    * @return
    */
-  @POST
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  @Consumes({MediaType.MULTIPART_FORM_DATA})
-  public Response replaceResource(@PathParam("repoEntryKey") String repoEntryKey,
-      @Context HttpServletRequest request) {
-    if(!RestSecurityHelper.isAuthor(request)) {
-      return Response.serverError().status(Status.UNAUTHORIZED).build();
-    }
+	@POST
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.MULTIPART_FORM_DATA })
+	public Response replaceResource(@Context HttpServletRequest request) {
+		if (!RestSecurityHelper.isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 
-    MultipartReader reader = null;
-    try {
-      final RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-      if(re == null) {
-        return Response.serverError().status(Status.NOT_FOUND).build();
-      }
-      
-      reader = new MultipartReader(request);
-      File tmpFile = reader.getFile();
-      String displayname = reader.getValue("displayname");
-      String location = reader.getValue("location");
-      String authors = reader.getValue("authors");
-      String description = reader.getValue("description");
-      String externalId = reader.getValue("externalId");
-      String externalRef = reader.getValue("externalRef");
-      String managedFlags = reader.getValue("managedFlags");
+		MultipartReader reader = null;
+		try {
+			reader = new MultipartReader(request);
+			File tmpFile = reader.getFile();
+			String displayname = reader.getValue("displayname");
+			String location = reader.getValue("location");
+			String authors = reader.getValue("authors");
+			String description = reader.getValue("description");
+			String externalId = reader.getValue("externalId");
+			String externalRef = reader.getValue("externalRef");
+			String managedFlags = reader.getValue("managedFlags");
 
-      Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
-      RepositoryEntry replacedRe;
-      if(tmpFile == null) {
-      	replacedRe = repositoryManager.setDescriptionAndName(re, displayname, description,
-      			location, authors, externalId, externalRef, managedFlags, re.getLifecycle());
-      } else {
-	      long length = tmpFile.length();
-	      if(length == 0) {
-	        return Response.serverError().status(Status.NO_CONTENT).build();
-	      }
-	      replacedRe = replaceFileResource(identity, re, tmpFile);
-	      if(replacedRe == null) {
-	        return Response.serverError().status(Status.NOT_FOUND).build();
-	      } else {
-	      	replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description,
-	      			location, authors, externalId, externalRef, managedFlags, replacedRe.getLifecycle());
-	      }
-      }
-      RepositoryEntryVO vo = RepositoryEntryVO.valueOf(replacedRe);
-      return Response.ok(vo).build();
-    } catch (Exception e) {
-      log.error("Error while importing a file",e);
-    } finally {
-    	MultipartReader.closeQuietly(reader);
-    }
-    return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
-  }
+			Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
+			RepositoryEntry replacedRe;
+			if (tmpFile == null) {
+				replacedRe = repositoryManager.setDescriptionAndName(entry, displayname, description, location, authors,
+						externalId, externalRef, managedFlags, entry.getLifecycle());
+			} else {
+				long length = tmpFile.length();
+				if (length == 0) {
+					return Response.serverError().status(Status.NO_CONTENT).build();
+				}
+				replacedRe = replaceFileResource(identity, entry, tmpFile);
+				if (replacedRe == null) {
+					return Response.serverError().status(Status.NOT_FOUND).build();
+				} else {
+					replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description, location,
+							authors, externalId, externalRef, managedFlags, replacedRe.getLifecycle());
+				}
+			}
+			RepositoryEntryVO vo = RepositoryEntryVO.valueOf(replacedRe);
+			return Response.ok(vo).build();
+		} catch (Exception e) {
+			log.error("Error while importing a file", e);
+		} finally {
+			MultipartReader.closeQuietly(reader);
+		}
+		return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+	}
 
 	private RepositoryEntry replaceFileResource(Identity identity, RepositoryEntry re, File fResource) {
 		if (re == null) throw new NullPointerException("RepositoryEntry cannot be null");
@@ -786,25 +686,21 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response deleteCourse(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
+	public Response deleteCourse(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-		if(re == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(re, request)) {
+		if (!isAuthorEditor(entry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		ErrorList errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		ErrorList errors = repositoryService.deletePermanently(entry, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
 		}
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DELETE, getClass(),
-				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+				LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		return Response.ok().build();
 	}
 	
@@ -828,49 +724,68 @@ public class RepositoryEntryWebService {
 	@POST
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
-	public Response deleteCoursePermanently(@PathParam("repoEntryKey") String repoEntryKey,
-			@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
-		
+	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-		if(re == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(re, request)) {
+		if (!isAuthorEditor(entry, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		if("closed".equals(newStatus)) {
-			rs.closeRepositoryEntry(re);
-			log.audit("REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			repositoryService.closeRepositoryEntry(entry);
+			log.audit("REST closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
-			rs.uncloseRepositoryEntry(re);
-			log.audit("REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			repositoryService.uncloseRepositoryEntry(entry);
+			log.audit("REST unclosing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("unpublished".equals(newStatus)) {
-			rs.unpublishRepositoryEntry(re);
-			log.audit("REST unpublishing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			repositoryService.unpublishRepositoryEntry(entry);
+			log.audit("REST unpublishing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			rs.deleteSoftly(re, identity, true);
-			log.audit("REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			repositoryService.deleteSoftly(entry, identity, true);
+			log.audit("REST deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			rs.restoreRepositoryEntry(re);
-			log.audit("REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			repositoryService.restoreRepositoryEntry(entry);
+			log.audit("REST restoring course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		}
 		return Response.ok().build();
+	}
+	
+	@GET
+	@Path("access")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getAccess(@Context HttpServletRequest request) {
+		if(!isAuthor(request) && !isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		RepositoryEntryAccessVO accessVo = RepositoryEntryAccessVO.valueOf(entry);
+		return Response.ok(accessVo).build();
+	}
+	
+	@POST
+	@Path("access")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response updateAccess(RepositoryEntryAccessVO accessVo, @Context HttpServletRequest request) {
+		if(!isAuthor(request) && !isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		if(accessVo.getRepoEntryKey() != null && !accessVo.getRepoEntryKey().equals(entry.getKey())) {
+			return Response.serverError().status(Status.BAD_REQUEST).build();
+		}
+		entry = repositoryManager.setAccess(entry, accessVo.getAccess(), accessVo.isMembersOnly());
+		return Response.ok(RepositoryEntryAccessVO.valueOf(entry)).build();
 	}
 	
 	private Response getIdentityInSecurityGroup(RepositoryEntry re, String role) {
@@ -883,29 +798,4 @@ public class RepositoryEntryWebService {
 		}
 		return Response.ok(ownerVOs).build();
 	}
-
-  private RepositoryEntry lookupRepositoryEntry(String key) {
-    Long repoEntryKey = longId(key);
-    RepositoryEntry re = null;
-    if(repoEntryKey != null) {//looks like a primary key
-      re = repositoryManager.lookupRepositoryEntry(repoEntryKey);
-    }
-    if(re == null) {// perhaps a soft key
-      re = repositoryManager.lookupRepositoryEntryBySoftkey(key, false);
-    }
-    return re;
-  }
-
-  private Long longId(String key) {
-    try {
-      for(int i=key.length(); i-->0; ) {
-        if(!Character.isDigit(key.charAt(i))) {
-          return null;
-        }
-      }
-      return new Long(key);
-    } catch(NumberFormatException ex) {
-      return null;
-    }
-  }
 }

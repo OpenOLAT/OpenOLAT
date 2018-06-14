@@ -43,6 +43,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -118,9 +119,9 @@ public class RepositoryEntriesWebService {
 	/**
 	 * List all entries in the OLAT repository
 	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-   * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
-   * @response.representation.200.doc List all entries in the repository
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
+	 * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
+	 * @response.representation.200.doc List all entries in the repository
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
 	 * @param uriInfo The URI information
 	 * @param httpRequest The HTTP request
 	 * @return
@@ -158,9 +159,9 @@ public class RepositoryEntriesWebService {
 	/**
 	 * List all entries in the OLAT repository
 	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-   * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
-   * @response.representation.200.doc List all entries in the repository
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
+	 * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
+	 * @response.representation.200.doc List all entries in the repository
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
 	 * @param start (optional)
 	 * @param limit (optional)
 	 * @param managed (optional)
@@ -387,9 +388,30 @@ public class RepositoryEntriesWebService {
 	}
 	
 	@Path("{repoEntryKey}")
-	public RepositoryEntryWebService getRepositoryEntryResource() {
-		RepositoryEntryWebService entrySW = new RepositoryEntryWebService();
+	public RepositoryEntryWebService getRepositoryEntryResource(@PathParam("repoEntryKey")String repoEntryKey)
+	throws WebApplicationException {
+		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+	    if(re == null) {
+	      throw new WebApplicationException(Status.NOT_FOUND);
+	    }
+		
+		RepositoryEntryWebService entrySW = new RepositoryEntryWebService(re);
 		CoreSpringFactory.autowireObject(entrySW);
 		return entrySW;
+	}
+	
+	private RepositoryEntry lookupRepositoryEntry(String key) {
+		RepositoryEntry re = null;
+		if (StringHelper.isLong(key)) {// looks like a primary key
+			try {
+				re = repositoryManager.lookupRepositoryEntry(Long.valueOf(key));
+			} catch (NumberFormatException e) {
+				log.warn("", e);
+			}
+		}
+		if (re == null) {// perhaps a soft key
+			re = repositoryManager.lookupRepositoryEntryBySoftkey(key, false);
+		}
+		return re;
 	}
 }

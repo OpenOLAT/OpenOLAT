@@ -307,6 +307,16 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public LectureBlock moveLectureBlock(LectureBlockRef block, RepositoryEntry newEntry) {
+		LectureBlockImpl blockToMove = (LectureBlockImpl)lectureBlockDao.loadByKey(block.getKey());
+		blockToMove.setEntry(newEntry);
+		LectureBlock mergedBlock = lectureBlockDao.update(blockToMove);
+		dbInstance.commit();
+		recalculateSummary(mergedBlock.getEntry());
+		return mergedBlock;
+	}
+
+	@Override
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block) {
 		LectureBlock copy = lectureBlockDao.createLectureBlock(block.getEntry());
 		copy.setTitle(newTitle);

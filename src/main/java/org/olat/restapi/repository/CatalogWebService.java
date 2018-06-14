@@ -53,7 +53,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -75,6 +74,7 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.UserManager;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -91,11 +91,17 @@ public class CatalogWebService {
 	
 	private static final String VERSION = "1.0";
 	
-	private final CatalogManager catalogManager;
-	
-	public CatalogWebService() {
-		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
-	}
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CatalogManager catalogManager;
+	@Autowired
+	private SecurityGroupDAO securityGroupDao;
+	@Autowired
+	private RepositoryManager repositoryManager;
+
 	
 	/**
 	 * Retrieves the version of the Catalog Web Service.
@@ -310,7 +316,7 @@ public class CatalogWebService {
 		
 		RepositoryEntry re = null;
 		if(entryVo.getRepositoryEntryKey() != null) {
-			re = RepositoryManager.getInstance().lookupRepositoryEntry(entryVo.getRepositoryEntryKey());
+			re = repositoryManager.lookupRepositoryEntry(entryVo.getRepositoryEntryKey());
 			if(re == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -649,7 +655,6 @@ public class CatalogWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -662,7 +667,7 @@ public class CatalogWebService {
 		}
 		
 		try {
-			CoreSpringFactory.getImpl(SecurityGroupDAO.class).addIdentityToSecurityGroup(identity, ce.getOwnerGroup());
+			securityGroupDao.addIdentityToSecurityGroup(identity, ce.getOwnerGroup());
 		} catch(Exception e) {
 			throw new WebApplicationException(e);
 		} finally {
@@ -702,7 +707,6 @@ public class CatalogWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.ok().build();
@@ -736,7 +740,7 @@ public class CatalogWebService {
 		
 		Translator translator = Util.createPackageTranslator(CatalogNodeManagerController.class, locale);
 
-		String ownerName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lock.getOwner());
+		String ownerName = userManager.getUserDisplayName(lock.getOwner());
 		String translation = translator.translate("catalog.locked.by", new String[]{ ownerName });
 		ErrorVO vo = new ErrorVO("org.olat.catalog.ui","catalog.locked.by",translation);
 		ErrorVO[] voes = new ErrorVO[]{vo};

@@ -33,12 +33,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -332,15 +334,16 @@ public class OrganisationsWebService {
 	@PUT
 	@Path("{organisationKey}/{role}/{identityKey}")
 	public Response putMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
-			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+			@PathParam("identityKey") Long identityKey, @QueryParam("inheritanceMode") String inheritanceMode,
+			@Context HttpServletRequest httpRequest) {
 		boolean isSystemAdministrator = isAdmin(httpRequest);
 		if(!isSystemAdministrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return putMember(organisationKey, identityKey, getRoles(role));
+		return putMember(organisationKey, identityKey, getRoles(role), inheritanceMode);
 	}
 	
-	private Response putMember(Long organisationKey, Long identityKey, OrganisationRoles role) {
+	private Response putMember(Long organisationKey, Long identityKey, OrganisationRoles role, String inheritanceMode) {
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -353,7 +356,12 @@ public class OrganisationsWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		organisationService.addMember(organisation, identity, role);
+		
+		if(GroupMembershipInheritance.isValueOf(inheritanceMode)) {
+			organisationService.addMember(organisation, identity, role, GroupMembershipInheritance.valueOf(inheritanceMode));
+		} else {
+			organisationService.addMember(organisation, identity, role);
+		}
 		return Response.ok().build();
 	}
 	
@@ -375,7 +383,8 @@ public class OrganisationsWebService {
 	@PUT
 	@Path("{organisationKey}/{role}")
 	public Response putMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
-			UserVO[] members, @Context HttpServletRequest httpRequest) {
+			@QueryParam("inheritanceMode") String inheritanceMode, UserVO[] members,
+			@Context HttpServletRequest httpRequest) {
 		boolean isSystemAdministrator = isAdmin(httpRequest);
 		if(!isSystemAdministrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -388,11 +397,20 @@ public class OrganisationsWebService {
 		if(getRoles(role) == null) {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
+		
+		GroupMembershipInheritance inheritance = null;
+		if(GroupMembershipInheritance.isValueOf(inheritanceMode)) {
+			inheritance = GroupMembershipInheritance.valueOf(inheritanceMode);
+		}
 
 		for(UserVO member:members) {
 			Identity identity = securityManager.loadIdentityByKey(member.getKey());
 			if(identity != null) {
-				organisationService.addMember(organisation, identity, getRoles(role));
+				if(inheritance == null) {
+					organisationService.addMember(organisation, identity, getRoles(role));
+				} else {
+					organisationService.addMember(organisation, identity, getRoles(role), inheritance);
+				}
 			}
 		}
 		return Response.ok().build();

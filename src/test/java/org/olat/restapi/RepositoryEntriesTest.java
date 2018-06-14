@@ -72,6 +72,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
@@ -818,6 +819,65 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(participants);
 		Assert.assertTrue(participants.isEmpty());
 		Assert.assertFalse(participants.contains(participant));
+	}
+	
+	@Test
+	public void getAccess() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo/entries").path(re.getKey().toString()).path("access").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryAccessVO accessVo = conn.parse(response, RepositoryEntryAccessVO.class);
+		conn.shutdown();
+		
+		//check
+		Assert.assertNotNull(accessVo);
+		Assert.assertEquals(re.getKey(), accessVo.getRepoEntryKey());
+		Assert.assertEquals(re.getAccess(), accessVo.getAccess());
+		Assert.assertEquals(re.isMembersOnly(), accessVo.isMembersOnly());
+	}
+	
+	@Test
+	public void updateAccess() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		dbInstance.commitAndCloseSession();
+		Assert.assertFalse(re.isMembersOnly());
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		RepositoryEntryAccessVO accessVo = new RepositoryEntryAccessVO();
+		accessVo.setAccess(RepositoryEntry.ACC_OWNERS);
+		accessVo.setMembersOnly(true);
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo/entries").path(re.getKey().toString()).path("access").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, accessVo);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryAccessVO updatedAccessVo = conn.parse(response, RepositoryEntryAccessVO.class);
+		conn.shutdown();
+		
+		// check return value
+		Assert.assertNotNull(updatedAccessVo);
+		Assert.assertEquals(re.getKey(), updatedAccessVo.getRepoEntryKey());
+		Assert.assertEquals(RepositoryEntry.ACC_OWNERS, updatedAccessVo.getAccess());
+		Assert.assertEquals(true, updatedAccessVo.isMembersOnly());
+		
+		// check database value
+		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
+		Assert.assertEquals(RepositoryEntry.ACC_OWNERS, updatedRe.getAccess());
+		Assert.assertEquals(true, updatedRe.isMembersOnly());
 	}
 
 	private List<RepositoryEntryVO> parseRepoArray(HttpEntity entity) {

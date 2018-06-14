@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 3 mai 2018<br>
@@ -29,6 +31,16 @@ public enum GroupMembershipInheritance {
 	
 	none,
 	root,//
-	inherited
-
+	inherited;
+	
+	public static boolean isValueOf(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			for(GroupMembershipInheritance value:values()) {
+				if(value.name().equals(val)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

@@ -33,11 +33,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -49,6 +49,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("repo/lifecycle")
 public class RepositoryEntryLifecycleWebService {
+	
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifeCycleDao;
 	
 	/**
 	 * List all public lifecycles
@@ -68,7 +71,6 @@ public class RepositoryEntryLifecycleWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		RepositoryEntryLifecycleDAO lifeCycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		List<RepositoryEntryLifecycle> publicLifeCycles = lifeCycleDao.loadPublicLifecycle();
 		List<RepositoryEntryLifecycleVO> voList = new ArrayList<>(publicLifeCycles.size());
 		for(RepositoryEntryLifecycle lifeCycle: publicLifeCycles) {

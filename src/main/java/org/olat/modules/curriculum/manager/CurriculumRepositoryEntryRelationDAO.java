@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +28,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
-import org.olat.modules.curriculum.CurriculumRepositoryEntryRelation;
-import org.olat.modules.curriculum.model.CurriculumRepositoryEntryRelationImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,36 +44,6 @@ public class CurriculumRepositoryEntryRelationDAO {
 	
 	@Autowired
 	private DB dbInstance;
-	
-	public CurriculumRepositoryEntryRelation createRelation(RepositoryEntry entry, CurriculumElement element, boolean master) {
-		CurriculumRepositoryEntryRelationImpl relation = new CurriculumRepositoryEntryRelationImpl();
-		relation.setCreationDate(new Date());
-		relation.setLastModified(relation.getCreationDate());
-		relation.setCurriculumElement(element);
-		relation.setEntry(entry);
-		relation.setMaster(master);
-		dbInstance.getCurrentEntityManager().persist(relation);
-		return relation;
-	}
-	
-	public List<CurriculumRepositoryEntryRelation> getRelations(RepositoryEntryRef entry, CurriculumElementRef element) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select rel from repoentrytocurriculumelement as rel")
-		  .append(" where rel.entry.key=:repoKey and rel.curriculumElement.key=:elementKey");
-
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), CurriculumRepositoryEntryRelation.class)
-			.setParameter("repoKey", entry.getKey())
-			.setParameter("elementKey", element.getKey())
-			.getResultList();
-	}
-	
-	public void deleteRelation(RepositoryEntryRef entry, CurriculumElementRef element) {
-		List<CurriculumRepositoryEntryRelation> relations = getRelations(entry, element);
-		for(CurriculumRepositoryEntryRelation relation:relations) {
-			dbInstance.getCurrentEntityManager().remove(relation);
-		}
-	}
 	
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder(256);

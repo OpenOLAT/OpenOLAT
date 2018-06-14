@@ -33,11 +33,13 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -287,16 +289,19 @@ public class LectureBlocksWebService {
 	 * @return The web service for a single lecture block.
 	 */
 	@Path("{lectureBlockKey}")
-	public LectureBlockWebService getLectureBlockWebService(@PathParam("lectureBlockKey") Long lectureBlockKey, @Context HttpServletRequest httpRequest) {
+	public LectureBlockWebService getLectureBlockWebService(@PathParam("lectureBlockKey") Long lectureBlockKey, @Context HttpServletRequest httpRequest)
+	throws WebApplicationException {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isOLATAdmin()) {
-			return null;
+			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
 		LectureBlock lectureBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlockKey));
 		if(lectureBlock == null || !lectureBlock.getEntry().equals(entry)) {
-			return null;
+			throw new WebApplicationException(Status.NOT_FOUND);
 		}
-		return new LectureBlockWebService(lectureBlock, entry, lectureService);
+		LectureBlockWebService ws = new LectureBlockWebService(lectureBlock, entry);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 	
 	/**

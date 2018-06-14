@@ -542,7 +542,9 @@ public class UserWebService {
 		if(ureqIdentity == null || !ureqIdentity.equals(identity)) {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
-		return new UserCoursesWebService(identity);
+		UserCoursesWebService ws = new UserCoursesWebService(identity);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 	
 	/**

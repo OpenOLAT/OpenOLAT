@@ -501,6 +501,48 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Assert.assertTrue(teachers.contains(teacher2));
 	}
 	
+	/**
+	 * Move a lecture block from one course to the other.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void moveLectureBlock()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		RepositoryEntry entryOrigin = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryTarget = JunitTestHelper.deployBasicCourse(author);
+		ICourse courseOrigin = CourseFactory.loadCourse(entryOrigin);
+		entryOrigin = courseOrigin.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		LectureBlock block = createLectureBlock(entryOrigin);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseOrigin.getResourceableId().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("entry").path(entryTarget.getKey().toString()).build();
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		LectureBlockVO movedBlock = conn.parse(response, LectureBlockVO.class);
+		Assert.assertNotNull(movedBlock);
+		Assert.assertEquals(entryTarget.getKey(), movedBlock.getRepoEntryKey());
+		
+		// check lecture blocks of origin
+		List<LectureBlock> originBlocks = lectureService.getLectureBlocks(entryOrigin);
+		Assert.assertNotNull(originBlocks);
+		Assert.assertTrue(originBlocks.isEmpty());
+		
+		// check lecture block of target
+		List<LectureBlock> targetBlocks = lectureService.getLectureBlocks(entryTarget);
+		Assert.assertNotNull(targetBlocks);
+		Assert.assertEquals(1, targetBlocks.size());
+		Assert.assertEquals(block.getKey(), targetBlocks.get(0).getKey());		
+	}
+	
 	private LectureBlock createLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
