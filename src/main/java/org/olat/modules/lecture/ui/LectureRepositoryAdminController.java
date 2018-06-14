@@ -63,8 +63,9 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
-	private final Link lecturesLink, settingsLink, participantsLink;
+	private final Link lecturesLink, appealsLink, settingsLink, participantsLink;
 	
+	private AppealListRepositoryController appealsCtrl;
 	private LectureListRepositoryController lecturesCtrl;
 	private final LectureRepositorySettingsController settingsCtrl;
 	private ParticipantListRepositoryController participantsCtrl;
@@ -98,6 +99,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 
 		lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
 		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
+		appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
 		settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Settings"), null);
@@ -107,6 +109,9 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(settingsCtrl.isLectureEnabled()) {
 			segmentView.addSegment(lecturesLink, true);
 			segmentView.addSegment(participantsLink, false);
+			if(lectureModule.isAbsenceAppealEnabled()) {
+				segmentView.addSegment(appealsLink, false);
+			}
 			doOpenLectures(ureq);
 		} else {
 			doOpenSettings(ureq);
@@ -156,6 +161,11 @@ public class LectureRepositoryAdminController extends BasicController implements
 		} else if("Settings".equalsIgnoreCase(name)) {
 			doOpenSettings(ureq);
 			segmentView.select(settingsLink);
+		} else if("Appeals".equalsIgnoreCase(name)) {
+			if(lectureModule.isAbsenceAppealEnabled()) {
+				doOpenAppeals(ureq);
+				segmentView.select(appealsLink);
+			}
 		}
 	}
 
@@ -172,6 +182,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 					doOpenSettings(ureq);
 				} else if(clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
+				} else if(clickedLink == appealsLink) {
+					doOpenAppeals(ureq);
 				}
 			}
 		} else if(archiveLink == source) {
@@ -197,6 +209,9 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private void updateSegments() {
 		if(settingsCtrl.isLectureEnabled()) {
 			if(segmentView.getSegments().size() == 1) {
+				if(lectureModule.isAbsenceAppealEnabled()) {
+					segmentView.addSegment(0, appealsLink, false);
+				}
 				segmentView.addSegment(0, participantsLink, false);
 				segmentView.addSegment(0, lecturesLink, false);
 			}
@@ -204,6 +219,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 			// remove the unused segments
 			segmentView.removeSegment(lecturesLink);
 			segmentView.removeSegment(participantsLink);
+			segmentView.removeSegment(appealsLink);
 		}	
 	}
 
@@ -236,8 +252,19 @@ public class LectureRepositoryAdminController extends BasicController implements
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 	}
 	
+	private void doOpenAppeals(UserRequest ureq) {
+		if(appealsCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("Appeals");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			appealsCtrl = new AppealListRepositoryController(ureq, swControl, entry);
+			listenTo(appealsCtrl);
+		} else {
+			addToHistory(ureq, appealsCtrl);
+		}
+		mainVC.put("segmentCmp", appealsCtrl.getInitialComponent());
+	}
+	
 	private void doExportArchive(UserRequest ureq) {
-		
 		LecturesBlocksEntryExport archive = new LecturesBlocksEntryExport(entry, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(archive);
 	}

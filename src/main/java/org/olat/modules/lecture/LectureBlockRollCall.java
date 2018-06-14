@@ -57,6 +57,22 @@ public interface LectureBlockRollCall extends LectureBlockRollCallRef, ModifiedI
 	public String getComment();
 	
 	public void setComment(String comment);
+	
+	public Date getAppealDate();
+	
+	public void setAppealDate(Date date);
+	
+	public LectureBlockAppealStatus getAppealStatus();
+	
+	public void setAppealStatus(LectureBlockAppealStatus status);
+	
+	public String getAppealStatusReason();
+
+	public void setAppealStatusReason(String statusReason);
+	
+	public String getAppealReason();
+	
+	public void setAppealReason(String reason);
 
 	public Date getAbsenceSupervisorNotificationDate();
 

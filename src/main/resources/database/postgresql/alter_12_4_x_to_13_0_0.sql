@@ -158,7 +158,7 @@ create table o_eva_form_survey (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    e_resname varchar(50) not null,
-   e_resid bigint not null,
+   e_resid int8 not null,
    e_sub_ident varchar(2048),
    fk_form_entry bigint not null,
    primary key (id)
@@ -207,4 +207,14 @@ create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_respo
 
 -- membership
 alter table o_bs_group_member add column g_inheritance_mode varchar(16) default 'none' not null;
+
+
+-- lectures
+alter table o_lecture_block_roll_call add column l_appeal_reason text;
+alter table o_lecture_block_roll_call add column l_appeal_status text;
+alter table o_lecture_block_roll_call add column l_appeal_status_reason text;
+
+
+
+
 

@@ -19,6 +19,10 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.List;
+
+import org.olat.repository.RepositoryEntryRef;
+
 /**
  * 
  * Initial date: 28 août 2017<br>
@@ -33,6 +37,9 @@ public class LectureBlockRollCallSearchParameters {
 	
 	private Long rollCallKey;
 	private Long lectureBlockKey;
+	
+	private RepositoryEntryRef entry;
+	private List<LectureBlockAppealStatus> appealStatus;
 
 	public Boolean getClosed() {
 		return closed;
@@ -73,4 +80,21 @@ public class LectureBlockRollCallSearchParameters {
 	public void setLectureBlockKey(Long lectureBlockKey) {
 		this.lectureBlockKey = lectureBlockKey;
 	}
+
+	public RepositoryEntryRef getEntry() {
+		return entry;
+	}
+
+	public void setEntry(RepositoryEntryRef entry) {
+		this.entry = entry;
+	}
+
+	public List<LectureBlockAppealStatus> getAppealStatus() {
+		return appealStatus;
+	}
+
+	public void setAppealStatus(List<LectureBlockAppealStatus> appealStatus) {
+		this.appealStatus = appealStatus;
+	}
+
 }

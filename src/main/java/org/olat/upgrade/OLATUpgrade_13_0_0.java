@@ -30,10 +30,6 @@ import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.manager.RepositoryEntryRelationDAO;
-import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -42,7 +38,16 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
+import org.olat.modules.lecture.LectureBlockAppealStatus;
+import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockRollCallRefImpl;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,9 +62,12 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_ROLE = "MIGRATE ROLE";
 	private static final String MIGRATE_REPO_ENTRY_DEFAULT_ORG = "MIGRATE REPO ENTRY TO DEF ORG";
 	private static final String MIGRATE_PORTFOLIO_EVAL_FORM = "PORTFOLIO EVALUATION FORM";
+	private static final String MIGRATE_SEND_APPEAL_DATES = "LECTURES SEND APPEAL DATES";
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private OrganisationDAO organisationDao;
 	@Autowired
@@ -103,6 +111,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		allOk &= migrateRole(upgradeManager, uhd);
 		allOk &= migrateRepositoryEntriesTodefaultOrganisation(upgradeManager, uhd);
 		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
+		allOk &= migrateLecturesSendAppealDates(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -112,6 +121,71 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			log.audit("OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
+	}
+	
+	private boolean migrateLecturesSendAppealDates(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_SEND_APPEAL_DATES)) {
+			try {
+				List<Long> repositoryEntryKeys = getRepositoryEntryWithAuditLog();
+				for(int i=0; i<repositoryEntryKeys.size(); i++) {
+					migrateLecturesSendAppealDates(repositoryEntryKeys.get(0));
+					if(i % 50 == 0) {
+						log.info("Migration repository entries with appeal in lectures block roll call: " + i + " / " + repositoryEntryKeys.size());
+					}
+				}
+				log.info("Migration repository entries with appeal in lectures block roll call: " + repositoryEntryKeys.size());
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_SEND_APPEAL_DATES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateLecturesSendAppealDates(Long repositoryEntryKey) {
+		int count = 0;
+		
+		List<LectureBlockAuditLog> auditLogs = getAuditLog(repositoryEntryKey);
+		for(LectureBlockAuditLog auditLog:auditLogs) {
+			Long rollCallKey = auditLog.getRollCallKey();
+			if(rollCallKey != null) {
+				LectureBlockRollCall call = lectureService.getRollCall(new LectureBlockRollCallRefImpl(rollCallKey));
+				if(call.getAppealDate() == null) {
+					call.setAppealDate(auditLog.getCreationDate());
+					call.setAppealStatus(LectureBlockAppealStatus.oldWorkflow);
+					lectureService.updateRollCall(call);
+					if(count++ % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					}
+				}
+			}
+		}
+		
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private List<LectureBlockAuditLog> getAuditLog(Long entryKey) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select log from lectureblockauditlog log where log.entryKey=:repoEntryKey and log.action=:action");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlockAuditLog.class)
+				.setParameter("repoEntryKey", entryKey)
+				.setParameter("action", LectureBlockAuditLog.Action.sendAppeal.name())
+				.getResultList();
+	}
+	
+	private List<Long> getRepositoryEntryWithAuditLog() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct log.entryKey from lectureblockauditlog log where log.action=:action");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("action", LectureBlockAuditLog.Action.sendAppeal.name())
+				.getResultList();
 	}
 	
 	private boolean migrateRepositoryEntriesTodefaultOrganisation(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

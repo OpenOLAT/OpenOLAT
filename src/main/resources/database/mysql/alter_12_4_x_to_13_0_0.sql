@@ -203,3 +203,8 @@ create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_respo
 alter table o_bs_group_member add column g_inheritance_mode varchar(16) default 'none' not null;
 
 
+-- lectures
+alter table o_lecture_block_roll_call add column l_appeal_reason mediumtext;
+alter table o_lecture_block_roll_call add column l_appeal_status mediumtext;
+alter table o_lecture_block_roll_call add column l_appeal_status_reason mediumtext;
+

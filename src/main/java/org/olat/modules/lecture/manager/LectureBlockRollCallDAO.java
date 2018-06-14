@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -35,6 +36,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -45,6 +47,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -261,6 +264,47 @@ public class LectureBlockRollCallDAO {
 		return rollCalls != null && rollCalls.size() > 0 ? rollCalls.get(0) : null;
 	}
 	
+	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams) {
+		List<LectureBlockRollCall> rollCalls = getRollCalls(searchParams);
+		Map<Long,String> coaches = getCoaches(searchParams.getEntry(), ", ");
+		List<LectureBlockRollCallAndCoach> blockAndRollCalls = new ArrayList<>(rollCalls.size());
+		for(LectureBlockRollCall rollCall:rollCalls) {
+			LectureBlock block = rollCall.getLectureBlock();
+			String coach = coaches.get(block.getKey());
+			blockAndRollCalls.add(new LectureBlockRollCallAndCoach(coach, block, rollCall));
+		}
+		return blockAndRollCalls;
+	}
+	
+	private Map<Long,String> getCoaches(RepositoryEntryRef entry, String teacherSeaparator) {
+		// append the coaches
+		StringBuilder sc = new StringBuilder();
+		sc.append("select block.key, coach")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join membership.identity coach")
+		  .append(" inner join fetch coach.user usercoach")
+		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
+		
+		//get all, it's quick
+		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+		Map<Long,String> coaches = new HashMap<>();
+		for(Object[] rawCoach:rawCoachs) {
+			Long blockKey = (Long)rawCoach[0];
+			Identity coach = (Identity)rawCoach[1];
+			String fullname = userManager.getUserDisplayName(coach);
+			if(coaches.containsKey(blockKey)) {
+				fullname = coaches.get(blockKey) + " " + teacherSeaparator + " " + fullname;
+			}
+			coaches.put(blockKey, fullname);
+		}
+		return coaches;
+	}
+	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rollcall from lectureblockrollcall rollcall")
@@ -304,10 +348,17 @@ public class LectureBlockRollCallDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append("rollcall.key=:rollCallKey");
 		}
-		
 		if(searchParams.getLectureBlockKey() != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("rollcall.lectureBlock.key=:lectureBlockKey");
+			sb.append("block.key=:lectureBlockKey");
+		}
+		if(searchParams.getEntry() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("block.entry.key=:entryKey");
+		}
+		if(searchParams.getAppealStatus() != null && !searchParams.getAppealStatus().isEmpty()) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("rollcall.appealStatusString in (:appealStatus)");
 		}
 
 		TypedQuery<LectureBlockRollCall> query = dbInstance.getCurrentEntityManager()
@@ -317,6 +368,14 @@ public class LectureBlockRollCallDAO {
 		}
 		if(searchParams.getLectureBlockKey() != null) {
 			query.setParameter("lectureBlockKey", searchParams.getLectureBlockKey());
+		}
+		if(searchParams.getEntry() != null) {
+			query.setParameter("entryKey", searchParams.getEntry().getKey());
+		}
+		if(searchParams.getAppealStatus() != null && !searchParams.getAppealStatus().isEmpty()) {
+			List<String> appealStatus = searchParams.getAppealStatus().stream()
+					.map(LectureBlockAppealStatus::name).collect(Collectors.toList());
+			query.setParameter("appealStatus", appealStatus);
 		}
 		
 		return query.getResultList();

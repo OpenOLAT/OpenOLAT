@@ -2149,6 +2149,9 @@ create table o_lecture_block_roll_call (
   l_absence_authorized bool default null,
   l_absence_appeal_date timestamp,
   l_absence_supervisor_noti_date timestamp,
+  l_appeal_reason text,
+  l_appeal_status text,
+  l_appeal_status_reason text,
   fk_lecture_block int8 not null,
   fk_identity int8 not null,
   primary key (id)

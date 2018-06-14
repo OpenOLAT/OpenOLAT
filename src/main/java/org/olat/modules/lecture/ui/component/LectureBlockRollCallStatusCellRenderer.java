@@ -28,6 +28,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.ui.AppealRollCallRow;
 import org.olat.modules.lecture.ui.LectureBlockAndRollCallRow;
 
 /**
@@ -52,11 +53,41 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof LectureBlockAndRollCallRow) {
+		if(renderer == null) {
+			if(cellValue instanceof LectureBlockAndRollCallRow) {
+				LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)cellValue;
+				renderString(target, rollCallRow.getRow());
+			} else if(cellValue instanceof LectureBlockAndRollCall) {
+				renderString(target, (LectureBlockAndRollCall)cellValue);
+			} else if(cellValue instanceof AppealRollCallRow) {
+				AppealRollCallRow rollCallRow = (AppealRollCallRow)cellValue;
+				renderString(target, rollCallRow.getLectureBlockAndRollCall());
+			}
+		} else if(cellValue instanceof LectureBlockAndRollCallRow) {
 			LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)cellValue;
 			render(target, rollCallRow.getRow());
 		} else if(cellValue instanceof LectureBlockAndRollCall) {
 			render(target, (LectureBlockAndRollCall)cellValue);
+		} else if(cellValue instanceof AppealRollCallRow) {
+			AppealRollCallRow rollCallRow = (AppealRollCallRow)cellValue;
+			render(target, rollCallRow.getLectureBlockAndRollCall());
+		}	
+	}
+	
+	private void renderString(StringOutput target, LectureBlockAndRollCall rollCall) {
+		if(rollCall.isRollCalled()) {
+			LectureBlockStatus status = rollCall.getStatus();
+			LectureRollCallStatus rollCallStatus = rollCall.getRollCallStatus();
+			if(status == LectureBlockStatus.cancelled) {
+				target.append(translator.translate("cancelled"));
+			} else if(status == LectureBlockStatus.done
+					&& (rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed)) {
+				renderClosed(target, rollCall, true);	
+			} else {
+				target.append(translator.translate("in.progress"));
+			}
+		} else if(!rollCall.isCompulsory()) {
+			target.append(translator.translate("rollcall.tooltip.free"));
 		}
 	}
 	
@@ -69,7 +100,7 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_icon_cancelled'> </i></span>");
 			} else if(status == LectureBlockStatus.done
 					&& (rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed)) {
-				renderClosed(target, rollCall);	
+				renderClosed(target, rollCall, false);	
 			} else {
 				String title = translator.translate("in.progress");
 				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_icon_status_in_review'> </i></span>");
@@ -80,7 +111,7 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 		}
 	}
 	
-	private void renderClosed(StringOutput target, LectureBlockAndRollCall rollCall) {
+	private void renderClosed(StringOutput target, LectureBlockAndRollCall rollCall, boolean textOnly) {
 		int numOfLectures = rollCall.getEffectiveLecturesNumber();
 		if(numOfLectures < 0) {
 			numOfLectures = rollCall.getPlannedLecturesNumber();
@@ -111,6 +142,10 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 			iconCssClass = "o_lectures_rollcall_free";
 			title = translator.translate("rollcall.tooltip.free");
 		}
-		target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg ").append(iconCssClass).append("'> </i></span>");
+		if(textOnly) {
+			target.append(title);
+		} else {
+			target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg ").append(iconCssClass).append("'> </i></span>");
+		}
 	}
 }

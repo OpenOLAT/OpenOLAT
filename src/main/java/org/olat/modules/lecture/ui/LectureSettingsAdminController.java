@@ -283,10 +283,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 		//
 	}
 	
-	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		attendanceRateEl.clearError();
 		if(StringHelper.containsNonWhitespace(attendanceRateEl.getValue())) {
@@ -317,7 +316,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 			allOk &= validateInt(reminderPeriodEl);
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInt(TextElement el) {

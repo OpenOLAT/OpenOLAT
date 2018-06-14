@@ -70,12 +70,12 @@ public class LectureBlockAuditLogExport extends AbstractLectureBlockAuditLogExpo
 		int pos = 0;
 		headerRow.addCell(pos++, translator.translate("export.header.entry", new String[] { entry.getDisplayname() }));
 
-		Formatter formatter = Formatter.getInstance(translator.getLocale());
+		Formatter localeFormatter = Formatter.getInstance(translator.getLocale());
 		String[] args = new String[] {
 			lectureBlock.getTitle(),
-			formatter.formatDate(lectureBlock.getStartDate()),
-			formatter.formatTimeShort(lectureBlock.getStartDate()),
-			formatter.formatTimeShort(lectureBlock.getEndDate())
+			localeFormatter.formatDate(lectureBlock.getStartDate()),
+			localeFormatter.formatTimeShort(lectureBlock.getStartDate()),
+			localeFormatter.formatTimeShort(lectureBlock.getEndDate())
 		};
 		headerRow.addCell(pos++, translator.translate("export.header.lectureblocks", args));
 	}

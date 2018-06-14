@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -290,8 +291,9 @@ public interface LectureService {
 	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block);
 	
-	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams);
+	
+	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams);
 	
 	
 	/**

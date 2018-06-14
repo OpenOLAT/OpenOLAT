@@ -42,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockRollCall;
 
 /**
@@ -85,11 +86,18 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@Column(name="l_absence_authorized", nullable=true, insertable=true, updatable=true)
 	private Boolean absenceAuthorized;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="l_absence_appeal_date", nullable=true, insertable=true, updatable=true)
-	private Date absenceAppealDate;
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="l_absence_supervisor_noti_date", nullable=true, insertable=true, updatable=true)
 	private Date absenceSupervisorNotificationDate;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="l_absence_appeal_date", nullable=true, insertable=true, updatable=true)
+	private Date appealDate;
+	@Column(name="l_appeal_reason", nullable=true, insertable=true, updatable=true)
+	private String appealReason;
+	@Column(name="l_appeal_status", nullable=true, insertable=true, updatable=true)
+	private String appealStatusString;
+	@Column(name="l_appeal_status_reason", nullable=true, insertable=true, updatable=true)
+	private String statusReason;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -150,14 +158,6 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@Override
 	public void setAbsenceAuthorized(Boolean absenceAuthorized) {
 		this.absenceAuthorized = absenceAuthorized;
-	}
-
-	public Date getAbsenceAppealDate() {
-		return absenceAppealDate;
-	}
-
-	public void setAbsenceAppealDate(Date absenceAppealDate) {
-		this.absenceAppealDate = absenceAppealDate;
 	}
 
 	@Override
@@ -257,6 +257,59 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@Override
 	public void setAbsenceSupervisorNotificationDate(Date absenceSupervisorNotificationDate) {
 		this.absenceSupervisorNotificationDate = absenceSupervisorNotificationDate;
+	}
+	
+	@Override
+	public Date getAppealDate() {
+		return appealDate;
+	}
+
+	@Override
+	public void setAppealDate(Date appealDate) {
+		this.appealDate = appealDate;
+	}
+	
+	public String getAppealStatusString() {
+		return appealStatusString;
+	}
+
+	public void setAppealStatusString(String statusString) {
+		this.appealStatusString = statusString;
+	}
+
+	@Override
+	public LectureBlockAppealStatus getAppealStatus() {
+		return StringHelper.containsNonWhitespace(appealStatusString)
+				? LectureBlockAppealStatus.valueOf(appealStatusString) : null;
+	}
+
+	@Override
+	public void setAppealStatus(LectureBlockAppealStatus appealStatus) {
+		if(appealStatus == null) {
+			appealStatusString = null;
+		} else {
+			appealStatusString = appealStatus.name();
+		}
+	}
+
+	@Override
+	public String getAppealReason() {
+		return appealReason;
+	}
+
+	@Override
+	public void setAppealReason(String appealReason) {
+		this.appealReason = appealReason;
+	}
+
+	@Override
+	public String getAppealStatusReason() {
+		return statusReason;
+	}
+
+	@Override
+	public void setAppealStatusReason(String statusReason) {
+		this.statusReason = statusReason;
 	}
 
 	@Override

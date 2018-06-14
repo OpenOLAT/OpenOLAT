@@ -22,6 +22,7 @@ package org.olat.modules.lecture.model;
 import java.util.Date;
 
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockRollCallRef;
@@ -52,6 +53,9 @@ public class LectureBlockAndRollCall {
 	private final int lecturesAttendedNumber;
 	private final Boolean lecturesAuthorizedAbsent;
 	
+	private final Date appealDate;
+	private final LectureBlockAppealStatus appealStatus;
+	
 	private String coach;
 	
 	public LectureBlockAndRollCall(String entryDisplayname, LectureBlock lectureBlock, LectureBlockRollCall rollCall) {
@@ -71,11 +75,15 @@ public class LectureBlockAndRollCall {
 			lecturesAttendedNumber = 0;
 			lecturesAbsentNumber = 0;
 			lecturesAuthorizedAbsent = null;
+			appealDate = null;
+			appealStatus = null;
 		} else {
 			rollCallKey = rollCall.getKey();
 			lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
 			lecturesAbsentNumber = rollCall.getLecturesAbsentNumber();
 			lecturesAuthorizedAbsent = rollCall.getAbsenceAuthorized();	
+			appealDate = rollCall.getAppealDate();
+			appealStatus = rollCall.getAppealStatus();
 		}
 	}
 
@@ -142,4 +150,14 @@ public class LectureBlockAndRollCall {
 	public void setCoach(String coach) {
 		this.coach = coach;
 	}
+
+	public Date getAppealDate() {
+		return appealDate;
+	}
+
+	public LectureBlockAppealStatus getAppealStatus() {
+		return appealStatus;
+	}
+	
+	
 }
