@@ -152,6 +152,10 @@ public class EfficiencyStatementArchiver {
 		Object value = nodeData.get(key);
 		if(value instanceof String) {
 			row.addCell(col, (String)value);
+		} else if(value instanceof Number) {
+			row.addCell(col, (Number)value, null);
+		} else if(value instanceof Boolean) {
+			row.addCell(col, ((Boolean)value).toString(), null);
 		}
 	}
 

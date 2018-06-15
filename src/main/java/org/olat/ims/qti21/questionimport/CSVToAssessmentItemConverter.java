@@ -120,6 +120,7 @@ public class CSVToAssessmentItemConverter {
 			case "type": processType(parts); break;
 			case "titel":
 			case "title": processTitle(parts); break;
+			case "topic": processTopic(parts); break;
 			case "beschreibung":
 			case "description": processDescription(parts); break;
 			case "frage":
@@ -272,7 +273,7 @@ public class CSVToAssessmentItemConverter {
 		String discriminationIndex = parts[1];
 		if(StringHelper.containsNonWhitespace(discriminationIndex)) {
 			try {
-				currentItem.setDifferentiation(new BigDecimal(discriminationIndex.trim()));
+				currentItem.setDifferentiation(new BigDecimal(discriminationIndex.replace(",", ".").trim()));
 			} catch (Exception e) {
 				log.warn("", e);
 			}
@@ -285,7 +286,7 @@ public class CSVToAssessmentItemConverter {
 		String difficulty = parts[1];
 		if(StringHelper.containsNonWhitespace(difficulty)) {
 			try {
-				BigDecimal dif = new BigDecimal(difficulty.trim());
+				BigDecimal dif = new BigDecimal(difficulty.replace(",", ".").trim());
 				if(dif.doubleValue() >= 0.0d && dif.doubleValue() <= 1.0d) {
 					currentItem.setDifficulty(dif);
 				} else {
@@ -303,7 +304,7 @@ public class CSVToAssessmentItemConverter {
 		String stddev = parts[1];
 		if(StringHelper.containsNonWhitespace(stddev)) {
 			try {
-				BigDecimal dev = new BigDecimal(stddev.trim());
+				BigDecimal dev = new BigDecimal(stddev.replace(",", ".").trim());
 				if(dev.doubleValue() >= 0.0d && dev.doubleValue() <= 1.0d) {
 					currentItem.setStdevDifficulty(dev);
 				} else {
@@ -512,6 +513,15 @@ public class CSVToAssessmentItemConverter {
 		String title = parts[1];
 		if(StringHelper.containsNonWhitespace(title)) {
 			currentItem.setTitle(title);
+		}
+	}
+	
+	private void processTopic(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String topic = parts[1];
+		if(StringHelper.containsNonWhitespace(topic)) {
+			currentItem.setTopic(topic);
 		}
 	}
 	

@@ -19,7 +19,9 @@
  */
 package org.olat.user.ui.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -75,13 +77,13 @@ public class UserDataExportController extends FormBasicController {
 			((FormLayoutContainer)formLayout).contextPut("dataBusinessPath", url);
 			
 			if(!processing) {
-				List<String> exportIds = exportService.getExporterIds();
-				String[] keys = new String[exportIds.size()];
-				String[] values = new String[exportIds.size()];
-				for(int i=exportIds.size(); i-->0; ) {
-					String exportId = exportIds.get(i);
-					keys[i] = exportId;
-					values[i] = translate(exportId);
+				List<ExportLabel> exports = getAvailableExports();
+				String[] keys = new String[exports.size()];
+				String[] values = new String[exports.size()];
+				for(int i=exports.size(); i-->0; ) {
+					ExportLabel export = exports.get(i);
+					keys[i] = export.getId();
+					values[i] = export.getLabel();
 				}
 				exportEl = uifactory.addCheckboxesVertical("export.options", formLayout, keys, values, 1);
 				exportEl.setMandatory(true);
@@ -118,5 +120,39 @@ public class UserDataExportController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private List<ExportLabel> getAvailableExports() {
+		List<String> exportIds = exportService.getExporterIds();
+		List<ExportLabel> labels = new ArrayList<>(exportIds.size());
+		for(String exportId:exportIds) {
+			labels.add(new ExportLabel(exportId, translate(exportId)));
+		}
+		Collections.sort(labels);
+		return labels;
+	}
+	
+	private static final class ExportLabel implements Comparable<ExportLabel> {
+		
+		private final String id;
+		private final String label;
+		
+		public ExportLabel(String id, String label) {
+			this.id = id;
+			this.label = label;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getLabel() {
+			return label;
+		}
+
+		@Override
+		public int compareTo(ExportLabel o) {
+			return label.compareToIgnoreCase(o.label);
+		}	
 	}
 }

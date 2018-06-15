@@ -1309,8 +1309,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 	@Override
 	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
-		File noteArchive = new File(archiveDirectory, "Notifications.xlsx");
-		try(OutputStream out = new FileOutputStream(noteArchive);
+		File subscriptionsArchive = new File(archiveDirectory, "Subscriptions.xlsx");
+		try(OutputStream out = new FileOutputStream(subscriptionsArchive);
 			OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
@@ -1329,7 +1329,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			log.error("Unable to export xlsx", e);
 		}
 
-		manifest.appendFile("Notifications.xlsx");
+		manifest.appendFile(subscriptionsArchive.getName());
 	}
 
 	private void exportSubscriberData(Subscriber subscriber, OpenXMLWorksheet sheet, OpenXMLWorkbook workbook, Locale locale) {

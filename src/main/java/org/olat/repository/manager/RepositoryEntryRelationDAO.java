@@ -693,7 +693,7 @@ public class RepositoryEntryRelationDAO {
 	
 	public List<MembershipInfos> getMembership(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(512);
-		sb.append("select v.key, v.displayname, reMember.role, reMember.creationDate,")
+		sb.append("select v.key, v.displayname, reMember.key, reMember.role, reMember.creationDate,")
 		  .append(" userinfos.initialLaunch, userinfos.recentLaunch, userinfos.visit")
 		  .append(" from repositoryentry as v")
 		  .append(" inner join v.groups as rel")
@@ -706,11 +706,18 @@ public class RepositoryEntryRelationDAO {
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		
+		Set<Long> memberKeys = new HashSet<>();
 		List<MembershipInfos> memberhips = new ArrayList<>(rawObjects.size());
 		for(Object[] rawObject:rawObjects) {
 			int col = 0;
 			Long entryKey = (Long)rawObject[col++];
 			String displayName = (String)rawObject[col++];
+			Long memberKey = (Long)rawObject[col++];
+			if(memberKeys.contains(memberKey)) {
+				continue;//duplicate
+			}
+			memberKeys.add(memberKey);
+			
 			String role = (String)rawObject[col++];
 			Date creationDate = (Date)rawObject[col++];
 			Date initialLaunch = (Date)rawObject[col++];
