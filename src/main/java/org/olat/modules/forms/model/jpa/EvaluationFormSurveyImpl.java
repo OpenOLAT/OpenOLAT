@@ -69,7 +69,7 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	private String resSubident;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=true)
 	private RepositoryEntry formEntry;
 	
 	@Override

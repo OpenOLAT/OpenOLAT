@@ -93,16 +93,20 @@
 	   <property name="enabled" value="${site.catalogadmin.enable}"/>
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="curriculumManagerSiteSecurityCallback"/>
 	</bean>
-	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">
+	<bean id="olatsites_quality" class="org.olat.modules.quality.site.QualitySiteDef">
 	   <property name="order" value="13" />
+	   <property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
+	</bean>
+	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">
+	   <property name="order" value="14" />
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="restrictToUserManagerSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef">
-	   <property name="order" value="14" />
+	   <property name="order" value="15" />
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
-	   <property name="order" value="15" />
+	   <property name="order" value="16" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
 	</bean>

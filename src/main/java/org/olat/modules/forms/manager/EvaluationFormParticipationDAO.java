@@ -21,6 +21,7 @@ package org.olat.modules.forms.manager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -29,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
@@ -128,6 +130,19 @@ class EvaluationFormParticipationDAO {
 		return participations.isEmpty() || participations.size() > 1? null : participations.get(0);
 	}
 
+	void deleteParticipations(List<? extends EvaluationFormParticipationRef> participationRefs) {
+		if (participationRefs == null || participationRefs.isEmpty()) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from evaluationformparticipation as participation");
+		sb.append(" where participation.key in (:participationKeys)");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("participationKeys", getParticipationsKeys(participationRefs))
+				.executeUpdate();	
+	}
+
 	void deleteParticipations(EvaluationFormSurvey survey) {
 		if (survey == null) return;
 		
@@ -139,6 +154,10 @@ class EvaluationFormParticipationDAO {
 				.createQuery(sb.toString())
 				.setParameter("surveyKey", survey.getKey())
 				.executeUpdate();
+	}
+	
+	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
+		return participationRefs.stream().map(EvaluationFormParticipationRef::getKey).collect(Collectors.toList());
 	}
 
 }

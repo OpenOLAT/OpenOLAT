@@ -78,6 +78,8 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor);
 
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor, boolean anonymous);
+	
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
 
@@ -95,16 +97,25 @@ public interface EvaluationFormManager {
 	 * @param identifier
 	 * @return the participation or null
 	 */
-	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
+	public EvaluationFormParticipationRef loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
 
 	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
+	
+	/**
+	 * Delete participations. It deletes the sessions and the responses as well if
+	 * they are still connected with the participation. This is the case if the
+	 * session is not anonymous or not finished yet.
+	 *
+	 * @param participationRefs
+	 */
+	public void deleteParticipations(List<? extends EvaluationFormParticipationRef> participationRefs);
 
 	public EvaluationFormSession createSession(EvaluationFormParticipation participation);
 	
 	public EvaluationFormSession loadSessionByKey(EvaluationFormSessionRef sessionRef);
 
-	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation);
+	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipationRef participation);
 	
 	public List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessionRefs,
 			int firstResult, int maxResults, SortKey... orderBy);

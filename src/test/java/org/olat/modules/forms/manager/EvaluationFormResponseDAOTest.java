@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -121,6 +122,27 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesBySurvey(survey);
+		
+		assertThat(loadedResponses)
+				.contains(response11, response12, response21)
+				.doesNotContain(otherResponse);
+	}
+	
+	@Test
+	public void shouldLoadResponsesByParticipations() { 
+		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation();
+		EvaluationFormSession session1 = evaTestHelper.createSession(participation1);
+		EvaluationFormResponse response11 = evaTestHelper.createResponse(session1);
+		EvaluationFormResponse response12 = evaTestHelper.createResponse(session1);
+		EvaluationFormParticipation participation2 = evaTestHelper.createParticipation();
+		EvaluationFormSession session2 = evaTestHelper.createSession(participation2);
+		EvaluationFormResponse response21 = evaTestHelper.createResponse(session2);
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		EvaluationFormResponse otherResponse = evaTestHelper.createResponse(otherSession);
+		dbInstance.commit();
+		
+		List<EvaluationFormParticipation> participations = Arrays.asList(participation1, participation2);
+		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesByParticipations(participations);
 		
 		assertThat(loadedResponses)
 				.contains(response11, response12, response21)

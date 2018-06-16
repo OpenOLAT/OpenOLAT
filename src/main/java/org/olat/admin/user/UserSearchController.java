@@ -96,7 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *         select multiple identities from within the search results.
  */
 public class UserSearchController extends BasicController {
-	// Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends UserSearchController and re-use translations
+	// Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends AddUserSearchController and re-use translations
 	private static final String PACKAGE = UserSearchController.class.getPackage().getName();
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
 	
@@ -172,7 +172,7 @@ public class UserSearchController extends BasicController {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
-	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends UserSearchController and re-use translations
+	  // Needs PACKAGE and VELOCITY_ROOT because DeletableUserSearchController extends AddUserSearchController and re-use translations
 		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(Util.createPackageTranslator(UserSearchController.class, ureq.getLocale()) );	
 		myContent = new VelocityContainer("olatusersearch", VELOCITY_ROOT + "/usersearch.html", pT, this);
 		backLink = LinkFactory.createButton("btn.back", myContent, this);

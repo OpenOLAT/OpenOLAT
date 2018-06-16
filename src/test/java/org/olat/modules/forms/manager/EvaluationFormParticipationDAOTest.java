@@ -21,6 +21,8 @@ package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -29,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.test.JunitTestHelper;
@@ -118,7 +121,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 				identifierKey);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(identifierKey);
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormParticipation participation = sut.createParticipation(survey, identifier, false, executor);
+		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, executor);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByExecutor(survey, executor);
@@ -132,7 +135,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormParticipation participation = sut.createParticipation(survey, identifier, false, null);
+		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, null);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByIdentifier(survey, identifier);
@@ -145,7 +148,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
-		EvaluationFormParticipation participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
+		EvaluationFormParticipationRef participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByIdentifier(identifier);
@@ -168,6 +171,25 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void shouldShouldDeleteParticipations() {
+		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation();
+		EvaluationFormParticipation participation2 = evaTestHelper.createParticipation();
+		EvaluationFormParticipation otherParticipation = evaTestHelper.createParticipation();
+		dbInstance.commit();
+
+		List<? extends EvaluationFormParticipationRef> participations = Arrays.asList(participation1, participation2);
+		sut.deleteParticipations(participations);
+		dbInstance.commit();
+		
+		EvaluationFormParticipation loadedParticipation1 = sut.loadByIdentifier(participation1.getIdentifier());
+		assertThat(loadedParticipation1).isNull();
+		EvaluationFormParticipation loadedParticipation2 = sut.loadByIdentifier(participation2.getIdentifier());
+		assertThat(loadedParticipation2).isNull();
+		EvaluationFormParticipation loadedOtherParticipation = sut.loadByIdentifier(otherParticipation.getIdentifier());
+		assertThat(loadedOtherParticipation).isEqualTo(otherParticipation);
+	}
+
+	@Test
 	public void shouldShouldDeleteParticipationsOfSurvey() {
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
 		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation(survey);
@@ -184,6 +206,6 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		assertThat(loadedParticipation2).isNull();
 		EvaluationFormParticipation loadedOtherParticipation = sut.loadByIdentifier(otherParticipation.getIdentifier());
 		assertThat(loadedOtherParticipation).isEqualTo(otherParticipation);
-;	}
+	}
 
 }

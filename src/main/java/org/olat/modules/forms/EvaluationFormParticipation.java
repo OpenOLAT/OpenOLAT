@@ -29,9 +29,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormParticipation extends CreateInfo, ModifiedInfo {
-	
-	public Long getKey();
+public interface EvaluationFormParticipation extends EvaluationFormParticipationRef, CreateInfo, ModifiedInfo {
 	
 	/**
 	 *

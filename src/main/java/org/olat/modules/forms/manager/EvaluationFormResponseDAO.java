@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
@@ -135,7 +136,27 @@ public class EvaluationFormResponseDAO {
 				.setParameter("surveyKey", survey.getKey())
 				.getResultList();
 	}
+
+	List<EvaluationFormResponse> loadResponsesByParticipations(
+			List<? extends EvaluationFormParticipationRef> participationRefs) {
+		if (participationRefs == null || participationRefs.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response from evaluationformresponse as response");
+		sb.append(" inner join response.session as session");
+		sb.append(" inner join session.participation as participation");
+		sb.append(" where participation.key in (:participationKeys)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormResponse.class)
+				.setParameter("participationKeys", getParticipationsKeys(participationRefs))
+				.getResultList();
+	}
 	
+	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
+		return participationRefs.stream().map(EvaluationFormParticipationRef::getKey).collect(Collectors.toList());
+	}
+
 	private List<Long> getSessionKeys(List<? extends EvaluationFormSessionRef> sessionRefs) {
 		return sessionRefs.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
 	}

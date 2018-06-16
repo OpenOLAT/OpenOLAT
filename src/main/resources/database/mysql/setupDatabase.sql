@@ -1831,7 +1831,7 @@ create table o_eva_form_participation (
    e_status varchar(20) not null,
    e_anonymous bit not null,
    fk_executor bigint,
-   fk_survey bigint not null,
+   fk_survey bigint,
    primary key (id)
 );
 
@@ -1867,6 +1867,25 @@ create table o_eva_form_response (
    e_stringuifiedresponse mediumtext,
    e_file_response_path varchar(4000),
    fk_session bigint not null,
+   primary key (id)
+);
+
+-- quality management
+create table o_qual_data_collection (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_status varchar(50),
+   q_title varchar(200),
+   q_start datetime,
+   q_deadline datetime,
+   q_topic_type varchar(50),
+   q_topic_custom varchar(200),
+   q_topic_fk_identity bigint,
+   q_topic_fk_organisation bigint,
+   q_topic_fk_curriculum bigint,
+   q_topic_fk_curriculum_element bigint,
+   q_topic_fk_repository bigint,
    primary key (id)
 );
 
@@ -2776,11 +2795,11 @@ alter table o_pf_binder ENGINE = InnoDB;
 alter table o_pf_assessment_section ENGINE = InnoDB;
 alter table o_pf_assignment ENGINE = InnoDB;
 alter table o_pf_binder_user_infos ENGINE = InnoDB;
-alter table o_eva_form_survey ENGINE = InnoDB;
 alter table o_eva_form_participation ENGINE = InnoDB;
 alter table o_eva_form_session ENGINE = InnoDB;
 alter table o_eva_form_response ENGINE = InnoDB;
 alter table o_eva_form_survey ENGINE = InnoDB;
+alter table o_qual_data_collection ENGINE = InnoDB;
 alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;

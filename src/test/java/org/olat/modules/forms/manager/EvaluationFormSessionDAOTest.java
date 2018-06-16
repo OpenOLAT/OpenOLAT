@@ -249,7 +249,6 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		assertThat(countOfSessions).isEqualTo(2);
 		
 	}
-
 	
 	@Test
 	public void shouldDeleteSessionsOfSurvey() {
@@ -260,6 +259,28 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		sut.deleteSessions(survey);
+		dbInstance.commit();
+		
+		EvaluationFormSession loadedSession1 = sut.loadSessionByParticipation(session1.getParticipation());
+		assertThat(loadedSession1).isNull();
+		EvaluationFormSession loadedSession2 = sut.loadSessionByParticipation(session2.getParticipation());
+		assertThat(loadedSession2).isNull();
+		EvaluationFormSession loadedOtherSession = sut.loadSessionByParticipation(otherSession.getParticipation());
+		assertThat(loadedOtherSession).isEqualTo(otherSession);
+	}
+	
+	@Test
+	public void shouldDeleteSessionsOfParticipations() {
+		EvaluationFormParticipation participation1 = evaTestHelper.createParticipation();
+		EvaluationFormSession session1 = evaTestHelper.createSession(participation1);
+		EvaluationFormParticipation participation2 = evaTestHelper.createParticipation();
+		EvaluationFormSession session2 = evaTestHelper.createSession(participation2);
+		EvaluationFormParticipation otherParticipation = evaTestHelper.createParticipation();
+		EvaluationFormSession otherSession = evaTestHelper.createSession(otherParticipation);
+		dbInstance.commit();
+		
+		List<EvaluationFormParticipation> participations = Arrays.asList(participation1, participation2);
+		sut.deleteSessions(participations);
 		dbInstance.commit();
 		
 		EvaluationFormSession loadedSession1 = sut.loadSessionByParticipation(session1.getParticipation());

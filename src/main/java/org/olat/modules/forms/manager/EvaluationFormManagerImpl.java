@@ -36,6 +36,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -120,6 +121,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
 				false, executor);
 	}
+	
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor, boolean anonymous) {
+		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
+				anonymous, executor);
+	}
 
 	@Override
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
@@ -138,7 +145,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier) {
+	public EvaluationFormParticipationRef loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier) {
 		return evaluationFormParticipationDao.loadByIdentifier(identifier);
 	}
 
@@ -146,6 +153,16 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier) {
 		return evaluationFormParticipationDao.loadByIdentifier(survey, identifier);
+	}
+
+	@Override
+	public void deleteParticipations(List<? extends EvaluationFormParticipationRef> participationRefs) {
+		if (participationRefs == null || participationRefs.isEmpty()) return;
+		
+		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesByParticipations(participationRefs);
+		deleteResponses(responses);
+		evaluationFormSessionDao.deleteSessions(participationRefs);
+		evaluationFormParticipationDao.deleteParticipations(participationRefs);
 	}
 
 	@Override
@@ -159,7 +176,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
+	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipationRef participation) {
 		return evaluationFormSessionDao.loadSessionByParticipation(participation);
 	}
 

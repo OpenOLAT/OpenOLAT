@@ -1481,6 +1481,29 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.modules.quality.ui.QualityMainController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties used in the quality management" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.modules.reminder.rule.UserPropertyRuleSPI">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

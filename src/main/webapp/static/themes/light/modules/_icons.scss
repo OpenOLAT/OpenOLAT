@@ -667,6 +667,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eva_sc:before { content: $fa-var-dot-circle-o; }
 .o_icon_surv_reset:before { content: $fa-var-eraser;}
 
+/* Quality management */
+.o_icon_qual_dc_create:before { content: $fa-var-plus-circle; }
+.o_icon_qual_dc_delete:before { content: $fa-var-trash; }
+.o_icon_qual_dc_edit:before { content: $fa-var-edit; }
+.o_icon_qual_part_user_add:before { content: $fa-var-user-plus; }
+
 /* Licenses */
 .o_icon_lic_add:before { content: $fa-var-plus-circle;}
 .o_icon_lic_public_domain:before, %o_icon_lic_public_domain { content:"\E810"; font-family: openolat; font-size: 120%; }

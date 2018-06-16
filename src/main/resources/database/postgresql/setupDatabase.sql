@@ -1762,6 +1762,25 @@ create table o_eva_form_response (
    primary key (id)
 );
 
+-- quality management
+create table o_qual_data_collection (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_status varchar(50),
+   q_title varchar(200),
+   q_start timestamp,
+   q_deadline timestamp,
+   q_topic_type varchar(50),
+   q_topic_custom varchar(200),
+   q_topic_fk_identity int8,
+   q_topic_fk_organisation int8,
+   q_topic_fk_curriculum int8,
+   q_topic_fk_curriculum_element int8,
+   q_topic_fk_repository int8,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id int8 not null,

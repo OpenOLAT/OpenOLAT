@@ -198,6 +198,26 @@ alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (
 
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
 
+-- quality management
+create table o_qual_data_collection (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_status varchar(50),
+   q_title varchar(200),
+   q_start datetime,
+   q_deadline datetime,
+   q_topic_type varchar(50),
+   q_topic_custom varchar(200),
+   q_topic_fk_identity bigint,
+   q_topic_fk_organisation bigint,
+   q_topic_fk_curriculum bigint,
+   q_topic_fk_curriculum_element bigint,
+   q_topic_fk_repository bigint,
+   primary key (id)
+);
+
+alter table o_qual_data_collection ENGINE = InnoDB;
 
 -- membership
 alter table o_bs_group_member add column g_inheritance_mode varchar(16) default 'none' not null;

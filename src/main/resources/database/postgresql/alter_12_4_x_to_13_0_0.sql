@@ -204,6 +204,24 @@ create unique index idx_eva_sess_to_part_idx on o_eva_form_session (fk_participa
 
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
 
+-- quality management
+create table o_qual_data_collection (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_status varchar(50),
+   q_title varchar(200),
+   q_start timestamp,
+   q_deadline timestamp,
+   q_topic_type varchar(50),
+   q_topic_custom varchar(200),
+   q_topic_fk_identity int8,
+   q_topic_fk_organisation int8,
+   q_topic_fk_curriculum int8,
+   q_topic_fk_curriculum_element int8,
+   q_topic_fk_repository int8,
+   primary key (id)
+);
 
 -- membership
 alter table o_bs_group_member add column g_inheritance_mode varchar(16) default 'none' not null;

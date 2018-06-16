@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-class EvaluationFormTestsHelper {
+public class EvaluationFormTestsHelper {
 	
 	@Autowired
 	private DB dbInstance;
@@ -54,7 +54,7 @@ class EvaluationFormTestsHelper {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	void deleteAll() {
+	public void deleteAll() {
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from evaluationformresponse")
 				.executeUpdate();

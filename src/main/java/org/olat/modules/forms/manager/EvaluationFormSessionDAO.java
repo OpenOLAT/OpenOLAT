@@ -29,6 +29,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -121,7 +122,7 @@ class EvaluationFormSessionDAO {
 		return sb;
 	}
 	
-	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipation participation) {
+	EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipationRef participation) {
 		if (participation == null) return null;
 		
 		StringBuilder sb = new StringBuilder();
@@ -257,6 +258,23 @@ class EvaluationFormSessionDAO {
 				.createQuery(sb.toString())
 				.setParameter("surveyKey", survey.getKey())
 				.executeUpdate();
+	}
+
+	void deleteSessions(List<? extends EvaluationFormParticipationRef> participationRefs) {
+		if (participationRefs == null || participationRefs.isEmpty()) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from evaluationformsession session");
+		sb.append(" where session.participation.key in (:participationKeys)");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("participationKeys", getParticipationsKeys(participationRefs))
+				.executeUpdate();
+	}
+	
+	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
+		return participationRefs.stream().map(EvaluationFormParticipationRef::getKey).collect(Collectors.toList());
 	}
 
 }
