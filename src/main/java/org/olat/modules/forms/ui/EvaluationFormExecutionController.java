@@ -196,7 +196,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	private void loadElements(UserRequest ureq) {
 		fragments.clear();
-		for(AbstractElement element: form.getElements()) {
+		List<AbstractElement> elements = form.getElements();
+		if (elements.isEmpty()) {
+			flc.contextPut("messageWithoutElements", Boolean.TRUE);
+		}
+		for(AbstractElement element: elements) {
 			EvaluationFormElementHandler handler = handlerMap.get(element.getType());
 			if(handler != null) {
 				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(), this.mainForm, element);

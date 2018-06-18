@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
+import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.RubricController;
 import org.olat.modules.forms.ui.RubricEditorController;
@@ -89,6 +90,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 		rubric.setEnd(5);
 		rubric.setSteps(5);
 		rubric.setSliderType(SliderType.discrete);
+		rubric.setScaleType(ScaleType.oneToMax);
 		
 		Slider slider = new Slider();
 		slider.setId(UUID.randomUUID().toString());

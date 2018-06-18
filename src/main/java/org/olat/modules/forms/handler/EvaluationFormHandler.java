@@ -32,7 +32,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
-import java.util.UUID;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -67,11 +66,9 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
-import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.EvaluationFormEditorController;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormRuntimeController;
-import org.olat.modules.forms.ui.TitleEditorController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -132,15 +129,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			repositoryDir.mkdirs();
 		}
 
-		// make a minimalistic form
 		Form form = new Form();
-		Translator translator = Util.createPackageTranslator(TitleEditorController.class, locale);
-		String content = translator.translate("title.example");
-		Title element = new Title();
-		element.setId(UUID.randomUUID().toString());
-		element.setContent(content);
-		form.addElement(element);
-
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		XStreamHelper.writeObject(FormXStream.getXStream(), formFile, form);
 		return re;

@@ -35,6 +35,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -183,11 +184,13 @@ public class EvaluationFormExcelExport {
 
 	private void addTitle(OpenXMLWorksheet exportSheet, Title title) {
 		String content = title.getContent();
+		content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
 		exportSheet.newRow().addCell(0, content);
 	}
 
 	private void addHtmlRaw(OpenXMLWorksheet exportSheet, HTMLRaw htmlRaw) {
 		String content = htmlRaw.getContent();
+		content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
 		exportSheet.newRow().addCell(0, content);
 	}
 
