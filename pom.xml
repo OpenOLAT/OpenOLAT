@@ -1198,22 +1198,22 @@
 			</testResource>
 		</testResources>
 		<plugins>
-			<!-- Set the build number from mercurial -->
+			<!-- Set the build number from git -->
 			<plugin>
-				<groupId>org.openolat.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.2.0</version>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.4</version>
 				<executions>
 					<execution>
-						<phase>validate</phase>
+						<id>get-the-git-infos</id>
 						<goals>
-							<goal>hgchangeset</goal>
+							<goal>revision</goal>
 						</goals>
+						<phase>validate</phase>
 					</execution>
 				</executions>
 				<configuration>
-					<doCheck>true</doCheck>
-					<doUpdate>true</doUpdate>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -1345,9 +1345,9 @@
 								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							</manifest>
 							<manifestEntries>
-								<Build-Change-Set>${changeSet}</Build-Change-Set>
-								<Build-Change-Set-Date>${changeSetDate}</Build-Change-Set-Date>
-								<Build-Revision-Number>${revisionNumber}</Build-Revision-Number>
+								<Build-Change-Set>${git.commit.id}</Build-Change-Set>
+								<Build-Change-Set-Date>${git.commit.time}</Build-Change-Set-Date>
+								<Build-Revision-Number>${git.commit.id.abbrev}</Build-Revision-Number>
 								<Implementation-Build>${buildNumber}</Implementation-Build>
 							</manifestEntries>
 						</archive>

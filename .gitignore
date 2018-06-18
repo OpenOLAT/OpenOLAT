@@ -1,3 +1,29 @@
+/bin/
+/target/
+/cargo/
+/.settings/
+
+# deprecated scripting files
+*.pl
+*.php
+
+# editor backup files
+*~
+*.bak
+*.swp
+
+# sundry useless files
+*.out
+mvn*.log
+
+# Mac idiosyncrasies
+.DS_Store
+
+#ignore project/.classpath file at this gets created by maven
+.classpath
+.project
+src/main/java/olat.local.properties
+
 .classpath
 /.project
 /.settings
@@ -5,12 +31,4 @@
 *.sw?
 */.classpath
 */.project
-*/.settings/*
-*/.settings/org.eclipse.core.resources.prefs
-*/.settings/org.eclipse.wst.common.component
-*/.settings/org.eclipse.wst.common.project.facet.core.xml
-*/.settings/org.eclipse.jdt.core.prefs
-*/.settings/org.eclipse.m2e.core.prefs
-*/.settings/org.eclipse.wst.jsdt.ui.*
-*/.settings/org.sonarlint.*
-*/.settings/.jsdtscope
+
