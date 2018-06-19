@@ -88,7 +88,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 			return EvaluationFormFormatter.formatDouble(rubricRow.getSdtDev());
 		}
 		if (col - offset == 5) {
-			return EvaluationFormFormatter.formatDouble(rubricRow.getAvg());
+			return rubricRow.getAvg();
 		}
 		return rubricRow.getStepCounts().get(col - 1);
 	}

@@ -122,7 +122,10 @@ public class RubricTableController extends FormBasicController {
 		sdtDevColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(sdtDevColumn);
 		
+		RubricAvgRenderer avgRenderer = new RubricAvgRenderer(rubric);
 		DefaultFlexiColumnModel avgColumn = new DefaultFlexiColumnModel(RubricReportCols.avg.i18nHeaderKey(), columnIndex++, false, null);
+		avgColumn.setCellRenderer(avgRenderer);
+		avgColumn.setFooterCellRenderer(avgRenderer);
 		avgColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		avgColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(avgColumn);

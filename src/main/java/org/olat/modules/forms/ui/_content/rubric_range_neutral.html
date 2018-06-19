@@ -1,0 +1,9 @@
+<div class="form-inline">
+	$r.translate("rubric.lower.bound") 
+	$r.render("rubric.lower.bound.neutral") 
+	$r.translate("rubric.upper.bound") 
+	$r.render("rubric.upper.bound.neutral")
+</div>
+#if($f.hasError("rubric.lower.bound.neutral"))
+	<div>$r.render("rubric.lower.bound.neutral_ERROR")</div>
+#end

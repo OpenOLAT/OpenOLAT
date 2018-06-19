@@ -1,0 +1,9 @@
+<div class="form-inline">
+	$r.translate("rubric.lower.bound") 
+	$r.render("rubric.lower.bound.insufficient") 
+	$r.translate("rubric.upper.bound") 
+	$r.render("rubric.upper.bound.insufficient")
+</div>
+#if($f.hasError("rubric.lower.bound.insufficient"))
+	<div>$r.render("rubric.lower.bound.insufficient_ERROR")</div>
+#end

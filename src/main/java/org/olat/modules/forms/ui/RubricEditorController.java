@@ -77,6 +77,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private TextElement nameEl;
 	private SingleSelection stepsEl;
 	private MultipleSelectionElement noAnswerEl;
+	private TextElement lowerBoundInsufficientEl;
+	private TextElement upperBoundInsufficientEl;
+	private TextElement lowerBoundNeutralEl;
+	private TextElement upperBoundNeutralEl;
+	private TextElement lowerBoundSufficientEl;
+	private TextElement upperBoundSufficientEl;
 	private FormLink addSliderButton;
 	private FormLayoutContainer settingsLayout;
 	
@@ -158,6 +164,65 @@ public class RubricEditorController extends FormBasicController implements PageE
 		noAnswerEl.select(showResponseKey[0], rubric.isNoResponseEnabled());
 		noAnswerEl.setEnabled(!restrictedEdit);
 		
+		String insufficientPage = velocity_root + "/rubric_range_insufficient.html";
+		FormLayoutContainer insufficientCont = FormLayoutContainer.createCustomFormLayout("insufficient",
+				getTranslator(), insufficientPage);
+		insufficientCont.setRootForm(mainForm);
+		settingsLayout.add("insufficient", insufficientCont);
+		insufficientCont.setLabel("rubric.insufficient", null);
+		String insufficientLowerBound = rubric.getLowerBoundInsufficient() != null
+				? String.valueOf(rubric.getLowerBoundInsufficient())
+				: null;
+		lowerBoundInsufficientEl = uifactory.addTextElement("rubric.lower.bound.insufficient", 4,
+				insufficientLowerBound, insufficientCont);
+		lowerBoundInsufficientEl.setDomReplacementWrapperRequired(false);
+		lowerBoundInsufficientEl.setDisplaySize(4);
+		String insufficientUpperBound = rubric.getUpperBoundInsufficient() != null
+				? String.valueOf(rubric.getUpperBoundInsufficient())
+				: null;
+		upperBoundInsufficientEl = uifactory.addTextElement("rubric.upper.bound.insufficient", 4,
+				insufficientUpperBound, insufficientCont);
+		upperBoundInsufficientEl.setDomReplacementWrapperRequired(false);
+		upperBoundInsufficientEl.setDisplaySize(4);
+
+		String neutralPage = velocity_root + "/rubric_range_neutral.html";
+		FormLayoutContainer neutralCont = FormLayoutContainer.createCustomFormLayout("neutral", getTranslator(),
+				neutralPage);
+		neutralCont.setRootForm(mainForm);
+		settingsLayout.add("neutral", neutralCont);
+		neutralCont.setLabel("rubric.neutral", null);
+		String neutralLowerBound = rubric.getLowerBoundNeutral() != null ? String.valueOf(rubric.getLowerBoundNeutral())
+				: null;
+		lowerBoundNeutralEl = uifactory.addTextElement("rubric.lower.bound.neutral", 4, neutralLowerBound, neutralCont);
+		lowerBoundNeutralEl.setDomReplacementWrapperRequired(false);
+		lowerBoundNeutralEl.setDisplaySize(4);
+		String neutralUpperBound = rubric.getUpperBoundNeutral() != null ? String.valueOf(rubric.getUpperBoundNeutral())
+				: null;
+		upperBoundNeutralEl = uifactory.addTextElement("rubric.upper.bound.neutral", 4, neutralUpperBound, neutralCont);
+		upperBoundNeutralEl.setDomReplacementWrapperRequired(false);
+		upperBoundNeutralEl.setDisplaySize(4);
+
+		String sufficientPage = velocity_root + "/rubric_range_sufficient.html";
+		FormLayoutContainer sufficientCont = FormLayoutContainer.createCustomFormLayout("sufficient", getTranslator(),
+				sufficientPage);
+		sufficientCont.setRootForm(mainForm);
+		settingsLayout.add("sufficient", sufficientCont);
+		sufficientCont.setLabel("rubric.sufficient", null);
+		String sufficientLowerBound = rubric.getLowerBoundSufficient() != null
+				? String.valueOf(rubric.getLowerBoundSufficient())
+				: null;
+		lowerBoundSufficientEl = uifactory.addTextElement("rubric.lower.bound.sufficient", 4, sufficientLowerBound,
+				sufficientCont);
+		lowerBoundSufficientEl.setDomReplacementWrapperRequired(false);
+		lowerBoundSufficientEl.setDisplaySize(4);
+		String sufficientUpperBound = rubric.getUpperBoundSufficient() != null
+				? String.valueOf(rubric.getUpperBoundSufficient())
+				: null;
+		upperBoundSufficientEl = uifactory.addTextElement("rubric.upper.bound.sufficient", 4, sufficientUpperBound,
+				sufficientCont);
+		upperBoundSufficientEl.setDomReplacementWrapperRequired(false);
+		upperBoundSufficientEl.setDisplaySize(4);
+
 		updateTypeSettings();
 		updateSteps();
 		
@@ -376,8 +441,75 @@ public class RubricEditorController extends FormBasicController implements PageE
 			sliderTypeEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		
+		double min = -101;
+		double max = 101;
+		int steps = 100;
+		String selectedSliderType = sliderTypeEl.getSelectedKey();
+		SliderType sliderType =  SliderType.valueOf(selectedSliderType);
+		String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
+		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
+		if (sliderType != SliderType.continuous) {
+			steps = Integer.parseInt(stepsEl.getSelectedKey());
+		}
+		min = scaleType.getStepValue(steps, 1);
+		max = scaleType.getStepValue(steps, steps);
+		if (min > max) {
+			double temp = min;
+			min = max;
+			max = temp;
+		}
+		lowerBoundInsufficientEl.clearError();
+		if (isInvalidDouble(lowerBoundInsufficientEl.getValue(), min, max)
+				|| isInvalidDouble(upperBoundInsufficientEl.getValue(), min, max)
+				|| isOnlyOnePresent(lowerBoundInsufficientEl, upperBoundInsufficientEl)) {
+			lowerBoundInsufficientEl.setErrorKey("error.outside.range",
+					new String[] { String.valueOf(min), String.valueOf(max) });
+			allOk = false;
+		}
+		lowerBoundNeutralEl.clearError();
+		if (isInvalidDouble(lowerBoundNeutralEl.getValue(), min, max)
+				|| isInvalidDouble(upperBoundNeutralEl.getValue(), min, max)
+				|| isOnlyOnePresent(lowerBoundNeutralEl, upperBoundNeutralEl)) {
+			lowerBoundNeutralEl.setErrorKey("error.outside.range",
+					new String[] { String.valueOf(min), String.valueOf(max) });
+			allOk = false;
+		}
+		lowerBoundSufficientEl.clearError();
+		if (isInvalidDouble(lowerBoundSufficientEl.getValue(), min, max)
+				|| isInvalidDouble(upperBoundSufficientEl.getValue(), min, max)
+				|| isOnlyOnePresent(lowerBoundSufficientEl, upperBoundSufficientEl)) {
+			lowerBoundSufficientEl.setErrorKey("error.outside.range",
+					new String[] { String.valueOf(min), String.valueOf(max) });
+			allOk = false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean isOnlyOnePresent(TextElement element1, TextElement element2) {
+		boolean present1 = StringHelper.containsNonWhitespace(element1.getValue());
+		boolean present2 = StringHelper.containsNonWhitespace(element2.getValue());
+		if (present1 && !present2) return true;
+		if (!present1 && present2) return true;
+		return false;
+	}
+
+	private boolean isInvalidDouble(String val, double min, double max) {
+		boolean inside = true;
+		if (StringHelper.containsNonWhitespace(val)) {
+			try {
+				double value = Double.parseDouble(val);
+				if(min > value) {
+					inside =  false;
+				} else if(max < value) {
+					inside =  false;
+				}
+			} catch (NumberFormatException e) {
+				inside =  false;
+			}
+		}
+		return !inside;
 	}
 
 	@Override
@@ -416,6 +548,49 @@ public class RubricEditorController extends FormBasicController implements PageE
 		
 		boolean noResonse = noAnswerEl.isAtLeastSelected(1);
 		rubric.setNoResponseEnabled(noResonse);
+		
+		String lowerBoundInsufficientValue = lowerBoundInsufficientEl.getValue();
+		if (StringHelper.containsNonWhitespace(lowerBoundInsufficientValue)) {
+			double lowerBoundInsufficient = Double.parseDouble(lowerBoundInsufficientValue);
+			rubric.setLowerBoundInsufficient(lowerBoundInsufficient);
+		} else {
+			rubric.setLowerBoundInsufficient(null);
+		}
+		String upperBoundInsufficientValue = upperBoundInsufficientEl.getValue();
+		if (StringHelper.containsNonWhitespace(upperBoundInsufficientValue)) {
+			double upperBoundInsufficient = Double.parseDouble(upperBoundInsufficientValue);
+			rubric.setUpperBoundInsufficient(upperBoundInsufficient);
+		} else {
+			rubric.setUpperBoundInsufficient(null);
+		}
+		String lowerBoundNeutralValue = lowerBoundNeutralEl.getValue();
+		if (StringHelper.containsNonWhitespace(lowerBoundNeutralValue)) {
+			double lowerBoundNeutral = Double.parseDouble(lowerBoundNeutralValue);
+			rubric.setLowerBoundNeutral(lowerBoundNeutral);
+		} else {
+			rubric.setLowerBoundNeutral(null);
+		}
+		String upperBoundNeutralValue = upperBoundNeutralEl.getValue();
+		if (StringHelper.containsNonWhitespace(upperBoundNeutralValue)) {
+			double upperBoundNeutral = Double.parseDouble(upperBoundNeutralValue);
+			rubric.setUpperBoundNeutral(upperBoundNeutral);
+		} else {
+			rubric.setUpperBoundNeutral(null);
+		}
+		String lowerBoundSufficientValue = lowerBoundSufficientEl.getValue();
+		if (StringHelper.containsNonWhitespace(lowerBoundSufficientValue)) {
+			double lowerBoundSufficient = Double.parseDouble(lowerBoundSufficientValue);
+			rubric.setLowerBoundSufficient(lowerBoundSufficient);
+		} else {
+			rubric.setLowerBoundSufficient(null);
+		}
+		String upperBoundSufficientValue = upperBoundSufficientEl.getValue();
+		if (StringHelper.containsNonWhitespace(upperBoundSufficientValue)) {
+			double upperBoundSufficient = Double.parseDouble(upperBoundSufficientValue);
+			rubric.setUpperBoundSufficient(upperBoundSufficient);
+		} else {
+			rubric.setUpperBoundSufficient(null);
+		}
 		
 		rubricCtrl.updateForm();
 		

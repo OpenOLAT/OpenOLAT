@@ -44,6 +44,12 @@ public class Rubric extends AbstractElement {
 	private int end;
 	private int steps;
 	private boolean noResponseEnabled;
+	private Double lowerBoundInsufficient;
+	private Double upperBoundInsufficient;
+	private Double lowerBoundNeutral;
+	private Double upperBoundNeutral;
+	private Double lowerBoundSufficient;
+	private Double upperBoundSufficient;
 	
 	@Override
 	public String getType() {
@@ -131,6 +137,54 @@ public class Rubric extends AbstractElement {
 		continuous	
 	}
 	
+	public Double getLowerBoundInsufficient() {
+		return lowerBoundInsufficient;
+	}
+
+	public void setLowerBoundInsufficient(Double lowerBoundInsufficient) {
+		this.lowerBoundInsufficient = lowerBoundInsufficient;
+	}
+
+	public Double getUpperBoundInsufficient() {
+		return upperBoundInsufficient;
+	}
+
+	public void setUpperBoundInsufficient(Double upperBoundInsufficient) {
+		this.upperBoundInsufficient = upperBoundInsufficient;
+	}
+
+	public Double getLowerBoundNeutral() {
+		return lowerBoundNeutral;
+	}
+
+	public void setLowerBoundNeutral(Double lowerBoundNeutral) {
+		this.lowerBoundNeutral = lowerBoundNeutral;
+	}
+
+	public Double getUpperBoundNeutral() {
+		return upperBoundNeutral;
+	}
+
+	public void setUpperBoundNeutral(Double upperBoundNeutral) {
+		this.upperBoundNeutral = upperBoundNeutral;
+	}
+
+	public Double getLowerBoundSufficient() {
+		return lowerBoundSufficient;
+	}
+
+	public void setLowerBoundSufficient(Double lowerBoundSufficient) {
+		this.lowerBoundSufficient = lowerBoundSufficient;
+	}
+
+	public Double getUpperBoundSufficient() {
+		return upperBoundSufficient;
+	}
+
+	public void setUpperBoundSufficient(Double upperBoundSufficient) {
+		this.upperBoundSufficient = upperBoundSufficient;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {

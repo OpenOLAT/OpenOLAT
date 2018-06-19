@@ -1,3 +1,7 @@
+.o_rubric_insufficient { background-color: $o-evaluation-insufficient-background-color;}
+.o_rubric_neutral { background-color: $o-evaluation-neutral-background-color;}
+.o_rubric_sufficient { background-color: $o-evaluation-sufficient-background-color;}
+
 .o_evaluation_form {
 	.o_evaluation_block {
 		margin-top: $o-evaluation-block-margin-top;
@@ -331,5 +335,15 @@
 				margin-top: 5px;
 			}
 		}
+	}
+	
+	.o_ed_rubrictablehandler {
+		.o_table_footer {
+			font-weight: bold;
+		}
+	}
+	
+	.o_rubric_avg {
+		font-weight: bold;
 	}
 }

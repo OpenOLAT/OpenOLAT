@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -116,15 +117,18 @@ public class RubricBarChartsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatisticCols.term));
 		DefaultFlexiColumnModel valueColumn = new DefaultFlexiColumnModel(StatisticCols.value);
 		valueColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		valueColumn.setFooterCellRenderer(new RubricAvgRenderer(rubric));
 		columnsModel.addFlexiColumnModel(valueColumn);
 		
-		StatisticDataModel dataModel = new StatisticDataModel(columnsModel);
+		String footerHeader = translate("rubric.report.avg.title");
+		StatisticDataModel dataModel = new StatisticDataModel(columnsModel, footerHeader);
 		List<StatisticRow> objects = getStatisticRows(sliderStatistic);
-		dataModel.setObjects(objects );
+		dataModel.setObjects(objects, sliderStatistic.getAvg());
 		String tableName = "ru_" + CodeHelper.getRAMUniqueID();
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), tableName, dataModel, getTranslator(), flc);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setFooter(true);
 		return tableName;
 	}
 
@@ -135,7 +139,6 @@ public class RubricBarChartsController extends FormBasicController {
 		rows.add(new StatisticRow(translate("rubric.report.median.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getMedian())));
 		rows.add(new StatisticRow(translate("rubric.report.variance.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getVariance())));
 		rows.add(new StatisticRow(translate("rubric.report.sdtdev.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getStdDev())));
-		rows.add(new StatisticRow(translate("rubric.report.avg.title"), EvaluationFormFormatter.formatDouble(sliderStatistic.getAvg())));
 		return rows;
 	}
 
@@ -295,10 +298,20 @@ public class RubricBarChartsController extends FormBasicController {
 		}
 	}
 	
-	private final static class StatisticDataModel extends DefaultFlexiTableDataModel<StatisticRow> {
+	private final static class StatisticDataModel extends DefaultFlexiTableDataModel<StatisticRow>
+			implements FlexiTableFooterModel {
 		
-		StatisticDataModel(FlexiTableColumnModel columnsModel) {
+		private final String footerHeader;
+		private Double average;
+
+		StatisticDataModel(FlexiTableColumnModel columnsModel, String footerHeader) {
 			super(columnsModel);
+			this.footerHeader = footerHeader;
+		}
+
+		public void setObjects(List<StatisticRow> objects, Double average) {
+			super.setObjects(objects);
+			this.average = average;
 		}
 
 		@Override
@@ -313,7 +326,17 @@ public class RubricBarChartsController extends FormBasicController {
 
 		@Override
 		public DefaultFlexiTableDataModel<StatisticRow> createCopyWithEmptyList() {
-			return new StatisticDataModel(getTableColumnModel());
+			return new StatisticDataModel(getTableColumnModel(), footerHeader);
+		}
+
+		@Override
+		public String getFooterHeader() {
+			return footerHeader;
+		}
+
+		@Override
+		public Object getFooterValueAt(int col) {
+			return col == 1? average: null;
 		}
 	}
 	
