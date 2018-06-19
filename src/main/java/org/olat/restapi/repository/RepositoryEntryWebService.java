@@ -76,6 +76,10 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -83,6 +87,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -117,13 +122,17 @@ public class RepositoryEntryWebService {
 	private RepositoryEntry entry;
 	
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private BaseSecurity securityManager;
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
-	private 	RepositoryEntryLifecycleDAO lifecycleDao;
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
 	public RepositoryEntryWebService(RepositoryEntry entry) {
 		this.entry = entry;
@@ -786,6 +795,50 @@ public class RepositoryEntryWebService {
 		}
 		entry = repositoryManager.setAccess(entry, accessVo.getAccess(), accessVo.isMembersOnly());
 		return Response.ok(RepositoryEntryAccessVO.valueOf(entry)).build();
+	}
+	
+	@GET
+	@Path("taxonomy/levels")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTaxonomyLevels(@Context HttpServletRequest request) {	
+		if(!isAuthor(request) && !isAuthorEditor(entry, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
+		TaxonomyLevelVO[] voes = new TaxonomyLevelVO[levels.size()];
+		for(int i=levels.size(); i-->0; ) {
+			voes[i] = TaxonomyLevelVO.valueOf(levels.get(i));
+		}
+		return Response.ok(voes).build();
+	}
+	
+	@PUT
+	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
+		for(TaxonomyLevel level:levels) {
+			if(level.getKey().equals(taxonomyLevelKey)) {
+				return Response.ok().status(Status.NOT_MODIFIED).build();
+			}
+		}
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
+		if(level == null) {
+			return Response.ok(Status.NOT_FOUND).build();
+		}
+		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
+		if(level == null) {
+			return Response.ok(Status.NOT_FOUND).build();
+		}
+		repositoryEntryToTaxonomyLevelDao.deleteRelation(entry, level);
+		return Response.ok().build();
 	}
 	
 	private Response getIdentityInSecurityGroup(RepositoryEntry re, String role) {

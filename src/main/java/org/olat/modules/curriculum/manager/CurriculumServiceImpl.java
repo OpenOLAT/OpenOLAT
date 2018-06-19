@@ -109,6 +109,23 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public List<Identity> getMembersIdentity(CurriculumRef curriculum, CurriculumRoles role) {
+		return curriculumDao.getMembersIdentity(curriculum, role.name());
+	}
+
+	@Override
+	public void addMember(Curriculum curriculum, Identity identity, CurriculumRoles role) {
+		if(!groupDao.hasRole(curriculum.getGroup(), identity, role.name())) {
+			groupDao.addMembershipOneWay(curriculum.getGroup(), identity, role.name(), GroupMembershipInheritance.none);
+		}
+	}
+
+	@Override
+	public void removeMember(Curriculum curriculum, Identity member, CurriculumRoles role) {
+		groupDao.removeMembership(curriculum.getGroup(), member, role.name());
+	}
+
+	@Override
 	public List<CurriculumElementType> getCurriculumElementTypes() {
 		return curriculumElementTypeDao.load();
 	}
@@ -201,6 +218,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
 		return curriculumElementDao.loadElements(entry);
+	}
+
+	@Override
+	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement) {
+		return curriculumElementDao.getChildren(parentElement);
 	}
 
 	@Override

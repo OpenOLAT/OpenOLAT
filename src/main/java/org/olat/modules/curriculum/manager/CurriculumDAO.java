@@ -28,10 +28,12 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,5 +133,20 @@ public class CurriculumDAO {
 	public Curriculum update(Curriculum curriculum) {
 		((CurriculumImpl)curriculum).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(curriculum);
+	}
+	
+	public List<Identity> getMembersIdentity(CurriculumRef curriculum, String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from curriculum cur")
+		  .append(" inner join cur.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where cur.key=:curriculumKey and membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("curriculumKey", curriculum.getKey())
+				.setParameter("role", role)
+				.getResultList();
 	}
 }

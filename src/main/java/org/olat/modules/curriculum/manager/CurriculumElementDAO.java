@@ -251,6 +251,19 @@ public class CurriculumElementDAO {
 		return elements;
 	}
 	
+	public List<CurriculumElement> getChildren(CurriculumElementRef curriculumElement) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el from curriculumelement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" inner join fetch el.group bGroup")
+		  .append(" left join fetch curriculum.organisation org")
+		  .append(" where el.parent.key=:elementKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("elementKey", curriculumElement.getKey())
+				.getResultList();
+	}
+	
 	public List<CurriculumElementMember> getMembers(CurriculumElementRef element) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident, membership.role, membership.inheritanceModeString from curriculumelement el")

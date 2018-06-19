@@ -26,11 +26,13 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -43,16 +45,25 @@ import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.modules.lecture.restapi.LectureBlockVO;
 import org.olat.modules.lecture.restapi.RepositoryEntryLectureConfigurationVO;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -71,12 +82,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class LecturesBlocksTest extends OlatJerseyTestCase {
 	
+	private static final OLog log = Tracing.createLoggerFor(LecturesBlocksTest.class);
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
 	/**
 	 * Get the list of lecture block through the course.
@@ -103,7 +122,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity());
 		Assert.assertNotNull(voList);
 		Assert.assertEquals(1, voList.size());
 		LectureBlockVO blockVo = voList.get(0);
@@ -136,7 +155,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity());
 		Assert.assertNotNull(voList);
 		Assert.assertEquals(1, voList.size());
 		LectureBlockVO blockVo = voList.get(0);
@@ -543,6 +562,147 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Assert.assertEquals(block.getKey(), targetBlocks.get(0).getKey());		
 	}
 	
+	@Test
+	public void getTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(block, teacher);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-200", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		lectureBlockToTaxonomyLevelDao.createRelation(block, level);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("taxonomy").path("levels").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<TaxonomyLevelVO> levelVoes = parseTaxonomyLevelArray(response.getEntity());
+		Assert.assertNotNull(levelVoes);
+		Assert.assertEquals(1, levelVoes.size());
+	}
+	
+	@Test
+	public void addTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(block, teacher);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-200", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("taxonomy").path("levels").path(level.getKey().toString()).build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		Set<LectureBlockToTaxonomyLevel> relationToLevels = reloadedBlock.getTaxonomyLevels();
+		Assert.assertNotNull(relationToLevels);
+		Assert.assertEquals(1, relationToLevels.size());
+		LectureBlockToTaxonomyLevel relationToLevel = relationToLevels.iterator().next();
+		Assert.assertEquals(level, relationToLevel.getTaxonomyLevel());
+	}
+	
+	@Test
+	public void addTwiceTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(block, teacher);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-200", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		lectureBlockToTaxonomyLevelDao.createRelation(block, level);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("taxonomy").path("levels").path(level.getKey().toString()).build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(304, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		Set<LectureBlockToTaxonomyLevel> relationToLevels = reloadedBlock.getTaxonomyLevels();
+		Assert.assertNotNull(relationToLevels);
+		Assert.assertEquals(1, relationToLevels.size());
+		LectureBlockToTaxonomyLevel relationToLevel = relationToLevels.iterator().next();
+		Assert.assertEquals(level, relationToLevel.getTaxonomyLevel());
+	}
+	
+	@Test
+	public void deleteTaxonomyLevel()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(block, teacher);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-202", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		lectureBlockToTaxonomyLevelDao.createRelation(block, level1);
+		lectureBlockToTaxonomyLevelDao.createRelation(block, level2);
+		dbInstance.commitAndCloseSession();
+		
+		// make sure we have something to delete
+		List<TaxonomyLevel> levels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(block);
+		Assert.assertEquals(2, levels.size());
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("taxonomy").path("levels").path(level1.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// check that the right relation was deleted
+		List<TaxonomyLevel> survivingLevels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(block);
+		Assert.assertEquals(1, survivingLevels.size());
+		Assert.assertEquals(level2, survivingLevels.get(0));
+	}
+	
+	
+	
 	private LectureBlock createLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
@@ -552,12 +712,22 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		return lectureService.save(lectureBlock, null);
 	}
 	
-	protected List<LectureBlockVO> parseLectureBlockArray(InputStream body) {
-		try {
+	protected List<TaxonomyLevelVO> parseTaxonomyLevelArray(HttpEntity entity) {
+		try(InputStream in = entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<LectureBlockVO>>(){/* */});
+			return mapper.readValue(in, new TypeReference<List<TaxonomyLevelVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	protected List<LectureBlockVO> parseLectureBlockArray(HttpEntity entity) {
+		try(InputStream in = entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<LectureBlockVO>>(){/* */});
+		} catch (Exception e) {
+			log.error("", e);
 			return null;
 		}
 	}

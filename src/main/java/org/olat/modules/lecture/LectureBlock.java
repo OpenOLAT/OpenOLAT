@@ -21,6 +21,7 @@
 package org.olat.modules.lecture;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -112,6 +113,11 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	public Date getAutoClosedDate();
 
 	public RepositoryEntry getEntry();
+	
+	/**
+	 * @return The relation to taxonomy levels (lazy loading)
+	 */
+	public Set<LectureBlockToTaxonomyLevel> getTaxonomyLevels();
 
 
 }

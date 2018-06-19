@@ -46,6 +46,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
+import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.Reason;
 import org.olat.repository.RepositoryEntry;
@@ -134,6 +135,10 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@OneToMany(targetEntity=LectureBlockToGroupImpl.class, fetch=FetchType.LAZY, orphanRemoval=false)
 	@JoinColumn(name="fk_lecture_block")
 	private Set<LectureBlockToGroup> groups;
+	
+	@OneToMany(targetEntity=LectureBlockToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
+	@JoinColumn(name="fk_lecture_block")
+	private Set<LectureBlockToTaxonomyLevel> taxonomyLevels;
 	
 	
 	@Override
@@ -383,6 +388,18 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 
 	public void setTeacherGroup(Group teacherGroup) {
 		this.teacherGroup = teacherGroup;
+	}
+
+	@Override
+	public Set<LectureBlockToTaxonomyLevel> getTaxonomyLevels() {
+		if(taxonomyLevels == null) {
+			taxonomyLevels = new HashSet<>();
+		}
+		return taxonomyLevels;
+	}
+
+	public void setTaxonomyLevels(Set<LectureBlockToTaxonomyLevel> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	@Override

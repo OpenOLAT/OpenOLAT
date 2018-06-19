@@ -111,7 +111,7 @@ public class TaxonomyWebService {
 		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomy);
 		List<TaxonomyLevelVO> levelVOes = new ArrayList<>(levels.size());
 		for(TaxonomyLevel level:levels) {
-			levelVOes.add(new TaxonomyLevelVO(level));
+			levelVOes.add(TaxonomyLevelVO.valueOf(level));
 		}
 		return Response.ok(levelVOes.toArray(new TaxonomyLevelVO[levelVOes.size()])).build();
 	}
@@ -186,7 +186,7 @@ public class TaxonomyWebService {
 			level = taxonomyService.moveTaxonomyLevel(level, newParentLevel);
 		}
 		
-		TaxonomyLevelVO newLevelVo = new TaxonomyLevelVO(level);
+		TaxonomyLevelVO newLevelVo = TaxonomyLevelVO.valueOf(level);
 		return Response.ok(newLevelVo).build();
 	}
 	

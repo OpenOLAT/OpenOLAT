@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -48,13 +49,20 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementMemberVO;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
@@ -77,9 +85,16 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private OrganisationService organisationService;
+
+	@Autowired
+	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	
 	@Test
 	public void getCurriculumElements()
@@ -133,6 +148,46 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		CurriculumElementVO elementVo = conn.parse(response, CurriculumElementVO.class);
 		Assert.assertNotNull(elementVo);
 		Assert.assertEquals(element.getKey(), elementVo.getKey());
+	}
+	
+	@Test
+	public void getCurriculumElementChildren()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "Element 1", null, null, null, null, curriculum);
+		CurriculumElement element_1 = curriculumService.createCurriculumElement("Element-1.1", "Element 1.1", null, null, element, null, curriculum);
+		CurriculumElement element_2 = curriculumService.createCurriculumElement("Element-1.2", "Element 1.2", null, null, element, null, curriculum);
+		CurriculumElement element_3 = curriculumService.createCurriculumElement("Element-1.3", "Element 1.3", null, null, element, null, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("elements").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<CurriculumElementVO> children = this.parseCurriculumElementArray(response.getEntity());
+		Assert.assertNotNull(children);
+		Assert.assertEquals(3, children.size());
+		
+		boolean found1 = false;
+		boolean found2 = false;
+		boolean found3 = false;
+		for(CurriculumElementVO elementVo:children) {
+			if(elementVo.getKey().equals(element_1.getKey())) {
+				found1 = true;
+			} else if(elementVo.getKey().equals(element_2.getKey())) {
+				found2 = true;
+			} else if(elementVo.getKey().equals(element_3.getKey())) {
+				found3 = true;
+			}
+		}
+		Assert.assertTrue(found1);
+		Assert.assertTrue(found2);
+		Assert.assertTrue(found3);
 	}
 
 	@Test
@@ -245,6 +300,42 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(2, savedElement.getManagedFlags().length);
 		Assert.assertEquals(curriculum, savedElement.getCurriculum());
 		Assert.assertEquals(type, savedElement.getType());
+	}
+	
+	/**
+	 * Set the parent element key as itself.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void updateCurriculumElement_conflict()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "Element 5", null, null, null, null, curriculum);
+		CurriculumElement element_1 = curriculumService.createCurriculumElement("Element-5.1", "Element 5.1", null, null, element, null, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElementVO vo = new CurriculumElementVO();
+		vo.setKey(element_1.getKey());
+		vo.setDescription("Via REST updated element");
+		vo.setDisplayName("REST updated element");
+		vo.setExternalId("REST-CEL-2");
+		vo.setIdentifier("REST-ID-CEL-2");
+		vo.setCurriculumKey(curriculum.getKey());
+		vo.setParentElementKey(element_1.getKey());
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 	}
 	
 	@Test
@@ -930,10 +1021,150 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(1, participants.size());
 	}
 	
+	@Test
+	public void getTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", null, null, null, null, curriculum);
+		dbInstance.commit();
+
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-350", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString())
+				.path("taxonomy").path("levels").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<TaxonomyLevelVO> levelVoes = parseTaxonomyLevelArray(response.getEntity());
+		Assert.assertNotNull(levelVoes);
+		Assert.assertEquals(1, levelVoes.size());
+	}
+	
+	@Test
+	public void addTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", null, null, null, null, curriculum);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-351", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString())
+				.path("taxonomy").path("levels").path(level.getKey().toString()).build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// check that the relation is really persisted
+		List<TaxonomyLevel> levels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(element);
+		Assert.assertNotNull(levels);
+		Assert.assertEquals(1, levels.size());
+		Assert.assertEquals(level, levels.get(0));
+	}
+	
+	@Test
+	public void addTwiceTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "Element 24", null, null, null, null, curriculum);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-352", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString())
+				.path("taxonomy").path("levels").path(level.getKey().toString()).build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(304, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// check that the relation is really persisted
+		CurriculumElement reloadedElement = curriculumService.getCurriculumElement(element);
+		
+		Set<CurriculumElementToTaxonomyLevel> relationToLevels = reloadedElement.getTaxonomyLevels();
+		Assert.assertNotNull(relationToLevels);
+		Assert.assertEquals(1, relationToLevels.size());
+		CurriculumElementToTaxonomyLevel relationToLevel = relationToLevels.iterator().next();
+		Assert.assertEquals(level, relationToLevel.getTaxonomyLevel());
+		Assert.assertEquals(element, relationToLevel.getCurriculumElement());
+	}
+	
+	@Test
+	public void deleteTaxonomyLevels()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-30", "Element 24", null, null, null, null, curriculum);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-353", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", "My second taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element, level1);
+		curriculumElementToTaxonomyLevelDao.createRelation(element, level2);
+		dbInstance.commitAndCloseSession();
+		
+		// make sure there is something to delete
+		List<TaxonomyLevel> levels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(element);
+		Assert.assertNotNull(levels);
+		Assert.assertEquals(2, levels.size());
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString())
+				.path("taxonomy").path("levels").path(level2.getKey().toString()).build();
+		
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		// check that there is only level1 left
+		CurriculumElement reloadedElement = curriculumService.getCurriculumElement(element);
+		
+		Set<CurriculumElementToTaxonomyLevel> relationToLevels = reloadedElement.getTaxonomyLevels();
+		Assert.assertNotNull(relationToLevels);
+		Assert.assertEquals(1, relationToLevels.size());
+		CurriculumElementToTaxonomyLevel relationToLevel = relationToLevels.iterator().next();
+		Assert.assertEquals(level1, relationToLevel.getTaxonomyLevel());
+		Assert.assertEquals(element, relationToLevel.getCurriculumElement());
+	}
+	
 	protected List<UserVO> parseUserArray(HttpEntity body) {
 		try(InputStream in = body.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	protected List<TaxonomyLevelVO> parseTaxonomyLevelArray(HttpEntity body) {
+		try(InputStream in = body.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<TaxonomyLevelVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

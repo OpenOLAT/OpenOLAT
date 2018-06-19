@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
@@ -57,9 +58,9 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	
 	public void setEndDate(Date date);
 	
-	public String getStatus();
+	public CurriculumElementStatus getStatus();
 	
-	public void setStatus(String status);
+	public void setStatus(CurriculumElementStatus status);
 	
 	public String getMaterializedPathKeys();
 	
@@ -76,6 +77,8 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	public void setType(CurriculumElementType type);
 	
 	public Group getGroup();
+	
+	public Set<CurriculumElementToTaxonomyLevel> getTaxonomyLevels();
 	
 
 }

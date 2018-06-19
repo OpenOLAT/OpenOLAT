@@ -524,6 +524,13 @@ CREATE TABLE o_re_to_group (
    fk_entry_id number(20) not null,
    PRIMARY KEY (id)
 );
+CREATE TABLE o_re_to_tax_level (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  fk_entry number(20) not null,
+  fk_taxonomy_level number(20) not null,
+  PRIMARY KEY (id)
+);
 CREATE TABLE o_repositoryentry_cycle (
    id number(20) not null,
    creationdate date not null,
@@ -2267,6 +2274,14 @@ create table o_lecture_block_audit_log (
   primary key (id)
 );
 
+create table o_lecture_block_to_tax_level (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  fk_lecture_block number(20) not null,
+  fk_taxonomy_level number(20) not null,
+  primary key (id)
+);
+
 -- taxonomy
 create table o_tax_taxonomy (
   id number(20) generated always as identity,
@@ -2517,6 +2532,13 @@ create table o_cur_element_type_to_type (
   primary key (id)
 );
 
+create table o_cur_element_to_tax_level (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  fk_cur_element number(20) not null,
+  fk_taxonomy_level number(20) not null,
+  primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -2969,6 +2991,11 @@ alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk
 
 alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
 create index idx_re_deleted_to_identity_idx on o_repositoryentry (fk_deleted_by);
+
+alter table o_re_to_tax_level add constraint re_to_lev_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_re_to_lev_re_idx on o_re_to_tax_level (fk_entry);
+alter table o_re_to_tax_level add constraint re_to_lev_tax_lev_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+create index idx_re_to_lev_tax_lev_idx on o_re_to_tax_level (fk_taxonomy_level);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
@@ -3518,6 +3545,11 @@ alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx for
 create index idx_lec_audit_entry_idx on o_lecture_block_audit_log(fk_entry);
 create index idx_lec_audit_ident_idx on o_lecture_block_audit_log(fk_identity);
 
+alter table o_lecture_block_to_tax_level add constraint lblock_rel_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_lblock_rel_to_lblock_idx on o_lecture_block_to_tax_level (fk_lecture_block);
+alter table o_lecture_block_to_tax_level add constraint lblock_rel_to_tax_lev_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+create index idx_lblock_rel_to_tax_lev_idx on o_lecture_block_to_tax_level (fk_taxonomy_level);
+
 -- dialog elements
 alter table o_dialog_element add constraint dial_el_author_idx foreign key (fk_author) references o_bs_identity (id);
 create index idx_dial_el_author_idx on o_dialog_element (fk_author);
@@ -3573,6 +3605,11 @@ alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx forei
 create index idx_cur_type_to_type_idx on o_cur_element_type_to_type (fk_type);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
 create index idx_cur_type_to_sub_type_idx on o_cur_element_type_to_type (fk_allowed_sub_type);
+
+alter table o_cur_element_to_tax_level add constraint cur_el_rel_to_cur_el_idx foreign key (fk_cur_element) references o_cur_curriculum_element (id);
+create index idx_cur_el_rel_to_cur_el_idx on o_cur_element_to_tax_level (fk_cur_element);
+alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+create index idx_cur_el_to_tax_level_idx on o_cur_element_to_tax_level (fk_taxonomy_level);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

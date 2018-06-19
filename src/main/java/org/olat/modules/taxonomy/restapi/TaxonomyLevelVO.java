@@ -50,19 +50,21 @@ public class TaxonomyLevelVO {
 		//
 	}
 	
-	public TaxonomyLevelVO(TaxonomyLevel taxonomyLevel) {
-		key = taxonomyLevel.getKey();
-		identifier = taxonomyLevel.getIdentifier();
-		displayName = taxonomyLevel.getDisplayName();
-		description = taxonomyLevel.getDescription();
-		externalId = taxonomyLevel.getExternalId();
+	public static TaxonomyLevelVO valueOf(TaxonomyLevel taxonomyLevel) {
+		TaxonomyLevelVO vo = new TaxonomyLevelVO();
+		vo.setKey(taxonomyLevel.getKey());
+		vo.setIdentifier(taxonomyLevel.getIdentifier());
+		vo.setDisplayName(taxonomyLevel.getDisplayName());
+		vo.setDescription(taxonomyLevel.getDescription());
+		vo.setExternalId(taxonomyLevel.getExternalId());
 		if(taxonomyLevel.getParent() != null) {
-			parentKey = taxonomyLevel.getParent().getKey();
+			vo.setParentKey(taxonomyLevel.getParent().getKey());
 		}
 		if(taxonomyLevel.getType() != null) {
-			typeKey = taxonomyLevel.getType().getKey();
+			vo.setTypeKey(taxonomyLevel.getType().getKey());
 		}
-		managedFlags = taxonomyLevel.getManagedFlagsString();
+		vo.setManagedFlags(taxonomyLevel.getManagedFlagsString());
+		return vo;
 	}
 
 	public Long getKey() {

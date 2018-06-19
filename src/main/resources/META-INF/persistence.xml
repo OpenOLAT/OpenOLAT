@@ -128,6 +128,7 @@
 		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryMembership</class>
 		<class>org.olat.repository.model.RepositoryEntryToOrganisationImpl</class>
+		<class>org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderImpl</class>
@@ -157,6 +158,7 @@
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeToTypeImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumElementToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.fo.model.ForumImpl</class>
 		<class>org.olat.modules.fo.model.MessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageRefImpl</class>
@@ -180,6 +182,7 @@
 		<class>org.olat.modules.lecture.model.LectureParticipantSummaryImpl</class>
 		<class>org.olat.modules.lecture.model.LectureParticipantCalendarSummary</class>
 		<class>org.olat.modules.lecture.model.LectureBlockReminderImpl</class>
+		<class>org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>

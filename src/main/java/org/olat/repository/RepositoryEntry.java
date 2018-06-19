@@ -63,6 +63,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
+import org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 
@@ -144,6 +145,10 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@OneToMany(targetEntity=RepositoryEntryToOrganisationImpl.class, fetch=FetchType.LAZY)
 	@JoinColumn(name="fk_entry")
 	private Set<RepositoryEntryToOrganisation> organisations;
+	
+	@OneToMany(targetEntity=RepositoryEntryToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
+	@JoinColumn(name="fk_entry")
+	private Set<RepositoryEntryToTaxonomyLevel> taxonomyLevels;
 	
 	@Column(name="resourcename", nullable=false, insertable=true, updatable=true)
 	private String resourcename; // mandatory
@@ -581,17 +586,24 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	public void setStatistics(RepositoryEntryStatistics statistics) {
 		this.statistics = statistics;
 	}
+	
+	public Set<RepositoryEntryToTaxonomyLevel> getTaxonomyLevels() {
+		if(taxonomyLevels == null) {
+			taxonomyLevels = new HashSet<>();
+		}
+		return taxonomyLevels;
+	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
+	public void setTaxonomyLevels(Set<RepositoryEntryToTaxonomyLevel> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
+	}
+
+	@Override
 	public String getResourceableTypeName() { 
 		return OresHelper.calculateTypeName(RepositoryEntry.class); 
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
+	@Override
 	public Long getResourceableId() {
 		return getKey();
 	}
@@ -604,19 +616,11 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		version = v;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
 	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
 	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;

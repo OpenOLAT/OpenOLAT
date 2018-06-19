@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -40,18 +41,23 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -67,6 +73,8 @@ public class CurriculumsWebService {
 	
 	private static final String VERSION = "1.0";
 	
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -321,5 +329,103 @@ public class CurriculumsWebService {
 			voes[i] = CurriculumElementVO.valueOf(elements.get(i));
 		}
 		return Response.ok(voes).build();
+	}
+	
+	/**
+	 * Get all curriculum managers of the specified curriculum.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of curriculum managers
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element not found
+	 * @param curriculumKey The curriculum primary key
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("{curriculumKey}/curriculummanagers")
+	public Response getCurriculumManagers(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
+		return getMembers(curriculumKey, CurriculumRoles.curriculummanager, httpRequest);
+	}
+
+	private Response getMembers(Long curriculumKey, CurriculumRoles role, HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(curriculum == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		List<Identity> members = curriculumService.getMembersIdentity(curriculum, role);
+		List<UserVO> voList = new ArrayList<>(members.size());
+		for(Identity member:members) {
+			voList.add(UserVOFactory.get(member));
+		}
+		return Response.ok(voList.toArray(new UserVO[voList.size()])).build();
+	}
+	
+	/**
+	 * Make the specified user a curriculum manager of the curriculum.
+	 * 
+	 * @response.representation.200.doc The membership was added
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element or the identity was not found
+	 * @param curriculumKey The curriculum primary key
+	 * @param identityKey The member to make a curriculum manager of
+	 * @return Nothing
+	 */
+	@PUT
+	@Path("{curriculumKey}/curriculummanagers/{identityKey}")
+	public Response putCurriculumManager(@PathParam("curriculumKey") Long curriculumKey, @PathParam("identityKey") Long identityKey) {
+		return putMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager);
+	}
+	
+	private Response putMember(Long curriculumKey, Long identityKey, CurriculumRoles role) {
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(curriculum == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		curriculumService.addMember(curriculum, identity, role);
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Remove the curriculum manager membership of the identity from the specified curriculum .
+	 * 
+	 * @response.representation.200.doc The membership was removed
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum or the identity was not found
+	 * @param curriculumElementKey The curriculum primary key
+	 * @param identityKey The member to remove
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("{curriculumKey}/curriculummanagers/{identityKey}")
+	public Response deleteCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
+			@PathParam("identityKey") Long identityKey) {
+		return deleteMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager);
+	}
+	
+	private Response deleteMember(Long curriculumKey, Long identityKey, CurriculumRoles role) {
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(curriculum == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		curriculumService.removeMember(curriculum, identity, role);
+		return Response.ok().build();
 	}
 }

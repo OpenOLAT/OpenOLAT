@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -21,7 +22,9 @@ package org.olat.modules.curriculum.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -41,9 +44,12 @@ import javax.persistence.TemporalType;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
@@ -78,7 +84,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private String description;
 	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
-	private String status;
+	private String statusString;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="c_begin", nullable=true, insertable=true, updatable=true)
 	private Date beginDate;
@@ -114,6 +120,10 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@ManyToOne(targetEntity=CurriculumElementTypeImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
 	private CurriculumElementType type;
+	
+	@OneToMany(targetEntity=CurriculumElementToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
+	@JoinColumn(name="fk_cur_element")
+	private Set<CurriculumElementToTaxonomyLevel> taxonomyLevels;
 	
 	@Override
 	public Long getKey() {
@@ -173,12 +183,29 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		this.description = description;
 	}
 
-	public String getStatus() {
-		return status;
+	@Override
+	public CurriculumElementStatus getStatus() {
+		if(StringHelper.containsNonWhitespace(statusString)) {
+			return CurriculumElementStatus.valueOf(statusString);
+		}
+		return null;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	@Override
+	public void setStatus(CurriculumElementStatus status) {
+		if(status == null) {
+			statusString = null;
+		} else {
+			statusString = status.name();
+		}
+	}
+
+	public String getStatusString() {
+		return statusString;
+	}
+
+	public void setStatusString(String statusString) {
+		this.statusString = statusString;
 	}
 
 	@Override
@@ -274,6 +301,18 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setCurriculum(Curriculum curriculum) {
 		this.curriculum = curriculum;
+	}
+
+	@Override
+	public Set<CurriculumElementToTaxonomyLevel> getTaxonomyLevels() {
+		if(taxonomyLevels == null) {
+			taxonomyLevels = new HashSet<>();
+		}
+		return taxonomyLevels;
+	}
+
+	public void setTaxonomyLevels(Set<CurriculumElementToTaxonomyLevel> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	@Override

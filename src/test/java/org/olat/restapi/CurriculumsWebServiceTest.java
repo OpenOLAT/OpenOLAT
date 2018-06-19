@@ -33,6 +33,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -50,12 +51,14 @@ import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.curriculum.restapi.CurriculumVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -372,6 +375,95 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(elements);
 		Assert.assertEquals(1, elements.size());
 		Assert.assertEquals(element.getKey(), elements.get(0).getKey());
+	}
+	
+	@Test
+	public void getCurriculumManagers()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		dbInstance.commit();
+		
+		curriculumService.addMember(curriculum, member, CurriculumRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("curriculummanagers").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> memberVoes = parseUserArray(response.getEntity());
+		
+		Assert.assertNotNull(memberVoes);
+		Assert.assertEquals(1, memberVoes.size());
+		Assert.assertEquals(member.getKey(), memberVoes.get(0).getKey());
+	}
+	
+	@Test
+	public void addCurriculumManager()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-11");
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		dbInstance.commit();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("curriculummanagers").path(manager.getKey().toString()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> managers = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.curriculummanager);
+		Assert.assertNotNull(managers);
+		Assert.assertEquals(1, managers.size());
+		Assert.assertEquals(manager, managers.get(0));
+	}
+	
+	@Test
+	public void removeCurriculumManager()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-23");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", null);
+		dbInstance.commit();
+		
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(curriculum, coach, CurriculumRoles.coach);
+		dbInstance.commitAndCloseSession();
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("curriculummanagers").path(manager.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> managers = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.curriculummanager);
+		Assert.assertTrue(managers.isEmpty());
+		List<Identity> coaches = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.coach);
+		Assert.assertEquals(1, coaches.size());
+	}
+	
+	protected List<UserVO> parseUserArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	protected List<CurriculumVO> parseCurriculumArray(HttpEntity entity) {

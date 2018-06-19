@@ -39,6 +39,11 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.restapi.UserVO;
@@ -63,7 +68,11 @@ public class LectureBlockWebService {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
 	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry) {
 		this.entry = entry;
@@ -203,6 +212,46 @@ public class LectureBlockWebService {
 			currentGroups.remove(defGroup);
 			lectureService.save(reloadedBlock, currentGroups);
 		}
+		return Response.ok().build();
+	}
+	
+	@GET
+	@Path("taxonomy/levels")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTaxonomyLevels() {	
+		List<TaxonomyLevel> levels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
+		TaxonomyLevelVO[] voes = new TaxonomyLevelVO[levels.size()];
+		for(int i=levels.size(); i-->0; ) {
+			voes[i] = TaxonomyLevelVO.valueOf(levels.get(i));
+		}
+		return Response.ok(voes).build();
+	}
+	
+	@PUT
+	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+		List<TaxonomyLevel> levels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
+		for(TaxonomyLevel level:levels) {
+			if(level.getKey().equals(taxonomyLevelKey)) {
+				return Response.ok().status(Status.NOT_MODIFIED).build();
+			}
+		}
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
+		if(level == null) {
+			return Response.ok(Status.NOT_FOUND).build();
+		}
+		lectureBlockToTaxonomyLevelDao.createRelation(lectureBlock, level);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
+		if(level == null) {
+			return Response.ok(Status.NOT_FOUND).build();
+		}
+		lectureBlockToTaxonomyLevelDao.deleteRelation(lectureBlock, level);
 		return Response.ok().build();
 	}
 	

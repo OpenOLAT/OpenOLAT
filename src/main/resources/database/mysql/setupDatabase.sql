@@ -472,6 +472,13 @@ create table o_re_to_group (
    fk_entry_id bigint not null,
    primary key (id)
 );
+create table o_re_to_tax_level (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_entry bigint not null,
+  fk_taxonomy_level bigint not null,
+  primary key (id)
+);
 create table o_repositoryentry_cycle (
    id bigint not null,
    creationdate datetime not null,
@@ -2210,6 +2217,14 @@ create table o_lecture_block_audit_log (
   primary key (id)
 );
 
+create table o_lecture_block_to_tax_level (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_lecture_block bigint not null,
+  fk_taxonomy_level bigint not null,
+  primary key (id)
+);
+
 -- taxonomy
 create table o_tax_taxonomy (
   id bigint not null auto_increment,
@@ -2460,6 +2475,14 @@ create table o_cur_element_type_to_type (
   primary key (id)
 );
 
+create table o_cur_element_to_tax_level (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_cur_element bigint not null,
+  fk_taxonomy_level bigint not null,
+  primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -2674,6 +2697,7 @@ alter table o_bs_secgroup ENGINE = InnoDB;
 alter table o_bs_group ENGINE = InnoDB;
 alter table o_bs_group_member ENGINE = InnoDB;
 alter table o_re_to_group ENGINE = InnoDB;
+alter table o_re_to_tax_level ENGINE = InnoDB;
 alter table o_bs_grant ENGINE = InnoDB;
 alter table o_repositoryentry_cycle ENGINE = InnoDB;
 alter table o_lti_outcome ENGINE = InnoDB;
@@ -2811,6 +2835,7 @@ alter table o_lecture_reminder ENGINE = InnoDB;
 alter table o_lecture_participant_summary ENGINE = InnoDB;
 alter table o_lecture_entry_config ENGINE = InnoDB;
 alter table o_lecture_block_audit_log ENGINE = InnoDB;
+alter table o_lecture_block_to_tax_level ENGINE = InnoDB;
 alter table o_tax_taxonomy ENGINE = InnoDB;
 alter table o_tax_taxonomy_level_type ENGINE = InnoDB;
 alter table o_tax_taxonomy_type_to_type ENGINE = InnoDB;
@@ -2827,6 +2852,7 @@ alter table o_cur_element_type ENGINE = InnoDB;
 alter table o_cur_curriculum ENGINE = InnoDB;
 alter table o_cur_curriculum_element ENGINE = InnoDB;
 alter table o_cur_element_type_to_type ENGINE = InnoDB;
+alter table o_cur_element_to_tax_level ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -2976,6 +3002,9 @@ create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
 
 alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
+
+alter table o_re_to_tax_level add constraint re_to_lev_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_re_to_tax_level add constraint re_to_lev_tax_lev_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
@@ -3351,6 +3380,9 @@ alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx for
 create index idx_lec_audit_entry_idx on o_lecture_block_audit_log(fk_entry);
 create index idx_lec_audit_ident_idx on o_lecture_block_audit_log(fk_identity);
 
+alter table o_lecture_block_to_tax_level add constraint lblock_rel_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+alter table o_lecture_block_to_tax_level add constraint lblock_rel_to_tax_lev_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+
 -- taxonomy
 alter table o_tax_taxonomy add constraint tax_to_group_idx foreign key (fk_group) references o_bs_group (id);
 
@@ -3406,6 +3438,8 @@ alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx f
 alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);
 
+alter table o_cur_element_to_tax_level add constraint cur_el_rel_to_cur_el_idx foreign key (fk_cur_element) references o_cur_curriculum_element (id);
+alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

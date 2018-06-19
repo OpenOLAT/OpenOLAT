@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
+import org.olat.modules.curriculum.ui.component.CurriculumElementStatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -111,6 +112,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status, new CurriculumElementStatusCellRenderer(getTranslator())));
+
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);

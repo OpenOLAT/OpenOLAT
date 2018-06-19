@@ -19,10 +19,13 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 
 /**
  * 
@@ -60,6 +63,18 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	public String getExternalId() {
 		return element.getExternalId();
+	}
+	
+	public Date getBeginDate() {
+		return element.getBeginDate();
+	}
+	
+	public Date getEndDate() {
+		return element.getEndDate();
+	}
+	
+	public CurriculumElementStatus getStatus() {
+		return element.getStatus();
 	}
 
 	@Override

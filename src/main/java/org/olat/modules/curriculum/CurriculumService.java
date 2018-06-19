@@ -60,6 +60,34 @@ public interface CurriculumService {
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
 	
 	/**
+	 * Get the list of members of the specified curriculum with the specified
+	 * role.
+	 * 
+	 * @param curriculum The curriculum
+	 * @param role The role (mandatory)
+	 * @return
+	 */
+	public List<Identity> getMembersIdentity(CurriculumRef curriculum, CurriculumRoles role);
+	
+	/**
+	 * Add a member to the curriculum with the specified role.
+	 * 
+	 * @param curriculum The curriculum
+	 * @param identity The identity which member
+	 * @param role The role
+	 */
+	public void addMember(Curriculum curriculum, Identity identity, CurriculumRoles role);
+	
+	/**
+	 * Remove a member of the curriculum with the specified role.
+	 * 
+	 * @param curriculum The curriculum
+	 * @param identity The identity which loose its membership
+	 * @param role The role
+	 */
+	public void removeMember(Curriculum curriculum, Identity member, CurriculumRoles role);
+	
+	/**
 	 * The list of all types available.
 	 * 
 	 * @return A list of curriculum element types
@@ -130,6 +158,14 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum);
+	
+	/**
+	 * Retrieve the children elements of the specified curriculum element.
+	 * 
+	 * @param parentElement the parent element
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement);
 	
 	/**
 	 * Return all the curriculum elements linked to the specified repository entry.

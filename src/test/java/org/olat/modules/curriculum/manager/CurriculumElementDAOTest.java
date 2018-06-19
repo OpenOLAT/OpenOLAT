@@ -236,6 +236,33 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getChildren() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-15", "Curriculum for element", "Curriculum", null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-15", "15. Element", null, null, null, null, curriculum);
+		dbInstance.commit();
+		// save 3 children
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-15-1", "15.1 Element", null, null, parentElement, null, curriculum);
+		dbInstance.commit();
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-15-2", "15.2 Element", null, null, parentElement, null, curriculum);
+		dbInstance.commit();
+		CurriculumElement element2_1 = curriculumElementDao.createCurriculumElement("Element-15-2-1", "15.2.1 Element", null, null, element2, null, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// get children of the root element
+		List<CurriculumElement> children = curriculumElementDao.getChildren(parentElement);
+		Assert.assertNotNull(children);
+		Assert.assertEquals(2, children.size());
+		Assert.assertTrue(children.contains(element1));
+		Assert.assertTrue(children.contains(element2));
+		
+		// check more
+		List<CurriculumElement> secondChildren = curriculumElementDao.getChildren(element2);
+		Assert.assertNotNull(secondChildren);
+		Assert.assertEquals(1, secondChildren.size());
+		Assert.assertTrue(secondChildren.contains(element2_1));
+	}
+	
+	@Test
 	public void moveCurriculumElement() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-7", "7. Element", null, null, null, null, curriculum);

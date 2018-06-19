@@ -43,15 +43,22 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -73,9 +80,13 @@ public class CurriculumElementsWebService {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	
 	private final Curriculum curriculum;
 	
@@ -220,6 +231,9 @@ public class CurriculumElementsWebService {
 		if(curriculumElement.getParentElementKey() != null) {
 			parentElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getParentElementKey()));
 			checkCurriculum(parentElement);
+			if(curriculumElement.getParentElementKey().equals(curriculumElement.getKey())) {
+				throw new WebApplicationException(Status.CONFLICT);
+			}
 		}
 		
 		boolean move = false;
@@ -243,7 +257,11 @@ public class CurriculumElementsWebService {
 		elementToSave.setDescription(curriculumElement.getDescription());
 		elementToSave.setExternalId(curriculumElement.getExternalId());
 		elementToSave.setManagedFlags(CurriculumElementManagedFlag.toEnum(curriculumElement.getManagedFlagsString()));
-		elementToSave.setStatus(curriculumElement.getStatus());
+		if(StringHelper.containsNonWhitespace(curriculumElement.getStatus())) {
+			elementToSave.setStatus(CurriculumElementStatus.valueOf(curriculumElement.getStatus()));
+		} else {
+			elementToSave.setStatus(null);
+		}
 		
 		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);
 		if(move) {
@@ -258,6 +276,37 @@ public class CurriculumElementsWebService {
 		if(element.getCurriculum() != null && !element.getCurriculum().getKey().equals(curriculum.getKey())) {
 			throw new WebApplicationException(Response.serverError().status(Status.CONFLICT).build());
 		}
+	}
+	
+	/**
+	 * Get the curriculum elements laying under the specified curriculum element.
+	 * 
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc Get the curriculum elements under the specified element
+	 * @response.representation.200.doc The curriculum elements under the specified element
+	 * @response.representation.200.example {@link org.olat.modules.curriculum.restapi.Examples#SAMPLE_CURRICULUMELEMENTVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The curriculum element was not found
+	 * @param curriculumElementKey The curriculum element
+	 * @return An array of curriculum elements
+	 */
+	@GET
+	@Path("{curriculumElementKey}/elements")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCurriculumElementChildren(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		List<CurriculumElement> entries = curriculumService.getCurriculumElements(curriculumElement);
+		CurriculumElementVO[] entriesVoes = new CurriculumElementVO[entries.size()];
+		for(int i=entries.size(); i-->0; ) {
+			entriesVoes[i] = CurriculumElementVO.valueOf(entries.get(i));
+		}
+		return Response.ok(entriesVoes).build();
 	}
 
 	/**
@@ -626,7 +675,7 @@ public class CurriculumElementsWebService {
 	 * 
 	 * @response.representation.200.qname {http://www.example.com}userVO
 	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The array of coaches
+	 * @response.representation.200.doc The array of curriculum managers
 	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The curriculum element not found
@@ -705,7 +754,7 @@ public class CurriculumElementsWebService {
 	}
 	
 	/**
-	 * Make the specified user a curricullum manager of the curriculum element.
+	 * Make the specified user a curriculum manager of the curriculum element.
 	 * 
 	 * @response.representation.200.doc The membership was added
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
@@ -925,6 +974,71 @@ public class CurriculumElementsWebService {
 		}
 		
 		curriculumService.removeMember(curriculumElement, identity, role);
+		return Response.ok().build();
+	}
+	
+	@GET
+	@Path("{curriculumElementKey}/taxonomy/levels")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTaxonomyLevels(@PathParam("curriculumElementKey") Long curriculumElementKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		List<TaxonomyLevel> levels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(curriculumElement);
+		TaxonomyLevelVO[] voes = new TaxonomyLevelVO[levels.size()];
+		for(int i=levels.size(); i-->0; ) {
+			voes[i] = TaxonomyLevelVO.valueOf(levels.get(i));
+		}
+		return Response.ok(voes).build();
+	}
+	
+	@PUT
+	@Path("{curriculumElementKey}/taxonomy/levels/{taxonomyLevelKey}")
+	public Response getTaxonomyLevels(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		List<TaxonomyLevel> levels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(curriculumElement);
+		for(TaxonomyLevel level:levels) {
+			if(level.getKey().equals(taxonomyLevelKey)) {
+				return Response.ok().status(Status.NOT_MODIFIED).build();
+			}
+			
+		}
+		
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
+		if(level == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement, level);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("{curriculumElementKey}/taxonomy/levels/{taxonomyLevelKey}")
+	public Response deleteTaxonomyLevel(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
+		if(level == null) {
+			return Response.ok(Status.NOT_FOUND).build();
+		}
+		curriculumElementToTaxonomyLevelDao.deleteRelation(curriculumElement, level);
 		return Response.ok().build();
 	}
 }
