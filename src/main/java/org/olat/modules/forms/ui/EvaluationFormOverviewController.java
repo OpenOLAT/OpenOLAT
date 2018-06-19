@@ -33,10 +33,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormStatistic;
+import org.olat.modules.forms.handler.EvaluationFormReportHandler;
+import org.olat.modules.forms.handler.EvaluationFormReportProvider;
+import org.olat.modules.forms.handler.RubricBarChartsHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
+import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,6 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EvaluationFormOverviewController extends BasicController {
+	
+	private static final OverviewProvider PROVIDER = new OverviewProvider();
 
 	private VelocityContainer mainVC;
 
@@ -67,7 +73,7 @@ public class EvaluationFormOverviewController extends BasicController {
 		mainVC.contextPut("averageDuration", EvaluationFormFormatter.duration(statistic.getAverageDuration()));
 		
 		if (hasRubrics(form)) {
-			Controller reportCtrl = new RubricsTotalController(ureq, getWindowControl(), form, sessions);
+			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, sessions, PROVIDER, null);
 			mainVC.put("report", reportCtrl.getInitialComponent());
 		}
 
@@ -165,6 +171,20 @@ public class EvaluationFormOverviewController extends BasicController {
 		void increaseCount() {
 			count++;
 		}
+	}
+	
+	private static final class OverviewProvider implements EvaluationFormReportProvider {
+		
+		RubricBarChartsHandler rubricBarChartsHandler = new RubricBarChartsHandler(true);
+
+		@Override
+		public EvaluationFormReportHandler getReportHandler(PageElement element) {
+			if (Rubric.TYPE.equals(element.getType())) {
+				return rubricBarChartsHandler;
+			}
+			return null;
+		}
+		
 	}
 	
 }

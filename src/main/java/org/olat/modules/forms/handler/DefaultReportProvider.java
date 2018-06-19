@@ -47,7 +47,7 @@ public class DefaultReportProvider implements EvaluationFormReportProvider {
 		handlers.put(Title.TYPE, new TitleHandler());
 		handlers.put(Spacer.TYPE, new SpacerHandler());
 		handlers.put(HTMLRaw.TYPE, new HTMLRawHandler());
-		handlers.put(Rubric.TYPE, new RubricBarChartsHandler());
+		handlers.put(Rubric.TYPE, new RubricBarChartsHandler(false));
 		handlers.put(TextInput.TYPE, new TextInputLegendTextHandler());
 		handlers.put(FileUpload.TYPE, new FileUploadListingHandler());
 		handlers.put(SingleChoice.TYPE, new SingleChoiceBarChartHandler());

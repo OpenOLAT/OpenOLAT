@@ -42,52 +42,46 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
-import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
-import org.olat.modules.forms.ui.model.RubricStatistic;
 import org.olat.modules.forms.ui.model.SliderStatistic;
 
 /**
  * 
- * Initial date: 25.05.2018<br>
+ * Initial date: 19.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RubricBarChartsController extends FormBasicController {
+public abstract class RubricBarChartsController extends FormBasicController {
 
 	private final Rubric rubric;
 	private final List<? extends EvaluationFormSessionRef> sessions;
-	
+
 	public RubricBarChartsController(UserRequest ureq, WindowControl wControl, Rubric rubric,
 			List<? extends EvaluationFormSessionRef> sessions) {
 		super(ureq, wControl, "rubric_bar_charts");
 		this.rubric = rubric;
 		this.sessions = sessions;
-		initForm(ureq);
+	}
+
+	protected abstract RubricWrapper createRubricWrapper();
+	
+	public Rubric getRubric() {
+		return rubric;
+	}
+
+	public List<? extends EvaluationFormSessionRef> getSessions() {
+		return sessions;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("rubricWrapper", createRubricWrapper());
 	}
-	
-	private RubricWrapper createRubricWrapper() {
-		RubricStatistic rubricStatistic = new RubricStatistic(rubric, sessions);
-		List<SliderWrapper> sliderWrappers = new ArrayList<>();
-		for (Slider slider: rubric.getSliders()) {
-			SliderStatistic sliderStatistic = rubricStatistic.getSliderStatistic(slider);
-			SliderWrapper sliderWrapper = createSliderWrapper(slider, sliderStatistic);
-			sliderWrappers.add(sliderWrapper);
-		}
-		RubricWrapper rubricWrapper = new RubricWrapper(rubric);
-		rubricWrapper.setSliders(sliderWrappers);
-		return rubricWrapper;
-	}
 
-	private SliderWrapper createSliderWrapper(Slider slider, SliderStatistic sliderStatistic) {
+	protected SliderWrapper createSliderWrapper(String startLabel, String endLabel, SliderStatistic sliderStatistic) {
 		String barChartName = createChartAndGetName(sliderStatistic);
 		String tableName = createTableAndGetName(sliderStatistic);
-		return new SliderWrapper(slider, barChartName, tableName);
+		return new SliderWrapper(startLabel, endLabel, barChartName, tableName);
 	}
 
 	private String createChartAndGetName(SliderStatistic sliderStatistic) {
@@ -117,6 +111,7 @@ public class RubricBarChartsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatisticCols.term));
 		DefaultFlexiColumnModel valueColumn = new DefaultFlexiColumnModel(StatisticCols.value);
 		valueColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		valueColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		valueColumn.setFooterCellRenderer(new RubricAvgRenderer(rubric));
 		columnsModel.addFlexiColumnModel(valueColumn);
 		
@@ -153,80 +148,21 @@ public class RubricBarChartsController extends FormBasicController {
 	}
 	
 	public final static class RubricWrapper {
-
-		private final Rubric rubric;
+		
+		private Rubric rubric;
 		private List<SliderWrapper> sliders;
-
+		
+		public RubricWrapper() {
+		}
+	
 		public RubricWrapper(Rubric rubric) {
 			this.rubric = rubric;
 		}
 		
-		public static int getWidthInPercent(Rubric theRubric) {
-			if(theRubric.getSliderType() != SliderType.continuous) {
-				int steps = theRubric.getSteps();
-				int stepInPercent = Math.round(100.0f / steps) - 1;
-				return stepInPercent;
-			}
-			return 0;
-		}
-		
-		public int getStepInPercent() {
-			return getWidthInPercent(rubric);
-		}
-		
-		public boolean isStepLabels() {
-			if(rubric.getStepLabels() == null || rubric.getStepLabels().isEmpty()) {
-				return false;
-			}
-			
-			List<StepLabel> stepLabels = rubric.getStepLabels();
-			for(StepLabel stepLabel:stepLabels) {
-				if(stepLabel != null && StringHelper.containsNonWhitespace(stepLabel.getLabel())) {
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		public boolean isLeftLabels() {
-			List<Slider> rubricSliders = rubric.getSliders();
-			if(rubricSliders != null && rubricSliders.size() > 0) {
-				for(Slider slider:rubricSliders) {
-					if(slider != null && StringHelper.containsNonWhitespace(slider.getStartLabel())) {
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-		
-		public boolean isRightLabels() {
-			List<Slider> rubricSliders = rubric.getSliders();
-			if(rubricSliders != null && rubricSliders.size() > 0) {
-				for(Slider slider:rubricSliders) {
-					if(slider != null && StringHelper.containsNonWhitespace(slider.getEndLabel())) {
-						return true;
-					}
-				}
-			}	
-			return false;
-		}
-		
-		public List<String> getStepLabels() {
-			if(rubric.getStepLabels() != null && rubric.getStepLabels().size() > 0) {
-				List<String> stepLabels = new ArrayList<>(rubric.getStepLabels().size());
-				for(StepLabel stepLabel:rubric.getStepLabels()) {
-					stepLabels.add(stepLabel.getLabel());
-				}
-				return stepLabels;
-			}
-			return new ArrayList<>(1);
-		}
-
 		public List<SliderWrapper> getSliders() {
 			return sliders;
 		}
-
+	
 		public void setSliders(List<SliderWrapper> sliders) {
 			this.sliders = sliders;
 		}
@@ -244,42 +180,41 @@ public class RubricBarChartsController extends FormBasicController {
 			return false;
 		}
 	}
-		
-	
+
 	public static final class SliderWrapper {
 		
-		private final Slider slider;
+		private final String startLabel;
+		private final String endLabel;
 		private final String chartName;
 		private final String tableName;
 		
-		SliderWrapper(Slider slider, String chartName, String tableName) {
+		SliderWrapper(String startLabel, String endLabel, String chartName, String tableName) {
 			super();
-			this.slider = slider;
+			this.startLabel = startLabel;
+			this.endLabel = endLabel;
 			this.chartName = chartName;
 			this.tableName = tableName;
 		}
 		
 		public String getStartLabel() {
-			String start = slider.getStartLabel();
-			return start == null ? "" : start;
+			return startLabel == null ? "" : startLabel;
 		}
 		
 		public String getEndLabel() {
-			String end = slider.getEndLabel();
-			return end == null ? "" : end;
+			return endLabel == null ? "" : endLabel;
 		}
-
+	
 		public String getChartName() {
 			return chartName;
 		}
-
+	
 		public String getTableName() {
 			return tableName;
 		}
 	}
-	
-	private final static class StatisticRow {
-		
+
+	protected final static class StatisticRow {
+			
 		private final String term;
 		private final String value;
 		
@@ -297,8 +232,8 @@ public class RubricBarChartsController extends FormBasicController {
 			return value;
 		}
 	}
-	
-	private final static class StatisticDataModel extends DefaultFlexiTableDataModel<StatisticRow>
+
+	protected final static class StatisticDataModel extends DefaultFlexiTableDataModel<StatisticRow>
 			implements FlexiTableFooterModel {
 		
 		private final String footerHeader;
@@ -339,8 +274,8 @@ public class RubricBarChartsController extends FormBasicController {
 			return col == 1? average: null;
 		}
 	}
-	
-	private enum StatisticCols implements FlexiColumnDef {
+
+	protected enum StatisticCols implements FlexiColumnDef {
 		term("rubric.report.figure.title"),
 		value("rubric.report.value.title");
 		

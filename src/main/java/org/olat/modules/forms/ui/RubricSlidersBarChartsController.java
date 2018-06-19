@@ -17,20 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.handler;
+package org.olat.modules.forms.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Rubric;
-import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.RubricSlidersBarChartsController;
-import org.olat.modules.forms.ui.RubricTotalBarChartsController;
-import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.forms.model.xml.Slider;
+import org.olat.modules.forms.ui.model.RubricStatistic;
+import org.olat.modules.forms.ui.model.SliderStatistic;
 
 /**
  * 
@@ -38,34 +36,26 @@ import org.olat.modules.portfolio.ui.editor.PageElement;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RubricBarChartsHandler implements EvaluationFormReportHandler {
+public class RubricSlidersBarChartsController extends RubricBarChartsController {
 
-	private boolean totals;
-	
-	public RubricBarChartsHandler(boolean totals) {
-		super();
-		this.totals = totals;
+	public RubricSlidersBarChartsController(UserRequest ureq, WindowControl wControl, Rubric rubric,
+			List<? extends EvaluationFormSessionRef> sessions) {
+		super(ureq, wControl, rubric, sessions);
+		initForm(ureq);
 	}
 
 	@Override
-	public String getType() {
-		return "rubricbarcharts";
-	}
-
-	@Override
-	public Component getReportComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
-		if (element instanceof Rubric) {
-			Rubric rubric = (Rubric) element;
-			Controller ctrl;
-			if (totals) {
-				ctrl = new RubricTotalBarChartsController(ureq, windowControl, rubric, sessions);
-			} else {
-				ctrl = new RubricSlidersBarChartsController(ureq, windowControl, rubric, sessions);
-			}
-			return ctrl.getInitialComponent();
+	protected RubricWrapper createRubricWrapper() {
+		RubricStatistic rubricStatistic = new RubricStatistic(getRubric(), getSessions());
+		List<SliderWrapper> sliderWrappers = new ArrayList<>();
+		for (Slider slider: getRubric().getSliders()) {
+			SliderStatistic sliderStatistic = rubricStatistic.getSliderStatistic(slider);
+			SliderWrapper sliderWrapper = createSliderWrapper(slider.getStartLabel(), slider.getEndLabel(), sliderStatistic);
+			sliderWrappers.add(sliderWrapper);
 		}
-		return null;
+		RubricWrapper rubricWrapper = new RubricWrapper(getRubric());
+		rubricWrapper.setSliders(sliderWrappers);
+		return rubricWrapper;
 	}
 
 }
