@@ -11,6 +11,7 @@
 		div, span {
 			display:inline-block;
 			text-align: center;
+			align-self: flex-end;
 		}
 	}
 	
@@ -64,7 +65,6 @@
 			.o_evaluation_no_response {
 				div.checkbox {
 					margin-top: 0px;
-					margin-left: 8px;
 				}
 			}
 		}
@@ -285,6 +285,14 @@
 			.o_evaluation_no_response {
 				margin-top: 0.7em;
 			}	
+		}
+
+		.o_slider {
+			margin-bottom: 2em;
+			
+			div {
+				padding-left: 0;
+			}
 		}
 	}
 }

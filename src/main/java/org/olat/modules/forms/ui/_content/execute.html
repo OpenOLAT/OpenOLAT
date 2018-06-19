@@ -1,5 +1,7 @@
 #if($messageNotDone)
 	<div class="o_warning">$r.translate("evaluation.in.progress")</div>
+#elseif($messageWithoutElements)
+	<div class="o_warning">$r.translate("evaluation.form.without.elements")</div>
 #else
 	#if($anonymous)
 		<div class="o_warning">$r.translate("evaluation.anonymous")</div>

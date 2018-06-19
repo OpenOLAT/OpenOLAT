@@ -50,7 +50,7 @@
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
-		<div class="$colMiddle o_evaluation_step_labels #if(!$hasRightLabels) hidden-xs #end">
+		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
 		#if($element.isStepLabels())
 			#foreach($stepLabel in $element.stepLabels)
 				<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
@@ -67,8 +67,8 @@
 	<div class="o_slider clearfix">
 		<div class="$colLeft o_evaluation_left_label #if(!$hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
 		<div class="$colMiddle ">
-			#if($element.isStepLabels() && !$hasRightLabels) 
-					<div class="o_evaluation_step_labels hidden-sm hidden-md hidden-lg">
+			#if($element.isStepLabels()) 
+					<div class="o_evaluation_step_labels o_small hidden-sm hidden-md hidden-lg">
 					#if($element.isStepLabels())
 						#foreach($stepLabel in $element.stepLabels)
 							<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
@@ -79,7 +79,7 @@
 			<div class="o_evaluation_steps">$r.render($slider.formItem)</div>
 		</div>
 		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
+			<div class="$colNoResponse text-center o_evaluation_no_response o_small">$r.render($slider.noResponseEl)</div>
 		#end
 		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
 	</div>
@@ -90,7 +90,7 @@
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
-		<div class="$colMiddle o_evaluation_step_labels #if(!$hasRightLabels) hidden-xs #end">
+		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
 		#if($element.isStepLabels())
 			#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
 			#set($marginWidth = $colWidth / 2)
@@ -115,8 +115,8 @@
 	<div class="o_slider clearfix">
 		<div class="$colLeft o_evaluation_left_label #if($hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
 		<div class="$colMiddle ">
-			#if($element.isStepLabels() && !$hasRightLabels) 
-					<div class="o_evaluation_step_labels hidden-sm hidden-md hidden-lg">
+			#if($element.isStepLabels()) 
+					<div class="o_evaluation_step_labels o_small hidden-sm hidden-md hidden-lg">
 					#if($element.isStepLabels())
 						#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
 						#set($marginWidth = $colWidth / 2)
@@ -135,7 +135,7 @@
 			<div class="o_evaluation_steps">$r.render($slider.formItem)</div>
 		</div>
 		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
+			<div class="$colNoResponse text-center o_small o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
 		#end
 		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
 	</div>

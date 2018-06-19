@@ -59,6 +59,9 @@ public class Rubric extends AbstractElement {
 	}
 
 	public ScaleType getScaleType() {
+		if (scaleType == null) {
+			scaleType = ScaleType.oneToMax;
+		}
 		return scaleType;
 	}
 

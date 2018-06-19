@@ -69,7 +69,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	
 	public EvaluationFormSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form,
 			List<? extends EvaluationFormSessionRef> sessionRefs, ReportHelper reportHelper) {
-		super(ureq, wControl, LAYOUT_HORIZONTAL);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
 		this.sessionRefs = sessionRefs;
 		this.reportHelper = reportHelper;
