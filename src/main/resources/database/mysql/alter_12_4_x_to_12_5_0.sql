@@ -5,7 +5,7 @@ alter table o_bs_identity add column deletedby varchar(128);
 
 alter table o_loggingtable drop username, drop userproperty1, drop userproperty2, drop userproperty3, drop userproperty4, drop userproperty5, drop userproperty6, drop userproperty7, drop userproperty8, drop userproperty9, drop userproperty10, drop userproperty11, drop userproperty12;
 
-update o_bs_identity set name=id where status=199;
+update o_bs_identity set name=concat('del_',id) where status=199;
 
 update o_user inner join o_bs_identity on (id=fk_identity) set u_firstname=null where status=199;
 update o_user inner join o_bs_identity on (id=fk_identity) set u_lastname=null where status=199;
