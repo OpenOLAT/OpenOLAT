@@ -35,7 +35,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
-import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -304,10 +304,10 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
-		List<CurriculumElementMember> members = curriculumElementDao.getMembers(element);
+		List<CurriculumMember> members = curriculumElementDao.getMembers(element);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
-		CurriculumElementMember member = members.get(0);
+		CurriculumMember member = members.get(0);
 		Assert.assertEquals(supervisor, member.getIdentity());
 		Assert.assertEquals(CurriculumRoles.curriculummanager.name(), member.getRole());
 	}

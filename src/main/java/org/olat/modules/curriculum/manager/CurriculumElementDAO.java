@@ -46,8 +46,8 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
-import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -264,7 +264,7 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementMember> getMembers(CurriculumElementRef element) {
+	public List<CurriculumMember> getMembers(CurriculumElementRef element) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident, membership.role, membership.inheritanceModeString from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
@@ -276,7 +276,7 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("elementKey", element.getKey())
 				.getResultList();
-		List<CurriculumElementMember> members = new ArrayList<>(objects.size());
+		List<CurriculumMember> members = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			Identity identity = (Identity)object[0];
 			String role = (String)object[1];
@@ -285,7 +285,7 @@ public class CurriculumElementDAO {
 			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
 				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
 			}
-			members.add(new CurriculumElementMember(identity, role, inheritanceMode));
+			members.add(new CurriculumMember(identity, role, inheritanceMode));
 		}
 		return members;
 	}

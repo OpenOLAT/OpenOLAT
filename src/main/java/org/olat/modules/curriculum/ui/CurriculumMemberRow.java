@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
-import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -33,12 +33,12 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementUserRow extends UserPropertiesRow {
+public class CurriculumMemberRow extends UserPropertiesRow {
 	
 	private final String role;
 	private final GroupMembershipInheritance inheritanceMode;
 	
-	public CurriculumElementUserRow(CurriculumElementMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public CurriculumMemberRow(CurriculumMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member.getIdentity(), userPropertyHandlers, locale);
 		role = member.getRole();
 		inheritanceMode = member.getInheritanceMode();

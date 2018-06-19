@@ -64,6 +64,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
@@ -230,6 +231,16 @@ public class EditLectureBlockController extends FormBasicController {
 			}
 		} else if(groupKeys.length == 1) {
 			groupsEl.select(groupKeys[0], true);
+		}
+		
+		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);
+		if(!levels.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			for(TaxonomyLevel level:levels) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(level.getDisplayName());
+			}
+			uifactory.addStaticTextElement("lecture.taxonomy", sb.toString(), formLayout);
 		}
 
 		String description = lectureBlock == null ? "" : lectureBlock.getDescription();

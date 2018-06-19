@@ -63,7 +63,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// check that there is not an other member with an other role
 		List<Identity> owners = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.owner);
 		Assert.assertTrue(owners.isEmpty());
-		
 	}
+	
+	
 
 }

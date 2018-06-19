@@ -28,10 +28,11 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -60,6 +61,14 @@ public interface CurriculumService {
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
 	
 	/**
+	 * Get the list of members of the specified curriculum with their roles.
+	 * 
+	 * @param curriculum The curriculum
+	 * @return A list of memberships
+	 */
+	public List<CurriculumMember> getMembers(CurriculumRef curriculum);
+	
+	/**
 	 * Get the list of members of the specified curriculum with the specified
 	 * role.
 	 * 
@@ -86,6 +95,15 @@ public interface CurriculumService {
 	 * @param role The role
 	 */
 	public void removeMember(Curriculum curriculum, Identity member, CurriculumRoles role);
+	
+	/**
+	 * Remove all memberships of the curriculum for the specified member.
+	 * The method doesn't propagate to the elements of the curriculum.
+	 *  
+	 * @param curriculum The curriculum
+	 * @param member The identity which loose its memberships
+	 */
+	public void removeMember(Curriculum curriculum, IdentityRef member);
 	
 	/**
 	 * The list of all types available.
@@ -209,7 +227,7 @@ public interface CurriculumService {
 	 * @param element The curriculum element
 	 * @return The list of memberships
 	 */
-	public List<CurriculumElementMember> getMembers(CurriculumElement element);
+	public List<CurriculumMember> getMembers(CurriculumElement element);
 	
 	/**
 	 * The list of members of the specified curriculum element with the specified role.
@@ -292,6 +310,14 @@ public interface CurriculumService {
 	
 
 	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
+	
+	/**
+	 * The list of taxonomy levels of the curriculum element.
+	 * 
+	 * @param element The curriculum element
+	 * @return A list of taxonomy levels
+	 */
+	public List<TaxonomyLevel> getTaxonomy(CurriculumElement element);
 	
 	/**
 	 * Remove from the list the curriculum elements which are not manageable with the specified roles.

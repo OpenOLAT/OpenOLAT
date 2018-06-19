@@ -31,8 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumUserManagementTableModel extends DefaultFlexiTableDataModel<CurriculumElementUserRow>
-implements SortableFlexiTableDataModel<CurriculumElementUserRow> {
+public class CurriculumUserManagementTableModel extends DefaultFlexiTableDataModel<CurriculumMemberRow>
+implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 	
 	public CurriculumUserManagementTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -45,14 +45,14 @@ implements SortableFlexiTableDataModel<CurriculumElementUserRow> {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CurriculumElementUserRow member = getObject(row);
+		CurriculumMemberRow member = getObject(row);
 		return getValueAt(member, col);
 	}
 
 	@Override
-	public Object getValueAt(CurriculumElementUserRow row, int col) {
-		if(col >= 0 && col < MemberCols.values().length) {
-			switch(MemberCols.values()[col]) {
+	public Object getValueAt(CurriculumMemberRow row, int col) {
+		if(col >= 0 && col < CurriculumMemberCols.values().length) {
+			switch(CurriculumMemberCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case role: return row.getRole();
 				default : return "ERROR";
@@ -64,17 +64,17 @@ implements SortableFlexiTableDataModel<CurriculumElementUserRow> {
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<CurriculumElementUserRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<CurriculumMemberRow> createCopyWithEmptyList() {
 		return new CurriculumUserManagementTableModel(getTableColumnModel());
 	}
 	
-	public enum MemberCols implements FlexiSortableColumnDef {
+	public enum CurriculumMemberCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
 		role("table.header.role");
 		
 		private final String i18nKey;
 		
-		private MemberCols(String i18nKey) {
+		private CurriculumMemberCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

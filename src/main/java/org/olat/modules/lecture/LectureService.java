@@ -33,6 +33,7 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -455,6 +456,8 @@ public interface LectureService {
 	public void addTeacher(LectureBlock block, Identity teacher);
 	
 	public void removeTeacher(LectureBlock block, Identity teacher);
+	
+	public List<TaxonomyLevel> getTaxonomy(LectureBlockRef lectureBlock);
 	
 	/**
 	 * The method will not set the date of admission.

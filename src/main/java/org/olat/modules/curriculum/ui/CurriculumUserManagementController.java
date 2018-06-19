@@ -49,8 +49,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
@@ -63,11 +63,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 9 mai 2018<br>
+ * Initial date: 19 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementUserManagementController extends FormBasicController {
+public class CurriculumUserManagementController extends FormBasicController {
 
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
@@ -84,7 +84,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private RoleListController roleListCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	
-	private final CurriculumElement curriculumElement;
+	private final Curriculum curriculum;
 	private final boolean membersManaged;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -96,17 +96,16 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	
-	public CurriculumElementUserManagementController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public CurriculumUserManagementController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
 		super(ureq, wControl, "curriculum_element_user_mgmt");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		this.curriculumElement = curriculumElement;
+		this.curriculum = curriculum;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
-		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
+		membersManaged = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
 
 		initForm(ureq);
 		loadModel(true);
@@ -145,7 +144,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	}
 	
 	private void loadModel(boolean reset) {
-		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement);
+		List<CurriculumMember> members = curriculumService.getMembers(curriculum);
 		List<CurriculumMemberRow> rows = new ArrayList<>(members.size());
 		for(CurriculumMember member:members) {
 			rows.add(new CurriculumMemberRow(member, userPropertyHandlers, getLocale()));
@@ -239,7 +238,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private void doRemove(List<CurriculumMemberRow> membersToRemove) {
 		for(CurriculumMemberRow memberToRemove:membersToRemove) {
-			curriculumService.removeMember(curriculumElement, new IdentityRefImpl(memberToRemove.getIdentityKey()));
+			curriculumService.removeMember(curriculum, new IdentityRefImpl(memberToRemove.getIdentityKey()));
 		}
 		loadModel(true);
 	}
@@ -249,7 +248,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		removeAsListenerAndDispose(roleListCtrl);
 		
 		String title = translate("add.member");
-		roleListCtrl = new RoleListController(ureq, getWindowControl(), CurriculumRoles.values());
+		roleListCtrl = new RoleListController(ureq, getWindowControl(), new CurriculumRoles[] { CurriculumRoles.curriculummanager });
 		listenTo(roleListCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);
@@ -272,7 +271,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private void doAddMember(List<Identity> identitiesToAdd, CurriculumRoles role) {
 		for(Identity identityToAdd:identitiesToAdd) {
-			curriculumService.addMember(curriculumElement, identityToAdd, role);
+			curriculumService.addMember(curriculum, identityToAdd, role);
 		}
 		loadModel(true);
 	}

@@ -52,9 +52,9 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
-import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -160,7 +160,8 @@ public class CurriculumElementsWebService {
 	@PUT
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putCurriculumElement(CurriculumElementVO curriculumElement) {
+	public Response putCurriculumElement(CurriculumElementVO curriculumElement)
+	throws WebApplicationException {
 		CurriculumElement savedElement = saveCurriculumElement(curriculumElement);
 		return Response.ok(CurriculumElementVO.valueOf(savedElement)).build();
 	}
@@ -183,7 +184,8 @@ public class CurriculumElementsWebService {
 	@POST
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postCurriculumElement(CurriculumElementVO curriculumElement) {
+	public Response postCurriculumElement(CurriculumElementVO curriculumElement)
+	throws WebApplicationException {
 		CurriculumElement savedElement = saveCurriculumElement(curriculumElement);
 		return Response.ok(CurriculumElementVO.valueOf(savedElement)).build();
 	}
@@ -209,7 +211,8 @@ public class CurriculumElementsWebService {
 	@Path("{curriculumElementKey}")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO curriculumElement) {
+	public Response postCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO curriculumElement)
+	throws WebApplicationException {
 		if(curriculumElement.getKey() == null) {
 			curriculumElement.setKey(curriculumElementKey);
 		} else if(!curriculumElementKey.equals(curriculumElement.getKey())) {
@@ -221,7 +224,8 @@ public class CurriculumElementsWebService {
 	}
 	
 	
-	private CurriculumElement saveCurriculumElement(CurriculumElementVO curriculumElement) {
+	private CurriculumElement saveCurriculumElement(CurriculumElementVO curriculumElement)
+	throws WebApplicationException {
 		CurriculumElement elementToSave = null;
 		CurriculumElementType type = null;
 		if(curriculumElement.getCurriculumElementTypeKey() != null) {
@@ -502,9 +506,9 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		List<CurriculumElementMember> members = curriculumService.getMembers(curriculumElement);
+		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement);
 		List<CurriculumElementMemberVO> voList = new ArrayList<>(members.size());
-		for(CurriculumElementMember member:members) {
+		for(CurriculumMember member:members) {
 			voList.add(CurriculumElementMemberVO.valueOf(member));
 		}
 		return Response.ok(voList.toArray(new CurriculumElementMemberVO[voList.size()])).build();

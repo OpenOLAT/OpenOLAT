@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -147,6 +148,16 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		if(!typeFound) {
 			curriculumElementTypeEl.select(typeKeys[0], true);
+		}
+		
+		List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
+		if(!levels.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			for(TaxonomyLevel level:levels) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(level.getDisplayName());
+			}
+			uifactory.addStaticTextElement("curriculum.element.taxonomy", sb.toString(), formLayout);
 		}
 		
 		Date begin = element == null ? null : element.getBeginDate();

@@ -73,7 +73,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private EditCurriculumController newCurriculumCtrl;
-	private EditCurriculumController editCurriculumCtrl;
+	private EditCurriculumOverviewController editCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private int counter = 0;
@@ -170,10 +170,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(editCurriculumCtrl);
 		removeAsListenerAndDispose(newCurriculumCtrl);
 		removeAsListenerAndDispose(cmc);
-		editCurriculumCtrl = null;
 		newCurriculumCtrl = null;
 		cmc = null;
 	}
@@ -225,18 +223,15 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void doEditCurriculum(UserRequest ureq, CurriculumRow row) {
-		if(editCurriculumCtrl != null) return;
+		removeAsListenerAndDispose(editCurriculumCtrl);
 		
 		Curriculum curriculum = curriculumService.getCurriculum(row);
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			editCurriculumCtrl = new EditCurriculumController(ureq, getWindowControl(), curriculum);
+			editCurriculumCtrl = new EditCurriculumOverviewController(ureq, getWindowControl(), curriculum);
 			listenTo(editCurriculumCtrl);
-			
-			cmc = new CloseableModalController(getWindowControl(), "close", editCurriculumCtrl.getInitialComponent(), true, translate("edit"));
-			listenTo(cmc);
-			cmc.activate();
+			toolbarPanel.pushController(row.getDisplayName(), editCurriculumCtrl);
 		}
 	}
 	

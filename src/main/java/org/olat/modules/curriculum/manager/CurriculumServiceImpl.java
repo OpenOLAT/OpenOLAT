@@ -49,10 +49,11 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -91,6 +92,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
+	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
+	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
 
 	@Override
@@ -106,6 +109,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public Curriculum updateCurriculum(Curriculum curriculum) {
 		return curriculumDao.update(curriculum);
+	}
+	
+	@Override
+	public List<CurriculumMember> getMembers(CurriculumRef curriculum) {
+		return curriculumDao.getMembers(curriculum);
 	}
 
 	@Override
@@ -123,6 +131,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public void removeMember(Curriculum curriculum, Identity member, CurriculumRoles role) {
 		groupDao.removeMembership(curriculum.getGroup(), member, role.name());
+	}
+
+	@Override
+	public void removeMember(Curriculum curriculum, IdentityRef member) {
+		groupDao.removeMembership(curriculum.getGroup(), member);
 	}
 
 	@Override
@@ -236,7 +249,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
-	public List<CurriculumElementMember> getMembers(CurriculumElement element) {
+	public List<CurriculumMember> getMembers(CurriculumElement element) {
 		return curriculumElementDao.getMembers(element);
 	}
 	
@@ -347,6 +360,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
 		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
+	}
+
+	@Override
+	public List<TaxonomyLevel> getTaxonomy(CurriculumElement element) {
+		return curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(element);
 	}
 
 	@Override

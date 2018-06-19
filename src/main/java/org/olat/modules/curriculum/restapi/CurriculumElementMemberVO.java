@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.olat.modules.curriculum.model.CurriculumElementMember;
+import org.olat.modules.curriculum.model.CurriculumMember;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class CurriculumElementMemberVO {
 		//
 	}
 	
-	public static final CurriculumElementMemberVO valueOf(CurriculumElementMember membership) {
+	public static final CurriculumElementMemberVO valueOf(CurriculumMember membership) {
 		CurriculumElementMemberVO vo = new CurriculumElementMemberVO();
 		vo.setIdentityKey(membership.getIdentity().getKey());
 		vo.setRole(membership.getRole());
