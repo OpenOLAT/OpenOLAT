@@ -30,5 +30,6 @@ src/main/java/olat.local.properties
 */target
 *.sw?
 */.classpath
+
 */.project
 
