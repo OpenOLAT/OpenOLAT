@@ -85,7 +85,7 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 	private Date creationDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=true, updatable=false)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
 	@Column(name="g_role", nullable=false, insertable=true, updatable=false)

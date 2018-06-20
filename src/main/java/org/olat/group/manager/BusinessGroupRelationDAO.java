@@ -295,6 +295,7 @@ public class BusinessGroupRelationDAO {
 				.getResultList();
 		for(GroupMembershipImpl membership:memberships) {
 			membership.setLastModified(new Date());
+			dbInstance.getCurrentEntityManager().merge(membership);
 		}
 	}
 	
