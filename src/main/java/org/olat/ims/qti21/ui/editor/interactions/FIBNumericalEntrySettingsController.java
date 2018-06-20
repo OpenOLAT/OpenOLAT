@@ -252,11 +252,11 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 					BigDecimal solution = new BigDecimal(solutionEl.getValue());
 					BigDecimal upperBound = new BigDecimal(upperToleranceEl.getValue());
 					BigDecimal lowerBound = new BigDecimal(lowerToleranceEl.getValue());
-					if(upperBound.subtract(solution).compareTo(new BigDecimal("0.0")) < 0) {
+					if(upperBound.subtract(solution).compareTo(new BigDecimal("0.0")) <= 0) {
 						upperToleranceEl.setErrorKey("error.upper.tolerance", null);
 						allOk &= false;
 					}
-					if(solution.subtract(lowerBound).compareTo(new BigDecimal("0.0")) < 0) {
+					if(solution.subtract(lowerBound).compareTo(new BigDecimal("0.0")) <= 0) {
 						lowerToleranceEl.setErrorKey("error.lower.tolerance", null);
 						allOk &= false;
 					}
