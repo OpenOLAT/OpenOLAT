@@ -61,11 +61,11 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 		Range neutralRange = new Range(rubric.getLowerBoundNeutral(), rubric.getUpperBoundNeutral());
 		Range sufficientRange = new Range(rubric.getLowerBoundSufficient(), rubric.getUpperBoundSufficient());
 		target.append("<div class='o_rubric_avg ");
-		if (insufficientRange.getLower() <= value && value < insufficientRange.getUpper()) {
+		if (insufficientRange.getLower() <= value && value <= insufficientRange.getUpper()) {
 			target.append("o_rubric_insufficient");
-		} else if (neutralRange.getLower() <= value && value < neutralRange.getUpper()) {
+		} else if (neutralRange.getLower() <= value && value <= neutralRange.getUpper()) {
 			target.append("o_rubric_neutral");
-		} else if (sufficientRange.getLower() <= value && value < sufficientRange.getUpper()) {
+		} else if (sufficientRange.getLower() <= value && value <= sufficientRange.getUpper()) {
 			target.append("o_rubric_sufficient");
 		}
 		target.append("'>");
