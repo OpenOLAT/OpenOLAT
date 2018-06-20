@@ -859,6 +859,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	
 	@Override
 	public List<TaxonomyLevel> getTaxonomy(LectureBlockRef lectureBlock) {
+		if(lectureBlock == null || lectureBlock.getKey() == null) return Collections.emptyList();
 		return lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
 	}
 
