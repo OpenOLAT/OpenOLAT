@@ -286,6 +286,16 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		return true;
 	}
 	
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
+		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
+		evaluationFormManager.deleteSurvey(survey);
+	}
+
 	public static RepositoryEntry getEvaluationForm(ModuleConfiguration config) {
 		if (config == null) return null;
 		
