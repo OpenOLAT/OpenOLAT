@@ -22,6 +22,7 @@ package org.olat.core.util.openxml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.openxml.workbookstyle.Alignment;
 import org.olat.core.util.openxml.workbookstyle.Border;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.core.util.openxml.workbookstyle.Fill;
@@ -63,6 +64,7 @@ public class OpenXMLWorkbookStyles {
 	private final CellStyle correctStyle;
 	private final CellStyle percentStyle;
 	private final CellStyle lightGrayStyle;
+	private final CellStyle topAlignStyle;
 
 	public OpenXMLWorkbookStyles() {
 		standardFont = new Font(fonts.size(), "12", "1", "Calibri", "2", "minor", FontStyle.none);
@@ -84,24 +86,27 @@ public class OpenXMLWorkbookStyles {
 		borderRight = new Border(borders.size(), "thin", null, null, null);
 		borders.add(borderRight);
 		
-		standardStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, noBorder, null, null);
+		standardStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, noBorder, null, null, null, null);
 		cellXfs.add(standardStyle);
-		borderRightStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, borderRight, null, null);
+		borderRightStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, borderRight, null, null, null, null);
 		cellXfs.add(borderRightStyle);
-		dateStyle = new CellStyle(cellXfs.size(), DATE_FORMAT, standardFont, noneFile, noBorder, null, "1");
+		dateStyle = new CellStyle(cellXfs.size(), DATE_FORMAT, standardFont, noneFile, noBorder, null, "1", null, null);
 		cellXfs.add(dateStyle);
-		dateTimeStyle = new CellStyle(cellXfs.size(), DATE_TIME_FORMAT, standardFont, noneFile, noBorder, null, "1");
+		dateTimeStyle = new CellStyle(cellXfs.size(), DATE_TIME_FORMAT, standardFont, noneFile, noBorder, null, "1", null, null);
 		cellXfs.add(dateTimeStyle);
-		durationStyle = new CellStyle(cellXfs.size(), TIME_FORMAT, standardFont, noneFile, borderRight, null, "1");
+		durationStyle = new CellStyle(cellXfs.size(), TIME_FORMAT, standardFont, noneFile, borderRight, null, "1", null, null);
 		cellXfs.add(durationStyle);
-		headerStyle = new CellStyle(cellXfs.size(), "0", boldFont, noneFile, noBorder, null, null);
+		headerStyle = new CellStyle(cellXfs.size(), "0", boldFont, noneFile, noBorder, null, null, null, null);
 		cellXfs.add(headerStyle);
-		correctStyle = new CellStyle(cellXfs.size(), "0", boldFont, correctFill, noBorder, null, null);
+		correctStyle = new CellStyle(cellXfs.size(), "0", boldFont, correctFill, noBorder, null, null, null, null);
 		cellXfs.add(correctStyle);
-		percentStyle = new CellStyle(cellXfs.size(), PERCENT_FORMAT, standardFont, noneFile, borderRight, null, "1");
+		percentStyle = new CellStyle(cellXfs.size(), PERCENT_FORMAT, standardFont, noneFile, borderRight, null, "1", null, null);
 		cellXfs.add(percentStyle);
-		lightGrayStyle = new CellStyle(cellXfs.size(), "0", standardFont, lightGrayFill, borderRight, null, null);
+		lightGrayStyle = new CellStyle(cellXfs.size(), "0", standardFont, lightGrayFill, borderRight, null, null, null, null);
 		cellXfs.add(lightGrayStyle);
+		Alignment topAlign = new Alignment(Alignment.TOP, "1");
+		topAlignStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, noBorder, null, null, topAlign, "1");
+		cellXfs.add(topAlignStyle);
 	}
 	
 	public CellStyle getBorderRightStyle() {
@@ -144,6 +149,10 @@ public class OpenXMLWorkbookStyles {
 		return lightGrayStyle;
 	}
 	
+	public CellStyle getTopAlignStyle() {
+		return topAlignStyle;
+	}
+
 	public List<Font> getFonts() {
 		return fonts;
 	}

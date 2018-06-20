@@ -702,10 +702,24 @@ public class OpenXMLWorkbook implements Closeable {
 		if(style.getFill().getIndex() > 0) {
 			writer.writeAttribute("applyFill", "1");
 		}
-		
 		if(StringHelper.containsNonWhitespace(style.getApplyNumberFormat())) {
 			writer.writeAttribute("applyNumberFormat", style.getApplyNumberFormat());
-		}	
+		}
+		if(StringHelper.containsNonWhitespace(style.getApplyAlignment())) {
+			writer.writeAttribute("applyalignment", style.getApplyAlignment());
+		}
+		
+		if(style.getAlignment() != null) {
+			writer.writeStartElement("alignment");
+			if(StringHelper.containsNonWhitespace(style.getAlignment().getVertical())) {
+				writer.writeAttribute("vertical", style.getAlignment().getVertical());
+			}
+			if(StringHelper.containsNonWhitespace(style.getAlignment().getWraptext())) {
+				writer.writeAttribute("wraptext", style.getAlignment().getWraptext());
+			}
+			writer.writeEndElement();
+		}
+		
 		writer.writeEndElement();
 	}
 		

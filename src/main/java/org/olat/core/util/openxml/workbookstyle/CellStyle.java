@@ -35,13 +35,14 @@ public class CellStyle extends IndexedObject {
 	private Border border;
 	private String applyBorder;
 	private String applyNumberFormat;
+	private Alignment alignment;
+	private String applyAlignment;
 
-	
 	public CellStyle(int index) {
 		super(index);
 	}
 	
-	public CellStyle(int index, String numFmtId, Font font, Fill fill, Border border, String applyBorder, String applyNumberFormat) {
+	public CellStyle(int index, String numFmtId, Font font, Fill fill, Border border, String applyBorder, String applyNumberFormat, Alignment alignment, String applyAlignment) {
 		super(index);
 		this.numFmtId = numFmtId;
 		this.font = font;
@@ -49,6 +50,8 @@ public class CellStyle extends IndexedObject {
 		this.border = border;
 		this.applyBorder = applyBorder;
 		this.applyNumberFormat = applyNumberFormat;
+		this.applyAlignment = applyAlignment;
+		this.alignment = alignment;
 	}
 	
 	public Font getFont() {
@@ -105,5 +108,21 @@ public class CellStyle extends IndexedObject {
 
 	public void setApplyNumberFormat(String applyNumberFormat) {
 		this.applyNumberFormat = applyNumberFormat;
+	}
+
+	public String getApplyAlignment() {
+		return applyAlignment;
+	}
+
+	public void setApplyAlignment(String applyAlignment) {
+		this.applyAlignment = applyAlignment;
+	}
+
+	public Alignment getAlignment() {
+		return alignment;
+	}
+
+	public void setAlignment(Alignment alignment) {
+		this.alignment = alignment;
 	}
 }

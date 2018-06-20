@@ -17,42 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
-
-import org.olat.basesecurity.GroupMembershipInheritance;
-import org.olat.core.id.Identity;
+package org.olat.core.util.openxml.workbookstyle;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * Initial date: 20 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMember {
+public class Alignment {
 	
-	private final Identity identity;
-	private final String role;
-	private final GroupMembershipInheritance inheritanceMode;
+	public static final String TOP = "top";
 	
-	public CurriculumMember(Identity identity, String role) {
-		this(identity, role, GroupMembershipInheritance.none);
-	}
+	private final String vertical;
+	private final String wraptext;
 	
-	public CurriculumMember(Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
-		this.identity = identity;
-		this.role = role;
-		this.inheritanceMode = inheritanceMode;
+	public Alignment(String vertical, String wraptext) {
+		this.vertical = vertical;
+		this.wraptext = wraptext;
 	}
 
-	public Identity getIdentity() {
-		return identity;
+	public String getVertical() {
+		return vertical;
 	}
 
-	public String getRole() {
-		return role;
-	}
-
-	public GroupMembershipInheritance getInheritanceMode() {
-		return inheritanceMode;
+	public String getWraptext() {
+		return wraptext;
 	}
 }

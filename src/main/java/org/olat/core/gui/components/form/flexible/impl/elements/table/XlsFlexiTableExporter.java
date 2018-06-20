@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.StringOutput;
@@ -113,6 +114,8 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 					dataRow.addCell(col, (Date)value, workbook.getStyles().getDateStyle());
 				} else if(value instanceof Number) {
 					dataRow.addCell(col, (Number)value, null);
+				} else if(value instanceof FormItem) {
+					// do nothing
 				} else {
 					StringOutput so = StringOutputPool.allocStringBuilder(1000);
 					cd.getCellRenderer().render(null, so, value, row, ftC, ubu, translator);
@@ -123,7 +126,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 					if(StringHelper.containsNonWhitespace(cellValue)) {
 						cellValue = StringEscapeUtils.unescapeHtml(cellValue);
 					}
-					dataRow.addCell(col, cellValue, null);
+					dataRow.addCell(col, cellValue, workbook.getStyles().getTopAlignStyle());
 				}
 			}
 		} catch (Exception e) {
