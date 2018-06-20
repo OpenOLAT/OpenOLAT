@@ -51,7 +51,7 @@ public class SingleChoiceLegendTextHandler implements EvaluationFormReportHandle
 			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
-			LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, sessions);
+			LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, sessions, reportHelper);
 			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return ctrl.getInitialComponent();
 		}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
@@ -61,17 +61,17 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private FlexiTableElement tableEl;
 
 	private final Form form;
-	private final List<? extends EvaluationFormSessionRef> sessionRefs;
+	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
 	public EvaluationFormSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessionRefs, ReportHelper reportHelper) {
+			List<EvaluationFormSession> sessions, ReportHelper reportHelper) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
-		this.sessionRefs = sessionRefs;
+		this.sessions = sessions;
 		this.reportHelper = reportHelper;
 		initForm(ureq);
 	}
@@ -86,7 +86,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("report.session.quickview",
 				"<i class='o_icon o_icon_quickview'> </i>", CMD_QUICKVIEW));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SessionSelectionCols.submissionDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SessionSelectionCols.participant));
 		
 		if (SessionInformationsUIFactory.hasInformationType(form, InformationType.USER_FIRSTNAME)) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(SessionSelectionCols.firstname);
@@ -122,9 +122,25 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
-		SessionSelectionDataSource dataSource = new SessionSelectionDataSource(sessionRefs);
-		dataModel = new SessionSelectionModel(dataSource, columnsModel, reportHelper);
+		dataModel = new SessionSelectionModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", dataModel, 25, true, getTranslator(), formLayout);
+		loadModel();
+	}
+
+	private void loadModel() {
+		List<SessionSelectionRow> rows = new ArrayList<>();
+		int count = 1;
+		sessions.sort(reportHelper.getComparator());
+		for (EvaluationFormSession session: sessions) {
+			String participant = new StringBuilder()
+					.append(translate("report.session.participant"))
+					.append(" ")
+					.append(count++)
+					.toString();
+			SessionSelectionRow row = new SessionSelectionRow(participant , session);
+			rows.add(row);
+		}
+		dataModel.setObjects(rows);
 	}
 
 	@Override

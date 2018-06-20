@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class ReportHelper {
 	private final Legend anonymousLegend;
 	private final ColorGenerator colorGenerator;
 	private final LegendNameGenerator legendNameGenerator;
+	private final Comparator<EvaluationFormSession> comparator;
 	
 	private final Map<EvaluationFormSession, Legend> sessionKeyToData = new HashMap<>();
 	private final Map<EvaluationFormParticipation, Legend> participationToLegend = new HashMap<>();
@@ -83,8 +85,17 @@ public class ReportHelper {
 		} else {
 			this.legendNameGenerator = new NullNameGenerator();
 		}
+		if (builder.comparator != null) {
+			this.comparator = builder.comparator;
+		} else {
+			this.comparator = new KeyComparator();
+		}
 	}
 	
+	public Comparator<EvaluationFormSession> getComparator() {
+		return comparator;
+	}
+
 	Legend getLegend(EvaluationFormSession session) {
 		Legend legend = sessionKeyToData.get(session);
 		if (legend == null && session.getParticipation() != null) {
@@ -142,6 +153,7 @@ public class ReportHelper {
 		private String anonymousColor = null;
 		private boolean hasColors = false;
 		private LegendNameGenerator legendNameGenerator;
+		private Comparator<EvaluationFormSession> comparator;
 		
 		Builder(Locale locale) {
 			this.locale = locale;
@@ -164,6 +176,11 @@ public class ReportHelper {
 		
 		public Builder withLegendNameGenrator(LegendNameGenerator legendNameGenerator) {
 			this.legendNameGenerator = legendNameGenerator;
+			return this;
+		}
+
+		public Builder withSessionComparator(Comparator<EvaluationFormSession> comparator) {
+			this.comparator = comparator;
 			return this;
 		}
 		
@@ -195,6 +212,7 @@ public class ReportHelper {
 		boolean isAnonymous() {
 			return anonymous;
 		}
+
 	}
 	
 	private final static class NullNameGenerator implements LegendNameGenerator {
@@ -202,6 +220,17 @@ public class ReportHelper {
 		@Override
 		public String getName(EvaluationFormSession session, Identity identity) {
 			return null;
+		}
+
+	}
+	
+	private final static class KeyComparator implements Comparator<EvaluationFormSession> {
+
+		@Override
+		public int compare(EvaluationFormSession o1, EvaluationFormSession o2) {
+			long key1 = o1 != null? o1.getKey(): -1;
+			long key2 = o2 != null? o2.getKey(): -1;
+			return Long.compare(key1, key2);
 		}
 
 	}

@@ -19,11 +19,14 @@
  */
 package org.olat.modules.forms.ui;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.util.StringHelper;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -31,46 +34,47 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SessionSelectionModel extends DefaultFlexiTableDataSourceModel<SessionSelectionRow> {
+public class SessionSelectionModel extends DefaultFlexiTableDataModel<SessionSelectionRow>
+		implements SortableFlexiTableDataModel<SessionSelectionRow> {
 	
-	private final ReportHelper reportHelper;
-	
-	public SessionSelectionModel(FlexiTableDataSourceDelegate<SessionSelectionRow> dataSource,
-			FlexiTableColumnModel columnsModel, ReportHelper reportHelper) {
-		super(dataSource, columnsModel);
-		this.reportHelper = reportHelper;
+	public SessionSelectionModel(FlexiTableColumnModel columnsModel) {
+		super(columnsModel);
+	}
+
+	@Override
+	public void sort(SortKey sortKey) {
+		List<SessionSelectionRow> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, null).sort();
+		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		SessionSelectionRow sessionSelectionRow = getObject(row);
+		return getValueAt(sessionSelectionRow, col);
+	}
+
+	@Override
+	public Object getValueAt(SessionSelectionRow row, int col) {
 		switch(SessionSelectionCols.values()[col]) {
-			case submissionDate: return sessionSelectionRow.getSession().getSubmissionDate();
-			case firstname: return sessionSelectionRow.getSession().getFirstname();
-			case lastname: {
-				boolean hasFirstname = StringHelper.containsNonWhitespace(sessionSelectionRow.getSession().getFirstname());
-				String lastname = sessionSelectionRow.getSession().getLastname();
-				boolean hasLastname = StringHelper.containsNonWhitespace(lastname);
-				return hasFirstname || hasLastname
-						? lastname
-						: reportHelper.getLegend(sessionSelectionRow.getSession()).getName();
-			}
-			case email: return sessionSelectionRow.getSession().getEmail();
-			case age: return sessionSelectionRow.getSession().getAge();
-			case gender: return sessionSelectionRow.getSession().getGender();
-			case orgUnit: return sessionSelectionRow.getSession().getOrgUnit();
-			case studySubject: return sessionSelectionRow.getSession().getStudySubject();
+			case participant: return row.getParticipant();
+			case firstname: return row.getSession().getFirstname();
+			case lastname: return row.getSession().getLastname();
+			case email: return row.getSession().getEmail();
+			case age: return row.getSession().getAge();
+			case gender: return row.getSession().getGender();
+			case orgUnit: return row.getSession().getOrgUnit();
+			case studySubject: return row.getSession().getStudySubject();
 			default: return null;
 		}	
 	}
 
 	@Override
-	public DefaultFlexiTableDataSourceModel<SessionSelectionRow> createCopyWithEmptyList() {
-		return new SessionSelectionModel(getSourceDelegate(),  getTableColumnModel(), reportHelper);
+	public DefaultFlexiTableDataModel<SessionSelectionRow> createCopyWithEmptyList() {
+		return new SessionSelectionModel(getTableColumnModel());
 	}
 	
 	public enum SessionSelectionCols implements FlexiSortableColumnDef {
-		submissionDate("report.session.submission.date"),
+		participant("report.session.participant"),
 		firstname("report.session.dummy"),
 		lastname("report.session.dummy"),
 		email("report.session.dummy"),

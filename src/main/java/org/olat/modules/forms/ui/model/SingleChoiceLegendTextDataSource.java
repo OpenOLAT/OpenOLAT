@@ -28,6 +28,7 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.ui.ReportHelper;
 
 /**
  * 
@@ -39,14 +40,16 @@ public class SingleChoiceLegendTextDataSource implements LegendTextDataSource {
 
 	private final SingleChoice singleChoice;
 	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final ReportHelper reportHelper;
 	
 	private EvaluationFormReportDAO reportDAO;
 	
 	public SingleChoiceLegendTextDataSource(SingleChoice singleChoice,
-			List<? extends EvaluationFormSessionRef> sessions) {
+			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		super();
 		this.singleChoice = singleChoice;
 		this.sessions = sessions;
+		this.reportHelper = reportHelper;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 
@@ -54,6 +57,7 @@ public class SingleChoiceLegendTextDataSource implements LegendTextDataSource {
 	public List<SessionText> getResponses() {
 		List<SessionText> sessionTexts = new ArrayList<>();
 		List<EvaluationFormResponse> responses = reportDAO.getResponses(singleChoice.getId(), sessions);
+		responses.sort((r1, r2) -> reportHelper.getComparator().compare(r1.getSession(), r2.getSession()));
 		
 		for (EvaluationFormResponse response : responses) {
 			String text = getText(response);

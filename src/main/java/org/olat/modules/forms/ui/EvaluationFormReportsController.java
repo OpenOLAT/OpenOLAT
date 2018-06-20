@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -61,9 +62,12 @@ public class EvaluationFormReportsController extends BasicController {
 		this.form = form;
 		this.sessions = sessions;
 		
+		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
+		sessions.sort(comparator);
 		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(sessions);
 		this.reportHelper = ReportHelper.builder(getLocale())
 				.withLegendNameGenrator(legendNameGenerator)
+				.withSessionComparator(comparator)
 				.withColors()
 				.build();
 

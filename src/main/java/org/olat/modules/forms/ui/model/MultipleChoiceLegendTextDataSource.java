@@ -31,6 +31,7 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.ui.ReportHelper;
 
 /**
  * 
@@ -42,14 +43,16 @@ public class MultipleChoiceLegendTextDataSource implements LegendTextDataSource 
 
 	private final MultipleChoice multipleChoice;
 	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final ReportHelper reportHelper;
 	
 	private EvaluationFormReportDAO reportDAO;
 	
 	public MultipleChoiceLegendTextDataSource(MultipleChoice multipleChoice,
-			List<? extends EvaluationFormSessionRef> sessions) {
+			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		super();
 		this.multipleChoice = multipleChoice;
 		this.sessions = sessions;
+		this.reportHelper = reportHelper;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 
@@ -60,7 +63,9 @@ public class MultipleChoiceLegendTextDataSource implements LegendTextDataSource 
 		Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponse = responses.stream()
 				.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));
 		
-		for (EvaluationFormSession session: sessionToResponse.keySet()) {
+		List<EvaluationFormSession> sessions = new ArrayList<>(sessionToResponse.keySet());
+		sessions.sort(reportHelper.getComparator());
+		for (EvaluationFormSession session: sessions) {
 			List<EvaluationFormResponse> sessionResponses = sessionToResponse.get(session);
 			String text = concatResponses(sessionResponses);
 			if (text != null) {

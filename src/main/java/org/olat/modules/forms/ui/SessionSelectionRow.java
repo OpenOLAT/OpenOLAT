@@ -29,15 +29,21 @@ import org.olat.modules.forms.EvaluationFormSession;
  */
 class SessionSelectionRow {
 	
+	private final String participant;
 	private final EvaluationFormSession session;
 
-	protected SessionSelectionRow(EvaluationFormSession session) {
+	protected SessionSelectionRow(String participant, EvaluationFormSession session) {
 		super();
+		this.participant = participant;
 		this.session = session;
 	}
 
 	EvaluationFormSession getSession() {
 		return session;
+	}
+
+	public String getParticipant() {
+		return participant;
 	}
 
 }

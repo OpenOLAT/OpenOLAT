@@ -51,7 +51,7 @@ public class TextInputLegendTextHandler implements EvaluationFormReportHandler {
 			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof TextInput) {
 			TextInput textInput = (TextInput) element;
-			LegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), sessions);
+			LegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), sessions, reportHelper);
 			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return ctrl.getInitialComponent();
 		}

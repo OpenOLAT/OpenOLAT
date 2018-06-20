@@ -102,6 +102,7 @@ public class EvaluationFormExcelExport {
 	public OpenXMLWorkbookResource createMediaResource() {
 		// refresh to avoid lazy instantiation exception
 		sessions = evaluationFormManager.loadSessionsByKey(sessions, 0, -1);
+		sessions.sort(reportHelper.getComparator());
 		return new OpenXMLWorkbookResource(fileName) {
 			@Override
 			protected void generate(OutputStream out) {

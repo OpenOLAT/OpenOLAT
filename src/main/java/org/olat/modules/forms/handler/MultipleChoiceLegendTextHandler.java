@@ -51,7 +51,7 @@ public class MultipleChoiceLegendTextHandler implements EvaluationFormReportHand
 			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof MultipleChoice) {
 			MultipleChoice multipleChoice = (MultipleChoice) element;
-			LegendTextDataSource dataSource = new MultipleChoiceLegendTextDataSource(multipleChoice, sessions);
+			LegendTextDataSource dataSource = new MultipleChoiceLegendTextDataSource(multipleChoice, sessions, reportHelper);
 			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return ctrl.getInitialComponent();
 		}
