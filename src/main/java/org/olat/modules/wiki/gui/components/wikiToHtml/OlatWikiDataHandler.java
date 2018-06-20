@@ -68,6 +68,7 @@ public class OlatWikiDataHandler implements DataHandler {
 	 * @see org.jamwiki.DataHandler#lookupTopic(java.lang.String,
 	 *      java.lang.String, boolean, java.lang.Object)
 	 */
+	@Override
 	public Topic lookupTopic(String virtualWiki, String topicName, boolean deleteOK, Object transactionObject) throws Exception {
 		String decodedName = null;
 
@@ -114,6 +115,7 @@ public class OlatWikiDataHandler implements DataHandler {
 	 * @see org.jamwiki.DataHandler#lookupWikiFile(java.lang.String,
 	 *      java.lang.String)
 	 */
+	@Override
 	public WikiFile lookupWikiFile(String virtualWiki, String topicName) throws Exception {
 		WikiFile wikifile = new WikiFile();
 		if (topicName.startsWith(IMAGE_NAMESPACE)) {
@@ -131,17 +133,23 @@ public class OlatWikiDataHandler implements DataHandler {
 	/**
 	 * @see org.jamwiki.DataHandler#exists(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public boolean exists(String virtualWiki, String topic) {
-		if (!StringUtils.hasText(topic)) { return false; }
-		if (PseudoTopicHandler.isPseudoTopic(topic)) { return true; }
-		if (InterWikiHandler.isInterWiki(topic)) { return true; }
-		
-//		try {
-//			Utilities.validateTopicName(topic);
-//		} catch (WikiException e) {
-//			throw new OLATRuntimeException(this.getClass(), "invalid topic name!", e);
-//		}
-		
+		if (!StringUtils.hasText(topic)) {
+			return false;
+		}
+		if (PseudoTopicHandler.isPseudoTopic(topic)) {
+			return true;
+		}
+
+		try {
+			if (InterWikiHandler.isInterWiki(topic)) {
+				return true;
+			}
+		} catch (Exception e) {
+			log.warn("Cannot initialize InterWikiHandler", e);
+		}
+
 		Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
 		if (topic.startsWith(IMAGE_NAMESPACE) || topic.startsWith(MEDIA_NAMESPACE)) {
 			return wiki.pageExists(topic);

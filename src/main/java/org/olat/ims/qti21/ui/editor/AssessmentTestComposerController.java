@@ -884,15 +884,23 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		metadata.setOpenOLATMetadataMasterIdentifier(identifier);
 		metadata.setOpenOLATMetadataIdentifier(UUID.randomUUID().toString());
 		doSaveManifest();
-		return doReloadItem(ureq);	
+
+		// reselect the node (--force)
+		String itemId = itemRef.getIdentifier().toString();
+		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(itemId);
+		menuTree.setSelectedNode(newItemNode);
+		menuTree.open(newItemNode);
+		return doReloadItem(ureq);
 	}
 	
 	private TreeNode doReloadItem(UserRequest ureq) {
 		TreeNode selectedNode = menuTree.getSelectedNode();
 		updateTreeModel(false);
-		menuTree.setSelectedNodeId(selectedNode.getIdent());
-		selectedNode = menuTree.getSelectedNode();
-		partEditorFactory(ureq, selectedNode);
+		if(selectedNode != null) {
+			menuTree.setSelectedNodeId(selectedNode.getIdent());
+			selectedNode = menuTree.getSelectedNode();
+			partEditorFactory(ureq, selectedNode);
+		}
 		return selectedNode;	
 	}
 	
