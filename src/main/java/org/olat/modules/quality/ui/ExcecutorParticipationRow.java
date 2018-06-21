@@ -19,41 +19,44 @@
  */
 package org.olat.modules.quality.ui;
 
-import org.olat.modules.forms.EvaluationFormParticipationRef;
-import org.olat.modules.quality.QualityParticipation;
+import java.util.Date;
+
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.quality.QualityExecutorParticipation;
 
 /**
  * 
- * Initial date: 13.06.2018<br>
+ * Initial date: 20.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class ParticipationRow {
+public class ExcecutorParticipationRow {
 
-	private final QualityParticipation participation;
+	private final QualityExecutorParticipation participation;
 
-	public ParticipationRow(QualityParticipation participation) {
+	public ExcecutorParticipationRow(QualityExecutorParticipation participation) {
 		this.participation = participation;
 	}
+	
 
-	public QualityParticipation getParticipation() {
+	public QualityExecutorParticipation getParticipation() {
 		return participation;
 	}
-	
-	public EvaluationFormParticipationRef getParticipationRef() {
-		return participation.getParticipationRef();
+
+	public EvaluationFormParticipationStatus getParticipationStatus() {
+		return participation.getParticipationStatus();
 	}
 
-	public Object getFirstname() {
-		return participation.getFirstname();
+	public Date getStart() {
+		return participation.getStart();
 	}
 
-	public Object getLastname() {
-		return participation.getLastname();
+	public Date getDeadine() {
+		return participation.getDeadline();
 	}
 
-	public Object getEmail() {
-		return participation.getEmail();
+	public Object getTitle() {
+		return participation.getTitle();
 	}
 
 }

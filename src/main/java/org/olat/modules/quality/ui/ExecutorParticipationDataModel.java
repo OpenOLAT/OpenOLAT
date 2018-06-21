@@ -25,48 +25,55 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.modules.quality.QualitySecurityCallback;
 
 /**
  * 
- * Initial date: 13.06.2018<br>
+ * Initial date: 20.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipationDataModel extends DefaultFlexiTableDataSourceModel<ParticipationRow> {
+public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceModel<ExcecutorParticipationRow> {
 
+	private final QualitySecurityCallback secCallback;
 	private final Locale locale;
 
-	public ParticipationDataModel(FlexiTableDataSourceDelegate<ParticipationRow> dataSource,
-			FlexiTableColumnModel columnsModel, Locale locale) {
+	public ExecutorParticipationDataModel(FlexiTableDataSourceDelegate<ExcecutorParticipationRow> dataSource,
+			FlexiTableColumnModel columnsModel, QualitySecurityCallback secCallback, Locale locale) {
 		super(dataSource, columnsModel);
+		this.secCallback = secCallback;
 		this.locale = locale;
 	}
 	
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		ParticipationRow participationRow = getObject(row);
-		switch (ParticipationCols.values()[col]) {
-			case firstname: return participationRow.getFirstname();
-			case lastname: return participationRow.getLastname();
-			case email: return participationRow.getEmail();
+		ExcecutorParticipationRow participationRow = getObject(row);
+		switch (ExecutorParticipationCols.values()[col]) {
+			case participationStatus: return participationRow.getParticipationStatus();
+			case start: return participationRow.getStart();
+			case deadline: return participationRow.getDeadine();
+			case title: return participationRow.getTitle();
+			case execute: return secCallback.canExecute(participationRow.getParticipation());
 			default: return null;
 		}
 	}
 
 	@Override
-	public DefaultFlexiTableDataSourceModel<ParticipationRow> createCopyWithEmptyList() {
-		return new ParticipationDataModel(getSourceDelegate(), getTableColumnModel(), locale);
+	public DefaultFlexiTableDataSourceModel<ExcecutorParticipationRow> createCopyWithEmptyList() {
+		return new ExecutorParticipationDataModel(getSourceDelegate(), getTableColumnModel(), secCallback, locale);
 	}
 
-	public enum ParticipationCols implements FlexiSortableColumnDef {
-		firstname("participation.firstname"),
-		lastname("participation.lastname"),
-		email("participation.email");
+	public enum ExecutorParticipationCols implements FlexiSortableColumnDef {
+		participationStatus("executor.participation.status"),
+		start("executor.participation.start"),
+		deadline("executor.participation.deadline"),
+		title("executor.participation.title"),
+		execute("executor.participation.execute");
 		
 		private final String i18nKey;
 		
-		private ParticipationCols(String i18nKey) {
+		private ExecutorParticipationCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

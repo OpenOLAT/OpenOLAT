@@ -21,6 +21,7 @@ package org.olat.modules.quality;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -62,7 +63,12 @@ public interface QualityManager {
 	
 	public int getParticipationCount(QualityDataCollectionLight dataCollection);
 
-	public List<QualityDataCollectionParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
+	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
 			int firstResult, int maxResults, SortKey... orderBy);
+
+	public int getExecutorParticipationCount(IdentityRef executor);
+
+	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
+			int maxResults, SortKey[] orderBy);
 
 }

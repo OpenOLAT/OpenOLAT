@@ -21,6 +21,7 @@ package org.olat.modules.quality.manager;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -29,8 +30,9 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityDataCollectionParticipation;
+import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityManager;
 import org.olat.repository.RepositoryEntry;
@@ -107,17 +109,6 @@ public class QualityManagerImpl implements QualityManager {
 	}
 
 	@Override
-	public int getParticipationCount(QualityDataCollectionLight dataCollection) {
-		return participationDao.getParticipationCount(dataCollection);
-	}
-
-	@Override
-	public List<QualityDataCollectionParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		return participationDao.loadParticipations(dataCollection, firstResult, maxResults, orderBy);
-	}
-
-	@Override
 	public void addParticipants(QualityDataCollectionLight dataCollection, List<Identity> executors) {
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		for (Identity executor: executors) {
@@ -126,5 +117,27 @@ public class QualityManagerImpl implements QualityManager {
 				evaluationFormManager.createParticipation(survey, executor, true);
 			}
 		}
+	}
+
+	@Override
+	public int getParticipationCount(QualityDataCollectionLight dataCollection) {
+		return participationDao.getParticipationCount(dataCollection);
+	}
+
+	@Override
+	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		return participationDao.loadParticipations(dataCollection, firstResult, maxResults, orderBy);
+	}
+
+	@Override
+	public int getExecutorParticipationCount(IdentityRef executor) {
+		return participationDao.getExecutorParticipationCount(executor);
+	}
+
+	@Override
+	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
+			int maxResults, SortKey[] orderBy) {
+		return participationDao.loadExecutorParticipations(executor, firstResult, maxResults, orderBy);
 	}
 }

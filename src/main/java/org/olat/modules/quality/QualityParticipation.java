@@ -17,10 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.ui;
+package org.olat.modules.quality;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
-import org.olat.modules.quality.QualityParticipation;
 
 /**
  * 
@@ -28,32 +27,14 @@ import org.olat.modules.quality.QualityParticipation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class ParticipationRow {
-
-	private final QualityParticipation participation;
-
-	public ParticipationRow(QualityParticipation participation) {
-		this.participation = participation;
-	}
-
-	public QualityParticipation getParticipation() {
-		return participation;
-	}
+public interface QualityParticipation {
 	
-	public EvaluationFormParticipationRef getParticipationRef() {
-		return participation.getParticipationRef();
-	}
-
-	public Object getFirstname() {
-		return participation.getFirstname();
-	}
-
-	public Object getLastname() {
-		return participation.getLastname();
-	}
-
-	public Object getEmail() {
-		return participation.getEmail();
-	}
+	public EvaluationFormParticipationRef getParticipationRef();
+	
+	public String getFirstname();
+	
+	public String getLastname();
+	
+	public String getEmail();
 
 }

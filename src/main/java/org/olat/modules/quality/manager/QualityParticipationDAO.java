@@ -24,10 +24,12 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityDataCollectionParticipation;
+import org.olat.modules.quality.QualityParticipation;
+import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,13 +64,13 @@ public class QualityParticipationDAO {
 		return Math.toIntExact(counts.get(0));
 	}
 
-	List<QualityDataCollectionParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
+	List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if (dataCollection == null)
 			return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.modules.quality.model.QualityDataCollectionParticipationImpl(");
+		sb.append("select new org.olat.modules.quality.model.QualityParticipationImpl(");
 		sb.append("       participation.key");
 		sb.append("     , user.firstName");
 		sb.append("     , user.lastName");
@@ -81,10 +83,10 @@ public class QualityParticipationDAO {
 		sb.append(" where survey.resName=:resName");
 		sb.append("   and survey.resId=:resId");
 		
-		appendOrderBy(sb, orderBy);
+		appendParticipationOrderBy(sb, orderBy);
 
-		TypedQuery<QualityDataCollectionParticipation> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QualityDataCollectionParticipation.class)
+		TypedQuery<QualityParticipation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityParticipation.class)
 				.setParameter("resName", dataCollection.getResourceableTypeName())
 				.setParameter("resId", dataCollection.getResourceableId());
 		if(firstResult >= 0) {
@@ -97,7 +99,7 @@ public class QualityParticipationDAO {
 		return query.getResultList();
 	}
 	
-	private void appendOrderBy(StringBuilder sb, SortKey... orderBy) {
+	private void appendParticipationOrderBy(StringBuilder sb, SortKey... orderBy) {
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
@@ -124,6 +126,71 @@ public class QualityParticipationDAO {
 			sb.append(" desc");
 		}
 		return sb;
+	}
+
+	int getExecutorParticipationCount(IdentityRef executor) {
+		if (executor == null) return 0;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(participation.key)");
+		sb.append("  from evaluationformparticipation as participation");
+		sb.append(" inner join participation.survey as survey");
+		sb.append(" inner join participation.executor as executor");
+		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("   and executor.key = :executorKey");
+		
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("executorKey", executor.getKey())
+				.getResultList();
+		return Math.toIntExact(counts.get(0));
+	}
+
+	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
+			int maxResults, SortKey... orderBy) {
+		if (executor == null)
+			return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.modules.quality.model.QualityExcecutorParticipationImpl(");
+		sb.append("       participation.key as participationKey");
+		sb.append("     , participation.status as participationStatus");
+		sb.append("     , collection.start as start");
+		sb.append("     , collection.deadline as deadline");
+		sb.append("     , collection.title as title");
+		sb.append("       )");
+		sb.append("  from evaluationformparticipation as participation");
+		sb.append(" inner join participation.survey as survey");
+		sb.append(" inner join participation.executor as executor");
+		sb.append(" inner join qualitydatacollection as collection on collection.key = survey.resId");
+		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("   and executor.key = :executorKey");
+		
+		appendExecutorParticipationOrderBy(sb, orderBy);
+
+		TypedQuery<QualityExecutorParticipation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityExecutorParticipation.class)
+				.setParameter("executorKey", executor.getKey());
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		
+		return query.getResultList();
+	}
+	
+	private void appendExecutorParticipationOrderBy(StringBuilder sb, SortKey... orderBy) {
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			String sortKey = orderBy[0].getKey();
+			boolean asc = orderBy[0].isAsc();
+			sb.append(" order by ");
+			sb.append(sortKey);
+			appendAsc(sb, asc);
+		} else {
+			sb.append(" order by participation.status asc ");
+		}
 	}
 
 }

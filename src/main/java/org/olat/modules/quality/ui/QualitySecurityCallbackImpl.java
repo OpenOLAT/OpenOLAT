@@ -21,7 +21,9 @@ package org.olat.modules.quality.ui;
 
 import java.util.Date;
 
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualitySecurityCallback;
 
 /**
@@ -67,10 +69,26 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection) {
 		return !isStarted(dataCollection);
 	}
+
+	@Override
+	public boolean canExecute(QualityExecutorParticipation participation) {
+		return EvaluationFormParticipationStatus.prepared.equals(participation.getParticipationStatus())
+				&& isStarted(participation.getStart())
+				&& !isFinished(participation.getDeadline());
+	}
 	
 	private boolean isStarted(QualityDataCollectionLight dataCollection) {
+		return isStarted(dataCollection.getStart());
+	}
+	
+	private boolean isStarted(Date start) {
 		Date now = new Date();
-		return dataCollection.getStart() != null && dataCollection.getStart().before(now);
+		return start != null && start.before(now);
+	}
+	
+	private boolean isFinished(Date deadline) {
+		Date now = new Date();
+		return deadline != null && deadline.before(now);
 	}
 
 }

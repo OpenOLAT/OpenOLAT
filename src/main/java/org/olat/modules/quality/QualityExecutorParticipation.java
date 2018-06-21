@@ -19,22 +19,27 @@
  */
 package org.olat.modules.quality;
 
+import java.util.Date;
+
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 
 /**
  * 
- * Initial date: 13.06.2018<br>
+ * Initial date: 20.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityDataCollectionParticipation {
+public interface QualityExecutorParticipation {
 	
 	public EvaluationFormParticipationRef getParticipationRef();
-	
-	public String getFirstname();
-	
-	public String getLastname();
-	
-	public String getEmail();
+
+	public EvaluationFormParticipationStatus getParticipationStatus();
+
+	public Date getStart();
+
+	public Date getDeadline();
+
+	public String getTitle();
 
 }

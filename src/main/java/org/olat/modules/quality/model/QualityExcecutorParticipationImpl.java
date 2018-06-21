@@ -19,32 +19,36 @@
  */
 package org.olat.modules.quality.model;
 
+import java.util.Date;
+
 import org.olat.modules.forms.EvaluationFormParticipationRef;
-import org.olat.modules.quality.QualityDataCollectionParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.quality.QualityExecutorParticipation;
 
 /**
  * 
- * Initial date: 13.06.2018<br>
- * 
+ * Initial date: 20.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityDataCollectionParticipationImpl implements QualityDataCollectionParticipation {
-
+public class QualityExcecutorParticipationImpl implements QualityExecutorParticipation {
+	
 	private final Long participationKey;
-	private final String firstname;
-	private final String lastname;
-	private final String email;
-
-	public QualityDataCollectionParticipationImpl(Long participationKey, String firstname, String lastname,
-			String email) {
+	private final EvaluationFormParticipationStatus participationStatus;
+	private final Date start;
+	private final Date deadline;
+	private final String title;
+	
+	public QualityExcecutorParticipationImpl(Long participationKey,
+			EvaluationFormParticipationStatus participationStatus, Date start, Date deadline, String title) {
 		super();
 		this.participationKey = participationKey;
-		this.firstname = firstname;
-		this.lastname = lastname;
-		this.email = email;
+		this.participationStatus = participationStatus;
+		this.start = start;
+		this.deadline = deadline;
+		this.title = title;
 	}
-
+	
 	@Override
 	public EvaluationFormParticipationRef getParticipationRef() {
 		return new EvaluationFormParticipationRef() {
@@ -57,18 +61,23 @@ public class QualityDataCollectionParticipationImpl implements QualityDataCollec
 	}
 
 	@Override
-	public String getFirstname() {
-		return firstname;
+	public EvaluationFormParticipationStatus getParticipationStatus() {
+		return participationStatus;
 	}
 
 	@Override
-	public String getLastname() {
-		return lastname;
+	public Date getStart() {
+		return start;
 	}
 
 	@Override
-	public String getEmail() {
-		return email;
+	public Date getDeadline() {
+		return deadline;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
 	}
 
 }

@@ -51,9 +51,11 @@ public class QualityMainController extends MainLayoutBasicController implements 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private Link dataCollectionLink;
+	private Link executorParticipationLink;
 	
 	private TooledStackedPanel stackPanel;
 	private DataCollectionListController dataCollectionListCtrl;
+	private ExecutorParticipationsListController executorParticipationListCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	
@@ -64,12 +66,14 @@ public class QualityMainController extends MainLayoutBasicController implements 
 		mainVC = createVelocityContainer("main");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		executorParticipationLink = LinkFactory.createLink("segments.executor.participation", mainVC, this);
+		segmentView.addSegment(executorParticipationLink, true);
 		if (secCallback.canViewDataCollections()) {
 			dataCollectionLink = LinkFactory.createLink("segments.data.collection", mainVC, this);
-			segmentView.addSegment(dataCollectionLink, true);
+			segmentView.addSegment(dataCollectionLink, false);
 		}
 		
-		doOpenDataCollection(ureq);
+		doOpenUserParticipations(ureq);
 		
 		putInitialPanel(mainVC);
 	}
@@ -85,14 +89,21 @@ public class QualityMainController extends MainLayoutBasicController implements 
 			SegmentViewEvent sve = (SegmentViewEvent) event;
 			String segmentCName = sve.getComponentName();
 			Component clickedLink = mainVC.getComponent(segmentCName);
-			if (clickedLink == dataCollectionLink) {
+			if (clickedLink == executorParticipationLink) {
+				doOpenUserParticipations(ureq);
+			} else if (clickedLink == dataCollectionLink) {
 				doOpenDataCollection(ureq);
 			}
 		}
 	}
 
+	private void doOpenUserParticipations(UserRequest ureq) {
+		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, getWindowControl(), secCallback);
+		mainVC.put(SEGMENTS_CMP, executorParticipationListCtrl.getInitialComponent());
+	}
+
 	private void doOpenDataCollection(UserRequest ureq) {
-		stackPanel = new TooledStackedPanel("data.collections", getTranslator(), this);
+		stackPanel = new TooledStackedPanel("qualitiy.management", getTranslator(), this);
 		stackPanel.setInvisibleCrumb(0);
 		dataCollectionListCtrl = new DataCollectionListController(ureq, getWindowControl(), stackPanel, secCallback);
 		listenTo(dataCollectionListCtrl);

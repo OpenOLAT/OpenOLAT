@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.ui;
+package org.olat.modules.quality.model;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.quality.QualityParticipation;
@@ -25,35 +25,50 @@ import org.olat.modules.quality.QualityParticipation;
 /**
  * 
  * Initial date: 13.06.2018<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class ParticipationRow {
+public class QualityParticipationImpl implements QualityParticipation {
 
-	private final QualityParticipation participation;
+	private final Long participationKey;
+	private final String firstname;
+	private final String lastname;
+	private final String email;
 
-	public ParticipationRow(QualityParticipation participation) {
-		this.participation = participation;
+	public QualityParticipationImpl(Long participationKey, String firstname, String lastname,
+			String email) {
+		super();
+		this.participationKey = participationKey;
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
 	}
 
-	public QualityParticipation getParticipation() {
-		return participation;
-	}
-	
+	@Override
 	public EvaluationFormParticipationRef getParticipationRef() {
-		return participation.getParticipationRef();
+		return new EvaluationFormParticipationRef() {
+			
+			@Override
+			public Long getKey() {
+				return participationKey;
+			}
+		};
 	}
 
-	public Object getFirstname() {
-		return participation.getFirstname();
+	@Override
+	public String getFirstname() {
+		return firstname;
 	}
 
-	public Object getLastname() {
-		return participation.getLastname();
+	@Override
+	public String getLastname() {
+		return lastname;
 	}
 
-	public Object getEmail() {
-		return participation.getEmail();
+	@Override
+	public String getEmail() {
+		return email;
 	}
 
 }

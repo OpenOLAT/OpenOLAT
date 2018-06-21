@@ -29,48 +29,48 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityParticipation;
+import org.olat.core.id.Identity;
+import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 13.06.2018<br>
+ * Initial date: 20.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class ParticipationDataSource implements FlexiTableDataSourceDelegate<ParticipationRow> {
+class ExcecutorParticipationDataSource implements FlexiTableDataSourceDelegate<ExcecutorParticipationRow> {
 	
-	private QualityDataCollectionLight dataCollection;
+	private Identity executor;
 	
 	@Autowired
 	private QualityManager qualityManager;
 	
-	public ParticipationDataSource(QualityDataCollectionLight dataCollection) {
-		this.dataCollection = dataCollection;
+	public ExcecutorParticipationDataSource(Identity executor) {
+		this.executor = executor;
 		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
 	public int getRowCount() {
-		return qualityManager.getParticipationCount(dataCollection);
+		return qualityManager.getExecutorParticipationCount(executor);
 	}
 
 	@Override
-	public List<ParticipationRow> reload(List<ParticipationRow> rows) {
+	public List<ExcecutorParticipationRow> reload(List<ExcecutorParticipationRow> rows) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public ResultInfos<ParticipationRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries,
-			int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<ExcecutorParticipationRow> getRows(String query, List<FlexiTableFilter> filters,
+			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
-		List<QualityParticipation> participations = qualityManager.loadParticipations(dataCollection,
+		List<QualityExecutorParticipation> participations = qualityManager.loadExecutorParticipations(executor,
 				firstResult, maxResults, orderBy);
-		List<ParticipationRow> rows = new ArrayList<>();
-		for (QualityParticipation participation : participations) {
-			rows.add(new ParticipationRow(participation));
+		List<ExcecutorParticipationRow> rows = new ArrayList<>();
+		for (QualityExecutorParticipation participation : participations) {
+			rows.add(new ExcecutorParticipationRow(participation));
 		}
 
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);

@@ -19,6 +19,10 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -33,6 +37,7 @@ import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,14 +72,28 @@ public class QualityTestHelper {
 		dbInstance.commitAndCloseSession();
 	}
 
-	QualityDataCollection createDataCollection() {
+	public QualityDataCollection createDataCollection(String title) {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		return qualityManager.createDataCollection(formEntry);
+		QualityDataCollection dataCollection = qualityManager.createDataCollection(formEntry);
+		dataCollection.setTitle(title);
+		dataCollection.setStart(new Date());
+		dataCollection.setDeadline(new Date());
+		return dataCollection;
+	}
+	
+	QualityDataCollection createDataCollection() {
+		return createDataCollection(UUID.randomUUID().toString());
 	}
 
 	EvaluationFormSurvey createSurvey(QualityDataCollection dataCollection) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		return evaluationFormManager.createSurvey(dataCollection, null, entry);
+	}
+
+	public EvaluationFormSurvey createRandomSurvey() {
+		OLATResource ores = JunitTestHelper.createRandomResource();
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		return evaluationFormManager.createSurvey(ores, null, entry);
 	}
 
 	EvaluationFormParticipationRef createParticipation(EvaluationFormSurvey survey) {
@@ -83,6 +102,10 @@ public class QualityTestHelper {
 
 	EvaluationFormParticipationRef createParticipation(EvaluationFormSurvey survey, Identity identity) {
 		return evaluationFormManager.createParticipation(survey, identity);
+	}
+
+	public void addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {
+		qualityManager.addParticipants(dataCollection, executors);
 	}
 
 	Organisation getOrganisation() {
