@@ -55,10 +55,10 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		String mainCssClass = panel.getCssClass();
 		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='").append(mainCssClass, mainCssClass != null).append("'>");
 		
-		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0 && panel.isToolbarEnabled()) {
+		if((panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) || (tools.size() > 0 && panel.isToolbarEnabled())) {
 			sb.append("<div id='o_main_toolbar' class='o_toolbar'>");
 
-			if(breadCrumbs.size() > panel.getInvisibleCrumb()) {
+			if(panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) {
 				sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
 				Link backLink = panel.getBackLink();
 				int numOfCrumbs = breadCrumbs.size();
@@ -84,6 +84,7 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				sb.append("</ol></div>"); // o_breadcrumb
 			}
 			
+			System.out.println(panel.isToolbarAutoEnabled() + " " + panel.isToolbarEnabled());
 			if (panel.isToolbarAutoEnabled() || panel.isToolbarEnabled()) {
 				List<Tool> leftTools = getTools(tools, Align.left);
 				List<Tool> rightEdgeTools = getTools(tools, Align.rightEdge);

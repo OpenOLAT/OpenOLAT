@@ -44,6 +44,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	private static final ComponentRenderer RENDERER = new TooledStackedPanelRenderer();
 	private boolean toolbarEnabled = true;
 	private boolean toolbarAutoEnabled = false;
+	private boolean breadcrumbEnabled = true;
 	
 	private String message;
 	private String messageCssClass;
@@ -217,6 +218,14 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		if(enable) {
 			toolbarEnabled = false;
 		}
+	}
+
+	public boolean isBreadcrumbEnabled() {
+		return breadcrumbEnabled;
+	}
+
+	public void setBreadcrumbEnabled(boolean breadcrumbEnabled) {
+		this.breadcrumbEnabled = breadcrumbEnabled;
 	}
 
 	public String getMessage() {

@@ -425,12 +425,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.setToolbarEnabled(true);
 		}
 		// make bread crumb disappear if not enabled
-		if (!course.getCourseConfig().isBreadCrumbEnabled()) {
-			toolbarPanel.setInvisibleCrumb(100);
-			if (!toolbarPanel.isToolbarEnabled()) {
-				// disable if toolbar also not visible
-				toolbarPanel.setEnabled(false);
-			}
+		if (!course.getCourseConfig().isBreadCrumbEnabled() && !toolbarPanel.isToolbarEnabled()) {
+			// disable if toolbar also not visible
+			toolbarPanel.setBreadcrumbEnabled(false);
 		}
 		
 		if(!isAssessmentLock()) {
