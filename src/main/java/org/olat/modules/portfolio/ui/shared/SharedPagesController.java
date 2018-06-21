@@ -340,6 +340,11 @@ public class SharedPagesController extends FormBasicController implements Activa
 		removeAsListenerAndDispose(pageCtrl);
 		
 		Page reloadedPage = portfolioService.getPageByKey(row.getPageKey());
+		if(reloadedPage == null) {
+			loadModel(true, true);
+			showWarning("warning.page.not.found");
+			return null;
+		}
 		Binder binder = reloadedPage.getSection().getBinder();
 		
 		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", reloadedPage.getKey());
