@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -57,6 +58,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
@@ -135,6 +137,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			AssessmentItemCorrection correction, Map<Long, File> submissionDirectoryMaps,
 			String mapperUri, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "correction_identity_interactions", rootForm);
+		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
 		this.mapperUri = mapperUri;
 		this.correction = correction;
