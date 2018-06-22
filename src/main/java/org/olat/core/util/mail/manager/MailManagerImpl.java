@@ -520,7 +520,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			.append(" inner join fetch mail.from fromRecipient")
 			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
 			.append(" inner join ").append(fetchRecipients ? "fetch" : "").append(" mail.recipients recipient")
-			.append(" inner join ").append(fetchRecipients ? "fetch" : "").append(" recipient.recipient recipientIdentity")
+			.append(" left join ").append(fetchRecipients ? "fetch" : "").append(" recipient.recipient recipientIdentity")
 			.append(" where fromRecipientIdentity.key=:fromKey and fromRecipient.deleted=false ")
 			.append(" order by mail.creationDate desc");
 
