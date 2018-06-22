@@ -223,7 +223,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 				vContext.put("url", url);
 			}
 		};
-		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), dataExport.getRequestBy(), template, dataExport.getRequestBy(), null, result);
+		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), dataExport.getRequestBy(), template, null, null, result);
 		if(bundle != null) {
 			mailService.sendMessage(bundle);
 		}

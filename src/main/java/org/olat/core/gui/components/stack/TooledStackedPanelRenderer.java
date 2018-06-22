@@ -84,7 +84,6 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				sb.append("</ol></div>"); // o_breadcrumb
 			}
 			
-			System.out.println(panel.isToolbarAutoEnabled() + " " + panel.isToolbarEnabled());
 			if (panel.isToolbarAutoEnabled() || panel.isToolbarEnabled()) {
 				List<Tool> leftTools = getTools(tools, Align.left);
 				List<Tool> rightEdgeTools = getTools(tools, Align.rightEdge);
