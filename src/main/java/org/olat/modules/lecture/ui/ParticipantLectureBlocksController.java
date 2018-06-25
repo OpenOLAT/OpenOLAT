@@ -55,6 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
@@ -362,16 +363,23 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			teacherNames.append(teacher.getUser().getFirstName()).append(" ").append(teacher.getUser().getLastName());
 		}
 		String date = Formatter.getInstance(getLocale()).formatDate(block.getStartDate());
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][LectureBlock:" + block.getKey() + "]";
+		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);	
 		String[] args = new String[] {
 			row.getLectureBlockTitle(),
 			teacherNames.toString(),
-			date
+			date,
+			url
 		};
+		
+		StringBuilder body = new StringBuilder(1024);
+		body.append(translate("appeal.body.title", args))
+		    .append(translate("appeal.body", args));
 		
 		ContactMessage cmsg = new ContactMessage(getIdentity());
 		cmsg.addEmailTo(contactList);
 		cmsg.setSubject(translate("appeal.subject", args));
-		cmsg.setBodyText(translate("appeal.body", args));
+		cmsg.setBodyText(body.toString());
 		appealCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		appealCtrl.setUserObject(row);
 		appealCtrl.setContactFormTitle(translate("new.appeal.title"));
