@@ -17,31 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.repository.ui;
+
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 8 juin 2018<br>
+ * Initial date: 21 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementMembership {
+public class RepositoryFlexiTableSortDelegate extends SortableFlexiTableModelDelegate<RepositoryEntry>  {
 	
-	public Long getIdentityKey();
-	
-	public Long getCurriculumElementKey();
-
-	public boolean isRepositoryEntryOwner();
-
-	public boolean isCoach();
-	
-	public boolean isParticipant();
-	
-	public boolean isCurriculumManager();
-	
-	/**
-	 * @return true if the identity has at least one role on the curriculum element
-	 */
-	public boolean hasMembership();
+	public RepositoryFlexiTableSortDelegate(SortKey orderBy, RepositoryFlexiTableModel tableModel, Locale locale) {
+		super(orderBy, tableModel, locale);
+	}
 
 }

@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.model;
 import java.util.List;
 
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.repository.RepositoryEntryMyView;
 
 /**
@@ -35,10 +36,13 @@ public class CurriculumElementRepositoryEntryViews {
 	
 	private final CurriculumElement curriculumElement;
 	private final List<RepositoryEntryMyView> entries;
+	private final CurriculumElementMembership curriculumMembership;
 	
-	public CurriculumElementRepositoryEntryViews(CurriculumElement curriculumElement, List<RepositoryEntryMyView> entries) {
+	public CurriculumElementRepositoryEntryViews(CurriculumElement curriculumElement, List<RepositoryEntryMyView> entries,
+			CurriculumElementMembership curriculumMembership) {
 		this.curriculumElement = curriculumElement;
 		this.entries = entries;
+		this.curriculumMembership = curriculumMembership;
 	}
 
 	public CurriculumElement getCurriculumElement() {
@@ -47,6 +51,10 @@ public class CurriculumElementRepositoryEntryViews {
 
 	public List<RepositoryEntryMyView> getEntries() {
 		return entries;
+	}
+	
+	public CurriculumElementMembership getCurriculumMembership() {
+		return curriculumMembership;
 	}
 
 	@Override

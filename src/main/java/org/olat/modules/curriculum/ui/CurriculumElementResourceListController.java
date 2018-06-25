@@ -19,8 +19,10 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -40,9 +42,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -64,12 +69,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumElementResourceListController extends FormBasicController {
 
 	private FormLink addResourcesButton;
+	private FormLink removeResourcesButton;
 	private FlexiTableElement tableEl;
 	private RepositoryFlexiTableModel tableModel;
 	
 	private CloseableModalController cmc;
+	private DialogBoxController confirmRemoveCtrl;
 	private ReferencableEntriesSearchController repoSearchCtr;
 	
+	private final boolean resourcesManaged;
 	private final CurriculumElement curriculumElement;
 	
 	@Autowired
@@ -80,6 +88,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		
 		this.curriculumElement = curriculumElement;
+		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);
 		
 		initForm(ureq);
 		loadModel();
@@ -87,8 +96,12 @@ public class CurriculumElementResourceListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
-		addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		if(!resourcesManaged) {
+			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
+			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		
+			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.ac, new RepositoryEntryACColumnDescriptor()));
@@ -101,7 +114,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.author));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.access, new AccessRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.access, new AccessRenderer(getLocale())));
 
 		tableModel = new RepositoryFlexiTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -123,7 +136,13 @@ public class CurriculumElementResourceListController extends FormBasicController
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(repoSearchCtr == source) {
+		if(confirmRemoveCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<RepositoryEntry> rows = (List<RepositoryEntry>)confirmRemoveCtrl.getUserObject();
+				doRemove(rows);
+			}
+		} else if(repoSearchCtr == source) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				doAddRepositoryEntry(repoSearchCtr.getSelectedEntry());
 				loadModel();
@@ -150,6 +169,8 @@ public class CurriculumElementResourceListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addResourcesButton == source) {
 			doChooseResources(ureq);
+		} else if(removeResourcesButton == source) {
+			doConfirmRemoveResources(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -188,6 +209,28 @@ public class CurriculumElementResourceListController extends FormBasicController
 		for(RepositoryEntry entry:entries) {
 			curriculumService.addRepositoryEntry(curriculumElement, entry, false);
 		}
+	}
+	
+	private void doConfirmRemoveResources(UserRequest ureq) {
+		Set<Integer> selectedRows = tableEl.getMultiSelectedIndex();
+		if(selectedRows.isEmpty()) {
+			showWarning("warning.atleastone.resource");
+		} else {
+			List<RepositoryEntry> rows = new ArrayList<>(selectedRows.size());
+			for(Integer selectedRow:selectedRows) {
+				rows.add(tableModel.getObject(selectedRow.intValue()));
+			}
+			String title = translate("confirm.remove.resource.title");
+			confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("confirm.remove.resource.text", ""), confirmRemoveCtrl);
+			confirmRemoveCtrl.setUserObject(rows);
+		}
+	}
+	
+	private void doRemove(List<RepositoryEntry> resourcesToRemove) {
+		for(RepositoryEntry resourceToRemove:resourcesToRemove) {
+			curriculumService.removeRepositoryEntry(curriculumElement, resourceToRemove);
+		}
+		loadModel();
 	}
 	
 	private void doSelectRepositoryEntry(UserRequest ureq, RepositoryEntry entry) {

@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumImpl;
+import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.test.JunitTestHelper;
@@ -148,6 +149,53 @@ public class CurriculumDAOTest extends OlatTestCase {
 		params.setSearchString(curriculum.getKey().toString());
 		List<Curriculum> curriculumByKey = curriculumDao.search(params);
 		Assert.assertTrue(curriculumByKey.contains(curriculum));
+	}
+	
+	@Test
+	public void search_manager() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-1");
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+		
+		// search curriculum for the manager
+		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
+		managerParams.setManagerIdentity(manager);
+		List<Curriculum> managedCurriculums = curriculumDao.search(managerParams);
+		Assert.assertEquals(1, managedCurriculums.size());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0));
+		
+		
+		// search curriculum for the user
+		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
+		userParams.setManagerIdentity(user);
+		List<Curriculum> userCurriculums = curriculumDao.search(userParams);
+		Assert.assertTrue(userCurriculums.isEmpty());
+	}
+	
+	@Test
+	public void searchWithInfos_manager() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-1");
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+		
+		// search curriculum for the manager
+		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
+		managerParams.setManagerIdentity(manager);
+		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
+		Assert.assertEquals(1, managedCurriculums.size());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		
+		// search curriculum for the user
+		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
+		userParams.setManagerIdentity(user);
+		List<Curriculum> userCurriculums = curriculumDao.search(userParams);
+		Assert.assertTrue(userCurriculums.isEmpty());
 	}
 	
 	@Test

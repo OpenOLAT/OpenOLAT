@@ -147,18 +147,22 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		this.description = description;
 	}
 
+	@Override
 	public String getStatus() {
 		return status;
 	}
 
+	@Override
 	public void setStatus(String status) {
 		this.status = status;
 	}
 
+	@Override
 	public String getDegree() {
 		return degree;
 	}
 
+	@Override
 	public void setDegree(String degree) {
 		this.degree = degree;
 	}
@@ -191,6 +195,7 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		setManagedFlagsString(CurriculumManagedFlag.toString(flags));
 	}
 
+	@Override
 	public Group getGroup() {
 		return group;
 	}
@@ -204,6 +209,7 @@ public class CurriculumImpl implements Persistable, Curriculum {
 		return organisation;
 	}
 
+	@Override
 	public void setOrganisation(Organisation organisation) {
 		this.organisation = organisation;
 	}

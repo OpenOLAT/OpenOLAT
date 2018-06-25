@@ -40,7 +40,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,10 +90,9 @@ public class CurriculumListController extends FormBasicController implements Act
 	}
 	
 	private void loadModel() {
-		CurriculumSearchParameters params = new CurriculumSearchParameters();
-		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
+		List<Curriculum> curriculums = curriculumService.getMyCurriculums(getIdentity());
 		List<CurriculumRow> rows = curriculums.stream()
-				.map(curriculum -> new CurriculumRow(curriculum, null)).collect(Collectors.toList());
+				.map(curriculum -> new CurriculumRow(curriculum)).collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
@@ -104,10 +102,16 @@ public class CurriculumListController extends FormBasicController implements Act
 		//
 	}
 
-
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) {
+			if(tableModel.getRowCount() == 1) {
+				CurriculumRow row = tableModel.getObject(0);
+				if(elementlistCtrl == null || !elementlistCtrl.getCurriculum().getKey().equals(row.getKey())) {
+					doSelectCurriculum(ureq, row);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -131,6 +135,8 @@ public class CurriculumListController extends FormBasicController implements Act
 	}
 	
 	private void doSelectCurriculum(UserRequest ureq, CurriculumRow row) {
+		stackPanel.popUpToController(this);
+	
 		elementlistCtrl = new CurriculumElementListController(ureq, getWindowControl(), row);
 		listenTo(elementlistCtrl);
 		stackPanel.pushController(row.getDisplayName(), elementlistCtrl);

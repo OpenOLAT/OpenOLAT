@@ -19,11 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
@@ -31,32 +29,23 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataModel<CurriculumElementWithViewsRow>
-implements SortableFlexiTableDataModel<CurriculumElementWithViewsRow> {
+public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataModel<CurriculumElementWithViewsRow> {
 	
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-	}
-
-	@Override
-	public void sort(SortKey sortKey) {
-		//
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
 		CurriculumElementWithViewsRow curriculum = getObject(row);
-		return getValueAt(curriculum, col);
-	}
-
-	@Override
-	public Object getValueAt(CurriculumElementWithViewsRow row, int col) {
 		switch(ElementViewCols.values()[col]) {
-			case key: return row.getKey();
-			case elementDisplayName: return row.getCurriculumElementDisplayName();
-			case elementIdentifier: return row.getCurriculumElementIdentifier();
-			case entryDisplayName: return row.getRepositoryEntryName();
-			case start: return row.getStartLink();
+			case key: return curriculum.getKey();
+			case elementDisplayName: return curriculum.getCurriculumElementDisplayName();
+			case elementIdentifier: return curriculum.getCurriculumElementIdentifier();
+			case entryDisplayName: return curriculum.getRepositoryEntryDisplayName();
+			case entryExternalRef: return curriculum.getRepositoryEntryExternalRef();
+			case details: return curriculum.getDetailsLink();
+			case start: return curriculum.getStartLink();
 			default: return "ERROR";
 		}
 	}
@@ -71,6 +60,8 @@ implements SortableFlexiTableDataModel<CurriculumElementWithViewsRow> {
 		elementDisplayName("table.header.curriculum.element.displayName"),
 		elementIdentifier("table.header.curriculum.element.identifier"),
 		entryDisplayName("table.header.repository.entry.displayName"),
+		entryExternalRef("table.header.repository.entry.externalRef"),
+		details("table.header.details"),
 		start("table.header.start");
 		
 		private final String i18nHeaderKey;

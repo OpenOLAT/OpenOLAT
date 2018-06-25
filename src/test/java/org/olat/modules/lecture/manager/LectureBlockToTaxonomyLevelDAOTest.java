@@ -115,5 +115,26 @@ public class LectureBlockToTaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, loadedLevels.size());
 		Assert.assertEquals(level, loadedLevels.get(0));
 	}
+	
+	
+	@Test
+	public void getLectureBlocks() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lectures of taxonomists");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-202", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 
+		lectureBlockToTaxonomyLevelDao.createRelation(lectureBlock, level);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlock> loadedBlocks = lectureBlockToTaxonomyLevelDao.getLectureBlocks(level);
+		Assert.assertNotNull(loadedBlocks);
+		Assert.assertEquals(1, loadedBlocks.size());
+		Assert.assertEquals(lectureBlock, loadedBlocks.get(0));
+	}
 }

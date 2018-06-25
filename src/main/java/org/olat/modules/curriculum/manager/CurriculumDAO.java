@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -35,7 +36,9 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumImpl;
+import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,16 +85,33 @@ public class CurriculumDAO {
 		return curriculums == null || curriculums.isEmpty() ? null : curriculums.get(0);
 	}
 	
+	public List<Curriculum> getMyCurriculums(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select cur from curriculum cur")
+		  .append(" left join fetch cur.organisation organis")
+		  .append(" inner join fetch cur.group baseGroup")
+		  .append(" where exists (select curElement from curriculumelement curElement")
+		  .append("  inner join curElement.group as bGroup")
+		  .append("  inner join bGroup.members membership")
+		  .append("  where curElement.curriculum.key=cur.key and membership.identity.key=:memberKey and membership.role in ('").append(CurriculumRoles.participant).append("')")
+		  .append(" )");
+	
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Curriculum.class)
+				.setParameter("memberKey", identity.getKey())
+				.getResultList();
+	}
+	
 	public List<Curriculum> search(CurriculumSearchParameters params) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select cur from curriculum cur")
-		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation org")
+		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis")
 		  .append(" inner join fetch cur.group baseGroup");
 		
 		boolean where = false;
 		if(!params.getOrganisations().isEmpty()) {
 			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" cur.organisation.key in (:organisationKeys)");
+			sb.append(" organis.key in (:organisationKeys)");
 		}
 		
 		Long key = null;
@@ -112,6 +132,15 @@ public class CurriculumDAO {
 			}
 			sb.append(")");	
 		}
+		
+		if(params.getManagerIdentity() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("exists (select membership.key from bgroupmember as membership")
+			  .append("  where membership.identity.key=:managerKey")
+			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
+			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("')")
+			  .append(")");
+		}
 
 		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class);
@@ -129,7 +158,84 @@ public class CurriculumDAO {
 		if(fuzzyRef != null) {
 			query.setParameter("fuzzyRef", fuzzyRef);
 		}
+		if(params.getManagerIdentity() != null) {
+			query.setParameter("managerKey", params.getManagerIdentity().getKey());
+		}
 		return query.getResultList();
+	}
+	
+	public List<CurriculumInfos> searchWithInfos(CurriculumSearchParameters params) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select cur,")
+		  .append(" (select count(curElement.key) from curriculumelement curElement")
+		  .append("  where curElement.curriculum.key=cur.key")
+		  .append(" ) as numOfElements")
+		  .append(" from curriculum cur")
+		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis")
+		  .append(" inner join fetch cur.group baseGroup");
+		
+		boolean where = false;
+		if(!params.getOrganisations().isEmpty()) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" organis.key in (:organisationKeys)");
+		}
+		
+		Long key = null;
+		String ref = null;
+		String fuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
+			ref = params.getSearchString();
+			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
+			
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" (cur.externalId=:ref or ");
+			PersistenceHelper.appendFuzzyLike(sb, "cur.displayName", "fuzzyRef", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "cur.identifier", "fuzzyRef", dbInstance.getDbVendor());
+			if(StringHelper.isLong(ref)) {
+				key = Long.valueOf(ref);
+				sb.append(" or cur.key=:curriculumKey");
+			}
+			sb.append(")");	
+		}
+		
+		if(params.getManagerIdentity() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("exists (select membership.key from bgroupmember as membership")
+			  .append("  where membership.identity.key=:managerKey")
+			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
+			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("')")
+			  .append(")");
+		}
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(!params.getOrganisations().isEmpty()) {
+			List<Long> organisationKeys = params.getOrganisations()
+					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+			query.setParameter("organisationKeys", organisationKeys);
+		}
+		if(key != null) {
+			query.setParameter("curriculumKey", key);
+		}
+		if(ref != null) {
+			query.setParameter("ref", ref);
+		}
+		if(fuzzyRef != null) {
+			query.setParameter("fuzzyRef", fuzzyRef);
+		}
+		if(params.getManagerIdentity() != null) {
+			query.setParameter("managerKey", params.getManagerIdentity().getKey());
+		}
+		
+		List<Object[]> rawObjects = query.getResultList();
+		List<CurriculumInfos> infos = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			Curriculum curriculum = (Curriculum)rawObject[0];
+			Long numOfElements = PersistenceHelper.extractLong(rawObject, 1);
+			infos.add(new CurriculumInfos(curriculum, numOfElements));
+		}
+		return infos;
 	}
 	
 	public Curriculum update(Curriculum curriculum) {

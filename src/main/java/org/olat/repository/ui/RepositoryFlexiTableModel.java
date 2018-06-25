@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryService;
@@ -63,8 +62,6 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private LoginModule loginModule;
-	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private AccessControlModule acModule;
@@ -76,8 +73,12 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			RepositoryFlexiTableSortDelegate sort = new RepositoryFlexiTableSortDelegate(orderBy, this, translator.getLocale());
+			List<RepositoryEntry> sorted = sort.sort();
+			super.setObjects(sorted);
+		}
 	}
 	
 	@Override
@@ -93,7 +94,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 			case repoEntry: return re; 
 			case displayname: return getDisplayName(re, translator.getLocale());
 			case author: return getFullname(re.getInitialAuthor());
-			case access: return getAccess(re);
+			case access: return re;
 			case creationDate: return re.getCreationDate();
 			case lastUsage: return re.getStatistics().getLastUsage();
 			case externalId: return re.getExternalId();
@@ -186,27 +187,6 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 		return access;
 	}
 	
-	private Object getAccess(RepositoryEntry re) {
-		if(re.isMembersOnly()) {
-			return translator.translate("table.header.access.membersonly"); 
-		}
-		switch (re.getAccess()) {
-			case RepositoryEntry.ACC_OWNERS: return translator.translate("table.header.access.owner");
-			case RepositoryEntry.ACC_OWNERS_AUTHORS: return translator.translate("table.header.access.author");
-			case RepositoryEntry.ACC_USERS: return translator.translate("table.header.access.user");
-			case RepositoryEntry.ACC_USERS_GUESTS: {
-				if(!loginModule.isGuestLoginLinksEnabled()) {
-					return translator.translate("table.header.access.user");
-				}
-				return translator.translate("table.header.access.guest");
-			}
-			default:						
-				// OLAT-6272 in case of broken repo entries with no access code
-				// return error instead of nothing
-				return "ERROR";
-		}
-	}
-	
 	private String getFullname(String author) {
 		if(fullNames.containsKey(author)) {
 			return fullNames.get(author);
@@ -244,8 +224,8 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 		externalRef("table.header.externalref"),
 		lifecycleLabel("table.header.lifecycle.label"),
 		lifecycleSoftKey("table.header.lifecycle.softkey"),
-		lifecycleStart(""),
-		lifecycleEnd("");
+		lifecycleStart("table.header.lifecycle.start"),
+		lifecycleEnd("table.header.lifecycle.end");
 		
 		private final String i18nKey;
 		
@@ -268,5 +248,4 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 			return name();
 		}
 	}
-
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.Locale;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -26,9 +28,11 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
+import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -39,47 +43,56 @@ import org.olat.repository.RepositoryEntryLight;
 public class AccessRenderer implements FlexiCellRenderer {
 	
 	private final boolean guestLoginEnabled;
+	private final Translator translator;
 	
-	public AccessRenderer() {
+	public AccessRenderer(Locale locale) {
 		guestLoginEnabled = CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginLinksEnabled();
+		translator = Util.createPackageTranslator(RepositoryService.class, locale);
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
 		if(val instanceof RepositoryEntryLight) {
 			RepositoryEntryLight re = (RepositoryEntryLight)val;
-			if(re.getAccess() == RepositoryEntry.DELETED) {
-				sb.append(translator.translate("table.header.access.deleted"));
-			} else if(re.isMembersOnly()) {
-				sb.append(translator.translate("table.header.access.membersonly")); 
-			} else {
-				switch (re.getAccess()) {
-					case RepositoryEntry.DELETED: {
-						sb.append(translator.translate("table.header.access.deleted"));
-						break;
-					}
-					case RepositoryEntry.ACC_OWNERS:
-						sb.append(translator.translate("table.header.access.owner"));
-						break;
-					case RepositoryEntry.ACC_OWNERS_AUTHORS:
-						sb.append(translator.translate("table.header.access.author"));
-						break;
-					case RepositoryEntry.ACC_USERS:
-						sb.append(translator.translate("table.header.access.user"));
-						break;
-					case RepositoryEntry.ACC_USERS_GUESTS: {
-						if(!guestLoginEnabled) {
-							sb.append(translator.translate("table.header.access.user"));
-						} else {
-							sb.append(translator.translate("table.header.access.guest"));
-						}
-						break;
-					} default:						
-						// OLAT-6272 in case of broken repo entries with no access code
-						// return error instead of nothing
-						sb.append("ERROR");
+			render(sb, re.getAccess(), re.isMembersOnly());
+		} else if(val instanceof RepositoryEntry) {
+			RepositoryEntry re = (RepositoryEntry)val;
+			render(sb, re.getAccess(), re.isMembersOnly());
+		}
+	}
+	
+	private void render(StringOutput sb, int access, boolean membersOnly) {
+		if(access == RepositoryEntry.DELETED) {
+			sb.append(translator.translate("table.header.access.deleted"));
+		} else if(membersOnly) {
+			sb.append(translator.translate("table.header.access.membersonly")); 
+		} else {
+			switch (access) {
+				case RepositoryEntry.DELETED: {
+					sb.append(translator.translate("table.header.access.deleted"));
+					break;
 				}
+				case RepositoryEntry.ACC_OWNERS:
+					sb.append(translator.translate("table.header.access.owner"));
+					break;
+				case RepositoryEntry.ACC_OWNERS_AUTHORS:
+					sb.append(translator.translate("table.header.access.author"));
+					break;
+				case RepositoryEntry.ACC_USERS:
+					sb.append(translator.translate("table.header.access.user"));
+					break;
+				case RepositoryEntry.ACC_USERS_GUESTS: {
+					if(!guestLoginEnabled) {
+						sb.append(translator.translate("table.header.access.user"));
+					} else {
+						sb.append(translator.translate("table.header.access.guest"));
+					}
+					break;
+				} default:						
+					// OLAT-6272 in case of broken repo entries with no access code
+					// return error instead of nothing
+					sb.append("ERROR");
 			}
 		}
 	}

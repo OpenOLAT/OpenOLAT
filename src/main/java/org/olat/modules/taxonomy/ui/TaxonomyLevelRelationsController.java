@@ -19,8 +19,8 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,11 +31,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelRelationsTableModel.RelationsCols;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelRelationTypeRenderer;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,7 +58,13 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 	private final TaxonomyLevelRef taxonomyLevel;
 	
 	@Autowired
+	private LectureService lectureService;
+	@Autowired
 	private QPoolService questionPoolService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public TaxonomyLevelRelationsController(UserRequest ureq, WindowControl wControl, TaxonomyLevelRef taxonomyLevel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -64,10 +76,11 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationsCols.key));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RelationsCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationsCols.type,
 				new TaxonomyLevelRelationTypeRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationsCols.displayName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationsCols.externalId));
 	
 		tableModel = new TaxonomyLevelRelationsTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -77,10 +90,24 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
+		List<TaxonomyLevelRelationRow> rows = new ArrayList<>();
 		List<QuestionItemShort> items = questionPoolService.getItems(taxonomyLevel);
-		List<TaxonomyLevelRelationRow> rows = items.stream()
-				.map(i -> new TaxonomyLevelRelationRow(i))
-				.collect(Collectors.toList());
+		for(QuestionItemShort item:items) {
+			rows.add(new TaxonomyLevelRelationRow(item));
+		}
+		List<RepositoryEntry> entries = repositoryService.getRepositoryEntryByTaxonomy(taxonomyLevel);
+		for(RepositoryEntry entry:entries) {
+			rows.add(new TaxonomyLevelRelationRow(entry));
+		}
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(taxonomyLevel);
+		for(CurriculumElement curriculumElement:curriculumElements) {
+			rows.add(new TaxonomyLevelRelationRow(curriculumElement));
+		}
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(taxonomyLevel);
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			rows.add(new TaxonomyLevelRelationRow(lectureBlock));
+		}
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}

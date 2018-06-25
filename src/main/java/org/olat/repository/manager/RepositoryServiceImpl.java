@@ -22,6 +22,7 @@ package org.olat.repository.manager;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,8 @@ import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.reminder.manager.ReminderDAO;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
@@ -152,6 +155,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -709,5 +714,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params,
 			int firstResult, int maxResults) {
 		return authorViewQueries.searchViews(params, firstResult, maxResults);
+	}
+
+	@Override
+	public List<TaxonomyLevel> getTaxonomy(RepositoryEntry entry) {
+		if(entry == null || entry.getKey() == null) return Collections.emptyList();
+		return repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
+	}
+
+	@Override
+	public List<RepositoryEntry> getRepositoryEntryByTaxonomy(TaxonomyLevelRef taxonomyLevel) {
+		return repositoryEntryToTaxonomyLevelDao.getRepositoryEntries(taxonomyLevel);
 	}
 }

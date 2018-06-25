@@ -2,6 +2,7 @@
 /target/
 /cargo/
 /.settings/
+/.externalToolBuilders/
 
 # deprecated scripting files
 *.pl

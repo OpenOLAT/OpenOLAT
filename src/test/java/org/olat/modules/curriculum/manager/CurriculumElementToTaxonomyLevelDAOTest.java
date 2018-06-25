@@ -103,5 +103,22 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, loadedLevels.size());
 		Assert.assertEquals(level, loadedLevels.get(0));
 	}
+	
+	@Test
+	public void getCurriculumElements() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-4", "Curriculum for relation to taxonomy", "Curriculum", null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-4", "4. Element", new Date(), new Date(), null, null, curriculum);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-303", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElement> loadedElements = curriculumElementToTaxonomyLevelDao.getCurriculumElements(level);
+		Assert.assertNotNull(loadedElements);
+		Assert.assertEquals(1, loadedElements.size());
+		Assert.assertEquals(element, loadedElements.get(0));
+	}
+	
 
 }

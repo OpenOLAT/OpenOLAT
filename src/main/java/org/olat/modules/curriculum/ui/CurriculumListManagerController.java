@@ -53,6 +53,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +78,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private int counter = 0;
+	private final boolean isOlatAdmin;
 	private final CurriculumSecurityCallback secCallback;
-	
+
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -87,7 +89,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		super(ureq, wControl, "manage_curriculum");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
-		
+		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+
 		initForm(ureq);
 		loadModel(null, true);
 	}
@@ -108,6 +111,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements));
+		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", translate("edit.icon"), "edit");
+		editCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(editCol);
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
 		toolsCol.setExportable(false);
 		toolsCol.setAlwaysVisible(true);
@@ -124,14 +131,17 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private void loadModel(String searchString, boolean reset) {
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setSearchString(searchString);
-		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
+		if(!isOlatAdmin) {
+			params.setManagerIdentity(getIdentity());
+		}
+		List<CurriculumInfos> curriculums = curriculumService.getCurriculumsWithInfos(params);
 		List<CurriculumRow> rows = curriculums.stream()
 				.map(this::forgeRow).collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(reset, reset, true);
 	}
 	
-	private CurriculumRow forgeRow(Curriculum curriculum) {
+	private CurriculumRow forgeRow(CurriculumInfos curriculum) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		CurriculumRow row = new CurriculumRow(curriculum, toolsLink);
@@ -193,6 +203,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				if("select".equals(cmd)) {
 					CurriculumRow row = tableModel.getObject(se.getIndex());
 					doSelectCurriculum(ureq, row);
+				} else if("edit".equals(cmd)) {
+					CurriculumRow row = tableModel.getObject(se.getIndex());
+					doEditCurriculum(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				doSearch((FlexiTableSearchEvent)event);
