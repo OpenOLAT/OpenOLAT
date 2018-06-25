@@ -195,6 +195,18 @@ public interface CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry);
 	
 	/**
+	 * Return the curriculum elements linked to the specified repository entry and a
+	 * the specified identity.
+	 *
+	 * @param entry
+	 * @param identity
+	 * @param roles Restrict to this roles. If roles is null or empty, no restriction is active.
+	 * @return
+	 */
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry, Identity identity,
+			Collection<CurriculumRoles> roles);
+	
+	/**
 	 * Search curriculum elements in all curriculums. The search is an exact match (think about Syncher).
 	 * 
 	 * @param externalId The external id (optional)

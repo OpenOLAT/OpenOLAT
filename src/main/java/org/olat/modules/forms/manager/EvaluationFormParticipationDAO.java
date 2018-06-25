@@ -28,6 +28,8 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -46,6 +48,8 @@ import org.springframework.stereotype.Service;
 @Service
 class EvaluationFormParticipationDAO {
 
+	private static final OLog log = Tracing.createLoggerFor(EvaluationFormParticipationDAO.class);
+
 	@Autowired
 	private DB dbInstance;
 
@@ -60,6 +64,7 @@ class EvaluationFormParticipationDAO {
 		participation.setAnonymous(anonymous);
 		participation.setExecutor(executor);
 		dbInstance.getCurrentEntityManager().persist(participation);
+		log.debug("Participation created: " + participation.toString());
 		return participation;
 	}
 

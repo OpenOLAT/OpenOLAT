@@ -20,14 +20,20 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +78,32 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.createQuery(sb.toString(), RepositoryEntry.class)
 			.setParameter("elementKey", element.getKey())
 			.getResultList();
+	}
+	
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry, Identity identity, Collection<CurriculumRoles> roles) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el from curriculumelement as el")
+		  .append(" inner join el.group as bGroup")
+		  .append(" inner join bGroup.members as memberships")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" where rel.entry.key=:repoKey")
+		  .append("   and memberships.identity.key=:identityKey");
+		if (roles != null && !roles.isEmpty()) {
+			sb.append(" and memberships.role in (:roles)");
+		}
+		
+		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CurriculumElement.class)
+			.setParameter("repoKey", entry.getKey())
+			.setParameter("identityKey", identity.getKey());
+		if (roles != null && !roles.isEmpty()) {
+			query.setParameter("roles", getRoleNames(roles));
+		}
+		return query.getResultList();
+	}
+	
+	private List<String> getRoleNames(Collection<CurriculumRoles> roles) {
+		return roles.stream().map(CurriculumRoles::name).collect(Collectors.toList());
 	}
 	
 	/**

@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class QualityDataCollectionDAO {
+class QualityDataCollectionDAO {
 	
 	@Autowired
 	private DB dbInstance;
@@ -67,23 +67,10 @@ public class QualityDataCollectionDAO {
 		return dataCollection;
 	}
 
-	void deleteDataCollection(QualityDataCollectionRef dataCollectionRef) {
-		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from qualitydatacollection as collection");
-		sb.append(" where collection.key=:collectionKey");
-		
-		dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.setParameter("collectionKey", dataCollectionRef.getKey())
-				.executeUpdate();	
-	}
-
 	QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef) {
 		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return null;
 			
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select collection from qualitydatacollection as collection");
 		sb.append(" where collection.key=:collectionKey");
 		
@@ -94,9 +81,21 @@ public class QualityDataCollectionDAO {
 		return dataCollections.isEmpty() ? null : dataCollections.get(0);
 	}
 
+	void deleteDataCollection(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("delete from qualitydatacollection as collection");
+		sb.append(" where collection.key=:collectionKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("collectionKey", dataCollectionRef.getKey())
+				.executeUpdate();
+	}
 
 	int getDataCollectionCount() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select count(collection.key) from qualitydatacollection as collection");
 		
 		List<Long> counts = dbInstance.getCurrentEntityManager()

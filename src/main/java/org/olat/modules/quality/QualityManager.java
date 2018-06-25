@@ -21,10 +21,12 @@ package org.olat.modules.quality;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -59,8 +61,19 @@ public interface QualityManager {
 
 	public void updateFormEntry(QualityDataCollection dataCollection, RepositoryEntry formEntry);
 
-	public void addParticipants(QualityDataCollectionLight dataCollection, List<Identity> executors);
-	
+	/**
+	 * Add the executors to the data collection and returns the participations of
+	 * the executors. If already a participation for an executor exists, no further
+	 * participation is created, but the existing participation is used and
+	 * returned.
+	 *
+	 * @param dataCollection
+	 * @param executors
+	 * @return
+	 */
+	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection,
+			List<Identity> executors);
+
 	public int getParticipationCount(QualityDataCollectionLight dataCollection);
 
 	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
@@ -70,5 +83,23 @@ public interface QualityManager {
 
 	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
 			int maxResults, SortKey[] orderBy);
+
+	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
+			EvaluationFormParticipation participation);
+	
+	/**
+	 * Create a QualityContextBuilder and populate it with the data according to the
+	 * participation and the repository entry.
+	 *
+	 * @param dataCollection
+	 * @param participation
+	 * @param entry
+	 * @param roles 
+	 * @return
+	 */
+	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
+			EvaluationFormParticipation participation, RepositoryEntry entry, List<GroupRoles> roles);
+	
+	public void deleteContext(QualityContext context);
 
 }

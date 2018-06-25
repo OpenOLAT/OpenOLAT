@@ -31,9 +31,11 @@ import org.olat.modules.quality.QualityParticipation;
 class ParticipationRow {
 
 	private final QualityParticipation participation;
+	private final Long key;
 
 	public ParticipationRow(QualityParticipation participation) {
 		this.participation = participation;
+		this.key = participation.getParticipationRef().getKey();
 	}
 
 	public QualityParticipation getParticipation() {
@@ -54,6 +56,31 @@ class ParticipationRow {
 
 	public Object getEmail() {
 		return participation.getEmail();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParticipationRow other = (ParticipationRow) obj;
+		if (key == null) {
+			if (other.key != null)
+				return false;
+		} else if (!key.equals(other.key))
+			return false;
+		return true;
 	}
 
 }

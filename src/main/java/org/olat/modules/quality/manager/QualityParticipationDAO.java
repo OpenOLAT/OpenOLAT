@@ -28,8 +28,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class QualityParticipationDAO {
+class QualityParticipationDAO {
 	
 	@Autowired
 	private DB dbInstance;
@@ -49,7 +49,7 @@ public class QualityParticipationDAO {
 	int getParticipationCount(QualityDataCollectionLight dataCollection) {
 		if (dataCollection == null) return 0;
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select count(participation.key)");
 		sb.append("  from evaluationformparticipation as participation");
 		sb.append(" inner join participation.survey as survey");

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -27,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -75,6 +77,28 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<CurriculumElement> elements = curriculumRepositoryEntryRelationDao.getCurriculumElements(entry);
+		Assert.assertNotNull(elements);
+		Assert.assertEquals(1, elements.size());
+		Assert.assertEquals(element, elements.get(0));
+	}
+	
+	@Test
+	public void getCurriculumElementsRepositoryEntryAnsUser() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant, CurriculumRoles.coach);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-re-part2");
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumRoles> roles = Arrays.asList(CurriculumRoles.participant);
+		List<CurriculumElement> elements = curriculumRepositoryEntryRelationDao.getCurriculumElements(entry, participant, roles);
 		Assert.assertNotNull(elements);
 		Assert.assertEquals(1, elements.size());
 		Assert.assertEquals(element, elements.get(0));

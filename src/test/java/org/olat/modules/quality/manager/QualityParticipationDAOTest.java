@@ -73,7 +73,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		for (int i = 0; i < numberOfParticipations; i++) {
 			qualityTestHelper.createParticipation(survey);
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		int count = sut.getParticipationCount(dataCollection);
 		
@@ -89,7 +89,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 			Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 			qualityTestHelper.createParticipation(survey, identity);
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, 0, -1);
 		
@@ -110,7 +110,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 			Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 			qualityTestHelper.createParticipation(survey, identity);
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, 1, 1);
 		
@@ -131,7 +131,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		userA.setProperty(UserConstants.LASTNAME, "A");
 		UserManager.getInstance().updateUser(userA);
 		qualityTestHelper.createParticipation(survey, identityA);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		SortKey sortKey = new SortKey(ParticipationCols.lastname.name(), true);
 		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, 0, -1, sortKey);
@@ -146,7 +146,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		qualityTestHelper.createParticipation(survey, identity);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<ParticipationCols> excludedCols = Arrays.asList();
 		for (ParticipationCols col: ParticipationCols.values()) {
@@ -169,7 +169,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
 		EvaluationFormSurvey otherSurvey = qualityTestHelper.createRandomSurvey();
 		qualityTestHelper.createParticipation(otherSurvey, identity);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		int count = sut.getExecutorParticipationCount(identity);
 		
@@ -186,7 +186,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
 		EvaluationFormSurvey otherSurvey = qualityTestHelper.createRandomSurvey();
 		qualityTestHelper.createParticipation(otherSurvey, identity);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(identity, 0, -1);
 		
@@ -206,7 +206,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		qualityTestHelper.addParticipations(dataCollection1, Arrays.asList(identity));
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(identity, 1, 1);
 		
@@ -220,7 +220,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		qualityTestHelper.addParticipations(dataCollection1, Arrays.asList(identity));
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		SortKey sortKey = new SortKey(ExecutorParticipationCols.title.name(), true);
 		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(identity, 0, -1, sortKey);
@@ -234,7 +234,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		qualityTestHelper.addParticipations(dataCollection, Arrays.asList(identity));
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<ExecutorParticipationCols> excludedCols = Arrays.asList(ExecutorParticipationCols.execute);
 		for (ExecutorParticipationCols col: ExecutorParticipationCols.values()) {

@@ -257,7 +257,73 @@ create table o_qual_data_collection (
    primary key (id)
 );
 
+create table o_qual_context (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   fk_data_collection bigint not null,
+   fk_eva_participation bigint,
+   fk_eva_session bigint,
+   fk_repository bigint,
+   primary key (id)
+);
+
+create table o_qual_context_to_organisation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_organisation bigint not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_curriculum (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_curriculum bigint not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_cur_element (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_cur_element bigint not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_tax_level (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_tax_leveL bigint not null,
+   primary key (id)
+);
+
 alter table o_qual_data_collection ENGINE = InnoDB;
+alter table o_qual_context ENGINE = InnoDB;
+alter table o_qual_context_to_organisation ENGINE = InnoDB;
+alter table o_qual_context_to_curriculum ENGINE = InnoDB;
+alter table o_qual_context_to_cur_element ENGINE = InnoDB;
+alter table o_qual_context_to_tax_level ENGINE = InnoDB;
+
+alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
+alter table o_qual_context add constraint qual_con_to_session_idx foreign key (fk_eva_session) references o_eva_form_session (id);
+alter table o_qual_context add constraint qual_con_to_repo_idx foreign key (fk_repository) references o_repositoryentry (repositoryentry_id);
+
+alter table o_qual_context_to_organisation add constraint qual_con_to_org_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_org_org_idx on o_qual_context_to_organisation (fk_organisation, fk_context);
+
+alter table o_qual_context_to_curriculum add constraint qual_con_to_cur_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_cur_cur_idx on o_qual_context_to_curriculum (fk_curriculum, fk_context);
+
+alter table o_qual_context_to_cur_element add constraint qual_con_to_cur_ele_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_cur_ele_ele_idx on o_qual_context_to_cur_element (fk_cur_element, fk_context);
+
+alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
+
 
 -- membership
 alter table o_bs_group_member add column g_inheritance_mode varchar(16) default 'none' not null;

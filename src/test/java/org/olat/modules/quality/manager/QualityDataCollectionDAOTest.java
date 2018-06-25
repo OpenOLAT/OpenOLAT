@@ -70,7 +70,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateNewDataCollection() {
 		QualityDataCollection dataCollection = sut.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 
 		assertThat(dataCollection).isNotNull();
 		assertThat(dataCollection.getCreationDate()).isNotNull();
@@ -86,12 +86,12 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		Date end = new GregorianCalendar(2014, Calendar.FEBRUARY, 20).getTime();
 		QualityDataCollectionTopicType topicType = QualityDataCollectionTopicType.CURRICULUM;
 		String topicCustom = "custom topic";
-		Organisation organisation = qualityTestHelper.getOrganisation();
-		Curriculum curriculum = qualityTestHelper.createCuriculum();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
 		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
 		RepositoryEntry entry = qualityTestHelper.createRepositoryEntry();
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		dataCollection.setStatus(status);
 		dataCollection.setTitle(title);
@@ -104,8 +104,9 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollection.setTopicCurriculumElement(curriculumElement);
 		dataCollection.setTopicRepositoryEntry(entry);
 		QualityDataCollection updatedDataCollection = sut.updateDataCollection(dataCollection);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 
+		updatedDataCollection = sut.loadDataCollectionByKey(updatedDataCollection);
 		assertThat(updatedDataCollection.getStatus()).isEqualByComparingTo(status);
 		assertThat(updatedDataCollection.getTitle()).isEqualTo(title);
 		assertThat(updatedDataCollection.getStart()).isEqualToIgnoringSeconds(start);
@@ -121,10 +122,10 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteDataCollection() {
 		QualityDataCollectionRef dataCollection = sut.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		sut.deleteDataCollection(dataCollection);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityDataCollectionView> collections = sut.loadDataCollections(TRANSLATOR, 0, -1);
 		
@@ -134,7 +135,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadDataCollectionByKey() {
 		QualityDataCollection dataCollection = sut.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection loadDataCollection = sut.loadDataCollectionByKey(dataCollection);
 		
@@ -147,7 +148,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		for (int i = 0; i < numberOfDataCollections; i++) {
 			qualityTestHelper.createDataCollection();
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		int count = sut.getDataCollectionCount();
 		
@@ -158,7 +159,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadDataCollections() {
 		qualityTestHelper.createDataCollection();
 		qualityTestHelper.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, 0, -1);
 		
@@ -169,7 +170,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadDataCollectionsPaged() {
 		qualityTestHelper.createDataCollection();
 		qualityTestHelper.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, 1, 1);
 		
@@ -182,7 +183,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollectionZ.setTitle("Z");
 		QualityDataCollection dataCollectionA = qualityTestHelper.createDataCollection();
 		dataCollectionA.setTitle("A");
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		SortKey sortKey = new SortKey(DataCollectionCols.title.name(), true);
 		List<QualityDataCollectionView> dataCollectionViews = sut.loadDataCollections(TRANSLATOR, 0, -1, sortKey);
@@ -194,7 +195,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadDataCollectionOrderedByAllColumns() {
 		qualityTestHelper.createDataCollection();
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<DataCollectionCols> excludedCols = Arrays.asList(DataCollectionCols.edit, DataCollectionCols.delete);
 		for (DataCollectionCols col: DataCollectionCols.values()) {

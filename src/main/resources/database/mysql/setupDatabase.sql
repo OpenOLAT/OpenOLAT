@@ -1896,6 +1896,49 @@ create table o_qual_data_collection (
    primary key (id)
 );
 
+create table o_qual_context (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   fk_data_collection bigint not null,
+   fk_eva_participation bigint,
+   fk_eva_session bigint,
+   fk_repository bigint,
+   primary key (id)
+);
+
+create table o_qual_context_to_organisation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_organisation bigint not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_curriculum (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_curriculum bigint not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_cur_element (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_cur_element bigint not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_tax_level (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_context bigint not null,
+   fk_tax_leveL bigint not null,
+   primary key (id)
+);
+
 -- lti
 create table o_lti_outcome (
    id bigint not null,
@@ -2824,6 +2867,11 @@ alter table o_eva_form_session ENGINE = InnoDB;
 alter table o_eva_form_response ENGINE = InnoDB;
 alter table o_eva_form_survey ENGINE = InnoDB;
 alter table o_qual_data_collection ENGINE = InnoDB;
+alter table o_qual_context ENGINE = InnoDB;
+alter table o_qual_context_to_organisation ENGINE = InnoDB;
+alter table o_qual_context_to_curriculum ENGINE = InnoDB;
+alter table o_qual_context_to_cur_element ENGINE = InnoDB;
+alter table o_qual_context_to_tax_level ENGINE = InnoDB;
 alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;
@@ -3296,6 +3344,24 @@ alter table o_eva_form_session add constraint eva_sess_to_form_idx foreign key (
 
 alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
+
+--quality management
+alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
+alter table o_qual_context add constraint qual_con_to_session_idx foreign key (fk_eva_session) references o_eva_form_session (id);
+alter table o_qual_context add constraint qual_con_to_repo_idx foreign key (fk_repository) references o_repositoryentry (repositoryentry_id);
+
+alter table o_qual_context_to_organisation add constraint qual_con_to_org_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_org_org_idx on o_qual_context_to_organisation (fk_organisation, fk_context);
+
+alter table o_qual_context_to_curriculum add constraint qual_con_to_cur_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_cur_cur_idx on o_qual_context_to_curriculum (fk_curriculum, fk_context);
+
+alter table o_qual_context_to_cur_element add constraint qual_con_to_cur_ele_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_cur_ele_ele_idx on o_qual_context_to_cur_element (fk_cur_element, fk_context);
+
+alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con_idx foreign key (fk_context) references o_qual_context (id);
+create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

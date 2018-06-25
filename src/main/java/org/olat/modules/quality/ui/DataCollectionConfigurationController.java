@@ -133,7 +133,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
-		this.dataCollection = qualityManager.loadDataCollectionByKey(dataCollectionLight);;
+		this.dataCollection = qualityManager.loadDataCollectionByKey(dataCollectionLight);
 		this.formEntry = qualityManager.loadFormEntry(dataCollection);
 		this.topicType = dataCollection.getTopicType();
 		this.topicIdentity = dataCollection.getTopicIdentity();

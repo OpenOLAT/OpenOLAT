@@ -234,6 +234,12 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry, Identity identity,
+			Collection<CurriculumRoles> roles) {
+		return curriculumRepositoryEntryRelationDao.getCurriculumElements(entry, identity, roles);
+	}
+
+	@Override
 	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement) {
 		return curriculumElementDao.getChildren(parentElement);
 	}
@@ -261,9 +267,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities) {
 		return curriculumElementDao.getMembershipInfos(elements, identities);
-	}
-	
-	
+	}	
 
 	@Override
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles,

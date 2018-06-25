@@ -19,10 +19,12 @@
  */
 package org.olat.modules.quality.ui;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -50,13 +52,17 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityManager;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.olat.modules.quality.ui.wizard.AddUser_1_ChooseUserStep;
 import org.olat.modules.quality.ui.wizard.IdentityContext;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,7 +75,8 @@ public class ParticipationListController extends FormBasicController implements 
 
 	private static final String CMD_REMOVE = "remove";
 	
-	private Link addUserLink;
+	private Link addUsersLink;
+	private Link addCourseUsersLink;
 	private FormLink removeUsersLink;
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
@@ -80,12 +87,14 @@ public class ParticipationListController extends FormBasicController implements 
 	private ParticipationRemoveConfirmationController removeConformationCtrl;
 	
 	private final QualitySecurityCallback secCallback;
-	private final QualityDataCollectionLight dataCollection;
+	private QualityDataCollection dataCollection;
 	
 	@Autowired
 	private QualityManager qualityManager;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
@@ -93,7 +102,7 @@ public class ParticipationListController extends FormBasicController implements 
 		super(ureq, windowControl, "participation_list");
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
-		this.dataCollection = dataCollection;
+		this.dataCollection = qualityManager.loadDataCollectionByKey(dataCollection);
 		initForm(ureq);
 	}
 
@@ -109,6 +118,7 @@ public class ParticipationListController extends FormBasicController implements 
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), formLayout);
 		if (secCallback.canRevomeParticipation(dataCollection)) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 		}
 		
 		if (secCallback.canRevomeParticipation(dataCollection)) {
@@ -118,9 +128,13 @@ public class ParticipationListController extends FormBasicController implements 
 
 	@Override
 	public void initTools() {
-		addUserLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
-		addUserLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
-		stackPanel.addTool(addUserLink, Align.right);
+		addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
+		addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
+		stackPanel.addTool(addCourseUsersLink, Align.right);
+		
+		addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
+		addUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
+		stackPanel.addTool(addUsersLink, Align.right);
 	}
 	
 	@Override
@@ -147,8 +161,10 @@ public class ParticipationListController extends FormBasicController implements 
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(addUserLink == source) {
-			doAddUser(ureq);
+		if (addUsersLink == source) {
+			doAddUsers(ureq);
+		} else if (addCourseUsersLink == source) {
+			doAddCourseUsers();
 		}
 		super.event(ureq, source, event);
 	}
@@ -190,7 +206,7 @@ public class ParticipationListController extends FormBasicController implements 
 				.collect(Collectors.toList());
 	}
 
-	private void doAddUser(UserRequest ureq) {
+	private void doAddUsers(UserRequest ureq) {
 		removeAsListenerAndDispose(addUserWizard);
 
 		Step start = new AddUser_1_ChooseUserStep(ureq);
@@ -199,7 +215,7 @@ public class ParticipationListController extends FormBasicController implements 
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				IdentityContext identityContext = (IdentityContext) runContext.get("identityContext");
 				List<Identity> identities = identityContext.getIdentities();
-				qualityManager.addParticipants(dataCollection, identities);
+				doAddSelectedUsers(identities);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -208,6 +224,13 @@ public class ParticipationListController extends FormBasicController implements 
 				translate("participation.user.add.title"), "");
 		listenTo(addUserWizard);
 		getWindowControl().pushAsModalDialog(addUserWizard.getInitialComponent());
+	}
+
+	private void doAddSelectedUsers(List<Identity> identities) {
+		List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+		for (EvaluationFormParticipation participation: participations) {
+			qualityManager.createContextBuilder(dataCollection, participation).build();
+		}
 	}
 
 	private void doConfirmRemove(UserRequest ureq, List<EvaluationFormParticipationRef> participationRefs) {
@@ -222,6 +245,22 @@ public class ParticipationListController extends FormBasicController implements 
 			cmc.activate();
 			listenTo(cmc);
 		}
+	}
+	
+	private void doAddCourseUsers() {
+		dataCollection = qualityManager.loadDataCollectionByKey(dataCollection);
+		RepositoryEntry entry = dataCollection.getTopicRepositoryEntry();
+		if (entry != null) {
+			//TODO uh Rollen abbilden
+			List<GroupRoles> roles = Arrays.asList(GroupRoles.participant);
+			String[] roleNames = roles.stream().map(GroupRoles::name).toArray(String[]::new);
+			List<Identity> members = repositoryService.getMembers(entry, roleNames);
+			List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, members);
+			for (EvaluationFormParticipation participation: participations) {
+				qualityManager.createContextBuilder(dataCollection, participation, entry, roles).build();
+			}
+		}
+		tableEl.reset(true, false, true);
 	}
 	
 	private void doRemove(List<EvaluationFormParticipationRef> participationRefs) {

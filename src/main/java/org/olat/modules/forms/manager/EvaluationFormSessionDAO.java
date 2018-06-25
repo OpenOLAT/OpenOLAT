@@ -273,7 +273,7 @@ class EvaluationFormSessionDAO {
 				.executeUpdate();
 	}
 	
-	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
+	private List<Long> getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
 		return participationRefs.stream().map(EvaluationFormParticipationRef::getKey).collect(Collectors.toList());
 	}
 

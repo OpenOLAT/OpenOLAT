@@ -214,6 +214,11 @@
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
 		<class>org.olat.modules.qpool.model.QuestionItemAuditLogImpl</class>
+		<class>org.olat.modules.quality.model.QualityContextImpl</class>
+		<class>org.olat.modules.quality.model.QualityContextToCurriculumElementImpl</class>
+		<class>org.olat.modules.quality.model.QualityContextToCurriculumImpl</class>
+		<class>org.olat.modules.quality.model.QualityContextToOrganisationImpl</class>
+		<class>org.olat.modules.quality.model.QualityContextToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.quality.model.QualityDataCollectionImpl</class>
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>

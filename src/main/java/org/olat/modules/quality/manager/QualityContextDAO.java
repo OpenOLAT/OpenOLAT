@@ -1,0 +1,139 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.quality.manager;
+
+import java.util.Date;
+import java.util.List;
+
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextRef;
+import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.model.QualityContextImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * 
+ * Initial date: 22.06.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+@Service
+class QualityContextDAO {
+
+	private static final OLog log = Tracing.createLoggerFor(QualityContextDAO.class);
+
+	@Autowired
+	private DB dbInstance;
+	
+	QualityContext createContext(QualityDataCollection dataCollection,
+			EvaluationFormParticipation evaluationFormParticipation, RepositoryEntry repositoryEntry) {
+		QualityContextImpl context = new QualityContextImpl();
+		context.setCreationDate(new Date());
+		context.setLastModified(context.getCreationDate());
+		context.setDataCollection(dataCollection);
+		context.setEvaluationFormParticipation(evaluationFormParticipation);
+		context.setRepositoryEntry(repositoryEntry);
+		dbInstance.getCurrentEntityManager().persist(context);
+		log.debug("Quality context created: " + context.toString());
+		return context;
+	}
+	
+	QualityContext loadByKey(QualityContextRef contextRef) {
+		if (contextRef == null || contextRef.getKey() == null) return null;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.key = :contextKey");
+		
+		 List<QualityContext> contexts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("contextKey", contextRef.getKey())
+				.getResultList();
+		return contexts.isEmpty() ? null : contexts.get(0);
+	}
+
+	QualityContext loadByParticipationKey(EvaluationFormParticipationRef participationRef) {
+		if (participationRef == null || participationRef.getKey() == null) return null;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.evaluationFormParticipation.key = :participationKey");
+		
+		 List<QualityContext> contexts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("participationKey", participationRef.getKey())
+				.getResultList();
+		return contexts.isEmpty() ? null : contexts.get(0);
+	}
+
+	/**
+	 * Load the context by participation and repository entry.
+	 * The returned list should have 0 or 1 entry, but it is safer to even load faulty entries.
+	 *
+	 * @param participationRef
+	 * @param repositoryEntryRef
+	 * @return
+	 */
+	List<QualityContext> loadByParticipationAndRepositoryEntry(
+			EvaluationFormParticipation participationRef, RepositoryEntryRef repositoryEntryRef) {
+		if (participationRef == null || participationRef.getKey() == null || repositoryEntryRef == null
+				|| repositoryEntryRef.getKey() == null)
+			return null;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.evaluationFormParticipation.key = :participationKey");
+		sb.append("   and context.repositoryEntry.key = :entryKey");
+		
+		 List<QualityContext> contexts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("participationKey", participationRef.getKey())
+				.setParameter("entryKey", repositoryEntryRef.getKey())
+				.getResultList();
+		return contexts;
+	}
+
+	void deleteContext(QualityContextRef contextRef) {
+		if (contextRef == null || contextRef.getKey() == null) return;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("delete from qualitycontext as context");
+		sb.append(" where context.key = :contextKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("contextKey", contextRef.getKey())
+				.executeUpdate();
+		
+		log.debug("Quality context deleted: " + contextRef.toString());
+	}
+
+}

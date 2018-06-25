@@ -190,4 +190,21 @@ public class EvaluationFormParticipationImpl implements EvaluationFormParticipat
 		return equals(persistable);
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("EvaluationFormParticipationImpl [key=");
+		builder.append(key);
+		builder.append(", identifier=");
+		builder.append(identifier);
+		builder.append(", anonymous=");
+		builder.append(anonymous);
+		builder.append(", executor=");
+		builder.append(executor);
+		builder.append(", survey=");
+		builder.append(survey);
+		builder.append("]");
+		return builder.toString();
+	}
+
 }

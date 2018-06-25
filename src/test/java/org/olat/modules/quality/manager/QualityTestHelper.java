@@ -31,11 +31,15 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
+import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityManager;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
@@ -56,6 +60,8 @@ public class QualityTestHelper {
 	@Autowired
 	private QualityManager qualityManager;
 	@Autowired
+	private QualityContextDAO qualityContextDao;
+	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
@@ -63,8 +69,25 @@ public class QualityTestHelper {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	void deleteAll() {
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttocurriculum")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttocurriculumelement")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttoorganisation")
+					.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttotaxonomylevel")
+					.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitycontext")
+				.executeUpdate();
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from qualitydatacollection")
 				.executeUpdate();
@@ -84,44 +107,57 @@ public class QualityTestHelper {
 	QualityDataCollection createDataCollection() {
 		return createDataCollection(UUID.randomUUID().toString());
 	}
+	
+	QualityContext createContext() {
+		return qualityContextDao.createContext(createDataCollection(), createParticipation(), createRepositoryEntry());
+	}
 
 	EvaluationFormSurvey createSurvey(QualityDataCollection dataCollection) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		return evaluationFormManager.createSurvey(dataCollection, null, entry);
 	}
 
-	public EvaluationFormSurvey createRandomSurvey() {
+	EvaluationFormSurvey createRandomSurvey() {
 		OLATResource ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		return evaluationFormManager.createSurvey(ores, null, entry);
 	}
+	
+	EvaluationFormParticipation createParticipation() {
+		return evaluationFormManager.createParticipation(createRandomSurvey());
+	}
 
-	EvaluationFormParticipationRef createParticipation(EvaluationFormSurvey survey) {
+	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey) {
 		return evaluationFormManager.createParticipation(survey);
 	}
 
-	EvaluationFormParticipationRef createParticipation(EvaluationFormSurvey survey, Identity identity) {
+	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity identity) {
 		return evaluationFormManager.createParticipation(survey, identity);
 	}
 
-	public void addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {
-		qualityManager.addParticipants(dataCollection, executors);
+	void addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {
+		qualityManager.addParticipations(dataCollection, executors);
 	}
 
-	Organisation getOrganisation() {
-		return organisationService.getDefaultOrganisation();
+	Organisation createOrganisation() {
+		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, null, null);
 	}
 
-	Curriculum createCuriculum() {
-		return curriculumService.createCurriculum("i", "d", "d", getOrganisation());
+	Curriculum createCurriculum() {
+		return curriculumService.createCurriculum("i", "d", "d", createOrganisation());
 	}
 
 	CurriculumElement createCurriculumElement() {
-		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, createCuriculum());
+		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, createCurriculum());
 	}
 
 	RepositoryEntry createRepositoryEntry() {
 		return JunitTestHelper.createAndPersistRepositoryEntry();
+	}
+
+	TaxonomyLevel createTaxonomyLevel() {
+		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "d", "d", null);
+		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, null, taxonomy);
 	}
 
 }

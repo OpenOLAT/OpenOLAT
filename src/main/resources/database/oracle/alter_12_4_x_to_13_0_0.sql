@@ -242,7 +242,7 @@ create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_respo
 
 -- quality management
 create table o_qual_data_collection (
-   id  number(20) GENERATED ALWAYS AS IDENTITY,
+   id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    q_status varchar2(50),
@@ -258,6 +258,75 @@ create table o_qual_data_collection (
    q_topic_fk_repository number(20),
    primary key (id)
 );
+
+create table o_qual_context (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   fk_data_collection number(20) not null,
+   fk_eva_participation number(20),
+   fk_eva_session number(20),
+   fk_repository number(20),
+   primary key (id)
+);
+
+create table o_qual_context_to_organisation (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   fk_context number(20) not null,
+   fk_organisation number(20) not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_curriculum (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   fk_context number(20) not null,
+   fk_curriculum number(20) not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_cur_element (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   fk_context number(20) not null,
+   fk_cur_element number(20) not null,
+   primary key (id)
+);
+
+create table o_qual_context_to_tax_level (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   fk_context number(20) not null,
+   fk_tax_leveL number(20) not null,
+   primary key (id)
+);
+
+alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+create index idx_con_to_data_collection_idx on o_qual_context (fk_data_collection);
+alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
+create index idx_con_to_participation_idx on o_qual_context (fk_eva_participation);
+alter table o_qual_context add constraint qual_con_to_session_idx foreign key (fk_eva_session) references o_eva_form_session (id);
+create index idx_con_to_session_idx on o_qual_context (fk_eva_session);
+alter table o_qual_context add constraint qual_con_to_repo_idx foreign key (fk_repository) references o_repositoryentry (repositoryentry_id);
+create index idx_con_to_repo_idx on o_qual_context (fk_repository);
+
+alter table o_qual_context_to_organisation add constraint qual_con_to_org_con_idx foreign key (fk_context) references o_qual_context (id);
+create index idx_con_to_org_con_idx on o_qual_context_to_organisation (fk_context);
+create unique index idx_con_to_org_org_idx on o_qual_context_to_organisation (fk_organisation, fk_context);
+
+alter table o_qual_context_to_curriculum add constraint qual_con_to_cur_con_idx foreign key (fk_context) references o_qual_context (id);
+create index idx_con_to_cur_con_idx on o_qual_context_to_curriculum (fk_context);
+create unique index idx_con_to_cur_cur_idx on o_qual_context_to_curriculum (fk_curriculum, fk_context);
+
+alter table o_qual_context_to_cur_element add constraint qual_con_to_cur_ele_con_idx foreign key (fk_context) references o_qual_context (id);
+create index idx_con_to_cur_ele_con_idx on o_qual_context_to_cur_element (fk_context);
+create unique index idx_con_to_cur_ele_ele_idx on o_qual_context_to_cur_element (fk_cur_element, fk_context);
+
+alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con_idx foreign key (fk_context) references o_qual_context (id);
+create index idx_con_to_tax_level_con_idx on o_qual_context_to_tax_level (fk_context);
+create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
+
 
 -- membership
 alter table o_bs_group_member add g_inheritance_mode varchar(16) default 'none' not null;

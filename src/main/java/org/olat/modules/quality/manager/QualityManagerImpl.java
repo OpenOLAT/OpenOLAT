@@ -19,22 +19,26 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityDataCollectionRef;
-import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityParticipation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +54,16 @@ public class QualityManagerImpl implements QualityManager {
 
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
+	@Autowired
+	private QualityContextDAO contextDao;
+	@Autowired
+	private QualityContextToCurriculumDAO contextToCurriculumDao;
+	@Autowired
+	private QualityContextToCurriculumElementDAO contextToCurriculumElementDao;
+	@Autowired
+	private QualityContextToOrganisationDAO contextToOrganisationDao;
+	@Autowired
+	private QualityContextToTaxonomyLevelDAO contextToTaxonomyLevelDao;
 	@Autowired
 	private QualityParticipationDAO participationDao;
 	@Autowired
@@ -109,14 +123,17 @@ public class QualityManagerImpl implements QualityManager {
 	}
 
 	@Override
-	public void addParticipants(QualityDataCollectionLight dataCollection, List<Identity> executors) {
+	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection, List<Identity> executors) {
+		List<EvaluationFormParticipation> participations = new ArrayList<>();
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		for (Identity executor: executors) {
-			EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
+			EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
 			if (participation == null) {
-				evaluationFormManager.createParticipation(survey, executor, true);
+				participation = evaluationFormManager.createParticipation(survey, executor, true);
 			}
+			participations.add(participation);
 		}
+		return participations;
 	}
 
 	@Override
@@ -140,4 +157,28 @@ public class QualityManagerImpl implements QualityManager {
 			int maxResults, SortKey[] orderBy) {
 		return participationDao.loadExecutorParticipations(executor, firstResult, maxResults, orderBy);
 	}
+
+	@Override
+	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
+			EvaluationFormParticipation participation) {
+		return DefaultQualityContextBuilder.builder(dataCollection, participation);
+	}
+	
+	@Override
+	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
+			EvaluationFormParticipation participation, RepositoryEntry entry, List<GroupRoles> roles) {
+		return RepositoryQualityContextBuilder.builder(dataCollection, participation, entry, roles);
+	}
+	
+	@Override
+	public void deleteContext(QualityContext context) {
+		if (context != null) {
+			contextToCurriculumDao.deleteRelations(context);
+			contextToCurriculumElementDao.deleteRelations(context);
+			contextToOrganisationDao.deleteRelations(context);
+			contextToTaxonomyLevelDao.deleteRelations(context);
+			contextDao.deleteContext(context);
+		}
+	}
+
 }

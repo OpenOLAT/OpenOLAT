@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.model.jpa;
+package org.olat.modules.quality.model;
 
 import java.util.Date;
 
@@ -33,104 +33,75 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Persistable;
-import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.repository.RepositoryEntry;
+import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextToOrganisation;
 
 /**
  * 
- * Initial date: 29.04.2018<br>
+ * Initial date: 25.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="evaluationformsurvey")
-@Table(name="o_eva_form_survey")
-public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistable {
+@Entity(name="contexttoorganisation")
+@Table(name="o_qual_context_to_organisation")
+public class QualityContextToOrganisationImpl implements QualityContextToOrganisation, Persistable {
 
-	private static final long serialVersionUID = 2039825688298350338L;
-	
+	private static final long serialVersionUID = 2852105459495032549L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
-
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
-	private Date lastModified;
 	
-	@Column(name="e_resname", nullable=true, insertable=true, updatable=false)
-	private String resName;
-	@Column(name="e_resid", nullable=true, insertable=true, updatable=false)
-	private Long resId;
-	@Column(name="e_sub_ident", nullable=true, insertable=true, updatable=false)
-	private String resSubident;
-	
-	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=true)
-	private RepositoryEntry formEntry;
-	
+	@ManyToOne(targetEntity=QualityContextImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_context", nullable=false, insertable=true, updatable=false)
+	private QualityContext context;
+
+	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_organisation", nullable=false, insertable=true, updatable=false)
+	private Organisation organisation;
+
 	@Override
 	public Long getKey() {
 		return key;
 	}
-	
+
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
+
 	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
-	
+
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
 
 	@Override
-	public Date getLastModified() {
-		return lastModified;
-	}
-	
-	@Override
-	public void setLastModified(Date date) {
-		lastModified = date;
+	public QualityContext getContext() {
+		return context;
 	}
 
-	public String getResName() {
-		return resName;
-	}
-
-	public void setResName(String resName) {
-		this.resName = resName;
-	}
-
-	public Long getResId() {
-		return resId;
-	}
-
-	public void setResId(Long resId) {
-		this.resId = resId;
-	}
-
-	public String getResSubident() {
-		return resSubident;
-	}
-
-	public void setResSubident(String resSubident) {
-		this.resSubident = resSubident;
+	public void setContext(QualityContext context) {
+		this.context = context;
 	}
 
 	@Override
-	public RepositoryEntry getFormEntry() {
-		return formEntry;
+	public Organisation getOrganisation() {
+		return organisation;
 	}
 
-	public void setFormEntry(RepositoryEntry formEntry) {
-		this.formEntry = formEntry;
+	public void setOrganisation(Organisation organisation) {
+		this.organisation = organisation;
 	}
 
 	@Override
@@ -149,7 +120,7 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		EvaluationFormSurveyImpl other = (EvaluationFormSurveyImpl) obj;
+		QualityContextToOrganisationImpl other = (QualityContextToOrganisationImpl) obj;
 		if (key == null) {
 			if (other.key != null)
 				return false;
@@ -166,16 +137,12 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("EvaluationFormSurveyImpl [key=");
+		builder.append("QualityContextToOrganisationImpl [key=");
 		builder.append(key);
-		builder.append(", resName=");
-		builder.append(resName);
-		builder.append(", resId=");
-		builder.append(resId);
-		builder.append(", resSubident=");
-		builder.append(resSubident);
-		builder.append(", formEntryKey=");
-		builder.append(formEntry.getKey());
+		builder.append(", contextKey=");
+		builder.append(context != null? context.getKey(): "");
+		builder.append(", organisationKey=");
+		builder.append(organisation != null? organisation.getKey(): "");
 		builder.append("]");
 		return builder.toString();
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -37,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityDataCollection;
 
 /**
@@ -51,6 +53,16 @@ public class QualityManagerImplTest {
 	private EvaluationFormManager evaluationFormManagerMock;
 	@Mock
 	private EvaluationFormSurvey surveyMock;
+	@Mock
+	private QualityContextDAO contextDaoMock;
+	@Mock
+	private QualityContextToCurriculumDAO contextToCurriculumDaoMock;
+	@Mock
+	private QualityContextToCurriculumElementDAO contextToCurriculumElementDaoMock;
+	@Mock
+	private QualityContextToOrganisationDAO contextToOrganisationDaoMock;
+	@Mock
+	private QualityContextToTaxonomyLevelDAO contextToTaxonomyLevelDaoMock;
 	
 	@InjectMocks
 	private QualityManagerImpl sut;
@@ -69,7 +81,7 @@ public class QualityManagerImplTest {
 		List<Identity> executors = Arrays.asList(executorMock);
 		when(evaluationFormManagerMock.loadParticipationByExecutor(surveyMock, executorMock)).thenReturn(null);
 		
-		sut.addParticipants(dataCollectionMock, executors);
+		sut.addParticipations(dataCollectionMock, executors);
 		
 		verify(evaluationFormManagerMock).createParticipation(surveyMock, executorMock, true);
 	}
@@ -82,9 +94,39 @@ public class QualityManagerImplTest {
 		List<Identity> executors = Arrays.asList(executorMock);
 		when(evaluationFormManagerMock.loadParticipationByExecutor(surveyMock, executorMock)).thenReturn(participationMock);
 		
-		sut.addParticipants(dataCollectionMock, executors);
+		sut.addParticipations(dataCollectionMock, executors);
 		
 		verify(evaluationFormManagerMock, never()).createParticipation(surveyMock, executorMock);
+	}
+	
+	@Test
+	public void shouldReturnAllParticipationsOfTheExecutors() {
+		QualityDataCollection dataCollectionMock = mock(QualityDataCollection.class);
+		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
+		Identity executorWithParticipationMock = mock(Identity.class);
+		Identity executorWithoutParticipationMock = mock(Identity.class);
+		List<Identity> executors = Arrays.asList(executorWithParticipationMock, executorWithoutParticipationMock);
+		when(evaluationFormManagerMock.loadParticipationByExecutor(surveyMock, executorWithParticipationMock))
+				.thenReturn(participationMock);
+		when(evaluationFormManagerMock.loadParticipationByExecutor(surveyMock, executorWithoutParticipationMock))
+				.thenReturn(null);
+
+		List<EvaluationFormParticipation> participations = sut.addParticipations(dataCollectionMock, executors);
+
+		assertThat(participations).hasSize(2);
+	}
+	
+	@Test
+	public void shouldDeleteContextAndRelations() {
+		QualityContext context = mock(QualityContext.class);
+		
+		sut.deleteContext(context);
+		
+		verify(contextDaoMock).deleteContext(context);
+		verify(contextToCurriculumDaoMock).deleteRelations(context);
+		verify(contextToCurriculumElementDaoMock).deleteRelations(context);
+		verify(contextToOrganisationDaoMock).deleteRelations(context);
+		verify(contextToTaxonomyLevelDaoMock).deleteRelations(context);
 	}
 
 }
