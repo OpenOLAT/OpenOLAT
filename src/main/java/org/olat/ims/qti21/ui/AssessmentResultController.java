@@ -224,10 +224,12 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("testResults", testResults);
 				TestResult testResult = assessmentResult.getTestResult();
 				if(testResult != null) {
-					extractOutcomeVariable(testResult.getItemVariables(), testResults);
 					if(candidateSession.getManualScore() != null) {
+						testResults.setScore(candidateSession.getScore());
 						testResults.addScore(candidateSession.getManualScore());
 						testResults.setManualScore(candidateSession.getManualScore());
+					} else {
+						extractOutcomeVariable(testResult.getItemVariables(), testResults);
 					}
 					
 					AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();

@@ -2324,14 +2324,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		public String getAssessmentTestEndTime() {
 			Long timeLimits = getAssessmentTestMaxTimeLimit();
 			if(timeLimits != null) {
+				long testDuration = getAssessmentTestDuration();
+				if(testDuration < 0l) {
+					testDuration = 0l;
+				}
+				
 				Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+				calendar.add(Calendar.MILLISECOND, -(int)testDuration);
 				calendar.add(Calendar.SECOND, timeLimits.intValue());
-				String time = Formatter.getInstance(getLocale()).formatTimeShort(calendar.getTime());
-				return time;
+				return Formatter.getInstance(getLocale()).formatTimeShort(calendar.getTime());
 			}
 			return "";
 		}
 		
+		/**
+		 * @return The test duration in milliseconds
+		 */
 		public long getAssessmentTestDuration() {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			long duration = testSessionState.getDurationAccumulated();

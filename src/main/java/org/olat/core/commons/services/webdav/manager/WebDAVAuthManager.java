@@ -185,12 +185,12 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	
 	private void updateWebdavPassword(Identity doer, Identity identity, String password, List<Authentication> authentications) {
 		updateWebDAVPassword(doer, identity, identity.getName(), password, PROVIDER_WEBDAV, authentications);
-		if(StringHelper.containsNonWhitespace(identity.getUser().getEmail())) {
+		if(userModule.isEmailUnique() && StringHelper.containsNonWhitespace(identity.getUser().getEmail())) {
 			updateWebDAVPassword(doer, identity, identity.getUser().getEmail(), password, PROVIDER_WEBDAV_EMAIL, authentications);
 		} else {
 			removePassword(PROVIDER_WEBDAV_EMAIL, authentications);
 		}
-		if(StringHelper.containsNonWhitespace(identity.getUser().getInstitutionalEmail())) {
+		if(userModule.isEmailUnique() && StringHelper.containsNonWhitespace(identity.getUser().getInstitutionalEmail())) {
 			updateWebDAVPassword(doer, identity, identity.getUser().getInstitutionalEmail(), password, PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, authentications);
 		} else {
 			removePassword(PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, authentications);
@@ -247,18 +247,16 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	private void updateDigestPasswords(Identity doer, Identity identity, String newPwd,
 			List<Authentication> authentications) {
 		updateDigestPassword(doer, identity, identity.getName(), newPwd, PROVIDER_HA1, authentications);
-		
-		if (userModule.isEmailUnique()) {
-			if(StringHelper.containsNonWhitespace(identity.getUser().getEmail())) {
-				updateDigestPassword(doer, identity, identity.getUser().getEmail(), newPwd, PROVIDER_HA1_EMAIL, authentications);
-			} else {
-				removePassword(PROVIDER_HA1_EMAIL, authentications);
-			}
-			if(StringHelper.containsNonWhitespace(identity.getUser().getInstitutionalEmail())) {
-				updateDigestPassword(doer, identity, identity.getUser().getInstitutionalEmail(), newPwd, PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
-			} else {
-				removePassword(PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
-			}
+
+		if(userModule.isEmailUnique() && StringHelper.containsNonWhitespace(identity.getUser().getEmail())) {
+			updateDigestPassword(doer, identity, identity.getUser().getEmail(), newPwd, PROVIDER_HA1_EMAIL, authentications);
+		} else {
+			removePassword(PROVIDER_HA1_EMAIL, authentications);
+		}
+		if(userModule.isEmailUnique() && StringHelper.containsNonWhitespace(identity.getUser().getInstitutionalEmail())) {
+			updateDigestPassword(doer, identity, identity.getUser().getInstitutionalEmail(), newPwd, PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
+		} else {
+			removePassword(PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
 		}
 		
 		for(Authentication authentication:authentications) {

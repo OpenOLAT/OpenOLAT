@@ -62,7 +62,6 @@ import org.olat.core.util.mail.MailLoggingAction;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.mail.ui.EMailIdentity;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.members.Member;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -549,7 +548,7 @@ public class MembersMailController extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(value)) {
 				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\r\n", false); tokenizer.hasMoreTokens(); ) {
 					String email = tokenizer.nextToken().trim();
-					contactList.add(new EMailIdentity(email, getLocale()));
+					contactList.add(email);
 				}
 			}
 		}
