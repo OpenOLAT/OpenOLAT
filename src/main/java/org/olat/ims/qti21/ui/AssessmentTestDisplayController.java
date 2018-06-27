@@ -629,35 +629,38 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private Long getAssessmentTestMaxTimeLimit() {
 		int extra = extraTime == null ? 0 : extraTime.intValue();
-		long leadingTime = getLeadingTimeEndTestOption();
+		Long leadingTimeInMilliSeconds = getLeadingTimeEndTestOption();
+		long leadingDuration = Long.MAX_VALUE;
+		if(leadingTimeInMilliSeconds != null) {
+			double leadingDurationInSeconds = (leadingTimeInMilliSeconds + getAssessmentTestDuration()) / 1000.0d;
+			leadingDuration = Math.round(leadingDurationInSeconds);
+		}
 		if(overrideOptions != null && overrideOptions.getAssessmentTestMaxTimeLimit() != null) {
 			long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit().longValue();
-			return timeLimits > 0 ? Math.min(leadingTime, timeLimits) + extra : null;
+			return timeLimits > 0 ? Math.min(leadingDuration, timeLimits) + extra : null;
 		}
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
 			long timeLimits = assessmentTest.getTimeLimits().getMaximum().longValue();
-			return Math.min(leadingTime, timeLimits) + extra;
+			return Math.min(leadingDuration, timeLimits) + extra;
 		}
 		return null;
 	}
+
 	
 	/**
-	 * @return The number of seconds up to the defined end of the test (or a very long time if nothing is configured)
+	 * @return The number of milliseconds up to the defined end of the test (or a very long time if nothing is configured)
 	 */
-	private long getLeadingTimeEndTestOption() {
+	private Long getLeadingTimeEndTestOption() {
 		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
 			Date endTestDate = overrideOptions.getEndTestDate();
 			long diff = endTestDate.getTime() - currentRequestTimestamp.getTime();
 			if(diff < 0l) {
 				diff = 0l;
 			}
-			if(diff > 0l) {
-				diff = diff / 1000l;
-			}
 			return diff;
 		}
-		return 365 * 24 * 60 * 60;// default is a year
+		return null;// default is a year
 	}
 	
 	/**
@@ -673,6 +676,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 		}
 		return diff;
+	}
+	
+	/**
+	 * @return The test duration in milliseconds
+	 */
+	private long getAssessmentTestDuration() {
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		long duration = testSessionState.getDurationAccumulated();
+		duration += getRequestTimeStampDifferenceToNow();
+		return duration;
 	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
@@ -2341,10 +2354,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		 * @return The test duration in milliseconds
 		 */
 		public long getAssessmentTestDuration() {
-			TestSessionState testSessionState = testSessionController.getTestSessionState();
-			long duration = testSessionState.getDurationAccumulated();
-			duration += getRequestTimeStampDifferenceToNow();
-			return duration;
+			return AssessmentTestDisplayController.this.getAssessmentTestDuration();
 		}
 		
 		/**
