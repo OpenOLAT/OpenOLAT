@@ -38,10 +38,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,9 +75,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	
 	private static final String CMD_SELECT = "sel";
 
-	private StackedPanel mainPanel;
-	private VelocityContainer mainVC;
-	
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
@@ -212,7 +207,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		//
 	}
 
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == searchForm) {
@@ -222,7 +216,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			}
 		} else if (source == detailController) {
 			if(event == Event.BACK_EVENT) {
-				mainPanel.setContent(mainVC);
+				if(stackPanel == null) {
+					initialPanel.popContent();
+				} else {
+					stackPanel.popController(detailController);
+				}
 				removeAsListenerAndDispose(detailController);
 				detailController = null;
 				addSearchToHistory(ureq);
@@ -256,7 +254,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		listenTo(detailController);
 		
 		if(stackPanel == null) {
-			mainPanel.setContent(detailController.getInitialComponent());
+			initialPanel.pushContent(detailController.getInitialComponent());
 		} else {
 			detailController.hideBackLink();
 			stackPanel.pushController(order.getOrderNr(), detailController);

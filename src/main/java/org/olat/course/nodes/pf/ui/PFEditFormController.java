@@ -24,9 +24,9 @@ import java.util.Date;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.PFCourseNode;
 /**
 *
@@ -43,7 +44,7 @@ import org.olat.course.nodes.PFCourseNode;
 public class PFEditFormController extends FormBasicController {
 	
 	private SelectionElement studentDropBox, teacherDropBox, alterFiles, limitFileCount, timeFrame;
-	private IntegerElement fileCount;
+	private TextElement fileCount;
 	private JSDateChooser dateStart, dateEnd;
 	private SpacerElement spacerEl;
 	
@@ -55,7 +56,6 @@ public class PFEditFormController extends FormBasicController {
 
 		initForm(ureq);
 	}
-	
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -90,7 +90,7 @@ public class PFEditFormController extends FormBasicController {
 		limitFileCount = uifactory.addCheckboxesHorizontal("limit.count", "blank.label", formLayout, new String[]{"xx"}, limitcount);
 		limitFileCount.addActionListener(FormEvent.ONCLICK);
 		limitFileCount.showLabel(Boolean.FALSE);
-		fileCount = uifactory.addIntegerElement("file.count", 3, formLayout);
+		fileCount = uifactory.addTextElement("file.count", 4, "3", formLayout);
 		fileCount.showLabel(Boolean.FALSE);
 		fileCount.setHelpTextKey("limit.count.coach.info", null);
 
@@ -106,8 +106,6 @@ public class PFEditFormController extends FormBasicController {
 			.setElementCssClass("o_sel_node_editor_submit");
 		
 		applyModuleConfig();
-		
-		
 	}
 	
 	private void applyModuleConfig () {
@@ -119,7 +117,7 @@ public class PFEditFormController extends FormBasicController {
 		boolean hasLimitCount = pfNode.hasLimitCountConfigured();
 		limitFileCount.select("xx", hasLimitCount);
 		limitFileCount.setVisible(hasStudentBox);
-		fileCount.setIntValue(pfNode.getLimitCount());
+		fileCount.setValue(String.valueOf(pfNode.getLimitCount()));
 		fileCount.setVisible(hasLimitCount);
 		boolean hasTimeFrame = pfNode.hasDropboxTimeFrameConfigured();
 		timeFrame.select("xx", hasTimeFrame);
@@ -187,7 +185,7 @@ public class PFEditFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		dateEnd.clearError();
 		dateStart.clearError();
 		fileCount.clearError();
@@ -216,23 +214,38 @@ public class PFEditFormController extends FormBasicController {
 			}			
 			// if file limit is enabled, ensure limit is greater than 0
 			if (limitFileCount.isSelected(0)) {
-				if (1 > fileCount.getIntValue()) {
-					fileCount.setErrorKey("filecount.error", null);
+				if(StringHelper.containsNonWhitespace(fileCount.getValue())) {
+					try {
+						int numOfFiles = Integer.parseInt(fileCount.getValue());
+						if (1 > numOfFiles) {
+							fileCount.setErrorKey("filecount.error", null);
+							allOk &= false;
+						}
+					} catch (NumberFormatException e) {
+						fileCount.setErrorKey("form.error.nointeger", null);
+						allOk &= false;
+					}
+				} else {
+					fileCount.setErrorKey("form.legende.mandatory", null);
 					allOk &= false;
 				}
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
-
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		int numOfFiles = 0;
+		if(fileCount.isVisible() && StringHelper.isLong(fileCount.getValue())) {
+			numOfFiles = Integer.parseInt(fileCount.getValue());
+		}
+	
 		pfNode.updateModuleConfig(studentDropBox.isSelected(0), 
 				teacherDropBox.isSelected(0), 
 				alterFiles.isSelected(0), 
 				limitFileCount.isSelected(0), 
-				fileCount.getIntValue(),
+				numOfFiles,
 				timeFrame.isSelected(0), 
 				dateStart.getDate(), 
 				dateEnd.getDate());
