@@ -35,6 +35,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -207,6 +208,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		Form form = te.getRootForm();
 		configurations.append("ffxhrevent: { formNam:\"").append(form.getFormName()).append("\", dispIdField:\"").append(form.getDispatchFieldId()).append("\",")
 		 .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId()).append("\"},\n");
+		configurations.append("contextPath: \"").append(Settings.getServerContextPath()).append("\",\n");
 		if(te.getMaxLength() > 0) {
 			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");
 		}
