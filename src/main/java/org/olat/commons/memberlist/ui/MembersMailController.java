@@ -21,7 +21,6 @@ package org.olat.commons.memberlist.ui;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,8 +111,8 @@ public class MembersMailController extends FormBasicController {
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList, List<Member> waitingList, String bodyTemplate) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(translator, MailHelper.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(translator, MailHelper.class, ureq.getLocale()));
+		
 		
 		this.courseEnv = courseEnv;
 		this.ownerList = ownerList;
@@ -477,7 +476,7 @@ public class MembersMailController extends FormBasicController {
 	}
 	
 	private void doSend(UserRequest ureq) {
-		ContactList contactList = new ContactList("");
+		List<ContactList> contactList = new ArrayList<>();
 		if (courseEnv == null) {
 			if(coachEl != null && coachEl.isAtLeastSelected(1)) {
 				List<Long> identityKeys = new ArrayList<>(coachList.size());
@@ -485,7 +484,9 @@ public class MembersMailController extends FormBasicController {
 					identityKeys.add(coach.getKey());
 				}
 				List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
-				contactList.addAllIdentites(coaches);
+				ContactList coachList = new ContactList(translate("contact.list.coaches"));
+				coachList.addAllIdentites(coaches);
+				contactList.add(coachList);
 			}
 			
 			if(participantEl != null && participantEl.isAtLeastSelected(1)) {
@@ -494,7 +495,9 @@ public class MembersMailController extends FormBasicController {
 					identityKeys.add(participant.getKey());
 				}
 				List<Identity> participants = securityManager.loadIdentityByKeys(identityKeys);
-				contactList.addAllIdentites(participants);
+				ContactList participantList = new ContactList(translate("contact.list.participants"));
+				participantList.addAllIdentites(participants);
+				contactList.add(participantList);
 			}
 			
 			if(waitingEl != null && waitingEl.isAtLeastSelected(1)) {
@@ -503,13 +506,17 @@ public class MembersMailController extends FormBasicController {
 					identityKeys.add(waiter.getKey());
 				}
 				List<Identity> waiters = securityManager.loadIdentityByKeys(identityKeys);
-				contactList.addAllIdentites(waiters);
+				ContactList waitingList = new ContactList(translate("contact.list.waiting"));
+				waitingList.addAllIdentites(waiters);
+				contactList.add(waitingList);
 			}
 		} else {			
 			if(ownerEl != null && ownerEl.isAtLeastSelected(1)) {
 				RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 				List<Identity> owners = repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
-				contactList.addAllIdentites(owners);
+				ContactList ownerList = new ContactList(translate("contact.list.owners"));
+				ownerList.addAllIdentites(owners);
+				contactList.add(ownerList);
 			}
 			
 			if(coachEl != null && coachEl.isAtLeastSelected(1)) {
@@ -518,8 +525,10 @@ public class MembersMailController extends FormBasicController {
 					sendToWhatYouSee.add(coach.getKey());
 				}
 				CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-				avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), contactList, sendToWhatYouSee);
-				avoidInvisibleMember(cgm.getCoaches(), contactList, sendToWhatYouSee);
+				ContactList coachList = new ContactList(translate("contact.list.coaches"));
+				avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), coachList, sendToWhatYouSee);
+				avoidInvisibleMember(cgm.getCoaches(), coachList, sendToWhatYouSee);
+				contactList.add(coachList);
 			}
 			
 			if(participantEl != null && participantEl.isAtLeastSelected(1)) {
@@ -528,8 +537,10 @@ public class MembersMailController extends FormBasicController {
 					sendToWhatYouSee.add(participant.getKey());
 				}
 				CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-				avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), contactList, sendToWhatYouSee);
-				avoidInvisibleMember(cgm.getParticipants(), contactList, sendToWhatYouSee);
+				ContactList participantList = new ContactList(translate("contact.list.participants"));
+				avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), participantList, sendToWhatYouSee);
+				avoidInvisibleMember(cgm.getParticipants(), participantList, sendToWhatYouSee);
+				contactList.add(participantList);
 			}
 		}
 		
@@ -540,23 +551,27 @@ public class MembersMailController extends FormBasicController {
 				identityKeys.add(member.getKey());
 			}
 			List<Identity> selectedIdentities = securityManager.loadIdentityByKeys(identityKeys);
-			contactList.addAllIdentites(selectedIdentities);
+			ContactList otherList = new ContactList(translate("contact.list.others"));
+			otherList.addAllIdentites(selectedIdentities);
+			contactList.add(otherList);
 		}
 		
 		if(externalEl != null && externalEl.isAtLeastSelected(1)) {
 			String value = externalAddressesEl.getValue();
 			if(StringHelper.containsNonWhitespace(value)) {
+				ContactList externalList = new ContactList(translate("contact.list.external"));
 				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\r\n", false); tokenizer.hasMoreTokens(); ) {
 					String email = tokenizer.nextToken().trim();
-					contactList.add(email);
+					externalList.add(email);
 				}
+				contactList.add(externalList);
 			}
 		}
 
 		doSendEmailToMember(ureq, contactList);
 	}
 	
-	private void doSendEmailToMember(UserRequest ureq, ContactList contactList) {
+	private void doSendEmailToMember(UserRequest ureq, List<ContactList> contactList) {
 		boolean success = false;
 		try {
 			File[] attachmentArr = getAttachments();
@@ -564,7 +579,7 @@ public class MembersMailController extends FormBasicController {
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
 			bundle.setFromId(getIdentity());						
-			bundle.setContactLists(Collections.singletonList(contactList));
+			bundle.setContactLists(contactList);
 			bundle.setContent(subjectEl.getValue(), bodyEl.getValue(), attachmentArr);
 			MailerResult result = mailService.sendMessage(bundle);
 			if(copyFromEl.isAtLeastSelected(1)) {

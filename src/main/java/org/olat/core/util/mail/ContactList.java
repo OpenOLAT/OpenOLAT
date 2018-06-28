@@ -38,7 +38,8 @@ import javax.mail.internet.InternetAddress;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -56,7 +57,10 @@ import org.olat.core.util.StringHelper;
  * @author patrick
  */
 
-public class ContactList extends LogDelegator {
+public class ContactList {
+	
+	private static final OLog log = Tracing.createLoggerFor(ContactList.class);
+	
 	private String name;
 	private String description;
 	//container for addresses contributed as strings
@@ -152,7 +156,7 @@ public class ContactList extends LogDelegator {
 			rfc2047name = javax.mail.internet.MimeUtility.encodeWord(name, "UTF-8", null);
 		}
 		catch (java.io.UnsupportedEncodingException e) {
-			logWarn("Error MIME-encoding name: " + e, e);
+			log.warn("Error MIME-encoding name: " + e, e);
 			rfc2047name = name;
 		}
 
@@ -303,7 +307,7 @@ public class ContactList extends LogDelegator {
 
 	private void setName(String nameP) {
 		if (!StringHelper.containsNoneOfCoDouSemi(nameP)){
-			logWarn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT, null);
+			log.warn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT, null);
 			//replace bad chars with bad char in rfc compliant comments
 			nameP = nameP.replaceAll(":","¦");
 			nameP = nameP.replaceAll(";","_");
