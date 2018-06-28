@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * This is a list of curriculum elements and repository entries
  * aimed to participants. The repository entries permissions
- * folllow the same rules as {@link org.olat.repository.ui.list.RepositoryEntryListController}<br>
+ * follow the same rules as {@link org.olat.repository.ui.list.RepositoryEntryListController}<br>
  * 
  * 
  * Initial date: 11 mai 2018<br>

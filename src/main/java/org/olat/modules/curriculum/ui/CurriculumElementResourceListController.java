@@ -192,7 +192,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{ CourseModule.getCourseTypeName() }, null,
-				translate("resources.add"), false, false, true, true, Can.referenceable);
+				translate("add.resources"), false, false, true, true, Can.referenceable);
 		listenTo(repoSearchCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("add.resources"));
