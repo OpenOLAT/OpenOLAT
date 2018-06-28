@@ -245,9 +245,11 @@ class QTIImportProcessor {
 		}
 		if(metadata != null) {
 			processItemMetadata(poolItem, metadata);
-			createLicense(poolItem, metadata);
 		}
 		questionItemDao.persist(owner, poolItem);
+		if(metadata != null) {
+			createLicense(poolItem, metadata);
+		}
 		return poolItem;
 	}
 	
