@@ -35,6 +35,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
+import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -120,6 +121,25 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertTrue(elements.contains(element1));
 		Assert.assertTrue(elements.contains(element2));
 		Assert.assertTrue(elements.contains(element3));
+	}
+	
+	@Test
+	public void loadElementsWithInfos() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry1 = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry1, true);
+		curriculumService.addRepositoryEntry(element, entry2, true);
+		dbInstance.commit();
+		
+		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(curriculum);
+		Assert.assertEquals(1, relations.size());
+		Assert.assertEquals(element, relations.get(0).getCurriculumElement());
+		Assert.assertEquals(element.getKey(), relations.get(0).getKey());
+		Assert.assertEquals(2, relations.get(0).getNumOfResources());
 	}
 	
 	@Test

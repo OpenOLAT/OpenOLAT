@@ -44,6 +44,8 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataMo
 			case elementIdentifier: return curriculum.getCurriculumElementIdentifier();
 			case entryDisplayName: return curriculum.getRepositoryEntryDisplayName();
 			case entryExternalRef: return curriculum.getRepositoryEntryExternalRef();
+			case mark: return curriculum.getMarkLink();
+			case select: return curriculum.getSelectLink();
 			case details: return curriculum.getDetailsLink();
 			case start: return curriculum.getStartLink();
 			default: return "ERROR";
@@ -61,6 +63,8 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataMo
 		elementIdentifier("table.header.curriculum.element.identifier"),
 		entryDisplayName("table.header.repository.entry.displayName"),
 		entryExternalRef("table.header.repository.entry.externalRef"),
+		mark("table.header.mark"),
+		select("table.header.details"),
 		details("table.header.details"),
 		start("table.header.start");
 		

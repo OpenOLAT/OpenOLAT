@@ -76,6 +76,11 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
+	/** Only used for order by */
+	@GeneratedValue
+	@Column(name="pos", insertable=false, updatable=false)//TODO order hack
+	private Long pos;
+	
 	@Column(name="c_identifier", nullable=true, insertable=true, updatable=true)
 	private String identifier;
 	@Column(name="c_displayname", nullable=true, insertable=true, updatable=true)
@@ -263,6 +268,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags) {
 		managedFlagsString = CurriculumElementManagedFlag.toString(flags);
+	}
+
+	@Override
+	public Long getPos() {
+		return pos;
+	}
+	
+	public void setPos(Long pos) {
+		this.pos = pos;
 	}
 
 	@Override

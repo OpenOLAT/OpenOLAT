@@ -316,6 +316,9 @@ $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
 
+/* Curriculum in course site */
+$o-coursesite-curriculum-rowelem-height-md :	40px !default;
+
 /* Course editor and runtime */
 $o-course-show-icon-title		: false !default; 	// don't show icon in title - no info value
 $o-course-show-icon-toc			: true !default;	// show icons in menu - looks prettier

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,13 +52,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumElementStatusCellRenderer;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,6 +81,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private ReferencesController referencesCtrl; 
 	private EditCurriculumElementController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementController newSubElementCtrl;
@@ -111,9 +118,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status, new CurriculumElementStatusCellRenderer(getTranslator())));
 
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
@@ -141,10 +149,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(curriculum);
+		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(curriculum);
 		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
 		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
-		for(CurriculumElement element:elements) {
+		for(CurriculumElementInfos element:elements) {
 			CurriculumElementRow row = forgeRow(element);
 			rows.add(row);
 			keyToRows.put(element.getKey(), row);
@@ -161,11 +169,20 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.reset(false, true, true);
 	}
 	
-	private CurriculumElementRow forgeRow(CurriculumElement element) {
+	private CurriculumElementRow forgeRow(CurriculumElementInfos element) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		CurriculumElementRow row = new CurriculumElementRow(element, toolsLink);
+		
+		FormLink resourcesLink = null;
+		if(element.getNumOfResources() > 1) {
+			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(element.getNumOfResources()), null, null, Link.NONTRANSLATED);
+		}
+		CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(), element.getNumOfResources(),
+				toolsLink, resourcesLink);
 		toolsLink.setUserObject(row);
+		if(resourcesLink != null) {
+			resourcesLink.setUserObject(row);
+		}
 		return row;
 	}
 
@@ -221,7 +238,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				doOpenTools(ureq, (CurriculumElementRow)link.getUserObject(), link);
-			} 
+			} else if("resources".equals(cmd)) {
+				doOpenReferences(ureq, (CurriculumElementRow)link.getUserObject(), link);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -298,6 +317,73 @@ public class CurriculumComposerController extends FormBasicController implements
 					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
+		}
+	}
+	
+	private void doOpenReferences(UserRequest ureq, CurriculumElementRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null ) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			referencesCtrl = new ReferencesController(ureq, getWindowControl(), element);
+			listenTo(referencesCtrl);
+	
+			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(toolsCalloutCtrl);
+			toolsCalloutCtrl.activate();
+		}
+	}
+	
+	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
+		String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
+		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+			tableEl.reloadData();
+		}
+	}
+	
+	private class ReferencesController extends BasicController {
+		
+		public ReferencesController(UserRequest ureq, WindowControl wControl, CurriculumElement element) {
+			super(ureq, wControl);
+			setTranslator(CurriculumComposerController.this.getTranslator());
+			VelocityContainer mainVC = createVelocityContainer("references");
+
+			List<RepositoryEntry> refs = curriculumService.getRepositoryEntries(element);
+
+			List<String> refLinks = new ArrayList<>(refs.size());
+			for(RepositoryEntry ref:refs) {
+				String name = "ref-" + (++counter);
+				Link refLink = LinkFactory.createLink(name, "reference", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				refLink.setCustomDisplayText(StringHelper.escapeHtml(ref.getDisplayname()));
+				refLink.setUserObject(ref);
+				refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
+				refLinks.add(name);
+			}
+			mainVC.contextPut("referenceLinks", refLinks);
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(source instanceof Link) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				Link link = (Link)source;
+				if("reference".equals(link.getCommand())) {
+					RepositoryEntryRef uobject = (RepositoryEntryRef)link.getUserObject();
+					launch(ureq, uobject);
+				}
+			}
+		}
+
+		@Override
+		protected void doDispose() {
+			//
 		}
 	}
 	

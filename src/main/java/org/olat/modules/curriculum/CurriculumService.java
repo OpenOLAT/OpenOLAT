@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumInfos;
@@ -189,6 +190,15 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum);
+	
+	/**
+	 * Return all the elements of a curriculum, flat, with additional informations
+	 * like the number of resources linked to the elements.
+	 * 
+	 * @param curriculum The curriculum
+	 * @return A list of curriculum elements with additional informations
+	 */
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum);
 	
 	/**
 	 * Retrieve the children elements of the specified curriculum element.

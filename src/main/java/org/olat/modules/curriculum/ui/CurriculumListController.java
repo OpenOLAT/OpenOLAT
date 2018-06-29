@@ -137,7 +137,7 @@ public class CurriculumListController extends FormBasicController implements Act
 	private void doSelectCurriculum(UserRequest ureq, CurriculumRow row) {
 		stackPanel.popUpToController(this);
 	
-		elementlistCtrl = new CurriculumElementListController(ureq, getWindowControl(), row);
+		elementlistCtrl = new CurriculumElementListController(ureq, getWindowControl(), stackPanel, row);
 		listenTo(elementlistCtrl);
 		stackPanel.pushController(row.getDisplayName(), elementlistCtrl);
 	}

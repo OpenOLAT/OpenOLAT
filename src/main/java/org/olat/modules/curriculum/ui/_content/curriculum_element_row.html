@@ -6,39 +6,111 @@
 			<i class=" o_icon o_icon_start o_icon-lg"></i>
 		</div>
 		<h4 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h4>
-	</div>
-	
-	#elseif(${row.isRepositoryEntryOnly()})
-	
-	<div class="o_meta">
-		<div class="o_go_xs visible-xs">
-			<i class=" o_icon o_icon_start o_icon-lg"></i>
-		</div>
-		<h4 class="o_title"><i class="o_icon o_icon-fw $row.repositoryEntryCssClass"> </i> $r.escapeHtml($row.repositoryEntryDisplayName) <small>$r.escapeHtml($row.repositoryEntryExternalRef)</small></h4>
-	</div>
-	<div class="o_access container">
-		$r.render($row.getDetailsLinkName())
-		#if($row.getStartLinkName())
-			$r.render($row.getStartLinkName())
+		
+		#if($row.curriculumElementBeginDate || $row.curriculumElementEndDate)
+			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
+				#if($row.curriculumElementBeginDate || $row.curriculumElementEndDate)
+				<div><i class="o_icon o_icon_lifecycle_date"> </i>
+					#if($row.curriculumElementBeginDate) $r.formatDate($row.curriculumElementBeginDate) #end
+					#if($row.curriculumElementEndDate) - $r.formatDate($row.curriculumElementEndDate) #end
+				</div>
+				#end
+			</div>
 		#end
 	</div>
 	
-	#elseif(${row.isCurriculumElementWithEntry()})
-	
-	<div class="o_meta">
-		<div class="o_go_xs visible-xs">
-			<i class=" o_icon o_icon_start o_icon-lg"></i>
+	#else
+		<div class="o_visual">
+			<a href="javascript:${f.ffXHREvent("select_row","$row.key")}">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailRelPath()}" />
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+			</a>	
 		</div>
-		<h4 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h4>
-	</div>
-	<div class="o_access container">
-		#if($r.isNotNull($row.getDetailsLinkName()))
+	
+		<div class="o_meta">
+			<div class="o_go_xs visible-xs">
+				<i class=" o_icon o_icon_start o_icon-lg"></i>
+			</div>
+			#if(${row.isCurriculumElementWithEntry()})
+				<h5 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h5>
+			#end
+			<h4 class="o_title">$r.render($row.getSelectLinkName()) <small>$r.escapeHtml($row.repositoryEntryExternalRef)</small></h4>
+
+			#if($row.authors && !$row.authors.empty)
+				<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
+			#end
+			#if($row.closed)
+				<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
+			#end
+			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
+				<div class="o_lifecycle #if ($row.isActive()) o_active #end">
+					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+						<div><i class="o_icon o_icon_lifecycle_date"> </i>
+						#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
+							#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
+							#else $r.escapeHtml($row.lifecycleLabel) #end
+						#else
+							#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
+							#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
+						#end</div>
+					#end
+					#if($row.location  && !${row.location.isEmpty()})
+						<div><i class="o_icon o_icon_home"> </i> $r.escapeHtml($row.location)</div>
+					#end
+				</div>
+			#end
+			<div class="o_desc">$row.shortenedDescription</div>
+			#if($row.markLinkName)
+			<div class="o_bookmark">$r.render($row.markLinkName)</div>
+			#end
+		</div>
+
+		#if(${row.isRepositoryEntryOnly()} || ${row.isCurriculumElementWithEntry()})
+		<div class="o_access container">
+			#if($row)
+				#if($row.passed || $row.failed)
+				<div class="row">
+					#if($row.passed)
+						$r.translate("passed.true")
+					#elseif($row.failed)
+						$r.translate("passed.false")
+					#end
+				</div>
+				#end
+			
+				#if($row.score) 
+				<div class="o_score row">
+					$row.score 
+					<span class="o_label">
+						$r.translate("details.label.score")
+					</span>
+				</div> 
+				#end			
+			#end
+			
+			#if($row.accessTypes && !$row.isMember())
+			<div class="o_bookings row">
+				<div class="o_label">
+					$r.translate("details.orders"):
+				</div>
+				<div class="o_methods">
+					<ul class="list-inline">
+					#foreach($type in $row.accessTypes)
+						<li title="$r.escapeHtml("$type.displayName")"><i class="o_icon $type.type o_icon-lg"></i>#if($type.price && $type.price.length() > 0) ($type.price)#end</li>
+					#end
+					</ul>
+				</div>							
+			</div> 
+			#end
+		
 			$r.render($row.getDetailsLinkName())
+			#if($row.getStartLinkName())
+				$r.render($row.getStartLinkName())
+			#end
+		</div>
 		#end
-		#if($r.isNotNull($row.getStartLinkName()))
-			$r.render($row.getStartLinkName())
-		#end
-	</div>
-	
 	#end
 </div>

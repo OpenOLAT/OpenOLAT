@@ -49,6 +49,7 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumInfos;
@@ -239,7 +240,12 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum) {
 		return curriculumElementDao.loadElements(curriculum);
 	}
-	
+
+	@Override
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum) {
+		return curriculumElementDao.loadElementsWithInfos(curriculum);
+	}
+
 	@Override
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
 		return curriculumElementDao.loadElements(entry);

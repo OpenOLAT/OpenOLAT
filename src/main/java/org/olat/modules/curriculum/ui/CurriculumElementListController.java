@@ -30,6 +30,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,10 +49,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -56,12 +68,19 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModel.ElementViewCols;
-import org.olat.modules.curriculum.ui.component.CurriculumElementDepthComparator;
 import org.olat.modules.curriculum.ui.component.CurriculumElementIndentRenderer;
+import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowComparator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -85,24 +104,36 @@ public class CurriculumElementListController extends FormBasicController impleme
 	
 	private FlexiTableElement tableEl;
 	private CurriculumElementWithViewsDataModel tableModel;
+	private final BreadcrumbPanel stackPanel;
 	
 	private int counter;
 	private final boolean guestOnly;
 	private final CurriculumRef curriculum;
+	private final MapperKey mapperThumbnailKey;
+	
+	private RepositoryEntryDetailsController detailsCtrl;
 	
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
-	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, CurriculumRef curriculum) {
-		super(ureq, wControl, "curriculum_element_list");
+	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, CurriculumRef curriculum) {
+		super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.curriculum = curriculum;
+		this.stackPanel = stackPanel;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		
 		initForm(ureq);
 		loadModel(ureq);
@@ -120,12 +151,15 @@ public class CurriculumElementListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryDisplayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryExternalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setElementCssClass("o_curriculumtable");
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
@@ -164,6 +198,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		int count = 0;
 		for(CurriculumElementWithViewsRow parent=rowWithView.getParent(); parent != null; parent=parent.getParent()) {
+			count++;
+		}
+		if(rowWithView.isRepositoryEntryOnly()) {
 			count++;
 		}
 		sb.append(" o_curriculum_element_l").append(count);
@@ -215,8 +252,17 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 		Map<Long,CurriculumElementWithViewsRow> keyToRow = rows.stream()
 				.collect(Collectors.toMap(CurriculumElementWithViewsRow::getKey, row -> row, (row1, row2) -> row1));
-		rows.forEach(row -> row.setParent(keyToRow.get(row.getParentKey())));
-		Collections.sort(rows, new CurriculumElementDepthComparator());
+		rows.forEach(row -> {
+			row.setParent(keyToRow.get(row.getParentKey()));
+			if(row.getOlatResource() != null) {
+				VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable());
+				if(image != null) {
+					row.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
+				}
+			}
+		});
+		
+		Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
 		removeByPermissions(rows);
 
 		tableModel.setObjects(rows);
@@ -272,6 +318,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		forgeStartLink(row);
 		forgeDetails(row);
+		forgeMarkLink(row);
+		forgeSelectLink(row);
 	}
 	
 	private void forgeDetails(CurriculumElementWithViewsRow row) {
@@ -304,6 +352,28 @@ public class CurriculumElementListController extends FormBasicController impleme
 		startLink.setIconRightCSS("o_icon o_icon_start");
 		row.setStartLink(startLink);
 	}
+	
+	private void forgeMarkLink(CurriculumElementWithViewsRow row) {
+		if(!guestOnly) {
+			FormLink markLink = uifactory.addFormLink("mark_" + (++counter), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+			markLink.setUserObject(row);
+			row.setMarkLink(markLink);
+		}
+	}
+	
+	private void forgeSelectLink(CurriculumElementWithViewsRow row) {
+		if(row.isCurriculumElementOnly()) return;
+		
+		String displayName = StringHelper.escapeHtml(row.getRepositoryEntryDisplayName());
+		FormLink selectLink = uifactory.addFormLink("select_" + (++counter), "select", displayName, null, null, Link.NONTRANSLATED);
+		if(row.isClosed()) {
+			selectLink.setIconLeftCSS("o_icon o_CourseModule_icon_closed");
+		}
+		selectLink.setUserObject(row);
+		row.setSelectLink(selectLink);
+	}
 
 	@Override
 	protected void doDispose() {
@@ -315,6 +385,35 @@ public class CurriculumElementListController extends FormBasicController impleme
 		//do not update the 
 	}
 	
+	
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("select_row");
+				if(StringHelper.isLong(rowKeyStr)) {
+					try {
+						Long rowKey = new Long(rowKeyStr);
+						List<CurriculumElementWithViewsRow> rows = tableModel.getObjects();
+						for(CurriculumElementWithViewsRow row:rows) {
+							if(row != null && row.getRepositoryEntryKey() != null  && row.getRepositoryEntryKey().equals(rowKey)) {
+								if (row.isMember()) {
+									doOpen(ureq, row, null);					
+								} else {
+									doOpenDetails(ureq, row);
+								}
+							}
+						}
+					} catch (NumberFormatException e) {
+						logWarn("Not a valid long: " + rowKeyStr, e);
+					}
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
@@ -324,9 +423,15 @@ public class CurriculumElementListController extends FormBasicController impleme
 				doOpen(ureq, row, null);
 			} else if("details".equals(link.getCmd())) {
 				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
-				doOpen(ureq, row, "[Infos:0]");
+				doOpenDetails(ureq, row);
+			} else if("mark".equals(link.getCmd())) {
+				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
+				boolean marked = doMark(ureq, row);
+				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
+				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+				link.getComponent().setDirty(true);
+				row.setMarked(marked);
 			}
-			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -346,6 +451,49 @@ public class CurriculumElementListController extends FormBasicController impleme
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + row.getKey() + " (" + row.getOlatResource().getResourceableId() + ")", e);
 			showError("cif.error.corrupted");
+		}
+	}
+	
+	private void doOpenDetails(UserRequest ureq, CurriculumElementWithViewsRow row) {
+		// to be more consistent: course members see info page within the course, non-course members see it outside the course
+		if (row.isMember()) {
+			doOpen(ureq, row, "[Infos:0]");
+		} else {
+			removeAsListenerAndDispose(detailsCtrl);
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
+			RepositoryEntry entry = repositoryService.loadByKey(row.getRepositoryEntryKey());
+			if(entry == null) {
+				showWarning("repositoryentry.not.existing");
+			} else {
+				detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, false);
+				listenTo(detailsCtrl);
+				addToHistory(ureq, detailsCtrl);
+				
+				String displayName = row.getRepositoryEntryDisplayName();
+				stackPanel.pushController(displayName, detailsCtrl);	
+			}
+		}
+	}
+	
+	private boolean doMark(UserRequest ureq, CurriculumElementWithViewsRow row) {
+		OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepositoryEntryKey());
+		RepositoryEntryRef ref = new RepositoryEntryRefImpl(row.getRepositoryEntryKey());
+		if(markManager.isMarked(item, getIdentity(), null)) {
+			markManager.removeMark(item, getIdentity(), null);
+			
+			EntryChangedEvent e = new EntryChangedEvent(ref, getIdentity(), Change.removeBookmark, "curriculum");
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+			return false;
+		} else {
+			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
+			markManager.setMark(item, getIdentity(), null, businessPath);
+			
+			EntryChangedEvent e = new EntryChangedEvent(ref, getIdentity(), Change.addBookmark, "curriculum");
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+			return true;
 		}
 	}
 }

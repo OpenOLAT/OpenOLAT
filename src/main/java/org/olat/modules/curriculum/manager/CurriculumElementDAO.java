@@ -46,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
+import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.repository.RepositoryEntryRef;
@@ -163,6 +164,32 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("curriculumKey", curriculum.getKey())
 				.getResultList();
+	}
+	
+	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumRef curriculum) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el, ")
+		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
+		  .append("  where reToGroup.group.key=baseGroup.key")
+		  .append(" ) as numOfElements")
+		  .append(" from curriculumelement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" inner join fetch el.group baseGroup")
+		  .append(" left join el.parent parentEl")
+		  .append(" where el.curriculum.key=:curriculumKey");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("curriculumKey", curriculum.getKey())
+				.getResultList();
+		List<CurriculumElementInfos> infos = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			CurriculumElement element = (CurriculumElement)rawObject[0];
+			Long rawNumOfResources = PersistenceHelper.extractLong(rawObject, 1);
+			long numOfResources = rawNumOfResources == null ? 0l : rawNumOfResources.longValue();
+			infos.add(new CurriculumElementInfos(element, numOfResources));
+		}
+		return infos;
 	}
 	
 	public List<CurriculumElement> loadElements(RepositoryEntryRef entry) {

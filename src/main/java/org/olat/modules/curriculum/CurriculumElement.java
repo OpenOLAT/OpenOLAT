@@ -68,6 +68,8 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
 	
+	public Long getPos();
+	
 	public Curriculum getCurriculum();
 	
 	public CurriculumElement getParent();

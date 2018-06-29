@@ -39,12 +39,16 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private CurriculumElementRow parent;
 	private final Long parentKey;
 	private final CurriculumElement element;
+	private final long numOfResources;
 	
 	private final FormLink toolsLink;
+	private final FormLink resourcesLink;
 	
-	public CurriculumElementRow(CurriculumElement element, FormLink toolsLink) {
+	public CurriculumElementRow(CurriculumElement element, long numOfResources, FormLink toolsLink, FormLink resourcesLink) {
 		this.element = element;
 		this.toolsLink = toolsLink;
+		this.numOfResources = numOfResources;
+		this.resourcesLink = resourcesLink;
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 	}
 	
@@ -96,6 +100,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public Long getParentKey() {
 		return parentKey;
 	}
+	
+	public long getNumOfResources() {
+		return numOfResources;
+	}
 
 	@Override
 	public String getCrump() {
@@ -104,6 +112,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 
 	public FormLink getTools() {
 		return toolsLink;
+	}
+	
+	public FormLink getResources() {
+		return resourcesLink;
 	}
 
 }
