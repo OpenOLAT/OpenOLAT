@@ -36,12 +36,8 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
- * Description: <br>
- * TODO: Felix Jost Class Description for MultiSource
- * <P>
- * 
- *  Initial Date: 23.06.2005 <br>
-  * @author Felix Jost
+ * Initial Date: 23.06.2005 <br>
+ * @author Felix Jost
  */
 public class MergeSource extends AbstractVirtualContainer {
 
@@ -57,16 +53,16 @@ public class MergeSource extends AbstractVirtualContainer {
 	public MergeSource(VFSContainer parentContainer, String name) {
 		super(name);
 		this.parentContainer = parentContainer;
-		mergedContainers = new ArrayList<VFSContainer>();
-		mergedContainersChildren = new ArrayList<VFSContainer>();
+		mergedContainers = new ArrayList<>();
+		mergedContainersChildren = new ArrayList<>();
 	}
 	
 	protected void init() {
 		if(mergedContainers == null) {
-			mergedContainers = new ArrayList<VFSContainer>();
+			mergedContainers = new ArrayList<>();
 		}
 		if(mergedContainersChildren == null) {
-			mergedContainersChildren = new ArrayList<VFSContainer>(2);
+			mergedContainersChildren = new ArrayList<>(2);
 		}
 	}
 	

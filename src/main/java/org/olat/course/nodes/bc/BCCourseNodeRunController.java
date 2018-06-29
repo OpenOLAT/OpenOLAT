@@ -119,7 +119,8 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 		} else{
 			//create folder automatically if not found
 			String subPath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
-			VFSContainer item = VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseFolderContainer(), subPath);
+			VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
+			VFSContainer item = VFSManager.resolveOrCreateContainerFromPath(courseContainer, subPath);
 			
 			String relPath;
 			if(item == null) {
@@ -135,7 +136,7 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 						&& inheritingContainer.getLocalSecurityCallback() .getQuota() != null) {
 					relPath = inheritingContainer.getLocalSecurityCallback().getQuota().getPath();
 				} else {
-					relPath = VFSManager.getRelativeItemPath(target, courseEnv.getCourseFolderContainer(), null);
+					relPath = VFSManager.getRelativeItemPath(target, courseContainer, null);
 				}
 				scallback = new FolderNodeCallback(relPath, ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 			}
