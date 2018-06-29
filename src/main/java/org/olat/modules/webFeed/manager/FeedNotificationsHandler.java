@@ -137,7 +137,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 					.getURLFromBusinessPathString(businessPath);
 		String iconCssClass = item.extraCSSClass();
 		Date publishDate = item.getPublishDate();
-		if(publishDate != null) {
+		if(item.isPublished()) {
 			if(compareDate.before(publishDate)) {
 				String desc = translator.translate("notifications.entry.published", new String[] { title, author });
 				items.add(new SubscriptionListItem(desc, urlToSend, businessPath, publishDate, iconCssClass));

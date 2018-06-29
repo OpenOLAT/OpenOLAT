@@ -98,15 +98,10 @@ public class FeedNotifications {
 	
 	private void createSubscriptionItem(Item item, Publisher p){
 		Date modDate = item.getPublishDate();
-		if (compareDate.before(modDate)) {
+		if (item.isPublished() && compareDate.before(modDate)) {
 			String title = item.getTitle();
 			String author = item.getAuthor();
-			String desc;
-			if (item.isDraft()) {
-				return;
-			} else {
-				desc = translator.translate("notifications.entry", new String[] { title, author });
-			}
+			String desc = translator.translate("notifications.entry", new String[] { title, author });
 			String businessPath = p.getBusinessPath();
 			String urlToSend = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(businessPath);
