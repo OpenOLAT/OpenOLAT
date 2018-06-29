@@ -93,7 +93,7 @@ public class CurriculumElementDAO {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select el from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" inner join el.group baseGroup")
+		  .append(" inner join fetch el.group baseGroup")
 		  .append(" where el.key=:key");
 		
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
@@ -155,7 +155,7 @@ public class CurriculumElementDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" inner join el.group baseGroup")
+		  .append(" inner join fetch el.group baseGroup")
 		  .append(" left join el.parent parentEl")
 		  .append(" where el.curriculum.key=:curriculumKey");
 		
@@ -305,7 +305,8 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementMembership> getMembershipInfos(Collection<CurriculumElement> elements, Identity... identities) {
+	
+	public List<CurriculumElementMembership> getMembershipInfos(CurriculumRef curriculum, Collection<CurriculumElement> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el.key, membership from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
@@ -319,6 +320,10 @@ public class CurriculumElementDAO {
 		if(elements != null && !elements.isEmpty()) {
 			and = and(sb, and);
 			sb.append("el.key in (:elementKeys)");
+		}
+		if(curriculum != null) {
+			and = and(sb, and);
+			sb.append("el.curriculum.key=:curriculumKey");
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -334,6 +339,9 @@ public class CurriculumElementDAO {
 			List<Long> elementKeys = elements.stream()
 					.map(CurriculumElement::getKey).collect(Collectors.toList());
 			query.setParameter("elementKeys", elementKeys);
+		}
+		if(curriculum != null) {
+			query.setParameter("curriculumKey", curriculum.getKey());
 		}
 
 		List<Object[]> rawObjects = query.getResultList();

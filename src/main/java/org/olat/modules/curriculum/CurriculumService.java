@@ -30,9 +30,11 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -45,7 +47,8 @@ import org.olat.repository.RepositoryEntryRef;
 public interface CurriculumService {
 	
 	/**
-	 * Create and persist a curriculum
+	 * Create and persist a curriculum.
+	 * 
 	 * @param identifier The identifier
 	 * @param displayName The name
 	 * @param description The description
@@ -59,6 +62,16 @@ public interface CurriculumService {
 	public Curriculum updateCurriculum(Curriculum curriculum);
 	
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
+	
+	public List<CurriculumInfos> getCurriculumsWithInfos(CurriculumSearchParameters params);
+	
+	/**
+	 * The list of curriculums the identity participates.
+	 * 
+	 * @param identity The identity
+	 * @return A list of curriculums
+	 */
+	public List<Curriculum> getMyCurriculums(Identity identity);
 	
 	/**
 	 * Get the list of members of the specified curriculum with their roles.
@@ -330,6 +343,8 @@ public interface CurriculumService {
 	 * @return A list of taxonomy levels
 	 */
 	public List<TaxonomyLevel> getTaxonomy(CurriculumElement element);
+	
+	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level);
 	
 	/**
 	 * Remove from the list the curriculum elements which are not manageable with the specified roles.

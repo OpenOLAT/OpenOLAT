@@ -19,11 +19,14 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -39,8 +42,13 @@ implements SortableFlexiTableDataModel<TaxonomyLevelRelationRow> {
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			SortableFlexiTableModelDelegate<TaxonomyLevelRelationRow> sorter
+				= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+			List<TaxonomyLevelRelationRow> views = sorter.sort();
+			super.setObjects(views);
+		}
 	}
 	
 	@Override
@@ -55,6 +63,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelRelationRow> {
 			case key: return row.getKey();
 			case type: return row.getRelation().getClass().getSimpleName();
 			case displayName: return row.getDisplayName();
+			case externalId: return row.getExternalId();
 			default: return "ERROR";
 		}
 	}
@@ -67,7 +76,8 @@ implements SortableFlexiTableDataModel<TaxonomyLevelRelationRow> {
 	public enum RelationsCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		type("table.header.competence.type"),
-		displayName("table.header.displayName");
+		displayName("table.header.displayName"),
+		externalId("table.header.relation.externalId");
 		
 		private final String i18nHeaderKey;
 		

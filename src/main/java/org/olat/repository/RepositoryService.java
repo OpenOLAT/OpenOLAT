@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -34,6 +35,8 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
@@ -311,6 +314,23 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public List<OrganisationRef> getOrganisationReferences(RepositoryEntryRef entry);
+	
+	/**
+	 * Retrieve where the repository entry is linked in taxonomy.
+	 * 
+	 * @param entry A repository entry
+	 * @return A list of taxonomy level
+	 */
+	public List<TaxonomyLevel> getTaxonomy(RepositoryEntry entry);
+	
+	/**
+	 * Retrieve the list of repository entries link to a specific level
+	 * of the taxonomy.
+	 * 
+	 * @param taxonomyLevel The taxonomy level
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getRepositoryEntryByTaxonomy(TaxonomyLevelRef taxonomyLevel);
 	
 	
 	

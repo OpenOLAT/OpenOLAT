@@ -62,10 +62,13 @@ public class WebDAVPasswordController extends FormBasicController {
 	private FormLink newButton;
 	private TextElement passwordEl;
 	private TextElement confirmPasswordEl;
+	private StaticTextElement usernamesStaticEl;
 	private StaticTextElement passwordStaticEl;
 	private FormLayoutContainer accessDataFlc;
 	private FormLayoutContainer buttonGroupLayout;
 	
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -87,16 +90,6 @@ public class WebDAVPasswordController extends FormBasicController {
 			
 			accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
 			layoutContainer.add(accessDataFlc);
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append(getIdentity().getName());
-			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getEmail())) {
-				sb.append(", ").append(getIdentity().getUser().getEmail());
-			}
-			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getInstitutionalEmail())) {
-				sb.append(", ").append(getIdentity().getUser().getInstitutionalEmail());
-			}
-			uifactory.addStaticTextElement("pwdav.username", "pwdav.username", sb.toString(), accessDataFlc);
 
 			boolean hasOlatToken = false;
 			boolean hasWebDAVToken = false;
@@ -104,10 +97,18 @@ public class WebDAVPasswordController extends FormBasicController {
 			for(Authentication auth : authentications) {
 				if(BaseSecurityModule.getDefaultAuthProviderIdentifier().equals(auth.getProvider())) {
 					hasOlatToken = true;
-				} else if(WebDAVAuthManager.PROVIDER_WEBDAV.equals(auth.getProvider())) {
+				} else if(WebDAVAuthManager.PROVIDER_WEBDAV.equals(auth.getProvider())
+						|| WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL.equals(auth.getProvider())
+						|| WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL.equals(auth.getProvider())
+						|| WebDAVAuthManager.PROVIDER_HA1.equals(auth.getProvider())
+						|| WebDAVAuthManager.PROVIDER_HA1_EMAIL.equals(auth.getProvider())
+						|| WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL.equals(auth.getProvider())) {
 					hasWebDAVToken = true;
 				}
 			}
+			
+			String usernames = getUsernames(authentications);
+			usernamesStaticEl = uifactory.addStaticTextElement("pwdav.username", "pwdav.username", usernames, accessDataFlc);
 			
 			if(hasOlatToken) {
 				String passwordPlaceholder = getTranslator().translate("pwdav.password.placeholder");
@@ -141,6 +142,35 @@ public class WebDAVPasswordController extends FormBasicController {
 			
 			layoutContainer.put("access_data", accessDataFlc.getComponent());
 		}
+	}
+	
+	private String getUsernames(List<Authentication> authentications) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getIdentity().getName());
+		if(userModule.isEmailUnique()) {
+			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getEmail())) {
+				sb.append(", ").append(getIdentity().getUser().getEmail());
+			}
+			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getInstitutionalEmail())) {
+				sb.append(", ").append(getIdentity().getUser().getInstitutionalEmail());
+			}
+		}
+
+		for(Authentication auth : authentications) {
+			if(WebDAVAuthManager.PROVIDER_WEBDAV.equals(auth.getProvider())
+					|| WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL.equals(auth.getProvider())
+					|| WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL.equals(auth.getProvider())
+					|| WebDAVAuthManager.PROVIDER_HA1.equals(auth.getProvider())
+					|| WebDAVAuthManager.PROVIDER_HA1_EMAIL.equals(auth.getProvider())
+					|| WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL.equals(auth.getProvider())) {
+				String authUsername = auth.getAuthusername();
+				if(sb.indexOf(authUsername) < 0) {
+					sb.append(", ").append(authUsername);
+				}
+			}
+		}
+		
+		return sb.toString();		
 	}
 	
 	@Override
@@ -214,6 +244,10 @@ public class WebDAVPasswordController extends FormBasicController {
 		
 		String buttonPlaceholderKey = auth == null ? "pwdav.password.new" : "pwdav.password.change";
 		newButton.setI18nKey(buttonPlaceholderKey);
+		
+		List<Authentication> authentications = securityManager.getAuthentications(ureq.getIdentity());
+		String usernames = getUsernames(authentications);
+		usernamesStaticEl.setValue(usernames);
 		
 		flc.setDirty(true);
 	}

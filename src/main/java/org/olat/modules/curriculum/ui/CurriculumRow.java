@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.model.CurriculumInfos;
 
 /**
  * 
@@ -32,10 +33,19 @@ import org.olat.modules.curriculum.CurriculumRef;
 public class CurriculumRow implements CurriculumRef {
 	
 	private final Curriculum curriculum;
+	private final long numOfElements;
+	
 	private final FormLink toolsLink;
 	
-	public CurriculumRow(Curriculum curriculum, FormLink toolsLink) {
+	public CurriculumRow(Curriculum curriculum) {
 		this.curriculum = curriculum;
+		numOfElements = -1l;
+		toolsLink = null;
+	}
+	
+	public CurriculumRow(CurriculumInfos infos, FormLink toolsLink) {
+		curriculum = infos.getCurriculum();
+		numOfElements = infos.getNumOfElements();
 		this.toolsLink = toolsLink;
 	}
 	
@@ -54,6 +64,10 @@ public class CurriculumRow implements CurriculumRef {
 	
 	public String getExternalId() {
 		return curriculum.getExternalId();
+	}
+	
+	public long getNumOfElements() {
+		return numOfElements;
 	}
 	
 	public FormLink getTools() {

@@ -19,7 +19,10 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -31,6 +34,7 @@ public class TaxonomyLevelRelationRow {
 	
 	private final Long key;
 	private final String displayName;
+	private final String externalId;
 	
 	private final Object relation;
 	
@@ -38,6 +42,28 @@ public class TaxonomyLevelRelationRow {
 		this.relation = item;
 		key = item.getKey();
 		displayName = item.getTitle();
+		externalId = null;
+	}
+	
+	public TaxonomyLevelRelationRow(RepositoryEntry entry) {
+		this.relation = entry;
+		key = entry.getKey();
+		displayName = entry.getDisplayname();
+		externalId = entry.getExternalId();
+	}
+	
+	public TaxonomyLevelRelationRow(CurriculumElement element) {
+		this.relation = element;
+		key = element.getKey();
+		displayName = element.getDisplayName();
+		externalId = element.getExternalId();
+	}
+	
+	public TaxonomyLevelRelationRow(LectureBlock lectureBlock) {
+		this.relation = lectureBlock;
+		key = lectureBlock.getKey();
+		displayName = lectureBlock.getTitle();
+		externalId = lectureBlock.getExternalId();
 	}
 	
 	public Long getKey() {
@@ -46,6 +72,10 @@ public class TaxonomyLevelRelationRow {
 
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	public String getExternalId() {
+		return externalId;
 	}
 
 	public Object getRelation() {

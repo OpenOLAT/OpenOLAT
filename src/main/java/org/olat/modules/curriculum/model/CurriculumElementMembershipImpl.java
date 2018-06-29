@@ -52,6 +52,11 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	public Long getCurriculumElementKey() {
 		return curriculumElementKey;
 	}
+	
+	@Override
+	public boolean hasMembership() {
+		return repositoryEntryOwner || coach || participant || curriculumManager;
+	}
 
 	@Override
 	public boolean isRepositoryEntryOwner() {
@@ -87,5 +92,24 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 
 	public void setCurriculumManager(boolean curriculumManager) {
 		this.curriculumManager = curriculumManager;
+	}
+
+	@Override
+	public int hashCode() {
+		return (identityKey == null ? 792515 : identityKey.hashCode())
+				+ (curriculumElementKey == null ? 12121 : curriculumElementKey.hashCode());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CurriculumElementMembershipImpl) {
+			CurriculumElementMembershipImpl el = (CurriculumElementMembershipImpl)obj;
+			return identityKey != null && identityKey.equals(el.identityKey)
+					&& curriculumElementKey != null && curriculumElementKey.equals(el.curriculumElementKey);
+		}
+		return false;
 	}
 }

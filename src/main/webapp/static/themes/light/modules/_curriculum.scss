@@ -1,5 +1,25 @@
 @for $i from 0 through 11 {
 	tr.o_curriculum_element_l#{$i} td {
-		padding: ($i * $o-tree-padding-steps-px); 
+		padding: ($i * $o-tree-padding-steps-px);
 	}
+	
+	div.o_curriculum_element_l#{$i} {
+		margin-left: ($i * $o-tree-padding-steps-px);
+	}
+}
+
+.o_curriculumtable {
+
+	&.o_rendertype_custom {	
+		 .o_table_row {
+			position: relative;
+			border: 1px solid $o-coursesite-rowelem-border;
+			margin-bottom: floor($line-height-computed / 2);
+		}
+		.o_table_row.o_curriculum_element {
+			border-color: #999;
+		}
+	}
+
+
 }

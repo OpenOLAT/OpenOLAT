@@ -367,9 +367,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, SearchIdentityParams predefinedQuery) {
 		if(manageableOrganisations != null && predefinedQuery.getOrganisations() != null) {
-				List<OrganisationRef> allowedOrganisations = new ArrayList<>(predefinedQuery.getOrganisations());
-				allowedOrganisations	.retainAll(manageableOrganisations);
-				predefinedQuery.setOrganisations(allowedOrganisations);
+			List<OrganisationRef> allowedOrganisations = new ArrayList<>(predefinedQuery.getOrganisations());
+			allowedOrganisations.retainAll(manageableOrganisations);
+			predefinedQuery.setOrganisations(allowedOrganisations);
 		}
 		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true);
 	}

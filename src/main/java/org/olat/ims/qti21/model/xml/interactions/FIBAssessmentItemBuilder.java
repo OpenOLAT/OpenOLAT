@@ -996,6 +996,9 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		private boolean match(double answer) {
 			double lTolerance = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
 			double uTolerance = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
+			if(toleranceMode == ToleranceMode.ABSOLUTE && (lTolerance <= 0.0d || uTolerance <= 0.0d)) {
+				return false;
+			}
 			return toleranceMode.isEqual(solution, answer,
 					lTolerance, uTolerance,
 					true, true);

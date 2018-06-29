@@ -91,6 +91,7 @@ import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -861,6 +862,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public List<TaxonomyLevel> getTaxonomy(LectureBlockRef lectureBlock) {
 		if(lectureBlock == null || lectureBlock.getKey() == null) return Collections.emptyList();
 		return lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
+	}
+
+	@Override
+	public List<LectureBlock> getLectureBlocks(TaxonomyLevelRef level) {
+		return lectureBlockToTaxonomyLevelDao.getLectureBlocks(level);
 	}
 
 	@Override

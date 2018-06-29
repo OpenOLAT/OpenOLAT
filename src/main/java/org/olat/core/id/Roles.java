@@ -112,18 +112,18 @@ public class Roles implements Serializable {
 			for(OrganisationRoles organisationRole:organisationRoles) {
 				if(organisationRole != null) {
 					switch(organisationRole) {
-						case	 sysadmin: systemAdmin = true; break;
-						case	 administrator: olatAdmin = true; break;
-						case	 usermanager: userManager = true; break;
-						case	 learnresourcemanager: learnResourceManager = true; break;
-						case	 groupmanager: groupManager = true; break;
-						case	 poolmanager: poolAdmin = true; break;
-						case	 curriculummanager: curriculumManager = true; break;
-						case	 author: author = true; break;
-						case	 coach: coach = true; break;
-						case	 user: break;
-						case	 invitee: invitee = true; break;
-						case	 guest: guestOnly = true; break;
+						case sysadmin: systemAdmin = true; break;
+						case administrator: olatAdmin = true; break;
+						case usermanager: userManager = true; break;
+						case learnresourcemanager: learnResourceManager = true; break;
+						case groupmanager: groupManager = true; break;
+						case poolmanager: poolAdmin = true; break;
+						case curriculummanager: curriculumManager = true; break;
+						case author: author = true; break;
+						case coach: coach = true; break;
+						case user: break;
+						case invitee: invitee = true; break;
+						case guest: guestOnly = true; break;
 					}
 				}
 			}

@@ -327,14 +327,33 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getMembershipInfos() {
+	public void getMembershipInfos_elements() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, curriculum);
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
-		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(Collections.singletonList(element), supervisor);
+		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(null, Collections.singletonList(element), supervisor);
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		Assert.assertEquals(supervisor.getKey(), members.get(0).getIdentityKey());
+		Assert.assertEquals(element.getKey(), members.get(0).getCurriculumElementKey());
+		Assert.assertTrue(members.get(0).isCurriculumManager());
+		Assert.assertFalse(members.get(0).isRepositoryEntryOwner());
+		Assert.assertFalse(members.get(0).isCoach());
+		Assert.assertFalse(members.get(0).isParticipant());
+	}
+	
+	@Test
+	public void getMembershipInfos_curriculum() {
+		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element", null, null, null, null, curriculum);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(curriculum, null, supervisor);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(supervisor.getKey(), members.get(0).getIdentityKey());

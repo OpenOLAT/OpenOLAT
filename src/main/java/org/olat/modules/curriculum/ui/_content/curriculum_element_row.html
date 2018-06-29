@@ -1,0 +1,44 @@
+<div>
+	#if(${row.isCurriculumElementOnly()})
+	
+	<div class="o_meta">
+		<div class="o_go_xs visible-xs">
+			<i class=" o_icon o_icon_start o_icon-lg"></i>
+		</div>
+		<h4 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h4>
+	</div>
+	
+	#elseif(${row.isRepositoryEntryOnly()})
+	
+	<div class="o_meta">
+		<div class="o_go_xs visible-xs">
+			<i class=" o_icon o_icon_start o_icon-lg"></i>
+		</div>
+		<h4 class="o_title"><i class="o_icon o_icon-fw $row.repositoryEntryCssClass"> </i> $r.escapeHtml($row.repositoryEntryDisplayName) <small>$r.escapeHtml($row.repositoryEntryExternalRef)</small></h4>
+	</div>
+	<div class="o_access container">
+		$r.render($row.getDetailsLinkName())
+		#if($row.getStartLinkName())
+			$r.render($row.getStartLinkName())
+		#end
+	</div>
+	
+	#elseif(${row.isCurriculumElementWithEntry()})
+	
+	<div class="o_meta">
+		<div class="o_go_xs visible-xs">
+			<i class=" o_icon o_icon_start o_icon-lg"></i>
+		</div>
+		<h4 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h4>
+	</div>
+	<div class="o_access container">
+		#if($r.isNotNull($row.getDetailsLinkName()))
+			$r.render($row.getDetailsLinkName())
+		#end
+		#if($r.isNotNull($row.getStartLinkName()))
+			$r.render($row.getStartLinkName())
+		#end
+	</div>
+	
+	#end
+</div>

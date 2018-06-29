@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'https://www.frentix.com',
 				infourl : 'https://www.frentix.com',
-				version : '2.4.1'
+				version : '2.5.0'
 			};
 		},
 
@@ -176,12 +176,8 @@
 				var pl = eval("x={" + attribs + "}");
 				_getEmbed(pl);
 
-				if(pl.provider == "rtmp" || pl.provider == "http") {
-					win.find('#streamer')[0].visible();
-				} else {
-					win.find('#streamer')[0].hide();
-				}
-				return;
+				var streaming = (pl.provider == "rtmp" || pl.provider == "http");
+				win.find('#streamer')[0].parent().visible(streaming);
 			}
 			
 			function _getEmbed(p) {
@@ -233,13 +229,77 @@
 				    {text: translator().translate('olatmovieviewer.sound'), value: 'sound'},
 				    {text: translator().translate('olatmovieviewer.youtube'), value: 'youtube'},
 				    {text: translator().translate('olatmovieviewer.vimeo'), value: 'vimeo'},
+				    {text: translator().translate('olatmovieviewer.nanoo'), value: 'nanoo'},
 				    {text: translator().translate('olatmovieviewer.http'), value: 'http'},
 				    {text: translator().translate('olatmovieviewer.rtmp'), value: 'rtmp'}
 				];
 				return targetListItems;
 			}
 			
-			function insertVideo() {
+			/**
+			 * Get server side to find some sizes
+			 */
+			function generateSizes() {
+				var address = win.find('#address')[0].value();
+				if(address != null && address !== undefined && address.indexOf('nanoo.tv') > 0) {
+					var parts = address.split('?');
+					var nanooId = parts[0].substring(address.lastIndexOf('/') + 1);
+					var width = win.find('#width')[0].value();
+					var height = win.find('#height')[0].value();
+					if((nanooId.length > 6) && (width == null || width === undefined || width === "") && (height == null || height === undefined || height === "")) {
+						var contextPath = ed.getParam("contextPath");
+						var url = contextPath + "/tiny/nanoo?nanooId=" + nanooId;
+						jQuery.getJSON(url, function(data) {
+							if(data.width > 0) {
+								var width = win.find('#width')[0].value();
+								if(width == null || width === undefined || width === "") {
+									win.find('#width')[0].value('' + data.width);
+								}
+							}
+							if(data.height > 0) {
+								var height = win.find('#height')[0].value();
+								if(height == null || height === undefined || height === "") {
+									win.find('#height')[0].value('' + data.height);
+								}
+							}
+							if(data.width > 0 && data.height > 0) {
+								generatePreview();
+							}
+						});
+					}
+				}
+			}
+			
+			function insertVideo(e) {
+				//remove errors
+				jQuery(this.find('#width')[0].getEl()).removeClass("mce-danger");
+				jQuery(this.find('#height')[0].getEl()).removeClass("mce-danger");
+				jQuery(this.find('#address')[0].getEl()).removeClass("mce-danger");
+
+				// make some validation
+				var allOk = true;
+				
+				var width = this.find('#width')[0].value();
+				if(width == null || width === undefined || width === "") {
+					jQuery(this.find('#width')[0].getEl()).addClass("mce-danger");
+					allOk = false;
+				}
+				var height = this.find('#height')[0].value();
+				if(height == null || height === undefined || height === "") {
+					jQuery(this.find('#height')[0].getEl()).addClass("mce-danger");
+					allOk = false;
+				}
+				var address = this.find('#address')[0].value();
+				if(address == null || address === undefined || address === "") {
+					jQuery(this.find('#address')[0].getEl()).addClass("mce-danger");
+					allOk = false;
+				}
+
+				if(!allOk) {
+					e.preventDefault();
+					return;
+				}
+				
 				var attribs = serializeParameters();
 				var f = eval("x={" + attribs + "}");
 				
@@ -265,7 +325,7 @@
 					var h = '<img id="' + newDomId + '"';
 					h += ' class="mceItemOlatMovieViewer" src="' + ed.getParam("olatmovieviewer_transparentImage") + '"';
 					h += ' title="' + titleAttr + '"';
-					h += ' width="' + f.width + '"' + ' height="' + f.height + '" />';
+					h += ' width="' + f.width + '"' + ' height="' + f.height + '" style="width:' + f.width + 'px; height:' + f.height + 'px" />';
 					ed.execCommand("mceInsertContent", false, h);
 				}
 			} 
@@ -279,9 +339,16 @@
 					    	title: translator().translate('olatmovieviewer.general'),
 					    	type: 'form',
 					    	items: [
-					    	    { name: 'provider', type: 'listbox', label: translator().translate('olatmovieviewer.provider'), values: buildProviderList() },
-					    	    { name: 'streamer', type: 'textbox', label: translator().translate('olatmovieviewer.streamer')},
-					    	    { name: 'address', type: 'filepicker', filetype: 'flashplayer', label: translator().translate('olatmovieviewer.address')},
+					    	    { name: 'provider', type: 'listbox',
+					    	    	label: translator().translate('olatmovieviewer.provider'),
+					    	    	values: buildProviderList(),
+					    	    	onselect: function(e) {
+					    	    		var streaming = (this.value() == 'rtmp' || this.value() == 'http');
+					    	    		win.find('#streamer')[0].parent().visible(streaming);
+					    	    	}
+					    	    },
+					    	    { name: 'streamer', type: 'textbox', label: translator().translate('olatmovieviewer.streamer') },
+					    	    { name: 'address', type: 'filepicker', filetype: 'flashplayer', label: translator().translate('olatmovieviewer.address'), onchange: generateSizes},
 					    	    { name: 'poster', type: 'filepicker', filetype: 'image', label: translator().translate('olatmovieviewer.poster')},
 					    	    {
 									type: 'container',
@@ -330,7 +397,11 @@
 				
 				var helpButton = coreTranslator().translate('help');
 				var helpLink = ed.getParam("olatmovieviewer_helpUrl" + o_getMainWin().o_info.locale);
-				jQuery(".mce-tabs").append("<span class='o_chelp_wrapper'><a href='" + helpLink + "' class='o_chelp' target='_blank'><i class='mce-ico mce-i-help'> </i> " + helpButton + "</a></span>")
+				jQuery(".mce-tabs").append("<span class='o_chelp_wrapper'><a href='" + helpLink + "' class='o_chelp' target='_blank'><i class='mce-ico mce-i-help'> </i> " + helpButton + "</a></span>");
+				
+				var streamingValue = win.find('#provider')[0].value();
+				var streaming = (streamingValue == 'rtmp' || streamingValue == 'http');
+	    		win.find('#streamer')[0].parent().visible(streaming);
 			}
 			
 			function parseBPlayerScript(editor,script) {
@@ -511,19 +582,24 @@
 						movieSettings = {};
 					}
 					
+					var width = typeof(movieSettings.width) == 'undefined' ? 320 : movieSettings.width;
+					var height = typeof(movieSettings.height) == 'undefined' ? 240 : movieSettings.height;
+					
 					var imgNode = ed.dom.create("img", {
 						id:movieSettings.domIdentity,
 						name:movieSettings.domIdentity,
 						"class":"mceItemOlatMovieViewer",
+						"style": 'width:' + width + 'px; height:' + height + 'px;',
 						src:imgUrl,
 						title:movieSettingsString
 					});
+
 					//for ie8
-					imgNode.width = typeof(movieSettings.width) == 'undefined' ? 320 : movieSettings.width;
-					imgNode.height = typeof(movieSettings.height) == 'undefined' ? 240 : movieSettings.height;
-					imgNode.style = 'width:' + imgNode.width + 'px; height:' + imgNode.height + 'px;'
+					imgNode.width = width;
+					imgNode.height = height;
 					//  ...and replace the div by the new img.
 					ed.dom.replace(imgNode, node, false);
+		            ed.dom.setAttrib(imgNode, "style", 'width:' + width + 'px; height:' + height + 'px;');
 			    });
 			});
 		}

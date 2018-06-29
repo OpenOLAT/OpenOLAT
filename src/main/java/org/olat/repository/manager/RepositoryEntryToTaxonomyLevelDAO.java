@@ -63,6 +63,20 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
+	public List<RepositoryEntry> getRepositoryEntries(TaxonomyLevelRef level) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select v from repositoryentrytotaxonomylevel rel")
+		  .append(" inner join rel.entry v")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where rel.taxonomyLevel.key=:levelKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("levelKey", level.getKey())
+				.getResultList();
+	}
+	
 	public void deleteRelation(RepositoryEntryRef entry, TaxonomyLevelRef taxonomyLevel) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from repositoryentrytotaxonomylevel rel")

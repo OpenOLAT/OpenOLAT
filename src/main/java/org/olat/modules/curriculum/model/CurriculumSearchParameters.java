@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 
 /**
@@ -33,6 +34,7 @@ import org.olat.core.id.OrganisationRef;
 public class CurriculumSearchParameters {
 	
 	private String searchString;
+	private Identity managerIdentity;
 	private List<OrganisationRef> organisations;
 
 	public List<OrganisationRef> getOrganisations() {
@@ -52,5 +54,13 @@ public class CurriculumSearchParameters {
 
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
+	}
+
+	public Identity getManagerIdentity() {
+		return managerIdentity;
+	}
+
+	public void setManagerIdentity(Identity managerIdentity) {
+		this.managerIdentity = managerIdentity;
 	}
 }

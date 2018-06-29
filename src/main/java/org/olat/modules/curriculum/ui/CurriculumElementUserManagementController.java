@@ -231,8 +231,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 			for(Integer selectedRow:selectedRows) {
 				rows.add(tableModel.getObject(selectedRow.intValue()));
 			}
-			String title = translate("confirm.remove.title");
-			confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("confirm.remove.text", ""), confirmRemoveCtrl);
+			String title = translate("confirm.remove.member.title");
+			confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("confirm.remove.member.text", ""), confirmRemoveCtrl);
 			confirmRemoveCtrl.setUserObject(rows);
 		}
 	}

@@ -170,6 +170,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 					String ident = te.getNodeId();
 					TreeNode selectedNode = courseTree.getTreeModel().getNodeById(ident);
 					doSelectNode(ureq, selectedNode);
+					initTools();
 				}
 			}
 		}
@@ -187,6 +188,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 				String selNodeId = nclr.getIdent();
 				courseTree.setSelectedNodeId(selNodeId);
 				doSelectNode(ureq, nclr);
+				initTools();
 			}
 		}
 	}
@@ -209,9 +211,6 @@ public class StatisticCourseNodesController extends BasicController implements A
 		if(currentCtrl != null) {
 			listenTo(currentCtrl);
 			layoutCtr.setCol3(currentCtrl.getInitialComponent());
-			if(currentCtrl instanceof TooledController) {
-				((TooledController)currentCtrl).initTools();
-			}
 		} else {
 			layoutCtr.setCol3(new Panel("empty"));
 		}

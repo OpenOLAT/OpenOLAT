@@ -24,9 +24,11 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 
 /**
@@ -43,11 +45,12 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	private final Long parentKey;
 	private final CurriculumElement element;
+	private final CurriculumElementMembership curriculumMembership;
+	private boolean curriculumMember;
 
 	private boolean singleEntry;
-	private Long repositoryEntryKey;
-	private String repositoryEntryName;
 	private OLATResource olatResource;
+	private RepositoryEntryMyView repositoryEntry;
 	
 	private int access;
 	private boolean isMembersOnly;
@@ -56,21 +59,26 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	private boolean member;
 	
 	private FormLink startLink;
+	private FormLink detailsLink;
 	
-	public CurriculumElementWithViewsRow(CurriculumElement element) {
+	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership) {
 		this.element = element;
+		this.curriculumMembership = curriculumMembership;
+		curriculumMember = (curriculumMembership == null ? false : curriculumMembership.hasMembership());
 		singleEntry = false;
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 	}
 	
-	public CurriculumElementWithViewsRow(CurriculumElement element, RepositoryEntryMyView repositoryEntryView, boolean alone) {
+	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership,
+			RepositoryEntryMyView repositoryEntryView, boolean alone) {
 		this.element = element;
+		this.curriculumMembership = curriculumMembership;
+		curriculumMember = (curriculumMembership == null ? false : curriculumMembership.hasMembership());
 		singleEntry = alone;
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		
 		isMembersOnly = repositoryEntryView.isMembersOnly();
-		repositoryEntryName = repositoryEntryView.getDisplayname();
-		repositoryEntryKey = repositoryEntryView.getKey();
+		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
 		access = repositoryEntryView.getAccess();
 	}
@@ -80,12 +88,24 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		return element.getKey();
 	}
 	
+	public boolean isCurriculumElementOnly() {
+		return element != null && repositoryEntry == null;
+	}
+	
+	public boolean isRepositoryEntryOnly() {
+		return element != null && repositoryEntry != null && !singleEntry;
+	}
+	
+	public boolean isCurriculumElementWithEntry() {
+		return element != null && repositoryEntry != null && singleEntry;
+	}
+	
 	public String getCurriculumElementIdentifier() {
-		return repositoryEntryName == null || singleEntry ? element.getIdentifier() : null;
+		return repositoryEntry == null || singleEntry ? element.getIdentifier() : null;
 	}
 	
 	public String getCurriculumElementDisplayName() {
-		return repositoryEntryName == null || singleEntry ? element.getDisplayName() : null;
+		return repositoryEntry == null || singleEntry ? element.getDisplayName() : null;
 	}
 	
 	public String getMaterializedPathKeys() {
@@ -105,11 +125,19 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	}
 	
 	public Long getRepositoryEntryKey() {
-		return repositoryEntryKey;
+		return repositoryEntry == null ? null : repositoryEntry.getKey();
 	}
 	
-	public String getRepositoryEntryName() {
-		return repositoryEntryName;
+	public String getRepositoryEntryDisplayName() {
+		return repositoryEntry == null ? null : repositoryEntry.getDisplayname();
+	}
+	
+	public String getRepositoryEntryExternalRef() {
+		return repositoryEntry == null ? null : repositoryEntry.getExternalRef();
+	}
+	
+	public String getRepositoryEntryCssClass() {
+		return olatResource == null ? "" : RepositoyUIFactory.getIconCssClass(olatResource.getResourceableTypeName());
 	}
 	
 	public OLATResource getOlatResource() {
@@ -126,6 +154,18 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	public void setMember(boolean member) {
 		this.member = member;
+	}
+
+	public CurriculumElementMembership getCurriculumMembership() {
+		return curriculumMembership;
+	}
+
+	public boolean isCurriculumMember() {
+		return curriculumMember;
+	}
+
+	public void setCurriculumMember(boolean curriculumMember) {
+		this.curriculumMember = curriculumMember;
 	}
 
 	public List<PriceMethod> getAccessTypes() {
@@ -156,12 +196,28 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		return parentKey;
 	}
 	
+	public String getStartLinkName() {
+		return startLink == null ? null : startLink.getComponent().getComponentName();
+	}
+	
 	public FormLink getStartLink() {
 		return startLink;
 	}
 	
 	public void setStartLink(FormLink startLink) {
 		this.startLink = startLink;
+	}
+	
+	public String getDetailsLinkName() {
+		return detailsLink == null ? null : detailsLink.getComponent().getComponentName();
+	}
+
+	public FormLink getDetailsLink() {
+		return detailsLink;
+	}
+
+	public void setDetailsLink(FormLink detailsLink) {
+		this.detailsLink = detailsLink;
 	}
 
 	@Override

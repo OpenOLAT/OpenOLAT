@@ -51,9 +51,11 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -196,10 +198,20 @@ public class CurriculumServiceImpl implements CurriculumService {
 		curriculumElementTypeDao.deleteCurriculumElementType(elementType);
 		return true;
 	}
-
+	
 	@Override
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params) {
 		return curriculumDao.search(params);
+	}
+
+	@Override
+	public List<CurriculumInfos> getCurriculumsWithInfos(CurriculumSearchParameters params) {
+		return curriculumDao.searchWithInfos(params);
+	}
+	
+	@Override
+	public List<Curriculum> getMyCurriculums(Identity identity) {
+		return curriculumDao.getMyCurriculums(identity);
 	}
 
 	@Override
@@ -266,9 +278,9 @@ public class CurriculumServiceImpl implements CurriculumService {
 	
 	@Override
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities) {
-		return curriculumElementDao.getMembershipInfos(elements, identities);
-	}	
-
+		return curriculumElementDao.getMembershipInfos(null, elements, identities);
+	}
+	
 	@Override
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles,
 			List<CurriculumElementMembershipChange> changes) {
@@ -368,12 +380,24 @@ public class CurriculumServiceImpl implements CurriculumService {
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomy(CurriculumElement element) {
+		if(element == null || element.getKey() == null) return Collections.emptyList();
 		return curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(element);
+	}
+
+	@Override
+	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level) {
+		return curriculumElementToTaxonomyLevelDao.getCurriculumElements(level);
 	}
 
 	@Override
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum) {
 		if(curriculum == null) return Collections.emptyList();
+		
+		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculum, null, identity);
+		Map<Long,CurriculumElementMembership> membershipMap = new HashMap<>();
+		for(CurriculumElementMembership membership:memberships) {
+			membershipMap.put(membership.getCurriculumElementKey(), membership);
+		}
 		
 		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao.getCurriculumElementsWithRepositoryEntryKeys(curriculum);
 		List<CurriculumElementRepositoryEntryViews> elements = new ArrayList<>(elementsMap.size());
@@ -396,7 +420,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 						elementViews.add(elementView);
 					}
 				}
-				elements.add(new CurriculumElementRepositoryEntryViews(element, elementViews));
+				CurriculumElementMembership membership = membershipMap.get(element.getKey());
+				elements.add(new CurriculumElementRepositoryEntryViews(element, elementViews, membership));
 			}
 		}
 		return elements;

@@ -48,7 +48,6 @@ public class CurriculumElementToTaxonomyLevelDAO {
 		CurriculumElementToTaxonomyLevelImpl rel = new CurriculumElementToTaxonomyLevelImpl();
 		rel.setCreationDate(new Date());
 		rel.setCurriculumElement(curriculumElement);
-		rel.setCurriculumElement(curriculumElement);
 		rel.setTaxonomyLevel(taxonomyLevel);
 		dbInstance.getCurrentEntityManager().persist(rel);
 		return rel;
@@ -61,6 +60,19 @@ public class CurriculumElementToTaxonomyLevelDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), TaxonomyLevel.class)
 				.setParameter("elementKey", curriculumElement.getKey())
+				.getResultList();
+	}
+	
+	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el from curriculumelementtotaxonomylevel rel")
+		  .append(" inner join rel.curriculumElement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" inner join fetch el.group baseGroup")
+		  .append(" where rel.taxonomyLevel.key=:levelKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("levelKey", level.getKey())
 				.getResultList();
 	}
 	

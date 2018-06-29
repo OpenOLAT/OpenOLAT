@@ -295,6 +295,11 @@ i.mce-ico.mce-i-help:before {
 	background-color: $alert-danger-bg;
 }
 
+.mce-textbox.mce-danger {
+	border-color: darken($alert-danger-bg, 25%);
+	background-color: $alert-danger-bg;
+}
+
 /*
  * Overwrite some class of typehead needed by the flexi table
  */

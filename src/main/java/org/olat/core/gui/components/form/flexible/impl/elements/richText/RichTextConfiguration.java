@@ -990,10 +990,10 @@ public class RichTextConfiguration implements Disposable {
 
 	protected void appendConfigToTinyJSArray_4(StringOutput out, Translator translator) {
 		// Now add the quoted values
-		Map<String,String> copyValues = new HashMap<String,String>(quotedConfigValues);
+		Map<String,String> copyValues = new HashMap<>(quotedConfigValues);
 
 		// Now add the non-quoted values (e.g. true, false or functions)
-		Map<String,String> copyNonValues = new HashMap<String,String>(nonQuotedConfigValues);
+		Map<String,String> copyNonValues = new HashMap<>(nonQuotedConfigValues);
 		String converter = copyNonValues.get(URLCONVERTER_CALLBACK);
 		if(converter != null) {
 			copyNonValues.put(CONVERT_URLS, "true");

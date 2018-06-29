@@ -893,7 +893,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
     </xsl:when>
     <xsl:when test="$allowComment and $isItemSessionEnded and exists($itemSessionState/qw:candidateComment)">
       <fieldset class="candidateComment">
-        <legend>You submitted the folllowing comment with this item:</legend>
+        <legend>You submitted the following comment with this item:</legend>
         <input name="qtiworks_comment_presented" type="hidden" value="true"/>
         <textarea name="qtiworks_comments" disabled="disabled"><xsl:value-of select="$itemSessionState/qw:candidateComment"/></textarea>
       </fieldset>

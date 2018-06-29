@@ -17,31 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.curriculum.model;
+
+import org.olat.modules.curriculum.Curriculum;
 
 /**
  * 
- * Initial date: 8 juin 2018<br>
+ * Initial date: 22 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementMembership {
+public class CurriculumInfos {
 	
-	public Long getIdentityKey();
+	private final Curriculum curriculum;
+	private final long numOfElements;
 	
-	public Long getCurriculumElementKey();
+	public CurriculumInfos(Curriculum curriculum, Long numOfElements) {
+		this.curriculum = curriculum;
+		this.numOfElements = numOfElements == null ? 0l : numOfElements.longValue();
+	}
 
-	public boolean isRepositoryEntryOwner();
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
 
-	public boolean isCoach();
-	
-	public boolean isParticipant();
-	
-	public boolean isCurriculumManager();
-	
-	/**
-	 * @return true if the identity has at least one role on the curriculum element
-	 */
-	public boolean hasMembership();
-
+	public long getNumOfElements() {
+		return numOfElements;
+	}
 }

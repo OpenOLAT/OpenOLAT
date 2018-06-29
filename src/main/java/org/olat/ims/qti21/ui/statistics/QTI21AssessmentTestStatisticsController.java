@@ -105,10 +105,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 			printLink = LinkFactory.createToolLink("print" + CodeHelper.getRAMUniqueID(), translate("print"), this);
 			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
 			printLink.setPopup(new LinkPopupSettings(680, 500, "qti-stats"));
-			stackPanel.addTool(printLink, Align.right);
 
 			downloadRawLink = LinkFactory.createToolLink("download" + CodeHelper.getRAMUniqueID(), translate("download.raw.data"), this);
-			stackPanel.addTool(downloadRawLink, Align.right);
 		} else {
 			printLink = null;
 			downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
@@ -116,7 +114,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 			mainVC.put("download", downloadRawLink);
 		}
 		downloadRawLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
-
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
@@ -232,12 +229,13 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		List<ItemInfos> itemInfos = new ArrayList<>(statisticItems.size());
 		for (AssessmentItemStatistic statisticItem: statisticItems) {
 			AssessmentItem item = statisticItem.getAssessmentItem();
-			
-			String label = Integer.toString(++i);
-			String text = item.getTitle(); 
-			d1.add(statisticItem.getAverageScore(), label);
-			d2.add(statisticItem.getNumOfCorrectAnswers(), label);
-			itemInfos.add(new ItemInfos(label, text));
+			if(item != null) {
+				String label = Integer.toString(++i);
+				String text = item.getTitle(); 
+				d1.add(statisticItem.getAverageScore(), label);
+				d2.add(statisticItem.getNumOfCorrectAnswers(), label);
+				itemInfos.add(new ItemInfos(label, text));
+			}
 		}
 		
 		mainVC.contextPut("itemInfoList", itemInfos);

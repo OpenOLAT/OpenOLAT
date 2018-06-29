@@ -364,6 +364,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		addToHistory(ureq, curriculumListCtrl);
 		mainVC.put("segmentCmp", curriculumStackPanel);
+		curriculumListCtrl.activate(ureq, null, null);
 		return curriculumListCtrl;
 	}
 	
