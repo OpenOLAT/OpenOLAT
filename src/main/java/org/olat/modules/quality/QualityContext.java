@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.repository.RepositoryEntry;
@@ -35,13 +36,17 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface QualityContext extends QualityContextRef, CreateInfo, ModifiedInfo {
 
+	public QualityContextRole getRole();
+	
 	public QualityDataCollection getDataCollection();
 	
 	public EvaluationFormSession getEvaluationFormSession();
 	
 	public EvaluationFormParticipation getEvaluationFormParticipation();
 	
-	public RepositoryEntry getRepositoryEntry();
+	public RepositoryEntry getAudienceRepositoryEntry();
+	
+	public CurriculumElement getAudienceCurriculumElement();
 	
 	public Set<QualityContextToCurriculum> getContextToCurriculum();
 	

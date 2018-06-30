@@ -35,6 +35,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityManager;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -109,7 +110,8 @@ public class QualityTestHelper {
 	}
 	
 	QualityContext createContext() {
-		return qualityContextDao.createContext(createDataCollection(), createParticipation(), createRepositoryEntry());
+		return qualityContextDao.createContext(createDataCollection(), createParticipation(), QualityContextRole.owner,
+				createRepositoryEntry(), createCurriculumElement());
 	}
 
 	EvaluationFormSurvey createSurvey(QualityDataCollection dataCollection) {

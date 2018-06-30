@@ -20,6 +20,7 @@
 package org.olat.modules.quality.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -27,6 +28,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -123,7 +126,7 @@ public class QualityManagerImpl implements QualityManager {
 	}
 
 	@Override
-	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection, List<Identity> executors) {
+	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection, Collection<Identity> executors) {
 		List<EvaluationFormParticipation> participations = new ArrayList<>();
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		for (Identity executor: executors) {
@@ -161,13 +164,19 @@ public class QualityManagerImpl implements QualityManager {
 	@Override
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation participation) {
-		return DefaultQualityContextBuilder.builder(dataCollection, participation);
+		return AudiencelessQualityContextBuilder.builder(dataCollection, participation);
 	}
 	
 	@Override
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
-			EvaluationFormParticipation participation, RepositoryEntry entry, List<GroupRoles> roles) {
-		return RepositoryQualityContextBuilder.builder(dataCollection, participation, entry, roles);
+			EvaluationFormParticipation participation, RepositoryEntry entry, GroupRoles role) {
+		return RepositoryEntryQualityContextBuilder.builder(dataCollection, participation, entry, role);
+	}
+
+	@Override
+	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
+			EvaluationFormParticipation participation, CurriculumElement curriculumElement, CurriculumRoles role) {
+		return CurriculumElementQualityContextBuilder.builder(dataCollection, participation, curriculumElement, role);
 	}
 	
 	@Override

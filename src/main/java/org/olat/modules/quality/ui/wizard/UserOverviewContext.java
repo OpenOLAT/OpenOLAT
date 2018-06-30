@@ -17,33 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality;
+package org.olat.modules.quality.ui.wizard;
 
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import java.util.List;
+
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 25.06.2018<br>
+ * Initial date: 30.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityContextBuilder {
+public interface UserOverviewContext {
 	
-	QualityContextBuilder withRole(QualityContextRole role);
+	public List<Identity> getIdentities();
 	
-	QualityContextBuilder addToDelete(QualityContext context);
-
-	QualityContextBuilder addCurriculum(Curriculum curriculum);
-
-	QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement);
-
-	QualityContextBuilder addOrganisation(Organisation organisation);
-
-	QualityContextBuilder addTaxonomyLevel(TaxonomyLevel taxonomyLevel);
-
-	QualityContext build();
+	public void setIdentities(List<Identity> identities);
 
 }

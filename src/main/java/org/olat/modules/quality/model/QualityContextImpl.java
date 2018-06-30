@@ -25,6 +25,8 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -37,11 +39,14 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
 import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityContextToCurriculum;
 import org.olat.modules.quality.QualityContextToCurriculumElement;
 import org.olat.modules.quality.QualityContextToOrganisation;
@@ -73,6 +78,10 @@ public class QualityContextImpl implements QualityContext, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
+	@Enumerated(EnumType.STRING)
+	@Column(name="q_role", nullable=true, insertable=true, updatable=true)
+	private QualityContextRole role;
+	
 	@ManyToOne(targetEntity=QualityDataCollectionImpl.class)
 	@JoinColumn(name="fk_data_collection", nullable=false, insertable=true, updatable=false)
 	private QualityDataCollection dataCollection;
@@ -83,8 +92,11 @@ public class QualityContextImpl implements QualityContext, Persistable {
 	@JoinColumn(name="fk_eva_session", nullable=true, insertable=true, updatable=true)
 	private EvaluationFormSession evaluationFormSession;
 	@ManyToOne(targetEntity=RepositoryEntry.class)
-	@JoinColumn(name="fk_repository", nullable=true, insertable=true, updatable=true)
-	private RepositoryEntry repositoryEntry;
+	@JoinColumn(name="fk_audience_repository", nullable=true, insertable=true, updatable=true)
+	private RepositoryEntry audienceRepositoryEntry;
+	@ManyToOne(targetEntity=CurriculumElementImpl.class)
+	@JoinColumn(name="fk_audience_cur_element", nullable=true, insertable=true, updatable=true)
+	private CurriculumElement audienceCurriculumElement;
 	
 	@OneToMany(targetEntity=QualityContextToCurriculumImpl.class, fetch=FetchType.LAZY)
 	@JoinColumn(name="fk_context")
@@ -125,6 +137,15 @@ public class QualityContextImpl implements QualityContext, Persistable {
 	}
 
 	@Override
+	public QualityContextRole getRole() {
+		return role;
+	}
+
+	public void setRole(QualityContextRole role) {
+		this.role = role;
+	}
+
+	@Override
 	public QualityDataCollection getDataCollection() {
 		return dataCollection;
 	}
@@ -152,12 +173,21 @@ public class QualityContextImpl implements QualityContext, Persistable {
 	}
 
 	@Override
-	public RepositoryEntry getRepositoryEntry() {
-		return repositoryEntry;
+	public RepositoryEntry getAudienceRepositoryEntry() {
+		return audienceRepositoryEntry;
 	}
 
-	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
-		this.repositoryEntry = repositoryEntry;
+	public void setAudienceRepositoryEntry(RepositoryEntry audienceRepositoryEntry) {
+		this.audienceRepositoryEntry = audienceRepositoryEntry;
+	}
+
+	@Override
+	public CurriculumElement getAudienceCurriculumElement() {
+		return audienceCurriculumElement;
+	}
+
+	public void setAudienceCurriculumElement(CurriculumElement audienceCurriculumElement) {
+		this.audienceCurriculumElement = audienceCurriculumElement;
 	}
 
 	@Override
@@ -248,7 +278,9 @@ public class QualityContextImpl implements QualityContext, Persistable {
 		builder.append(", evaluationFormParticipationKey=");
 		builder.append(evaluationFormParticipation != null? evaluationFormParticipation.getKey(): "");
 		builder.append(", repositoryEntryKey=");
-		builder.append(repositoryEntry != null? repositoryEntry.getKey(): "");
+		builder.append(audienceRepositoryEntry != null? audienceRepositoryEntry.getKey(): "");
+		builder.append(", curriculumElementKey=");
+		builder.append(audienceCurriculumElement != null? audienceCurriculumElement.getKey(): "");
 		builder.append("]");
 		return builder.toString();
 	}

@@ -22,10 +22,6 @@ package org.olat.modules.quality.ui.wizard;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -55,28 +51,19 @@ public class AddUserOverviewController extends StepFormBasicController {
 
 	protected static final String USER_PROPS_ID = QualityMainController.class.getCanonicalName();
 	
-	private List<Identity> oks;
-	private List<String> notfounds;
+	private List<Identity> identities;
 	
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
-	private OrganisationService organisationService;
 
 	public AddUserOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(ParticipationListController.class, getLocale(), getTranslator()));
 
-		oks = null;
-		if(containsRunContextKey("keys")) {
-			@SuppressWarnings("unchecked")
-			List<String> keys = (List<String>)runContext.get("keys");
-			loadModel(keys);
-		}
-
+		UserOverviewContext context = (UserOverviewContext) getFromRunContext("context");
+		identities = context.getIdentities();
+		
 		initForm (ureq);
 	}
 	
@@ -100,37 +87,14 @@ public class AddUserOverviewController extends StepFormBasicController {
 		}
 		
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-		AddUserOverviewDataModel userTableModel = new AddUserOverviewDataModel(oks, resultingPropertyHandlers,
+		AddUserOverviewDataModel userTableModel = new AddUserOverviewDataModel(identities, resultingPropertyHandlers,
 				getLocale(), tableColumnModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
 	
-	private void loadModel(List<String> keys) {
-		oks = new ArrayList<>();
-		List<String> isanonymous = new ArrayList<>();
-		notfounds = new ArrayList<>();
-
-		for (String identityKey : keys) {
-			Identity ident = securityManager.loadIdentityByKey(Long.parseLong(identityKey));
-			if (ident == null) { // not found, add to not-found-list
-				notfounds.add(identityKey);
-			} else if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
-				isanonymous.add(identityKey);
-			} else if (!PersistenceHelper.containsPersistable(oks, ident)) {
-				oks.add(ident);
-			}
-		}
-	}
-	
-	public boolean validate() {
-		return true;
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
-		IdentityContext identityContext = (IdentityContext) getFromRunContext("identityContext");
-		identityContext.setIdentities(oks);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

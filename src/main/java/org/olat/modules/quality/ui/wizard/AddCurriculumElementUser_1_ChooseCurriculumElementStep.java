@@ -31,17 +31,17 @@ import org.olat.modules.quality.ui.ParticipationListController;
 
 /**
  * 
- * Initial date: 13.06.2018<br>
+ * Initial date: 02.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AddUser_1_ChooseUserStep extends BasicStep {
+public class AddCurriculumElementUser_1_ChooseCurriculumElementStep extends BasicStep {
 	
-	public AddUser_1_ChooseUserStep(UserRequest ureq) {
+	public AddCurriculumElementUser_1_ChooseCurriculumElementStep(UserRequest ureq) {
 		super(ureq);
-		setNextStep(new AddUser_2_ConfirmUserChoiceStep(ureq));
+		setNextStep(new AddCurriculumElementUser_2_ChooseRolesStep(ureq));
 		setTranslator(Util.createPackageTranslator(ParticipationListController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("participation.user.add.choose.title", "participation.user.add.choose.title");
+		setI18nTitleAndDescr("participation.user.curele.add.choose.curele.title", "participation.user.curele.add.choose.curele.title");
 	}
 
 	@Override
@@ -52,9 +52,8 @@ public class AddUser_1_ChooseUserStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		if(!runContext.containsKey("context")) {
-			runContext.put("context", new IdentityContext());
+			runContext.put("context", new CurriculumElementContext());
 		}
-		AddUserSearchController controller = new AddUserSearchController(ureq, wControl, form, runContext);
-		return controller;
+		return new AddCurriculumElementUserSelectionController(ureq, wControl, form, runContext);
 	}
 }

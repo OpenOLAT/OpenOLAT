@@ -22,9 +22,6 @@ package org.olat.modules.quality.ui.wizard;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.admin.user.UserSearchFlexiController;
-import org.olat.basesecurity.events.MultiIdentityChosenEvent;
-import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -34,7 +31,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Identity;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
 
 
 /**
@@ -43,33 +41,31 @@ import org.olat.core.id.Identity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
  *
  */
-public class AddUserSearchController extends StepFormBasicController {
+public class AddCourseUserSearchController extends StepFormBasicController {
 	
-	private UserSearchFlexiController searchController;
-	
-	private final IdentityContext context; 
+	private ReferencableEntriesSearchController searchController; 
 
-	public AddUserSearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "search");
+	public AddCourseUserSearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "user_course_add_search");
 
-		context = (IdentityContext) getFromRunContext("context");
-		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				new String[] { "CourseModule" }, translate("participation.user.course.add.choose"),
+				false, false, true, true);
 		listenTo(searchController);
-		initForm(ureq);
+		initForm (ureq);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (event instanceof SingleIdentityChosenEvent) {
-			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent) event;
-			Identity identity = e.getChosenIdentity();
-			List<Identity> identities = Collections.singletonList(identity);
-			context.setIdentities(identities);
-			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-		} else if (event instanceof MultiIdentityChosenEvent) {
-			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent) event;
-			List<Identity> identities = e.getChosenIdentities();
-			context.setIdentities(identities);
+		if (source == searchController) {
+			List<RepositoryEntry> selectedEntries = Collections.emptyList();
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				selectedEntries = Collections.singletonList(searchController.getSelectedEntry());
+			} else if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				selectedEntries = searchController.getSelectedEntries();
+			}
+			CourseContext courseContext = (CourseContext) getFromRunContext("context");
+			courseContext.setRepositoryEntries(selectedEntries);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			super.event(ureq, source, event);
@@ -77,15 +73,8 @@ public class AddUserSearchController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void formNext(UserRequest ureq) {
-		List<Identity> identities = searchController.getSelectedIdentities();
-		context.setIdentities(identities);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.add("search", searchController.getInitialFormItem());
+		flc.put("search", searchController.getInitialComponent());
 	}
 
 	@Override

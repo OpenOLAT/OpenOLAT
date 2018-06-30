@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityManager;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -46,7 +47,9 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 
 	private QualityDataCollection dataCollection;
 	private EvaluationFormParticipation evaluationFormParticipation;
-	private RepositoryEntry repositoryEntry;
+	private QualityContextRole role;
+	private RepositoryEntry audienceRepositoryEntry;
+	private CurriculumElement audienceCurriculumElement;
 	private final Set<QualityContext> contextsToDelete = new HashSet<>();
 	private final Set<Curriculum> curriculums = new HashSet<>();
 	private final Set<CurriculumElement> curriculumElements = new HashSet<>();
@@ -80,8 +83,19 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 		return new DefaultQualityContextBuilder(dataCollection, evaluationFormParticipation);
 	}
 	
-	DefaultQualityContextBuilder withRepositoryEntry(RepositoryEntry entry) {
-		this.repositoryEntry = entry;
+	DefaultQualityContextBuilder withAudienceRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.audienceRepositoryEntry = repositoryEntry;
+		return this;
+	}
+	
+	DefaultQualityContextBuilder withAudiencCurriculumElement(CurriculumElement curriculumElement) {
+		this.audienceCurriculumElement = curriculumElement;
+		return this;
+	}
+
+	@Override
+	public QualityContextBuilder withRole(QualityContextRole role) {
+		this.role = role;
 		return this;
 	}
 
@@ -130,7 +144,8 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 		for (QualityContext contextToDelete: contextsToDelete) {
 			qualityManager.deleteContext(contextToDelete);
 		}
-		QualityContext context = contextDao.createContext(dataCollection, evaluationFormParticipation, repositoryEntry);
+		QualityContext context = contextDao.createContext(dataCollection, evaluationFormParticipation, role,
+				audienceRepositoryEntry, audienceCurriculumElement);
 		for (Curriculum curriculum: curriculums) {
 			contextToCurriculumDao.createRelation(context, curriculum);
 		}

@@ -65,7 +65,7 @@ public class DefaultQualityContextBuilderTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		QualityContext context = DefaultQualityContextBuilder.builder(dataCollection, evaluationFormParticipation)
-			.withRepositoryEntry(repositoryEntry)
+			.withAudienceRepositoryEntry(repositoryEntry)
 			.addCurriculum(qualityTestHelper.createCurriculum())
 			.addCurriculumElement(qualityTestHelper.createCurriculumElement())
 			.addOrganisation(qualityTestHelper.createOrganisation())
@@ -83,7 +83,7 @@ public class DefaultQualityContextBuilderTest extends OlatTestCase {
 		assertThat(context.getDataCollection()).isEqualTo(dataCollection);
 		assertThat(context.getEvaluationFormParticipation()).isEqualTo(evaluationFormParticipation);
 		assertThat(context.getEvaluationFormSession()).isNull();
-		assertThat(context.getRepositoryEntry()).isEqualTo(repositoryEntry);
+		assertThat(context.getAudienceRepositoryEntry()).isEqualTo(repositoryEntry);
 		assertThat(context.getContextToCurriculum()).hasSize(2);
 		assertThat(context.getContextToCurriculumElement()).hasSize(2);
 		assertThat(context.getContextToOrganisation()).hasSize(1);

@@ -261,10 +261,12 @@ create table o_qual_context (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   q_role varchar(20),
    fk_data_collection bigint not null,
    fk_eva_participation bigint,
    fk_eva_session bigint,
-   fk_repository bigint,
+   fk_audience_repository bigint,
+   fk_audience_cur_element bigint,
    primary key (id)
 );
 
@@ -310,7 +312,6 @@ alter table o_qual_context_to_tax_level ENGINE = InnoDB;
 alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
 alter table o_qual_context add constraint qual_con_to_session_idx foreign key (fk_eva_session) references o_eva_form_session (id);
-alter table o_qual_context add constraint qual_con_to_repo_idx foreign key (fk_repository) references o_repositoryentry (repositoryentry_id);
 
 alter table o_qual_context_to_organisation add constraint qual_con_to_org_con_idx foreign key (fk_context) references o_qual_context (id);
 create unique index idx_con_to_org_org_idx on o_qual_context_to_organisation (fk_organisation, fk_context);

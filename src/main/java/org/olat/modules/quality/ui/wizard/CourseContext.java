@@ -17,33 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality;
+package org.olat.modules.quality.ui.wizard;
 
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.olat.basesecurity.GroupRoles;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 25.06.2018<br>
+ * Initial date: 29.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityContextBuilder {
-	
-	QualityContextBuilder withRole(QualityContextRole role);
-	
-	QualityContextBuilder addToDelete(QualityContext context);
+public class CourseContext extends IdentityContext {
 
-	QualityContextBuilder addCurriculum(Curriculum curriculum);
+	private Collection<RepositoryEntry> repositoryEntries;
+	private Collection<GroupRoles> roles;
 
-	QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement);
+	public Collection<RepositoryEntry> getRepositoryEntries() {
+		if (repositoryEntries == null) {
+			repositoryEntries = new ArrayList<>(0);
+		}
+		return repositoryEntries;
+	}
 
-	QualityContextBuilder addOrganisation(Organisation organisation);
+	public void setRepositoryEntries(Collection<RepositoryEntry> repositoryEntries) {
+		this.repositoryEntries = repositoryEntries;
+	}
 
-	QualityContextBuilder addTaxonomyLevel(TaxonomyLevel taxonomyLevel);
+	public Collection<GroupRoles> getRoles() {
+		if (roles == null) {
+			roles = new ArrayList<>(0);
+		}
+		return roles;
+	}
 
-	QualityContext build();
+	public void setRoles(Collection<GroupRoles> roles) {
+		this.roles = roles;
+	}
 
 }

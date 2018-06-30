@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.ui.wizard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -29,14 +30,19 @@ import org.olat.core.id.Identity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityContext {
+public class IdentityContext implements UserOverviewContext {
 	
 	private List<Identity> identities;
 
+	@Override
 	public List<Identity> getIdentities() {
+		if (identities == null) {
+			identities = new ArrayList<>(0);
+		}
 		return identities;
 	}
 
+	@Override
 	public void setIdentities(List<Identity> identities) {
 		this.identities = identities;
 	}

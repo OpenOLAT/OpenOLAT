@@ -269,10 +269,12 @@ create table o_qual_context (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   q_role varchar(20),
    fk_data_collection bigint not null,
    fk_eva_participation bigint,
    fk_eva_session bigint,
-   fk_repository bigint,
+   fk_audience_repository bigint,
+   fk_audience_cur_element bigint,
    primary key (id)
 );
 
@@ -314,8 +316,6 @@ alter table o_qual_context add constraint qual_con_to_participation_idx foreign 
 create index idx_con_to_participation_idx on o_qual_context (fk_eva_participation);
 alter table o_qual_context add constraint qual_con_to_session_idx foreign key (fk_eva_session) references o_eva_form_session (id);
 create index idx_con_to_session_idx on o_qual_context (fk_eva_session);
-alter table o_qual_context add constraint qual_con_to_repo_idx foreign key (fk_repository) references o_repositoryentry (repositoryentry_id);
-create index idx_con_to_repo_idx on o_qual_context (fk_repository);
 
 alter table o_qual_context_to_organisation add constraint qual_con_to_org_con_idx foreign key (fk_context) references o_qual_context (id);
 create index idx_con_to_org_con_idx on o_qual_context_to_organisation (fk_context);

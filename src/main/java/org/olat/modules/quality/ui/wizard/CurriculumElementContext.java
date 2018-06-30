@@ -17,33 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality;
+package org.olat.modules.quality.ui.wizard;
 
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
- * Initial date: 25.06.2018<br>
+ * Initial date: 02.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityContextBuilder {
-	
-	QualityContextBuilder withRole(QualityContextRole role);
-	
-	QualityContextBuilder addToDelete(QualityContext context);
+public class CurriculumElementContext  extends IdentityContext {
 
-	QualityContextBuilder addCurriculum(Curriculum curriculum);
+	private CurriculumElement curriculumElement;
+	private Collection<CurriculumRoles> roles;
 
-	QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement);
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
+	}
 
-	QualityContextBuilder addOrganisation(Organisation organisation);
+	public void setCurriculumElement(CurriculumElement curriculumElement) {
+		this.curriculumElement = curriculumElement;
+	}
 
-	QualityContextBuilder addTaxonomyLevel(TaxonomyLevel taxonomyLevel);
+	public Collection<CurriculumRoles> getRoles() {
+		if (roles == null) {
+			roles = new ArrayList<>(0);
+		}
+		return roles;
+	}
 
-	QualityContext build();
+	public void setRoles(Collection<CurriculumRoles> roles) {
+		this.roles = roles;
+	}
 
 }

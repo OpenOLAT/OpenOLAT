@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,11 +46,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -59,7 +60,11 @@ import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityManager;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
+import org.olat.modules.quality.ui.wizard.AddCourseUser_1_ChooseCourseStep;
+import org.olat.modules.quality.ui.wizard.AddCurriculumElementUser_1_ChooseCurriculumElementStep;
 import org.olat.modules.quality.ui.wizard.AddUser_1_ChooseUserStep;
+import org.olat.modules.quality.ui.wizard.CourseContext;
+import org.olat.modules.quality.ui.wizard.CurriculumElementContext;
 import org.olat.modules.quality.ui.wizard.IdentityContext;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -77,12 +82,13 @@ public class ParticipationListController extends FormBasicController implements 
 	
 	private Link addUsersLink;
 	private Link addCourseUsersLink;
+	private Link addCurriculumElementUsersLink;
 	private FormLink removeUsersLink;
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
 	private final TooledStackedPanel stackPanel;
-	private StepsMainRunController addUserWizard;
+	private StepsMainRunController wizard;
 	private CloseableModalController cmc;
 	private ParticipationRemoveConfirmationController removeConformationCtrl;
 	
@@ -95,6 +101,8 @@ public class ParticipationListController extends FormBasicController implements 
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
@@ -132,6 +140,10 @@ public class ParticipationListController extends FormBasicController implements 
 		addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
 		stackPanel.addTool(addCourseUsersLink, Align.right);
 		
+		addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.add.curele"), this);
+		addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_curele");
+		stackPanel.addTool(addCurriculumElementUsersLink, Align.right);;
+		
 		addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
 		addUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
 		stackPanel.addTool(addUsersLink, Align.right);
@@ -164,14 +176,16 @@ public class ParticipationListController extends FormBasicController implements 
 		if (addUsersLink == source) {
 			doAddUsers(ureq);
 		} else if (addCourseUsersLink == source) {
-			doAddCourseUsers();
+			doAddCourseUsers(ureq);
+		} else if (addCurriculumElementUsersLink == source) {
+			doAddCurriculumElementUsers(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (addUserWizard == source) {
+		if (wizard == source) {
 			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -192,49 +206,91 @@ public class ParticipationListController extends FormBasicController implements 
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(removeConformationCtrl);
-		removeAsListenerAndDispose(addUserWizard);
+		removeAsListenerAndDispose(wizard);
 		removeAsListenerAndDispose(cmc);
 		removeConformationCtrl = null;
-		addUserWizard = null;
+		wizard = null;
 		cmc = null;
 	}
 	
 	private List<EvaluationFormParticipationRef> getSelectedParticipationRefs() {
 		return tableEl.getMultiSelectedIndex().stream()
 				.map(index -> dataModel.getObject(index.intValue()))
-				.map(row -> row.getParticipationRef())
+				.map(ParticipationRow::getParticipationRef)
 				.collect(Collectors.toList());
 	}
 
 	private void doAddUsers(UserRequest ureq) {
-		removeAsListenerAndDispose(addUserWizard);
-
-		Step start = new AddUser_1_ChooseUserStep(ureq);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				IdentityContext identityContext = (IdentityContext) runContext.get("identityContext");
-				List<Identity> identities = identityContext.getIdentities();
-				doAddSelectedUsers(identities);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
-		};
-		
-		addUserWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("participation.user.add.title"), "");
-		listenTo(addUserWizard);
-		getWindowControl().pushAsModalDialog(addUserWizard.getInitialComponent());
+		removeAsListenerAndDispose(wizard);
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new AddUser_1_ChooseUserStep(ureq),
+				addSelectedUsers(), null, translate("participation.user.add.title"), "");
+		listenTo(wizard);
+		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
 	}
-
-	private void doAddSelectedUsers(List<Identity> identities) {
-		List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
-		for (EvaluationFormParticipation participation: participations) {
-			qualityManager.createContextBuilder(dataCollection, participation).build();
-		}
+	
+	private StepRunnerCallback addSelectedUsers() {
+		return (uureq, wControl, runContext) -> {
+			IdentityContext identityContext = (IdentityContext) runContext.get("context");
+			Collection<Identity> identities = identityContext.getIdentities();
+			List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+			for (EvaluationFormParticipation participation: participations) {
+				qualityManager.createContextBuilder(dataCollection, participation).build();
+			}
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+	}
+	
+	private void doAddCourseUsers(UserRequest ureq) {
+		removeAsListenerAndDispose(wizard);
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new AddCourseUser_1_ChooseCourseStep(ureq),
+				addSelectedCourseUsers(), null, translate("participation.user.course.add.title"), "");
+		listenTo(wizard);
+		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
+	}
+	
+	private StepRunnerCallback addSelectedCourseUsers() {
+		return (uureq, wControl, runContext) -> {
+			CourseContext courseContext = (CourseContext) runContext.get("context");
+			for (GroupRoles role: courseContext.getRoles()) {
+				String roleName = role.name();
+				for (RepositoryEntry repositoryEntry: courseContext.getRepositoryEntries()) {
+					Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, roleName);
+					List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+					for (EvaluationFormParticipation participation: participations) {
+						qualityManager.createContextBuilder(dataCollection, participation, repositoryEntry, role).build();
+					}
+				}
+			}
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+	}
+	
+	private void doAddCurriculumElementUsers(UserRequest ureq) {
+		removeAsListenerAndDispose(wizard);
+		wizard = new StepsMainRunController(ureq, getWindowControl(),
+				new AddCurriculumElementUser_1_ChooseCurriculumElementStep(ureq), addSelectedCurriculumElementUsers(),
+				null, translate("participation.user.curele.add.title"), "");
+		listenTo(wizard);
+		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
+	}
+	
+	private StepRunnerCallback addSelectedCurriculumElementUsers() {
+		return (uureq, wControl, runContext) -> {
+			CurriculumElementContext curriculumElementContext = (CurriculumElementContext) runContext.get("context");
+			CurriculumElement curriculumElement = curriculumElementContext.getCurriculumElement();
+			for (CurriculumRoles role: curriculumElementContext.getRoles()) {
+				List<Identity> identities = curriculumService.getMembersIdentity(curriculumElement, role);
+				List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+				for (EvaluationFormParticipation participation: participations) {
+					qualityManager.createContextBuilder(dataCollection, participation, curriculumElement, role).build();
+				}
+			}
+			return StepsMainRunController.DONE_MODIFIED;
+		};
 	}
 
 	private void doConfirmRemove(UserRequest ureq, List<EvaluationFormParticipationRef> participationRefs) {
-		if (participationRefs.size() == 0) {
+		if (participationRefs.isEmpty()) {
 			showWarning("participation.none.selected");
 		} else {
 			removeConformationCtrl = new ParticipationRemoveConfirmationController(ureq, getWindowControl(), participationRefs);
@@ -245,22 +301,6 @@ public class ParticipationListController extends FormBasicController implements 
 			cmc.activate();
 			listenTo(cmc);
 		}
-	}
-	
-	private void doAddCourseUsers() {
-		dataCollection = qualityManager.loadDataCollectionByKey(dataCollection);
-		RepositoryEntry entry = dataCollection.getTopicRepositoryEntry();
-		if (entry != null) {
-			//TODO uh Rollen abbilden
-			List<GroupRoles> roles = Arrays.asList(GroupRoles.participant);
-			String[] roleNames = roles.stream().map(GroupRoles::name).toArray(String[]::new);
-			List<Identity> members = repositoryService.getMembers(entry, roleNames);
-			List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, members);
-			for (EvaluationFormParticipation participation: participations) {
-				qualityManager.createContextBuilder(dataCollection, participation, entry, roles).build();
-			}
-		}
-		tableEl.reset(true, false, true);
 	}
 	
 	private void doRemove(List<EvaluationFormParticipationRef> participationRefs) {

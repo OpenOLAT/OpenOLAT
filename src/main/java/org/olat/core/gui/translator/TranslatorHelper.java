@@ -17,33 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality;
+package org.olat.core.gui.translator;
 
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import java.util.stream.Stream;
 
 /**
  * 
- * Initial date: 25.06.2018<br>
+ * Initial date: 30.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityContextBuilder {
+public class TranslatorHelper {
 	
-	QualityContextBuilder withRole(QualityContextRole role);
-	
-	QualityContextBuilder addToDelete(QualityContext context);
-
-	QualityContextBuilder addCurriculum(Curriculum curriculum);
-
-	QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement);
-
-	QualityContextBuilder addOrganisation(Organisation organisation);
-
-	QualityContextBuilder addTaxonomyLevel(TaxonomyLevel taxonomyLevel);
-
-	QualityContext build();
+	/**
+	 * Translate all the keys and return the translated strings.
+	 *
+	 * @param translator
+	 * @param i18nKeys
+	 * @return
+	 */
+	public static String[] translateAll(Translator translator, String[] i18nKeys) {
+		return Stream.of(i18nKeys)
+				.map(key -> translator.translate(key))
+				.toArray(String[]::new);
+		}
 
 }

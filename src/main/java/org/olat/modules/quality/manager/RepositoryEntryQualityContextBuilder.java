@@ -19,9 +19,8 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
@@ -34,10 +33,11 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryToTaxonomyLevel;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,41 +46,43 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryQualityContextBuilder implements QualityContextBuilder {
-	
-	private final DefaultQualityContextBuilder builder;
+public class RepositoryEntryQualityContextBuilder extends ForwardingQualityContextBuilder implements QualityContextBuilder {
 	
 	@Autowired
 	private QualityContextDAO qualityContextDao;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private CurriculumService curriculumService;
 	
-	static final RepositoryQualityContextBuilder builder(QualityDataCollection dataCollection,
+	static final RepositoryEntryQualityContextBuilder builder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation evaluationFormParticipation, RepositoryEntry repositoryEntry,
-			List<GroupRoles> roles) {
-		return new RepositoryQualityContextBuilder(dataCollection, evaluationFormParticipation, repositoryEntry, roles);
+			GroupRoles role) {
+		return new RepositoryEntryQualityContextBuilder(dataCollection, evaluationFormParticipation, repositoryEntry, role);
 	}
 
-	private RepositoryQualityContextBuilder(QualityDataCollection dataCollection,
+	private RepositoryEntryQualityContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation evaluationFormParticipation, RepositoryEntry repositoryEntry,
-			List<GroupRoles> roles) {
-		this.builder = DefaultQualityContextBuilder.builder(dataCollection, evaluationFormParticipation);
+			GroupRoles role) {
+		super(dataCollection, evaluationFormParticipation);
 		CoreSpringFactory.autowireObject(this);
-		initBuilder(evaluationFormParticipation, repositoryEntry, roles);
+		initBuilder(evaluationFormParticipation, repositoryEntry, role);
 	}
 
 	private void initBuilder(EvaluationFormParticipation evaluationFormParticipation, RepositoryEntry repositoryEntry,
-			List<GroupRoles> roles) {
-		builder.withRepositoryEntry(repositoryEntry);
+			GroupRoles role) {
+		QualityContextRole contextRole = QualityContextRole.valueOf(role.name());
+		builder.withRole(contextRole);
+		builder.withAudienceRepositoryEntry(repositoryEntry);
 
 		List<QualityContext> contextToDelete = qualityContextDao
-				.loadByParticipationAndRepositoryEntry(evaluationFormParticipation, repositoryEntry);
+				.loadByAudienceRepositoryEntry(evaluationFormParticipation, repositoryEntry, contextRole);
 		contextToDelete.forEach(c -> builder.addToDelete(c));
 		
 		Identity executor = evaluationFormParticipation.getExecutor();
 		if (executor != null) {
-			List<CurriculumRoles> curriculumRoles = roles.stream().map(GroupRoles::name).map(CurriculumRoles::valueOf)
-					.collect(Collectors.toList());
+			CurriculumRoles curriculumRole = CurriculumRoles.valueOf(role.name());
+			List<CurriculumRoles> curriculumRoles = Collections.singletonList(curriculumRole);
 			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(repositoryEntry, executor, curriculumRoles);
 			for (CurriculumElement curriculumElement: curriculumElements) {
 				builder.addCurriculumElement(curriculumElement);
@@ -90,45 +92,10 @@ public class RepositoryQualityContextBuilder implements QualityContextBuilder {
 				builder.addOrganisation(organisation);
 			}
 		}
-		Set<RepositoryEntryToTaxonomyLevel> taxonomyLevels = repositoryEntry.getTaxonomyLevels();
-		for (RepositoryEntryToTaxonomyLevel entryToLevel: taxonomyLevels) {
-			builder.addTaxonomyLevel(entryToLevel.getTaxonomyLevel());
+		List<TaxonomyLevel> taxonomyLevels = repositoryService.getTaxonomy(repositoryEntry);
+		for (TaxonomyLevel taxonomyLevel: taxonomyLevels) {
+			builder.addTaxonomyLevel(taxonomyLevel);
 		}
-	}
-
-	@Override
-	public QualityContextBuilder addToDelete(QualityContext context) {
-		builder.addToDelete(context);
-		return this;
-	}
-
-	@Override
-	public QualityContextBuilder addCurriculum(Curriculum curriculum) {
-		builder.addCurriculum(curriculum);
-		return this;
-	}
-
-	@Override
-	public QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement) {
-		builder.addCurriculumElement(curriculumElement);
-		return this;
-	}
-
-	@Override
-	public QualityContextBuilder addOrganisation(Organisation organisation) {
-		builder.addOrganisation(organisation);
-		return this;
-	}
-
-	@Override
-	public QualityContextBuilder addTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
-		builder.addTaxonomyLevel(taxonomyLevel);
-		return this;
-	}
-
-	@Override
-	public QualityContext build() {
-		return builder.build();
 	}
 
 }

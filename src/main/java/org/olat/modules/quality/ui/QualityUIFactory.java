@@ -41,12 +41,12 @@ import org.olat.user.ui.organisation.OrganisationTreeModel;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class QualityUIFactory {
+public class QualityUIFactory {
 
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = (c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
 	
-	static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums) {
+	public static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums) {
 		String[] keys = curriculums.stream()
 				.sorted(DISPLAY_NAME_COMPARATOR)
 				.map(Curriculum::getKey)
@@ -59,11 +59,11 @@ class QualityUIFactory {
 		return new KeysValues(keys, values);
 	}
 
-	static String getCurriculumKey(Curriculum curriculum) {
+	public static String getCurriculumKey(Curriculum curriculum) {
 		return String.valueOf(curriculum.getKey());
 	}
 
-	static CurriculumRef getCurriculumRef(String curriculumKey) {
+	public static CurriculumRef getCurriculumRef(String curriculumKey) {
 		if (StringHelper.containsNonWhitespace(curriculumKey)) {
 			try {
 				Long key = Long.valueOf(curriculumKey);
@@ -81,7 +81,7 @@ class QualityUIFactory {
 		return null;
 	}
 
-	static KeysValues getCurriculumElementKeysValues(CurriculumTreeModel curriculumTreeModel) {
+	public static KeysValues getCurriculumElementKeysValues(CurriculumTreeModel curriculumTreeModel) {
 		List<CurriculumElement> elements = new ArrayList<>();
 		curriculumElementTreeToList(elements, curriculumTreeModel.getRootNode());
 		String[] keys = new String[elements.size()];
@@ -197,7 +197,7 @@ class QualityUIFactory {
 		return null;
 	}
 	
-	static class KeysValues {
+	public static class KeysValues {
 		
 		private final String[] keys;
 		private final String[] values;
