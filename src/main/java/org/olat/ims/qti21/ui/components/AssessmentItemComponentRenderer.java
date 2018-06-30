@@ -30,7 +30,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -90,6 +92,11 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
             /* Render event */
             AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
             renderItemEvent(renderHints, sb, cmp, latestEvent, itemSessionState, ubu, translator);
+            
+            if(renderHints.isMathJax()
+            		|| (WebappHelper.isMathJaxMarkers() && ((sb.contains("\\(") || sb.contains("\\[") || sb.contains("&&"))))) {
+				sb.append(Formatter.elementLatexFormattingScript("itemBody"));
+			}
         }
 		
 		sb.append("</div>");

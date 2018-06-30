@@ -49,6 +49,7 @@
 		<property name="mobileContext" value="${mobile.context}" />
 		<property name="mathJaxCdn" value="${mathjax.cdn}"/>
 		<property name="mathJaxConfig" value="${mathjax.config}"/>
+		<property name="mathJaxMarkers" value="${mathjax.markers}"/>
 	</bean>
 
 	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper">

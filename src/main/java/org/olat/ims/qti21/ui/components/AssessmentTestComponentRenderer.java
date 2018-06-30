@@ -51,7 +51,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
@@ -127,6 +129,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				/* Render event */
 				AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
 				renderTestEvent(testSessionController, renderHints, sb, cmp, ubu, translator);
+				
+				if(renderHints.isMathJax()
+	            		|| (WebappHelper.isMathJaxMarkers() && ((sb.contains("\\(") || sb.contains("\\[") || sb.contains("&&"))))) {
+					sb.append(Formatter.elementLatexFormattingScript("itemBody"));
+				}
 			}
 		}
 	}

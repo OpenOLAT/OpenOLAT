@@ -32,6 +32,7 @@ import org.olat.core.gui.render.URLBuilder;
 public class AssessmentRenderer {
 
 	private Renderer renderer;
+	private boolean mathJax;
 	private boolean mathXsltDisabled;
 	private boolean solutionMode;
 	private boolean reviewMode;
@@ -143,6 +144,14 @@ public class AssessmentRenderer {
 
 	public void setShowTitles(boolean showTitles) {
 		this.showTitles = showTitles;
+	}
+
+	public boolean isMathJax() {
+		return mathJax;
+	}
+
+	public void setMathJax(boolean mathJax) {
+		this.mathJax = mathJax;
 	}
 
 	public void setRenderer(Renderer renderer) {
