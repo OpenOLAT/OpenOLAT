@@ -30,25 +30,34 @@ import org.junit.Test;
  */
 public class UserNameAndPasswordSyntaxCheckerWithRegexpTest {
 	
+	@Test
+	public void defaultPasswordCheck() {
+		UserNameAndPasswordSyntaxCheckerWithRegexp checker = new UserNameAndPasswordSyntaxCheckerWithRegexp();
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kan"));
+		Assert.assertTrue(checker.syntaxCheckOlatPassword("Kanu#01"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kan\u00FC#01"));
+	}
+	
 	/**
 	 * Min. 7 characters, one uppercase, one lowercase, one number
 	 */
 	@Test
-	public void testCustomPasswordCheck_upperLowerCase_number() {
+	public void customPasswordCheck_upperLowerCase_number() {
 		UserNameAndPasswordSyntaxCheckerWithRegexp checker = new UserNameAndPasswordSyntaxCheckerWithRegexp();
 		checker.setPasswordRegExp("(?=^.{7,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$");
 		
 		Assert.assertTrue(checker.syntaxCheckOlatPassword("Kanu#01"));
 		Assert.assertTrue(checker.syntaxCheckOlatPassword("Kanuunc1"));
 		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanu#1"));//less than 7 characters
-		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanuunch"));//no number
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanuunch"));//no number	Kan\u00FC
+		Assert.assertTrue(checker.syntaxCheckOlatPassword("Kan\u00FCunc1"));// Umlaut allowed
 	}
 	
 	/**
 	 * Min. 8 characters, one uppercase, one lowercase, one number, one special character
 	 */
 	@Test
-	public void testCustomPasswordCheck_upperLowerCase_number_special() {
+	public void customPasswordCheck_upperLowerCase_number_special() {
 		UserNameAndPasswordSyntaxCheckerWithRegexp checker = new UserNameAndPasswordSyntaxCheckerWithRegexp();
 		checker.setPasswordRegExp("(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z])(?=.*[$@$!%*#?&]).*$");
 
