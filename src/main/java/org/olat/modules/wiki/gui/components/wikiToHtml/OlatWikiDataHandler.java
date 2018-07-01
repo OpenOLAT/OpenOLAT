@@ -146,7 +146,7 @@ public class OlatWikiDataHandler implements DataHandler {
 			if (InterWikiHandler.isInterWiki(topic)) {
 				return true;
 			}
-		} catch (Exception e) {
+		} catch (Exception | Error e) {
 			log.warn("Cannot initialize InterWikiHandler", e);
 		}
 

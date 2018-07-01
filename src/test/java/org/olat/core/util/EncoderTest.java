@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.services.webdav.manager.WebDAVManagerImpl;
 import org.olat.core.util.Encoder.Algorithm;
 
 /**
@@ -41,7 +42,7 @@ public class EncoderTest {
 		//the openolat password as saved on our database
 		String openolat = "c14c4d01c090a065eaa619ca92f8cbc0";
 
-		String hashedOpenolat_1 = Encoder.md5("openolat", null);
+		String hashedOpenolat_1 = Encoder.md5("openolat", null, null);
 		Assert.assertEquals(openolat, hashedOpenolat_1);
 		
 		String encryptedOpenolat_1 = Encoder.md5hash("openolat");
@@ -52,11 +53,34 @@ public class EncoderTest {
 	}
 	
 	/**
+	 * The test check the use of the UTF-8 or the ISO-8859-1
+	 * on the hashing algorithm used by the digest authentication.
+	 */
+	@Test
+	public void testDigestLikeCompatibility() {
+		// UTF-8 encoded of standard username
+		String rawDigest = digest("myUsername@openolat.org", "de#34KL");
+		String ha1_utf8 = Encoder.encrypt(rawDigest, null, Encoder.Algorithm.md5_noSalt);
+		String ha1_iso = Encoder.encrypt(rawDigest, null, Encoder.Algorithm.md5_iso_8859_1);
+		Assert.assertEquals(ha1_utf8, ha1_iso);
+		
+		// ISO-8859-1 difference with Umlaut
+		String rawUmlautDigest = digest("myUsern\u00E4me@openolat.org", "de#34KL");
+		String ha1_umlaut_utf8 = Encoder.encrypt(rawUmlautDigest, null, Encoder.Algorithm.md5_noSalt);
+		String ha1_umlaut_iso = Encoder.encrypt(rawUmlautDigest, null, Encoder.Algorithm.md5_iso_8859_1);
+		Assert.assertNotEquals(ha1_umlaut_utf8, ha1_umlaut_iso);		
+	}
+	
+	private String digest(String authUsername, String password) {
+		return authUsername + ":" + WebDAVManagerImpl.BASIC_AUTH_REALM + ":" + password;
+	}
+	
+	/**
 	 * Dummy test which check that the salts are not always equals.
 	 */
 	@Test
 	public void testSalt() {
-		Set<String> history = new HashSet<String>();
+		Set<String> history = new HashSet<>();
 		for(int i=0; i<100; i++) {
 			String salt = Encoder.getSalt();
 			Assert.assertFalse(history.contains(salt));

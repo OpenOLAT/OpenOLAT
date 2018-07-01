@@ -83,7 +83,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
@@ -472,27 +471,20 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			case RubricBlock.QTI_CLASS_NAME: break; //never rendered automatically
 			case Math.QTI_CLASS_NAME: {
-				String domid = "mw_" + CodeHelper.getRAMUniqueID();
-				sb.append("<div id=\"").append(domid).append("\">");
+				sb.append("<div>");
 				renderMath(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Math)block);
-				sb.append("</div>")
-				  .append(Formatter.elementLatexFormattingScript(domid));
+				sb.append("</div>");
+				renderer.setMathJax(true);
 				break;
 			}
 			case Div.QTI_CLASS_NAME: {
-				String domid = null;
 				if (containsClass(block, "math")) {
-					domid = "mw_" + CodeHelper.getRAMUniqueID();
-					sb.append("<div id=\"").append(domid).append("\">");
+					renderer.setMathJax(true);
 				}
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				((Div)block).getFlows().forEach((flow)
 						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 				renderEndTag(sb, block);
-				if (domid != null) {
-					sb.append("</div>")
-					  .append(Formatter.elementLatexFormattingScript(domid));
-				}
 				break;
 			}
 			case Ul.QTI_CLASS_NAME:
@@ -688,11 +680,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case Math.QTI_CLASS_NAME: {
-				String domid = "mw_" + CodeHelper.getRAMUniqueID();
-				sb.append("<span id=\"").append(domid).append("\">");
+				sb.append("<span>");
 				renderMath(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Math)inline);
-				sb.append("</span>")
-				  .append(Formatter.elementLatexFormattingScript(domid));
+				sb.append("</span>");
+				renderer.setMathJax(true);
 				break;
 			}
 			case Img.QTI_CLASS_NAME: {
@@ -730,22 +721,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected final void renderSpan(AssessmentRenderer renderer, StringOutput sb, Span span, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
 		if (containsClass(span,"math")) {
-			String domid = "mw_" + CodeHelper.getRAMUniqueID();
-			sb.append("<span id=\"").append(domid).append("\">");
-			
-			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
-			span.getInlines().forEach((child)
-					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
-			renderEndTag(sb, span);
-			
-			sb.append("</span>")
-			  .append(Formatter.elementLatexFormattingScript(domid));
-		} else {
-			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
-			span.getInlines().forEach((child)
-					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
-			renderEndTag(sb, span);
+			renderer.setMathJax(true);
 		}
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
+		span.getInlines().forEach((child)
+			-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+		renderEndTag(sb, span);
 	}
 	
 	protected final void renderA(AssessmentRenderer renderer, StringOutput sb, A a, AssessmentObjectComponent component,

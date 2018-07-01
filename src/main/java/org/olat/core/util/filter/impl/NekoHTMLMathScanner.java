@@ -24,8 +24,10 @@ import java.io.StringReader;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WebappHelper;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -77,6 +79,16 @@ public class NekoHTMLMathScanner {
 							mathFound = true;
 						}
 					}
+				}
+			}
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			if(!mathFound && WebappHelper.isMathJaxMarkers()) {
+				String content = new String(ch, start, length);
+				if(content.contains("\\(") || content.contains("\\[") || content.contains("$$")) {
+					mathFound = true;
 				}
 			}
 		}

@@ -207,6 +207,10 @@ public class StringOutput extends Writer {
 		return sb.length();
 	}
 	
+	public boolean contains(String str) {
+		return sb.indexOf(str) >= 0;
+	}
+	
 	public Reader getReader() {
 		return new StringOutputReader();
 	}

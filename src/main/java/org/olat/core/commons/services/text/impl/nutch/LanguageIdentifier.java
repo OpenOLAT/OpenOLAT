@@ -66,8 +66,7 @@ public class LanguageIdentifier {
   /** A global index of ngrams of all supported languages */
   private Map<CharSequence, NGramEntry[]> ngramsIdx = new HashMap<CharSequence, NGramEntry[]>();
 
-  /** The NGramProfile used for identification */
-  private NGramProfile suspect = null;
+
 
 
   /**
@@ -136,7 +135,6 @@ public class LanguageIdentifier {
       }
       log.info(list.toString());
       // Create the suspect profile
-      suspect = new NGramProfile("suspect", minLength, maxLength);
     } catch (Exception e) {
       log.error("", e);
     }
@@ -172,6 +170,7 @@ public class LanguageIdentifier {
         text.setLength(analyzeLength);
     }
 
+    NGramProfile suspect = new NGramProfile("suspect", minLength, maxLength);
     suspect.analyze(text);
     Iterator<NGramEntry> iter = suspect.getSorted().iterator();
     float topscore = Float.MIN_VALUE;

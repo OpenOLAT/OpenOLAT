@@ -68,9 +68,6 @@ public class Formatter {
 
 	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<>();
 
-	// Pattern to find math classes
-	private static final Pattern classMathPattern = Pattern.compile(".*class[ ]*=[ ]*(math|(['\"])([a-zA-Z0-9_\\- ]* )*math( [a-zA-Z0-9_\\- ]*)*\\2).*");
-	
 	private final Locale locale;
 	private final DateFormat shortDateFormat;
 	private final DateFormat longDateFormat;

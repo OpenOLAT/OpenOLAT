@@ -109,6 +109,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.sms.manager.MessageLogDAOTest.class,
 	org.olat.core.commons.services.taskexecutor.PersistentTaskDAOTest.class,
 	org.olat.core.commons.services.taskexecutor.TaskExecutorManagerTest.class,
+	org.olat.core.commons.services.text.TextServiceTest.class,
 	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,
 	org.olat.group.BusinessGroupManagedFlagsTest.class,
 	org.olat.group.test.BGRightManagerTest.class,

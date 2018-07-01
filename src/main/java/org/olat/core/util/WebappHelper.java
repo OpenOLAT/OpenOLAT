@@ -77,6 +77,8 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	
 	private static String mathJaxCdn;
 	private static String mathJaxConfig;
+	private static boolean mathJaxMarkers;
+	
 	private static String mobileContext;
 	
 	/** need to set this at least once before the actual request, since we cannot extract it from the servletContext, 
@@ -311,6 +313,14 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 
 	public void setMathJaxConfig(String mathJaxConfig) {
 		WebappHelper.mathJaxConfig = mathJaxConfig;
+	}
+	
+	public static boolean isMathJaxMarkers() {
+		return mathJaxMarkers;
+	}
+	
+	public void setMathJaxMarkers(boolean mathJaxMarkers) {
+		WebappHelper.mathJaxMarkers = mathJaxMarkers;
 	}
 
 	public void setFullPathToSrc(String fullPathToSrc) {

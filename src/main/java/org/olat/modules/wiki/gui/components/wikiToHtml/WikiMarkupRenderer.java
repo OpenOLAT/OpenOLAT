@@ -55,14 +55,6 @@ import org.olat.core.util.Formatter;
  */
 public class WikiMarkupRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -97,9 +89,9 @@ public class WikiMarkupRenderer extends DefaultComponentRenderer {
 				String targetUrl = " onclick=\"o_XHREvent(jQuery(this).attr('href'),false,true); return false;\"";
 				input.setURLTarget(targetUrl);
 			}
-			sb.append("<div style=\"min-height:"+ wikiComp.getMinHeight() +"px\" id=\"");
-			sb.append(uniqueId);
-			sb.append("\">");
+			sb.append("<div style=\"min-height:").append(wikiComp.getMinHeight()).append("px\" id=\"")
+			  .append(uniqueId)
+			  .append("\">");
 		
 			JFlexParser parser = new JFlexParser(input);
 			parsedDoc = parser.parseHTML(wikiComp.getWikiContent());
@@ -109,12 +101,11 @@ public class WikiMarkupRenderer extends DefaultComponentRenderer {
 			throw new OLATRuntimeException(this.getClass(), "error while rendering wiki page with content:"+ wikiComp.getWikiContent(), e);
 		}
 		// Use global js math formatter for latex formulas
-		sb.append(Formatter.formatLatexFormulas(parsedDoc.getContent()));
-		sb.append("</div>");
+		sb.append(Formatter.formatLatexFormulas(parsedDoc.getContent()))
+		  .append("</div>");
 		//set targets of media, image and external links to target "_blank" 
-		sb.append("<script type=\"text/javascript\">/* <![CDATA[ */ ");
-		String instanceUrl = Settings.getServerContextPathURI();
-		sb.append("changeAnchorTargets('").append(uniqueId).append("','").append(instanceUrl).append("');");
-		sb.append("/* ]]> */</script>");
+		sb.append("<script type=\"text/javascript\">/* <![CDATA[ */ ")
+		  .append("changeAnchorTargets('").append(uniqueId).append("','").append(Settings.getServerContextPathURI()).append("');")
+		  .append("/* ]]> */</script>");
 	}
 }
