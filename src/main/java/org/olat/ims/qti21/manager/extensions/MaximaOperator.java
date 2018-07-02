@@ -28,7 +28,11 @@ import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
 import uk.ac.ed.ph.jqtiplus.node.expression.ExpressionParent;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.CustomOperator;
+import uk.ac.ed.ph.jqtiplus.node.item.template.processing.ProcessTemplateValue;
+import uk.ac.ed.ph.jqtiplus.node.shared.VariableDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.shared.VariableType;
 import uk.ac.ed.ph.jqtiplus.running.ProcessingContext;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.validation.ValidationContext;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
@@ -130,7 +134,36 @@ public class MaximaOperator extends CustomOperator<OpenOLATExtensionPackage>  {
             context.fireRuntimeError(this, "Failed to convert result from Maxima back to a QTI variable - returning NULL");
             return NullValue.INSTANCE;
         }
+        
+        result = adjustTemplateValue(result, context);
         return result;
+	}
+	
+	private Value adjustTemplateValue(Value value, ProcessingContext context) {
+		ExpressionParent parent = getParent();
+		if(parent instanceof ProcessTemplateValue) {
+			ProcessTemplateValue processTemplateValue = (ProcessTemplateValue)parent;
+			Identifier valueIdentifier = processTemplateValue.getIdentifier();
+			VariableDeclaration declaration = context.ensureVariableDeclaration(valueIdentifier, VariableType.TEMPLATE);
+			if(declaration != null && declaration.getBaseType() != value.getBaseType()) {
+				value = adjustValueBaseType(value, declaration.getBaseType());
+			}
+		}
+		return value;
+	}
+	
+	private Value adjustValueBaseType(Value value, BaseType desiredType) {
+		if(value.getBaseType() == BaseType.INTEGER && desiredType == BaseType.FLOAT) {
+			IntegerValue integerValue = (IntegerValue)value;
+			return new FloatValue(integerValue.doubleValue());
+		} else if(value.getBaseType() == BaseType.FLOAT && desiredType == BaseType.INTEGER) {
+			FloatValue floatValue = (FloatValue)value;
+			int intValue = (int)Math.round(floatValue.doubleValue());
+			return new IntegerValue(intValue);
+		} else {
+			log.error("Cannot convert " + value.getBaseType() + " to " + desiredType);
+		}
+		return value;
 	}
 	
 	private String getValue(Value value) {
@@ -150,6 +183,15 @@ public class MaximaOperator extends CustomOperator<OpenOLATExtensionPackage>  {
 
 	@Override
 	public BaseType[] getProducedBaseTypes(ValidationContext context) {
+		ExpressionParent parent = getParent();
+		if(parent instanceof ProcessTemplateValue) {
+			ProcessTemplateValue processTemplateValue = (ProcessTemplateValue)parent;
+			Identifier valueIdentifier = processTemplateValue.getIdentifier();
+			VariableDeclaration declaration = context.isValidLocalVariableReference(valueIdentifier);
+			if(declaration != null && (declaration.getBaseType() == BaseType.INTEGER || declaration.getBaseType() == BaseType.FLOAT)) {
+				return new BaseType[] { declaration.getBaseType() };
+			}	
+		}
 		return new BaseType[] { BaseType.FLOAT, BaseType.INTEGER };
 	}
 }
