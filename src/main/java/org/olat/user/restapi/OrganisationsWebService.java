@@ -252,8 +252,8 @@ public class OrganisationsWebService {
 			organisationToSave.setIdentifier(organisation.getIdentifier());
 			organisationToSave.setDescription(organisation.getDescription());
 			organisationToSave.setType(type);
-			if(parentOrganisation != null && organisationToSave.getParent() != null
-					&& !organisationToSave.getParent().getKey().equals(parentOrganisation.getKey())) {
+			if((parentOrganisation != null && organisationToSave.getParent() == null)
+					|| (parentOrganisation != null && organisationToSave.getParent() != null && !organisationToSave.getParent().getKey().equals(parentOrganisation.getKey()))) {
 				move = true;
 			}
 		}

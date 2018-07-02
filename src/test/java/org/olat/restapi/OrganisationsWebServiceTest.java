@@ -317,6 +317,41 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void updateAndMoveRootOrganisation()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Organisation rootOrganisation = organisationService.createOrganisation("ROOT Organisation 10", "REST-p-10-organisation", "", null, null);
+		Organisation rootOrganisation2 = organisationService.createOrganisation("REST Organisation 10.1", "REST-p-10-1-organisation", "", null, null);
+		dbInstance.commitAndCloseSession();
+		
+		OrganisationVO vo = OrganisationVO.valueOf(rootOrganisation2);
+		vo.setParentOrganisationKey(rootOrganisation.getKey());
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		
+		// checked VO
+		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedVo.getKey());
+		Assert.assertEquals(rootOrganisation.getKey(), savedVo.getParentOrganisationKey());
+		Assert.assertEquals(rootOrganisation.getKey(), savedVo.getRootOrganisationKey());
+		
+		// checked database
+		Organisation savedOrganisation = organisationService.getOrganisation(new OrganisationRefImpl(savedVo.getKey()));
+		Assert.assertNotNull(savedOrganisation);
+		Assert.assertEquals(savedVo.getKey(), savedOrganisation.getKey());
+		Assert.assertEquals(rootOrganisation, savedOrganisation.getParent());
+		Assert.assertEquals(rootOrganisation, savedOrganisation.getRoot());
+	}
+	
+	@Test
 	public void getMembers_users()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();

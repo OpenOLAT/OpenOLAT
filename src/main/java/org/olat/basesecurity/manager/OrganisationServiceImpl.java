@@ -134,9 +134,15 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		String keysPath = toMove.getMaterializedPathKeys();
 		
 		toMove.setParent(newParent);
+		if(newParent.getRoot() == null && newParent.getParent() == null) {
+			toMove.setRoot(newParent);
+		} else {
+			toMove.setRoot(newParent.getRoot());
+		}
 		toMove.setLastModified(new Date());
 		String newKeysPath = organisationDao.getMaterializedPathKeys(newParent, toMove);
 		toMove.setMaterializedPathKeys(newKeysPath);
+		
 		dbInstance.getCurrentEntityManager().merge(toMove);
 		
 		List<Organisation> descendants = new ArrayList<>();
