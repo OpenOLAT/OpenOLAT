@@ -71,6 +71,7 @@ public class DataCollectionListController extends FormBasicController implements
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController formSearchCtrl;
+	private DataCollectionDeleteConfirmationController deleteConfirmationCtrl;
 	private DataCollectionController dataCollectionCtrl;
 	
 	private final QualitySecurityCallback secCallback;
@@ -141,7 +142,7 @@ public class DataCollectionListController extends FormBasicController implements
 				if (CMD_EDIT.equals(cmd)) {
 					doEditDataCollection(ureq, row.getDataCollection());
 				} else if (CMD_DELETE.equals(cmd)) {
-					doDeleteDataCollection(row.getDataCollection());
+					doConfirmDeleteDataCollection(ureq, row.getDataCollection());
 				}
 			}
 		}
@@ -171,6 +172,13 @@ public class DataCollectionListController extends FormBasicController implements
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == deleteConfirmationCtrl) {
+			if (Event.DONE_EVENT.equals(event)) {
+				QualityDataCollectionLight dataCollection = deleteConfirmationCtrl.getDataCollection();
+				doDeleteDataCollection(dataCollection);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -178,8 +186,10 @@ public class DataCollectionListController extends FormBasicController implements
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(formSearchCtrl);
 		removeAsListenerAndDispose(cmc);
+		deleteConfirmationCtrl = null;
 		formSearchCtrl = null;
 		cmc = null;
 	}
@@ -204,6 +214,16 @@ public class DataCollectionListController extends FormBasicController implements
 		String title = dataCollection.getTitle();
 		stackPanel.pushController(Formatter.truncate(title, 50), dataCollectionCtrl);
 		dataCollectionCtrl.activate(ureq, null, null);
+	}
+
+	private void doConfirmDeleteDataCollection(UserRequest ureq, QualityDataCollectionLight dataCollection) {
+		deleteConfirmationCtrl = new DataCollectionDeleteConfirmationController(ureq, getWindowControl(), dataCollection);
+		listenTo(deleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				deleteConfirmationCtrl.getInitialComponent(), true, translate("data.collection.delete.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void doDeleteDataCollection(QualityDataCollectionLight dataCollection) {

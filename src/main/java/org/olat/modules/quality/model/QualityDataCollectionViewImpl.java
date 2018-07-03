@@ -137,4 +137,15 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("QualityDataCollectionViewImpl [key=");
+		builder.append(key);
+		builder.append(", title=");
+		builder.append(title);
+		builder.append("]");
+		return builder.toString();
+	}
+
 }

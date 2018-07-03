@@ -29,6 +29,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -57,6 +59,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QualityManagerImpl implements QualityManager {
+
+	private static final OLog log = Tracing.createLoggerFor(QualityManagerImpl.class);
 
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
@@ -105,9 +109,14 @@ public class QualityManagerImpl implements QualityManager {
 
 	@Override
 	public void deleteDataCollection(QualityDataCollectionLight dataCollection) {
+		List<QualityContext> contexts = contextDao.loadByDataCollection(dataCollection);
+		for (QualityContext context: contexts) {
+			deleteContext(context);
+		}
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		evaluationFormManager.deleteSurvey(survey);
 		dataCollectionDao.deleteDataCollection(dataCollection);
+		log.info("Quality management data collection deleted: " + dataCollection.toString());
 	}
 
 	@Override

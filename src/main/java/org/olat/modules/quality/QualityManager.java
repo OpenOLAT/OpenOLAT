@@ -52,7 +52,7 @@ public interface QualityManager {
 			SortKey... orderBy);
 
 	/**
-	 * Deletes a data collection and the whole survey.
+	 * Deletes a data collection, the whole survey and all contexts.
 	 *
 	 * @param dataCollection
 	 */

@@ -85,7 +85,7 @@ public class ParticipationListController extends FormBasicController implements 
 	private final TooledStackedPanel stackPanel;
 	private StepsMainRunController wizard;
 	private CloseableModalController cmc;
-	private ParticipationRemoveConfirmationController removeConformationCtrl;
+	private ParticipationRemoveConfirmationController removeConfirmationCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
@@ -179,9 +179,9 @@ public class ParticipationListController extends FormBasicController implements 
 				}
 				cleanUp();
 			}
-		} else if (source == removeConformationCtrl) {
+		} else if (source == removeConfirmationCtrl) {
 			if (Event.DONE_EVENT.equals(event)) {
-				List<QualityContextRef> contextRefs = removeConformationCtrl.getContextRefs();
+				List<QualityContextRef> contextRefs = removeConfirmationCtrl.getContextRefs();
 				doRemove(contextRefs);
 			}
 			cmc.deactivate();
@@ -193,10 +193,10 @@ public class ParticipationListController extends FormBasicController implements 
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(removeConformationCtrl);
+		removeAsListenerAndDispose(removeConfirmationCtrl);
 		removeAsListenerAndDispose(wizard);
 		removeAsListenerAndDispose(cmc);
-		removeConformationCtrl = null;
+		removeConfirmationCtrl = null;
 		wizard = null;
 		cmc = null;
 	}
@@ -281,11 +281,11 @@ public class ParticipationListController extends FormBasicController implements 
 		if (contextRefs.isEmpty()) {
 			showWarning("participation.none.selected");
 		} else {
-			removeConformationCtrl = new ParticipationRemoveConfirmationController(ureq, getWindowControl(), contextRefs);
-			listenTo(removeConformationCtrl);
+			removeConfirmationCtrl = new ParticipationRemoveConfirmationController(ureq, getWindowControl(), contextRefs);
+			listenTo(removeConfirmationCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					removeConformationCtrl.getInitialComponent(), true, translate("participation.remove"));
+					removeConfirmationCtrl.getInitialComponent(), true, translate("participation.remove"));
 			cmc.activate();
 			listenTo(cmc);
 		}

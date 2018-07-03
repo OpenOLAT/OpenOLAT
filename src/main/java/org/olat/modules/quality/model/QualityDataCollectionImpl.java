@@ -278,4 +278,15 @@ public class QualityDataCollectionImpl implements QualityDataCollection, Persist
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("QualityDataCollectionImpl [key=");
+		builder.append(key);
+		builder.append(", title=");
+		builder.append(title);
+		builder.append("]");
+		return builder.toString();
+	}
 }

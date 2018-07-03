@@ -34,6 +34,7 @@ import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.model.QualityContextImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -83,6 +84,22 @@ class QualityContextDAO {
 				.setParameter("contextKey", contextRef.getKey())
 				.getResultList();
 		return contexts.isEmpty() ? null : contexts.get(0);
+	}
+
+	List<QualityContext> loadByDataCollection(QualityDataCollectionLight dataCollection) {
+		if (dataCollection == null || dataCollection.getKey() == null) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.dataCollection.key = :dataCollectionKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("dataCollectionKey", dataCollection.getKey())
+				.getResultList();
 	}
 
 	/**
@@ -197,7 +214,7 @@ class QualityContextDAO {
 				.setParameter("contextKey", contextRef.getKey())
 				.executeUpdate();
 		
-		log.debug("Quality context deleted: " + contextRef.toString());
+		log.debug("Quality context deleted. Keys: " + contextRef.getKey());
 	}
 
 }
