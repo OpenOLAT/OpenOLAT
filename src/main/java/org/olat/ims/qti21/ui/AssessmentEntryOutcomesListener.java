@@ -58,6 +58,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	
 	private final boolean authorMode;
 	private final boolean needManualCorrection;
+	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 
 	private AtomicBoolean start = new AtomicBoolean(true);
 	private AtomicBoolean close = new AtomicBoolean(true);
@@ -140,6 +141,11 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		assessmentEntry.setPassed(submittedPass);
 		assessmentEntry.setCompletion(completion);
 		assessmentEntry.setAssessmentId(assessmentId);
+		if(incrementAttempts.getAndSet(false)) {
+			int currentAttempts = assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts().intValue();
+			assessmentEntry.setAttempts(currentAttempts + 1);
+		}
+		
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		
 		boolean firstClose = close.getAndSet(false);
