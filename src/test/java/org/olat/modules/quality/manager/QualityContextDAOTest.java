@@ -138,6 +138,26 @@ public class QualityContextDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCheckWhetherParticipationHasContexts() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
+		
+		boolean hasContexts = sut.hasContexts(evaluationFormParticipation);
+
+		assertThat(hasContexts).isTrue();
+	}
+
+	@Test
+	public void shouldCheckWhetherParticipationHasNoContexts() {
+		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
+		
+		boolean hasContexts = sut.hasContexts(evaluationFormParticipation);
+
+		assertThat(hasContexts).isFalse();
+	}
+	
+	@Test
 	public void shouldDeleteContext() {
 		QualityContext context = qualityTestHelper.createContext();
 		dbInstance.commitAndCloseSession();

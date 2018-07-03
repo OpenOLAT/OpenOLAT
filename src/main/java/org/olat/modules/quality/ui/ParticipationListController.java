@@ -20,7 +20,6 @@
 package org.olat.modules.quality.ui;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -52,9 +50,8 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
-import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityManager;
@@ -78,8 +75,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticipationListController extends FormBasicController implements TooledController {
 
-	private static final String CMD_REMOVE = "remove";
-	
 	private Link addUsersLink;
 	private Link addCourseUsersLink;
 	private Link addCurriculumElementUsersLink;
@@ -97,8 +92,6 @@ public class ParticipationListController extends FormBasicController implements 
 	
 	@Autowired
 	private QualityManager qualityManager;
-	@Autowired
-	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -120,9 +113,12 @@ public class ParticipationListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.firstname));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.lastname));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.email));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.role, new QualityContextRoleRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.repositoryEntryName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.curriculumElementName));
 		
 		ParticipationDataSource dataSource = new ParticipationDataSource(dataCollection);
-		dataModel = new ParticipationDataModel(dataSource, columnsModel, getLocale());
+		dataModel = new ParticipationDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), formLayout);
 		if (secCallback.canRevomeParticipation(dataCollection)) {
 			tableEl.setMultiSelect(true);
@@ -151,21 +147,11 @@ public class ParticipationListController extends FormBasicController implements 
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent) event;
-				String cmd = se.getCommand();
-				ParticipationRow row = dataModel.getObject(se.getIndex());
-				if (CMD_REMOVE.equals(cmd)) {
-					List<EvaluationFormParticipationRef> participationRefs = Collections.singletonList(row.getParticipationRef());
-					doConfirmRemove(ureq, participationRefs);
-				}
-			}
-		} else if (source instanceof FormLink) {
+		if (source instanceof FormLink) {
 			FormLink link = (FormLink) source;
 			if (link == removeUsersLink) {
-				List<EvaluationFormParticipationRef> participationRefs = getSelectedParticipationRefs();
-				doConfirmRemove(ureq, participationRefs);
+				List<QualityContextRef> contextRefs = getSelectedContextRefs();
+				doConfirmRemove(ureq, contextRefs);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -194,8 +180,10 @@ public class ParticipationListController extends FormBasicController implements 
 				cleanUp();
 			}
 		} else if (source == removeConformationCtrl) {
-			List<EvaluationFormParticipationRef> participationRefs = removeConformationCtrl.getParticipationRefs();
-			doRemove(participationRefs);
+			if (Event.DONE_EVENT.equals(event)) {
+				List<QualityContextRef> contextRefs = removeConformationCtrl.getContextRefs();
+				doRemove(contextRefs);
+			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == cmc) {
@@ -213,10 +201,10 @@ public class ParticipationListController extends FormBasicController implements 
 		cmc = null;
 	}
 	
-	private List<EvaluationFormParticipationRef> getSelectedParticipationRefs() {
+	private List<QualityContextRef> getSelectedContextRefs() {
 		return tableEl.getMultiSelectedIndex().stream()
 				.map(index -> dataModel.getObject(index.intValue()))
-				.map(ParticipationRow::getParticipationRef)
+				.map(ParticipationRow::getContextRef)
 				.collect(Collectors.toList());
 	}
 
@@ -289,11 +277,11 @@ public class ParticipationListController extends FormBasicController implements 
 		};
 	}
 
-	private void doConfirmRemove(UserRequest ureq, List<EvaluationFormParticipationRef> participationRefs) {
-		if (participationRefs.isEmpty()) {
+	private void doConfirmRemove(UserRequest ureq, List<QualityContextRef> contextRefs) {
+		if (contextRefs.isEmpty()) {
 			showWarning("participation.none.selected");
 		} else {
-			removeConformationCtrl = new ParticipationRemoveConfirmationController(ureq, getWindowControl(), participationRefs);
+			removeConformationCtrl = new ParticipationRemoveConfirmationController(ureq, getWindowControl(), contextRefs);
 			listenTo(removeConformationCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -303,9 +291,9 @@ public class ParticipationListController extends FormBasicController implements 
 		}
 	}
 	
-	private void doRemove(List<EvaluationFormParticipationRef> participationRefs) {
-		evaluationFormManager.deleteParticipations(participationRefs);
-		tableEl.reset(true, false, true);
+	private void doRemove(List<QualityContextRef> contextRefs) {
+		qualityManager.deleteContextsAndParticipations(contextRefs);
+		tableEl.reset(true, true, true);
 	}
 
 	@Override

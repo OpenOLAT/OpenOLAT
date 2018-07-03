@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityExecutorParticipation;
@@ -71,7 +72,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
 		int numberOfParticipations = 3;
 		for (int i = 0; i < numberOfParticipations; i++) {
-			qualityTestHelper.createParticipation(survey);
+			EvaluationFormParticipation participation = qualityTestHelper.createParticipation(survey);
+			qualityTestHelper.createContext(dataCollection, participation);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -87,7 +89,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		int numberOfParticipations = 3;
 		for (int i = 0; i < numberOfParticipations; i++) {
 			Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-			qualityTestHelper.createParticipation(survey, identity);
+			EvaluationFormParticipation participation = qualityTestHelper.createParticipation(survey, identity);
+			qualityTestHelper.createContext(dataCollection, participation);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -99,6 +102,10 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		assertThat(participation.getFirstname()).isNotNull();
 		assertThat(participation.getLastname()).isNotNull();
 		assertThat(participation.getEmail()).isNotNull();
+		assertThat(participation.getContextRef()).isNotNull();
+		assertThat(participation.getRole()).isNotNull();
+		assertThat(participation.getAudienceRepositoryEntryName()).isNotNull();
+		assertThat(participation.getAudienceCurriculumElementName()).isNotNull();
 	}
 	
 	@Test
@@ -107,8 +114,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
 		int numberOfParticipations = 3;
 		for (int i = 0; i < numberOfParticipations; i++) {
-			Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-			qualityTestHelper.createParticipation(survey, identity);
+			EvaluationFormParticipation participation = qualityTestHelper.createParticipation(survey);
+			qualityTestHelper.createContext(dataCollection, participation);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -125,12 +132,14 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		User userZ = identityZ.getUser();
 		userZ.setProperty(UserConstants.LASTNAME, "Z");
 		UserManager.getInstance().updateUser(userZ);
-		qualityTestHelper.createParticipation(survey, identityZ);
+		EvaluationFormParticipation participationZ = qualityTestHelper.createParticipation(survey, identityZ);
+		qualityTestHelper.createContext(dataCollection, participationZ);
 		Identity identityA = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		User userA = identityA.getUser();
 		userA.setProperty(UserConstants.LASTNAME, "A");
 		UserManager.getInstance().updateUser(userA);
-		qualityTestHelper.createParticipation(survey, identityA);
+		EvaluationFormParticipation participationA = qualityTestHelper.createParticipation(survey, identityA);
+		qualityTestHelper.createContext(dataCollection, participationA);
 		dbInstance.commitAndCloseSession();
 		
 		SortKey sortKey = new SortKey(ParticipationCols.lastname.name(), true);

@@ -27,6 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -39,6 +41,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 
 /**
@@ -128,5 +131,32 @@ public class QualityManagerImplTest {
 		verify(contextToOrganisationDaoMock).deleteRelations(context);
 		verify(contextToTaxonomyLevelDaoMock).deleteRelations(context);
 	}
+	
+	@Test
+	public void shouldDeleteParticipationIfHasNoContext() {
+		QualityContext context = mock(QualityContext.class);
+		EvaluationFormParticipation participation = mock(EvaluationFormParticipation.class);
+		when(context.getEvaluationFormParticipation()).thenReturn(participation);
+		when(contextDaoMock.loadByKey(context)).thenReturn(context);
+		when(contextDaoMock.hasContexts(participation)).thenReturn(false);
+		
+		Collection<QualityContextRef> contextRefs = Collections.singletonList(context);
+		sut.deleteContextsAndParticipations(contextRefs);
 
+		verify(evaluationFormManagerMock).deleteParticipations(any());
+	}
+
+	@Test
+	public void shouldNotDeleteParticipationIfHasContexts() {
+		QualityContext context = mock(QualityContext.class);
+		EvaluationFormParticipation participation = mock(EvaluationFormParticipation.class);
+		when(context.getEvaluationFormParticipation()).thenReturn(participation);
+		when(contextDaoMock.loadByKey(context)).thenReturn(context);
+		when(contextDaoMock.hasContexts(participation)).thenReturn(true);
+		
+		Collection<QualityContextRef> contextRefs = Collections.singletonList(context);
+		sut.deleteContextsAndParticipations(contextRefs);
+
+		verify(evaluationFormManagerMock, never()).deleteParticipations(any());
+	}
 }

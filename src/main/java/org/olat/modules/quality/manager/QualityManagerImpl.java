@@ -21,6 +21,7 @@ package org.olat.modules.quality.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -32,9 +33,11 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
+import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
@@ -180,13 +183,25 @@ public class QualityManagerImpl implements QualityManager {
 	}
 	
 	@Override
-	public void deleteContext(QualityContext context) {
-		if (context != null) {
-			contextToCurriculumDao.deleteRelations(context);
-			contextToCurriculumElementDao.deleteRelations(context);
-			contextToOrganisationDao.deleteRelations(context);
-			contextToTaxonomyLevelDao.deleteRelations(context);
-			contextDao.deleteContext(context);
+	public void deleteContext(QualityContextRef contextRef) {
+		if (contextRef != null) {
+			contextToCurriculumDao.deleteRelations(contextRef);
+			contextToCurriculumElementDao.deleteRelations(contextRef);
+			contextToOrganisationDao.deleteRelations(contextRef);
+			contextToTaxonomyLevelDao.deleteRelations(contextRef);
+			contextDao.deleteContext(contextRef);
+		}
+	}
+
+	@Override
+	public void deleteContextsAndParticipations(Collection<QualityContextRef> contextRefs) {
+		for (QualityContextRef contextRef: contextRefs) {
+			QualityContext context = contextDao.loadByKey(contextRef);
+			EvaluationFormParticipationRef participationRef = context.getEvaluationFormParticipation();
+			deleteContext(contextRef);
+			if (!contextDao.hasContexts(participationRef)) {
+				evaluationFormManager.deleteParticipations(Collections.singletonList(participationRef));
+			}
 		}
 	}
 

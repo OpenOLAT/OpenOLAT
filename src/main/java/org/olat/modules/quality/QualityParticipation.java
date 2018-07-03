@@ -36,5 +36,13 @@ public interface QualityParticipation {
 	public String getLastname();
 	
 	public String getEmail();
+	
+	public QualityContextRef getContextRef();
+	
+	public QualityContextRole getRole();
+	
+	public String getAudienceRepositoryEntryName();
+	
+	public String getAudienceCurriculumElementName();
 
 }

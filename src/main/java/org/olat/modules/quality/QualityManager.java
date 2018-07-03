@@ -116,6 +116,14 @@ public interface QualityManager {
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation participation, CurriculumElement curriculumElement, CurriculumRoles role);
 
-	public void deleteContext(QualityContext context);
+	public void deleteContext(QualityContextRef contextRef);
+
+	/**
+	 * Deletes the contexts of the specified references. If a deleted context was
+	 * the last one of a participation, the participation is deleted as well.
+	 *
+	 * @param contetxtRefs
+	 */
+	public void deleteContextsAndParticipations(Collection<QualityContextRef> contextRefs);
 
 }

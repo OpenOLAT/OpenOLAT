@@ -167,6 +167,23 @@ class QualityContextDAO {
 				.setParameter("roleName", role)
 				.getResultList();
 	}
+
+	public boolean hasContexts(EvaluationFormParticipationRef participationRef) {
+		if (participationRef == null || participationRef.getKey() == null) return false;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context.key");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.evaluationFormParticipation.key = :participationKey");
+		
+		List<Long> types = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("participationKey", participationRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return types != null && !types.isEmpty() && types.get(0) != null && types.get(0).longValue() > 0;
+	}
 	
 	void deleteContext(QualityContextRef contextRef) {
 		if (contextRef == null || contextRef.getKey() == null) return;

@@ -20,6 +20,8 @@
 package org.olat.modules.quality.ui;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityContextRef;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityParticipation;
 
 /**
@@ -46,16 +48,32 @@ class ParticipationRow {
 		return participation.getParticipationRef();
 	}
 
-	public Object getFirstname() {
+	public String getFirstname() {
 		return participation.getFirstname();
 	}
 
-	public Object getLastname() {
+	public String getLastname() {
 		return participation.getLastname();
 	}
 
-	public Object getEmail() {
+	public String getEmail() {
 		return participation.getEmail();
+	}
+	
+	public QualityContextRef getContextRef() {
+		return participation.getContextRef();
+	}
+	
+	public QualityContextRole getRole() {
+		return participation.getRole();
+	}
+	
+	public String getAudienceRepositoryEntryName() {
+		return participation.getAudienceRepositoryEntryName();
+	}
+	
+	public String getAudienceCurriculumElementName() {
+		return participation.getAudienceCurriculumElementName();
 	}
 
 	@Override

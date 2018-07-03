@@ -20,6 +20,8 @@
 package org.olat.modules.quality.model;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityContextRef;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityParticipation;
 
 /**
@@ -35,25 +37,27 @@ public class QualityParticipationImpl implements QualityParticipation {
 	private final String firstname;
 	private final String lastname;
 	private final String email;
+	private final Long contextKey;
+	private final QualityContextRole role;
+	private final String audienceRepositoryEntryName;
+	private final String audienceCurriculumElementName;
 
-	public QualityParticipationImpl(Long participationKey, String firstname, String lastname,
-			String email) {
-		super();
+	public QualityParticipationImpl(Long participationKey, String firstname, String lastname, String email,
+			Long contextKey, QualityContextRole role, String audienceRepositoryEntryName,
+			String audienceCurriculumElementName) {
 		this.participationKey = participationKey;
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
+		this.contextKey = contextKey;
+		this.role = role;
+		this.audienceRepositoryEntryName = audienceRepositoryEntryName;
+		this.audienceCurriculumElementName = audienceCurriculumElementName;
 	}
 
 	@Override
 	public EvaluationFormParticipationRef getParticipationRef() {
-		return new EvaluationFormParticipationRef() {
-			
-			@Override
-			public Long getKey() {
-				return participationKey;
-			}
-		};
+		return () -> participationKey;
 	}
 
 	@Override
@@ -69,6 +73,26 @@ public class QualityParticipationImpl implements QualityParticipation {
 	@Override
 	public String getEmail() {
 		return email;
+	}
+
+	@Override
+	public QualityContextRef getContextRef() {
+		return () -> contextKey;
+	}
+
+	@Override
+	public QualityContextRole getRole() {
+		return role;
+	}
+
+	@Override
+	public String getAudienceRepositoryEntryName() {
+		return audienceRepositoryEntryName;
+	}
+
+	@Override
+	public String getAudienceCurriculumElementName() {
+		return audienceCurriculumElementName;
 	}
 
 }

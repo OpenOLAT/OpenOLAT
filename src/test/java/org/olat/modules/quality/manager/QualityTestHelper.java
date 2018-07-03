@@ -113,6 +113,11 @@ public class QualityTestHelper {
 		return qualityContextDao.createContext(createDataCollection(), createParticipation(), QualityContextRole.owner,
 				createRepositoryEntry(), createCurriculumElement());
 	}
+	
+	QualityContext createContext(QualityDataCollection dataCollection, EvaluationFormParticipation participation) {
+		return qualityContextDao.createContext(dataCollection, participation, QualityContextRole.owner,
+				createRepositoryEntry(), createCurriculumElement());
+	}
 
 	EvaluationFormSurvey createSurvey(QualityDataCollection dataCollection) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();

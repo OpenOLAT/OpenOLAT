@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityContextRef;
 
 /**
  * 
@@ -38,22 +38,22 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
  */
 public class ParticipationRemoveConfirmationController extends FormBasicController {
 	
-	private final List<EvaluationFormParticipationRef> participationRefs;
+	private final List<QualityContextRef> contextRefs;
 
 	public ParticipationRemoveConfirmationController(UserRequest ureq, WindowControl wControl,
-			List<EvaluationFormParticipationRef> participationRefs) {
+			List<QualityContextRef> contextRefs) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
-		this.participationRefs = participationRefs;
+		this.contextRefs = contextRefs;
 		initForm(ureq);
 	}
 
-	public List<EvaluationFormParticipationRef> getParticipationRefs() {
-		return participationRefs;
+	public List<QualityContextRef> getContextRefs() {
+		return contextRefs;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormInfo("participation.remove.confirm", new String[] { String.valueOf(participationRefs.size()) });
+		setFormInfo("participation.remove.confirm", new String[] { String.valueOf(contextRefs.size()) });
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

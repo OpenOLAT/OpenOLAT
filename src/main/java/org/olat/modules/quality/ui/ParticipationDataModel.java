@@ -19,8 +19,6 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -34,14 +32,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  */
 public class ParticipationDataModel extends DefaultFlexiTableDataSourceModel<ParticipationRow> {
 
-	private final Locale locale;
-
 	public ParticipationDataModel(FlexiTableDataSourceDelegate<ParticipationRow> dataSource,
-			FlexiTableColumnModel columnsModel, Locale locale) {
+			FlexiTableColumnModel columnsModel) {
 		super(dataSource, columnsModel);
-		this.locale = locale;
 	}
-	
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -50,19 +44,25 @@ public class ParticipationDataModel extends DefaultFlexiTableDataSourceModel<Par
 			case firstname: return participationRow.getFirstname();
 			case lastname: return participationRow.getLastname();
 			case email: return participationRow.getEmail();
+			case role: return participationRow.getRole();
+			case repositoryEntryName: return participationRow.getAudienceRepositoryEntryName();
+			case curriculumElementName: return participationRow.getAudienceCurriculumElementName();
 			default: return null;
 		}
 	}
 
 	@Override
 	public DefaultFlexiTableDataSourceModel<ParticipationRow> createCopyWithEmptyList() {
-		return new ParticipationDataModel(getSourceDelegate(), getTableColumnModel(), locale);
+		return new ParticipationDataModel(getSourceDelegate(), getTableColumnModel());
 	}
 
 	public enum ParticipationCols implements FlexiSortableColumnDef {
 		firstname("participation.firstname"),
 		lastname("participation.lastname"),
-		email("participation.email");
+		email("participation.email"),
+		role("participation.role"),
+		repositoryEntryName("participation.repository.entry"),
+		curriculumElementName("participation.curriculum.element");
 		
 		private final String i18nKey;
 		

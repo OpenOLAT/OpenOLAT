@@ -30,7 +30,6 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityParticipation;
-import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,14 +71,21 @@ class QualityParticipationDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityParticipationImpl(");
 		sb.append("       participation.key");
-		sb.append("     , user.firstName");
-		sb.append("     , user.lastName");
-		sb.append("     , user.email");
+		sb.append("     , user.firstName as firstname");
+		sb.append("     , user.lastName as lastname");
+		sb.append("     , user.email as email");
+		sb.append("     , context.key");
+		sb.append("     , context.role as role");
+		sb.append("     , audienceRepositoryEntry.displayname as repositoryEntryName");
+		sb.append("     , audienceCurriculumElement.displayName as curriculumElementName");
 		sb.append("       )");
 		sb.append("  from evaluationformparticipation as participation");
 		sb.append(" inner join participation.survey as survey");
 		sb.append("  left join participation.executor as executor");
-		sb.append(" inner join executor.user as user");
+		sb.append("  left join executor.user as user");
+		sb.append("  left join qualitycontext as context on participation.key = context.evaluationFormParticipation.key");
+		sb.append("  left join context.audienceRepositoryEntry as audienceRepositoryEntry");
+		sb.append("  left join context.audienceCurriculumElement as audienceCurriculumElement");
 		sb.append(" where survey.resName=:resName");
 		sb.append("   and survey.resId=:resId");
 		
@@ -104,15 +110,7 @@ class QualityParticipationDAO {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
 			sb.append(" order by ");
-			if (sortKey.equals(ParticipationCols.firstname.name())) {
-				sb.append("user.firstName");
-			} else if (sortKey.equals(ParticipationCols.lastname.name())) {
-				sb.append("user.lastName");
-			} else if (sortKey.equals(ParticipationCols.email.name())) {
-				sb.append("user.email");
-			} else {
-				sb.append(sortKey);
-			}
+			sb.append(sortKey);
 			appendAsc(sb, asc);
 		} else {
 			sb.append(" order by participation.key asc ");
