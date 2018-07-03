@@ -96,7 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </pre>
  */
 public class UserAdminMainController extends MainLayoutBasicController implements Activateable2 {
-	public static final String EXTENSIONPOINT_MENU_MENUQUERIES = ".menu.menuqueries";
+	public static final String EXTENSIONPOINT_MENU_MENUQUERIES = UserAdminMainController.class.getName() + ".menu.menuqueries";
 	
 	private Link createLink;
 	private Link importLink;
@@ -382,7 +382,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		TreeNode node = ((GenericTreeModel)menuTree.getTreeModel()).findNodeByUserObject(ae);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("AE", Long.valueOf(node.getPosition()));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		return ae.createController(ureq, bwControl, null);
+		return ae.createController(ureq, bwControl, content);
 	}
 
 	/**
@@ -566,7 +566,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		for (int i = 0; i < cnt; i++) {
 			Extension anExt = extm.getExtension(i);
 			// 1) general menu extensions
-			ExtensionElement ee = anExt.getExtensionFor(UserAdminMainController.class.getName() + EXTENSIONPOINT_MENU_MENUQUERIES, ureq);
+			ExtensionElement ee = anExt.getExtensionFor(EXTENSIONPOINT_MENU_MENUQUERIES, ureq);
 			if (ee instanceof GenericActionExtension && anExt.isEnabled()) {
 				GenericActionExtension ae = (GenericActionExtension)ee;
 				GenericTreeNode gtnChild = new GenericTreeNode();
@@ -575,7 +575,6 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				gtnChild.setUserObject(ae);
 				gtnChild.setAltText(ae.getDescription(getLocale()));
 				queriesNode.addChild(gtnChild);
-
 			} 
 		}
 	}
