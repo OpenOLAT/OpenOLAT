@@ -105,10 +105,8 @@ public class QTI12AssessmentStatisticsController extends BasicController impleme
 			printLink = LinkFactory.createToolLink("print" + CodeHelper.getRAMUniqueID(), translate("print"), this);
 			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
 			printLink.setPopup(new LinkPopupSettings(680, 500, "qti-stats"));
-			stackPanel.addTool(printLink, Align.right);
-
+			
 			downloadRawLink = LinkFactory.createToolLink("download" + CodeHelper.getRAMUniqueID(), translate("download.raw.data"), this);
-			stackPanel.addTool(downloadRawLink, Align.right);
 		} else {
 			printLink = null;
 			downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
