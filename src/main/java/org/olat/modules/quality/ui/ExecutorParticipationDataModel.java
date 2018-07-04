@@ -33,12 +33,12 @@ import org.olat.modules.quality.QualitySecurityCallback;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceModel<ExcecutorParticipationRow> {
+public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceModel<ExecutorParticipationRow> {
 
 	private final QualitySecurityCallback secCallback;
 	private final Locale locale;
 
-	public ExecutorParticipationDataModel(FlexiTableDataSourceDelegate<ExcecutorParticipationRow> dataSource,
+	public ExecutorParticipationDataModel(FlexiTableDataSourceDelegate<ExecutorParticipationRow> dataSource,
 			FlexiTableColumnModel columnsModel, QualitySecurityCallback secCallback, Locale locale) {
 		super(dataSource, columnsModel);
 		this.secCallback = secCallback;
@@ -48,7 +48,7 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		ExcecutorParticipationRow participationRow = getObject(row);
+		ExecutorParticipationRow participationRow = getObject(row);
 		switch (ExecutorParticipationCols.values()[col]) {
 			case participationStatus: return participationRow.getParticipationStatus();
 			case start: return participationRow.getStart();
@@ -60,7 +60,7 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 	}
 
 	@Override
-	public DefaultFlexiTableDataSourceModel<ExcecutorParticipationRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataSourceModel<ExecutorParticipationRow> createCopyWithEmptyList() {
 		return new ExecutorParticipationDataModel(getSourceDelegate(), getTableColumnModel(), secCallback, locale);
 	}
 

@@ -70,7 +70,7 @@ public class ExecutorParticipationsListController extends FormBasicController {
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
 
-		ExcecutorParticipationDataSource dataSource = new ExcecutorParticipationDataSource(getIdentity());
+		ExecutorParticipationDataSource dataSource = new ExecutorParticipationDataSource(getIdentity());
 		dataModel = new ExecutorParticipationDataModel(dataSource, columnsModel, secCallback, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "user-participations", dataModel, 25, true, getTranslator(), formLayout);
 	}

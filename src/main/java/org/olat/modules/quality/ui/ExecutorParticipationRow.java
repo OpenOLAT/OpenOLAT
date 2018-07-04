@@ -30,11 +30,11 @@ import org.olat.modules.quality.QualityExecutorParticipation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ExcecutorParticipationRow {
+public class ExecutorParticipationRow {
 
 	private final QualityExecutorParticipation participation;
 
-	public ExcecutorParticipationRow(QualityExecutorParticipation participation) {
+	public ExecutorParticipationRow(QualityExecutorParticipation participation) {
 		this.participation = participation;
 	}
 	

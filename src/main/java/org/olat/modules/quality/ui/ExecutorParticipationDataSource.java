@@ -40,14 +40,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class ExcecutorParticipationDataSource implements FlexiTableDataSourceDelegate<ExcecutorParticipationRow> {
+class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<ExecutorParticipationRow> {
 	
 	private Identity executor;
 	
 	@Autowired
 	private QualityService qualityService;
 	
-	public ExcecutorParticipationDataSource(Identity executor) {
+	public ExecutorParticipationDataSource(Identity executor) {
 		this.executor = executor;
 		CoreSpringFactory.autowireObject(this);
 	}
@@ -58,19 +58,19 @@ class ExcecutorParticipationDataSource implements FlexiTableDataSourceDelegate<E
 	}
 
 	@Override
-	public List<ExcecutorParticipationRow> reload(List<ExcecutorParticipationRow> rows) {
+	public List<ExecutorParticipationRow> reload(List<ExecutorParticipationRow> rows) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public ResultInfos<ExcecutorParticipationRow> getRows(String query, List<FlexiTableFilter> filters,
+	public ResultInfos<ExecutorParticipationRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
 		List<QualityExecutorParticipation> participations = qualityService.loadExecutorParticipations(executor,
 				firstResult, maxResults, orderBy);
-		List<ExcecutorParticipationRow> rows = new ArrayList<>();
+		List<ExecutorParticipationRow> rows = new ArrayList<>();
 		for (QualityExecutorParticipation participation : participations) {
-			rows.add(new ExcecutorParticipationRow(participation));
+			rows.add(new ExecutorParticipationRow(participation));
 		}
 
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
