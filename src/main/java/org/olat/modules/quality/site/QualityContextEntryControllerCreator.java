@@ -19,37 +19,42 @@
  */
 package org.olat.modules.quality.site;
 
-import org.olat.core.CoreSpringFactory;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
-import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.modules.quality.QualityModule;
 
 /**
  * 
- * Initial date: 08.06.2018<br>
+ * Initial date: 04.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualitySiteDef extends AbstractSiteDefinition {
+public class QualityContextEntryControllerCreator  extends DefaultContextEntryControllerCreator {
+
+	private final QualityModule qualityModule;
+	
+	public QualityContextEntryControllerCreator(QualityModule qualityModule) {
+		this.qualityModule = qualityModule;
+	}
 
 	@Override
-	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		return new QualitySite(this, ureq.getLocale());
+	public ContextEntryControllerCreator clone() {
+		return this;
 	}
-	
+
 	@Override
-	public boolean isEnabled() {
-		QualityModule module = CoreSpringFactory.getImpl(QualityModule.class);
-		return module.isEnabled() && super.isEnabled();
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
+		return QualitySite.class.getName();
 	}
-	
+
 	@Override
-	public boolean isFeatureEnabled() {
-		QualityModule module = CoreSpringFactory.getImpl(QualityModule.class);
-		return module.isEnabled();
+	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+		return qualityModule.isEnabled();
 	}
 
 }

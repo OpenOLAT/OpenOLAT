@@ -41,6 +41,10 @@ class DataCollectionRow {
 	QualityDataCollectionLight getDataCollection() {
 		return dataCollectionView;
 	}
+
+	Long getKey() {
+		return dataCollectionView.getKey();
+	}
 	
 	String getTitle() {
 		return dataCollectionView.getTitle();

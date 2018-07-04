@@ -34,8 +34,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.quality.QualitySecurityCallback;
 
 /**
@@ -46,6 +48,8 @@ import org.olat.modules.quality.QualitySecurityCallback;
  */
 public class QualityMainController extends MainLayoutBasicController implements Activateable2 {
 	
+	private static final String ORES_MY_TYPE = "my";
+	private static final String ORES_DATA_COLLECTIONS_TYPE = "datacollections";
 	private static final String SEGMENTS_CMP = "segmentCmp";
 	
 	private final VelocityContainer mainVC;
@@ -80,7 +84,23 @@ public class QualityMainController extends MainLayoutBasicController implements 
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if (entries == null || entries.isEmpty()) return;
+		
+		OLATResourceable resource = entries.get(0).getOLATResourceable();
+		if (ORES_MY_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())) {
+			doOpenUserParticipations(ureq);
+			segmentView.select(executorParticipationLink);
+		} else if (ORES_DATA_COLLECTIONS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())) {
+			if (secCallback.canViewDataCollections()) {
+				doOpenDataCollection(ureq);
+				segmentView.select(dataCollectionLink);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				dataCollectionListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			} else {
+				doOpenUserParticipations(ureq);
+				segmentView.select(executorParticipationLink);
+			}
+		}
 	}
 
 	@Override
@@ -98,14 +118,18 @@ public class QualityMainController extends MainLayoutBasicController implements 
 	}
 
 	private void doOpenUserParticipations(UserRequest ureq) {
-		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, getWindowControl(), secCallback);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_MY_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, secCallback);
 		mainVC.put(SEGMENTS_CMP, executorParticipationListCtrl.getInitialComponent());
 	}
 
 	private void doOpenDataCollection(UserRequest ureq) {
 		stackPanel = new TooledStackedPanel("qualitiy.management", getTranslator(), this);
 		stackPanel.setInvisibleCrumb(0);
-		dataCollectionListCtrl = new DataCollectionListController(ureq, getWindowControl(), stackPanel, secCallback);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_DATA_COLLECTIONS_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		dataCollectionListCtrl = new DataCollectionListController(ureq, bwControl, stackPanel, secCallback);
 		listenTo(dataCollectionListCtrl);
 		stackPanel.pushController(translate("data.collections"), dataCollectionListCtrl);
 		mainVC.put(SEGMENTS_CMP, stackPanel);

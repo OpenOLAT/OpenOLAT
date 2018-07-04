@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,12 +44,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -59,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionListController extends FormBasicController implements TooledController {
+public class DataCollectionListController extends FormBasicController implements TooledController, Activateable2 {
 
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
@@ -129,6 +134,32 @@ public class DataCollectionListController extends FormBasicController implements
 			createDataCollectionLink = LinkFactory.createToolLink("data.collection.create", translate("data.collection.create"), this);
 			createDataCollectionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_dc_create");
 			stackPanel.addTool(createDataCollectionLink, Align.left);
+		}
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if (QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME.equals(type)) {
+			Long key = entry.getOLATResourceable().getResourceableId();
+			DataCollectionRow row = dataModel.getObjectByKey(key);
+			if (row == null) {
+				dataModel.load(null, null, null, 0, -1);
+				row = dataModel.getObjectByKey(key);
+				if (row != null) {
+					doEditDataCollection(ureq, row.getDataCollection());
+					int index = dataModel.getObjects().indexOf(row);
+					if (index >= 1 && tableEl.getPageSize() > 1) {
+						int page = index / tableEl.getPageSize();
+						tableEl.setPage(page);
+					}
+				}
+			} else {
+				doEditDataCollection(ureq, row.getDataCollection());
+			}
 		}
 	}
 	
@@ -209,7 +240,8 @@ public class DataCollectionListController extends FormBasicController implements
 	}
 	
 	private void doEditDataCollection(UserRequest ureq, QualityDataCollectionLight dataCollection) {
-		dataCollectionCtrl = new DataCollectionController(ureq, getWindowControl(), secCallback, stackPanel,
+		WindowControl bwControl = addToHistory(ureq, dataCollection, null);
+		dataCollectionCtrl = new DataCollectionController(ureq, bwControl, secCallback, stackPanel,
 				dataCollection);
 		String title = dataCollection.getTitle();
 		stackPanel.pushController(Formatter.truncate(title, 50), dataCollectionCtrl);

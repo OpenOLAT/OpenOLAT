@@ -31,7 +31,7 @@ import org.olat.core.id.OLATResourceable;
  */
 public interface QualityDataCollectionLight extends QualityDataCollectionRef, OLATResourceable {
 
-	public String RESOURCEABLE_TYPE_NAME = "qualityDataCollection";
+	public String RESOURCEABLE_TYPE_NAME = "datacollection";
 	
 	public QualityDataCollectionStatus getStatus();
 
