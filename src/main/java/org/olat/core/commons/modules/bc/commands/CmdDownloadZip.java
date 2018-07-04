@@ -74,12 +74,18 @@ public class CmdDownloadZip implements FolderCommand {
 			return null;
 		}
 		
+		if(selection.getFiles().isEmpty()) {
+			status = FolderCommandStatus.STATUS_FAILED;
+			wControl.setWarning(trans.translate("warning.file.selection.empty"));
+			return null;
+		}
+		
 		MediaResource mr = new ZipMediaResource(currentContainer, selection);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 		return null;
 	}
 
-
+	@Override
 	public int getStatus() {
 		return status;
 	}

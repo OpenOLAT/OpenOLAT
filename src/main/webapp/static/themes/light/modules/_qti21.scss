@@ -520,6 +520,7 @@ img.o_hotspot_responsive[usemap] {
 			background: $o-qti-textEntryInteraction-bg;
 			padding: 1px 1px;
 			color: $o-qti-textEntryInteraction-color;
+			max-width: 100%;
 			/* format fields with values in it in separate style */
 			&:valid,
 			&:disabled {

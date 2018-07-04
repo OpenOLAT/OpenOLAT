@@ -174,6 +174,7 @@ class PublishStepCatalog extends BasicStep {
 			}
 
 			flc.contextPut("categories", deleteLinks);
+			flc.contextPut("courseTitle", courseEnv.getCourseGroupManager().getCourseEntry().getDisplayname());
 		}
 		
 		private String getPath(CatalogEntry entry) {
@@ -198,7 +199,7 @@ class PublishStepCatalog extends BasicStep {
 		}
 		
 		private void doAddCatalog(UserRequest ureq) {
-			List<CategoryLabel> categories = new ArrayList<CategoryLabel>();
+			List<CategoryLabel> categories = new ArrayList<>();
 			for(FormLink deleteLink:deleteLinks) {
 				CategoryLabel label = (CategoryLabel)deleteLink.getUserObject();
 				categories.add(label);
@@ -208,8 +209,10 @@ class PublishStepCatalog extends BasicStep {
 			catalogAddController = new SpecialCatalogEntryAddController(ureq, getWindowControl(), repositoryEntry, categories);
 			listenTo(catalogAddController);
 			removeAsListenerAndDispose(cmc);
+			
+			String displayName = courseEnv.getCourseGroupManager().getCourseEntry().getDisplayname();
 			cmc = new CloseableModalController(getWindowControl(), "close",
-					catalogAddController.getInitialComponent(), true, translate("publish.catalog.add"));
+					catalogAddController.getInitialComponent(), true, translate("publish.catalog.add.title", new String[] { displayName }));
 			listenTo(cmc);
 			cmc.activate();
 		}

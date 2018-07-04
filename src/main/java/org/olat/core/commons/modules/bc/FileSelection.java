@@ -39,7 +39,7 @@ public class FileSelection {
 	/** HTML form identifier */
 	public static final String FORM_ID = "paths";
 	
-	private List<String> files = new ArrayList<String>();
+	private List<String> files = new ArrayList<>();
 	private String currentContainerRelPath;
 	
 	public FileSelection(UserRequest ureq, String currentContainerRelPath) {
@@ -59,7 +59,7 @@ public class FileSelection {
 	 * @return
 	 */
 	public List<String> getInvalidFileNames() {
-		List<String> invalidFileNames = new ArrayList<String>();
+		List<String> invalidFileNames = new ArrayList<>();
 		List<String> filesList = getFiles();
 		for(String fileName:filesList) {
 			if(!FileUtils.validateFilename(fileName)) {

@@ -39,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,7 +55,6 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * Description:<br>
  * Provides a CreateItemForm and creates a zip file if input valid.
- * TODO: LD: check status to show if an error occured.
  * 
  * <P>
  * Initial Date:  30.01.2008 <br>
@@ -65,8 +63,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 public class CmdZip extends FormBasicController implements FolderCommand {
 	
 	private int status = FolderCommandStatus.STATUS_SUCCESS;	
-	
-	private VelocityContainer mainVC;
+
 	private VFSContainer currentContainer;
 	private FileSelection selection;
 	private TextElement textElement;
@@ -94,9 +91,13 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 			return null;
 		}
 		
+		if(selection.getFiles().isEmpty()) {
+			status = FolderCommandStatus.STATUS_FAILED;
+			wControl.setWarning(trans.translate("warning.file.selection.empty"));
+			return null;
+		}
+		
 		initForm(ureq);
-		mainVC = createVelocityContainer("createZipPanel");
-		mainVC.contextPut("fileselection", selection);
 		return this;
 	}
 	
@@ -160,7 +161,7 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 			return;				
 		}
 		
-		List<VFSItem> vfsFiles = new ArrayList<VFSItem>();
+		List<VFSItem> vfsFiles = new ArrayList<>();
 		for (String fileName : selection.getFiles()) {
 			VFSItem item = currentContainer.resolve(fileName);
 			if (item != null) {
