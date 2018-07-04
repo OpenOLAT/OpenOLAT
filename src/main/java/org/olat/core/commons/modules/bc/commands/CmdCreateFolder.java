@@ -146,7 +146,7 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		}	else {
 			status = FolderCommandStatus.STATUS_FAILED;
 			fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
-		}						
+		}
 	}
 
 	@Override
@@ -155,6 +155,7 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 	}
 
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = true;
 		String name = textElement.getValue();		
