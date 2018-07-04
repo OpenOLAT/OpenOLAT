@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityParticipation;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,7 +45,7 @@ class ParticipationDataSource implements FlexiTableDataSourceDelegate<Participat
 	private QualityDataCollectionLight dataCollection;
 	
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	
 	public ParticipationDataSource(QualityDataCollectionLight dataCollection) {
 		this.dataCollection = dataCollection;
@@ -54,7 +54,7 @@ class ParticipationDataSource implements FlexiTableDataSourceDelegate<Participat
 
 	@Override
 	public int getRowCount() {
-		return qualityManager.getParticipationCount(dataCollection);
+		return qualityService.getParticipationCount(dataCollection);
 	}
 
 	@Override
@@ -66,7 +66,7 @@ class ParticipationDataSource implements FlexiTableDataSourceDelegate<Participat
 	public ResultInfos<ParticipationRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries,
 			int firstResult, int maxResults, SortKey... orderBy) {
 
-		List<QualityParticipation> participations = qualityManager.loadParticipations(dataCollection,
+		List<QualityParticipation> participations = qualityService.loadParticipations(dataCollection,
 				firstResult, maxResults, orderBy);
 		List<ParticipationRow> rows = new ArrayList<>();
 		for (QualityParticipation participation : participations) {

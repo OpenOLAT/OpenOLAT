@@ -32,7 +32,7 @@ import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	@Autowired
 	private QualityContextDAO contextDao;
 	@Autowired
@@ -142,7 +142,7 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 	@Override
 	public QualityContext build() {
 		for (QualityContext contextToDelete: contextsToDelete) {
-			qualityManager.deleteContext(contextToDelete);
+			qualityService.deleteContext(contextToDelete);
 		}
 		QualityContext context = contextDao.createContext(dataCollection, evaluationFormParticipation, role,
 				audienceRepositoryEntry, audienceCurriculumElement);

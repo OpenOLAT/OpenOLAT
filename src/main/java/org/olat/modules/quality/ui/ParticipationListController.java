@@ -54,7 +54,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.olat.modules.quality.ui.wizard.AddCourseUser_1_ChooseCourseStep;
@@ -91,7 +91,7 @@ public class ParticipationListController extends FormBasicController implements 
 	private QualityDataCollection dataCollection;
 	
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -103,7 +103,7 @@ public class ParticipationListController extends FormBasicController implements 
 		super(ureq, windowControl, "participation_list");
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
-		this.dataCollection = qualityManager.loadDataCollectionByKey(dataCollection);
+		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollection);
 		initForm(ureq);
 	}
 
@@ -220,9 +220,9 @@ public class ParticipationListController extends FormBasicController implements 
 		return (uureq, wControl, runContext) -> {
 			IdentityContext identityContext = (IdentityContext) runContext.get("context");
 			Collection<Identity> identities = identityContext.getIdentities();
-			List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+			List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
 			for (EvaluationFormParticipation participation: participations) {
-				qualityManager.createContextBuilder(dataCollection, participation).build();
+				qualityService.createContextBuilder(dataCollection, participation).build();
 			}
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -243,9 +243,9 @@ public class ParticipationListController extends FormBasicController implements 
 				String roleName = role.name();
 				for (RepositoryEntry repositoryEntry: courseContext.getRepositoryEntries()) {
 					Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, roleName);
-					List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+					List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
 					for (EvaluationFormParticipation participation: participations) {
-						qualityManager.createContextBuilder(dataCollection, participation, repositoryEntry, role).build();
+						qualityService.createContextBuilder(dataCollection, participation, repositoryEntry, role).build();
 					}
 				}
 			}
@@ -268,9 +268,9 @@ public class ParticipationListController extends FormBasicController implements 
 			CurriculumElement curriculumElement = curriculumElementContext.getCurriculumElement();
 			for (CurriculumRoles role: curriculumElementContext.getRoles()) {
 				List<Identity> identities = curriculumService.getMembersIdentity(curriculumElement, role);
-				List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection, identities);
+				List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
 				for (EvaluationFormParticipation participation: participations) {
-					qualityManager.createContextBuilder(dataCollection, participation, curriculumElement, role).build();
+					qualityService.createContextBuilder(dataCollection, participation, curriculumElement, role).build();
 				}
 			}
 			return StepsMainRunController.DONE_MODIFIED;
@@ -292,7 +292,7 @@ public class ParticipationListController extends FormBasicController implements 
 	}
 	
 	private void doRemove(List<QualityContextRef> contextRefs) {
-		qualityManager.deleteContextsAndParticipations(contextRefs);
+		qualityService.deleteContextsAndParticipations(contextRefs);
 		tableEl.reset(true, true, true);
 	}
 

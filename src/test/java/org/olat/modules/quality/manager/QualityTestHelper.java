@@ -37,7 +37,7 @@ import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -59,7 +59,7 @@ public class QualityTestHelper {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	@Autowired
 	private QualityContextDAO qualityContextDao;
 	@Autowired
@@ -98,7 +98,7 @@ public class QualityTestHelper {
 
 	public QualityDataCollection createDataCollection(String title) {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		QualityDataCollection dataCollection = qualityManager.createDataCollection(formEntry);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(formEntry);
 		dataCollection.setTitle(title);
 		dataCollection.setStart(new Date());
 		dataCollection.setDeadline(new Date());
@@ -143,7 +143,7 @@ public class QualityTestHelper {
 	}
 
 	void addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {
-		qualityManager.addParticipations(dataCollection, executors);
+		qualityService.addParticipations(dataCollection, executors);
 	}
 
 	Organisation createOrganisation() {

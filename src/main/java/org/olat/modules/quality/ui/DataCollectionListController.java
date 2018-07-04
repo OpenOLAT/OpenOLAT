@@ -46,7 +46,7 @@ import org.olat.core.util.Formatter;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
@@ -77,7 +77,7 @@ public class DataCollectionListController extends FormBasicController implements
 	private final QualitySecurityCallback secCallback;
 	
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 
 	public DataCollectionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualitySecurityCallback secCallback) {
@@ -204,7 +204,7 @@ public class DataCollectionListController extends FormBasicController implements
 	}
 	
 	private void doCreateDataCollection(UserRequest ureq, RepositoryEntry formEntry) {
-		QualityDataCollection dataCollection = qualityManager.createDataCollection(formEntry);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(formEntry);
 		doEditDataCollection(ureq, dataCollection);
 	}
 	
@@ -227,7 +227,7 @@ public class DataCollectionListController extends FormBasicController implements
 	}
 
 	private void doDeleteDataCollection(QualityDataCollectionLight dataCollection) {
-		qualityManager.deleteDataCollection(dataCollection);
+		qualityService.deleteDataCollection(dataCollection);
 		tableEl.reset(true, false, true);
 	}
 

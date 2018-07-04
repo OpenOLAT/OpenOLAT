@@ -38,7 +38,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityManager {
+public interface QualityService {
 
 	public QualityDataCollection createDataCollection(RepositoryEntry formEntry);
 	

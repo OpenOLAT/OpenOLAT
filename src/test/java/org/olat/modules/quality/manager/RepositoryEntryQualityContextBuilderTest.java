@@ -46,7 +46,7 @@ import org.olat.modules.quality.QualityContextToCurriculumElement;
 import org.olat.modules.quality.QualityContextToOrganisation;
 import org.olat.modules.quality.QualityContextToTaxonomyLevel;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -73,7 +73,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 	@Autowired
 	private QualityContextDAO contextDao;
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -97,7 +97,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection,
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
 				Arrays.asList(executor));
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 
@@ -174,7 +174,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		List<EvaluationFormParticipation> participations = qualityManager.addParticipations(dataCollection,
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
 				Arrays.asList(executor));
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		QualityContext participantContext = RepositoryEntryQualityContextBuilder

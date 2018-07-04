@@ -45,7 +45,7 @@ import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualityParticipation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +58,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class QualityManagerImpl implements QualityManager {
+public class QualityServiceImpl implements QualityService {
 
-	private static final OLog log = Tracing.createLoggerFor(QualityManagerImpl.class);
+	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
 
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;

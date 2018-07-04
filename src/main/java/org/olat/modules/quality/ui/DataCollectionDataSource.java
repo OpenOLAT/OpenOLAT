@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.quality.QualityDataCollectionView;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,7 +45,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	private final Translator translator;
 	
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	
 	public DataCollectionDataSource(Translator translator) {
 		this.translator = translator;
@@ -54,7 +54,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 
 	@Override
 	public int getRowCount() {
-		return qualityManager.getDataCollectionCount();
+		return qualityService.getDataCollectionCount();
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	public ResultInfos<DataCollectionRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		
-		List<QualityDataCollectionView> dataCollections = qualityManager.loadDataCollections(translator, firstResult,
+		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, firstResult,
 				maxResults, orderBy);
 		List<DataCollectionRow> rows = new ArrayList<>();
 		for (QualityDataCollectionView dataCollection: dataCollections) {

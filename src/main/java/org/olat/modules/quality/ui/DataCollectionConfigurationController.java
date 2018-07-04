@@ -63,7 +63,7 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
-import org.olat.modules.quality.QualityManager;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
 import org.olat.modules.quality.ui.event.DataCollectionEvent;
@@ -119,7 +119,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private RepositoryEntry topicRepository;
 	
 	@Autowired
-	private QualityManager qualityManager;
+	private QualityService qualityService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -133,8 +133,8 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
-		this.dataCollection = qualityManager.loadDataCollectionByKey(dataCollectionLight);
-		this.formEntry = qualityManager.loadFormEntry(dataCollection);
+		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionLight);
+		this.formEntry = qualityService.loadFormEntry(dataCollection);
 		this.topicType = dataCollection.getTopicType();
 		this.topicIdentity = dataCollection.getTopicIdentity();
 		this.topicOrganisation = dataCollection.getTopicOrganisation();
@@ -208,7 +208,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean replacePossible = qualityManager.isFormEntryUpdateable(dataCollection);
+		boolean replacePossible = qualityService.isFormEntryUpdateable(dataCollection);
 		evaFormReplaceLink.setVisible(replacePossible);
 		
 		String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());
@@ -484,13 +484,13 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		}
 		
 		// save
-		dataCollection = qualityManager.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollection(dataCollection);
 
 		// form
 		if (formEntryChanged) {
-			boolean isFormUpdateable = qualityManager.isFormEntryUpdateable(dataCollection);
+			boolean isFormUpdateable = qualityService.isFormEntryUpdateable(dataCollection);
 			if (isFormUpdateable) {
-				qualityManager.updateFormEntry(dataCollection, formEntry);
+				qualityService.updateFormEntry(dataCollection, formEntry);
 			} else {
 				showError("error.repo.entry.not.replaceable");
 			}

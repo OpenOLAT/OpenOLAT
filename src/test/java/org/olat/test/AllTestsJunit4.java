@@ -404,7 +404,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.review.ReviewServiceImplTest.class,
 	org.olat.modules.qpool.model.QuestionItemAuditLogBuilderImplTest.class,
 	org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilderTest.class,
-	org.olat.modules.quality.manager.QualityManagerImplTest.class,
+	org.olat.modules.quality.manager.QualityServiceImplTest.class,
 	org.olat.modules.quality.ui.QualitySecurityCallbackImplTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,

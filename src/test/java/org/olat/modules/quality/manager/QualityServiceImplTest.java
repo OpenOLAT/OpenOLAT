@@ -50,7 +50,7 @@ import org.olat.modules.quality.QualityDataCollection;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityManagerImplTest {
+public class QualityServiceImplTest {
 	
 	@Mock
 	private EvaluationFormManager evaluationFormManagerMock;
@@ -68,7 +68,7 @@ public class QualityManagerImplTest {
 	private QualityContextToTaxonomyLevelDAO contextToTaxonomyLevelDaoMock;
 	
 	@InjectMocks
-	private QualityManagerImpl sut;
+	private QualityServiceImpl sut;
 	
 	@Before
 	public void setUp() {
