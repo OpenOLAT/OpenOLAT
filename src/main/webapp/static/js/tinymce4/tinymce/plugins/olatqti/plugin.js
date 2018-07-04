@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.7'
+				version : '1.2.8'
 			};
 		},
 
@@ -291,7 +291,9 @@
 	            contentholder.attr({ "contenteditable": editable });
 	            var textNode = new tinymce.html.Node('#text', 3);
 	            textNode.raw = true;
-	            textNode.value = content;
+	            
+	            var escapedContent = jQuery("<div>").text(content).html();
+	            textNode.value = escapedContent;
 	            contentholder.append(textNode);
 	            placeholder.append(contentholder);
 
