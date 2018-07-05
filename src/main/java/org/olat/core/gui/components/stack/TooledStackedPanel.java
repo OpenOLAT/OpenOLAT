@@ -117,17 +117,23 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	public void removeTool(Component toolComponent) {
 		if(toolComponent == null) return;
-
-		for(Iterator<Tool> it=getCurrentCrumb().getTools().iterator(); it.hasNext(); ) {
-			if(toolComponent == it.next().getComponent()) {
-				it.remove();
+		
+		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		if(breadCrumb != null) {
+			for(Iterator<Tool> it=breadCrumb.getTools().iterator(); it.hasNext(); ) {
+				if(toolComponent == it.next().getComponent()) {
+					it.remove();
+				}
 			}
 		}
 		setDirty(true);
 	}
 	
 	public void removeAllTools() {
-		getCurrentCrumb().getTools().clear();
+		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		if(breadCrumb != null) {
+			breadCrumb.getTools().clear();
+		}
 		setDirty(true);
 	}
 
@@ -139,7 +145,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		if(toolComponent == null) return;
 		
 		Tool tool = new Tool(toolComponent, align, inherit, css);
-		getCurrentCrumb().addTool(tool);
+		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		if(breadCrumb != null) {
+			breadCrumb.addTool(tool);
+		}
 		setDirty(true);
 	}
 	
@@ -159,7 +168,11 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 				}
 			}
 		}
-		currentTools.addAll(getCurrentCrumb().getTools());
+		
+		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		if(breadCrumb != null) {
+			currentTools.addAll(breadCrumb.getTools());
+		}
 		return currentTools;
 	}
 	
