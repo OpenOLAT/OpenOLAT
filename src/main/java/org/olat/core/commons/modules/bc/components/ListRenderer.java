@@ -302,21 +302,19 @@ public class ListRenderer {
 				sb.append("</div>");
 				hasMeta = true;
 			}
-			//boolean hasThumbnail = false;
+			
 			if(metaInfo.isThumbnailAvailable() && !xssErrors) {
 				sb.append("<div class='o_thumbnail' style='background-image:url("); 
 				ubu.buildURI(sb, new String[] { PARAM_SERV_THUMBNAIL}, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'></div>");
 				hasMeta = true;
-				//hasThumbnail = true;
 			}
 
 			// first try author info from metadata (creator)
-			//boolean hasMetaAuthor = false;
 			String author = metaInfo.getCreator();
 			// fallback use file author (uploader)
-			if (StringHelper.containsNonWhitespace(author)) {
-				//hasMetaAuthor = true;
+			if(StringHelper.containsNonWhitespace(author)) {
+				//
 			} else {
 				author = metaInfo.getAuthor();
 				if(!"-".equals(author)) {
@@ -354,14 +352,17 @@ public class ListRenderer {
 		// filesize
 		if (!isContainer) {
 			// append filesize
-			sb.append("<span class='text-muted small'>");
-			sb.append(Formatter.formatBytes(leaf.getSize()));
-			sb.append("</span>");
-		}
-		else if (child instanceof VFSContainer) {
-			sb.append("<span class='text-muted small'>");
-			sb.append(((VFSContainer) child).getItems(new SystemItemFilter()).size());
-			sb.append(" "+translator.translate("mf.elements")+"</span>");
+			sb.append("<span class='text-muted small'>")
+			  .append(Formatter.formatBytes(leaf.getSize()))
+			  .append("</span>");
+		} else if (child instanceof VFSContainer) {
+			try {
+				sb.append("<span class='text-muted small'>")
+				  .append(((VFSContainer) child).getItems(new SystemItemFilter()).size())
+				  .append(" ").append(translator.translate("mf.elements")).append("</span>");
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 		sb.append("</td><td>");
 		
