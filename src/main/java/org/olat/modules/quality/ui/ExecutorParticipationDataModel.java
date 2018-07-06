@@ -54,6 +54,8 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 			case start: return participationRow.getStart();
 			case deadline: return participationRow.getDeadine();
 			case title: return participationRow.getTitle();
+			case topicType: return participationRow.getTranslatedtopicType();
+			case topic: return participationRow.getTopic();
 			case execute: return secCallback.canExecute(participationRow.getParticipation());
 			default: return null;
 		}
@@ -69,6 +71,8 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 		start("executor.participation.start"),
 		deadline("executor.participation.deadline"),
 		title("executor.participation.title"),
+		topicType("executor.participation.topic.type"),
+		topic("executor.participation.topic"),
 		execute("executor.participation.execute");
 		
 		private final String i18nKey;

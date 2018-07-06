@@ -140,6 +140,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormParticipation loadParticipationByKey(EvaluationFormParticipationRef participationRef) {
+		return evaluationFormParticipationDao.loadByKey(participationRef);
+	}
+
+	@Override
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
 		return evaluationFormParticipationDao.loadByExecutor(survey, executor);
 	}

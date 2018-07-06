@@ -41,5 +41,9 @@ public interface QualityExecutorParticipation {
 	public Date getDeadline();
 
 	public String getTitle();
+	
+	public String getTranslatedTopicType();
+	
+	public String getTopic();
 
 }

@@ -45,8 +45,8 @@ import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
-import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualityParticipation;
+import org.olat.modules.quality.QualityService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -168,9 +168,9 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
+	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator, IdentityRef executor, int firstResult,
 			int maxResults, SortKey[] orderBy) {
-		return participationDao.loadExecutorParticipations(executor, firstResult, maxResults, orderBy);
+		return participationDao.loadExecutorParticipations(translator, executor, firstResult, maxResults, orderBy);
 	}
 
 	@Override
@@ -189,6 +189,11 @@ public class QualityServiceImpl implements QualityService {
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation participation, CurriculumElement curriculumElement, CurriculumRoles role) {
 		return CurriculumElementQualityContextBuilder.builder(dataCollection, participation, curriculumElement, role);
+	}
+
+	@Override
+	public List<QualityContext> loadContextByParticipation(EvaluationFormParticipationRef participationRef) {
+		return contextDao.loadByParticipation(participationRef);
 	}
 	
 	@Override

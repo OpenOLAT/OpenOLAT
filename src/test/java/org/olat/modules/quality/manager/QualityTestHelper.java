@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.basesecurity.OrganisationService;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
@@ -37,6 +36,7 @@ import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -57,8 +57,6 @@ import org.springframework.stereotype.Service;
 public class QualityTestHelper {
 
 	@Autowired
-	private DB dbInstance;
-	@Autowired
 	private QualityService qualityService;
 	@Autowired
 	private QualityContextDAO qualityContextDao;
@@ -73,27 +71,8 @@ public class QualityTestHelper {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	void deleteAll() {
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from contexttocurriculum")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from contexttocurriculumelement")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from contexttoorganisation")
-					.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from contexttotaxonomylevel")
-					.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from qualitycontext")
-				.executeUpdate();
-		dbInstance.getCurrentEntityManager()
-				.createQuery("delete from qualitydatacollection")
-				.executeUpdate();
+	public void deleteAll() {
 		evaTestHelper.deleteAll();
-		dbInstance.commitAndCloseSession();
 	}
 
 	public QualityDataCollection createDataCollection(String title) {
@@ -102,6 +81,8 @@ public class QualityTestHelper {
 		dataCollection.setTitle(title);
 		dataCollection.setStart(new Date());
 		dataCollection.setDeadline(new Date());
+		dataCollection.setTopicRepositoryEntry(formEntry);
+		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
 		return dataCollection;
 	}
 	

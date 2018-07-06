@@ -27,7 +27,9 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityParticipation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +146,7 @@ class QualityParticipationDAO {
 		return Math.toIntExact(counts.get(0));
 	}
 
-	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
+	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator, IdentityRef executor, int firstResult,
 			int maxResults, SortKey... orderBy) {
 		if (executor == null)
 			return new ArrayList<>();
@@ -156,11 +158,36 @@ class QualityParticipationDAO {
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , collection.title as title");
+		sb.append("     , case collection.topicType");
+		for (QualityDataCollectionTopicType topicType: QualityDataCollectionTopicType.values()) {
+			sb.append("       when '").append(topicType.toString()).append("'");
+			sb.append("       then '").append(translator.translate(topicType.getI18nKey())).append("'");
+		}
+		sb.append("       end as topicType");
+		sb.append("     , case collection.topicType");
+		sb.append("            when '").append(QualityDataCollectionTopicType.CUSTOM).append("'");
+		sb.append("            then collection.topicCustom");
+		sb.append("            when '").append(QualityDataCollectionTopicType.IDENTIY).append("'");
+		sb.append("            then concat(user.lastName, ' ', user.firstName)");
+		sb.append("            when '").append(QualityDataCollectionTopicType.ORGANISATION).append("'");
+		sb.append("            then organisation.displayName");
+		sb.append("            when '").append(QualityDataCollectionTopicType.CURRICULUM).append("'");
+		sb.append("            then curriculum.displayName");
+		sb.append("            when '").append(QualityDataCollectionTopicType.CURRICULUM_ELEMENT).append("'");
+		sb.append("            then curriculumElement.displayName");
+		sb.append("            when '").append(QualityDataCollectionTopicType.REPOSITORY).append("'");
+		sb.append("            then repository.displayname");
+		sb.append("       end as topic");
 		sb.append("       )");
 		sb.append("  from evaluationformparticipation as participation");
-		sb.append(" inner join participation.survey as survey");
-		sb.append(" inner join participation.executor as executor");
-		sb.append(" inner join qualitydatacollection as collection on collection.key = survey.resId");
+		sb.append("       inner join participation.survey as survey");
+		sb.append("       inner join participation.executor as executor");
+		sb.append("       inner join qualitydatacollection as collection on collection.key = survey.resId");
+		sb.append("       left join collection.topicIdentity.user as user");
+		sb.append("       left join collection.topicOrganisation as organisation");
+		sb.append("       left join collection.topicCurriculum as curriculum");
+		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
+		sb.append("       left join collection.topicRepositoryEntry as repository");
 		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("   and executor.key = :executorKey");
 		

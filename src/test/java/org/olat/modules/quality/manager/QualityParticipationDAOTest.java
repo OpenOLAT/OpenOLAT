@@ -52,6 +52,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QualityParticipationDAOTest extends OlatTestCase {
+	
+	private static final TranslatorMock TRANSLATOR = new TranslatorMock();
 
 	@Autowired
 	private DB dbInstance;
@@ -197,7 +199,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.createParticipation(otherSurvey, identity);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(identity, 0, -1);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, identity, 0, -1);
 		
 		assertThat(participations).hasSize(2);
 		QualityExecutorParticipation participation = participations.get(0);
@@ -206,6 +208,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		assertThat(participation.getStart()).isNotNull();
 		assertThat(participation.getDeadline()).isNotNull();
 		assertThat(participation.getTitle()).isNotNull();
+		assertThat(participation.getTranslatedTopicType()).isNotNull();
+		assertThat(participation.getTopic()).isNotNull();
 	}
 	
 	@Test
@@ -217,7 +221,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(identity, 1, 1);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, identity, 1, 1);
 		
 		assertThat(participations).hasSize(1);
 	}
@@ -232,7 +236,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SortKey sortKey = new SortKey(ExecutorParticipationCols.title.name(), true);
-		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(identity, 0, -1, sortKey);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, identity, 0, -1, sortKey);
 		
 		assertThat(participations.get(0).getTitle()).isEqualTo("A");
 		assertThat(participations.get(1).getTitle()).isEqualTo("Z");
@@ -249,7 +253,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		for (ExecutorParticipationCols col: ExecutorParticipationCols.values()) {
 			if (!excludedCols.contains(col)) {
 				SortKey sortKey = new SortKey(col.name(), true);
-				sut.loadExecutorParticipations(identity, 0, -1, sortKey);
+				sut.loadExecutorParticipations(TRANSLATOR, identity, 0, -1, sortKey);
 			}
 		}
 		

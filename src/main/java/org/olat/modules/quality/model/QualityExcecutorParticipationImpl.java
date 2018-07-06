@@ -38,15 +38,20 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	private final Date start;
 	private final Date deadline;
 	private final String title;
+	private final String translatedTopicType;
+	private final String topic;
 	
 	public QualityExcecutorParticipationImpl(Long participationKey,
-			EvaluationFormParticipationStatus participationStatus, Date start, Date deadline, String title) {
+			EvaluationFormParticipationStatus participationStatus, Date start, Date deadline, String title,
+			String translatedTopicType, String topic) {
 		super();
 		this.participationKey = participationKey;
 		this.participationStatus = participationStatus;
 		this.start = start;
 		this.deadline = deadline;
 		this.title = title;
+		this.translatedTopicType = translatedTopicType;
+		this.topic = topic;
 	}
 	
 	@Override
@@ -78,6 +83,16 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	@Override
 	public String getTitle() {
 		return title;
+	}
+	
+	@Override
+	public String getTranslatedTopicType() {
+		return translatedTopicType;
+	}
+
+	@Override
+	public String getTopic() {
+		return topic;
 	}
 
 }

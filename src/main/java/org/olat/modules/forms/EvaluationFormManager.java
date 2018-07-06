@@ -84,6 +84,8 @@ public interface EvaluationFormManager {
 			EvaluationFormParticipationIdentifier identifier);
 
 	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation);
+	
+	public EvaluationFormParticipation loadParticipationByKey(EvaluationFormParticipationRef participationRef);
 
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor);
 

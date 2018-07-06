@@ -1,0 +1,32 @@
+<div class="o_qual_execute">
+	#if( $r.isNotNull($title) )
+		<h2>$title</h2>
+	#end
+	#if( $r.isNotNull($topic) )
+		<div class="panel panel-default">
+			<div class="panel-heading"><h4>$r.translate("executor.participation.topic.title")</h4></div>
+			<table class="table o_qual_context_table"><tbody>
+				<tr>
+					<th>#if($r.isNotNull($topic))$topicType#end</th>
+					<td>$topic</td>
+				</tr>
+			</tbody></table>
+		</div>
+	#end
+	#foreach($context in $contexts)
+		<div class="panel panel-default">
+			<div class="panel-heading"><h4>$context.role</h4></div>
+			<table class="table o_qual_context_table"><tbody>
+				#foreach($keyValue in $context.keyValues)
+					<tr>
+						<th>$keyValue.key</th>
+						<td>$keyValue.value</td>
+					</tr>
+				#end
+			</tbody></table>
+		</div>
+	#end
+	#if($r.available("execution"))
+		$r.render("execution")
+	#end
+</div>

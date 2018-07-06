@@ -55,8 +55,16 @@ public class ExecutorParticipationRow {
 		return participation.getDeadline();
 	}
 
-	public Object getTitle() {
+	public String getTitle() {
 		return participation.getTitle();
+	}
+	
+	public String getTranslatedtopicType() {
+		return participation.getTranslatedTopicType();
+	}
+	
+	public String getTopic() {
+		return participation.getTopic();
 	}
 
 }

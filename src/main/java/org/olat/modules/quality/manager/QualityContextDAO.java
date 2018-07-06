@@ -102,6 +102,22 @@ class QualityContextDAO {
 				.getResultList();
 	}
 
+	public List<QualityContext> loadByParticipation(EvaluationFormParticipationRef participationRef) {
+		if (participationRef == null || participationRef.getKey() == null) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append(" where context.evaluationFormParticipation.key = :participationKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("participationKey", participationRef.getKey())
+				.getResultList();
+	}
+
 	/**
 	 * Load the context by participation and no audience.
 	 * The returned list should have 0 or 1 entry, but it is safer to even load faulty entries.

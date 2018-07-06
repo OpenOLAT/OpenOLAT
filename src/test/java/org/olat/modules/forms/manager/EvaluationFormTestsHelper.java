@@ -55,6 +55,26 @@ public class EvaluationFormTestsHelper {
 	private EvaluationFormManager evaluationFormManager;
 
 	public void deleteAll() {
+		// quality management
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttocurriculum")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttocurriculumelement")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttoorganisation")
+					.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from contexttotaxonomylevel")
+					.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitycontext")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitydatacollection")
+				.executeUpdate();
+		// evaluation forms
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from evaluationformresponse")
 				.executeUpdate();

@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityService;
@@ -42,12 +43,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<ExecutorParticipationRow> {
 	
-	private Identity executor;
+	private final Translator translator;
+	private final Identity executor;
 	
 	@Autowired
 	private QualityService qualityService;
 	
-	public ExecutorParticipationDataSource(Identity executor) {
+	public ExecutorParticipationDataSource(Translator translator, Identity executor) {
+		this.translator = translator;
 		this.executor = executor;
 		CoreSpringFactory.autowireObject(this);
 	}
@@ -66,8 +69,8 @@ class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<Ex
 	public ResultInfos<ExecutorParticipationRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
-		List<QualityExecutorParticipation> participations = qualityService.loadExecutorParticipations(executor,
-				firstResult, maxResults, orderBy);
+		List<QualityExecutorParticipation> participations = qualityService.loadExecutorParticipations(translator,
+				executor, firstResult, maxResults, orderBy);
 		List<ExecutorParticipationRow> rows = new ArrayList<>();
 		for (QualityExecutorParticipation participation : participations) {
 			rows.add(new ExecutorParticipationRow(participation));

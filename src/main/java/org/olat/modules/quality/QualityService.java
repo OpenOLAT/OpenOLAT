@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -84,8 +85,8 @@ public interface QualityService {
 
 	public int getExecutorParticipationCount(IdentityRef executor);
 
-	public List<QualityExecutorParticipation> loadExecutorParticipations(IdentityRef executor, int firstResult,
-			int maxResults, SortKey[] orderBy);
+	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator, IdentityRef executor,
+			int firstResult, int maxResults, SortKey[] orderBy);
 
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation participation);
@@ -115,6 +116,8 @@ public interface QualityService {
 	 */
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation participation, CurriculumElement curriculumElement, CurriculumRoles role);
+	
+	public List<QualityContext> loadContextByParticipation(EvaluationFormParticipationRef participationRef);
 
 	public void deleteContext(QualityContextRef contextRef);
 

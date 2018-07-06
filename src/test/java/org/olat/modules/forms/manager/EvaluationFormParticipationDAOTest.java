@@ -115,6 +115,21 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadByKey() {
+		String identifierKey = UUID.randomUUID().toString();
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
+				identifierKey);
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(identifierKey);
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, executor);
+		dbInstance.commit();
+		
+		EvaluationFormParticipation loadedParticipation = sut.loadByKey(participation);
+		
+		assertThat(loadedParticipation).isEqualTo(participation);
+	}
+	
+	@Test
 	public void shouldLoadBySurveyAndExecutor() {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,

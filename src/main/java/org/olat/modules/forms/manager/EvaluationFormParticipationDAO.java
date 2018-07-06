@@ -89,6 +89,21 @@ class EvaluationFormParticipationDAO {
 		participationImpl.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(participationImpl);
 	}
+
+	EvaluationFormParticipation loadByKey(EvaluationFormParticipationRef participationRef) {
+		if (participationRef == null || participationRef.getKey() == null) return null;
+		
+		StringBuilder query = new StringBuilder();
+		query.append("select participation from evaluationformparticipation as participation");
+		query.append(" inner join fetch participation.survey survey");
+		query.append(" where participation.key=:key");
+
+		List<EvaluationFormParticipation> participations = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), EvaluationFormParticipation.class)
+				.setParameter("key", participationRef.getKey())
+				.getResultList();
+		return participations.isEmpty() ? null : participations.get(0);
+	}
 	
 	EvaluationFormParticipation loadByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
 		if (survey == null || executor == null) return null;
