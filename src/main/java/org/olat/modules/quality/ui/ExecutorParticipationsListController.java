@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,6 +37,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorParticipationCols;
@@ -45,8 +53,9 @@ import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorPartic
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ExecutorParticipationsListController extends FormBasicController {
+public class ExecutorParticipationsListController extends FormBasicController implements Activateable2 {
 
+	private static final String ORES_EXECUTION_TYPE = "execution";
 	private static final String CMD_EXECUTE = "execute";
 	
 	private ExecutorParticipationDataModel dataModel;
@@ -87,6 +96,34 @@ public class ExecutorParticipationsListController extends FormBasicController {
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if (ORES_EXECUTION_TYPE.equals(type)) {
+			Long key = entry.getOLATResourceable().getResourceableId();
+			ExecutorParticipationRow row = dataModel.getObjectByParticipationKey(key);
+			if (row == null) {
+				dataModel.load(null, null, null, 0, -1);
+				row = dataModel.getObjectByParticipationKey(key);
+				if (row != null) {
+					doExecute(ureq, row.getParticipation());
+					int index = dataModel.getObjects().indexOf(row);
+					if (index >= 1 && tableEl.getPageSize() > 1) {
+						int page = index / tableEl.getPageSize();
+						tableEl.setPage(page);
+					}
+				} else {
+					showInfo("executor.participation.forbidden");
+				}
+			} else {
+				doExecute(ureq, row.getParticipation());
+			}
+		}
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl) {
 			if (event instanceof SelectionEvent) {
@@ -104,10 +141,12 @@ public class ExecutorParticipationsListController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl && event == Event.DONE_EVENT) {
+			addToHistory(ureq, this);
 			fullLayoutCtrl.deactivate();
 			cleanUp();
 			tableEl.reloadData();
 		} if (source == fullLayoutCtrl) {
+			addToHistory(ureq, this);
 			fullLayoutCtrl.deactivate();
 			cleanUp();
 			tableEl.reloadData();
@@ -123,7 +162,16 @@ public class ExecutorParticipationsListController extends FormBasicController {
 	}
 
 	private void doExecute(UserRequest ureq, QualityExecutorParticipation participation) {
-		executionCtrl = new ExecutionController(ureq, getWindowControl(), participation);
+		if (EvaluationFormParticipationStatus.done.equals(participation.getParticipationStatus())) {
+			showInfo("executor.participation.already.done", participation.getTitle());
+			return;
+		}
+		
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_EXECUTION_TYPE,
+				participation.getParticipationRef().getKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		executionCtrl = new ExecutionController(ureq, bwControl, participation);
 		listenTo(executionCtrl);
 		
 		fullLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null,

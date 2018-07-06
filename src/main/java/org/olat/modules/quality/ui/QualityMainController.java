@@ -90,6 +90,8 @@ public class QualityMainController extends MainLayoutBasicController implements 
 		if (ORES_MY_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())) {
 			doOpenUserParticipations(ureq);
 			segmentView.select(executorParticipationLink);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			executorParticipationListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if (ORES_DATA_COLLECTIONS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())) {
 			if (secCallback.canViewDataCollections()) {
 				doOpenDataCollection(ureq);

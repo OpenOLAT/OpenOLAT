@@ -38,9 +38,12 @@ public class ExecutorParticipationRow {
 		this.participation = participation;
 	}
 	
-
 	public QualityExecutorParticipation getParticipation() {
 		return participation;
+	}
+	
+	public Long getParticipationKey() {
+		return participation.getParticipationRef().getKey();
 	}
 
 	public EvaluationFormParticipationStatus getParticipationStatus() {

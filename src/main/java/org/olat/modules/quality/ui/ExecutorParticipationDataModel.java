@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
@@ -45,6 +46,15 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 		this.locale = locale;
 	}
 	
+	public ExecutorParticipationRow getObjectByParticipationKey(Long key) {
+		List<ExecutorParticipationRow> rows = getObjects();
+		for (ExecutorParticipationRow row: rows) {
+			if (row != null && row.getParticipationKey().equals(key)) {
+				return row;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
