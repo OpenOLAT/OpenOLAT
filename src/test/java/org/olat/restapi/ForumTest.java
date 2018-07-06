@@ -56,7 +56,9 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -75,6 +77,7 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ForumTest extends OlatJerseyTestCase {
 	
 	private static Forum forum;
