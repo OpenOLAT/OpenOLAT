@@ -370,7 +370,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (ureq != null) {
 			allChats = ureq.getUserSession().getChats();
 		}
-		if (allChats == null || allChats.size() == 0) {
+		if (allChats == null || allChats.isEmpty()) {
 			startButton.setEnabled (true);
 			mainVC.contextPut("hasChatWindowOpen", false);
 		} else {
@@ -522,10 +522,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					if(!displayCtrl.isResultsVisible()) {
 						doExitAssessment(ureq, event, true);
 						initAssessment(ureq);
+						fireEvent(ureq, Event.CHANGED_EVENT);
 					}
 				} else if(QTI21Event.CLOSE_RESULTS.equals(qe.getCommand())) {
 					doExitAssessment(ureq, event, true);
 					initAssessment(ureq);
+					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
 		}

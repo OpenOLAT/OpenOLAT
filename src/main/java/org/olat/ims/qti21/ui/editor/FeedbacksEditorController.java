@@ -51,6 +51,7 @@ import org.olat.ims.qti21.model.xml.ModalFeedbackCondition;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback.Answer;
 import org.olat.ims.qti21.model.xml.TestFeedbackBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -120,7 +121,9 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		addCorrectSolutionButton.setVisible(enable.isEnabled(ModalFeedbackType.correctSolution));
 		dropdownEl.addElement(addCorrectSolutionButton);
 		
-		addCorrectButton = uifactory.addFormLink("add.correct.feedback", formLayout, Link.LINK);
+		boolean sc = (itemBuilder instanceof SingleChoiceAssessmentItemBuilder);
+		String addCorrectLabel = "add.correct.feedback" + (sc ? ".single" : "");
+		addCorrectButton = uifactory.addFormLink("add.correct.feedback", addCorrectLabel, null, formLayout, Link.LINK);
 		addCorrectButton.setElementCssClass("o_sel_add_correct");
 		addCorrectButton.setVisible(enable.isEnabled(ModalFeedbackType.correct));
 		dropdownEl.addElement(addCorrectButton);
@@ -321,7 +324,12 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			formLayout = FormLayoutContainer.createDefaultFormLayout_2_10(feedbackType.name(), getTranslator());
 			parentFormLayout.add(formLayout);
 			formLayout.setRootForm(mainForm);
-			formLayout.setFormTitle(translate("form.imd." + feedbackType.name() + ".text"));
+			
+			String formTitle = "form.imd." + feedbackType.name();
+			if(feedbackType == ModalFeedbackType.correct && itemBuilder instanceof SingleChoiceAssessmentItemBuilder) {
+				formTitle += ".single";
+			}
+			formLayout.setFormTitle(translate(formTitle + ".text"));
 			
 			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
 			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
@@ -335,7 +343,12 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			textEl.setEnabled(!restrictedEdit && !readOnly);
 			textEl.setVisible(!restrictedEdit && !readOnly);
-			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
+			
+			String helpText = "feedback." + feedbackType.name();
+			if(feedbackType == ModalFeedbackType.correct && itemBuilder instanceof SingleChoiceAssessmentItemBuilder) {
+				helpText += ".single";
+			}
+			textEl.setHelpTextKey(helpText + ".help", null);
 			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
