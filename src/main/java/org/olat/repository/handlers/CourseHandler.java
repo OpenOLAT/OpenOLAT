@@ -339,7 +339,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, null,
-				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, RepositoryEntry.ACC_OWNERS);
 
 		// set the new shared folder reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
@@ -373,7 +373,7 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner,
-				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, RepositoryEntry.ACC_OWNERS);
 
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
