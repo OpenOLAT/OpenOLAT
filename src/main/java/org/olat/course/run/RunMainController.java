@@ -876,8 +876,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if(entries.size() > 1) {
 					entries = entries.subList(1, entries.size());
 				}
-				updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
-			} else if (currentCourseNode.equals(cn)) {
+				currentCourseNode = updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
+			} else {
 				// consume our entry
 				if(entries.size() > 1) {
 					entries = entries.subList(1, entries.size());
