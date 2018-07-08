@@ -77,7 +77,6 @@ public class DataCollectionListController extends FormBasicController implements
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController formSearchCtrl;
 	private DataCollectionDeleteConfirmationController deleteConfirmationCtrl;
-	private DataCollectionController dataCollectionCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	
@@ -165,16 +164,14 @@ public class DataCollectionListController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				String cmd = se.getCommand();
-				DataCollectionRow row = dataModel.getObject(se.getIndex());
-				if (CMD_EDIT.equals(cmd)) {
-					doEditDataCollection(ureq, row.getDataCollection());
-				} else if (CMD_DELETE.equals(cmd)) {
-					doConfirmDeleteDataCollection(ureq, row.getDataCollection());
-				}
+		if (source == tableEl && event instanceof SelectionEvent) {
+			SelectionEvent se = (SelectionEvent)event;
+			String cmd = se.getCommand();
+			DataCollectionRow row = dataModel.getObject(se.getIndex());
+			if (CMD_EDIT.equals(cmd)) {
+				doEditDataCollection(ureq, row.getDataCollection());
+			} else if (CMD_DELETE.equals(cmd)) {
+				doConfirmDeleteDataCollection(ureq, row.getDataCollection());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -184,12 +181,8 @@ public class DataCollectionListController extends FormBasicController implements
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(createDataCollectionLink == source) {
 			doSelectEvaluationForm(ureq);
-		} else if (stackPanel == source) {
-			if (event instanceof PopEvent) {
-				if (stackPanel.getLastController() == this) {
-					tableEl.reset(true, false, true);
-				}
-			}
+		} else if (stackPanel == source && event instanceof PopEvent && stackPanel.getLastController() == this) {
+			tableEl.reset(true, false, true);
 		}
 		super.event(ureq, source, event);
 	}
@@ -241,7 +234,7 @@ public class DataCollectionListController extends FormBasicController implements
 	
 	private void doEditDataCollection(UserRequest ureq, QualityDataCollectionLight dataCollection) {
 		WindowControl bwControl = addToHistory(ureq, dataCollection, null);
-		dataCollectionCtrl = new DataCollectionController(ureq, bwControl, secCallback, stackPanel,
+		DataCollectionController dataCollectionCtrl = new DataCollectionController(ureq, bwControl, secCallback, stackPanel,
 				dataCollection);
 		String title = dataCollection.getTitle();
 		stackPanel.pushController(Formatter.truncate(title, 50), dataCollectionCtrl);

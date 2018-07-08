@@ -144,17 +144,18 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl && event == Event.DONE_EVENT) {
-			addToHistory(ureq, this);
-			fullLayoutCtrl.deactivate();
-			cleanUp();
-			tableEl.reloadData();
-		} if (source == fullLayoutCtrl) {
-			addToHistory(ureq, this);
-			fullLayoutCtrl.deactivate();
-			cleanUp();
-			tableEl.reloadData();
+			doDeactivateExecution(ureq);
+		} else if (source == fullLayoutCtrl) {
+			doDeactivateExecution(ureq);
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doDeactivateExecution(UserRequest ureq) {
+		addToHistory(ureq, this);
+		fullLayoutCtrl.deactivate();
+		cleanUp();
+		tableEl.reloadData();
 	}
 	
 	private void cleanUp() {
