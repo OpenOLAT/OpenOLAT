@@ -19,32 +19,50 @@
  */
 package org.olat.modules.quality;
 
+import java.util.Arrays;
+
+import org.olat.core.gui.translator.Translator;
+
 /**
  * 
- * Initial date: 08.06.2018<br>
+ * Initial date: 09.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualitySecurityCallback {
+public enum QualityReminderTo {
+	
+	ALL("reminder.send.to.all"),
+	PENDING("reminder.send.to.pending"),
+	DONE("reminder.send.to.done");
 
-	public boolean canViewDataCollections();
+	private final String i18nKey;
 	
-	public boolean canEditDataCollections();
+	private QualityReminderTo(String i18nKey) {
+		this.i18nKey = i18nKey;
+	}
 	
-	public boolean canUpdateStart(QualityDataCollectionLight dataCollection);
-	
-	public boolean canUpdateDeadline(QualityDataCollectionLight dataCollection);
-	
-	public boolean canDeleteDataCollections();
-	
-	public boolean canDeleteDataCollection(QualityDataCollectionLight dataCollection);
-	
-	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection);
-	
-	public boolean canEditReminders();
+	public String getI18nKey() {
+		return i18nKey;
+	}
 
-	public boolean canEditReminder(QualityReminder reminder);
+	public String getKey() {
+		return name();
+	}
+	
+	public static QualityReminderTo getEnum(String key) {
+		return QualityReminderTo.valueOf(key);
+	}
 
-	public boolean canExecute(QualityExecutorParticipation participation);
-
+	public static String[] getKeys() {
+		return Arrays.stream(QualityReminderTo.values())
+				.map(QualityReminderTo::name)
+				.toArray(String[]::new);
+	}
+	
+	public static String[] getValues(Translator translator) {
+		return Arrays.stream(QualityReminderTo.values())
+				.map(type -> type.getI18nKey())
+				.map(i18n -> translator.translate(i18n))
+				.toArray(String[]::new);
+	}
 }

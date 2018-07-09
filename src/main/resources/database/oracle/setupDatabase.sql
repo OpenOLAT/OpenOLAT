@@ -1865,6 +1865,19 @@ create table o_qual_context_to_tax_level (
    primary key (id)
 );
 
+create table o_qual_reminder (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   q_sent bool number default 0,
+   q_send_date date,
+   q_to varchar2(64),
+   q_subject varchar2(1024),
+   q_body CLOB,
+   fk_data_collection number(20) not null,
+   primary key (id)
+);
+
 -- question pool
 create table o_qp_pool (
    id number(20) not null,
@@ -3491,6 +3504,9 @@ create unique index idx_con_to_cur_ele_ele_idx on o_qual_context_to_cur_element 
 alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con_idx foreign key (fk_context) references o_qual_context (id);
 create index idx_con_to_tax_level_con_idx on o_qual_context_to_tax_level (fk_context);
 create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
+
+alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+create index idx_rem_to_data_collection_idx on o_qual_reminder (fk_data_collection);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

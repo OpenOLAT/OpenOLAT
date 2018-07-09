@@ -1833,6 +1833,19 @@ create table o_qual_context_to_tax_level (
    primary key (id)
 );
 
+create table o_qual_reminder (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_sent bool default false,
+   q_send_date timestamp,
+   q_to varchar(64),
+   q_subject varchar(1024),
+   q_body text,
+   fk_data_collection bigint not null,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id int8 not null,
@@ -3390,6 +3403,10 @@ create unique index idx_con_to_cur_ele_ele_idx on o_qual_context_to_cur_element 
 alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con_idx foreign key (fk_context) references o_qual_context (id);
 create index idx_con_to_tax_level_con_idx on o_qual_context_to_tax_level (fk_context);
 create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
+
+alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+create index idx_rem_to_data_collection_idx on o_qual_reminder (fk_data_collection);
+
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

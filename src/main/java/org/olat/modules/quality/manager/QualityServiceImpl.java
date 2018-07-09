@@ -46,6 +46,7 @@ import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityParticipation;
+import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,8 @@ public class QualityServiceImpl implements QualityService {
 	private QualityContextToTaxonomyLevelDAO contextToTaxonomyLevelDao;
 	@Autowired
 	private QualityParticipationDAO participationDao;
+	@Autowired
+	private QualityReminderDAO reminderDao;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
@@ -109,6 +112,10 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public void deleteDataCollection(QualityDataCollectionLight dataCollection) {
+		List<QualityReminder> reminders = reminderDao.loadByDataCollection(dataCollection);
+		for (QualityReminder reminder : reminders) {
+			deleteReminder(reminder);
+		}
 		List<QualityContext> contexts = contextDao.loadByDataCollection(dataCollection);
 		for (QualityContext context: contexts) {
 			deleteContext(context);
@@ -217,6 +224,34 @@ public class QualityServiceImpl implements QualityService {
 				evaluationFormManager.deleteParticipations(Collections.singletonList(participationRef));
 			}
 		}
+	}
+
+	@Override
+	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef) {
+		return reminderDao.create(dataCollectionRef);
+	}
+
+	@Override
+	public QualityReminder saveReminder(QualityReminder reminder) {
+		return reminderDao.save(reminder);
+	}
+
+	@Override
+	public List<QualityReminder> loadReminders(QualityDataCollectionRef dataCollectionRef) {
+		return reminderDao.loadByDataCollection(dataCollectionRef);
+	}
+
+	@Override
+	public void deleteReminder(QualityReminder reminder) {
+		reminderDao.delete(reminder);
+	}
+
+	@Override
+	public QualityReminder sendReminder(QualityReminder reminder) {
+		// TODO uh Auto-generated method stub
+		reminder.setSent(true);
+		reminder = reminderDao.save(reminder);
+		return reminder;
 	}
 
 }

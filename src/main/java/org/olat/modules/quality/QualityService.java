@@ -129,4 +129,14 @@ public interface QualityService {
 	 */
 	public void deleteContextsAndParticipations(Collection<QualityContextRef> contextRefs);
 
+	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef);
+
+	public QualityReminder saveReminder(QualityReminder reminder);
+
+	public List<QualityReminder> loadReminders(QualityDataCollectionRef dataCollectionRef);
+
+	public void deleteReminder(QualityReminder reminder);
+
+	public QualityReminder sendReminder(QualityReminder reminder);
+
 }

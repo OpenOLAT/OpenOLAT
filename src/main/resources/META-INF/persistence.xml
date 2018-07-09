@@ -220,6 +220,7 @@
 		<class>org.olat.modules.quality.model.QualityContextToOrganisationImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.quality.model.QualityDataCollectionImpl</class>
+		<class>org.olat.modules.quality.model.QualityReminderImpl</class>
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>
 		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>

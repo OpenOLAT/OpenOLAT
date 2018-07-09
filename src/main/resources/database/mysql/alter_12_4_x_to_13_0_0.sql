@@ -302,12 +302,26 @@ create table o_qual_context_to_tax_level (
    primary key (id)
 );
 
+create table o_qual_reminder (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_sent bit default 0 not null,
+   q_send_date datetime,
+   q_to varchar(64),
+   q_subject varchar(1024),
+   q_body mediumtext,
+   fk_data_collection bigint not null,
+   primary key (id)
+);
+
 alter table o_qual_data_collection ENGINE = InnoDB;
 alter table o_qual_context ENGINE = InnoDB;
 alter table o_qual_context_to_organisation ENGINE = InnoDB;
 alter table o_qual_context_to_curriculum ENGINE = InnoDB;
 alter table o_qual_context_to_cur_element ENGINE = InnoDB;
 alter table o_qual_context_to_tax_level ENGINE = InnoDB;
+alter table o_qual_reminder ENGINE = InnoDB;
 
 alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
@@ -324,6 +338,8 @@ create unique index idx_con_to_cur_ele_ele_idx on o_qual_context_to_cur_element 
 
 alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con_idx foreign key (fk_context) references o_qual_context (id);
 create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
+
+alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 
 
 -- membership

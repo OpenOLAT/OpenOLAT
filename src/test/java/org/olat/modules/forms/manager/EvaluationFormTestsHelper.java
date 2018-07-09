@@ -57,6 +57,9 @@ public class EvaluationFormTestsHelper {
 	public void deleteAll() {
 		// quality management
 		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualityreminder")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from contexttocurriculum")
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager()
