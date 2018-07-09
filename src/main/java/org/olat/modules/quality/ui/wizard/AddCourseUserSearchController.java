@@ -31,6 +31,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.Util;
+import org.olat.modules.quality.ui.ParticipationListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 
@@ -47,6 +49,7 @@ public class AddCourseUserSearchController extends StepFormBasicController {
 
 	public AddCourseUserSearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "user_course_add_search");
+		setTranslator(Util.createPackageTranslator(ParticipationListController.class, getLocale(), getTranslator()));
 
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[] { "CourseModule" }, translate("participation.user.course.add.choose"),
