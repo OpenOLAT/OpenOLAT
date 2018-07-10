@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -165,7 +164,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 
 		//all members
-		List<Identity> members = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup);
+		List<Identity> members = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup,
+				GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
 		Assert.assertNotNull(members);
 		Assert.assertEquals(2, members.size());
 		Assert.assertTrue(members.contains(id1));
@@ -182,6 +182,19 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, participants.size());
 		Assert.assertEquals(1, numOfParticipants);
 		Assert.assertTrue(participants.contains(id2));
+	}
+	
+	@Test
+	public void getMembers_defaultGroup() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("owner-1-");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(owner, "Rei Ayanami", "rel", "rel", null, null, 0, defOrganisation);
+		dbInstance.commit();
+		
+		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+		Assert.assertNotNull(owners);
+		Assert.assertEquals(1, owners.size());
+		Assert.assertTrue(owners.contains(owner));
 	}
 	
 	@Test
@@ -329,8 +342,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isMember() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re);
 	    businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
@@ -346,13 +359,13 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isMember_v2() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-1-lc-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-2-lc-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-3-lc-" + UUID.randomUUID().toString());
-		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-4-lc-" + UUID.randomUUID().toString());
-		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-5-lc-" + UUID.randomUUID().toString());
-		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-6-lc-" + UUID.randomUUID().toString());
-		Identity idNull = JunitTestHelper.createAndPersistIdentityAsUser("re-is-member-null-lc-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-1-lc-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-2-lc-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-3-lc-");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-4-lc-");
+		Identity id5 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-5-lc-");
+		Identity id6 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-6-lc-");
+		Identity idNull = JunitTestHelper.createAndPersistIdentityAsRndUser("re-is-member-null-lc-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "member-1-g", "tg", null, null, false, false, re);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "member-2-g", "tg", null, null, false, false, re);
@@ -392,7 +405,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void filterMembership() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "memberg", "tg", null, null, false, false, re1);
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
@@ -425,7 +438,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void countRelations() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 
@@ -519,9 +532,9 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void removeMembers() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-3-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-rm-1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-rm-2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-rm-3-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
@@ -535,7 +548,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertTrue(removed);
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> members = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup);
+		List<Identity> members = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup,
+				GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
 		Assert.assertNotNull(members);
 	    Assert.assertEquals(1, members.size());
 	    Assert.assertTrue(members.contains(id1));
@@ -543,7 +557,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void removeRelation_specificOne() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 
@@ -566,7 +580,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void removeRelations_repositoryEntrySide() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 
@@ -589,7 +603,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void removeRelation_byGroup() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
 
