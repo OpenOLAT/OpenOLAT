@@ -154,12 +154,14 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 
 		//all members
 		List<Identity> members = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup);
-		int numOfMembers = repositoryEntryRelationDao.countMembers(re);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(2, members.size());
-		Assert.assertEquals(2, numOfMembers);
 		Assert.assertTrue(members.contains(id1));
 		Assert.assertTrue(members.contains(id2));
+		
+		// owner
+		int numOfOwners = repositoryEntryRelationDao.countMembers(re, GroupRoles.owner.name());
+		Assert.assertEquals(1, numOfOwners);
 		
 		//participant
 		List<Identity> participants = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());

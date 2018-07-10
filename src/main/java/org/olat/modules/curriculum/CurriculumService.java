@@ -347,6 +347,13 @@ public interface CurriculumService {
 	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
 	
 	/**
+	 * Remove the repository entry from all the curriculum elements.
+	 * 
+	 * @param entry
+	 */
+	public void removeRepositoryEntry(RepositoryEntry entry);
+	
+	/**
 	 * The list of taxonomy levels of the curriculum element.
 	 * 
 	 * @param element The curriculum element

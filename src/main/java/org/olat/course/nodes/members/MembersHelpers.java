@@ -72,8 +72,7 @@ public class MembersHelpers {
 			list.addAll(retrieveCoachesFromAreas(coachAreaKeys, cgm));
 		}
 		
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE
-				, MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
+		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE, MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
 			list.addAll(retrieveCoachesFromCourse(cgm));
 		}
 		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
@@ -83,32 +82,22 @@ public class MembersHelpers {
 	
 	public static List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
 		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
-		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
-		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
-		return coaches;
+		return new ArrayList<>(new HashSet<>(coaches));
 	}
 	
 	public static List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
-		List<Identity> coaches = new ArrayList<Identity>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
-		return coaches;
+		return new ArrayList<>(new HashSet<>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 	}
 	
 	public static List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
-		List<Identity> coaches = cgm.getCoaches();
-		return coaches;
+		return cgm.getCoaches();
 	}
 
 	public static List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
-		Set<Identity> uniq = new HashSet<Identity>();
-		{
-			List<Identity> coaches = cgm.getCoachesFromAreas();
-			uniq.addAll(coaches);
-		}
-		{
-			List<Identity> coaches = cgm.getCoachesFromBusinessGroups();
-			uniq.addAll(coaches);
-		}
-		return new ArrayList<Identity>(uniq);
+		Set<Identity> uniq = new HashSet<>();
+		uniq.addAll(cgm.getCoachesFromAreas());
+		uniq.addAll(cgm.getCoachesFromBusinessGroups());
+		return new ArrayList<>(uniq);
 	}
 	
 	// -----------------------------------------------------
@@ -143,31 +132,21 @@ public class MembersHelpers {
 	}
 	
 	public static List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
-		List<Identity> participiants = cgm.getParticipantsFromAreas(areaKeys);
-		return participiants;
+		return cgm.getParticipantsFromAreas(areaKeys);
 	}
 	
 	public static List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
-		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
-		return participiants;
+		return cgm.getParticipantsFromBusinessGroups(groupKeys);
 	}
 	
 	public static List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
-		List<Identity> participiants = cgm.getParticipants();
-		return participiants;
+		return cgm.getParticipants();
 	}
 	
 	public static List<Identity> retrieveParticipantsFromCourseGroups(CourseGroupManager cgm) {
-		Set<Identity> uniq = new HashSet<Identity>();
-		{
-			List<Identity> participiants = cgm.getParticipantsFromAreas();
-			uniq.addAll(participiants);
-		}
-		{
-			List<Identity> participiants = cgm.getParticipantsFromBusinessGroups();
-			uniq.addAll(participiants);
-		}
-		return new ArrayList<Identity>(uniq);
+		Set<Identity> uniq = new HashSet<>();
+		uniq.addAll(cgm.getParticipantsFromAreas());
+		uniq.addAll(cgm.getParticipantsFromBusinessGroups());
+		return new ArrayList<>(uniq);
 	}
-	
 }

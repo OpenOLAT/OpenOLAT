@@ -380,6 +380,14 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public void removeRepositoryEntry(RepositoryEntry entry) {
+		List<CurriculumElement> elements = curriculumRepositoryEntryRelationDao.getCurriculumElements(entry);
+		for(CurriculumElement element:elements) {
+			repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
+		}
+	}
+
+	@Override
 	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
 		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
 	}

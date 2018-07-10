@@ -54,8 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersCourseNodeRunController extends BasicController {
 	
-	private List<Identity> owners, coaches, participants;
-
+	
 	private MembersDisplayRunController membersDisplayRunController;
 	
 	@Autowired
@@ -69,9 +68,10 @@ public class MembersCourseNodeRunController extends BasicController {
 		super(ureq, wControl);
 		
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
-		
-		this.coaches = new ArrayList<>();
-		this.participants = new ArrayList<>();
+
+		List<Identity> owners;
+		List<Identity> coaches = new ArrayList<>();
+		List<Identity> participants = new ArrayList<>();
 
 		boolean showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
 		

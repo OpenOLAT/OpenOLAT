@@ -63,6 +63,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.reminder.manager.ReminderDAO;
@@ -451,6 +452,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		//detach portfolio if there are some lost
 		CoreSpringFactory.getImpl(PortfolioService.class).detachCourseFromBinders(entry);
 		dbInstance.commit();
+		//detach from curriculum
+		CoreSpringFactory.getImpl(CurriculumService.class).removeRepositoryEntry(entry);
+		dbInstance.commit();
 
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable a swell.
@@ -616,10 +620,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public int countMembers(RepositoryEntryRef re, String... roles) {
-		return reToGroupDao.countMembers(re, roles);
+	public int countMembers(RepositoryEntryRef re, String role) {
+		return reToGroupDao.countMembers(re, role);
 	}
-
 
 	@Override
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {
@@ -653,10 +656,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public List<Identity> getIdentitiesWithRole(String role) {
-		long start = System.nanoTime();
-		List<Identity> ids = reToGroupDao.getIdentitiesWithRole(role);
-		CodeHelper.printNanoTime(start, "Repository ids with role");
-		return ids;
+		return reToGroupDao.getIdentitiesWithRole(role);
 	}
 
 	@Override
