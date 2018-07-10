@@ -415,14 +415,14 @@ public class CourseConfig implements Serializable, Cloneable {
 	}
 	
 	public void setSharedFolderReadOnlyMount(boolean mount) {
-		configuration.put(KEY_SHAREDFOLDER_READONLY, new Boolean(mount));
+		configuration.put(KEY_SHAREDFOLDER_READONLY, Boolean.valueOf(mount));
 	}
 
 	/**
 	 * @param b
 	 */
 	public void setEfficencyStatementIsEnabled(boolean b) {
-		configuration.put(KEY_EFFICENCY_ENABLED, new Boolean(b));
+		configuration.put(KEY_EFFICENCY_ENABLED, Boolean.valueOf(b));
 	}
 
 	/**

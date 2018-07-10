@@ -309,15 +309,16 @@ public class AuthHelper {
 		setRolesFor(identity, usess);
 
 		// check if loginDenied or maxSession (only for non-admin)
-		if ( (loginBlocked && !usess.getRoles().isOLATAdmin())
-				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (sessionManager.getUserSessionsCnt() >= maxSessions)) && !usess.getRoles().isOLATAdmin() ) ) {
+		if ( (loginBlocked && !usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin())
+				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (sessionManager.getUserSessionsCnt() >= maxSessions))
+						&& !usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin())) {
 			log.audit("Login was blocked for identity=" + usess.getIdentity().getKey() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
 			sessionManager.signOffAndClear(usess);
 			return LOGIN_NOTAVAILABLE;
 		}
 
 		//need to block the all things for assessment?
-		if(usess.getRoles() != null && usess.getRoles().isOLATAdmin()) {
+		if(usess.getRoles() != null && (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin())) {
 			usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
 		} else {
 			AssessmentModule assessmentModule = CoreSpringFactory.getImpl(AssessmentModule.class);

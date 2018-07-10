@@ -47,10 +47,9 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 		UserSession usess = ureq.getUserSession();
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())
 				|| (!usess.getRoles().isGuestOnly() && !usess.getRoles().isInvitee())) {
-			CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-			if(usess.getRoles().isOLATAdmin() 
-					|| usess.getRoles().isUserManager()
-					|| coachingService.isCoach(ureq.getIdentity())) {
+			if(usess.getRoles().isAdministrator() 
+					|| usess.getRoles().isUserManager() || usess.getRoles().isRolesManager()
+					|| CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity())) {
 				return new CoachSite(this, ureq.getLocale());
 			}
 		}

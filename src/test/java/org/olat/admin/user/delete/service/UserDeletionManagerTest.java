@@ -120,7 +120,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(identity);
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(username, course.getInitialAuthor());
-		Assert.assertTrue(repositoryService.hasRole(identity, false, GroupRoles.owner.name()));
+		Assert.assertTrue(repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name()));
 		
 		//delete the identity
 		userDeletionManager.deleteIdentity(identity, null);
@@ -146,7 +146,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		Assert.assertFalse(isMember);
 		RepositoryEntry reloadedCourse = repositoryService.loadByKey(course.getKey());
 		Assert.assertFalse(reloadedCourse.getInitialAuthor().equals(username));
-		boolean isOwner = repositoryService.hasRole(identity, false, GroupRoles.owner.name());
+		boolean isOwner = repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name());
 		Assert.assertFalse(isOwner);
 		
 		User deletedUser = deletedIdentity.getUser();

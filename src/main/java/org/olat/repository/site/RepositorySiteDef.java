@@ -61,7 +61,7 @@ public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDef
 		}
 		
 		Roles roles = usess.getRoles();
-		if(roles.isOLATAdmin() || roles.isAuthor() || roles.isLearnResourceManager()) {
+		if(roles.isAdministrator() || roles.isAuthor() || roles.isLearnResourceManager()) {
 			// only for authors and institutional resource managers
 			return new RepositorySite(this, ureq.getLocale());
 		}

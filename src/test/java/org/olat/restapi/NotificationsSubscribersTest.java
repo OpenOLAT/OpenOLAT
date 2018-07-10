@@ -91,7 +91,7 @@ public class NotificationsSubscribersTest extends OlatJerseyTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//find the forum
-		IdentityEnvironment ienv = new IdentityEnvironment(id1, new Roles(false, false, false, false, false, false, false));
+		IdentityEnvironment ienv = new IdentityEnvironment(id1, Roles.userRoles());
 		ForumVisitor forumVisitor = new ForumVisitor(course);
 		new CourseTreeVisitor(course, ienv).visit(forumVisitor, new VisibleTreeFilter());
 		FOCourseNode courseNode = forumVisitor.firstNode;
@@ -152,7 +152,7 @@ public class NotificationsSubscribersTest extends OlatJerseyTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//find the forum
-		IdentityEnvironment ienv = new IdentityEnvironment(id1, new Roles(false, false, false, false, false, false, false));
+		IdentityEnvironment ienv = new IdentityEnvironment(id1, Roles.userRoles());
 		ForumVisitor forumVisitor = new ForumVisitor(course);
 		new CourseTreeVisitor(course, ienv).visit(forumVisitor, new VisibleTreeFilter());
 		FOCourseNode courseNode = forumVisitor.firstNode;

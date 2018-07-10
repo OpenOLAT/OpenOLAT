@@ -68,7 +68,7 @@ public class LinksPortletRunController extends BasicController {
 		initOrUpdatePortletView(ureq);
 		
 		//edit link
-		if (ureq.getUserSession().getRoles().isOLATAdmin()){
+		if (ureq.getUserSession().getRoles().isAdministrator()){
 			editButton = LinkFactory.createButtonXSmall("editor.button", portletVC, this);
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
@@ -93,7 +93,7 @@ public class LinksPortletRunController extends BasicController {
 		String inst = new String();
 		if(!isGuest) inst = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, getLocale());
 		
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		
 		// Inhalt verarbeiten
 		Map<String, PortletInstitution> content = LinksPortlet.getContent();
@@ -131,7 +131,7 @@ public class LinksPortletRunController extends BasicController {
 	 * @param StringBuffer to append the link
 	 */
 	private void appendContentFor(Map<String, PortletInstitution> content,
-			String inst, String lang, StringBuffer sb) {
+			String inst, String lang, StringBuilder sb) {
 		String linkLang = "";
 		int underlinePos = -1;
 		for( PortletLink link : content.get(inst).getLinks() ) {
@@ -140,7 +140,7 @@ public class LinksPortletRunController extends BasicController {
 			if (underlinePos != -1){
 				linkLang= linkLang.substring(0,underlinePos);
 			}
-			if(linkLang.equals(lang) | linkLang.equals(LinksPortlet.LANG_ALL))
+			if(linkLang.equals(lang) || linkLang.equals(LinksPortlet.LANG_ALL))
 				appendContent(link, sb);
 		}
 	}
@@ -150,8 +150,8 @@ public class LinksPortletRunController extends BasicController {
 	 * @param PortletLink
 	 * @param StringBuffer to append
 	 */
-	private void appendContent(PortletLink link, StringBuffer sb) {
-		sb.append("<li>" + buildContentLine(link.getTitle(), link.getUrl(), link.getDescription(), link.getTarget()) + "</li>");
+	private void appendContent(PortletLink link, StringBuilder sb) {
+		sb.append("<li>").append(buildContentLine(link.getTitle(), link.getUrl(), link.getDescription(), link.getTarget())).append("</li>");
 	}
 	
 	/**
@@ -163,10 +163,10 @@ public class LinksPortletRunController extends BasicController {
 	 * @param String lang
 	 * @return
 	 */
-	private String buildContentLine(String title, String URL, String descr, String target) {
-		StringBuffer sb = new StringBuffer();
+	private String buildContentLine(String title, String url, String descr, String target) {
+		StringBuilder sb = new StringBuilder();
 		sb.append("<a href=\"");
-		sb.append(URL);
+		sb.append(url);
 		sb.append("\" title=\"");
 		sb.append(title);
 		sb.append("\" target=\"_");
@@ -246,9 +246,9 @@ public class LinksPortletRunController extends BasicController {
 		VelocityContainer editorVC = this.createVelocityContainer("editorLinkOverview");
 		Map<String, PortletInstitution> content = LinksPortlet.getContent();
 		if (content != null && !content.isEmpty() ) {
-			ArrayList<String> allInst = new ArrayList<String>();
-			ArrayList<String> allInstTranslated = new ArrayList<String>();
-			HashMap<Integer, ArrayList<String>> allInstWithLinkIds = new HashMap<Integer, ArrayList<String>>();
+			ArrayList<String> allInst = new ArrayList<>();
+			ArrayList<String> allInstTranslated = new ArrayList<>();
+			HashMap<Integer, ArrayList<String>> allInstWithLinkIds = new HashMap<>();
 			int instCount = 1;
 			for (Iterator<String> iterator = content.keySet().iterator(); iterator.hasNext();) {
 				String inst = iterator.next();
@@ -261,7 +261,7 @@ public class LinksPortletRunController extends BasicController {
 				
 				PortletInstitution portletsForInst = content.get(inst);
 				// collect identifiers to find them in VC.
-				ArrayList<String> instLinksIdentifiers = new ArrayList<String>();
+				ArrayList<String> instLinksIdentifiers = new ArrayList<>();
 				
 				// add add-link per institution
 				LinkFactory.createCustomLink(LINKADD + inst, LINKADD + inst, "add.link", Link.BUTTON_XSMALL, editorVC, this);
@@ -288,9 +288,7 @@ public class LinksPortletRunController extends BasicController {
 		viewPanel.setContent(editorVC);
 	}
 
-	/**
-	 * @see org.olat.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		if(portletVC != null) portletVC = null;
 	}

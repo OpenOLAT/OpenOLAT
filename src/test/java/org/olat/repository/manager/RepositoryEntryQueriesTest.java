@@ -257,7 +257,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		params.setRoles(Roles.administratorRoles());
 		params.setAuthor(owner.getName());
 		List<RepositoryEntry> myEntries = repositoryEntryQueries.searchEntries(params, 0, -1, true);
 		Assert.assertNotNull(myEntries);
@@ -275,7 +275,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		
 		//search managed
 		SearchRepositoryEntryParameters paramsManaged = new SearchRepositoryEntryParameters();
-		paramsManaged.setRoles(new Roles(true, false, false, false, false, false, false));
+		paramsManaged.setRoles(Roles.administratorRoles());
 		paramsManaged.setManaged(Boolean.TRUE);
 		List<RepositoryEntry> managedEntries = repositoryEntryQueries.searchEntries(paramsManaged, 0, -1, true);
 		Assert.assertNotNull(managedEntries);
@@ -285,7 +285,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 
 		//search unmanaged
 		SearchRepositoryEntryParameters paramsFree = new SearchRepositoryEntryParameters();
-		paramsFree.setRoles(new Roles(true, false, false, false, false, false, false));
+		paramsFree.setRoles(Roles.administratorRoles());
 		paramsFree.setManaged(Boolean.FALSE);
 		List<RepositoryEntry> freeEntries = repositoryEntryQueries.searchEntries(paramsFree, 0, -1, true);
 		Assert.assertNotNull(freeEntries);
@@ -297,8 +297,9 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	@Test
 	public void genericANDQueryWithRolesWithStandardUser() {
 		//create 2 identities (repo owner and tutor)
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-gen-2-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-gen-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("re-gen-2");
+		
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		repositoryEntryRelationDao.addRole(id1, re2, GroupRoles.participant.name());
@@ -309,7 +310,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		
 		//check for guest (negative test)
 		SearchRepositoryEntryParameters params1 = new SearchRepositoryEntryParameters();
-		params1.setRoles(new Roles(false, false, false, false, true, false, false));
+		params1.setRoles(Roles.guestRoles());
 		List<RepositoryEntry> entries1 = repositoryEntryQueries.searchEntries(params1, 0, -1, true);
 		Assert.assertNotNull(entries1);
 		Assert.assertFalse(entries1.contains(re1));
@@ -321,7 +322,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//check for identity 1 (participant re2 + re1 accessible to all users)
 		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
 		params2.setIdentity(id1);
-		params2.setRoles(new Roles(false, false, false, false, false, false, false));
+		params2.setRoles(Roles.userRoles());
 		List<RepositoryEntry> entries2 = repositoryEntryQueries.searchEntries(params2, 0, -1, true);
 		Assert.assertNotNull(entries2);
 		Assert.assertFalse(entries2.isEmpty());
@@ -336,7 +337,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//check for identity 1 (re1 accessible to all users)
 		SearchRepositoryEntryParameters params3 = new SearchRepositoryEntryParameters();
 		params3.setIdentity(id2);
-		params3.setRoles(new Roles(false, false, false, false, false, false, false));
+		params3.setRoles(Roles.userRoles());
 		List<RepositoryEntry> entries3 = repositoryEntryQueries.searchEntries(params3, 0, -1, true);
 		Assert.assertNotNull(entries3);
 		Assert.assertFalse(entries3.isEmpty());
@@ -363,7 +364,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//check for id 1 (owner of the repository entry)
 		SearchRepositoryEntryParameters params1 = new SearchRepositoryEntryParameters();
 		params1.setIdentity(id1);
-		params1.setRoles(new Roles(false, false, false, false, false, false, false));
+		params1.setRoles(Roles.userRoles());
 		params1.setOnlyExplicitMember(true);
 		List<RepositoryEntry> entries1 = repositoryEntryQueries.searchEntries(params1, 0, -1, true);
 		Assert.assertNotNull(entries1);
@@ -378,7 +379,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//check for id2 (tutor)
 		SearchRepositoryEntryParameters params2 = new SearchRepositoryEntryParameters();
 		params2.setIdentity(id2);
-		params2.setRoles(new Roles(false, false, false, false, false, false, false));
+		params2.setRoles(Roles.userRoles());
 		params2.setOnlyExplicitMember(true);
 		List<RepositoryEntry> entries2 = repositoryEntryQueries.searchEntries(params2, 0, -1, true);
 		Assert.assertNotNull(entries2);
@@ -393,7 +394,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//check for id3 (negative test)
 		SearchRepositoryEntryParameters params3 = new SearchRepositoryEntryParameters();
 		params3.setIdentity(id3);
-		params3.setRoles(new Roles(false, false, false, false, false, false, false));
+		params3.setRoles(Roles.userRoles());
 		params3.setOnlyExplicitMember(true);
 		List<RepositoryEntry> entries3 = repositoryEntryQueries.searchEntries(params3, 0, -1, true);
 		Assert.assertNotNull(entries3);
@@ -462,7 +463,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		Roles learnResourceManagerRoles = new Roles(false, false, false, false, false, true, false);
+		Roles learnResourceManagerRoles = Roles.learnResourceManagerRoles();
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(id, learnResourceManagerRoles, re.getOlatResource().getResourceableTypeName());
 		List<RepositoryEntry> entries = repositoryEntryQueries.searchEntries(params, 0, -1, false);
 		

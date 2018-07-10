@@ -68,7 +68,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.portfolio.manager.InvitationDAO;
-import org.olat.resource.OLATResource;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
@@ -140,6 +139,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public Roles getRoles(IdentityRef identity) {
+		return getRoles(identity, true);
+	}
+
+	@Override
+	public Roles getRoles(IdentityRef identity, boolean withInherited) {
 		boolean isGuestOnly = false;
 		boolean isInvitee = false;
 		
@@ -148,65 +152,39 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where membership.identity.key=:identityKey");
+		if(!withInherited) {
+			sb.append(" and membership.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
+		}
 		
 		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		Map<OrganisationRef, List<OrganisationRoles>> orgToRoles = new HashMap<>();
-		
-		boolean sysAdmin = false;
-		boolean admin = false;
-		
-		boolean groupManager = false;
-		boolean userManager = false;
-		boolean resourceManager = false;
-		boolean poolManager = false;
-		boolean curriculumnManager = false;
-		
-		boolean author = false;
-		boolean coach = false;
-		
+
 		for(Object[] rawObject:rawObjects) {
 			Long organisationKey = (Long)rawObject[0];
-			String organisationId = (String)rawObject[1];
 			String role = (String)rawObject[2];
 			if(!OrganisationRoles.isValue(role)) {
 				continue;
 			}
-			
-			boolean defOrganisation = OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisationId);
-			
+
 			List<OrganisationRoles> roleList = orgToRoles
 					.computeIfAbsent(new OrganisationRefImpl(organisationKey), key -> new ArrayList<>());
 			roleList.add(OrganisationRoles.valueOf(role));
-			
-			sysAdmin |= role.equals(OrganisationRoles.sysadmin.name());
-			admin |= role.equals(OrganisationRoles.administrator.name());
-			
-			groupManager |= role.equals(OrganisationRoles.groupmanager.name());
-			userManager |= role.equals(OrganisationRoles.usermanager.name());
-			resourceManager |= role.equals(OrganisationRoles.learnresourcemanager.name());
-			poolManager |= role.equals(OrganisationRoles.poolmanager.name());
-			curriculumnManager |= role.equals(OrganisationRoles.curriculummanager.name());
-
-			author |= role.equals(OrganisationRoles.author.name());
-			coach |= role.equals(OrganisationRoles.coach.name());
 		}
-		
 
 		List<String> rolesStr = getRolesAsString(identity);
 		if(!rolesStr.contains(OrganisationRoles.user.name())) {
 			isInvitee = invitationDao.isInvitee(identity);
 			isGuestOnly = rolesStr.contains(OrganisationRoles.guest.name());
 		}
-		Roles roles = new Roles(sysAdmin, admin, userManager, groupManager, author, isGuestOnly, resourceManager, poolManager, curriculumnManager, coach, isInvitee);
+				
 		List<RolesByOrganisation> rolesByOrganisations = new ArrayList<>();
 		for(Map.Entry<OrganisationRef, List<OrganisationRoles>> entry:orgToRoles.entrySet()) {
 			rolesByOrganisations.add(new RolesByOrganisation(entry.getKey(), entry.getValue()));
 		}
-		roles.setRolesByOrganisation(rolesByOrganisations);
-		return roles;
+		return Roles.valueOf(rolesByOrganisations, isGuestOnly, isInvitee);
 	}
 
 	@Override
@@ -241,69 +219,43 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation roles) {
 		Organisation organisation = organisationService.getOrganisation(roles.getOrganisation());
-		
 		List<String> currentRoles = getRolesAsString(updatedIdentity, organisation);
 		
 		boolean hasBeenAnonymous = currentRoles.contains(OrganisationRoles.guest.name());
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
+		updateRolesInOrganisation(organisation, actingIdentity, updatedIdentity,
 				OrganisationRoles.guest, hasBeenAnonymous, roles.isGuestOnly());
 		
-		// system users - opposite of anonymous users
-		boolean hasBeenUser = currentRoles.contains(OrganisationRoles.user.name());
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.user, hasBeenUser, !roles.isGuestOnly());
+		boolean hasBeenInvitee = currentRoles.contains(OrganisationRoles.invitee.name());
+		updateRolesInOrganisation(organisation, actingIdentity, updatedIdentity,
+				OrganisationRoles.invitee, hasBeenInvitee, roles.isInvitee());
 
-		// coach
-		boolean hasBeenAuthor = currentRoles.contains(OrganisationRoles.author.name());
-		boolean isAuthor = (roles.isAuthor() || roles.isLearnResourceManager()) && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.author, hasBeenAuthor, isAuthor);
-
-		// author
-		boolean hasBeenCoach = currentRoles.contains(OrganisationRoles.coach.name());
-		boolean isCoach = roles.isCoach() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.coach, hasBeenCoach, isCoach);
-
-		// group manager
-		boolean hasBeenGroupManager = currentRoles.contains(OrganisationRoles.groupmanager.name());
-		boolean groupManager = roles.isGroupManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.groupmanager, hasBeenGroupManager, groupManager);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.user, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.author, actingIdentity, updatedIdentity);
 		
-		// user manager, only allowed by admin
-		boolean hasBeenUserManager = currentRoles.contains(OrganisationRoles.usermanager.name());
-		boolean userManager = roles.isUserManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.usermanager, hasBeenUserManager, userManager);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.groupmanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.usermanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.rolesmanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.learnresourcemanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.poolmanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.curriculummanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.lecturemanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.qualitymanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.linemanager, actingIdentity, updatedIdentity);
 
- 		// institutional resource manager
-		boolean hasBeenInstitutionalResourceManager = currentRoles.contains(OrganisationRoles.learnresourcemanager.name());
-		boolean institutionalResourceManager = roles.isLearnResourceManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.learnresourcemanager, hasBeenInstitutionalResourceManager, institutionalResourceManager);
-
-		// institutional resource manager
-		boolean hasBeenPoolManager = currentRoles.contains(OrganisationRoles.poolmanager.name());
-		boolean poolManager = roles.isPoolManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.poolmanager, hasBeenPoolManager, poolManager);
-		
-		// institutional resource manager
-		boolean hasBeenCurriculumManager = currentRoles.contains(OrganisationRoles.curriculummanager.name());
-		boolean curriculumManager = roles.isCurriculumManager() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.curriculummanager, hasBeenCurriculumManager, curriculumManager);
-
-		// system administrator
-		boolean hasBeenAdmin = currentRoles.contains(OrganisationRoles.administrator.name());
-		boolean isOLATAdmin = roles.isAdministrator() && !roles.isGuestOnly() && !roles.isInvitee();
-		updateRolesInSecurityGroup(organisation, actingIdentity, updatedIdentity,
-				OrganisationRoles.administrator, hasBeenAdmin, isOLATAdmin);		
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.principal, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.administrator, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.sysadmin, actingIdentity, updatedIdentity);
 	}
 	
+	private void updateRoles(Organisation organisation, RolesByOrganisation roles, List<String> currentRoles, OrganisationRoles role,
+			Identity actingIdentity, Identity updatedIdentity) {
+		boolean hasBeenAdmin = currentRoles.contains(role.name());
+		boolean isOLATAdmin = roles.hasRole(role) && !roles.isGuestOnly() && !roles.isInvitee();
+		updateRolesInOrganisation(organisation, actingIdentity, updatedIdentity,
+				role, hasBeenAdmin, isOLATAdmin);	
+	}
 	
-	private void updateRolesInSecurityGroup(Organisation organisation, Identity actingIdentity, Identity updatedIdentity,
+	private void updateRolesInOrganisation(Organisation organisation, Identity actingIdentity, Identity updatedIdentity,
 			OrganisationRoles role, boolean hasBeen, boolean isNow) {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
@@ -356,26 +308,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 
 		return openolatRoles;
-	}
-
-
-	public Policy findPolicy(SecurityGroup secGroup, String permission, OLATResource olatResource) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select poi from ").append(PolicyImpl.class.getName()).append(" as poi ")
-		  .append(" where poi.permission=:permission and poi.olatResource.key=:resourceKey and poi.securityGroup.key=:secGroupKey");
-
-		List<Policy> policies = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Policy.class)
-				.setParameter("permission", permission)
-				.setParameter("resourceKey", olatResource.getKey())
-				.setParameter("secGroupKey", secGroup.getKey())
-				.getResultList();
-		  		
-
-		if (policies.isEmpty()) {
-			return null;
-		}
-		return policies.get(0);
 	}
 
 	/**
@@ -479,8 +411,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new NewIdentityCreatedEvent(newIdentity), IDENTITY_EVENT_CHANNEL);
 	}
 
-
-
 	@Override
 	public Identity findIdentityByName(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
@@ -576,7 +506,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		  .append(" where lower(ident.name) in (:usernames)");
 		
 		List<String> loweredIdentityNames = identityNames.stream()
-				.map(id -> id.toLowerCase()).collect(Collectors.toList());
+				.map(String::toLowerCase).collect(Collectors.toList());
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -643,7 +573,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 		int count = 0;
 		int batch = 500;
-		List<Long> names = new ArrayList<Long>(identityKeys);
+		List<Long> names = new ArrayList<>(identityKeys);
 		List<IdentityShort> shortIdentities = new ArrayList<>(names.size());
 		do {
 			int toIndex = Math.min(count + batch, names.size());
@@ -655,39 +585,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		} while(count < names.size());
 		return shortIdentities;
 	}
-	
-	public List<Identity> findIdentitiesWithoutBusinessGroup(Integer status) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
-		  .append(" inner join fetch ident.user user ")
-		  .append(" where not exists (")
-		  .append("   select bgroup from businessgroup bgroup, bgroupmember as me")
-		  .append("   where  me.group.key=bgroup.baseGroup.key and me.identity.key=ident.key")
-		  .append(" )");
-		if (status != null) {
-			if (status.equals(Identity.STATUS_VISIBLE_LIMIT)) {
-				// search for all status smaller than visible limit 
-				sb.append(" and ident.status < :status ");
-			} else {
-				// search for certain status
-				sb.append(" and ident.status = :status ");
-			}
-		} else {
-			sb.append(" and ident.status < ").append(Identity.STATUS_DELETED);
-		}
-		
-		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class);
-		if (status != null) {
-			query.setParameter("status", status);
-		}
-		return query.getResultList();
-	}
 
-	/**
-	 * 
-	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long)
-	 */
 	@Override
 	public Identity loadIdentityByKey(Long identityKey) {
 		StringBuilder sb = new StringBuilder();
@@ -720,9 +618,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				.getResultList();
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long,boolean)
-	 */
 	@Override
 	public Identity loadIdentityByKey(Long identityKey, boolean strict) {
 		if(strict) return loadIdentityByKey(identityKey);
@@ -930,9 +825,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#findAuthentication(org.olat.core.id.Identity, java.lang.String)
-	 */
 	@Override
 	public Authentication findAuthentication(IdentityRef identity, String provider) {
 		if (identity==null) {
@@ -988,10 +880,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 		return results.get(0);
 	}
-	
-	/**
-	 * @see org.olat.basesecurity.Manager#findAuthentication(org.olat.core.id.Identity, java.lang.String)
-	 */
+
 	@Override
 	public List<Authentication> findAuthenticationByToken(String provider, String securityToken) {
 		if (provider==null || securityToken==null) {
@@ -1080,9 +969,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return updateAuthentication(authentication);
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#deleteAuthentication(org.olat.basesecurity.Authentication)
-	 */
 	@Override
 	public void deleteAuthentication(Authentication auth) {
 		if(auth == null || auth.getKey() == null) return;//nothing to do
@@ -1126,9 +1012,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				.executeUpdate();
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#findAuthenticationByAuthusername(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider) {
 		StringBuilder sb = new StringBuilder();
@@ -1216,9 +1099,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		return (status != null && status.intValue() < Identity.STATUS_VISIBLE_LIMIT);
 	}
 
-	/**
-	 * @see org.olat.basesecurity.Manager#saveIdentityStatus(org.olat.core.id.Identity)
-	 */
 	@Override
 	public Identity saveIdentityStatus(Identity identity, Integer status, Identity doer) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);

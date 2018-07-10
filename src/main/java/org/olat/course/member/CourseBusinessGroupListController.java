@@ -73,8 +73,8 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	public static String TABLE_ACTION_UNLINK = "tblUnlink";
-	public static String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
+	public static final String TABLE_ACTION_UNLINK = "tblUnlink";
+	public static final String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
 	
 	private final RepositoryEntry re;
 	private final boolean groupManagementRight;
@@ -173,7 +173,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		for(StatisticsBusinessGroupRow row:rows) {
 			BusinessGroupMembership membership = row.getMember();
 			Boolean allowLeave =  membership != null;
-			Boolean allowDelete = isAdmin() ? Boolean.TRUE : (membership == null ? null : new Boolean(membership.isOwner()));
+			Boolean allowDelete = isAdmin() ? Boolean.TRUE : (membership == null ? null : Boolean.valueOf(membership.isOwner()));
 			
 			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);

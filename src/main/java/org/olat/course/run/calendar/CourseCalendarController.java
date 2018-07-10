@@ -46,13 +46,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CourseCalendarController extends BasicController {
@@ -60,12 +58,9 @@ public class CourseCalendarController extends BasicController {
 	private CalendarController calendarController;
 	
 	private final UserCourseEnvironment userCourseEnv;
-	private KalendarRenderWrapper courseKalendarWrapper;
 
 	@Autowired
 	private CalendarManager calendarManager;
-	@Autowired
-	private  RepositoryManager repositoryManager;
 	
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
@@ -91,12 +86,9 @@ public class CourseCalendarController extends BasicController {
 		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		// add course calendar
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
-		courseKalendarWrapper = calendarManager.getCourseCalendar(course);
+		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean isPrivileged = !userCourseEnv.isCourseReadOnly() && (roles.isOLATAdmin() || userCourseEnv.isAdmin()
-				|| repositoryManager.isLearnResourceManagerFor(roles, cgm.getCourseEntry()));
+		boolean isPrivileged = isPrivileged(cgm);
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 			courseKalendarWrapper.setPrivateEventsVisible(true);
@@ -127,6 +119,11 @@ public class CourseCalendarController extends BasicController {
 		addCalendars(attendedGroups, false, clpc, calendars);
 
 		return calendars;
+	}
+	
+	private boolean isPrivileged(CourseGroupManager cgm) {
+		return !userCourseEnv.isCourseReadOnly()
+				&& (userCourseEnv.isAdmin() || cgm.isIdentityCourseAdministrator(getIdentity()));
 	}
 	
 	private void addCalendars(List<BusinessGroup> groups, boolean isOwner, LinkProvider linkProvider,

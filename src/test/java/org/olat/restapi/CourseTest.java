@@ -238,7 +238,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		
 		List<String> courseType = new ArrayList<>();
 		courseType.add(CourseModule.getCourseTypeName());
-		Roles roles = new Roles(true, true, true, true, false, true, false);
+		Roles roles = Roles.administratorRoles();
 
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters("*", "*", "*", courseType, null, roles);
 		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);

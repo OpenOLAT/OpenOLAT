@@ -35,11 +35,11 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -49,7 +49,6 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
@@ -74,8 +73,6 @@ public class ReferenceManager {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDAO;
 	@Autowired
@@ -148,7 +145,7 @@ public class ReferenceManager {
 				.getResultList();
 	}
 	
-	public List<ReferenceInfos> getReferencesInfos(List<RepositoryEntry> res, Identity identity, Roles roles) {
+	public List<ReferenceInfos> getReferencesInfos(List<RepositoryEntry> res, Identity identity) {
 		if(res == null || res.isEmpty()) return Collections.emptyList();
 		
 		List<Long> sourceKeys = new ArrayList<>();
@@ -175,24 +172,17 @@ public class ReferenceManager {
 				notOrphansResourceKeys.add(target.getKey());
 			}
 		}
-		
-		boolean isOlatAdmin = roles.isOLATAdmin();
-		
+
 		List<RepositoryEntry> entries = repositoryEntryDAO.loadByResourceKeys(targetResourceKeys);
 		List<ReferenceInfos> infos = new ArrayList<>(entries.size());
 		for(RepositoryEntry entry:entries) {
 			Long resourceKey = entry.getOlatResource().getKey();
 			boolean notOrphan = notOrphansResourceKeys.contains(resourceKey);
-			
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
-
-			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& repositoryManager.isLearnResourceManagerFor(roles, entry);
-			boolean isOwner = isOlatAdmin || reToGroupDao.hasRole(identity, entry, GroupRoles.owner.name())
-						|| isInstitutionalResourceManager;
-
-			ReferenceInfos refInfos = new ReferenceInfos(entry, !notOrphan, isOwner, deleteManaged);
-			infos.add(refInfos);
+			boolean isOwner = reToGroupDao.hasRole(identity, entry, true,
+					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+					GroupRoles.owner.name());
+			infos.add(new ReferenceInfos(entry, !notOrphan, isOwner, deleteManaged));
 		}
 		return infos;
 	}

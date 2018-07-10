@@ -25,11 +25,13 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -39,6 +41,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,6 +54,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
@@ -176,10 +181,65 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
 		dbInstance.commitAndCloseSession();
 		
-		Roles roles = new Roles(false, false, false, true, false, false, false);
+		Roles roles = Roles.authorRoles();
 		ErrorList errors = repositoryService.deletePermanently(re, initialAuthor, roles, Locale.ENGLISH);
 		Assert.assertNotNull(errors);
 		Assert.assertFalse(errors.hasErrors());
+	}
+	
+	/**
+	 * How can be a resource manager if Constants.ORESOURCE_USERMANAGER is never used?
+	 */
+	@Test
+	public void isInstitutionalRessourceManagerFor() {
+		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-1");
+		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-2");
+		Identity part3 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-3");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(owner1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(owner2, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(part3, re, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		//set the institutions
+		owner1.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
+		owner2.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
+		part3.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
+		userManager.updateUserFromIdentity(owner1);
+		userManager.updateUserFromIdentity(owner2);
+		userManager.updateUserFromIdentity(part3);
+		dbInstance.commit();
+		
+		//promote owner1 to institution resource manager
+		organisationService.addMember(owner1, OrganisationRoles.learnresourcemanager);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean institutionMgr1 = repositoryService.hasRoleExpanded(owner1, re, OrganisationRoles.learnresourcemanager.name());
+		boolean institutionMgr2 = repositoryService.hasRoleExpanded(owner2, re, OrganisationRoles.learnresourcemanager.name());
+		boolean institutionMgr3 = repositoryService.hasRoleExpanded(part3, re, OrganisationRoles.learnresourcemanager.name());
+	
+		Assert.assertTrue(institutionMgr1);
+		Assert.assertFalse(institutionMgr2);
+		Assert.assertFalse(institutionMgr3);
+	}
+	
+	@Test
+	public void isOwnerOfRepositoryEntry() {
+		//create a repository entry with an owner and a participant
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("re-owner-1-is");
+		Identity part = JunitTestHelper.createAndPersistIdentityAsRndUser("re-owner-2-is");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(part, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean isOwnerOwner = repositoryService.hasRoleExpanded(owner, re, GroupRoles.owner.name());
+		Assert.assertTrue(isOwnerOwner);
+		boolean isPartOwner = repositoryService.hasRoleExpanded(part, re, GroupRoles.owner.name());
+		Assert.assertFalse(isPartOwner);
 	}
 	
 	

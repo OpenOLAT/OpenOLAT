@@ -367,7 +367,7 @@ public class GroupController extends BasicController {
 						showError("msg.selectionempty");
 						return;
 					}
-					toAdd = new ArrayList<Identity>();
+					toAdd = new ArrayList<>();
 					toAdd.add(choosenIdentity);
 				} else if (event instanceof MultiIdentityChosenEvent) {
 					MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent) event;
@@ -389,7 +389,7 @@ public class GroupController extends BasicController {
 					}
 				} else if (toAdd.size() > 1) {
 					//check if already in group
-					List<Identity> alreadyInGroup = new ArrayList<Identity>();
+					List<Identity> alreadyInGroup = new ArrayList<>();
 					for (int i = 0; i < toAdd.size(); i++) {
 						if (groupDao.hasRole(group, toAdd.get(i), role)) {
 							tableCtr.setMultiSelectSelectedAt(i, false);
@@ -551,7 +551,9 @@ public class GroupController extends BasicController {
 				MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailTemplate, sender, metaId, result);
 				result.append(mailManager.sendMessage(ccBundle));
 			}
-			MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, ureq.getLocale());
 		}
 	}
 
@@ -598,13 +600,16 @@ public class GroupController extends BasicController {
 				MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailTemplate, sender, metaId, result);
 				result.append(mailManager.sendMessage(ccBundle));
 			}
-			MailHelper.appendErrorsAndWarnings(result, errorMessage, infoMessage, ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+			MailHelper.appendErrorsAndWarnings(result, errorMessage, infoMessage, detailedErrorOutput, ureq.getLocale());
 		}
 		// report any errors on screen
 		if (infoMessage.length() > 0) getWindowControl().setWarning(infoMessage.toString());
 		if (errorMessage.length() > 0) getWindowControl().setError(errorMessage.toString());
 	}
 
+	@Override
 	protected void doDispose() {
     // DialogBoxController and TableController get disposed by BasicController
 		// usc, userToGroupWizardCtr, addUserMailCtr, and removeUserMailCtr are registerd with listenTo and get disposed in BasicController
@@ -665,10 +670,10 @@ public class GroupController extends BasicController {
 	public void reloadData() {
 		// refresh view		
 		List<GroupMembership> combo = groupDao.getMemberships(group, role);
-		List<GroupMemberView> views = new ArrayList<GroupMemberView>(combo.size());
-		Map<Long,GroupMemberView> idToViews = new HashMap<Long,GroupMemberView>();
+		List<GroupMemberView> views = new ArrayList<>(combo.size());
+		Map<Long,GroupMemberView> idToViews = new HashMap<>();
 
-		Set<Long> loadStatus = new HashSet<Long>();
+		Set<Long> loadStatus = new HashSet<>();
 		for(GroupMembership co:combo) {
 			Identity identity = co.getIdentity();
 			Date addedAt = co.getCreationDate();
@@ -688,7 +693,7 @@ public class GroupController extends BasicController {
 		}
 		
 		if(loadStatus.size() > 0) {
-			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
 			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
 				String status = statusMap.get(toLoad);

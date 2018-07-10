@@ -39,7 +39,6 @@ import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.admin.user.delete.DirectDeleteController;
 import org.olat.admin.user.delete.TabbedPaneController;
 import org.olat.admin.user.imp.UserImportController;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
@@ -55,6 +54,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
@@ -72,6 +72,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -113,14 +114,12 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private DirectDeleteController directDeleteCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 
-	private final boolean isOlatAdmin;
+	private final Roles identityRoles;
 	private List<Organisation> manageableOrganisations;
 
 	private LockResult lock;
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationService organisationService;
 
@@ -133,10 +132,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		super(ureq, wControl);
 		
 		UserSession usess = ureq.getUserSession();
-		isOlatAdmin = usess.getRoles().isOLATAdmin();
+		identityRoles = usess.getRoles();
 	
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.usermanager);
+				OrganisationRoles.administrator, OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
 
 		menuTree = new MenuTree("olatMenuTree");
 		menuTree.setExpandSelectedNode(false);
@@ -150,7 +149,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		// allow closing of active menu tree element
 		menuTree.setExpandSelectedNode(false);
 		
-		content = new TooledStackedPanel("coaching-stack", getTranslator(), this);
+		content = new TooledStackedPanel("user-admin-stack", getTranslator(), this);
 		content.setInvisibleCrumb(0);
 		content.setNeverDisposeRootController(true);
 
@@ -162,7 +161,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 
 	private void initTools() {
-		if (isOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_CREATE_USER.booleanValue()) {
+		if (identityRoles.isAdministrator() || ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_CREATE_USER.booleanValue())) {
 			createLink = LinkFactory.createToolLink("ucreate", translate("menu.ucreate"), this, "o_icon_add_member");
 			createLink.setElementCssClass("o_sel_useradmin_create");
 			content.addTool(createLink, Align.right);
@@ -172,7 +171,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			content.addTool(importLink, Align.right);
 		}
 
-		if (isOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue()) {
+		if (identityRoles.isAdministrator() ||((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue())) {
 			deleteLink = LinkFactory.createToolLink("userdelete", translate("menu.userdelete"), this, "o_icon_delete");
 			deleteLink.setElementCssClass("o_sel_useradmin_delete");
 			content.addTool(deleteLink, Align.right);
@@ -192,6 +191,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			} else { // the action was not allowed anymore
 				content.popUpToRootController(ureq);
 			}
+		} else if(source == content) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == editCtrl) {
+					
+				}
+			}
 		} else if(createLink == source) {
 			doCreateUser(ureq);
 		} else if(importLink == source) {
@@ -210,21 +216,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				SingleIdentityChosenEvent sice = (SingleIdentityChosenEvent)event;
 				doEditCreatedUser(ureq, sice.getChosenIdentity());
 			}
-			
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void doCreateUser(UserRequest ureq) {
-		boolean canCreateOLATPassword = false;
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			// admin will override configuration
-			canCreateOLATPassword = true;
-		} else {
-			Boolean canCreatePwdByConfig = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;				
-			canCreateOLATPassword = canCreatePwdByConfig.booleanValue();
-		}
-		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
+
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Create", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
@@ -238,7 +237,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private void doEditCreatedUser(UserRequest ureq, Identity newIdentity) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Create", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		editCtrl = new UserAdminController(ureq, bwControl, newIdentity);
+		editCtrl = new UserAdminController(ureq, bwControl, content, newIdentity);
 		editCtrl.setBackButtonEnabled(false);
 		editCtrl.setShowTitle(false);
 		listenTo(editCtrl);
@@ -247,14 +246,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private void doImportUser(UserRequest ureq) {
-		boolean canCreateOLATPassword = false;
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			// admin will override configuration
-			canCreateOLATPassword = true;
-		} else {
-			Boolean canCreatePwdByConfig = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;				
-			canCreateOLATPassword = canCreatePwdByConfig.booleanValue();
-		}
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
+
 		importCtrl = new UserImportController(ureq, getWindowControl(), canCreateOLATPassword);
 		addToHistory(ureq, importCtrl);
 		listenTo(importCtrl);
@@ -322,14 +316,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "noauthentication": return createUserSearchController(ureq, bwControl,
 					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT));
 			case "userswithoutgroup":
-				List<Identity> usersWithoutGroup = securityManager.findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutGroup, null, true, true);
+				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups());
 			case "userswithoutemail":
 				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, null, true, true);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, true);
 			case "usersemailduplicates":
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, null, true, true);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true);
 			default: return null;		
 		}
 	}
@@ -366,9 +359,11 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, SearchIdentityParams predefinedQuery) {
-		if(manageableOrganisations != null && predefinedQuery.getOrganisations() != null) {
-			List<OrganisationRef> allowedOrganisations = new ArrayList<>(predefinedQuery.getOrganisations());
-			allowedOrganisations.retainAll(manageableOrganisations);
+		if(manageableOrganisations != null) {
+			List<OrganisationRef> allowedOrganisations = new ArrayList<>(manageableOrganisations);
+			if(predefinedQuery.getOrganisations() != null) {
+				allowedOrganisations.retainAll(predefinedQuery.getOrganisations());
+			}
 			predefinedQuery.setOrganisations(allowedOrganisations);
 		}
 		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true);
@@ -492,9 +487,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Map<Long, GenericTreeNode> fieldKeyToNode = new HashMap<>();
 		for(Organisation organisation:organisations) {
 			Long key = organisation.getKey();
-			GenericTreeNode node = fieldKeyToNode.computeIfAbsent(key, organisationKey -> {
-				return new GenericTreeNode(organisation.getDisplayName(), organisation);
-			});
+			GenericTreeNode node = fieldKeyToNode.computeIfAbsent(key, organisationKey -> 
+				new GenericTreeNode(organisation.getDisplayName(), organisation));
 
 			Organisation parentOrganisation = organisation.getParent();
 			if(parentOrganisation == null || !keytoOrganisations.containsKey(parentOrganisation.getKey())) {
@@ -514,7 +508,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private void buildTreeAccessSubMenu(GenericTreeNode accessNode) {
 		appendNode("menu.usergroup", "menu.usergroup.alt", "usergroup", "o_sel_useradmin_usergroup", accessNode);
 		
-		if (isOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS.booleanValue()) {
+		if (identityRoles.isAdministrator() || identityRoles.isPrincipal() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
 			appendNode("menu.authorgroup", "menu.authorgroup.alt", "authorgroup", "o_sel_useradmin_authorgroup", accessNode);
 			appendNode("menu.coauthors", "menu.coauthors.alt", "coauthors", "o_sel_useradmin_coauthors", accessNode);
 			appendNode("menu.resourceowners", "menu.resourceowners.alt", "resourceowners", "o_sel_useradmin_resourceowners", accessNode);
@@ -523,18 +517,20 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		appendNode("menu.coursecoach", "menu.coursecoach.alt", "coursecoach", "o_sel_useradmin_coursecoach", accessNode);
 		appendNode("menu.courseparticipants", "menu.courseparticipants.alt", "courseparticipants", "o_sel_useradmin_courseparticipants", accessNode);
 
-		if (isOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS.booleanValue()) {
+		if (identityRoles.isAdministrator() || identityRoles.isPrincipal()
+				|| ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS.booleanValue())) {
 			appendNode("menu.groupmanagergroup", "menu.groupmanagergroup.alt", "groupmanagergroup", "o_sel_useradmin_groupmanagergroup", accessNode);
 			appendNode("menu.groupcoach", "menu.groupcoach.alt", "groupcoach", "o_sel_useradmin_groupcoach", accessNode);
 		}
 		
 		// admin group and user manager group always restricted to admins
-		if (isOlatAdmin) {
+		if (identityRoles.isAdministrator() || identityRoles.isPrincipal()) {
 			appendNode("menu.usermanagergroup", "menu.usermanagergroup.alt", "usermanagergroup", "o_sel_useradmin_usermanagergroup", accessNode);
 			appendNode("menu.admingroup", "menu.admingroup.alt", "admingroup", "o_sel_useradmin_admingroup", accessNode);
 		}
 		
-		if (isOlatAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS.booleanValue()) {
+		if (identityRoles.isAdministrator() || identityRoles.isPrincipal()
+				|| ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS.booleanValue())) {
 			appendNode("menu.anonymousgroup", "menu.anonymousgroup.alt", "anonymousgroup", "o_sel_useradmin_anonymousgroup", accessNode);
 		}
 		
@@ -545,7 +541,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 	private void buildTreeQueriesSubMenu(GenericTreeNode queriesNode) {
 		appendNode("menu.userswithoutgroup", "menu.userswithoutgroup.alt", "userswithoutgroup", "o_sel_useradmin_userswithoutgroup", queriesNode);
-		if(isOlatAdmin) {
+		if(identityRoles.isAdministrator() || identityRoles.isPrincipal()) {
 			appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
 			appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
 		}
@@ -592,13 +588,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		GenericTreeModel tm = (GenericTreeModel)menuTree.getTreeModel();
-		if(entries == null || entries.isEmpty()) {
-			TreeNode node = tm.getRootNode();
-			if(node.getChildCount() > 0) {
-				node = (TreeNode)node.getChildAt(0);
-			}
-			contentCtr = selectNode(ureq, node);
-		} else {
+		if(entries != null && !entries.isEmpty()) {
 			ContextEntry entry = entries.get(0);
 			String entryPoint = entry.getOLATResourceable().getResourceableTypeName();
 			if(entryPoint.startsWith("notifications") || entryPoint.startsWith("NewIdentityCreated")) {
@@ -622,43 +612,19 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				}
 			}
 		}
+		
+		if(contentCtr == null) {
+			TreeNode node = tm.getRootNode();
+			if(node.getChildCount() > 0) {
+				node = (TreeNode)node.getChildAt(0);
+			}
+			contentCtr = selectNode(ureq, node);
+		}
 	}
 	
 	private Controller selectNode(UserRequest ureq, TreeNode node) {
 		menuTree.setSelectedNode(node);
 		return pushController(ureq, node);
-	}
-
-	public void activate(UserRequest ureq, String viewIdentifier) {
-		if(viewIdentifier == null) return;
-		
-		if(viewIdentifier.startsWith("notifications") || viewIdentifier.startsWith("NewIdentityCreated")) {
-			GenericTreeModel tm = (GenericTreeModel)menuTree.getTreeModel();
-			TreeNode node = tm.findNodeByUserObject("created.newUsersNotification");
-			contentCtr = selectNode(ureq, node);
-		} else if(viewIdentifier.startsWith("AE")) {
-			String posStr = viewIdentifier.substring(3);
-			try {
-				GenericTreeModel treeModel = (GenericTreeModel)menuTree.getTreeModel();
-				TreeNode node = treeModel.findNodeByUserObject("menuqueries");
-				int pos = Integer.parseInt(posStr);
-				if(pos >= 0 && pos < node.getChildCount()) {
-					TreeNode childNode = (TreeNode)node.getChildAt(pos);
-					contentCtr = selectNode(ureq, childNode);
-				}
-			} catch (Exception e) {
-				logWarn("", e);
-			}	
-		} else {
-			int first = viewIdentifier.indexOf(":");
-			String uobject = viewIdentifier.substring(0, first);
-			GenericTreeModel treeModel = (GenericTreeModel)menuTree.getTreeModel();
-			TreeNode node = treeModel.findNodeByUserObject(uobject);
-			if(node == null) {
-				node = treeModel.getRootNode();
-			}
-			contentCtr = selectNode(ureq, node);
-		}
 	}
 
 	@Override

@@ -28,11 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.fileresource.types.WikiResource;
@@ -41,6 +41,7 @@ import org.olat.modules.wiki.restapi.vo.WikiVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -54,6 +55,9 @@ import org.springframework.stereotype.Component;
 @Path("repo/wikis")
 @Component
 public class WikisWebService {
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	/**
 	 * export a specific wiki
@@ -63,7 +67,9 @@ public class WikisWebService {
 	 */
 	@Path("{wikiKey}")
 	public WikiWebService getWiki() {
-		return new WikiWebService();
+		WikiWebService wikiWebservice = new WikiWebService();
+		CoreSpringFactory.autowireObject(wikiWebservice);
+		return wikiWebservice;
 	}
 
 	/**
@@ -77,17 +83,11 @@ public class WikisWebService {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response getWikis(@Context HttpServletRequest httpRequest) {
-
-		try {
-			List<RepositoryEntry> res = getAccessibleWikiRepositoryEntries(httpRequest);
-			WikiVO[] wks_repo = toArrayOfVOes_repoentry(res);
-			WikiVOes voes = new WikiVOes();
-			voes.setWikis( wks_repo);
-			return Response.ok(voes).build();
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
+		List<RepositoryEntry> res = getAccessibleWikiRepositoryEntries(httpRequest);
+		WikiVO[] wikiVoArr = toWikiVOArray(res);
+		WikiVOes voes = new WikiVOes();
+		voes.setWikis(wikiVoArr);
+		return Response.ok(voes).build();
 	}
 	
 	/**
@@ -96,16 +96,14 @@ public class WikisWebService {
 	 * @param httpRequest
 	 * @return
 	 */
-	private static List<RepositoryEntry> getAccessibleWikiRepositoryEntries(HttpServletRequest httpRequest){
+	private List<RepositoryEntry> getAccessibleWikiRepositoryEntries(HttpServletRequest httpRequest){
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
-		RepositoryManager rm = RepositoryManager.getInstance();
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, new String[] { WikiResource.TYPE_NAME });
-		List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
-		return res;
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, WikiResource.TYPE_NAME);
+		return repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 	}
 
-	private static WikiVO[] toArrayOfVOes_repoentry(List<RepositoryEntry> entries) {
+	private WikiVO[] toWikiVOArray(List<RepositoryEntry> entries) {
 		int i = 0;
 		WikiVO[] wikiVOs = new WikiVO[entries.size()];
 		for (RepositoryEntry entry : entries) {
@@ -114,7 +112,7 @@ public class WikisWebService {
 		return wikiVOs;
 	}
 
-	private static WikiVO wikivoFromRepoEntry(RepositoryEntry entry) {
+	private WikiVO wikivoFromRepoEntry(RepositoryEntry entry) {
 		WikiVO wiki = new WikiVO();
 		wiki.setTitle(entry.getDisplayname());
 		wiki.setKey(entry.getResourceableId());

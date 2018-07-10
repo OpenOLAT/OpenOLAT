@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -41,6 +43,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDocumentFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
@@ -64,6 +67,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	private static final int BATCH_SIZE = 100;
 	
 	private DB dbInstance;
+	private RepositoryService repositoryService;
 	private RepositoryManager repositoryManager;
 	private RepositoryEntryDocumentFactory documentFactory;
 	
@@ -97,6 +101,13 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	/**
 	 * [used by spring]
 	 */
+	public void setRepositoryService(RepositoryService repositoryService) {
+		this.repositoryService = repositoryService;
+	}
+
+	/**
+	 * [used by spring]
+	 */
 	public void setDbInstance(DB dbInstance) {
 		this.dbInstance = dbInstance;
 	}
@@ -108,7 +119,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
     */
 	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
-		final Roles roles = new Roles(true, true, true, true, false, true, false);
+		final Roles roles = Roles.administratorRoles();
 
 		final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 		params.setRoles(roles);
@@ -186,34 +197,28 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		return repositoryBlackList.contains(key);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
-	 */
+	@Override
 	public String getSupportedTypeName() {
 		return OresHelper.calculateTypeName(RepositoryEntry.class);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry, org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity, org.olat.core.id.Roles)
-	 */
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		boolean debug = isLogDebugEnabled();
 		if (debug) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
+		
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
 		if (repositoryEntry == null) {
 			return false;
 		}
-		if(roles.isGuestOnly()) {
-			if(repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
-				return false;
-			}
+		if(roles.isGuestOnly() && repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
+			return false;
 		}
 			
-		boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity,repositoryEntry);
+		boolean isOwner = repositoryService.hasRoleExpanded(identity, repositoryEntry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				GroupRoles.owner.name());
 		boolean isAllowedToLaunch = false;
 		if (!isOwner) {
 			isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);

@@ -44,7 +44,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -87,14 +86,6 @@ public class JunitTestHelper {
 		if (maildomain == null) {
 			maildomain = "mytrashmail.com";
 		}
-	}
-	
-	public static Roles getAdminRoles() {
-		return new Roles(true, true, true, true, false, false, false);
-	}
-	
-	public static Roles getUserRoles() {
-		return new Roles(false, false, false, false, false, false, false);
 	}
 	
 	public static final OLATResource createRandomResource() {
@@ -179,6 +170,11 @@ public class JunitTestHelper {
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
+	}
+	
+	public static final Identity createAndPersistIdentityAsRndAdmin(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsAdmin(login);
 	}
 	
 	/**

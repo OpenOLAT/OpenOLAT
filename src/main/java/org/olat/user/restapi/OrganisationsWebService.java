@@ -464,8 +464,6 @@ public class OrganisationsWebService {
 	private OrganisationRoles getRoles(String role) {
 		if(OrganisationRoles.isValue(role)) {
 			return OrganisationRoles.valueOf(role);
-		} else if("coaches".equals(role)) {
-			return OrganisationRoles.coach;
 		}
 		
 		if(role.endsWith("s")) {

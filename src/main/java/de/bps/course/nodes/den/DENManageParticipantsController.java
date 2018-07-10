@@ -46,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailBundle;
@@ -88,7 +89,7 @@ public class DENManageParticipantsController extends BasicController {
 	private MailNotificationEditController notificationCtr;
 	private ContactFormController contactCtr;
 	private CloseableModalController notificationCmc;
-	private List<Identity> selectedIds = new ArrayList<Identity>();
+	private List<Identity> selectedIds = new ArrayList<>();
 	
 	private CloseableModalController manageParticipantsModalCntrl;
 	
@@ -177,11 +178,11 @@ public class DENManageParticipantsController extends BasicController {
 				userSearchCMC.deactivate();
 			} else {
 				List<Identity> toAdd = null;
-				selectedIds = new ArrayList<Identity>();
+				selectedIds = new ArrayList<>();
 				if (event instanceof SingleIdentityChosenEvent) {
 					SingleIdentityChosenEvent singleEvent = (SingleIdentityChosenEvent) event;
 					Identity choosenIdentity = singleEvent.getChosenIdentity();
-					toAdd = new ArrayList<Identity>();
+					toAdd = new ArrayList<>();
 					toAdd.add(choosenIdentity);
 				} else if (event instanceof MultiIdentityChosenEvent) {
 					MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent) event;
@@ -224,7 +225,7 @@ public class DENManageParticipantsController extends BasicController {
 					refreshTables();
 				//write email to single user
 				} else if(tableEvent.getActionId().equals(DENParticipantsTableDataModel.MAIL_ACTION)) {
-					List<Identity> participants = new ArrayList<Identity>();
+					List<Identity> participants = new ArrayList<>();
 					participants.add(participantsTableData.getEntryAt(tableEvent.getRowId()));
 					createParticipantsMail(ureq, participants);
 				}
@@ -241,7 +242,9 @@ public class DENManageParticipantsController extends BasicController {
 					MailBundle ccBundles = mailManager.makeMailBundle(context, sender, notificationCtr.getMailTemplate(), sender, metaId, result);
 					result.append(mailManager.sendMessage(ccBundles));
 				}
-				MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+				Roles roles = ureq.getUserSession().getRoles();
+				boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, ureq.getLocale());
 			}
 			notificationCmc.deactivate();
 			selectedIds.clear();

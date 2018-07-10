@@ -32,7 +32,6 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -457,7 +456,7 @@ public class CourseOverviewController extends BasicController  {
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
 		//make sure all is committed before loading the model again (I see issues without)
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		updateModel();
 	}
 	
@@ -505,8 +504,12 @@ public class CourseOverviewController extends BasicController  {
 		}
 		
 		//make sure all is committed before loading the model again (I see issues without)
-		DBFactory.getInstance().commitAndCloseSession();
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+		dbInstance.commitAndCloseSession();
+		
+		// print errors
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
 	}
 
 	/**
@@ -516,7 +519,7 @@ public class CourseOverviewController extends BasicController  {
 	 */
 	private void doLeave(UserRequest ureq, Collection<CourseMemberView> views) {
 		List<Long> groupKeys = new ArrayList<Long>();
-		List<RepositoryEntry> repoEntryToLeave = new ArrayList<RepositoryEntry>();
+		List<RepositoryEntry> repoEntryToLeave = new ArrayList<>();
 		for(CourseMemberView view:views) {
 			for(BusinessGroupShort group:view.getGroups()) {
 				if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
@@ -539,7 +542,7 @@ public class CourseOverviewController extends BasicController  {
 		
 		List<BusinessGroup> groupsToLeave = businessGroupService.loadBusinessGroups(groupKeys);
 
-		List<BusinessGroup> groupsToDelete = new ArrayList<BusinessGroup>(1);
+		List<BusinessGroup> groupsToDelete = new ArrayList<>(1);
 		for(BusinessGroup group:groupsToLeave) {
 			int numOfOwners = businessGroupService.countMembers(group, GroupRoles.coach.name());
 			int numOfParticipants = businessGroupService.countMembers(group, GroupRoles.participant.name());
@@ -577,7 +580,9 @@ public class CourseOverviewController extends BasicController  {
 				MailPackage mailing = new MailPackage(doSendMail);
 				// 2) remove as participant
 				businessGroupService.removeParticipants(getIdentity(), membersToRemove, group, mailing);
-				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+				Roles roles = ureq.getUserSession().getRoles();
+				boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), detailedErrorOutput, getLocale());
 			}
 		}
 		

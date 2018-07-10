@@ -68,7 +68,7 @@ public class PoolTaxonomySecurityCallback implements SiteSecurityCallback {
 		if (roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isOLATAdmin() || roles.isQPoolManager()) {
+		if (roles.isAdministrator() || roles.isPoolManager()) {
 			return true;
 		}
 		

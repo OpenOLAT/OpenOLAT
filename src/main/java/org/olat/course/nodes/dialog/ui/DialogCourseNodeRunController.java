@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.commons.modules.bc.FileUploadController;
@@ -49,6 +50,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
@@ -61,6 +63,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseModule;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.dialog.DialogElement;
@@ -73,7 +76,7 @@ import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,8 +92,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	private Link uploadButton;
 	private final VelocityContainer mainVC;
 
-	private boolean isOlatAdmin;
-	private boolean isGuestOnly;
+	private final boolean isGuestOnly;
 	private DialogCourseNode courseNode;
 	private final RepositoryEntry entry;
 	private ForumCallback forumCallback;
@@ -108,7 +110,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private RepositoryService repositoryService;
 	@Autowired
 	private DialogElementsManager dialogElmsMgr;
 	@Autowired
@@ -120,19 +122,24 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		this.nodeEvaluation = nodeEvaluation;
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
-		entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		entry = cgm.getCourseEntry();
 
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
 		mainVC = createVelocityContainer("dialog");		
 
 		UserSession usess = ureq.getUserSession();
-		isOlatAdmin = usess.getRoles().isOLATAdmin();
-		isGuestOnly = usess.getRoles().isGuestOnly();
+		Roles roles = usess.getRoles();
+		isGuestOnly = roles.isGuestOnly();
+
+		boolean isAdministrator = (roles.isAdministrator() || roles.isLearnResourceManager()) && repositoryService.hasRoleExpanded(getIdentity(), entry,
+						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
 		subsContext = isGuestOnly ? null : CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode);
 		forumCallback = userCourseEnv.isCourseReadOnly() ?
-				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext) :
-				new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
+				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext) :
+				new DialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext);
 		
 		if (subsContext != null) {
 			String businessPath = "[RepositoryEntry:" +entry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]";
@@ -144,10 +151,9 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		
 		backButton = LinkFactory.createLinkBack(mainVC, this);
 		
-		if (!userCourseEnv.isCourseReadOnly()
-			&& (isOlatAdmin
-					|| repositoryManager.isOwnerOfRepositoryEntry(getIdentity(), entry)
-					|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
+		if (!userCourseEnv.isCourseReadOnly() && (isAdministrator
+					|| cgm.isIdentityCourseAdministrator(getIdentity())
+					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
 			copyButton = LinkFactory.createButton("dialog.copy.file", mainVC, this);
 		}
 		

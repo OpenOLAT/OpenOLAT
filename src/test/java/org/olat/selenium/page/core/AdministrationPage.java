@@ -141,8 +141,8 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationPage setGroupConfirmationForAuthor(boolean mandatory) {
-		By authorConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='authors']]");
-		By authorConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='authors']");
+		By authorConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='author']]");
+		By authorConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='author']");
 		
 		OOGraphene.waitElement(authorConfirmationBy, 5, browser);
 		OOGraphene.scrollTo(authorConfirmationBy, browser);

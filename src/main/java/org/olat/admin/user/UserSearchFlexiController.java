@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
@@ -119,6 +120,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private IdentityPowerSearchQueries identitySearchQueries;
 
 	/**
 	 * @param ureq
@@ -270,7 +273,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 						List<Identity> selectedIdentities = Collections.singletonList(chosenIdent);
 						userTableModel.setObjects(selectedIdentities);
 						Set<Integer> selectedIndex = new HashSet<>();
-						selectedIndex.add(new Integer(0));
+						selectedIndex.add(Integer.valueOf(0));
 						tableEl.setMultiSelectedIndex(selectedIndex);
 					}
 				}
@@ -289,8 +292,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	private boolean validateForm(UserRequest ureq) {
 		// override for sys admins
-		if (ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
-				&& ureq.getUserSession().getRoles().isOLATAdmin()) {
+		UserSession usess = ureq.getUserSession();
+		if (usess != null && usess.getRoles() != null
+				&& (usess.getRoles().isAdministrator() || usess.getRoles().isRolesManager())) {
 			return true;
 		}
 		
@@ -456,6 +460,6 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 				userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
 				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
-		return securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
 	}
 }

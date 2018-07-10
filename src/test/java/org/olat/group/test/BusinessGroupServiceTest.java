@@ -42,6 +42,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -486,7 +487,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		businessGroupService.addToWaitingList(admin, Collections.singletonList(ident1), group, null);
 		businessGroupService.addToWaitingList(admin, Collections.singletonList(ident2), group, null);
-		businessGroupService.addParticipants(admin, JunitTestHelper.getAdminRoles(), Collections.singletonList(ident3), group, null);
+		businessGroupService.addParticipants(admin, Roles.administratorRoles(), Collections.singletonList(ident3), group, null);
 		dbInstance.commitAndCloseSession();
 		
 		//move id1 from waiting-list to participant
@@ -1155,7 +1156,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Ignore @Test
 	public void parallelRemoveParticipants() {
 		mailModule.setInterSystem(true);
-		businessGroupModule.setMandatoryEnrolmentEmailForUsers("true");
+		businessGroupModule.setMandatoryEnrolmentEmailFor(OrganisationRoles.user, "true");
 		
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndUser("remove-p1-1");
 		
@@ -1206,7 +1207,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		}	
 		
 
-		businessGroupModule.setMandatoryEnrolmentEmailForUsers("false");
+		businessGroupModule.setMandatoryEnrolmentEmailFor(OrganisationRoles.user, "false");
 	}
 	
 	private class RemoveParticipantsThread extends Thread {

@@ -579,7 +579,9 @@ public class CourseHandler implements RepositoryHandler {
 				control.setInfo(CourseCreationMailHelper.getSuccessMessageString(uureq));
 				// send notification mail
 				final MailerResult mr = CourseCreationMailHelper.sentNotificationMail(uureq, ccHelper.getConfiguration());
-				MailHelper.printErrorsAndWarnings(mr, control, uureq.getUserSession().getRoles().isOLATAdmin(), uureq.getLocale());
+				Roles roles = uureq.getUserSession().getRoles();
+				boolean detailedErrorOuput = roles.isAdministrator() || roles.isSystemAdmin();
+				MailHelper.printErrorsAndWarnings(mr, control, detailedErrorOuput, uureq.getLocale());
 				return StepsMainRunController.DONE_MODIFIED;
 			};
 

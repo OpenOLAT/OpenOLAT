@@ -37,7 +37,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -115,7 +114,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	@Override
 	public RepositoryEntry getCourseEntry() {
 		if(courseRepoEntry == null) {
-			courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+			courseRepoEntry = repositoryManager.lookupRepositoryEntry(courseResource, false);
 		}
 		return courseRepoEntry;
 	}
@@ -202,7 +201,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(StringHelper.isLong(nameOrKey)) {
 			try {
-				params.setGroupKeys(Collections.singletonList(new Long(nameOrKey)));
+				params.setGroupKeys(Collections.singletonList(Long.valueOf(nameOrKey)));
 			} catch (NumberFormatException e) {
 				params.setExactName(nameOrKey);
 			}
@@ -248,33 +247,20 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 
 	@Override
 	public boolean isIdentityCourseCoach(Identity identity) {
-		boolean isCoach = repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.coach.name());
-		if (isCoach) { // don't check any further
-			return true;
-		}
-
-		return businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, getCourseEntry());
+		return repositoryService.hasRoleExpanded(identity, getCourseEntry(), GroupRoles.coach.name());
 	}
 	
 	@Override
 	public boolean isIdentityCourseParticipant(Identity identity) {
-		boolean participant = repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.participant.name());
-		if (participant) {// don't check any further
-			return true;
-		}
-		return businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, getCourseEntry());
+		return repositoryService.hasRoleExpanded(identity, getCourseEntry(), GroupRoles.participant.name());
 	}
 
 	@Override
 	public boolean isIdentityCourseAdministrator(Identity identity) {
 		// not really a group management method, for your convenience we have a
 		// shortcut here...
-		return repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.owner.name());
-	}
-	
-	@Override
-	public boolean isIdentityCourseLearnResourceManager(Identity identity, Roles roles) {
-		return repositoryManager.isLearnResourceManagerFor(roles, courseRepoEntry);
+		return repositoryService.hasRoleExpanded(identity, getCourseEntry(), OrganisationRoles.administrator.name(),
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
 	}
 
 	@Override
@@ -284,23 +270,23 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 
 	@Override
 	public boolean isIdentityAnyCourseAdministrator(Identity identity) {
-		return repositoryService.hasRole(identity, false, GroupRoles.owner.name());
+		return repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name());
 	}
 
 	@Override
 	public boolean isIdentityAnyCourseCoach(Identity identity) {
-		return repositoryService.hasRole(identity, true, GroupRoles.coach.name());
+		return repositoryService.hasRoleExpanded(identity, GroupRoles.coach.name());
 	}
 
 	@Override
 	public boolean isIdentityAnyCourseParticipant(Identity identity) {
-		return repositoryService.hasRole(identity, true, GroupRoles.participant.name());
+		return repositoryService.hasRoleExpanded(identity, GroupRoles.participant.name());
 	}
 
 	@Override
 	public void deleteCourseGroupmanagement() {
 		//delete permission group to course
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(getCourseResource(), false);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(getCourseResource(), false);
 		if(re != null) {
 			businessGroupService.removeResource(re);
 			//delete areas
@@ -393,7 +379,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
 		OLATResource resource = getCourseResource();
-		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(resource, true);
+		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(resource, true);
 		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		if(fGroupXML1.exists()) {
 			BusinessGroupEnvironment env = businessGroupService.importGroups(courseRe, fGroupXML1);

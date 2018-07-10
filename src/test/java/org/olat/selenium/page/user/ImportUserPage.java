@@ -84,7 +84,7 @@ public class ImportUserPage {
 	/**
 	 * Append a line in the form:<br/>
 	 * Benutzername *	Passwort	Sprache	Vorname *	Nachname *	E-Mail *	Institution	Institutionsnummer	Institutions E-Mail<br/>
-	 * demo	olat4you	de	Peter	Muster	peter.muster@openolat.org	Universität Zürich	08-123-987	peter.muster@uzh.ch<br/>
+	 * demo	olat4you	de	Peter	Muster	peter.muster@openolat.org	Universität Zürich	08-123-987	peter.muster@frentix.com<br/>
 	 * 
 	 * 
 	 * 

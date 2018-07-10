@@ -53,6 +53,7 @@ public class SearchIdentityParams {
 	private Integer status;
 	private Collection<Long> identityKeys;
 	private Boolean managed;
+	private boolean withoutBusinessGroup;
 	
 	private List<Organisation> organisationParents;
 	private List<OrganisationRef> organisations;
@@ -107,6 +108,13 @@ public class SearchIdentityParams {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setOrganisations(Collections.singletonList(organisation));
 		params.setStatus(status);
+		return params;
+	}
+	
+	public static SearchIdentityParams withBusinesGroups() {
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setWithoutBusinessGroup(true);
+		params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
 		return params;
 	}
 	
@@ -296,5 +304,13 @@ public class SearchIdentityParams {
 	
 	public void setIdentityKeys(Collection<Long> identityKeys) {
 		this.identityKeys = identityKeys;
+	}
+
+	public boolean isWithoutBusinessGroup() {
+		return withoutBusinessGroup;
+	}
+
+	public void setWithoutBusinessGroup(boolean withoutBusinessGroup) {
+		this.withoutBusinessGroup = withoutBusinessGroup;
 	}
 }

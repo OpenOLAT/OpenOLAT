@@ -26,7 +26,6 @@ package org.olat.restapi.repository;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
@@ -60,6 +59,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
@@ -126,11 +126,15 @@ public class RepositoryEntryWebService {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
@@ -492,19 +496,20 @@ public class RepositoryEntryWebService {
 	@Path("file")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getRepoFileById(@Context HttpServletRequest request, @Context HttpServletResponse response) {
-		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(entry);
 		if (typeToDownload == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(entry.getOlatResource());
+		OLATResource ores = resourceManager.findResourceable(entry.getOlatResource());
 		if (ores == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
 		Identity identity = getIdentity(request);
 		boolean canDownload = entry.getCanDownload() && typeToDownload.supportsDownload();
-		if (isAdmin(request) || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, entry)) {
+		if (repositoryService.hasRoleExpanded(identity, entry, OrganisationRoles.administrator.name(),
+				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name())) {
 			canDownload = true;
 		} else if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

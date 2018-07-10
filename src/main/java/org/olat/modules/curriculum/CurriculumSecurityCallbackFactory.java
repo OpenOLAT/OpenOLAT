@@ -34,7 +34,7 @@ public class CurriculumSecurityCallbackFactory {
 	}
 	
 	public static final CurriculumSecurityCallback createCallback(Roles roles) {
-		boolean admin = roles.isCurriculumManager() || roles.isOLATAdmin();
+		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
 		return new DefaultCurriculumSecurityCallback(admin);
 	}
 	

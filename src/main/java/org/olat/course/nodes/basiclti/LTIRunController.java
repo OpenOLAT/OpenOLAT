@@ -479,7 +479,7 @@ public class LTIRunController extends BasicController {
 		}
 		CourseGroupManager groupManager = courseEnv.getCourseGroupManager();
 		boolean admin = groupManager.isIdentityCourseAdministrator(getIdentity());
-		if(admin || roles.isOLATAdmin()) {
+		if(admin) {
 			String authorRole = config.getStringValue(BasicLTICourseNode.CONFIG_KEY_AUTHORROLE);
 			if(StringHelper.containsNonWhitespace(authorRole)) {
 				return authorRole;

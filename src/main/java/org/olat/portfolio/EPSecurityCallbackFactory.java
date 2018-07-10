@@ -20,6 +20,9 @@
 
 package org.olat.portfolio;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -30,6 +33,7 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 
 
 /**
@@ -146,24 +150,30 @@ public class EPSecurityCallbackFactory {
 	 * @return
 	 */
 	protected static EPSecurityCallback getSecurityCallbackTemplate(UserRequest ureq, PortfolioStructureMap map, EPFrontendManager ePFMgr) {
-		OLATResourceable mres = map.getOlatResource();
-		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(mres, false);
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		//owner of repository entry or owner of map is the same
-		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), repoEntry);	
-		boolean canLaunch = RepositoryManager.getInstance().isAllowedToLaunch(ureq.getIdentity(), ureq.getUserSession().getRoles(), repoEntry);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		
-		isOwner |= ePFMgr.isMapOwner(ureq.getIdentity(), map.getOlatResource());
+		OLATResourceable mres = map.getOlatResource();
+		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(mres, false);
+		
+		boolean isAdministrator = repositoryService.hasRoleExpanded(ureq.getIdentity(), repoEntry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+
+		//owner of repository entry or owner of map is the same
+		boolean isOwner = repositoryService.hasRole(ureq.getIdentity(), repoEntry, GroupRoles.owner.name())
+				|| ePFMgr.isMapOwner(ureq.getIdentity(), map.getOlatResource());
+		boolean canLaunch = isAdministrator || isOwner ||
+				repositoryManager.isAllowedToLaunch(ureq.getIdentity(), ureq.getUserSession().getRoles(), repoEntry);
 		boolean open = !StructureStatusEnum.CLOSED.equals(map.getStatus());
 		
-		boolean canEditStructure = (isOwner || isAdmin) && open;
+		boolean canEditStructure = (isOwner || isAdministrator) && open;
 		boolean canEditReflexion = isOwner && open;
 		boolean canEditTags = isOwner && open;
 		boolean canShare = false;
-		boolean canAddArtefact = false; // (isOwner || isAdmin) && open;
-		boolean canRemoveArtefactFromStruct = (isOwner || isAdmin) && open;
-		boolean canAddStructure = (isOwner || isAdmin) && open;
-		boolean canAddPage = (isOwner || isAdmin) && open;
+		boolean canAddArtefact = false;
+		boolean canRemoveArtefactFromStruct = (isOwner || isAdministrator) && open;
+		boolean canAddStructure = (isOwner || isAdministrator) && open;
+		boolean canAddPage = (isOwner || isAdministrator) && open;
 		boolean canView = canLaunch;
 		boolean canCommentAndRate = false;
 		boolean canSubmitAssess = false;

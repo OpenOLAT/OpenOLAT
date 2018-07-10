@@ -48,24 +48,61 @@ import org.springframework.stereotype.Service;
 public class BaseSecurityModule extends AbstractSpringModule {
 	
 	private static final OLog log = Tracing.createLoggerFor(BaseSecurityModule.class);
+	
+	private static final OrganisationRoles[] privacyRoles = new OrganisationRoles[]{
+			OrganisationRoles.user, OrganisationRoles.author,
+			OrganisationRoles.usermanager, OrganisationRoles.rolesmanager,
+			OrganisationRoles.groupmanager, OrganisationRoles.learnresourcemanager,
+			OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
+			OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
+			OrganisationRoles.linemanager, OrganisationRoles.principal,
+			OrganisationRoles.administrator, OrganisationRoles.sysadmin
+	};
 
 	private static final String USERSEARCH_ADMINPROPS_USERS = "userSearchAdminPropsForUsers";
 	private static final String USERSEARCH_ADMINPROPS_AUTHORS = "userSearchAdminPropsForAuthors";
 	private static final String USERSEARCH_ADMINPROPS_USERMANAGERS = "userSearchAdminPropsForUsermanagers";
+	private static final String USERSEARCH_ADMINPROPS_ROLESMANAGERS = "userSearchAdminPropsForRolesmanagers";
 	private static final String USERSEARCH_ADMINPROPS_GROUPMANAGERS = "userSearchAdminPropsForGroupmanagers";
+	private static final String USERSEARCH_ADMINPROPS_LEARNRESOURCEMANAGERS = "userSearchAdminPropsForLearnresourcemanagers";
+	private static final String USERSEARCH_ADMINPROPS_POOLMANAGERS = "userSearchAdminPropsForPoolmanagers";
+	private static final String USERSEARCH_ADMINPROPS_CURRICULUMMANAGERS = "userSearchAdminPropsForCurriculummanagers";
+	private static final String USERSEARCH_ADMINPROPS_LECTUREMANAGERS = "userSearchAdminPropsForLecturemanagers";
+	private static final String USERSEARCH_ADMINPROPS_QUALITYMANAGERS = "userSearchAdminPropsForQualitymanagers";
+	private static final String USERSEARCH_ADMINPROPS_LINEMANAGERS = "userSearchAdminPropsForLinemanagers";
+	private static final String USERSEARCH_ADMINPROPS_PRINCIPALS = "userSearchAdminPropsForPrincipals";
 	private static final String USERSEARCH_ADMINPROPS_ADMINISTRATORS = "userSearchAdminPropsForAdministrators";
+	private static final String USERSEARCH_ADMINPROPS_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
 	
 	private static final String USER_LASTLOGIN_VISIBLE_USERS = "userLastLoginVisibleForUsers";
 	private static final String USER_LASTLOGIN_VISIBLE_AUTHORS = "userLastLoginVisibleForAuthors";
 	private static final String USER_LASTLOGIN_VISIBLE_USERMANAGERS = "userLastLoginVisibleForUsermanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_ROLESMANAGERS = "userLastLoginVisibleForRolesmanagers";
 	private static final String USER_LASTLOGIN_VISIBLE_GROUPMANAGERS = "userLastLoginVisibleForGroupmanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_LEARNRESOURCEMANAGERS = "userLastLoginVisibleForLearnresourcemanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_POOLMANAGERS = "userLastLoginVisibleForPoolmanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_CURRICULUMMANAGERS = "userLastLoginVisibleForCurriculummanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_LECTUREMANAGERS = "userLastLoginVisibleForLecturemanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_QUALITYMANAGERS = "userLastLoginVisibleForQualitymanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_LINEMANAGERS = "userLastLoginVisibleForLinemanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_PRINCIPALS = "userLastLoginVisibleForPrincipals";
 	private static final String USER_LASTLOGIN_VISIBLE_ADMINISTRATORS = "userLastLoginVisibleForAdministrators";
+	private static final String USER_LASTLOGIN_VISIBLE_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
 
 	private static final String USERSEARCHAUTOCOMPLETE_USERS = "userSearchAutocompleteForUsers";
 	private static final String USERSEARCHAUTOCOMPLETE_AUTHORS = "userSearchAutocompleteForAuthors";
 	private static final String USERSEARCHAUTOCOMPLETE_USERMANAGERS = "userSearchAutocompleteForUsermanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_ROLESMANAGERS = "userSearchAutocompleteForRolesmanagers";
 	private static final String USERSEARCHAUTOCOMPLETE_GROUPMANAGERS = "userSearchAutocompleteForGroupmanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_LEARNRESOURCEMANAGERS = "userSearchAutocompleteForLearnresourcemanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_POOLMANAGERS = "userSearchAutocompleteForPoolmanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_CURRICULUMMANAGERS = "userSearchAutocompleteForCurriculummanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_LECTUREMANAGERS = "userSearchAutocompleteForLecturemanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_QUALITYMANAGERS = "userSearchAutocompleteForQualitymanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_LINEMANAGERS = "userSearchAutocompleteForLinemanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_PRINCIPALS = "userSearchAutocompleteForPrincipals";
 	private static final String USERSEARCHAUTOCOMPLETE_ADMINISTRATORS = "userSearchAutocompleteForAdministrators";
+	private static final String USERSEARCHAUTOCOMPLETE_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
 	private static final String USERSEARCH_MAXRESULTS = "userSearchMaxResults";
 	
 
@@ -78,23 +115,14 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	 * default values
 	 */
 	public static final Boolean USERMANAGER_CAN_CREATE_USER = true;
-	public static final Boolean USERMANAGER_CAN_DELETE_USER = false;
-	public static final Boolean USERMANAGER_CAN_CREATE_PWD = true;
-	public static final Boolean USERMANAGER_CAN_MODIFY_PWD = true;
+	public static final Boolean USERMANAGER_CAN_DELETE_USER = false;// fx -> true
 	public static final Boolean USERMANAGER_CAN_START_GROUPS = true;
 	public static final Boolean USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = true;
-	public static final Boolean USERMANAGER_ACCESS_TO_QUOTA = true;
-	public static final Boolean USERMANAGER_ACCESS_TO_PROP = false;
-	public static final Boolean USERMANAGER_ACCESS_TO_AUTH = false;
 	public static final Boolean USERMANAGER_CAN_MANAGE_POOLMANAGERS = true;
 	public static final Boolean USERMANAGER_CAN_MANAGE_GROUPMANAGERS = true;
 	public static final Boolean USERMANAGER_CAN_MANAGE_CURRICULUMMANAGERS = true;
-	public static final Boolean USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = true;
-	public static final Boolean USERMANAGER_CAN_MANAGE_AUTHORS = true;
 	public static final Boolean USERMANAGER_CAN_MANAGE_GUESTS = false;
 	public static final Boolean USERMANAGER_CAN_MANAGE_STATUS = true;
-	public static final Boolean USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = true;
-	public static final Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	
 	private static String defaultAuthProviderIdentifier;
 
@@ -104,10 +132,28 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userSearchAdminPropsForAuthors;
 	@Value("${usersearch.adminProps.usermanagers:enabled}")
 	private String userSearchAdminPropsForUsermanagers;
+	@Value("${usersearch.adminProps.rolesmanagers:enabled}")
+	private String userSearchAdminPropsForRolesmanagers;
 	@Value("${usersearch.adminProps.groupmanagers:enabled}")
 	private String userSearchAdminPropsForGroupmanagers;
+	@Value("${usersearch.adminProps.learnresourcemanagers:enabled}")
+	private String userSearchAdminPropsForLearnresourcemanagers;
+	@Value("${usersearch.adminProps.poolmanagers:enabled}")
+	private String userSearchAdminPropsForPoolmanagers;
+	@Value("${usersearch.adminProps.curriculummanagers:enabled}")
+	private String userSearchAdminPropsForCurriculummanagers;
+	@Value("${usersearch.adminProps.lecturemanagers:enabled}")
+	private String userSearchAdminPropsForLecturemanagers;
+	@Value("${usersearch.adminProps.qualitymanagers:enabled}")
+	private String userSearchAdminPropsForQualitymanagers;
+	@Value("${usersearch.adminProps.linemanagers:enabled}")
+	private String userSearchAdminPropsForLinemanagers;
+	@Value("${usersearch.adminProps.principals:enabled}")
+	private String userSearchAdminPropsForPrincipals;
 	@Value("${usersearch.adminProps.administrators:enabled}")
 	private String userSearchAdminPropsForAdministrators;
+	@Value("${usersearch.adminProps.systemadmins:enabled}")
+	private String userSearchAdminPropsForSystemAdmins;
 
 	@Value("${user.lastlogin.visible.users:disabled}")
 	private String userLastLoginVisibleForUsers;
@@ -115,10 +161,29 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userLastLoginVisibleForAuthors;
 	@Value("${user.lastlogin.visible.usermanagers:enabled}")
 	private String userLastLoginVisibleForUsermanagers;
+	@Value("${user.lastlogin.visible.rolesmanagers:enabled}")
+	private String userLastLoginVisibleForRolesmanagers;
 	@Value("${user.lastlogin.visible.groupmanagers:enabled}")
 	private String userLastLoginVisibleForGroupmanagers;
+	@Value("${user.lastlogin.visible.learnresourcemanagers:enabled}")
+	private String userLastLoginVisibleForLearnresourcemanagers;
+	@Value("${user.lastlogin.visible.poolmanagers:enabled}")
+	private String userLastLoginVisibleForPoolmanagers;
+	@Value("${user.lastlogin.visible.curriculummanagers:enabled}")
+	private String userLastLoginVisibleForCurriculummanagers;
+	@Value("${user.lastlogin.visible.lecturemanagers:enabled}")
+	private String userLastLoginVisibleForLecturemanagers;
+	@Value("${user.lastlogin.visible.qualitymanagers:enabled}")
+	private String userLastLoginVisibleForQualitymanagers;
+	@Value("${user.lastlogin.visible.linemanagers:enabled}")
+	private String userLastLoginVisibleForLinemanagers;
+	@Value("${user.lastlogin.visible.principals:enabled}")
+	private String userLastLoginVisibleForPrincipals;
 	@Value("${user.lastlogin.visible.administrators:enabled}")
 	private String userLastLoginVisibleForAdministrators;
+	@Value("${user.lastlogin.visible.systemadmins:enabled}")
+	private String userLastLoginVisibleForSystemAdmins;
+	
 	
 	@Value("${usersearch.maxResults:-1}")
 	private String userSearchMaxResults;
@@ -128,10 +193,31 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userSearchAutocompleteForAuthors;
 	@Value("${usersearch.autocomplete.usermanagers:enabled}")
 	private String userSearchAutocompleteForUsermanagers;
+	@Value("${usersearch.autocomplete.rolesmanagers:enabled}")
+	private String userSearchAutocompleteForRolesmanagers;
 	@Value("${usersearch.autocomplete.groupmanagers:enabled}")
 	private String userSearchAutocompleteForGroupmanagers;
+	@Value("${usersearch.autocomplete.learnresourcemanagers:enabled}")
+	private String userSearchAutocompleteForLearnresourcemanagers;
+	@Value("${usersearch.autocomplete.poolmanagers:enabled}")
+	private String userSearchAutocompleteForPoolmanagers;
+	@Value("${usersearch.autocomplete.curriculummanagers:enabled}")
+	private String userSearchAutocompleteForCurriculummanagers;
+	@Value("${usersearch.autocomplete.lecturemanagers:enabled}")
+	private String userSearchAutocompleteForLecturemanagers;
+	@Value("${usersearch.autocomplete.qualitymanagers:enabled}")
+	private String userSearchAutocompleteForQualitymanagers;
+	@Value("${usersearch.autocomplete.linemanagers:enabled}")
+	private String userSearchAutocompleteForLinemanagers;
+	@Value("${usersearch.autocomplete.principals:enabled}")
+	private String userSearchAutocompleteForPrincipals;
 	@Value("${usersearch.autocomplete.administrators:enabled}")
 	private String userSearchAutocompleteForAdministrators;
+	@Value("${usersearch.autocomplete.systemadmins:enabled}")
+	private String userSearchAutocompleteForSystemAdmins;
+	
+	
+	
 	
 	@Value("${userinfos.tunnelcoursebuildingblock}")
 	private String userInfosTunnelCourseBuildingBlock;
@@ -166,263 +252,259 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	}
 	
 	private void updateProperties() {
-		String enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_USERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAdminPropsForUsers = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_AUTHORS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAdminPropsForAuthors = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_USERMANAGERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAdminPropsForUsermanagers = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_GROUPMANAGERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAdminPropsForGroupmanagers = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCH_ADMINPROPS_ADMINISTRATORS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAdminPropsForAdministrators = enabled;
-		}
-		
-		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_USERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userLastLoginVisibleForUsers = enabled;
-		}
-		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_AUTHORS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userLastLoginVisibleForAuthors = enabled;
-		}
-		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_USERMANAGERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userLastLoginVisibleForUsermanagers = enabled;
-		}
-		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userLastLoginVisibleForGroupmanagers = enabled;
-		}
-		enabled = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userLastLoginVisibleForAdministrators = enabled;
-		}
+		// view admin. properties
+		userSearchAdminPropsForUsers = getStringPropertyValue(USERSEARCH_ADMINPROPS_USERS, userSearchAdminPropsForUsers);
+		userSearchAdminPropsForAuthors = getStringPropertyValue(USERSEARCH_ADMINPROPS_AUTHORS, userSearchAdminPropsForAuthors);
+		userSearchAdminPropsForUsermanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_USERMANAGERS, userSearchAdminPropsForUsermanagers);
+		userSearchAdminPropsForRolesmanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_ROLESMANAGERS, userSearchAdminPropsForRolesmanagers);
+		userSearchAdminPropsForGroupmanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_GROUPMANAGERS, userSearchAdminPropsForGroupmanagers);
+		userSearchAdminPropsForLearnresourcemanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_LEARNRESOURCEMANAGERS, userSearchAdminPropsForLearnresourcemanagers);
+		userSearchAdminPropsForPoolmanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_POOLMANAGERS, userSearchAdminPropsForPoolmanagers);
+		userSearchAdminPropsForCurriculummanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_CURRICULUMMANAGERS, userSearchAdminPropsForCurriculummanagers);
+		userSearchAdminPropsForLecturemanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_LECTUREMANAGERS, userSearchAdminPropsForLecturemanagers);
+		userSearchAdminPropsForQualitymanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_QUALITYMANAGERS, userSearchAdminPropsForQualitymanagers);
+		userSearchAdminPropsForLinemanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_LINEMANAGERS, userSearchAdminPropsForLinemanagers);
+		userSearchAdminPropsForPrincipals = getStringPropertyValue(USERSEARCH_ADMINPROPS_PRINCIPALS, userSearchAdminPropsForPrincipals);
+		userSearchAdminPropsForAdministrators = getStringPropertyValue(USERSEARCH_ADMINPROPS_ADMINISTRATORS, userSearchAdminPropsForAdministrators);
+		userSearchAdminPropsForSystemAdmins = getStringPropertyValue(USERSEARCH_ADMINPROPS_SYSTEMADMINS, userSearchAdminPropsForSystemAdmins);
 
-		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAutocompleteForUsers = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_AUTHORS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAutocompleteForAuthors = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERMANAGERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAutocompleteForUsermanagers = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAutocompleteForGroupmanagers = enabled;
-		}
-		enabled = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userSearchAutocompleteForAdministrators = enabled;
-		}
-		
-		String maxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, true);
-		if(StringHelper.containsNonWhitespace(maxResults)) {
-			userSearchMaxResults = maxResults;
-		}
-		
-		enabled = getStringPropertyValue(USERINFOS_TUNNEL_CBB, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			userInfosTunnelCourseBuildingBlock = enabled;
-		}
+		// view last login
+		userLastLoginVisibleForUsers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_USERS, userLastLoginVisibleForUsers);
+		userLastLoginVisibleForAuthors = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_AUTHORS, userLastLoginVisibleForAuthors);
+		userLastLoginVisibleForUsermanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_USERMANAGERS, userLastLoginVisibleForUsermanagers);
+		userLastLoginVisibleForRolesmanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_ROLESMANAGERS, userLastLoginVisibleForRolesmanagers);
+		userLastLoginVisibleForGroupmanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, userLastLoginVisibleForGroupmanagers);
+		userLastLoginVisibleForLearnresourcemanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_LEARNRESOURCEMANAGERS, userLastLoginVisibleForLearnresourcemanagers);
+		userLastLoginVisibleForPoolmanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_POOLMANAGERS, userLastLoginVisibleForPoolmanagers);
+		userLastLoginVisibleForCurriculummanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_CURRICULUMMANAGERS, userLastLoginVisibleForCurriculummanagers);
+		userLastLoginVisibleForLecturemanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_LECTUREMANAGERS, userLastLoginVisibleForLecturemanagers);
+		userLastLoginVisibleForQualitymanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_QUALITYMANAGERS, userLastLoginVisibleForQualitymanagers);
+		userLastLoginVisibleForLinemanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_LINEMANAGERS, userLastLoginVisibleForLinemanagers);
+		userLastLoginVisibleForAdministrators = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, userLastLoginVisibleForAdministrators);
+		userLastLoginVisibleForPrincipals = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_PRINCIPALS, userLastLoginVisibleForPrincipals);
+		userLastLoginVisibleForSystemAdmins = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_SYSTEMADMINS, userLastLoginVisibleForSystemAdmins);
 
-		enabled = getStringPropertyValue(WIKI_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			wikiEnabled = enabled;
-		}
+		// autocompletion
+		userSearchAutocompleteForUsers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, userSearchAutocompleteForUsers);
+		userSearchAutocompleteForAuthors = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_AUTHORS, userSearchAutocompleteForAuthors);
+		userSearchAutocompleteForUsermanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERMANAGERS, userSearchAutocompleteForUsermanagers);
+		userSearchAutocompleteForRolesmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ROLESMANAGERS, userSearchAutocompleteForRolesmanagers);
+		userSearchAutocompleteForGroupmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, userSearchAutocompleteForGroupmanagers);
+		userSearchAutocompleteForLearnresourcemanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_LEARNRESOURCEMANAGERS, userSearchAutocompleteForLearnresourcemanagers);
+		userSearchAutocompleteForPoolmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_POOLMANAGERS, userSearchAutocompleteForPoolmanagers);
+		userSearchAutocompleteForCurriculummanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_CURRICULUMMANAGERS, userSearchAutocompleteForCurriculummanagers);
+		userSearchAutocompleteForLecturemanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_LECTUREMANAGERS, userSearchAutocompleteForLecturemanagers);
+		userSearchAutocompleteForQualitymanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_QUALITYMANAGERS, userSearchAutocompleteForQualitymanagers);
+		userSearchAutocompleteForLinemanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_LINEMANAGERS, userSearchAutocompleteForLinemanagers);
+		userSearchAutocompleteForPrincipals = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_PRINCIPALS, userSearchAutocompleteForPrincipals);
+		userSearchAutocompleteForAdministrators = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, userSearchAutocompleteForAdministrators);
+		userSearchAutocompleteForSystemAdmins = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_SYSTEMADMINS, userSearchAutocompleteForSystemAdmins);
+
+		// other stuff
+		userSearchMaxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, userSearchMaxResults);
+		userInfosTunnelCourseBuildingBlock = getStringPropertyValue(USERINFOS_TUNNEL_CBB, userInfosTunnelCourseBuildingBlock);
+		wikiEnabled = getStringPropertyValue(WIKI_ENABLED, wikiEnabled);
+	}
+	
+	public static final OrganisationRoles[] getUserAllowedRoles() {
+		OrganisationRoles[] copy = new OrganisationRoles[privacyRoles.length];
+		System.arraycopy(privacyRoles, 0, copy, 0, privacyRoles.length);
+		return copy;
 	}
 	
 	public boolean isUserAllowedAdminProps(Roles roles) {
-		if(roles == null) return false;
-		if(roles.isOLATAdmin()) {
-			return "enabled".equals(userSearchAdminPropsForAdministrators);
+		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) return false;
+
+		boolean allowed = false;
+		for(OrganisationRoles role:privacyRoles) {
+			if(roles.hasRole(role) && "enabled".equals(getUserSearchAdminPropsFor(role))) {
+				allowed = true;
+				break;
+			}
 		}
-		if(roles.isGroupManager()) {
-			return "enabled".equals(userSearchAdminPropsForGroupmanagers);
+		return allowed;
+	}
+
+	public String getUserSearchAdminPropsFor(OrganisationRoles role) {
+		switch(role) {
+			case user: return userSearchAdminPropsForUsers;
+			case author: return userSearchAdminPropsForAuthors;
+			case usermanager: return userSearchAdminPropsForUsermanagers;
+			case rolesmanager: return userSearchAdminPropsForRolesmanagers;
+			case groupmanager: return userSearchAdminPropsForGroupmanagers;
+			case learnresourcemanager: return userSearchAdminPropsForLearnresourcemanagers;
+			case poolmanager: return userSearchAdminPropsForPoolmanagers;
+			case curriculummanager: return userSearchAdminPropsForCurriculummanagers;
+			case lecturemanager: return userSearchAdminPropsForLecturemanagers;
+			case qualitymanager: return userSearchAdminPropsForQualitymanagers;
+			case linemanager: return userSearchAdminPropsForLinemanagers;
+			case principal: return userSearchAdminPropsForPrincipals;
+			case administrator: return userSearchAdminPropsForAdministrators;
+			case sysadmin: return userSearchAdminPropsForSystemAdmins;
+			default: return "disabled";
 		}
-		if(roles.isUserManager()) {
-			return "enabled".equals(userSearchAdminPropsForUsermanagers);
+	}
+	
+	public void setUserSearchAdminPropsFor(OrganisationRoles role, String enable) {
+		switch(role) {
+			case user:
+				userSearchAdminPropsForUsers = setStringProperty(USERSEARCH_ADMINPROPS_USERS, enable, true);
+				break;
+			case author:
+				userSearchAdminPropsForAuthors = setStringProperty(USERSEARCH_ADMINPROPS_AUTHORS, enable, true);
+				break;
+			case usermanager:
+				userSearchAdminPropsForUsermanagers = setStringProperty(USERSEARCH_ADMINPROPS_USERMANAGERS, enable, true);
+				break;
+			case rolesmanager:
+				userSearchAdminPropsForRolesmanagers = setStringProperty(USERSEARCH_ADMINPROPS_ROLESMANAGERS, enable, true);
+				break;
+			case groupmanager:
+				userSearchAdminPropsForGroupmanagers = setStringProperty(USERSEARCH_ADMINPROPS_GROUPMANAGERS, enable, true);
+				break;
+			case learnresourcemanager:
+				userSearchAdminPropsForLearnresourcemanagers = setStringProperty(USERSEARCH_ADMINPROPS_LEARNRESOURCEMANAGERS, enable, true);
+				break;
+			case poolmanager:
+				userSearchAdminPropsForPoolmanagers = setStringProperty(USERSEARCH_ADMINPROPS_POOLMANAGERS, enable, true);
+				break;
+			case curriculummanager:
+				userSearchAdminPropsForCurriculummanagers = setStringProperty(USERSEARCH_ADMINPROPS_CURRICULUMMANAGERS, enable, true);
+				break;
+			case lecturemanager:
+				userSearchAdminPropsForLecturemanagers = setStringProperty(USERSEARCH_ADMINPROPS_LECTUREMANAGERS, enable, true);
+				break;
+			case qualitymanager:
+				userSearchAdminPropsForQualitymanagers = setStringProperty(USERSEARCH_ADMINPROPS_QUALITYMANAGERS, enable, true);
+				break;
+			case linemanager:
+				userSearchAdminPropsForLinemanagers = setStringProperty(USERSEARCH_ADMINPROPS_LINEMANAGERS, enable, true);
+				break;
+			case principal:
+				userSearchAdminPropsForPrincipals = setStringProperty(USERSEARCH_ADMINPROPS_PRINCIPALS, enable, true);
+				break;
+			case administrator:
+				userSearchAdminPropsForAdministrators = setStringProperty(USERSEARCH_ADMINPROPS_ADMINISTRATORS, enable, true);
+				break;
+			case sysadmin:
+				userSearchAdminPropsForSystemAdmins = setStringProperty(USERSEARCH_ADMINPROPS_SYSTEMADMINS, enable, true);
+				break;
+			default: /* Ignore the other roles */
 		}
-		if(roles.isAuthor()) {
-			return "enabled".equals(userSearchAdminPropsForAuthors);
-		}
-		if(roles.isInvitee()) {
-			return false;
-		}
-		return "enabled".equals(userSearchAdminPropsForUsers);
-	}
-
-	public String getUserSearchAdminPropsForUsers() {
-		return userSearchAdminPropsForUsers;
-	}
-
-	public void setUserSearchAdminPropsForUsers(String enable) {
-		setStringProperty(USERSEARCH_ADMINPROPS_USERS, enable, true);
-	}
-
-	public String getUserSearchAdminPropsForAuthors() {
-		return userSearchAdminPropsForAuthors;
-	}
-
-	public void setUserSearchAdminPropsForAuthors(String enable) {
-		setStringProperty(USERSEARCH_ADMINPROPS_AUTHORS, enable, true);
-	}
-
-	public String getUserSearchAdminPropsForUsermanagers() {
-		return userSearchAdminPropsForUsermanagers;
-	}
-
-	public void setUserSearchAdminPropsForUsermanagers(String enable) {
-		setStringProperty(USERSEARCH_ADMINPROPS_USERMANAGERS, enable, true);
-	}
-
-	public String getUserSearchAdminPropsForGroupmanagers() {
-		return userSearchAdminPropsForGroupmanagers;
-	}
-
-	public void setUserSearchAdminPropsForGroupmanagers(String enable) {
-		setStringProperty(USERSEARCH_ADMINPROPS_GROUPMANAGERS, enable, true);
-	}
-
-	public String getUserSearchAdminPropsForAdministrators() {
-		return userSearchAdminPropsForAdministrators;
-	}
-
-	public void setUserSearchAdminPropsForAdministrators(String enable) {
-		setStringProperty(USERSEARCH_ADMINPROPS_ADMINISTRATORS, enable, true);
 	}
 	
 	public boolean isUserLastVisitVisible(Roles roles) {
-		if(roles == null) return false;
-		if(roles.isOLATAdmin()) {
-			return "enabled".equals(userLastLoginVisibleForAdministrators);
+		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
+		
+		boolean allowed = false;
+		for(OrganisationRoles role:privacyRoles) {
+			if(roles.hasRole(role) && "enabled".equals(getUserLastLoginVisibleFor(role))) {
+				allowed = true;
+				break;
+			}
 		}
-		if(roles.isGroupManager()) {
-			return "enabled".equals(userLastLoginVisibleForGroupmanagers);
+		return allowed;
+	}
+	
+	public String getUserLastLoginVisibleFor(OrganisationRoles role) {
+		switch(role) {
+			case user: return userLastLoginVisibleForUsers;
+			case author: return userLastLoginVisibleForAuthors;
+			case usermanager: return userLastLoginVisibleForUsermanagers;
+			case rolesmanager: return userLastLoginVisibleForRolesmanagers;
+			case groupmanager: return userLastLoginVisibleForGroupmanagers;
+			case learnresourcemanager: return userLastLoginVisibleForLearnresourcemanagers;
+			case poolmanager: return userLastLoginVisibleForPoolmanagers;
+			case curriculummanager: return userLastLoginVisibleForCurriculummanagers;
+			case lecturemanager: return userLastLoginVisibleForLecturemanagers;
+			case qualitymanager: return userLastLoginVisibleForQualitymanagers;
+			case linemanager: return userLastLoginVisibleForLinemanagers;
+			case principal: return userLastLoginVisibleForPrincipals;
+			case administrator: return userLastLoginVisibleForAdministrators;
+			case sysadmin: return userLastLoginVisibleForSystemAdmins;
+			default: return "disabled";
 		}
-		if(roles.isUserManager()) {
-			return "enabled".equals(userLastLoginVisibleForUsermanagers);
+	}
+	
+	public void setUserLastLoginVisibleFor(OrganisationRoles role, String enable) {
+		switch(role) {
+			case user:
+				userLastLoginVisibleForUsers = setStringProperty(USER_LASTLOGIN_VISIBLE_USERS, enable, true);
+				break;
+			case author:
+				userLastLoginVisibleForAuthors = setStringProperty(USER_LASTLOGIN_VISIBLE_AUTHORS, enable, true);
+				break;
+			case usermanager:
+				userLastLoginVisibleForUsermanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_USERMANAGERS, enable, true);
+				break;
+			case rolesmanager:
+				userLastLoginVisibleForRolesmanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_ROLESMANAGERS, enable, true);
+				break;
+			case groupmanager:
+				userLastLoginVisibleForGroupmanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, enable, true);
+				break;
+			case learnresourcemanager:
+				userLastLoginVisibleForLearnresourcemanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_LEARNRESOURCEMANAGERS, enable, true);
+				break;
+			case poolmanager:
+				userLastLoginVisibleForPoolmanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_POOLMANAGERS, enable, true);
+				break;
+			case curriculummanager:
+				userLastLoginVisibleForCurriculummanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_CURRICULUMMANAGERS, enable, true);
+				break;
+			case lecturemanager:
+				userLastLoginVisibleForLecturemanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_LECTUREMANAGERS, enable, true);
+				break;
+			case qualitymanager:
+				userLastLoginVisibleForQualitymanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_QUALITYMANAGERS, enable, true);
+				break;
+			case linemanager:
+				userLastLoginVisibleForLinemanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_LINEMANAGERS, enable, true);
+				break;
+			case principal:
+				userLastLoginVisibleForPrincipals = setStringProperty(USER_LASTLOGIN_VISIBLE_PRINCIPALS, enable, true);
+				break;
+			case administrator:
+				userLastLoginVisibleForAdministrators = setStringProperty(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, enable, true);
+				break;
+			case sysadmin:
+				userLastLoginVisibleForSystemAdmins = setStringProperty(USER_LASTLOGIN_VISIBLE_SYSTEMADMINS, enable, true);
+				break;
+			default: /* Ignore the other roles */
 		}
-		if(roles.isAuthor()) {
-			return "enabled".equals(userLastLoginVisibleForAuthors);
-		}
-		if(roles.isInvitee()) {
-			return false;
-		}
-		return "enabled".equals(userLastLoginVisibleForUsers);
-	}
-
-	public String getUserLastLoginVisibleForUsers() {
-		return userLastLoginVisibleForUsers;
-	}
-
-	public void setUserLastLoginVisibleForUsers(String enable) {
-		setStringProperty(USER_LASTLOGIN_VISIBLE_USERS, enable, true);
-	}
-
-	public String getUserLastLoginVisibleForAuthors() {
-		return userLastLoginVisibleForAuthors;
-	}
-
-	public void setUserLastLoginVisibleForAuthors(String enable) {
-		setStringProperty(USER_LASTLOGIN_VISIBLE_AUTHORS, enable, true);
-	}
-
-	public String getUserLastLoginVisibleForUsermanagers() {
-		return userLastLoginVisibleForUsermanagers;
-	}
-
-	public void setUserLastLoginVisibleForUsermanagers(String enable) {
-		setStringProperty(USER_LASTLOGIN_VISIBLE_USERMANAGERS, enable, true);
-	}
-
-	public String getUserLastLoginVisibleForGroupmanagers() {
-		return userLastLoginVisibleForGroupmanagers;
-	}
-
-	public void setUserLastLoginVisibleForGroupmanagers(String enable) {
-		setStringProperty(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, enable, true);
-	}
-
-	public String getUserLastLoginVisibleForAdministrators() {
-		return userLastLoginVisibleForAdministrators;
-	}
-
-	public void setUserLastLoginVisibleForAdministrators(String enable) {
-		setStringProperty(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, enable, true);
 	}
 
 	public boolean isUserAllowedAutoComplete(Roles roles) {
-		if(roles == null) return false;
-		if(roles.isOLATAdmin()) {
-			return "enabled".equals(userSearchAutocompleteForAdministrators);
+		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
+		
+		boolean allowed = false;
+		for(OrganisationRoles role:privacyRoles) {
+			if(roles.hasRole(role) && "enabled".equals(getUserSearchAutocompleteFor(role))) {
+				allowed = true;
+				break;
+			}
 		}
-		if(roles.isGroupManager()) {
-			return "enabled".equals(userSearchAutocompleteForGroupmanagers);
-		}
-		if(roles.isUserManager()) {
-			return "enabled".equals(userSearchAutocompleteForUsermanagers);
-		}
-		if(roles.isAuthor()) {
-			return "enabled".equals(userSearchAutocompleteForAuthors);
-		}
-		if(roles.isInvitee()) {
-			return false;
-		}
-		return "enabled".equals(userSearchAutocompleteForUsers);
+		return allowed;
 	}
 	
-	public String isUserSearchAutocompleteForUsers() {
-		return userSearchAutocompleteForUsers;
-	}
-
-	public void setUserSearchAutocompleteForUsers(String enable) {
-		setStringProperty(USERSEARCHAUTOCOMPLETE_USERS, enable, true);
-	}
-
-	public String isUserSearchAutocompleteForAuthors() {
-		return userSearchAutocompleteForAuthors;
-	}
-
-	public void setUserSearchAutocompleteForAuthors(String enable) {
-		setStringProperty(USERSEARCHAUTOCOMPLETE_AUTHORS, enable, true);
-	}
-
-	public String isUserSearchAutocompleteForUsermanagers() {
-		return userSearchAutocompleteForUsermanagers;
-	}
-
-	public void setUserSearchAutocompleteForUsermanagers(String enable) {
-		setStringProperty(USERSEARCHAUTOCOMPLETE_USERMANAGERS, enable, true);
-	}
-
-	public String isUserSearchAutocompleteForGroupmanagers() {
-		return userSearchAutocompleteForGroupmanagers;
-	}
-
-	public void setUserSearchAutocompleteForGroupmanagers(String enable) {
-		setStringProperty(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, enable, true);
-	}
-
-	public String isUserSearchAutocompleteForAdministrators() {
-		return userSearchAutocompleteForAdministrators;
-	}
-
-	public void setUserSearchAutocompleteForAdministrators(String enable) {
-		setStringProperty(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, enable, true);
+	public String getUserSearchAutocompleteFor(OrganisationRoles role) {
+		switch(role) {
+			case user: return userSearchAutocompleteForUsers;
+			case author: return userSearchAutocompleteForAuthors;
+			case usermanager: return userSearchAutocompleteForUsermanagers;
+			case rolesmanager: return userSearchAutocompleteForRolesmanagers;
+			case groupmanager: return userSearchAutocompleteForGroupmanagers;
+			case learnresourcemanager: return userSearchAutocompleteForLearnresourcemanagers;
+			case poolmanager: return userSearchAutocompleteForPoolmanagers;
+			case curriculummanager: return userSearchAutocompleteForCurriculummanagers;
+			case lecturemanager: return userSearchAutocompleteForLecturemanagers;
+			case qualitymanager: return userSearchAutocompleteForQualitymanagers;
+			case linemanager: return userSearchAutocompleteForLinemanagers;
+			case principal: return userSearchAutocompleteForPrincipals;
+			case administrator: return userSearchAutocompleteForAdministrators;
+			case sysadmin: return userSearchAutocompleteForSystemAdmins;
+			default: return "disabled";
+		}
 	}
 	
 	public int getUserSearchMaxResultsValue() {

@@ -32,16 +32,21 @@ public enum OrganisationRoles {
 	sysadmin,
 	administrator,
 	usermanager,
+	rolesmanager,
 	learnresourcemanager,
+	lecturemanager,
 	groupmanager,
 	poolmanager,
 	curriculummanager,
+	qualitymanager,
+	linemanager,
 	principal,
 	author,
-	coach,
 	user,
 	invitee,
 	guest;
+	
+	public static final OrganisationRoles[] EMPTY_ROLES = new OrganisationRoles[0];
 	
 	public static boolean isValue(String value) {
 		boolean isValue = false;

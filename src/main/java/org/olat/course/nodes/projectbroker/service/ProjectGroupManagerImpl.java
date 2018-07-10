@@ -345,8 +345,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 
 	@Override
 	public boolean isProjectManagerOrAdministrator(UserRequest ureq, CourseEnvironment courseEnv, Project project) {	
-		return ureq.getUserSession().getRoles().isOLATAdmin()
-				|| isProjectManager(ureq.getIdentity(), project)
+		return isProjectManager(ureq.getIdentity(), project)
 				|| courseEnv.getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity());
 	}
 

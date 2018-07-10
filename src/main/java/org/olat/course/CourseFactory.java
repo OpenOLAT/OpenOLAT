@@ -42,6 +42,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarNotificationManager;
 import org.olat.commons.calendar.manager.ImportToCalendarManager;
@@ -513,7 +515,7 @@ public class CourseFactory {
 		synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 			sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas, backwardsCompatible);
-			Set<String> fileSet = new HashSet<String>();
+			Set<String> fileSet = new HashSet<>();
 			String[] files = fExportDir.list();
 			for (int i = 0; i < files.length; i++) {
 				fileSet.add(files[i]);
@@ -580,7 +582,7 @@ public class CourseFactory {
 		 publishProcess.changeGeneralAccess(identity, newAccess, membersOnly);
 
 		 if (publishTreeModel.hasPublishableChanges()) {
-			 List<String>nodeToPublish = new ArrayList<String>();
+			 List<String>nodeToPublish = new ArrayList<>();
 			 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
 
 			 publishProcess.createPublishSetFor(nodeToPublish);
@@ -625,8 +627,7 @@ public class CourseFactory {
 			Translator translator = Util.createPackageTranslator(CourseFactory.class, ureq.getLocale());
 			wControl.setError(translator.translate("error.helpcourse.not.configured"));
 			// create empty main controller
-			LayoutMain3ColsController emptyCtr = new LayoutMain3ColsController(ureq, wControl, null, null, null);
-			return emptyCtr;
+			return new LayoutMain3ColsController(ureq, wControl, null, null, null);
 		} else {
 			// Increment launch counter
 			rs.incrementLaunchCounter(entry);
@@ -634,7 +635,7 @@ public class CourseFactory {
 
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
-			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurity(false, false, false, false, false, false, false, true, false);
+			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurity(false, false, false, false, false, false, false, false, true, false);
 			return new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
 		}
 	}
@@ -652,9 +653,13 @@ public class CourseFactory {
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		PersistingCourseImpl course = (PersistingCourseImpl) loadCourse(res);
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
-		boolean isOLATAdmin = roles.isOLATAdmin();
-		boolean isOresOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, courseRe);
-		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isLearnResourceManagerFor(roles, courseRe);
+		
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		boolean isOLATAdmin = roles.isAdministrator()
+				&& repositoryService.hasRoleExpanded(identity, courseRe, OrganisationRoles.administrator.name());
+		boolean isOresOwner = repositoryService.hasRole(identity, courseRe, GroupRoles.owner.name());
+		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
+				&& repositoryService.hasRoleExpanded(identity, courseRe, OrganisationRoles.learnresourcemanager.name());
 		archiveCourse(identity, course, charset, locale, exportDirectory, isOLATAdmin, isOresOwner, isOresInstitutionalManager);
 	}
 

@@ -29,6 +29,8 @@ import java.io.File;
 import java.util.Date;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,7 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
@@ -54,6 +55,7 @@ import org.olat.course.statistic.AsyncExportManager;
 import org.olat.home.HomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,6 +79,8 @@ public class CourseLogsArchiveController extends BasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private AsyncExportManager asyncExportManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	/**
 	 * Constructor for the course logs archive controller
@@ -87,18 +91,19 @@ public class CourseLogsArchiveController extends BasicController {
 	public CourseLogsArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
 		super(ureq, wControl);
 		this.ores = ores;
-		this.myPanel = new Panel("myPanel");
+		myPanel = new Panel("myPanel");
 		myPanel.addListener(this);
 
 		myContent = createVelocityContainer("start_courselogs");
 		
-		Identity identity = ureq.getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
 		
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
-		boolean isOLATAdmin = roles.isOLATAdmin();
-		boolean isOresOwner = repositoryManager.isOwnerOfRepositoryEntry(identity, re);
-		boolean isOresInstitutionalManager = repositoryManager.isLearnResourceManagerFor(roles, re);
+		boolean isOLATAdmin = roles.isAdministrator()
+				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.administrator.name());
+		boolean isOresOwner = repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
+		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
+				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.learnresourcemanager.name());
 		boolean aLogV = isOresOwner || isOresInstitutionalManager;
 		boolean uLogV = isOLATAdmin;
 		boolean sLogV = isOresOwner || isOresInstitutionalManager;

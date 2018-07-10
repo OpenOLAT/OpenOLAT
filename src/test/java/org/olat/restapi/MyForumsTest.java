@@ -106,7 +106,7 @@ public class MyForumsTest extends OlatJerseyTestCase {
 		Assert.assertEquals(0, forums.getForums().length);
 		
 		//subscribe to the forum
-		IdentityEnvironment ienv = new IdentityEnvironment(id, new Roles(false, false, false, false, false, false, false));
+		IdentityEnvironment ienv = new IdentityEnvironment(id, Roles.userRoles());
 		new CourseTreeVisitor(myCourse, ienv).visit(new Visitor() {
 			@Override
 			public void visit(INode node) {

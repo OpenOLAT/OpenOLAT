@@ -196,8 +196,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		boolean canEdit = ureq.getUserSession().getRoles().isOLATAdmin()
-				|| cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+		boolean canEdit = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
 		boolean canManage;
 		if(canEdit) {
 			canManage = true;
@@ -284,7 +283,6 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		// delete checklist in db
 		Checklist checklist = loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
 		ChecklistManager.getInstance().deleteChecklist(checklist);
-		checklist = null;
 		// delete node configuration
 		deleteChecklistKeyConf(course.getCourseEnvironment().getCoursePropertyManager());
 	}

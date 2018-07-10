@@ -27,6 +27,8 @@ package org.olat.course.nodes.cp;
 
 import java.io.File;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,8 +48,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -67,6 +67,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,7 +120,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private RepositoryService repositoryService;
 
 	/**
 	 * @param cpNode
@@ -151,7 +152,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				cpConfigurationVc.contextPut(VC_CHOSENCP, translate("no.cp.chosen"));
 			} else {
-				if (isEditable(ureq.getIdentity(), ureq.getUserSession().getRoles(), re)) {
+				if (canManage(re)) {
 					editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
 				}
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
@@ -228,10 +229,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == searchController) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) { 
@@ -251,7 +249,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 						cpConfigurationVc.remove(editLink);
 						editLink = null;
 					}
-					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
+					if (canManage(re)) {
 						editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
 					}
 					// fire event so the updated config is saved by the editormaincontroller
@@ -288,15 +286,13 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	 * @param repository entry
 	 * @return
 	 */
-	private boolean isEditable(Identity identity, Roles roles, RepositoryEntry re) {
-		return roles.isOLATAdmin()
-				|| repositoryManager.isOwnerOfRepositoryEntry(identity, re) 
-				|| repositoryManager.isLearnResourceManagerFor(roles, re);
+	private boolean canManage(RepositoryEntry re) {
+		return repositoryService.hasRoleExpanded(getIdentity(), re,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				GroupRoles.owner.name());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 
@@ -354,9 +350,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		return (moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//child controllers registered with listenTo() get disposed in BasicController
 		if (previewCtr != null) {
@@ -365,10 +359,12 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		}
 	}
 
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}

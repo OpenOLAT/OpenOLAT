@@ -160,9 +160,8 @@ public class PodcastHandler implements RepositoryHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isOwner = reSecurity.isOwner();	
-		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
+		boolean isAdministrator = reSecurity.isEntryAdmin();	
+		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdministrator);
 		SubscriptionContext subsContext = new SubscriptionContext(re.getOlatResource(), re.getSoftkey());
 		callback.setSubscriptionContext(subsContext);
 		return new FeedRuntimeController(ureq, wControl, re, reSecurity,

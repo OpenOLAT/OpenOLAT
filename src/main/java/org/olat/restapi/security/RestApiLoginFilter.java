@@ -94,8 +94,6 @@ public class RestApiLoginFilter implements Filter {
 		//
 	}
 
-
-
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 	throws ServletException {
@@ -313,17 +311,17 @@ public class RestApiLoginFilter implements Filter {
 	}
 
 	private void upgradeIpAuthentication(HttpServletRequest request, HttpServletResponse response)
-	throws IOException, ServletException {
+	throws IOException {
 		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		UserSession usess = sessionManager.getUserSessionIfAlreadySet(request);
 		if(usess == null) {
 			usess = sessionManager.getUserSession(request.getSession(true));
 		}
 		if(usess.getIdentity() == null) {
-			usess.setRoles(new Roles(false, false, false, false, false, false, false));
+			usess.setRoles(Roles.userRoles());
 
 			String remoteAddr = request.getRemoteAddr();
-			SessionInfo sinfo = new SessionInfo(new Long(-1), "REST", request.getSession());
+			SessionInfo sinfo = new SessionInfo(Long.valueOf(-1), "REST", request.getSession());
 			sinfo.setFirstname("REST");
 			sinfo.setLastname(remoteAddr);
 			sinfo.setFromIP(remoteAddr);
@@ -406,7 +404,7 @@ public class RestApiLoginFilter implements Filter {
 				try {
 					chain.doFilter(request, response);
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("", e);
 				}
 			}
 		} else {
@@ -463,7 +461,7 @@ public class RestApiLoginFilter implements Filter {
 	private List<String> getIPProtectedURIs() {
 		if(ipProtectedUrls == null && isWebappHelperInitiated()) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
-			List<String > urls  = new ArrayList<String>();
+			List<String > urls  = new ArrayList<>();
 			urls.add(context + "/system");
 			ipProtectedUrls = urls;
 		}

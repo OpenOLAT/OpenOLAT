@@ -10,7 +10,9 @@
 	$r.render("userShortDescription")
 	</div>
 </div>
+#if($r.available("export.user.data"))
 <div class="o_button_group o_button_group_right">
 	$r.render("export.user.data")
 </div>
+#end
 $r.render("userTabP")

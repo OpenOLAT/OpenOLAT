@@ -196,6 +196,12 @@ public class MemberView extends UserPropertiesRow {
 			this.displayName = displayName;
 			this.managedFlags = CurriculumElementManagedFlag.toEnum(managedFlags);
 		}
+		
+		public CurriculumElementShortImpl(Long key, String displayName, CurriculumElementManagedFlag[] managedFlags) {
+			this.key = key;
+			this.displayName = displayName;
+			this.managedFlags = managedFlags;
+		}
 
 		@Override
 		public Long getKey() {

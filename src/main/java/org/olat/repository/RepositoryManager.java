@@ -57,7 +57,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -269,7 +268,6 @@ public class RepositoryManager {
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadRepositoryEntryByKey", RepositoryEntry.class)
 				.setParameter("repoKey", key)
-				//.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		if(entries.isEmpty()) {
 			return null;
@@ -544,20 +542,17 @@ public class RepositoryManager {
 	 */
 	public boolean isAllowedToLaunch(Identity identity, Roles roles, RepositoryEntry re) {
 		// allow if identity is owner
-		if (repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
+		// allow for administrators, institutional resource manager and principals
+		if (repositoryEntryRelationDao.hasRole(identity, re, true, OrganisationRoles.administrator.name(),
+				OrganisationRoles.learnresourcemanager.name(), OrganisationRoles.principal.name(),
+				GroupRoles.owner.name())) {
 			return true;
 		}
-		// allow if access limit matches identity's role
-		// allow for olat administrators
-		if (roles.isOLATAdmin()) return true;
-		// allow for institutional resource manager
-		if (isLearnResourceManagerFor(roles, re)) return true;
 		// allow for authors if access granted at least for authors
 		if (roles.isAuthor() && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) return true;
 		// allow for guests if access granted for guests
 		if (roles.isGuestOnly()) {
-			if (re.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS) return true;
-			else return false;
+			return (re.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS);
 		}
 		// else allow if access granted for users
 		if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
@@ -577,8 +572,11 @@ public class RepositoryManager {
 		boolean isGroupParticipant = false;
 		boolean isGroupWaiting = false;
 
+		boolean isAuthor = false;
 		boolean isEntryAdmin = false;
+		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
+		
 		boolean canLaunch = false;
 
 		if (roles.isGuestOnly()) {
@@ -600,7 +598,7 @@ public class RepositoryManager {
 							break;
 						}
 						case coach: {
-							boolean d = (def == null ? false : def.booleanValue());
+							boolean d = def != null && def.booleanValue();
 							if(d) {
 								isCourseCoach = true;
 							} else {
@@ -609,7 +607,7 @@ public class RepositoryManager {
 							break;
 						}
 						case participant: {
-							boolean d = (def == null ? false : def.booleanValue());
+							boolean d = def != null &&def.booleanValue();
 							if(d) {
 								isCourseParticipant = true;
 							} else {
@@ -624,37 +622,29 @@ public class RepositoryManager {
 						default: break;
 					}
 				} else if(OrganisationRoles.isValue(role)) {
-					
 					switch(OrganisationRoles.valueOf(role)) {
-						case learnresourcemanager: {
+						case administrator:
+							isAdministrator = true;
+							break;
+						case author:
+							isAuthor = true;
+							break;
+						case learnresourcemanager:
 							isLearnRessourceManager = true;
 							break;
-						}
-						case coach: {
-							isCourseCoach = true;
-							break;
-						}
 						default: break;
 					}
 				}
 			}
 
-			if(isOwner) {
-				canLaunch = true;
-				isEntryAdmin = true;
-			}
 			// allow if access limit matches identity's role
 			// allow for olat administrators
-			else if (roles.isOLATAdmin()) {
-				canLaunch = true;
-				isEntryAdmin = true;
-			}
 			// allow for institutional resource manager
-			else if (isLearnRessourceManager) {
+			if(isOwner || isAdministrator || isLearnRessourceManager) {
 				canLaunch = true;
 				isEntryAdmin = true;
 			}
-			if (roles.isAuthor() && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) {
+			if (isAuthor && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) {
 				// allow for authors if access granted at least for authors
 				canLaunch = true;
 			} else if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
@@ -673,7 +663,7 @@ public class RepositoryManager {
 		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach,
-				isGroupWaiting, canLaunch, readOnly);
+				isGroupWaiting, isAuthor, canLaunch, readOnly);
 	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {
@@ -1058,7 +1048,7 @@ public class RepositoryManager {
 		if(!checkCanReference && !checkCanCopy) {
 			return Collections.emptyList();
 		}
-		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isOLATAdmin()) {
+		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
 			return Collections.emptyList();
 		}
 
@@ -1184,17 +1174,6 @@ public class RepositoryManager {
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
-	}
-
-	/**
-	 * check ownership of identity for a resource
-	 * @return true if the identity is member of the security group of the repository entry
-	 */
-	public boolean isOwnerOfRepositoryEntry(IdentityRef identity, RepositoryEntryRef entry) {
-		if(entry == null || identity == null) {
-			return false;
-		}
-		return repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.owner.name());
 	}
 	
 	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params) {
@@ -1574,33 +1553,6 @@ public class RepositoryManager {
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
 		}
 		return allOk;
-	}
-
-	/**
-	 * 
-	 * @param RepositoryEntry repositoryEntry
-	 * @param Identity identity
-	 */
-	public boolean isLearnResourceManagerFor(Roles roles, RepositoryEntryRef repositoryEntry) {
-		if(repositoryEntry == null) {
-			return false;
-		}
-
-		if(!roles.isLearnResourceManager()) {
-			return false;
-		}
-		
-		//TODO roles (add administration)
-		List<OrganisationRef> learnResourceManagerOrganisations = roles.getOrganisationsWithRole(OrganisationRoles.learnresourcemanager);
-		List<OrganisationRef> repositoryOrganisations = repositoryEntryToOrganisationDao.getOrganisationReferences(repositoryEntry);
-		for(OrganisationRef learnResourceManagerOrganisation:learnResourceManagerOrganisations) {
-			for(OrganisationRef repositoryOrganisation:repositoryOrganisations) {
-				if(learnResourceManagerOrganisation.getKey().equals(repositoryOrganisation.getKey())) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	public int countLearningResourcesAsStudent(IdentityRef identity) {
@@ -2039,9 +1991,5 @@ public class RepositoryManager {
 			}
 			sb.append(var).append(".key asc");
 		}
-	}
-
-	public boolean isIdentityInTutorSecurityGroup(Identity identity, RepositoryEntryRef resource) {
-		return repositoryEntryRelationDao.hasRole(identity, resource, GroupRoles.coach.name());
 	}
 }

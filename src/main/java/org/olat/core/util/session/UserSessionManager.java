@@ -133,8 +133,7 @@ public class UserSessionManager implements GenericEventListener {
 	public UserSession getUserSession(HttpServletRequest hreq) {
 		// get existing or create new session
 		HttpSession httpSession = hreq.getSession(true);
-		UserSession usess = getUserSession(httpSession);
-		return usess;
+		return getUserSession(httpSession);
 	}
 	
 	/**
@@ -184,7 +183,7 @@ public class UserSessionManager implements GenericEventListener {
 	 * @return set of authenticated active user sessions
 	 */
 	public Set<UserSession> getAuthenticatedUserSessions() {
-		return new HashSet<UserSession>(authUserSessions);
+		return new HashSet<>(authUserSessions);
 	}
 	
 	public int getNumberOfAuthenticatedUserSessions() {
@@ -442,7 +441,7 @@ public class UserSessionManager implements GenericEventListener {
 
 					String objtostr = "n/a";
 					try {
-						objtostr = obj.toString();
+						objtostr = (obj == null ? "NULL" : obj.toString());
 					} catch (Exception ee) {
 						// ignore
 					}
@@ -542,7 +541,7 @@ public class UserSessionManager implements GenericEventListener {
 		Set<UserSession> userSessions = getAuthenticatedUserSessions();
 		for (UserSession userSession : userSessions) {
 			Roles userRoles = userSession != null ? userSession.getRoles() : null; 
-			if (userRoles != null && !userRoles.isOLATAdmin()) {
+			if (userRoles != null && !userRoles.isAdministrator() && !userRoles.isSystemAdmin()) {
 				//do not logout administrators
 				try {
 					internSignOffAndClear(userSession);
@@ -571,19 +570,20 @@ public class UserSessionManager implements GenericEventListener {
 		Comparator<UserSession> sessionComparator = new Comparator<UserSession>() {
 			@Override
 			public int compare(UserSession o1, UserSession o2) {
-				Long long1 = new Long((o1).getSessionInfo().getLastClickTime());
-				Long long2 = new Long((o2).getSessionInfo().getLastClickTime());
+				Long long1 = Long.valueOf((o1).getSessionInfo().getLastClickTime());
+				Long long2 = Long.valueOf((o2).getSessionInfo().getLastClickTime());
 				return long1.compareTo(long2);
 			}
 		};
 		// clusterNOK ?? invalidate only locale sessions ?
-		TreeSet<UserSession> sortedSet = new TreeSet<UserSession>(sessionComparator);
+		TreeSet<UserSession> sortedSet = new TreeSet<>(sessionComparator);
 		sortedSet.addAll(authUserSessions);
 		int i = 0;	
 		for (Iterator<UserSession> iterator = sortedSet.iterator(); iterator.hasNext() && i++<nbrSessions;) {
 			try {
 				UserSession userSession = iterator.next();
-				if (!userSession.getRoles().isOLATAdmin() && !userSession.getSessionInfo().isWebDAV()) {
+				if (!userSession.getRoles().isAdministrator() && !userSession.getRoles().isSystemAdmin()
+						&& !userSession.getSessionInfo().isWebDAV()) {
 					internSignOffAndClear(userSession);
 					invalidateCounter++;
 				}

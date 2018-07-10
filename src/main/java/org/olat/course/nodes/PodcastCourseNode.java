@@ -23,6 +23,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -31,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -56,7 +60,7 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -92,21 +96,12 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		RepositoryEntry entry = getReferencedRepositoryEntry();
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		String nodeId = this.getIdent();
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), entry);
-		FeedSecurityCallback callback;
-		if(userCourseEnv.isCourseReadOnly()) {
-			callback = new FeedReadOnlySecurityCallback();
-		} else {
-			callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
-		}
+		FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, ne);
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this); 
 		callback.setSubscriptionContext(subsContext);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
 		FeedMainController podcastCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createMainController(entry.getOlatResource(), ureq, control,
-				callback, courseId, nodeId);
+				callback, courseId, getIdent());
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(nodecmd);
 		podcastCtr.activate(ureq, entries, null);
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, control, podcastCtr, this, "o_podcast_icon");
@@ -120,17 +115,32 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 			// Create a feed peekview controller that shows the latest two entries
 			RepositoryEntry entry = getReferencedRepositoryEntry();
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			String nodeId = this.getIdent();
-			boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-			boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-			boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), entry);
-			FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
+			FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, ne);
 			FeedUIFactory uiFactory = PodcastUIFactory.getInstance(ureq.getLocale());
-			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, nodeId, uiFactory, 2, "o_podcast_peekview");
+			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, getIdent(), uiFactory, 2, "o_podcast_peekview");
 		} else {
 			// use standard peekview
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
 		}
+	}
+	
+	private FeedSecurityCallback getFeedSecurityCallback(UserRequest ureq, RepositoryEntry entry,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isGuest = roles.isGuestOnly();
+		
+		boolean isAdmin = (roles.isAdministrator() || roles.isLearnResourceManager())
+				&& repositoryService.hasRoleExpanded(ureq.getIdentity(), entry,
+						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+		boolean isOwner = !isGuest && repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name());
+		FeedSecurityCallback callback;
+		if(userCourseEnv.isCourseReadOnly()) {
+			callback = new FeedReadOnlySecurityCallback();
+		} else {
+			callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
+		}
+		return callback;
 	}
 
 	@Override

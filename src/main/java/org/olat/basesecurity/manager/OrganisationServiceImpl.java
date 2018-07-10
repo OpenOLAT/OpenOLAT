@@ -370,12 +370,21 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public void addMember(Organisation organisation, Identity member, OrganisationRoles role) {
 		GroupMembershipInheritance inheritanceMode;
-		if(role == OrganisationRoles.usermanager || role == OrganisationRoles.learnresourcemanager || role == OrganisationRoles.author) {
+		if(isRoleDefaultInherited(role)) {
 			inheritanceMode = GroupMembershipInheritance.root;
 		} else {
 			inheritanceMode = GroupMembershipInheritance.none;
 		}
 		addMember(organisation, member, role, inheritanceMode);
+	}
+	
+	private boolean isRoleDefaultInherited(OrganisationRoles role) {
+		return role == OrganisationRoles.author
+				|| role == OrganisationRoles.usermanager || role == OrganisationRoles.rolesmanager
+				|| role == OrganisationRoles.groupmanager || role == OrganisationRoles.learnresourcemanager
+				|| role == OrganisationRoles.poolmanager || role == OrganisationRoles.curriculummanager
+				|| role == OrganisationRoles.lecturemanager || role == OrganisationRoles.qualitymanager
+				|| role == OrganisationRoles.linemanager || role == OrganisationRoles.principal;
 	}
 
 	@Override

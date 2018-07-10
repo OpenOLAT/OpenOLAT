@@ -55,6 +55,7 @@ import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -542,7 +543,10 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				MailBundle ccBundle = mailManager.makeMailBundle(context, sender, mailTemplate, sender, metaId, result);
 				result.append(mailManager.sendMessage(ccBundle));
 			}
-			MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+			
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, ureq.getLocale());
 		}
 	}
 	

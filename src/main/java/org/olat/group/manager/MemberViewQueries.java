@@ -28,9 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -38,8 +41,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.MemberView;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +62,10 @@ public class MemberViewQueries {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	
 	public List<MemberView> getBusinessGroupMembers(BusinessGroup businessGroup, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -114,18 +124,17 @@ public class MemberViewQueries {
 	private Map<Identity,MemberView> getMembersView(RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.key, membership.role, membership.creationDate, membership.lastModified, ident, relGroup.defaultGroup,")
-		  .append("  grp.key, grp.name, grp.managedFlagsString,")
-		  .append("  curriculumEl.key, curriculumEl.displayName, curriculumEl.managedFlagsString")
+		sb.append("select membership, relGroup.defaultGroup")
 		  .append(" from repositoryentry as v ")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" left join businessgroup as grp on (grp.baseGroup.key=baseGroup.key)")
-		  .append(" left join curriculumelement as curriculumEl on (curriculumEl.group.key=baseGroup.key)")
-		  .append(" where v.key=:repoEntryKey");
+		  .append(" inner join fetch membership.group as mGroup")
+		  .append(" where v.key=:repoEntryKey and membership.role in ('")
+		  	.append(GroupRoles.participant).append("','").append(GroupRoles.coach).append("','")
+		  	.append(GroupRoles.owner).append("','").append(GroupRoles.waiting).append("')");
 		searchByIdentity(sb, params);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -133,39 +142,60 @@ public class MemberViewQueries {
 			.setParameter("repoEntryKey", entry.getKey());
 		searchByIdentity(query, params);
 		
+		// lazy load them
+		Map<Group,CurriculumElement> groupToCurriculumElement = null;
+		Map<Group,BusinessGroup> groupToBusinessGroup = null;
+		
 		List<Object[]> rawObjects = query.getResultList();
 		Map<Identity,MemberView> views = new HashMap<>();
-		for(Object[] objects:rawObjects) {
-			int pos = 1;// 0 is the membershipKey
-			String role = (String)objects[pos++];
-			Date creationDate = (Date)objects[pos++];
-			Date lastModified = (Date)objects[pos++];
-			Identity member = (Identity)objects[pos++];
-			MemberView view = views.computeIfAbsent(member, id -> new MemberView(id, userPropertyHandlers, locale, creationDate, lastModified));
-
-			Boolean defaultGroup = (Boolean)objects[pos++];
-
-			Long groupKey = (Long)objects[pos++];
-			String groupName = (String)objects[pos++];
-			String groupManagedflags = (String)objects[pos++];
-
-			Long curriculumElementKey = (Long)objects[pos++];
-			String curriculumElementName = (String)objects[pos++];
-			String curriculumElementManagedFlags = (String)objects[pos++];
-
+		for(Object[] rawObject:rawObjects) {
+			GroupMembership membership = (GroupMembership)rawObject[0];
+			Boolean defaultGroup = (Boolean)rawObject[1];
+			Identity member = membership.getIdentity();
+			
+			MemberView view = views.computeIfAbsent(member, id
+					-> new MemberView(id, userPropertyHandlers, locale, membership.getCreationDate(), membership.getLastModified()));
+			
 			if(defaultGroup != null && defaultGroup.booleanValue()) {
 				view.setRepositoryEntryDisplayName(entry.getDisplayname());
 				view.setManagedFlags(entry.getManagedFlags());
-				view.getMemberShip().setRepositoryEntryRole(role);
-			} else if(groupKey != null) {
-				view.addGroup(new MemberView.BusinessGroupShortImpl(groupKey, groupName, groupManagedflags));
-				view.getMemberShip().setBusinessGroupRole(role);
-			} else if(curriculumElementKey != null) {
-				view.addCurriculumElement(new MemberView.CurriculumElementShortImpl(curriculumElementKey, curriculumElementName, curriculumElementManagedFlags));
-				view.getMemberShip().setCurriculumElementRole(role);
+				view.getMemberShip().setRepositoryEntryRole(membership.getRole());
+			} else {
+				Group group = membership.getGroup();
+				if(groupToBusinessGroup == null) {
+					groupToBusinessGroup = getBusinessGroups(entry);
+				}
+
+				BusinessGroup businessGroup = groupToBusinessGroup.get(group);
+				if(businessGroup != null) {
+					view.addGroup(new MemberView
+							.BusinessGroupShortImpl(businessGroup.getKey(), businessGroup.getName(), businessGroup.getManagedFlagsString()));
+					view.getMemberShip().setBusinessGroupRole(membership.getRole());
+				} else {
+					if(groupToCurriculumElement == null) {
+						groupToCurriculumElement = getCurriculumElements(entry);
+					}
+					CurriculumElement element = groupToCurriculumElement.get(group);
+					if(element != null) {
+						view.addCurriculumElement(new MemberView
+								.CurriculumElementShortImpl(element.getKey(), element.getDisplayName(), element.getManagedFlags()));
+						view.getMemberShip().setCurriculumElementRole(membership.getRole());
+					}
+				}
 			}
 		}
 		return views;
+	}
+	
+	private Map<Group,BusinessGroup> getBusinessGroups(RepositoryEntry entry) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, entry, 0, -1);
+		return groups.stream().collect(Collectors.toMap(BusinessGroup::getBaseGroup, grp -> grp));
+	}
+	
+	private Map<Group,CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
+		List<CurriculumElement> elements = curriculumElementDao.loadElements(entry);
+		return elements.stream().collect(Collectors.toMap(CurriculumElement::getGroup, el -> el));
 	}
 	
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,

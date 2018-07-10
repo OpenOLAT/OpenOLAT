@@ -54,6 +54,8 @@ public interface BaseSecurity {
 	 */
 	public Roles getRoles(IdentityRef identity);
 	
+	public Roles getRoles(IdentityRef identity, boolean withInherited);
+	
 	/**
 	 * Get the list of roles as string without inheritance (an admin
 	 * has only admin role and not the user manager role...).
@@ -77,10 +79,8 @@ public interface BaseSecurity {
 	 * Update the roles
 	 * @param actingIdentity The identity who is performing the change
 	 * @param updatedIdentity The identity that is changed
-	 * @param roles The new roles to set on updatedIdentity
+	 * @param roles The new roles to set
 	 */
-	//public void updateRoles(Identity actingIdentity, Identity updatedIdentity, Organisation organisation, Roles roles);
-	
 	public void updateRoles(Identity actingIdentity, Identity updatedIdentity, RolesByOrganisation organisation);
 
 	public boolean isGuest(IdentityRef identity);
@@ -151,13 +151,6 @@ public interface BaseSecurity {
 	 * @return The identities
 	 */
 	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityKeys);
-	
-	/**
-	 * Find identities which are not in a business group
-	 * @param status
-	 * @return
-	 */
-	public List<Identity> findIdentitiesWithoutBusinessGroup(Integer status);
 
 	/**
 	 * find an identity by the key instead of the username. Prefer this method as
@@ -171,14 +164,17 @@ public interface BaseSecurity {
 	/**
 	 * 
 	 * @param search The search
-	 * @return
+	 * @return A list of identities (short version)
 	 */
 	public List<IdentityShort> searchIdentityShort(String search, int maxResults);
 	
 	/**
+	 * The search look into name, first name, last name and email.
 	 * 
-	 * @param search The search
-	 * @return
+	 * @param search Search string
+	 * @param searchableOrganisations The organisations where the identities are
+	 * @param maxResults The max results or -1
+	 * @return A list of identities (short version)
 	 */
 	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searchableOrganisations, int maxResults);
 

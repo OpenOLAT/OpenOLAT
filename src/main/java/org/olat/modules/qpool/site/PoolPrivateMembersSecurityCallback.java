@@ -43,9 +43,6 @@ public class PoolPrivateMembersSecurityCallback implements SiteSecurityCallback 
 	@Autowired
 	private QuestionPoolModule questionPoolModule;
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		if (!questionPoolModule.isEnabled() || ureq == null || ureq.getIdentity() == null) {
@@ -60,9 +57,8 @@ public class PoolPrivateMembersSecurityCallback implements SiteSecurityCallback 
 		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isOLATAdmin() || roles.isQPoolManager()) {
-			return true;
-		}
-		return qPoolService.isMemberOfPrivatePools(ureq.getIdentity());
+		return roles.isAdministrator()
+				|| roles.isPoolManager()
+				|| qPoolService.isMemberOfPrivatePools(ureq.getIdentity());
 	}
 }

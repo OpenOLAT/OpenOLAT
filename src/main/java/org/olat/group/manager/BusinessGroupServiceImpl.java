@@ -1542,7 +1542,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate delegate) {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		params.setRoles(Roles.administratorRoles());
 		params.setResourceTypes(Collections.singletonList("CourseModule"));
 		
 		float ratio = -1.0f;

@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -40,7 +42,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -74,6 +75,7 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +122,8 @@ public class IQConfigurationController extends BasicController {
 	private QTI21Service qti21service;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * 
@@ -157,14 +161,9 @@ public class IQConfigurationController extends BasicController {
 			myContent.contextPut(VC_CHOSENTEST, displayName);
 			myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 			// Put values to velocity container
-
-			boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
-			if(isOnyx) {
-				//
-			} else if (isEditable(ureq.getIdentity(), ureq.getUserSession().getRoles(), re)) {
+			if (isEditable(re)) {
 				editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 			}
-
 			previewLink = LinkFactory.createCustomLink("command.preview.link", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			previewLink.setCustomEnabledLinkCSS("o_preview");
@@ -249,15 +248,14 @@ public class IQConfigurationController extends BasicController {
 	 * @param repository entry
 	 * @return
 	 */
-	private boolean isEditable(Identity identity, Roles roles, RepositoryEntry re) {
+	private boolean isEditable(RepositoryEntry re) {
 		boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
 		if (isOnyx) {
 			return false;
 		}
-
-		return roles.isOLATAdmin()
-				|| repositoryManager.isOwnerOfRepositoryEntry(identity, re)
-				|| repositoryManager.isLearnResourceManagerFor(roles, re);
+		return repositoryService.hasRoleExpanded(getIdentity(), re,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				GroupRoles.owner.name());
 	}
 
 	@Override
@@ -621,12 +619,12 @@ public class IQConfigurationController extends BasicController {
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
 				} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
-					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
+					if (isEditable(re)) {
 						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 					}
 				} else {
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
-					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
+					if (isEditable(re)) {
 						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 					}
 				}

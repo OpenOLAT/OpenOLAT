@@ -93,7 +93,7 @@ public class NewUsersNotificationsController extends BasicController {
 		}
 		
 		List<Identity> identities = usersSubscriptionManager.getNewIdentityCreated(compareDate, getIdentity(), ureq.getUserSession().getRoles());
-		searchController = new UsermanagerUserSearchController(ureq, getWindowControl(), stackedPanel, identities, Identity.STATUS_VISIBLE_LIMIT, true, false);
+		searchController = new UsermanagerUserSearchController(ureq, getWindowControl(), stackedPanel, identities, true, false);
 		listenTo(searchController);
 		mainVC.put("notificationsList", searchController.getInitialComponent());
 
@@ -123,13 +123,7 @@ public class NewUsersNotificationsController extends BasicController {
 		}
 		else if(source == subscriptionController) {
 			String cmd = event.getCommand();
-			if("command.subscribe".equals(cmd)) {
-				updateUI(ureq, dateChooserController.getChoosenDate());
-			}
-			else if("command.unsubscribe".equals(cmd)) {
-				updateUI(ureq, dateChooserController.getChoosenDate());
-			}
-			else if("command.markread".equals(cmd)) {
+			if("command.subscribe".equals(cmd) || "command.unsubscribe".equals(cmd) || "command.markread".equals(cmd)) {
 				updateUI(ureq, dateChooserController.getChoosenDate());
 			}
 		} else if(source == dateChooserController) {

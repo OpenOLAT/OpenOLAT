@@ -61,7 +61,7 @@ public class EfficiencyStatementManagerGatling extends OlatTestCase {
 	@Test
 	public void testBigDatas() {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(new Roles(true, false, false, false, false, false, false));
+		params.setRoles(Roles.administratorRoles());
 		params.setResourceTypes(Collections.singletonList("CourseModule"));
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		

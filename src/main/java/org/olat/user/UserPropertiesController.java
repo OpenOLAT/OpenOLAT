@@ -28,7 +28,7 @@ package org.olat.user;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -42,11 +42,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  Initial Date:  Jul 29, 2003
@@ -57,15 +60,20 @@ import org.olat.properties.PropertyManager;
  */
 public class UserPropertiesController extends BasicController {
 
-	private Property foundProp;
 	private PropTableDataModel tdm;
 	private TableController tableCtr;
-
+	private DialogBoxController confirmDeleteCtrl;
 	
+	@Autowired
+	private PropertyManager pm;
+	@Autowired
+	private UserManager userManager;
+
 	/*
 	 * the identity that is displayed (not the user/admin, that views the properties)
 	 */
 	private Identity displayedIdentity;
+	private boolean identityAdministator;
 
 	/**
 	 * Administer properties of a user.
@@ -73,25 +81,25 @@ public class UserPropertiesController extends BasicController {
 	 * @param wControl
 	 * @param identity
 	 */
-	public UserPropertiesController(UserRequest ureq, WindowControl wControl, Identity displayedIdentity) {
+	public UserPropertiesController(UserRequest ureq, WindowControl wControl, Identity displayedIdentity, Roles displayedRoles) {
 		super(ureq, wControl);
-		PropertyManager pm = PropertyManager.getInstance();
 		this.displayedIdentity = displayedIdentity;
+		identityAdministator = ureq.getUserSession().getRoles().isManagerOf(OrganisationRoles.administrator, displayedRoles);
+
 		List<Property> l = pm.listProperties(displayedIdentity, null, null, null, null);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(getTranslator().translate("error.no.props.found"));
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.category", 0, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.grp", 1, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.resource", 2, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.name", 3, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.value", 4, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.creatdat", 5, null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.moddat", 6, null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.category", 0, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.grp", 1, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.resource", 2, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.name", 3, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.value", 4, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.creatdat", 5, null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.moddat", 6, null, getLocale()));
 		// property selection / id only for admins
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			//fxdiff FXOLAT-149
+		if (identityAdministator) {
 			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.action", translate("delete")));
 		}
 		tdm = new PropTableDataModel(l);
@@ -99,59 +107,33 @@ public class UserPropertiesController extends BasicController {
 		putInitialPanel(tableCtr.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
-				if (actionid.equals("choose")) {
-					int rowid = te.getRowId();
-					foundProp = tdm.getObject(rowid);
-					// Tell parentController that a subject has been found
-					fireEvent(ureq, new PropFoundEvent(foundProp));
-				}
-				//fxdiff FXOLAT-149
-				else if (actionid.equals("delete")) {
-					int rowid = te.getRowId();
-					foundProp = tdm.getObject(rowid);
-					String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(displayedIdentity);
-					activateYesNoDialog(ureq, translate("propdelete.yesno.title"),translate("propdelete.yesno.text",new String[]{foundProp.getName(), fullName}), null);
+				if (actionid.equals("delete") && identityAdministator) {
+					Property foundProp = tdm.getObject(te.getRowId());
+					String fullName = userManager.getUserDisplayName(displayedIdentity);
+					confirmDeleteCtrl = activateYesNoDialog(ureq, translate("propdelete.yesno.title"), translate("propdelete.yesno.text", new String[]{foundProp.getName(), fullName}), confirmDeleteCtrl);
+					confirmDeleteCtrl.setUserObject(foundProp);
 				}
 			}
-		}
-		//fxdiff FXOLAT-149
-		else if (DialogBoxUIFactory.isYesEvent(event) && foundProp != null) {
-			PropertyManager.getInstance().deleteProperty(foundProp);
+		} else if (confirmDeleteCtrl == source&& DialogBoxUIFactory.isYesEvent(event)) {
+			Property foundProp = (Property)confirmDeleteCtrl.getUserObject();
+			pm.deleteProperty(foundProp);
 			tdm.getObjects().remove(foundProp);
 			tableCtr.modelChanged();
-			foundProp = null;
 		}
-
 	}
 
-	/**
-	 * Get the property that was found by this workflow
-	 * 
-	 * @return Property The found property
-	 */
-	public Property getFoundProp() {
-		return foundProp;
-	}
-
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}
@@ -161,7 +143,6 @@ public class UserPropertiesController extends BasicController {
  *  The prop table data model. 
  *  
  */
-
 class PropTableDataModel extends DefaultTableDataModel<Property> {
 
 	/**
@@ -172,9 +153,7 @@ class PropTableDataModel extends DefaultTableDataModel<Property> {
 		super(objects);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public final Object getValueAt(int row, int col) {
 		Property p = getObject(row);
 		switch (col) {
@@ -217,9 +196,7 @@ class PropTableDataModel extends DefaultTableDataModel<Property> {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+	@Override
 	public int getColumnCount() {
 		return 7;
 	}

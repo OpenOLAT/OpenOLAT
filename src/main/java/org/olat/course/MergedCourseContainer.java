@@ -19,6 +19,8 @@
  */
 package org.olat.course;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.IdentityEnvironment;
@@ -123,8 +125,12 @@ public class MergedCourseContainer extends MergeSource {
 		String sfSoftkey = courseConfig.getSharedFolderSoftkey();
 		if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
 			RepositoryEntry re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			if(identityEnv == null || identityEnv.getRoles().isOLATAdmin() || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identityEnv.getIdentity(), re)) {
-				OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class).loadRepositoryEntryResourceBySoftKey(sfSoftkey);
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			
+			if(identityEnv == null || repositoryService.hasRoleExpanded(identityEnv.getIdentity(), re,
+					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+					GroupRoles.owner.name())) {
+				OLATResource sharedResource = repositoryService.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
 				if (sharedResource != null) {
 					OlatRootFolderImpl sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
 					if (sharedFolder != null) {

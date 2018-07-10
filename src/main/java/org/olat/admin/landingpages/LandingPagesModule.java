@@ -62,7 +62,7 @@ public class LandingPagesModule extends AbstractSpringModule {
 			rules = (Rules)rulesXStream.fromXML(rulesObj);
 		} else {
 			rules = new Rules();
-			rules.setRules(new ArrayList<Rule>(1));
+			rules.setRules(new ArrayList<>(1));
 		}
 	}
 	

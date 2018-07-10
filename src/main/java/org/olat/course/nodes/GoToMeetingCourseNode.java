@@ -29,7 +29,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -45,12 +44,9 @@ import org.olat.course.nodes.gotomeeting.GoToMeetingPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.ui.GoToMeetingRunController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -113,21 +109,10 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
 			// check if user is moderator of the virtual classroom
-			boolean admin = roles.isOLATAdmin();
-			boolean moderator = admin;
-			RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-	
-			if (!admin) {
-				RepositoryManager rm = RepositoryManager.getInstance();
-				if (re != null) {
-					admin = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
-							|| rm.isLearnResourceManagerFor(roles, re);
-					moderator = admin 
-							|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re)
-							|| isCoach(re, ureq.getIdentity());
-				}
-			}
-	
+			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			boolean admin = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+			boolean moderator = admin || cgm.isIdentityCourseCoach(ureq.getIdentity());
+
 			// create run controller
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			controller = new GoToMeetingRunController(ureq, wControl, courseEntry, getIdent(), null,
@@ -135,13 +120,6 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_gotomeeting_icon");
 		return new NodeRunConstructionResult(ctrl);
-	}
-	
-	private final boolean isCoach(RepositoryEntry re, Identity identity) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
-		int count = bgs.countBusinessGroups(params, re);
-		return count > 0;
 	}
 
 	@Override
@@ -167,10 +145,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-		
-		StatusDescription sd = StatusDescription.NOERROR;
-		
-		return sd;
+		return StatusDescription.NOERROR;
 	}
 	
 	@Override

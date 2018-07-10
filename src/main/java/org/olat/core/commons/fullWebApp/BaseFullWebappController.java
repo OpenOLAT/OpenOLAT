@@ -163,20 +163,20 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private SiteInstance curSite;
 	private DTab curDTab;
 	
-	private final List<TabState> siteAndTabs = new ArrayList<TabState>();
+	private final List<TabState> siteAndTabs = new ArrayList<>();
 
 	// the dynamic tabs list
 	private List<DTab> dtabs;
 	private List<Integer> dtabsLinkNames;
 	private List<Controller> dtabsControllers;
-	private Map<DTab,HistoryPoint> dtabToBusinessPath = new HashMap<DTab,HistoryPoint>();
+	private Map<DTab,HistoryPoint> dtabToBusinessPath = new HashMap<>();
 	// used as link id which is load url safe (e.g. replayable
 	private int dtabCreateCounter = 0;
 	// the sites list
 	private SiteInstance userTools;
 	private List<SiteInstance> sites;
-	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<SiteInstance, BornSiteInstance>();
-	private Map<SiteInstance,HistoryPoint> siteToBusinessPath = new HashMap<SiteInstance,HistoryPoint>();
+	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<>();
+	private Map<SiteInstance,HistoryPoint> siteToBusinessPath = new HashMap<>();
 
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
@@ -218,7 +218,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		if(identityEnv != null && identityEnv.getRoles() != null) {	
-			isAdmin = identityEnv.getRoles().isOLATAdmin();
+			isAdmin = identityEnv.getRoles().isAdministrator();
 		} else {
 			isAdmin = false;
 		}
@@ -314,6 +314,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	private void initializeBase(UserRequest ureq, WindowManager winman, ComponentCollection mainPanel) {
+		UserSession usess = ureq.getUserSession();
+		
 		// component-id of mainPanel for the window id
 		mainVc.contextPut("o_winid", mainPanel.getDispatchID());
 		
@@ -346,7 +348,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			StringBuilder sb = new StringBuilder();
 			sb.append("{ identity : ").append( ident.getKey());
 			User user = ident.getUser();
-			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, ureq.getUserSession().getRoles().isOLATAdmin());
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, usess.getRoles().isAdministrator());
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				String escapedValue = StringHelper.escapeJavaScript(userPropertyHandler.getUserProperty(user, getLocale()));
 				sb.append(", ").append(userPropertyHandler.getName()).append(" : \"").append(escapedValue).append("\"");				
@@ -383,9 +385,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// will start the translation tool in translation mode, if the overlay
 		// feature is enabled it will start in customizing mode
 		// fxdiff: allow user-managers to use the inline translation also.
-		UserSession usess = ureq.getUserSession();
 		if (usess.isAuthenticated()
-				&& (usess.getRoles().isOLATAdmin() || usess.getRoles().isUserManager())
+				&& (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin())
 				&& (i18nModule.isTransToolEnabled() || i18nModule.isOverlayEnabled())) {
 			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
 			Preferences guiPrefs = usess.getGuiPreferences();
@@ -657,7 +658,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		List<ContextEntry> entries = cstate.getEntries();
 		if(entries.isEmpty()) return;
 		
-		entries = new ArrayList<ContextEntry>(entries);
+		entries = new ArrayList<>(entries);
 		
 		ContextEntry state = entries.remove(0);
 		if(state == null) return;//no red screen for this

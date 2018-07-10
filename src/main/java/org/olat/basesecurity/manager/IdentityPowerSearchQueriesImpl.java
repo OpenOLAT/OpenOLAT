@@ -40,7 +40,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.util.CodeHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,19 +58,15 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
-		long start = System.nanoTime();
 		StringBuilder sb = new StringBuilder(5000);
 		sb.append("select count(ident.key) from org.olat.core.id.Identity as ident ")
 		  .append(" inner join ident.user as user ");
 		Number count = createIdentitiesByPowerQuery(params, null, sb, Number.class).getSingleResult();
-		CodeHelper.printNanoTime(start, "Count identity");
 		return count.intValue();
 	}
 
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {
-		long start = System.nanoTime();
-		
 		StringBuilder sb = new StringBuilder(5000);
 		sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
 		  .append(" inner join fetch ident.user as user ");
@@ -82,15 +77,13 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		if(maxResults > 0) {
 			dbq.setMaxResults(maxResults);
 		}
-		List<Identity> identities = dbq.getResultList();
-		CodeHelper.printNanoTime(start, "Get identity");
-		return identities;
+		return dbq.getResultList();
 	}
 
 	@Override
 	public List<IdentityPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale, SortKey orderBy, int firstResult, int maxResults) {
-		long start = System.nanoTime();
+
 		StringBuilder sb = new StringBuilder(5000);
 		sb.append("select")
 		  .append(" ident.id as ident_id,")
@@ -128,7 +121,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 
 			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, userProperties));
 		}
-		CodeHelper.printNanoTime(start, "Get user properties");
 		return rows;
 	}
 	
@@ -152,10 +144,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			orderBy(sb, orderBy);
 		}
 		
-		// create query object now from string
-		String query = sb.toString();
 		TypedQuery<U> dbq = dbInstance.getCurrentEntityManager()
-				.createQuery(query, resultClass);
+				.createQuery(sb.toString(), resultClass);
 		fillParameters(params, dbq);
 		return dbq;
 	}
@@ -177,10 +167,25 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			sb.append(" ident.key in (select membership.identity.key from bgroupmember membership ")
 			  .append("   left join repoentrytogroup as relGroup on (relGroup.group.key=membership.group.key) ")
 			  .append("   where  membership.role in (:roles) or (relGroup.group.key is not null and membership.role=:repositoryEntryRole))");
+			if(params.hasOrganisations()) {
+				sb.append(" and ident.key in  (select orgtomember.identity.key from bgroupmember as orgtomember ")
+				  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+				  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+			}
+		} else if(params.hasRoles() && params.hasOrganisations()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
+			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey) and orgtomember.role in (:roles))");
 		} else if(params.hasRoles()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" ident.key in (select membership.identity.key from bgroupmember membership ")
 			  .append("  where  membership.role in (:roles))");
+		} else if(params.hasOrganisations()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
+			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
 		}
 		
 		if(params.hasExcludedRoles()) {
@@ -203,11 +208,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			sb.append("))");
 		}
 		
-		if(params.hasOrganisations()) {
+		if(params.isWithoutBusinessGroup()) {
 			needsAnd = checkAnd(sb, needsAnd);
-			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
-			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+			sb.append(" not exists (select bgroup from businessgroup bgroup, bgroupmember as me")
+			  .append("   where me.group.key=bgroup.baseGroup.key and me.identity.key=ident.key")
+			  .append(" )");
 		}
 		
 		if(params.getBusinessGroupRole() != null) {

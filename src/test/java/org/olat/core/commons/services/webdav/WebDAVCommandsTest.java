@@ -469,7 +469,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		createFile(folderContainer, "tolock.txt");
 		VFSItem itemToLock = folderContainer.resolve("tolock.txt");
 		Assert.assertNotNull(itemToLock);
-		boolean locked = lockManager.lock(itemToLock, assistant, new Roles(false, false, false, true, false, false, false));
+		boolean locked = lockManager.lock(itemToLock, assistant, Roles.authorRoles());
 		Assert.assertTrue(locked);
 		
 		//author make a propfind in the locked resource
@@ -527,7 +527,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertNotNull(lockToken);
 
 		//check vfs lock
-		Roles adminRoles = new Roles(true, false, false, false, false, false, false);
+		Roles adminRoles = Roles.administratorRoles();
 		boolean lockedForMe = lockManager.isLockedForMe(item, user, adminRoles);
 		Assert.assertTrue(lockedForMe);
 		LockInfo lock = lockManager.getLock(item);

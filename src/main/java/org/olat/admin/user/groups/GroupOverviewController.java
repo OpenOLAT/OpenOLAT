@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
@@ -149,12 +150,12 @@ public class GroupOverviewController extends BasicController {
 
 		//retrieve all user's membership if there are more than 50 groups
 		List<BusinessGroupMembership> groupsAsOwner = businessGroupService.getBusinessGroupMembership(groupKeysWithMembers, identity);
-		Map<Long, BusinessGroupMembership> memberships = new HashMap<Long, BusinessGroupMembership>();
+		Map<Long, BusinessGroupMembership> memberships = new HashMap<>();
 		for(BusinessGroupMembership membership: groupsAsOwner) {
 			memberships.put(membership.getGroupKey(), membership);
 		}
 
-		List<GroupOverviewRow> items = new ArrayList<GroupOverviewRow>();
+		List<GroupOverviewRow> items = new ArrayList<>();
 		for(BusinessGroup group:groups) {
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
 			GroupOverviewRow tableItem = new GroupOverviewRow(group, membership, Boolean.TRUE);
@@ -264,7 +265,7 @@ public class GroupOverviewController extends BasicController {
 	}
 	
 	private void doAddToGroups(AddToGroupsEvent e, boolean sendMail) {
-		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		List<BusinessGroupMembershipChange> changes = new ArrayList<>();
 		if(e.getOwnerGroupKeys() != null && !e.getOwnerGroupKeys().isEmpty()) {
 			for(Long tutorGroupKey:e.getOwnerGroupKeys()) {
 				BusinessGroupMembershipChange change = new BusinessGroupMembershipChange(identity, tutorGroupKey);
@@ -285,7 +286,7 @@ public class GroupOverviewController extends BasicController {
 	}
 	
 	private void doLeave(UserRequest ureq, List<BusinessGroup> groupsToLeave) {
-		List<BusinessGroup> groupsToDelete = new ArrayList<BusinessGroup>(1);
+		List<BusinessGroup> groupsToDelete = new ArrayList<>(1);
 		for(BusinessGroup group:groupsToLeave) {
 			int numOfOwners = businessGroupService.countMembers(group, GroupRoles.coach.name());
 			int numOfParticipants = businessGroupService.countMembers(group, GroupRoles.participant.name());
@@ -308,6 +309,8 @@ public class GroupOverviewController extends BasicController {
 	 * @param doSendMail
 	 */
 	private void removeUserFromGroup(UserRequest ureq, List<BusinessGroup> groupsToLeave, List<BusinessGroup> groupsToDelete, boolean doSendMail) {
+		Roles roles = ureq.getUserSession().getRoles();
+		
 		for(BusinessGroup group:groupsToLeave) {
 			if (groupsToDelete.contains(group)) {
 				// really delete the group as it has no more owners/participants
@@ -325,7 +328,8 @@ public class GroupOverviewController extends BasicController {
 				MailPackage mailing = new MailPackage(doSendMail);
 				// 2) remove as participant
 				businessGroupService.removeParticipants(getIdentity(), Collections.singletonList(identity), group, mailing);
-				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(),
+						roles.isAdministrator() || roles.isSystemAdmin(), getLocale());
 			}
 		}
 
@@ -340,11 +344,10 @@ public class GroupOverviewController extends BasicController {
 	}
 	
 	private List<BusinessGroup> toBusinessGroups(List<GroupOverviewRow> items) {
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		for(GroupOverviewRow item:items) {
 			groupKeys.add(item.getKey());
 		}
-		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
-		return groups;
+		return businessGroupService.loadBusinessGroups(groupKeys);
 	}
 }

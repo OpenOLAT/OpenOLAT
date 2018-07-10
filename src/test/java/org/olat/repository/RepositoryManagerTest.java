@@ -42,7 +42,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -50,7 +49,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -67,7 +65,6 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -81,8 +78,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -399,7 +394,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//participant bookmarks
-		Roles roles = new Roles(false, false, false, false, false, false, false);
+		Roles roles = Roles.userRoles();
 		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmark(participant, roles, "CourseModule", 0, -1);
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(1, courses.size());
@@ -419,7 +414,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//participant bookmarks
-		Roles roles = new Roles(false, false, false, false, false, false, false);
+		Roles roles = Roles.userRoles();
 		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmark(participant, roles, "CourseModule", 0, -1);
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(0, courses.size());
@@ -716,23 +711,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
 	}
 	
-	@Test
-	public void isOwnerOfRepositoryEntry() {
-		//create a repository entry with an owner and a participant
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
-		Identity part = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
-		repositoryEntryRelationDao.addRole(part, re, GroupRoles.participant.name());
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		boolean isOwnerOwner = repositoryManager.isOwnerOfRepositoryEntry(owner, re);
-		Assert.assertTrue(isOwnerOwner);
-		boolean isPartOwner = repositoryManager.isOwnerOfRepositoryEntry(part, re);
-		Assert.assertFalse(isPartOwner);
-	}
+
 	
 	@Test
 	public void countLearningResourcesAsOwner() {
@@ -760,28 +739,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		//check
 		int count = repositoryManager.countLearningResourcesAsStudent(owner);
 		Assert.assertTrue(1 <= count);
-	}
-	
-	@Test
-	public void isIdentityInTutorSecurityGroup() {
-		//create a repository entry with an owner and a participant
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("re-tutor-is-" + UUID.randomUUID().toString());
-		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-		repositoryEntryRelationDao.addRole(identity, re1, GroupRoles.coach.name());
-		repositoryEntryRelationDao.addRole(identity, re2, GroupRoles.participant.name());
-		repositoryEntryRelationDao.addRole(identity, re3, GroupRoles.owner.name());
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		boolean isTutor1 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re1);
-		Assert.assertTrue(isTutor1);
-		boolean isTutor2 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re2);
-		Assert.assertFalse(isTutor2);
-		boolean isTutor3 = repositoryManager.isIdentityInTutorSecurityGroup(identity, re3);
-		Assert.assertFalse(isTutor3);
 	}
 	
 	@Test
@@ -866,46 +823,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		List<RepositoryEntryMembership> membership2s = repositoryManager.getRepositoryEntryMembership(null);
 		Assert.assertNotNull(membership2s);
 		Assert.assertTrue(membership2s.isEmpty());
-	}
-	
-	/**
-	 * How can be a resource manager if Constants.ORESOURCE_USERMANAGER is never used?
-	 */
-	@Test
-	public void isInstitutionalRessourceManagerFor() {
-		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-1");
-		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-2");
-		Identity part3 = JunitTestHelper.createAndPersistIdentityAsRndUser("instit-3");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryEntryRelationDao.addRole(owner1, re, GroupRoles.owner.name());
-		repositoryEntryRelationDao.addRole(owner2, re, GroupRoles.owner.name());
-		repositoryEntryRelationDao.addRole(part3, re, GroupRoles.participant.name());
-		dbInstance.commit();
-		
-		//set the institutions
-		owner1.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
-		owner2.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
-		part3.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "volks");
-		userManager.updateUserFromIdentity(owner1);
-		userManager.updateUserFromIdentity(owner2);
-		userManager.updateUserFromIdentity(part3);
-		dbInstance.commit();
-		
-		//promote owner1 to institution resource manager
-		organisationService.addMember(owner1, OrganisationRoles.learnresourcemanager);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		Roles rolesOwner1 = securityManager.getRoles(owner1);
-		Roles rolesOwner2 = securityManager.getRoles(owner2);
-		Roles rolesPart3 = securityManager.getRoles(part3);
-		boolean institutionMgr1 = repositoryManager.isLearnResourceManagerFor(rolesOwner1, re);
-		boolean institutionMgr2 = repositoryManager.isLearnResourceManagerFor(rolesOwner2, re);
-		boolean institutionMgr3 = repositoryManager.isLearnResourceManagerFor(rolesPart3, re);
-	
-		Assert.assertTrue(institutionMgr1);
-		Assert.assertFalse(institutionMgr2);
-		Assert.assertFalse(institutionMgr3);
 	}
 
 	@Test

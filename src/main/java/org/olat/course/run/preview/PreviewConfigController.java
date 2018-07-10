@@ -73,13 +73,6 @@ public class PreviewConfigController extends MainLayoutBasicController {
 
 	private IdentityEnvironment simIdentEnv;
 	private CourseEnvironment simCourseEnv;
-	/*
-	 * default role is student
-	 */
-	private boolean isGlobalAuthor = false;
-	private boolean isGuestOnly = false;
-	private boolean isCoach = false;
-	private boolean isCourseAdmin = false;
 	private String role = PreviewSettingsForm.ROLE_STUDENT;
 	private LayoutMain3ColsController previewLayoutCtr;
 	private final OLATResourceable ores;
@@ -113,21 +106,14 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		listenTo(previewLayoutCtr); // for later auto disposal
 		StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("coursePreviewPanel", "o_edit_mode"));
 		initialPanel.setContent(previewLayoutCtr.getInitialComponent());
-
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == prc && event.getCommand().equals("command.config")) {
 			// use config form in preview controller
@@ -153,33 +139,30 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		List<BGArea> tmpAreas = areaManager.loadAreas(psf.getAreaKeys());
 		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(psf.getGroupKeys());
 		// get learning areas for groups
-		Set<BGArea> areas = new HashSet<BGArea>();
+		Set<BGArea> areas = new HashSet<>();
 		areas.addAll(tmpAreas);
 		List<BGArea> areaByGroups = areaManager.findBGAreasOfBusinessGroups(groups);
 		areas.addAll(areaByGroups);
 		
 		role = psf.getRole();
 		ICourse course = CourseFactory.loadCourse(ores);
+		
 		// default is student
-		isGlobalAuthor = false;
-		isGuestOnly = false;
-		isCoach = false;
-		isCourseAdmin = false;
-		/*
-		 * if (role.equals(PreviewSettingsForm.ROLE_STUDENT)) { } else
-		 */
+		boolean isCoach = false;
+		boolean isCourseAdmin = false;
+		Roles previewRoles = Roles.userRoles();
 		if (role.equals(PreviewSettingsForm.ROLE_GUEST)) {
-			isGuestOnly = true;
+			previewRoles = Roles.guestRoles();
 		} else if (role.equals(PreviewSettingsForm.ROLE_COURSECOACH)) {
 			isCoach = true;
 		} else if (role.equals(PreviewSettingsForm.ROLE_COURSEADMIN)) {
 			isCourseAdmin = true;
 		} else if (role.equals(PreviewSettingsForm.ROLE_GLOBALAUTHOR)) {
-			isGlobalAuthor = true;
+			previewRoles = Roles.authorRoles();
 		}
 		
 		final RepositoryEntry courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<BusinessGroup>(groups), new ArrayList<BGArea>(areas), isCoach, isCourseAdmin);
+		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<BusinessGroup>(groups), new ArrayList<>(areas), isCoach, isCourseAdmin);
 		final UserNodeAuditManager auditman = new PreviewAuditManager();
 		final AssessmentManager am = new PreviewAssessmentManager();
 		final CoursePropertyManager cpm = new PreviewCoursePropertyManager();
@@ -190,16 +173,16 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		simCourseEnv = new PreviewCourseEnvironment(title, runStructure, psf.getDate(), course.getCourseFolderContainer(), course
 				.getCourseBaseContainer(),course.getResourceableId(), cpm, cgm, auditman, am, courseConfig);
 		simIdentEnv = new IdentityEnvironment();
-		simIdentEnv.setRoles(new Roles(false, false, false, isGlobalAuthor, isGuestOnly, false, false));
+		
+		
+		simIdentEnv.setRoles(previewRoles);
 		final Identity ident = new PreviewIdentity();
 		simIdentEnv.setIdentity(ident);
 		//identity must be set before attributes OLAT-4811
 		simIdentEnv.setAttributes(psf.getAttributesMap());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

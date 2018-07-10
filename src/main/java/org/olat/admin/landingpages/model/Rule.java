@@ -32,13 +32,6 @@ import org.olat.core.util.UserSession;
  */
 public class Rule {
 	
-	public static final String AUTHOR = "author";
-	public static final String USER_MGR = "userManager";
-	public static final String GROUP_MGR = "groupManager";
-	public static final String RSRC_MGR = "institutionalResourceManager";
-	public static final String POOL_MGR = "poolAdmin";
-	public static final String ADMIN = "olatAdmin";
-	
 	private String role;
 	private String userAttributeKey;
 	private String userAttributeValue;
@@ -86,17 +79,7 @@ public class Rule {
 		//match the role?
 		if(!"none".equals(role) && StringHelper.containsNonWhitespace(role)) {
 			Roles roles = userSession.getRoles();
-			switch(role) {
-				case AUTHOR: match &= roles.isAuthor(); break;
-				case USER_MGR: match &= roles.isUserManager(); break;
-				case GROUP_MGR: match &= roles.isGroupManager(); break;
-				case RSRC_MGR: match &= roles.isLearnResourceManager(); break;
-				case POOL_MGR: match &= roles.isQPoolManager(); break;
-				case ADMIN: match &= roles.isOLATAdmin(); break;
-				default: {
-					match &= false;
-				}
-			}
+			match &= roles.hasRole(RoleToRule.valueOf(role).role());
 		}
 		
 		if(StringHelper.containsNonWhitespace(userAttributeKey)) {

@@ -34,15 +34,12 @@ import org.olat.core.util.UserSession;
  */
 public class AdminSecurityCallback implements SiteSecurityCallback {
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		if(ureq == null) return false;
 		UserSession usess = ureq.getUserSession();
 		return usess != null
 				&& usess.getRoles() != null
-				&& usess.getRoles().isOLATAdmin();
+				&& usess.getRoles().isAdministrator();
 	}
 }

@@ -21,6 +21,8 @@ package org.olat.group.ui;
 
 import java.util.Collection;
 
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
@@ -65,9 +67,6 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	private final BusinessGroupModule module;
 	private final BusinessGroupService businessGroupService;
 	private String[] onKeys = new String[]{"user","author"};
-	private String[] enrollmentKeys = new String[]{
-			"users","authors", "usermanagers", "groupmanagers", "administrators"
-	};
 	private String[] assignKeys = new String[]{"granted"};
 	private String[] allowLeavingKeys = new String[]{
 			"groupMadeByLearners", "groupMadeByAuthors", "groupOverride"
@@ -115,35 +114,33 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		privacyOptionsContainer.setFormTitle(translate("module.privacy.title"));
 		privacyOptionsContainer.setFormDescription(translate("module.privacy.desc"));
 		formLayout.add(privacyOptionsContainer);
-		String[] enrollmentValues = new String[]{
-				translate("enrolment.email.users"),
-				translate("enrolment.email.authors"),
-				translate("enrolment.email.usermanagers"),
-				translate("enrolment.email.groupmanagers"),
-				translate("enrolment.email.administrators")
-		};
+
+		OrganisationRoles[] roles = BaseSecurityModule.getUserAllowedRoles();
+		String[] enrollmentKeys = new String[roles.length];
+		String[] enrollmentValues = new String[roles.length];
+		for(int i=roles.length; i-->0; ) {
+			enrollmentKeys[i] = roles[i].name();
+			enrollmentValues[i] = translate("enrolment.email." + roles[i].name() + "s");
+		}
 		enrolmentEl = uifactory.addCheckboxesVertical("mandatory.enrolment", privacyOptionsContainer, enrollmentKeys, enrollmentValues, 1);
-		enrolmentEl.select("users", "true".equals(module.getMandatoryEnrolmentEmailForUsers()));
-		enrolmentEl.select("authors", "true".equals(module.getMandatoryEnrolmentEmailForAuthors()));
-		enrolmentEl.select("usermanagers", "true".equals(module.getMandatoryEnrolmentEmailForUsermanagers()));
-		enrolmentEl.select("groupmanagers", "true".equals(module.getMandatoryEnrolmentEmailForGroupmanagers()));
-		enrolmentEl.select("administrators", "true".equals(module.getMandatoryEnrolmentEmailForAdministrators()));
+		for(OrganisationRoles adminProp:roles) {
+			if(Boolean.parseBoolean(module.getMandatoryEnrolmentEmailFor(adminProp))) {
+				enrolmentEl.select(adminProp.name(), true);
+			}
+		}
 		enrolmentEl.addActionListener(FormEvent.ONCHANGE);
 		
-		String[] membershipValues = new String[]{
-				translate("enrolment.email.users"),
-				translate("enrolment.email.authors"),
-				translate("enrolment.email.usermanagers"),
-				translate("enrolment.email.groupmanagers"),
-				translate("enrolment.email.administrators")
-		};
+		String[] membershipValues = new String[enrollmentKeys.length];
+		for(int i=roles.length; i-->0; ) {
+			membershipValues[i] = translate("membership." + roles[i].name() + "s");
+		}
 		membershipEl = uifactory.addCheckboxesVertical("mandatory.membership", privacyOptionsContainer, enrollmentKeys, membershipValues, 1);
 		membershipEl.setElementCssClass("o_select_membership_confirmation");
-		membershipEl.select("users", "true".equals(module.getAcceptMembershipForUsers()));
-		membershipEl.select("authors", "true".equals(module.getAcceptMembershipForAuthors()));
-		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));
-		membershipEl.select("groupmanagers", "true".equals(module.getAcceptMembershipForGroupmanagers()));
-		membershipEl.select("administrators", "true".equals(module.getAcceptMembershipForAdministrators()));
+		for(OrganisationRoles adminProp:roles) {
+			if(Boolean.parseBoolean(module.getAcceptMembershipFor(adminProp))) {
+				membershipEl.select(adminProp.name(), true);
+			}
+		}
 		membershipEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] allowLeavingValues = new String[]{
@@ -230,19 +227,17 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 			module.setUserAllowedCreate(allowEl.isSelected(0));
 			module.setAuthorAllowedCreate(allowEl.isSelected(1));
 		} else if(source == membershipEl) {
-			Collection<String> membershipSelectedKeys = membershipEl.getSelectedKeys();
-			module.setAcceptMembershipForUsers(membershipSelectedKeys.contains("users") ? "true" : "false");
-			module.setAcceptMembershipForAuthors(membershipSelectedKeys.contains("authors") ? "true" : "false");
-			module.setAcceptMembershipForUsermanagers(membershipSelectedKeys.contains("usermanagers") ? "true" : "false");
-			module.setAcceptMembershipForGroupmanagers(membershipSelectedKeys.contains("groupmanagers") ? "true" : "false");
-			module.setAcceptMembershipForAdministrators(membershipSelectedKeys.contains("administrators") ? "true" : "false");
+			Collection<String> selectedKeys = membershipEl.getSelectedKeys();
+			OrganisationRoles[] roleArray = BaseSecurityModule.getUserAllowedRoles();
+			for(OrganisationRoles role:roleArray) {
+				module.setAcceptMembershipFor(role, Boolean.toString(selectedKeys.contains(role.name())));
+			}
 		} else if(source == enrolmentEl) {
-			Collection<String> enrolmentSelectedKeys = enrolmentEl.getSelectedKeys();
-			module.setMandatoryEnrolmentEmailForUsers(enrolmentSelectedKeys.contains("users") ? "true" : "false");
-			module.setMandatoryEnrolmentEmailForAuthors(enrolmentSelectedKeys.contains("authors") ? "true" : "false");
-			module.setMandatoryEnrolmentEmailForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "true" : "false");
-			module.setMandatoryEnrolmentEmailForGroupmanagers(enrolmentSelectedKeys.contains("groupmanagers") ? "true" : "false");
-			module.setMandatoryEnrolmentEmailForAdministrators(enrolmentSelectedKeys.contains("administrators") ? "true" : "false");
+			Collection<String> selectedKeys = enrolmentEl.getSelectedKeys();
+			OrganisationRoles[] roleArray = BaseSecurityModule.getUserAllowedRoles();
+			for(OrganisationRoles role:roleArray) {
+				module.setMandatoryEnrolmentEmailFor(role, Boolean.toString(selectedKeys.contains(role.name())));
+			}
 		} else if(source == allowLeavingGroupsEl) {
 			Collection<String> leavingSelectedKeys = allowLeavingGroupsEl.getSelectedKeys();
 			module.setAllowLeavingGroupCreatedByLearners(leavingSelectedKeys.contains("groupMadeByLearners"));

@@ -52,19 +52,15 @@ public class RolesVO {
 
 	public RolesVO(Roles roles) {
 		systemAdmin = roles.isSystemAdmin();
-		olatAdmin = roles.isOLATAdmin();
+		olatAdmin = roles.isAdministrator();
 		groupManager = roles.isGroupManager();
 		userManager = roles.isUserManager();
 		author = roles.isAuthor();
 		guestOnly = roles.isGuestOnly();
 		institutionalResourceManager = roles.isLearnResourceManager();
-		poolAdmin = roles.isQPoolManager();
+		poolAdmin = roles.isPoolManager();
 		curriculumManager = roles.isCurriculumManager();
 		invitee = roles.isInvitee();
-	}
-	
-	public Roles toRoles() {
-		return new Roles(systemAdmin, olatAdmin, userManager, groupManager, author, guestOnly, institutionalResourceManager, poolAdmin, curriculumManager, false, invitee);
 	}
 
 	public boolean isSystemAdmin() {

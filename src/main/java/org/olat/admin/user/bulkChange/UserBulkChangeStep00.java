@@ -47,7 +47,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.user.ProfileFormController;
@@ -70,8 +69,7 @@ class UserBulkChangeStep00 extends BasicStep {
 	private static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 	private static final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
 	
-	private final boolean isAdministrativeUser;
-	private final boolean isOLATAdmin;
+
 	private List<Identity> identitiesToEdit;
 	private final UserBulkChanges userBulkChanges;
 
@@ -81,9 +79,6 @@ class UserBulkChangeStep00 extends BasicStep {
 		this.userBulkChanges = userBulkChanges;
 		setI18nTitleAndDescr("step0.description", null);
 		setNextStep(new UserBulkChangeStep01(ureq, userBulkChanges));
-		Roles roles = ureq.getUserSession().getRoles();
-		isOLATAdmin = roles.isOLATAdmin();
-		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
 	}
 
 	@Override
@@ -99,6 +94,8 @@ class UserBulkChangeStep00 extends BasicStep {
 	private final class UserBulkChangeStepForm00 extends StepFormBasicController {
 		private List<UserPropertyHandler> userPropertyHandlers;
 		private final List<MultipleSelectionElement> checkBoxes = new ArrayList<>();
+
+		private final boolean isAdministrativeUser;
 		
 		@Autowired
 		private I18nManager i18nManager;
@@ -106,12 +103,16 @@ class UserBulkChangeStep00 extends BasicStep {
 		private UserManager userManager;
 		@Autowired
 		private UserBulkChangeManager ubcMan;
-
+		@Autowired
+		private BaseSecurityModule securityModule;
+		
 		public UserBulkChangeStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			// use custom translator with fallback to user properties translator
 			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 			flc.setTranslator(getTranslator());
+			isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+
 			initForm(ureq);
 		}
 
@@ -239,18 +240,15 @@ class UserBulkChangeStep00 extends BasicStep {
 			formLayout.add(innerFormLayout);
 
 			// add input field for password
-			Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
-			if (canChangePwd.booleanValue() || isOLATAdmin) {
-				MultipleSelectionElement passwordCheckEl = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
-				passwordCheckEl.select("changePWD", false);
-				passwordCheckEl.addActionListener(FormEvent.ONCLICK);
-				TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.CRED_IDENTIFYER, "password", 127, null, innerFormLayout);
-				passwordTextEl.setDisplaySize(35);
-				passwordTextEl.setLabel(null, null);
-				passwordTextEl.setVisible(false);
-				checkBoxes.add(passwordCheckEl);
-				passwordCheckEl.setUserObject(passwordTextEl);
-			}
+			MultipleSelectionElement passwordCheckEl = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
+			passwordCheckEl.select("changePWD", false);
+			passwordCheckEl.addActionListener(FormEvent.ONCLICK);
+			TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.CRED_IDENTIFYER, "password", 127, null, innerFormLayout);
+			passwordTextEl.setDisplaySize(35);
+			passwordTextEl.setLabel(null, null);
+			passwordTextEl.setVisible(false);
+			checkBoxes.add(passwordCheckEl);
+			passwordCheckEl.setUserObject(passwordTextEl);
 
 			// add SingleSelect for language
 			Map<String, String> locdescs = i18nManager.getEnabledLanguagesTranslated();

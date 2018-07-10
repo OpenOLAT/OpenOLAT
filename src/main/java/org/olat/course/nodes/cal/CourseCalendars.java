@@ -47,7 +47,6 @@ import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryManager;
 
 public class CourseCalendars {
 
@@ -97,11 +96,10 @@ public class CourseCalendars {
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseResourceableId());
 		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean isPrivileged = ! courseEnv.isCourseReadOnly() &&
-				(roles.isOLATAdmin() || courseEnv.isAdmin()
+		boolean isPrivileged = !courseEnv.isCourseReadOnly() &&
+				(courseEnv.isAdmin()
 				  || (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
-				  || RepositoryManager.getInstance().isLearnResourceManagerFor(roles, cgm.getCourseEntry()));
+				  || cgm.isIdentityCourseAdministrator(ureq.getIdentity()));
 		
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);

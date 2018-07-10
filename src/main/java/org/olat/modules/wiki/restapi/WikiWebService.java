@@ -19,6 +19,9 @@
  */
 package org.olat.modules.wiki.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -29,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.fileresource.types.WikiResource;
@@ -38,6 +41,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,6 +52,13 @@ import org.olat.restapi.security.RestSecurityHelper;
  * 
  */
 public class WikiWebService {
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OLATResourceManager resourceManager;
 
 	/**
 	 * will export the specified wiki (which must be a repo-entry-wiki) to a CP
@@ -63,33 +74,15 @@ public class WikiWebService {
 	@GET
 	@Produces({"application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response exportWiki(@PathParam("wikiKey") String wikiKey, @Context HttpServletRequest request, @Context HttpServletResponse response) {
-		if (wikiKey == null)
-			return Response.serverError().status(Status.BAD_REQUEST).build();
-
-		try {
-			return getWikiEntryAndServe(wikiKey,request,response);
-		} catch (Exception e) {
+		RepositoryEntry wikiEntry = getExportableWikiRepoEntryByAnyKey(wikiKey);
+		if(wikiEntry == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-
-	}
-
-	/**
-	 * 
-	 * @param wikiKey
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws Exception
-	 */
-	private Response getWikiEntryAndServe(String wikiKey, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		RepositoryEntry wikiEntry = getExportableWikiRepoEntryByAnyKey(wikiKey);
-		if (isRESTUserAllowedToExportWiki(wikiEntry, request)) {
-			CoreSpringFactory.getImpl(RepositoryService.class).incrementDownloadCounter(wikiEntry);
+		if (isAllowedToExportWiki(wikiEntry, request)) {
+			repositoryService.incrementDownloadCounter(wikiEntry);
 			return WikiWebServiceHelper.serve(wikiEntry.getOlatResource(), request, response);
-		} else {
-			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		return Response.serverError().status(Status.FORBIDDEN).build();
 	}
 
 	/**
@@ -105,11 +98,9 @@ public class WikiWebService {
 	 *            the resourceable id, softkey or repository-id
 	 * @return the exportable wiki
 	 */
-	private static RepositoryEntry getExportableWikiRepoEntryByAnyKey(String wikiKey) throws Exception {
-		RepositoryEntry re = null;
-
+	private RepositoryEntry getExportableWikiRepoEntryByAnyKey(String wikiKey) {
 		// first try softkey
-		re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(wikiKey, false);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntryBySoftkey(wikiKey, false);
 		if (re != null && re.getCanDownload()) {
 			return re;
 		}
@@ -117,24 +108,23 @@ public class WikiWebService {
 		try {
 			Long key = Long.parseLong(wikiKey);
 			// try repo key
-			re = RepositoryManager.getInstance().lookupRepositoryEntry(key);
+			re = repositoryManager.lookupRepositoryEntry(key);
 			if (re != null && re.getCanDownload()) {
 				return re;
 			}
 
 			// null,try resourceable key
-			OLATResourceable ores = OLATResourceManager.getInstance().findResourceable(key, WikiResource.TYPE_NAME);
+			OLATResourceable ores = resourceManager.findResourceable(key, WikiResource.TYPE_NAME);
 			if (ores != null) {
-				re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-				if (re != null && re.getCanDownload())
+				re = repositoryManager.lookupRepositoryEntry(ores, false);
+				if (re != null && re.getCanDownload()) {
 					return re;
+				}
 			}
-
 		} catch (NumberFormatException nfe) {
 			// wikiKey was not a Long number, ignore
 		}
-
-		throw new Exception("No RepositoryEntry found for key " + wikiKey);
+		return null;
 	}
 
 	/**
@@ -145,11 +135,14 @@ public class WikiWebService {
 	 * @param request
 	 * @return
 	 */
-	private boolean isRESTUserAllowedToExportWiki(RepositoryEntry wikiEntry, HttpServletRequest request) {
-		Identity ident = RestSecurityHelper.getIdentity(request);
-		boolean isAuthor = RestSecurityHelper.isAuthor(request);
-		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ident, wikiEntry);
-		return isAuthor || isOwner;
+	private boolean isAllowedToExportWiki(RepositoryEntry re, HttpServletRequest request) {
+		Identity identity = RestSecurityHelper.getIdentity(request);
+		boolean canDownload = re.getCanDownload() ;
+		if (isAdmin(request) || repositoryService.hasRole(identity, re, GroupRoles.owner.name())) {
+			canDownload = true;
+		} else if(!isAuthor(request)) {
+			return false;
+		}
+		return canDownload;
 	}
-
 }

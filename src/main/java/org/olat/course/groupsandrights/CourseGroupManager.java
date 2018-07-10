@@ -31,7 +31,6 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
@@ -117,19 +116,14 @@ public interface CourseGroupManager {
 	public boolean isIdentityCourseCoach(Identity identity);
 
 	/**
-	 * Checks if user is course administrator (is owner of repository entry)
+	 * Checks if user is course administrator (is owner, learning resource
+	 * manager or administrator of repository entry)
 	 * 
-	 * @param identity
-	 * @return boolean
+	 * @param identity The identity to check
+	 * @return boolean true if the specified is administrator, learn resource manager or owner
+	 * 			of the course.
 	 */
 	public boolean isIdentityCourseAdministrator(Identity identity);
-	
-	/**
-	 * 
-	 * @param identity
-	 * @return
-	 */
-	public boolean isIdentityCourseLearnResourceManager(Identity identity, Roles roles);
 	
 	/**
 	 * Checks if user is course participant

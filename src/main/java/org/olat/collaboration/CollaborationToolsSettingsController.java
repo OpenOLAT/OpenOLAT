@@ -108,7 +108,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 			if(managed) {
 				quotaCtr = quotaManager.getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			} else {
-				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), null);//TODO roles
+				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), null);//TODO quota roles
 			}
 			listenTo(quotaCtr);
 		} else {

@@ -52,7 +52,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -100,6 +99,7 @@ import org.olat.restapi.support.vo.OlatResourceVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -118,10 +118,26 @@ public class CourseWebService {
 	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
 
 	
-	public static CacheControl cc = new CacheControl();
+	public static final CacheControl cc = new CacheControl();
 	static {
 		cc.setMaxAge(-1);
 	}
+	
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
+
 	
 	private final ICourse course;
 	private final OLATResource courseOres;
@@ -133,13 +149,12 @@ public class CourseWebService {
 	
 	@Path("groups")
 	public CourseGroupWebService getCourseGroupWebService() {
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
 		return new CourseGroupWebService(re, courseOres);
 	}
 	
 	@Path("calendar")
 	public CalWebService getCourseCalendarWebService(@Context HttpServletRequest request) {
-		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		if(calendarModule.isEnabled()
 				&& (calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar())
 				&& course.getCourseConfig().isCalendarEnabled()) {
@@ -211,7 +226,7 @@ public class CourseWebService {
 		}
 		
 		int newAccess = access == null ? RepositoryEntry.ACC_USERS : access.intValue();
-		boolean members = membersOnly == null ? false : membersOnly.booleanValue();
+		boolean members = membersOnly != null && membersOnly.booleanValue();
 		CourseFactory.publishCourse(course, newAccess, members, ureq.getIdentity(), locale);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
@@ -259,20 +274,19 @@ public class CourseWebService {
 	@Path("file")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getRepoFileById(@Context HttpServletRequest request) {
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if (re == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(re);
 		if (typeToDownload == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		Identity identity = getIdentity(request);
 		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
-		if (isAdmin(request) || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re)) {
+		if (isAdmin(request) || repositoryService.hasRole(identity, re, GroupRoles.owner.name())) {
 			canDownload = true;
 		} else if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -281,7 +295,7 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
+		OLATResource ores = resourceManager.findResourceable(re.getOlatResource());
 		if (ores == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -293,7 +307,7 @@ public class CourseWebService {
 			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
 				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
 				if (mr != null) {
-					rs.incrementDownloadCounter(re);
+					repositoryService.incrementDownloadCounter(re);
 					return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
 				} else {
 					return Response.serverError().status(Status.NO_CONTENT).build();
@@ -321,17 +335,13 @@ public class CourseWebService {
 	@DELETE
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCourse(@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if (!isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if(!isAuthor(request) && !isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		UserRequest ureq = getUserRequest(request);
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
-		ErrorList errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		ErrorList errors = repositoryService.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
 		}
@@ -361,37 +371,34 @@ public class CourseWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
 	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if (!isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if(!isAuthor(request) && !isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if("closed".equals(newStatus)) {
-			rs.closeRepositoryEntry(re);
+			repositoryService.closeRepositoryEntry(re);
 			log.audit("REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
-			rs.uncloseRepositoryEntry(re);
+			repositoryService.uncloseRepositoryEntry(re);
 			log.audit("REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("unpublished".equals(newStatus)) {
-			rs.unpublishRepositoryEntry(re);
+			repositoryService.unpublishRepositoryEntry(re);
 			log.audit("REST unpublishing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			rs.deleteSoftly(re, identity, true);
+			repositoryService.deleteSoftly(re, identity, true);
 			log.audit("REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			rs.restoreRepositoryEntry(re);
+			repositoryService.restoreRepositoryEntry(re);
 			log.audit("REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
@@ -415,9 +422,7 @@ public class CourseWebService {
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getConfiguration(@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		} else if (!isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if(!isAuthor(request) && !isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseConfigVO vo = ObjectFactory.getConfig(course);
@@ -560,7 +565,6 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		List<Identity> owners = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
 		
 		int count = 0;
@@ -590,7 +594,6 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		List<Identity> coachList = repositoryService.getMembers(repositoryEntry, GroupRoles.coach.name());
 		
 		int count = 0;
@@ -620,7 +623,6 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		List<Identity> participantList = repositoryService.getMembers(repositoryEntry, GroupRoles.participant.name());
 		
 		int count = 0;
@@ -651,12 +653,7 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-
 		Identity author = securityManager.loadIdentityByKey(identityKey, false);
 		if(repositoryService.hasRole(author, repositoryEntry, GroupRoles.owner.name()) &&
 				organisationService.hasRole(author, OrganisationRoles.author)) {
@@ -683,14 +680,12 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity author = securityManager.loadIdentityByKey(identityKey, false);
 		if(author == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		Identity identity = getIdentity(httpRequest);
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		boolean hasBeenAuthor = organisationService.hasRole(author, OrganisationRoles.author);
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
@@ -699,11 +694,10 @@ public class CourseWebService {
 		}
 		
 		//add the author as owner of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> authors = Collections.singletonList(author);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);
-		rm.addOwners(identity, identitiesAddedEvent, repositoryEntry, new MailPackage(false));
+		repositoryManager.addOwners(identity, identitiesAddedEvent, repositoryEntry, new MailPackage(false));
 		
 		return Response.ok().build();
 	}
@@ -716,8 +710,6 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-		
 		List<Identity> authorList = loadIdentities(authors);
 		Identity identity = getIdentity(httpRequest);
 
@@ -733,7 +725,7 @@ public class CourseWebService {
 		//add the author as owner of the course
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authorList);
-		RepositoryManager.getInstance().addOwners(identity, identitiesAddedEvent, repositoryEntry, new MailPackage(false));
+		repositoryManager.addOwners(identity, identitiesAddedEvent, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -754,7 +746,6 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity author = securityManager.loadIdentityByKey(identityKey, false);
 		if(author == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -763,10 +754,9 @@ public class CourseWebService {
 		Identity identity = getIdentity(httpRequest);
 		
 		//remove the author as owner of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> authors = Collections.singletonList(author);
-		rm.removeOwners(identity, authors, repositoryEntry, new MailPackage(false));
+		repositoryManager.removeOwners(identity, authors, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -787,7 +777,6 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity tutor = securityManager.loadIdentityByKey(identityKey, false);
 		if(tutor == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -797,12 +786,10 @@ public class CourseWebService {
 		UserRequest ureq = getUserRequest(httpRequest);
 		
 		//add the author as owner of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> tutors = Collections.singletonList(tutor);
 		IdentitiesAddEvent iae = new IdentitiesAddEvent(tutors);
-		rm.addTutors(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
-		
+		repositoryManager.addTutors(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -819,10 +806,9 @@ public class CourseWebService {
 		UserRequest ureq = getUserRequest(httpRequest);
 		
 		//add the author as owner of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		IdentitiesAddEvent iae = new IdentitiesAddEvent(coachList);
-		rm.addTutors(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
+		repositoryManager.addTutors(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -843,7 +829,6 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity coach = securityManager.loadIdentityByKey(identityKey, false);
 		if(coach == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -852,10 +837,9 @@ public class CourseWebService {
 		Identity identity = getIdentity(httpRequest);
 		
 		//remove the user as coach of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> coaches = Collections.singletonList(coach);
-		rm.removeTutors(identity, coaches, repositoryEntry, new MailPackage(false));
+		repositoryManager.removeTutors(identity, coaches, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -876,7 +860,6 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity participant = securityManager.loadIdentityByKey(identityKey, false);
 		if(participant == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -886,12 +869,10 @@ public class CourseWebService {
 		UserRequest ureq = getUserRequest(httpRequest);
 		
 		//add the author as owner of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> participants = Collections.singletonList(participant);
 		IdentitiesAddEvent iae = new IdentitiesAddEvent(participants);
-		rm.addParticipants(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
-		
+		repositoryManager.addParticipants(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -918,10 +899,9 @@ public class CourseWebService {
 		UserRequest ureq = getUserRequest(httpRequest);
 		
 		//add the participants to the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		IdentitiesAddEvent iae = new IdentitiesAddEvent(participantList);
-		rm.addParticipants(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
+		repositoryManager.addParticipants(identity, ureq.getUserSession().getRoles(), iae, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	
@@ -942,7 +922,6 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity participant = securityManager.loadIdentityByKey(identityKey, false);
 		if(participant == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -951,10 +930,9 @@ public class CourseWebService {
 		Identity identity = getIdentity(httpRequest);
 		
 		//remove the user as participant of the course
-		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> participants = Collections.singletonList(participant);
-		rm.removeParticipants(identity, participants, repositoryEntry, new MailPackage(false), false);
+		repositoryManager.removeParticipants(identity, participants, repositoryEntry, new MailPackage(false), false);
 		return Response.ok().build();
 	}
 	
@@ -963,7 +941,7 @@ public class CourseWebService {
 		for(UserVO user:users) {
 			identityKeys.add(user.getKey());
 		}
-		return BaseSecurityManager.getInstance().loadIdentityByKeys(identityKeys);
+		return securityManager.loadIdentityByKeys(identityKeys);
 	}
 	
 	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
@@ -978,9 +956,6 @@ public class CourseWebService {
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		AccessResult result = acManager.isAccessible(entry, identity, false);
-		if(result.isAccessible()) {
-			return true;
-		}
-		return false;
+		return result.isAccessible();
 	}
 }

@@ -35,7 +35,7 @@ import org.olat.modules.fo.ForumCallback;
 public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	
 	private NodeEvaluation ne;
-	private boolean isOlatAdmin;
+	private boolean isAdministator;
 	private boolean isGuestOnly;
 	private boolean isGroupWiki;
 	private boolean isResourceOwner;
@@ -48,11 +48,11 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	 * @param isGuestOnly
 	 * @param isGroupWiki
 	 */
-	public WikiSecurityCallbackImpl(NodeEvaluation ne, boolean isOlatAdmin, 
+	public WikiSecurityCallbackImpl(NodeEvaluation ne, boolean isAdministator, 
 			boolean isGuestOnly, boolean isGroupWiki, 
 			boolean isResourceOwner, SubscriptionContext subscriptionContext){
 		this.ne = ne;
-		this.isOlatAdmin = isOlatAdmin;
+		this.isAdministator = isAdministator;
 		this.isGuestOnly = isGuestOnly;
 		this.isGroupWiki  = isGroupWiki;
 		this.isResourceOwner = isResourceOwner;
@@ -61,20 +61,19 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	
 	/**
 	 * 
-	 * @return true if admin or allowed by preconditions
+	 * @return true if administrator or allowed by preconditions
 	 */
 	@Override
-	public boolean mayEditAndCreateArticle(){
-		if(isGroupWiki) return true;
+	public boolean mayEditAndCreateArticle() {
 		if(isGuestOnly) return false;
-		if(isOlatAdmin) return true;
-		//if(isResourceOwner) return true; //should not shortcut the nodeEvauation values			
-		if(ne != null && ne.isCapabilityAccessible("access")
-				&& ne.isCapabilityAccessible("editarticle")) {
+		if(isGroupWiki || isAdministator) {
 			return true;
 		}
-		if(ne == null) return true; //wiki is started from repo, and it's visible to this user, so creating pages is allowed
-		return false;
+		if(ne != null && ne.isCapabilityAccessible("access") && ne.isCapabilityAccessible("editarticle")) {
+			return true;
+		}
+		//wiki is started from repo, and it's visible to this user, so creating pages is allowed
+		return ne == null; 
 	}
 	
 	/**
@@ -83,28 +82,21 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	 */
 	@Override
 	public boolean mayEditWikiMenu(){
-		if(isGroupWiki) return true;
 		if(isGuestOnly) return false;
-		if(isOlatAdmin) return true;
-		if(isResourceOwner) return true;
-		return false;
+		return isGroupWiki || isAdministator || isResourceOwner;
 	}
 	
 	/**
 	 * @return the subscriptionContext. if null, then no subscription must be offered
 	 */
 	@Override
-	public SubscriptionContext getSubscriptionContext()
-	{
+	public SubscriptionContext getSubscriptionContext() {
 		return (isGuestOnly ? null : subscriptionContext);
 	}
 
 	@Override
 	public boolean mayModerateForum()	{
-		if(!isGuestOnly && (isOlatAdmin || isResourceOwner)) {
-			return true;		
-		}		
-		return false;
+		return !isGuestOnly && (isAdministator || isResourceOwner);
 	}
 
 	@Override

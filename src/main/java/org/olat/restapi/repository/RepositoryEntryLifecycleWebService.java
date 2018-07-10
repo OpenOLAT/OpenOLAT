@@ -67,7 +67,7 @@ public class RepositoryEntryLifecycleWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isLearnResourceManager() && !roles.isOLATAdmin()) {
+		if(!roles.isLearnResourceManager() && !roles.isAdministrator()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		

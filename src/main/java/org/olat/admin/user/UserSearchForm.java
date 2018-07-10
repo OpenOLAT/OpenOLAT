@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
@@ -94,8 +95,9 @@ public class UserSearchForm extends FormBasicController {
 	
 	private boolean validateForm(UserRequest ureq) {
 		// override for sys admins
-		if (ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
-				&& ureq.getUserSession().getRoles().isOLATAdmin()) {
+		UserSession usess = ureq.getUserSession();
+		if (usess != null && usess.getRoles() != null
+				&& (usess.getRoles().isAdministrator() || usess.getRoles().isRolesManager())) {
 			return true;
 		}
 		
@@ -115,9 +117,6 @@ public class UserSearchForm extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(uiValue)) {
 				full.append(uiValue.trim());
 				filled = true;
-			}else{
-				//its an empty field
-				filled = filled || false;
 			}
 
 			lastFormElement = ui;
@@ -137,8 +136,8 @@ public class UserSearchForm extends FormBasicController {
 			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates", null);
 			return false;
 		}		
-		int MIN_LENGTH = 4;
-		if ( fullString.length() < MIN_LENGTH ) {
+		int minLength = 4;
+		if ( fullString.length() < minLength ) {
 			lastFormElement.setErrorKey("error.search.form.to.short", null);
 			return false;
 		}
@@ -184,11 +183,6 @@ public class UserSearchForm extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {

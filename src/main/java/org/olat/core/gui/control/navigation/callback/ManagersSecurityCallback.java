@@ -22,6 +22,7 @@ package org.olat.core.gui.control.navigation.callback;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 
 /**
@@ -41,11 +42,12 @@ public class ManagersSecurityCallback implements SiteSecurityCallback {
 			return false;
 		}
 		
-		return usess.getRoles().isOLATAdmin()
-				|| usess.getRoles().isGroupManager()
-				|| usess.getRoles().isLearnResourceManager()
-				|| usess.getRoles().isUserManager()
-				|| usess.getRoles().isQPoolManager()
-				|| usess.getRoles().isCurriculumManager();
+		Roles roles = usess.getRoles();
+		return roles.isAdministrator()
+				|| roles.isGroupManager() || roles.isLearnResourceManager()
+				|| roles.isUserManager() || roles.isRolesManager()
+				|| roles.isPoolManager() || roles.isQualityManager()
+				|| roles.isCurriculumManager() || roles.isLectureManager()
+				|| roles.isLineManager() || roles.isPrincipal();
 	}
 }

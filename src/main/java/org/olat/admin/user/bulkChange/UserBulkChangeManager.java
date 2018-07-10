@@ -214,7 +214,7 @@ public class UserBulkChangeManager implements InitializingBean {
 
 			// set status
 			if (userBulkChanges.getStatus() != null) {
-				Integer status = userBulkChanges.getStatus().intValue();
+				Integer status = userBulkChanges.getStatus();
 
 				int oldStatus = identity.getStatus();
 				String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent" : (oldStatus == Identity.STATUS_ACTIV ? "active" : (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (oldStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));

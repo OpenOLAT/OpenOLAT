@@ -22,6 +22,9 @@ package org.olat.modules.webFeed.portfolio;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -37,7 +40,6 @@ import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.modules.webFeed.ui.FeedItemDisplayConfig;
-import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
 import org.olat.portfolio.EPAbstractHandler;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -77,36 +79,27 @@ public class LiveBlogArtefactHandler extends EPAbstractHandler<LiveBlogArtefact>
 	}
 
 	@Override
-	public void prefillArtefactAccordingToSource(AbstractArtefact artefact, Object source) {
-		super.prefillArtefactAccordingToSource(artefact, source);
-	}
-
-	@Override
 	public Controller createDetailsController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, boolean readOnlyMode) {
-		FeedSecurityCallback callback = new FeedResourceSecurityCallback(false, false);
+		FeedSecurityCallback callback = new FeedResourceSecurityCallback(false);
 		String businessPath = artefact.getBusinessPath();
 		Long resid = Long.parseLong(businessPath.substring(10, businessPath.length() - 1));
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(resid, BlogFileResource.TYPE_NAME);
 		FeedItemDisplayConfig displayConfig = new FeedItemDisplayConfig(false, false, readOnlyMode);
-		FeedMainController detailsController = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(ores, ureq, wControl, callback, displayConfig);
-		return detailsController;
+		return BlogUIFactory.getInstance(ureq.getLocale()).createMainController(ores, ureq, wControl, callback, displayConfig);
 	}
 
-	/**
-	 * @see org.olat.portfolio.EPAbstractHandler#isProvidingSpecialMapViewController()
-	 */
 	@Override
 	public boolean isProvidingSpecialMapViewController() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.portfolio.EPAbstractHandler#getSpecialMapViewController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller getSpecialMapViewController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
-		boolean isOwner = ureq.getIdentity().equalsByPersistableKey(artefact.getAuthor());
-		FeedSecurityCallback callback = new FeedResourceSecurityCallback(ureq.getUserSession().getRoles().isOLATAdmin(), isOwner);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		boolean isAdministrator = ureq.getIdentity().equalsByPersistableKey(artefact.getAuthor())
+				|| ureq.getUserSession().getRoles().isManagerOf(OrganisationRoles.administrator, securityManager.getRoles(artefact.getAuthor()));
+
+		FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdministrator);
 		String businessPath = artefact.getBusinessPath();
 		Long resid = Long.parseLong(businessPath.substring(10, businessPath.length() - 1));
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(resid, BlogFileResource.TYPE_NAME);

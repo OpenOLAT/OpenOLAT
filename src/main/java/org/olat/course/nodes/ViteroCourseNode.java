@@ -33,13 +33,13 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.vitero.ViteroEditController;
 import org.olat.course.nodes.vitero.ViteroPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -48,7 +48,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.ui.ViteroBookingsRunController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -104,21 +103,8 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			runCtr = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
 			// check if user is moderator of the virtual classroom
-			boolean moderator = roles.isOLATAdmin();
-			Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			if (!moderator) {
-				if(roles.isLearnResourceManager() || roles.isAuthor() || roles.isOLATAdmin()) {
-					RepositoryManager rm = RepositoryManager.getInstance();
-					ICourse course = CourseFactory.loadCourse(key);
-					RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-					if (re != null) {
-						moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
-						if(!moderator) {
-							moderator = rm.isLearnResourceManagerFor(roles, re);
-						}
-					}
-				}
-			}
+			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			boolean moderator = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
 			// create run controller
 			Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
@@ -149,8 +135,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-		StatusDescription status = StatusDescription.NOERROR;
-		return status;
+		return StatusDescription.NOERROR;
 	}
 	
 	@Override
@@ -162,7 +147,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		// load configuration
-		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
+		ViteroManager provider = CoreSpringFactory.getImpl(ViteroManager.class);
 		// remove meeting
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
 		provider.deleteAll(null, ores, getIdent());

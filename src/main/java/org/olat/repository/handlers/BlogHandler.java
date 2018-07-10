@@ -43,7 +43,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
@@ -62,7 +61,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -139,9 +137,6 @@ public class BlogHandler implements RepositoryHandler {
 	@Override
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
-		// For now, notifications are not implemented since a blog feed is meant
-		// to be subscriped to anyway.
-		// NotificationsManager.getInstance().deletePublishersOf(res);
 		FeedManager.getInstance().deleteFeed(res);
 		return true;
 	}
@@ -163,29 +158,19 @@ public class BlogHandler implements RepositoryHandler {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable,
-	 *      java.lang.String, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public MainLayoutController createLaunchController(final RepositoryEntry re, RepositoryEntrySecurity reSecurity,
 			UserRequest ureq, WindowControl wControl) {
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
-		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
+		
+		boolean isAdministrator = reSecurity.isEntryAdmin();
+		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdministrator);
 		SubscriptionContext subsContext = new SubscriptionContext(re.getOlatResource(), re.getSoftkey());
 		callback.setSubscriptionContext(subsContext);
-		return new FeedRuntimeController(ureq, wControl, re, reSecurity,
-				new RuntimeControllerCreator() {
-					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-							RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
-							BlogUIFactory.getInstance(uureq.getLocale()), callback, null);
-					}
+		return new FeedRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry,  security,  assessmentMode) -> {
+				CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+					.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
+				return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
+					BlogUIFactory.getInstance(uureq.getLocale()), callback, null);
 			});
 	}
 

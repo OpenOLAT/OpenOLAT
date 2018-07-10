@@ -95,7 +95,7 @@ public class OLATUpgrade_10_3_0 extends OLATUpgrade {
 	private boolean upgradeExportFodler(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		if (!uhd.getBooleanDataValue(TASK_EXPORT_FOLDER)) {
 			int counter = 0;
-			final Roles roles = new Roles(true, true, true, true, false, true, false);
+			final Roles roles = Roles.administratorAndManagersRoles();
 			final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 			params.setRoles(roles);
 			params.setResourceTypes(Collections.singletonList("CourseModule"));

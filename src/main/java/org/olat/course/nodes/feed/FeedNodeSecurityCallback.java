@@ -35,57 +35,45 @@ import org.olat.modules.webFeed.FeedSecurityCallback;
 public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 
 	private NodeEvaluation ne;
-	private boolean isOlatAdmin;
+	private boolean isAdministrator;
 	private boolean isGuestOnly;
 	private boolean isOwner;
 	private SubscriptionContext subsContext;
 
-	public FeedNodeSecurityCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isOwner, boolean isGuestOnly) {
+	public FeedNodeSecurityCallback(NodeEvaluation ne, boolean isAdministrator, boolean isOwner, boolean isGuestOnly) {
 		this.ne = ne;
-		this.isOlatAdmin = isOlatAdmin;
+		this.isAdministrator = isAdministrator;
 		this.isGuestOnly = isGuestOnly;
 		this.isOwner = isOwner;
 	}
-
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditMetadata()
-	 */
+	
 	@Override
 	public boolean mayEditMetadata() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return ne.isCapabilityAccessible("moderator") || isAdministrator;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayCreateItems()
-	 */
 	@Override
 	public boolean mayCreateItems() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isAdministrator;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayDeleteItems()
-	 */
 	@Override
 	public boolean mayDeleteItems() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return ne.isCapabilityAccessible("moderator") || isAdministrator;
 	}
 
 	@Override
 	public boolean mayDeleteOwnItems() {
 		return true;
 	}
-	
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditItems()
-	 */
+
 	@Override
 	public boolean mayEditItems() {
 		if (isGuestOnly) return false;
-		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+		return ne.isCapabilityAccessible("moderator") || isAdministrator;
 	}
 
 	@Override
@@ -93,12 +81,9 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
-	 */
 	@Override
 	public boolean mayViewAllDrafts() {
-		return isOwner || isOlatAdmin;
+		return isOwner || isAdministrator;
 	}
 
 	@Override

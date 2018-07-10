@@ -121,9 +121,6 @@ public class AjaxController extends DefaultController {
 		myContent = new VelocityContainer("jsserverpart", VELOCITY_ROOT + "/serverpart.html", null, this);
 		myContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		
-		//more debug information: OLAT-3529
-		if (ajaxEnabled) myContent.contextPut("isAdmin", Boolean.valueOf(ureq.getUserSession().getRoles().isOLATAdmin()));
-		
 		// create a mapper to not block main traffic when polling (or vica versa)
 		final Window window = wboImpl.getWindow();
 		m = new Mapper() {

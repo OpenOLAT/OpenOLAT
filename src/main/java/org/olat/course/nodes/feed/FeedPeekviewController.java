@@ -42,8 +42,6 @@ import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.resource.OLATResource;
-import org.olat.user.UserManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> The feed peekview controller displays the configurable
@@ -61,9 +59,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FeedPeekviewController extends BasicController implements Controller {
 	// the current course node id
 	private final String nodeId;
-	
-	@Autowired
-	private UserManager userManager;
 
 	/**
 	 * Constructor for the feed peekview controller
@@ -92,7 +87,6 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		} else {
 			peekviewVC.contextPut("wrapperCssClass", wrapperCssClass != null ? wrapperCssClass : "");
 			// add gui helper
-			String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
 			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), getTranslator(), courseId, nodeId);
 			peekviewVC.contextPut("helper", helper);
 			// add items, only as many as configured

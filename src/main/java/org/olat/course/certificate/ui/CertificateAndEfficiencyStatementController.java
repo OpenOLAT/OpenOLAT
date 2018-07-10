@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -115,6 +116,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private EfficiencyStatementMediaHandler mediaHandler;
 	@Autowired
@@ -251,7 +254,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		mainVC.contextPut("username", statementOwner.getName());
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 

@@ -49,7 +49,7 @@ public class QuestionPoolSiteDef extends AbstractSiteDefinition implements SiteD
 			return null;
 		}
 		Roles roles = usess.getRoles();
-		if(roles.isOLATAdmin() || roles.isAuthor() || roles.isQPoolManager()) {
+		if(roles.isOLATAdmin() || roles.isAuthor() || roles.isPoolManager()) {
 			return new QuestionPoolSite(this, ureq.getLocale());
 		}
 		return null;

@@ -28,6 +28,8 @@ package org.olat.course.nodes.bc;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
@@ -35,11 +37,11 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.DefaultController;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
@@ -49,9 +51,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
-import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -59,7 +60,9 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Apr 22, 2004
@@ -68,9 +71,14 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author gnaegi
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
-public class BCCourseNodeRunController extends DefaultController implements Activateable2 {
+public class BCCourseNodeRunController extends BasicController implements Activateable2 {
 
 	private FolderRunController frc;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * Constructor for a briefcase course building block runtime controller
@@ -82,11 +90,11 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 	 * @param scallback
 	 */
 	public BCCourseNodeRunController(UserRequest ureq, WindowControl wContr, UserCourseEnvironment userCourseEnv, BCCourseNode courseNode, NodeEvaluation ne) {
-		super(wContr);
+		super(ureq, wContr);
 		
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 		UserSession usess = ureq.getUserSession();
-		boolean isOlatAdmin = usess.getRoles().isOLATAdmin();
 		boolean isGuestOnly = usess.getRoles().isGuestOnly();
 		// set logger on this run controller
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
@@ -98,7 +106,8 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 		VFSSecurityCallback scallback;
 		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
 			OlatNamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
-			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
+			boolean isAdministrator = cgm.isIdentityCourseAdministrator(getIdentity());
+			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			target = directory;
 		} else if(courseNode.isSharedFolder()) {
 			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
@@ -114,7 +123,12 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 				scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
 			} else {
 				String relPath = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath();
-				scallback = new FolderNodeCallback(relPath, ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
+				
+				String sfSoftkey = courseEnv.getCourseConfig().getSharedFolderSoftkey();
+				RepositoryEntry sharedResource = repositoryManager.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
+				boolean isAdministrator = repositoryService.hasRoleExpanded(getIdentity(), sharedResource,
+						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
+				scallback = new FolderNodeCallback(relPath, ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			}
 		} else{
 			//create folder automatically if not found
@@ -138,7 +152,8 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 				} else {
 					relPath = VFSManager.getRelativeItemPath(target, courseContainer, null);
 				}
-				scallback = new FolderNodeCallback(relPath, ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
+				boolean isAdministrator = cgm.isIdentityCourseAdministrator(getIdentity());
+				scallback = new FolderNodeCallback(relPath, ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			}
 		}
 		
@@ -147,17 +162,12 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
 		}
 		
-		if(!noFolder) {
+		if(!noFolder && target != null) {
 			target.setLocalSecurityCallback(scallback);
 
 			VFSContainer courseContainer = null;
 			if(scallback.canWrite() && scallback.canCopy()) {
-				Identity identity = ureq.getIdentity();
-				ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-				RepositoryManager rm = RepositoryManager.getInstance();
-				RepositoryEntry entry = rm.lookupRepositoryEntry(course, true);
-				if (isOlatAdmin || rm.isOwnerOfRepositoryEntry(identity, entry)
-						|| courseEnv.getCourseGroupManager().hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)) {
+				if (cgm.isIdentityCourseAdministrator(getIdentity()) || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR)) {
 					// use course folder as copy source
 					courseContainer = courseEnv.getCourseFolderContainer();
 				}
@@ -182,7 +192,9 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 	
 			boolean canMail = !userCourseEnv.isCourseReadOnly();
 			frc = new FolderRunController(olatNamed, true, true, canMail, ureq, getWindowControl(), null, null, courseContainer);
-			setInitialComponent(frc.getInitialComponent());
+			putInitialPanel(frc.getInitialComponent());
+		} else {
+			putInitialPanel(new Panel("error"));
 		}
 	}
 

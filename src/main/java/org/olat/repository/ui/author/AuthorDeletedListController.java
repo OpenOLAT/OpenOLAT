@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,8 +44,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -100,7 +99,7 @@ public class AuthorDeletedListController extends AuthorListController {
 	@Override
 	protected void initBatchButtons(FormItemContainer formLayout) {
 		restoreButton = uifactory.addFormLink("tools.restore", formLayout, Link.BUTTON);
-		if(isOlatAdmin) {
+		if(hasAdministratorRight) {
 			deletePermanentlyButton = uifactory.addFormLink("tools.delete.permanently", formLayout, Link.BUTTON);
 		}
 	}
@@ -192,14 +191,10 @@ public class AuthorDeletedListController extends AuthorListController {
 	}
 
 	private void doRestore(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		Roles roles = ureq.getUserSession().getRoles();
 		List<Long> deleteableRowKeys = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
-			boolean canDelete = roles.isOLATAdmin()
-					|| repositoryService.hasRole(getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isLearnResourceManagerFor(roles, row);
-			if(canDelete && !managed) {
+			if(!managed && canManage(row)) {
 				deleteableRowKeys.add(row.getKey());
 			}
 		}
@@ -222,12 +217,11 @@ public class AuthorDeletedListController extends AuthorListController {
 	}
 	
 	private void doDeletePermanently(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		Roles roles = ureq.getUserSession().getRoles();
 		List<Long> deleteableRowKeys = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
-			boolean canDelete = roles.isOLATAdmin() || repositoryManager.isLearnResourceManagerFor(roles, row);
-			if(canDelete && !managed) {
+			if(!managed && repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.learnresourcemanager.name(),
+				OrganisationRoles.administrator.name())) {
 				deleteableRowKeys.add(row.getKey());
 			}
 		}
@@ -248,37 +242,30 @@ public class AuthorDeletedListController extends AuthorListController {
 			cmc.activate();
 		}
 	}
-	
-	
 
 	private class DToolsController extends BasicController {
-		
-		private final AuthoringEntryRow row;
 
 		private final VelocityContainer mainVC;
 		
-		private boolean isOwner;
-		private boolean isAuthor;
+		private final boolean isOwner;
+		private final boolean isAuthor;
+		private final AuthoringEntryRow row;
 		
 		public DToolsController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row, RepositoryEntry entry) {
 			super(ureq, wControl);
 			setTranslator(AuthorDeletedListController.this.getTranslator());
 			this.row = row;
 			
-			Identity identity = getIdentity();
-			Roles roles = ureq.getUserSession().getRoles();
-			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& repositoryManager.isLearnResourceManagerFor(roles, entry);
-			isOwner = isOlatAdmin || repositoryService.hasRole(identity, entry, GroupRoles.owner.name())
-						|| isInstitutionalResourceManager;
-			isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;
-			
+			boolean isManager = repositoryService.hasRoleExpanded(getIdentity(), entry,
+					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+			isOwner = isManager || repositoryService.hasRole(getIdentity(), entry, GroupRoles.owner.name());
+			isAuthor = isManager || repositoryService.hasRoleExpanded(getIdentity(), entry, OrganisationRoles.author.name());
+
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 
 			mainVC = createVelocityContainer("tools");
 			List<String> links = new ArrayList<>();
 
-			
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
 			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
 			
@@ -305,7 +292,7 @@ public class AuthorDeletedListController extends AuthorListController {
 				addLink("tools.restore", "restore", "o_icon o_icon-fw o_icon_restore", links);
 			}
 			
-			if(isOlatAdmin && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete)) {
+			if(isManager && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete)) {
 				addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
 			}
 

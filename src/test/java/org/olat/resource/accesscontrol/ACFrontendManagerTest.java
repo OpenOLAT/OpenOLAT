@@ -373,7 +373,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	public void testStandardMethods() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
 		
-		Roles roles = new Roles(false, false, false, true, false, false, false);
+		Roles roles = Roles.authorRoles();
 		List<AccessMethod> methods = acService.getAvailableMethods(ident, roles);
 		assertNotNull(methods);
 		assertTrue(methods.size() >= 2);

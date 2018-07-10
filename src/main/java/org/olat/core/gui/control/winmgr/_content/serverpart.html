@@ -90,7 +90,6 @@ function tick () {
 
 jQuery(document).ready(initPolling);
 
-#if ($isAdmin)
 ##check whether polling started or not. Wrap it makes it more stable
 jQuery(function() { 
 	setTimeout( function(){ if (!o_info.ajaxpp) {
@@ -98,7 +97,6 @@ jQuery(function() {
 		}},60000);
 	}
 );
-#end
 
 function onPollSuccess(content, s, response) {
 	if(response.status == 304) {

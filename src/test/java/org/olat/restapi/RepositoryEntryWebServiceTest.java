@@ -88,7 +88,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebServiceTest.class);
-	private static final Roles ADMIN_ROLES = new Roles(true, false, false, false, false, false, false);
 	
 	@Autowired
 	private DB dbInstance;
@@ -279,8 +278,8 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-1-" + UUID.randomUUID().toString());
 		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addTutors(coach1, ADMIN_ROLES, new IdentitiesAddEvent(coach1), re, new MailPackage(false));
-		repositoryManager.addTutors(coach1, ADMIN_ROLES, new IdentitiesAddEvent(coach2), re, new MailPackage(false));
+		repositoryManager.addTutors(coach1, Roles.administratorRoles(), new IdentitiesAddEvent(coach1), re, new MailPackage(false));
+		repositoryManager.addTutors(coach1, Roles.administratorRoles(), new IdentitiesAddEvent(coach2), re, new MailPackage(false));
 		dbInstance.commitAndCloseSession();
 
 		//get the coaches
@@ -373,7 +372,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 	public void removeCoach() throws IOException, URISyntaxException {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-4-" + UUID.randomUUID());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.addTutors(coach, ADMIN_ROLES, new IdentitiesAddEvent(coach), re, new MailPackage(false));
+		repositoryManager.addTutors(coach, Roles.administratorRoles(), new IdentitiesAddEvent(coach), re, new MailPackage(false));
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner

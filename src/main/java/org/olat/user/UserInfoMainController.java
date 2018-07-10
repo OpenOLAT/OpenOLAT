@@ -28,20 +28,10 @@
 
 package org.olat.user;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarModule;
-import org.olat.commons.calendar.model.CalendarUserConfiguration;
-import org.olat.commons.calendar.ui.WeeklyCalendarController;
-import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -53,7 +43,6 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -62,18 +51,10 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
-import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
-import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.modules.co.ContactFormController;
 import org.olat.portfolio.PortfolioModule;
-import org.olat.portfolio.manager.InvitationDAO;
-import org.olat.portfolio.ui.EPMapRunController;
-import org.olat.portfolio.ui.EPMapRunViewOption;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.user.ui.identity.AbstractUserInfoMainController;
 
 /**
  * Initial Date: July 26, 2005
@@ -87,41 +68,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *         form.
  * 
  */
-public class UserInfoMainController extends MainLayoutBasicController implements Activateable2 {
+public class UserInfoMainController extends AbstractUserInfoMainController implements Activateable2 {
 
-	private static final String CMD_HOMEPAGE = "homepage";
-	private static final String CMD_CALENDAR = "calendar";
-	private static final String CMD_FOLDER = "userfolder";
-	private static final String CMD_CONTACT = "contact";
-	private static final String CMD_PORTFOLIO = "portfolio";
-
-	private MenuTree menuTree;
 	private Panel main;
+	private MenuTree menuTree;
 	private TooledStackedPanel toolbarPanel;
 	
-	public static final OLATResourceable BUSINESS_CONTROL_TYPE_FOLDER = OresHelper.createOLATResourceableTypeWithoutCheck(FolderRunController.class
-			.getSimpleName());
-
-	private EPMapRunController portfolioController;
-	private FolderRunController folderRunController;
-	private WeeklyCalendarController calendarController;
-	private ContactFormController contactFormController;
-	private HomePageDisplayController homePageDisplayController;
-
-	private final Identity chosenIdentity;
-	private final String firstLastName;
 	private HistoryPoint launchedFromPoint;
-
-	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private InvitationDAO invitationDao;
-	@Autowired
-	private CalendarModule calendarModule;
-	@Autowired
-	private CalendarManager calendarManager;
-	@Autowired
-	private HomePageConfigManager homePageConfigManager;
 
 	/**
 	 * @param ureq
@@ -130,9 +83,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	 */
 	public UserInfoMainController(UserRequest ureq, WindowControl wControl, Identity chosenIdentity,
 			boolean showRootNode, boolean showToolbar) {
-		super(ureq, wControl);
-				
-		this.chosenIdentity = chosenIdentity;
+		super(ureq, wControl, chosenIdentity);
 		
 		UserSession session = ureq.getUserSession();
 		if(showToolbar && session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
@@ -140,7 +91,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			List<HistoryPoint> stack = session.getHistoryStack();
 			for(int i=stack.size() - 2; i-->0; ) {
 				HistoryPoint point = stack.get(stack.size() - 2);
-				if(point.getEntries().size() > 0) {
+				if(!point.getEntries().isEmpty()) {
 					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
 					if(!chosenIdentity.getKey().equals(ores.getResourceableId())) {
 						launchedFromPoint = point;
@@ -153,7 +104,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		main = new Panel("userinfomain");
 		Controller homeCtrl = createComponent(ureq, CMD_HOMEPAGE);
 		main.setContent(homeCtrl.getInitialComponent());
-		firstLastName = userManager.getUserDisplayName(chosenIdentity);
+		String firstLastName = userManager.getUserDisplayName(chosenIdentity);
 
 		// Navigation menu
 		if (!chosenIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
@@ -238,16 +189,14 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	 * @param firstLastName
 	 */
 	private GenericTreeModel buildTreeModel(String name) {
-		GenericTreeNode root, gtn;
-
 		GenericTreeModel gtm = new GenericTreeModel();
-		root = new GenericTreeNode();
+		GenericTreeNode root = new GenericTreeNode();
 		root.setTitle(name);
 		root.setAltText(name);
 		root.setAccessible(false);
 		gtm.setRootNode(root);
 
-		gtn = new GenericTreeNode();
+		GenericTreeNode gtn = new GenericTreeNode();
 		gtn.setTitle(translate("menu.homepage"));
 		gtn.setUserObject(CMD_HOMEPAGE);
 		gtn.setAltText(translate("menu.homepage.alt"));
@@ -256,12 +205,9 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		// following user info elements are only shown for undeleted and real
 		// users (not invited
 		// eportfolio users)
-		boolean isInvitee = invitationDao.isInvitee(chosenIdentity);
-		boolean isDeleted = chosenIdentity.getStatus().equals(Identity.STATUS_DELETED);
 		
-		
-		
-		if ( !isDeleted && ! isInvitee) {
+
+		if (!isDeleted && !isInvitee) {
 			if(calendarModule.isEnablePersonalCalendar()) {
 				gtn = new GenericTreeNode();
 				gtn.setTitle(translate("menu.calendar"));
@@ -315,89 +261,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		}
 		return controller;
 	}
-	
-	private HomePageDisplayController doOpenHomepage(UserRequest ureq) {
-		removeAsListenerAndDispose(homePageDisplayController);
-		
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(chosenIdentity.getName());
-		removeAsListenerAndDispose(homePageDisplayController);
-		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), chosenIdentity, homePageConfig);
-		listenTo(homePageDisplayController);
-		return homePageDisplayController;
-	}
-	
-	private WeeklyCalendarController doOpenCalendar(UserRequest ureq) {
-		removeAsListenerAndDispose(calendarController);
-		
-		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(chosenIdentity);
-		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(calendarWrapper.getKalendar(), getIdentity());
-		if (config != null) {
-			calendarWrapper.setConfiguration(config);
-		}
-		
-		calendarWrapper.setPrivateEventsVisible(chosenIdentity.equals(ureq.getIdentity()));
-		if (chosenIdentity.equals(ureq.getIdentity())) {
-			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-		} else {
-			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-		}
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
-		calendars.add(calendarWrapper);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_CALENDAR);
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		OLATResourceable callerOres = OresHelper.createOLATResourceableInstance(chosenIdentity.getName(), chosenIdentity.getKey());
-		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars,
-				WeeklyCalendarController.CALLER_PROFILE, callerOres, false);
-		listenTo(calendarController);
-		return calendarController;
-	}
-	
-	private FolderRunController doOpenFolder(UserRequest ureq) {
-		removeAsListenerAndDispose(folderRunController);
 
-		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity.getName()) + "/public";
-
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
-		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(firstLastName, rootFolder);
-		
-		//decided in plenum to have read only view in the personal visiting card, even for admin
-		VFSSecurityCallback secCallback = new ReadOnlyCallback();
-		namedFolder.setLocalSecurityCallback(secCallback);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableType("userfolder");
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, bwControl);
-		folderRunController.setResourceURL("[Identity:" + chosenIdentity.getKey() + "][userfolder:0]");
-		listenTo(folderRunController);
-		return folderRunController;
-	}
-	
-	private ContactFormController doOpenContact(UserRequest ureq) {
-		removeAsListenerAndDispose(contactFormController);
-		
-		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
-		ContactList emailList = new ContactList(firstLastName);
-		emailList.add(chosenIdentity);
-		cmsg.addEmailTo(emailList);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_CONTACT);
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		contactFormController = new ContactFormController(ureq, bwControl, true, false, false, cmsg);
-		listenTo(contactFormController);
-		return contactFormController;
-	}
-	
-	private EPMapRunController doOpenPortfolio(UserRequest ureq) {
-		removeAsListenerAndDispose(portfolioController);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_PORTFOLIO);
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		portfolioController = new EPMapRunController(ureq, bwControl, false, EPMapRunViewOption.OTHER_MAPS, chosenIdentity);
-		listenTo(portfolioController);
-		return portfolioController;
-	}
-	
 	protected final void doClose(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("HomeSite", chosenIdentity.getKey());
 		getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, ores, launchedFromPoint);

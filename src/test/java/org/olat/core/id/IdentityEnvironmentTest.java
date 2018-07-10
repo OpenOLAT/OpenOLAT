@@ -34,8 +34,8 @@ public class IdentityEnvironmentTest {
 	@Test
 	public void testSetRoles() {
 		IdentityEnvironment env = new IdentityEnvironment();
-		env.setRoles(new Roles(true, true, true, true, true, true, true));
-		env.setRoles(new Roles(true, true, true, true, true, true, true));
+		env.setRoles(Roles.administratorRoles());
+		env.setRoles(Roles.administratorRoles());
 	}
 	
 	/**
@@ -44,8 +44,8 @@ public class IdentityEnvironmentTest {
 	@Test(expected=AssertException.class)
 	public void testSetDifferentRoles() {
 		IdentityEnvironment env = new IdentityEnvironment();
-		env.setRoles(new Roles(true, true, true, true, true, true, true));
-		env.setRoles(new Roles(true, false, false, false, false, false, false));
+		env.setRoles(Roles.administratorRoles());
+		env.setRoles(Roles.userRoles());
 	}
 
 }

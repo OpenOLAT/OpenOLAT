@@ -129,7 +129,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	
 		cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
-		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin() || cgm.isIdentityCourseAdministrator(identity);
+		boolean isAdmin = cgm.isIdentityCourseAdministrator(identity);
 		if(isAdmin) {
 			// collect all identities with results
 			Set<Identity> identitiesWithResult = new HashSet<>();
@@ -146,7 +146,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			identitiesInGroups.addAll(cgm.getParticipants());
 			
 			// all identities with result and/or in learning groups
-			Set<Identity> identitiesAll = new HashSet<Identity>();
+			Set<Identity> identitiesAll = new HashSet<>();
 			identitiesAll.addAll(identitiesInGroups);
 			identitiesAll.addAll(identitiesWithResult);
 			allIdentities.addAll(identitiesAll);

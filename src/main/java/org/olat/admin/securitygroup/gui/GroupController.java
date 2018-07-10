@@ -541,7 +541,9 @@ public class GroupController extends BasicController {
 				MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailTemplate, sender, metaId, result);
 				result.append(mailManager.sendMessage(ccBundle));
 			}
-			MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, ureq.getLocale());
 		}
 	}
 
@@ -588,7 +590,9 @@ public class GroupController extends BasicController {
 				MailBundle ccBundle = mailManager.makeMailBundle(context, ureq.getIdentity(), mailTemplate, sender, metaId, result);
 				result.append(mailManager.sendMessage(ccBundle));
 			}
-			MailHelper.appendErrorsAndWarnings(result, errorMessage, infoMessage, ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+			MailHelper.appendErrorsAndWarnings(result, errorMessage, infoMessage, detailedErrorOutput, ureq.getLocale());
 		}
 		// report any errors on screen
 		if (infoMessage.length() > 0) getWindowControl().setWarning(infoMessage.toString());

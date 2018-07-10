@@ -185,7 +185,7 @@ public class WikiHandler implements RepositoryHandler {
 		}
 
 		//check role
-		boolean isOLatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		boolean isOLatAdmin = reSecurity.isEntryAdmin();
 		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean isResourceOwner = false;
 		if (isOLatAdmin) {

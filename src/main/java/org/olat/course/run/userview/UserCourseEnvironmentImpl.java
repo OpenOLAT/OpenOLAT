@@ -189,9 +189,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		}
 
 		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
-		boolean adminLazy = identityEnvironment.getRoles().isOLATAdmin()
-				|| (identityEnvironment.getRoles().isLearnResourceManager()
-						&& cgm.isIdentityCourseLearnResourceManager(identityEnvironment.getIdentity(), identityEnvironment.getRoles()))
+		boolean adminLazy = identityEnvironment.getRoles().isAdministrator()
+				|| identityEnvironment.getRoles().isLearnResourceManager()
 				|| cgm.isIdentityAnyCourseAdministrator(identityEnvironment.getIdentity());
 		adminAnyCourse = Boolean.valueOf(adminLazy);
 		return adminLazy;
@@ -266,7 +265,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	
 	@Override
 	public boolean isCourseReadOnly() {
-		return courseReadOnly == null ? false : courseReadOnly.booleanValue();
+		return courseReadOnly != null && courseReadOnly.booleanValue();
 	}
 	
 	public void setCourseReadOnly(Boolean courseReadOnly) {

@@ -152,6 +152,16 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		// delegate to new property based config style
 		return moduleConfigProperties.getStringPropertyValue(propertyName, allowEmptyString);
 	}
+	
+	protected String getStringPropertyValue(String propertyName, String defaultValue) {
+		// delegate to new property based config style
+		String val = moduleConfigProperties.getStringPropertyValue(propertyName, true);
+		if(StringHelper.containsNonWhitespace(val)) {
+			return val;
+		}
+		return defaultValue;
+	}
+	
 	/**
 	 * Set a string property
 	 * 
@@ -163,10 +173,11 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	 *            true: will save property and fire event; false: will not save,
 	 *            but set a dirty flag
 	 */
-	protected void setStringProperty(String propertyName, String value, boolean saveConfiguration) {
+	protected String setStringProperty(String propertyName, String value, boolean saveConfiguration) {
 		// delegate to new property based config style
 		moduleConfigProperties.setStringProperty(propertyName, value, saveConfiguration);
 		log.audit("change system property: " + propertyName, value);
+		return value;
 	}
 	
 	/**

@@ -216,7 +216,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isUserManager() || roles.isOLATAdmin()) {
+		if(roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator()) {
 			GenericTreeNode search = new GenericTreeNode();
 			search.setUserObject("Search");
 			search.setTitle(translate("search.menu.title"));

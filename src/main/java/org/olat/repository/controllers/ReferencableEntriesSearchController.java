@@ -221,7 +221,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private boolean isAdminSearchVisible(String[] limitingTypes, UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		return limitingTypes != null && limitingTypes.length == 1 && "CourseModule".equals(limitingTypes[0])
-				&& (roles.isOLATAdmin() ||
+				&& (roles.isAdministrator() ||
 						(roles.isLearnResourceManager() && roles.isGroupManager()) ||
 						(roles.isGroupManager() && businessGroupModule.isGroupManagersAllowedToLinkCourses()));
 	}

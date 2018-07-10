@@ -19,16 +19,14 @@
  */
 package org.olat.user.notification;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
-import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -37,7 +35,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -67,11 +65,9 @@ public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, G
 	public static final OLATResourceable IDENTITY_EVENT_CHANNEL = OresHelper.lookupType(Identity.class);
 	
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
-	private OrganisationDAO organisationDao;
-	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private IdentityPowerSearchQueries identitySearchQueries;
 	
 	@Autowired
 	public UsersSubscriptionManagerImpl(CoordinatorManager coordinatorManager) {
@@ -99,7 +95,7 @@ public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, G
 			@Override
 			public Long getResourceableId() { return 0l; }
 			@Override
-			public String getResourceableTypeName() { return "NewIdentityCreated"; }
+			public String getResourceableTypeName() { return NEW; }
 		});
 		return new PublisherData(RES_NAME, NEW, ce.toString());
 	}
@@ -148,14 +144,11 @@ public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, G
 	 */
 	@Override
 	public List<Identity> getNewIdentityCreated(Date from, Identity actingIdentity, Roles roles) {
-		if(from == null || (!roles.isUserManager() && !roles.isOLATAdmin())) return Collections.emptyList();
+		if(from == null) return Collections.emptyList();
 
-		List<String> managerRoles = new ArrayList<>();
-		managerRoles.add(OrganisationRoles.administrator.name());
-		managerRoles.add(OrganisationRoles.usermanager.name());
-		
-		List<Organisation> userManagerOrganisations = organisationDao.getOrganisations(actingIdentity, managerRoles);
-		if(userManagerOrganisations.isEmpty()) {
+		List<OrganisationRef> manageableOrganisations = roles
+				.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+		if(manageableOrganisations.isEmpty()) {
 			return Collections.emptyList();
 		}
 		
@@ -163,7 +156,7 @@ public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, G
 		params.setExcludedRoles(new OrganisationRoles[]{ OrganisationRoles.guest });
 		params.setCreatedAfter(from);
 		params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
-		params.setOrganisationParents(userManagerOrganisations);
-		return securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		params.setOrganisations(manageableOrganisations);
+		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
 	}
 }

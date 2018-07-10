@@ -42,6 +42,9 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -87,7 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * </pre>
  */
-public class UserAdminController extends BasicController implements Activateable2 {
+public class UserAdminController extends BasicController implements Activateable2, TooledController {
 
 	// NLS support
 	private static final String NLS_ERROR_NOACCESS_TO_USER = "error.noaccess.to.user";
@@ -108,8 +111,12 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_COMPETENCES		= "view.competences";
 
 	private VelocityContainer myContent;
+	private final TooledStackedPanel stackPanel;
 
-	private Identity myIdentity = null;
+	private final Roles managerRoles;
+	private Identity editedIdentity;
+	private final Roles editedRoles;
+	private final boolean allowedToManage;
 
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
@@ -126,8 +133,6 @@ public class UserAdminController extends BasicController implements Activateable
 	private IdentityCompetencesController competencesCtrl;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
-
-	private final boolean isOlatAdmin;
 
 	@Autowired
 	private UserManager userManager;
@@ -152,17 +157,21 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param wControl
 	 * @param identity
 	 */
-	public UserAdminController(UserRequest ureq, WindowControl wControl, Identity identity) {
+	public UserAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity identity) {
 		super(ureq, wControl);
-		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		this.stackPanel = stackPanel;
+		managerRoles = ureq.getUserSession().getRoles();
+		editedIdentity = identity;
+		editedRoles = securityManager.getRoles(editedIdentity);
 
-		myIdentity = identity;
-
-		if (allowedToManageUser(ureq, myIdentity)) {
+		allowedToManage = allowedToManageUser(ureq);
+		if (allowedToManage) {
 			myContent = createVelocityContainer("udispatcher");
 			backLink = LinkFactory.createLinkBack(myContent, this);
-			exportDataButton = LinkFactory.createButton("export.user.data", myContent, this);
-			exportDataButton.setIconLeftCSS("o_icon o_icon_download");
+			if(stackPanel == null) {
+				exportDataButton = LinkFactory.createButton("export.user.data", myContent, this);
+				exportDataButton.setIconLeftCSS("o_icon o_icon_download");
+			}
 			
 			userShortDescrCtr = new UserShortDescription(ureq, wControl, identity);
 			listenTo(userShortDescrCtr);
@@ -170,8 +179,8 @@ public class UserAdminController extends BasicController implements Activateable
 
 			setBackButtonEnabled(true); // default
 			setShowTitle(true);
-			initTabbedPane(myIdentity, ureq);
-			exposeUserDataToVC(ureq, myIdentity);
+			initTabbedPane(editedIdentity, ureq);
+			exposeUserDataToVC(ureq, editedIdentity);
 			putInitialPanel(myContent);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
@@ -181,7 +190,15 @@ public class UserAdminController extends BasicController implements Activateable
 	}
 	
 	public Identity getEditedIdentity() {
-		return myIdentity;
+		return editedIdentity;
+	}
+
+	@Override
+	public void initTools() {
+		if(allowedToManage && stackPanel != null) {
+			exportDataButton = LinkFactory.createToolLink("exportUserData", translate("export.user.data"), this, "o_icon_download");
+			stackPanel.addTool(exportDataButton, Align.left);
+		}
 	}
 
 	@Override
@@ -243,8 +260,8 @@ public class UserAdminController extends BasicController implements Activateable
 		} else if (source == userProfileCtr){
 			if (event == Event.DONE_EVENT){
 				//reload profile data on top
-				myIdentity = securityManager.loadIdentityByKey(myIdentity.getKey());
-				exposeUserDataToVC(ureq, myIdentity);
+				editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
+				exposeUserDataToVC(ureq, editedIdentity);
 				userProfileCtr.resetForm(ureq);
 			}
 		} else if(source == exportDataCtrl) {
@@ -265,10 +282,10 @@ public class UserAdminController extends BasicController implements Activateable
 	private void doExportData(UserRequest ureq) {
 		if(exportDataCtrl != null) return;
 		
-		exportDataCtrl = new UserDataExportController(ureq, getWindowControl(), myIdentity);
+		exportDataCtrl = new UserDataExportController(ureq, getWindowControl(), editedIdentity);
 		listenTo(exportDataCtrl);
 		
-		String fullname = userManager.getUserDisplayName(myIdentity);
+		String fullname = userManager.getUserDisplayName(editedIdentity);
 		String title = translate("export.user.data.title", new String[] { fullname });
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportDataCtrl.getInitialComponent(),
 				true, title);
@@ -285,42 +302,23 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param identity
 	 * @return boolean
 	 */
-	private boolean allowedToManageUser(UserRequest ureq, Identity identity) {
+	private boolean allowedToManageUser(UserRequest ureq) {
 		// prevent editing of users that are in sysadmin / superadmin group
-		if(organisationService.hasRole(identity, OrganisationRoles.sysadmin)){
-			return getIdentity().equals(identity) || organisationService.hasRole(getIdentity(), OrganisationRoles.sysadmin);
+		Roles identityRoles = securityManager.getRoles(editedIdentity);
+		if(identityRoles.hasRole(OrganisationRoles.sysadmin)){
+			return getIdentity().equals(editedIdentity)
+					|| organisationService.hasRole(getIdentity(), OrganisationRoles.sysadmin)
+					|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+					|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
 		}
-		if (isOlatAdmin) {
-			return true;
-		}
-		
-		Roles identityRoles = securityManager.getRoles(identity);
 
-		// only admins can administrate admin and usermanager users
-		boolean isAdmin = identityRoles.isOLATAdmin();
-		boolean isUserManager = identityRoles.isUserManager();
-		if (isAdmin || isUserManager) {
+		// if user is guest only allowed to edit if configured
+		if(identityRoles.isGuestOnly()) {
 			return false;
 		}
-		// if user is author ony allowed to edit if configured
-		boolean isAuthor = identityRoles.isAuthor();
-		Boolean canManageAuthor = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;
-		if (isAuthor && !canManageAuthor.booleanValue()) {
-			return false;
-		}
-		// if user is groupmanager ony allowed to edit if configured
-		boolean isGroupManager = identityRoles.isGroupManager();
-		Boolean canManageGroupmanager = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
-		if (isGroupManager && !canManageGroupmanager.booleanValue()) {
-			return false;
-		}
-		// if user is guest ony allowed to edit if configured
-		boolean isGuestOnly = identityRoles.isGuestOnly();
-		if (isGuestOnly) {
-			return false;
-		}
-		// passed all tests, current user is allowed to edit given identity
-		return true;
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles);
 	}
 
 	/**
@@ -334,13 +332,7 @@ public class UserAdminController extends BasicController implements Activateable
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
 		userTabP.addListener(this);
 
-		/**
-		 *  Determine, whether the user admin is or is not able to edit all fields in user
-		 *  profile form. The system admin is always able to do so.
-		 */
-		Boolean canEditAllFields = BaseSecurityModule.USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS;
-
-		userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, canEditAllFields.booleanValue());
+		userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
 		listenTo(userProfileCtr);
 		userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
 
@@ -357,26 +349,26 @@ public class UserAdminController extends BasicController implements Activateable
 				return pwdCtr.getInitialComponent();
 			});
 		}
+		
+		boolean isAdminOf = managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles);
+		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
+		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 
-		Boolean canAuth = BaseSecurityModule.USERMANAGER_ACCESS_TO_AUTH;
-		if (canAuth.booleanValue() || isOlatAdmin) {
+		if (isAdminOf) {
 			userTabP.addTab(translate(NLS_EDIT_UAUTH),  uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
 				return authenticationsCtr.getInitialComponent();
 			});
-		}
 
-		Boolean canProp = BaseSecurityModule.USERMANAGER_ACCESS_TO_PROP;
-		if (canProp.booleanValue() || isOlatAdmin) {
 			userTabP.addTab(translate(NLS_EDIT_UPROP), uureq -> {
-				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity);
+				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);
 				listenTo(propertiesCtr);
 				return propertiesCtr.getInitialComponent();
 			});
 		}
 
-		Boolean canStartGroups = BaseSecurityModule.USERMANAGER_CAN_START_GROUPS;
+		Boolean canStartGroups = BaseSecurityModule.USERMANAGER_CAN_START_GROUPS;//true
 		userTabP.addTab(translate(NLS_VIEW_GROUPS),  uureq -> {
 			grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canStartGroups);
 			listenTo(grpCtr);
@@ -389,28 +381,25 @@ public class UserAdminController extends BasicController implements Activateable
 			return courseCtr.getInitialComponent();
 		});
 
-		if (isOlatAdmin) {
+		if (isAdminOf) {
 			userTabP.addTab(translate(NLS_VIEW_ACCESS), uureq -> {
 				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity);
 				listenTo(accessCtr);
 				return accessCtr.getInitialComponent();
 			});
-		}
 
-		if (isOlatAdmin) {
 			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(), identity, true);
 				listenTo(efficicencyCtrl);
-				BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
-				stackPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
-				efficicencyCtrl.setBreadcrumbPanel(stackPanel);
-				stackPanel.setInvisibleCrumb(1);
-				return stackPanel;
+				BreadcrumbedStackedPanel efficiencyPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
+				efficiencyPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
+				efficicencyCtrl.setBreadcrumbPanel(efficiencyPanel);
+				efficiencyPanel.setInvisibleCrumb(1);
+				return efficiencyPanel;
 			});
 		}
 
-		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
-		if (canSubscriptions.booleanValue() || isOlatAdmin) {
+		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
 			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS),  uureq -> {
 				Controller subscriptionsCtr = new NotificationSubscriptionController(uureq, getWindowControl(), identity, true, true);
 				listenTo(subscriptionsCtr);
@@ -424,8 +413,7 @@ public class UserAdminController extends BasicController implements Activateable
 			return rolesCtr.getInitialComponent();
 		});
 
-		Boolean canQuota = BaseSecurityModule.USERMANAGER_ACCESS_TO_QUOTA;
-		if (canQuota.booleanValue() || isOlatAdmin) {
+		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
 			userTabP.addTab(translate(NLS_EDIT_UQUOTA),  uureq -> {
 				String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
 				List<Organisation> identityOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.values());
@@ -438,11 +426,11 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_VIEW_LECTURES),  uureq -> {
 				lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, true, true, true, true);
 				listenTo(lecturesCtrl);
-				BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
-				stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);
-				lecturesCtrl.setBreadcrumbPanel(stackPanel);
-				stackPanel.setInvisibleCrumb(1);
-				return stackPanel;
+				BreadcrumbedStackedPanel lecturesPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
+				lecturesPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);
+				lecturesCtrl.setBreadcrumbPanel(lecturesPanel);
+				lecturesPanel.setInvisibleCrumb(1);
+				return lecturesPanel;
 			});
 		}
 		
@@ -450,11 +438,11 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_VIEW_COMPETENCES),  uureq -> {
 				competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity);
 				listenTo(competencesCtrl);
-				BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
-				stackPanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);
-				competencesCtrl.setBreadcrumbPanel(stackPanel);
-				stackPanel.setInvisibleCrumb(1);
-				return stackPanel;
+				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
+				competencePanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);
+				competencesCtrl.setBreadcrumbPanel(competencePanel);
+				competencePanel.setInvisibleCrumb(1);
+				return competencePanel;
 			});
 		}
 
@@ -463,8 +451,9 @@ public class UserAdminController extends BasicController implements Activateable
 	}
 
 	private boolean isPasswordChangesAllowed(Identity identity) {
-		Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
-		if (canChangePwd.booleanValue()  || isOlatAdmin) {
+		if (managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles)) {
 			// show pwd form only if user has also right to create new passwords in case
 			// of a user that has no password yet
 			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.isIdentityInLDAPSecGroup(identity)) {
@@ -472,11 +461,8 @@ public class UserAdminController extends BasicController implements Activateable
 				return ldapLoginModule.isPropagatePasswordChangedOnLdapServer();
 			}
 
-			Boolean canCreatePwd = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;
 			Authentication olatAuth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-			if (olatAuth != null || canCreatePwd.booleanValue() || isOlatAdmin) {
-				return true;
-			}
+			return olatAuth != null;
 		}
 
 		return false;

@@ -35,7 +35,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -178,11 +177,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	@Override
 	public boolean isIdentityAnyCourseAdministrator(Identity identity) {
 		return isCourseAdmin;
-	}
-	
-	@Override
-	public boolean isIdentityCourseLearnResourceManager(Identity identity, Roles roles) {
-		return false;
 	}
 
 	@Override

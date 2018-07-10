@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -283,7 +284,9 @@ public class ContactFormController extends BasicController {
 	private void showError(UserRequest ureq, MailerResult result) {
 		StringBuilder errors = new StringBuilder(1024);
 		StringBuilder warnings = new StringBuilder(1024);
-		MailHelper.appendErrorsAndWarnings(result, errors, warnings, ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+		MailHelper.appendErrorsAndWarnings(result, errors, warnings, detailedErrorOutput, getLocale());
 
 		StringBuilder error = new StringBuilder(1024);
 		error.append(translate("error.msg.send.nok"));

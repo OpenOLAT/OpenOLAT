@@ -28,6 +28,7 @@ package org.olat.core.id;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,46 +41,21 @@ import org.olat.basesecurity.OrganisationRoles;
 */
 public class Roles implements Serializable {
 	private static final long serialVersionUID = 4726449291059674346L;
-	private final boolean isSystemAdmin;
-	private final boolean isOLATAdmin;
-	private final boolean isUserManager;
-	private final boolean isGroupManager;
-	private final boolean isAuthor;
-	private final boolean isCoach;
+
 	private final boolean isGuestOnly;
-	private final boolean isLearnResourceManager;
-	private final boolean isQPoolManager;
-	private final boolean isCurriculumManager;
 	private final boolean isInvitee;
 	
 	private List<RolesByOrganisation> rolesByOrganisations;
 
-	/**
-	 * @param isOLATAdmin
-	 * @param isUserManager
-	 * @param isGroupManager
-	 * @param isAuthor
-	 * @param isGuestOnly
-	 * @param isUniCourseManager
-	 */
-	public Roles(boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
-			boolean isLearnResourceManager, boolean isInvitee) {
-		this(false, isOLATAdmin, isGroupManager, isUserManager, isAuthor, isGuestOnly, isLearnResourceManager, false,  false, false, isInvitee);
+	private Roles(List<RolesByOrganisation> rolesByOrganisations, boolean isGuestOnly, boolean isInvitee) {
+		this.rolesByOrganisations = rolesByOrganisations;
+		this.isGuestOnly = isGuestOnly;
+		this.isInvitee = isInvitee;
 	}
 	
-	public Roles(boolean isSystemAdmin, boolean isOLATAdmin, boolean isUserManager, boolean isGroupManager, boolean isAuthor, boolean isGuestOnly,
-			boolean isLearnResourceManager, boolean isQPoolManager, boolean isCurriculumManager, boolean isCoach, boolean isInvitee) {
-		this.isSystemAdmin = isSystemAdmin;
-		this.isOLATAdmin = isOLATAdmin;
-		this.isGroupManager = isGroupManager;
-		this.isUserManager = isUserManager;
-		this.isAuthor = isAuthor;
-		this.isGuestOnly = isGuestOnly;
-		this.isLearnResourceManager = isLearnResourceManager;
-		this.isQPoolManager = isQPoolManager;
-		this.isCurriculumManager = isCurriculumManager;
-		this.isInvitee = isInvitee;
-		this.isCoach = isCoach;
+	public static final Roles guestRoles() {
+		RolesByOrganisation guest = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.guest });
+		return new Roles(Collections.singletonList(guest), true, false);
 	}
 	
 	/**
@@ -88,53 +64,40 @@ public class Roles implements Serializable {
 	 * @return The roles object
 	 */
 	public static final Roles userRoles() {
-		return new Roles(false, false, false, false, false, false, false, false, false, false, false);
+		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user });
+		return new Roles(Collections.singletonList(lrm), false, false);
 	}
 	
 	public static final Roles authorRoles() {
-		return new Roles(false, false, false, true, false, false, false);
+		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user, OrganisationRoles.author });
+		return new Roles(Collections.singletonList(lrm), false, false);
 	}
 	
-	public static final Roles roles(OrganisationRoles... organisationRoles) {
-		boolean systemAdmin = false;
-		boolean olatAdmin = false;
-		boolean groupManager = false;
-		boolean userManager = false;
-		boolean author = false;
-		boolean guestOnly = false;
-		boolean learnResourceManager = false;
-		boolean poolAdmin = false;
-		boolean curriculumManager = false;
-		boolean invitee = false;
-		boolean coach = false;
-
-		if(organisationRoles != null && organisationRoles.length > 0) {
-			for(OrganisationRoles organisationRole:organisationRoles) {
-				if(organisationRole != null) {
-					switch(organisationRole) {
-						case sysadmin: systemAdmin = true; break;
-						case administrator: olatAdmin = true; break;
-						case usermanager: userManager = true; break;
-						case learnresourcemanager: learnResourceManager = true; break;
-						case groupmanager: groupManager = true; break;
-						case poolmanager: poolAdmin = true; break;
-						case curriculummanager: curriculumManager = true; break;
-						case author: author = true; break;
-						case coach: coach = true; break;
-						case user: break;
-						case invitee: invitee = true; break;
-						case guest: guestOnly = true; break;
-					}
-				}
-			}
-		}
-		
-		return new Roles(systemAdmin, olatAdmin, userManager, groupManager, author, guestOnly,
-				learnResourceManager, poolAdmin, curriculumManager, coach, invitee);
+	public static final Roles administratorRoles() {
+		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user, OrganisationRoles.administrator });
+		return new Roles(Collections.singletonList(lrm), false, false);
 	}
 	
-	public void setRolesByOrganisation(List<RolesByOrganisation> rolesByOrganisations) {
-		this.rolesByOrganisations = new ArrayList<>(rolesByOrganisations);
+	public static final Roles administratorAndManagersRoles() {
+		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {
+				OrganisationRoles.user,
+				OrganisationRoles.administrator,
+				OrganisationRoles.usermanager,
+				OrganisationRoles.poolmanager,
+				OrganisationRoles.groupmanager,
+				OrganisationRoles.curriculummanager,
+				OrganisationRoles.learnresourcemanager	
+		});
+		return new Roles(Collections.singletonList(lrm), false, false);
+	}
+	
+	public static final Roles learnResourceManagerRoles() {
+		RolesByOrganisation lrm = new RolesByOrganisation(null, new OrganisationRoles[] {  OrganisationRoles.user, OrganisationRoles.learnresourcemanager });
+		return new Roles(Collections.singletonList(lrm), false, false);
+	}
+	
+	public static final Roles valueOf(List<RolesByOrganisation> rolesByOrganisations, boolean isGuestOnly, boolean isInvitee) {
+		return new Roles(new ArrayList<>(rolesByOrganisations), isGuestOnly, isInvitee);
 	}
 	
 	public RolesByOrganisation getRoles(OrganisationRef organisation) {
@@ -168,7 +131,8 @@ public class Roles implements Serializable {
 		List<OrganisationRef> organisations = new ArrayList<>();
 		if(rolesByOrganisations != null) {
 			for(int i=rolesByOrganisations.size(); i--> 0; ) {
-				if(rolesByOrganisations.get(i).hasRole(role)) {
+				if(rolesByOrganisations.get(i).hasRole(role)
+						&& rolesByOrganisations.get(i).getOrganisation() != null) {
 					organisations.add(rolesByOrganisations.get(i).getOrganisation());
 				}
 			}
@@ -180,12 +144,25 @@ public class Roles implements Serializable {
 		List<OrganisationRef> organisations = new ArrayList<>();
 		if(rolesByOrganisations != null) {
 			for(int i=rolesByOrganisations.size(); i--> 0; ) {
-				if(rolesByOrganisations.get(i).hasSomeRoles(roles)) {
+				if(rolesByOrganisations.get(i).hasSomeRoles(roles)
+						&& rolesByOrganisations.get(i).getOrganisation() != null) {
 					organisations.add(rolesByOrganisations.get(i).getOrganisation());
 				}
 			}
 		}
 		return organisations;
+	}
+	
+	public boolean hasRole(OrganisationRoles role) {
+		boolean foundRole = false;
+		if(rolesByOrganisations != null) {
+			for(int i=rolesByOrganisations.size(); i--> 0; ) {
+				if(rolesByOrganisations.get(i).hasRole(role)) {
+					foundRole = true;
+				}
+			}
+		}
+		return foundRole;
 	}
 	
 	public boolean hasRole(OrganisationRef organisation, OrganisationRoles role) {
@@ -238,91 +215,84 @@ public class Roles implements Serializable {
 	}
 
 	public boolean isSystemAdmin() {
-		return isSystemAdmin;
+		return hasRole(OrganisationRoles.sysadmin);
 	}
-
-	/**
-	 * @return boolean
-	 */
+	
+	public boolean isAdministrator() {
+		return hasRole(OrganisationRoles.administrator);
+	}
+	
+	public boolean isPrincipal() {
+		return hasRole(OrganisationRoles.principal);
+	}
+	
 	public boolean isOLATAdmin() {
-		return isOLATAdmin;
+		return hasRole(OrganisationRoles.administrator);
 	}
 
-	/**
-	 * @return boolean
-	 */
 	public boolean isAuthor() {
-		return isAuthor;
+		return hasRole(OrganisationRoles.author);
 	}
 	
-	public boolean isCoach() {
-		return isCoach;
-	}
-	
-	/**
-	 * @return boolean
-	 */
-	public boolean isGuestOnly() {
-		return isGuestOnly;
-	}
-	
-	/**
-	 * @return boolean
-	 */
 	public boolean isGroupManager() {
-		return isGroupManager;
+		return hasRole(OrganisationRoles.groupmanager);
+	}
+	
+	public boolean isRolesManager() {
+		return hasRole(OrganisationRoles.rolesmanager);
 	}
 
-	/**
-	 * @return boolean true if the user has the role "user manager" in some organizations.
-	 */
 	public boolean isUserManager() {
-		return isUserManager;
+		return hasRole(OrganisationRoles.usermanager);
 	}
 	
-	/**
-	 * @return boolean True if the user has the role "learn resource manager" in some organizations.
-	 */
 	public boolean isLearnResourceManager() {
-		return isLearnResourceManager;
+		return hasRole(OrganisationRoles.learnresourcemanager);
 	}
 	
-	/**
-	 * @return boolean
-	 */
-	public boolean isQPoolManager() {
-		return isQPoolManager;
+	public boolean isPoolManager() {
+		return hasRole(OrganisationRoles.poolmanager);
 	}
 	
 	public boolean isCurriculumManager() {
-		return isCurriculumManager;
+		return hasRole(OrganisationRoles.curriculummanager);
 	}
 	
-	/**
-	 * @return boolean
-	 */
+	public boolean isLectureManager() {
+		return hasRole(OrganisationRoles.lecturemanager);
+	}
+	
+	public boolean isQualityManager() {
+		return hasRole(OrganisationRoles.qualitymanager);
+	}
+	
+	public boolean isLineManager() {
+		return hasRole(OrganisationRoles.linemanager);
+	}
+
 	public boolean isInvitee() {
 		return isInvitee;
 	}
 
-	@Override
-	public String toString() {
-		return "admin:"+isOLATAdmin+", usermanager:"+isUserManager+", groupmanager:"+isGroupManager+", author:"+isAuthor+", guestonly:"+isGuestOnly+", isInstitutionalResourceManager:"+isLearnResourceManager+", isInvitee:"+isInvitee+", "+super.toString();
+	public boolean isGuestOnly() {
+		return hasRole(OrganisationRoles.guest) || isGuestOnly;
+	}
+	
+	public boolean isManagerOf(OrganisationRoles role, Roles targetRoles) {
+		List<OrganisationRef> targetOrganisations = targetRoles.getOrganisationsWithRole(OrganisationRoles.user);
+		return hasRole(targetOrganisations, role);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (isAuthor ? 1231 : 1237);
-		result = prime * result + (isGroupManager ? 1231 : 1237);
+		
+		
+		
+		
 		result = prime * result + (isGuestOnly ? 1231 : 1237);
-		result = prime * result + (isLearnResourceManager ? 1231 : 1237);
 		result = prime * result + (isInvitee ? 1231 : 1237);
-		result = prime * result + (isOLATAdmin ? 1231 : 1237);
-		result = prime * result + (isUserManager ? 1231 : 1237);
-		result = prime * result + (isQPoolManager ? 1231 : 1237);
-		result = prime * result + (isCurriculumManager ? 1231 : 1237);
 		return result;
 	}
 
@@ -331,22 +301,20 @@ public class Roles implements Serializable {
 		if (this == obj) {
 			return true;
 		}
-		if (obj == null) {
-			return false;
+		if (obj instanceof Roles) {
+			Roles roles = (Roles) obj;
+			if(roles.isGuestOnly != isGuestOnly || roles.isInvitee != isInvitee) {
+				return false;
+			}
+			if((roles.rolesByOrganisations == null || roles.rolesByOrganisations.isEmpty())
+					&& (rolesByOrganisations == null || rolesByOrganisations.isEmpty())) {
+				return true;
+			}
+			return roles.rolesByOrganisations != null && rolesByOrganisations != null
+					&& roles.rolesByOrganisations.size() == rolesByOrganisations.size()
+					&& roles.rolesByOrganisations.containsAll(rolesByOrganisations)
+					&& rolesByOrganisations.containsAll(roles.rolesByOrganisations);
 		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		
-		Roles other = (Roles) obj;
-		return isOLATAdmin == other.isOLATAdmin
-				&& isUserManager == other.isUserManager
-				&& isGroupManager == other.isGroupManager
-				&& isAuthor == other.isAuthor
-				&& isGuestOnly == other.isGuestOnly
-				&& isLearnResourceManager == other.isLearnResourceManager
-				&& isQPoolManager == other.isQPoolManager
-				&& isCurriculumManager == other.isCurriculumManager
-				&& isInvitee == other.isInvitee;
+		return false;
 	}
 }

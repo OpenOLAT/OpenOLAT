@@ -28,7 +28,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.control.generic.tabbable.TabbableDefaultController;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
@@ -36,6 +35,7 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.StatusDescriptionHelper;
@@ -44,7 +44,6 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 import de.bps.course.nodes.vc.NoProviderController;
 import de.bps.course.nodes.vc.VCConfiguration;
@@ -69,7 +68,7 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 
 	// configuration
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
-	public final static String CONF_PROVIDER_ID = "vc_provider_id";
+	public static final String CONF_PROVIDER_ID = "vc_provider_id";
 
 	public VCCourseNode() {
 		super(TYPE);
@@ -135,26 +134,15 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		// check if user is moderator of the virtual classroom
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean moderator = roles.isOLATAdmin();
-		Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		if (!moderator) {
-			if(roles.isLearnResourceManager() || roles.isAuthor() || roles.isOLATAdmin()) {
-				RepositoryManager rm = RepositoryManager.getInstance();
-				RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				if (re != null) {
-					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
-					if(!moderator) {
-						moderator = rm.isLearnResourceManagerFor(ureq.getUserSession().getRoles(), re);
-					}
-				}
-			}
-		}
+		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		boolean moderator = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+
 		// load configuration
 		final String providerId = getModuleConfiguration().getStringValue(CONF_PROVIDER_ID);
 		VCProvider provider = providerId == null ? VCProviderFactory.createDefaultProvider() : VCProviderFactory.createProvider(providerId);
 		VCConfiguration config = handleConfig(provider);
 		// create run controller
+		Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		Controller runCtr = new VCRunController(ureq, wControl, key + "_" + getIdent(), getShortName(), getLongTitle(), config, provider,
 				moderator, userCourseEnv.isCourseReadOnly());
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vc_icon");
@@ -174,10 +162,12 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 		StatusDescription status = StatusDescription.NOERROR;
@@ -199,6 +189,7 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		return status;
 	}
 
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}

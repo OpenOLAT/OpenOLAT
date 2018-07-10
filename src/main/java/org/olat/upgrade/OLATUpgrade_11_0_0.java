@@ -257,7 +257,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(EFFICIENCY_STATEMENT_DATAS)) {
 			int counter = 0;
-			final Roles roles = new Roles(true, true, true, true, false, true, false);
+			final Roles roles = Roles.administratorAndManagersRoles();
 			final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 			params.setRoles(roles);
 			params.setResourceTypes(Collections.singletonList("CourseModule"));
@@ -286,7 +286,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(ASSESSMENT_DATAS)) {
 			int counter = 0;
-			final Roles roles = new Roles(true, true, true, true, false, true, false);
+			final Roles roles = Roles.administratorAndManagersRoles();
 			final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 			params.setRoles(roles);
 			params.setResourceTypes(Collections.singletonList("CourseModule"));

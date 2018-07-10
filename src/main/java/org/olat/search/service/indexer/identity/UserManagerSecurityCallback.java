@@ -37,6 +37,6 @@ public class UserManagerSecurityCallback implements IndexerAccessSecurityCallbac
 
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return roles.isOLATAdmin() || roles.isUserManager();
+		return roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager();
 	}
 }

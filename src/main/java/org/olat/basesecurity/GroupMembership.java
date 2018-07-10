@@ -33,9 +33,23 @@ public interface GroupMembership {
 	
 	public Date getCreationDate();
 	
+	public Date getLastModified();
+	
 	public String getRole();
 	
+	/**
+	 * This property is lazy loaded.
+	 * 
+	 * @return The identity
+	 */
 	public Identity getIdentity();
+	
+	/**
+	 * This property is lazy loaded.
+	 * 
+	 * @return The group
+	 */
+	public Group getGroup();
 	
 	public GroupMembershipInheritance getInheritanceMode();
 	

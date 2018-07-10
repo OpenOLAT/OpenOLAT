@@ -19,18 +19,12 @@
  */
 package org.olat.admin.landingpages.ui;
 
-import static org.olat.admin.landingpages.model.Rule.ADMIN;
-import static org.olat.admin.landingpages.model.Rule.AUTHOR;
-import static org.olat.admin.landingpages.model.Rule.GROUP_MGR;
-import static org.olat.admin.landingpages.model.Rule.POOL_MGR;
-import static org.olat.admin.landingpages.model.Rule.RSRC_MGR;
-import static org.olat.admin.landingpages.model.Rule.USER_MGR;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.admin.landingpages.LandingPagesModule;
+import org.olat.admin.landingpages.model.RoleToRule;
 import org.olat.admin.landingpages.model.Rule;
 import org.olat.admin.landingpages.model.Rules;
 import org.olat.admin.landingpages.ui.RulesDataModel.RCols;
@@ -78,10 +72,9 @@ public class LandingPagesAdminController extends FormBasicController {
 
 	private RulesDataModel model;
 	private FlexiTableElement tableEl;
-	private static final String[] roleKeys = new String[]{ "none",
-		AUTHOR, USER_MGR, GROUP_MGR, RSRC_MGR, POOL_MGR, ADMIN
-	};
-	private final String[] roleValues;
+	
+	private String[] roleKeys;
+	private String[] roleValues;
 	private final String[] attrKeys;
 	private final String[] attrValues;
 
@@ -102,9 +95,14 @@ public class LandingPagesAdminController extends FormBasicController {
 		super(ureq, wControl, "rules");
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		
-		roleValues = new String[roleKeys.length];
-		for(int i=0; i<roleKeys.length; i++) {
-			roleValues[i] = translate(roleKeys[i]);
+		RoleToRule[] roles = RoleToRule.values();
+		roleKeys = new String[roles.length + 1];
+		roleValues = new String[roles.length + 1];
+		roleKeys[0] = "none";
+		roleValues[0] = translate("none");
+		for(int i=0; i<roles.length; i++) {
+			roleKeys[i + 1] = roles[i].name();
+			roleValues[i + 1] = translate("roles." + roles[i].role() + "s");
 		}
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -219,7 +217,7 @@ public class LandingPagesAdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		int rowCount = model.getRowCount();
-		List<Rule> ruleList = new ArrayList<Rule>(rowCount);
+		List<Rule> ruleList = new ArrayList<>(rowCount);
 		for(int i=0; i<rowCount; i++) {
 			ruleList.add(model.getObject(i).save());
 		}

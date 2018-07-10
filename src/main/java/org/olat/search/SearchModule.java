@@ -56,12 +56,12 @@ public class SearchModule extends AbstractSpringModule {
 	private static final OLog log = Tracing.createLoggerFor(SearchModule.class);
 	
 	// Definitions config parameter names in module-config
-	public final static String CONF_SEARCH_SERVICE = "searchService";
-	public final static String CONF_INDEX_PATH = "indexPath";
-	public final static String CONF_PERMANENT_INDEX_PATH = "permanentIndexPath";
-	public final static String CONF_TEMP_INDEX_PATH = "tempIndexPath";
-	public final static String CONF_TEMP_SPELL_CHECK_PATH = "tempSpellCheckPath";
-	public final static String CONF_GENERATE_AT_STARTUP = "generateIndexAtStartup";
+	public static final String CONF_SEARCH_SERVICE = "searchService";
+	public static final String CONF_INDEX_PATH = "indexPath";
+	public static final String CONF_PERMANENT_INDEX_PATH = "permanentIndexPath";
+	public static final String CONF_TEMP_INDEX_PATH = "tempIndexPath";
+	public static final String CONF_TEMP_SPELL_CHECK_PATH = "tempSpellCheckPath";
+	public static final String CONF_GENERATE_AT_STARTUP = "generateIndexAtStartup";
 	private static final String CONF_PPT_FILE_ENABLED = "pptFileEnabled";
 	private static final String CONF_EXCEL_FILE_ENABLED = "excelFileEnabled";
 	private static final String CONF_PDF_FILE_ENABLED = "pdfFileEnabled";
@@ -173,7 +173,7 @@ public class SearchModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(blackList)) {
 			String[] files = blackList.split(",");
 			if(customFileBlackList == null) {
-				customFileBlackList = new ArrayList<String>();
+				customFileBlackList = new ArrayList<>();
 			} else {
 				customFileBlackList.clear();
 			}
@@ -292,7 +292,7 @@ public class SearchModule extends AbstractSpringModule {
 	 * @return Space seperated list of non indexed files.
 	 */
 	public List<String> getFileBlackList() {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		if(fileBlackList != null) {
 			list.addAll(fileBlackList);
 		}

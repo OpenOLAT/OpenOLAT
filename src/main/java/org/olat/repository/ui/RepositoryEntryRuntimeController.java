@@ -130,7 +130,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				 detailsLink, bookmarkLink,
 				 copyLink, downloadLink, deleteLink;
 	
-	protected final boolean isOlatAdmin;
 	protected final boolean isGuestOnly;
 	protected final boolean isAuthor;
 	
@@ -224,9 +223,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		handler = handlerFactory.getRepositoryHandler(re);
 
 		roles = session.getRoles();
-		isOlatAdmin = roles.isOLATAdmin();
 		isGuestOnly = roles.isGuestOnly();
-		isAuthor = roles.isAuthor();
+		isAuthor = reSecurity.isAuthor();
 		this.reSecurity = reSecurity;
 
 		// set up the components
@@ -254,7 +252,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private final boolean isAssessmentLock(UserRequest ureq, RepositoryEntry entry, RepositoryEntrySecurity reSec) {
 		OLATResource resource = entry.getOlatResource();
 		OLATResourceable lock = ureq.getUserSession().getLockResource();
-		return lock != null && !reSec.isOwner() && !ureq.getUserSession().getRoles().isOLATAdmin()
+		return lock != null && !reSec.isOwner() && !reSec.isEntryAdmin()
 				&& lock.getResourceableId().equals(resource.getResourceableId())
 				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}
@@ -792,7 +790,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
-		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if(security.isEntryAdmin()) {
 			launchContent(ureq, security);
 		} else {
 			// guest are allowed to see resource with BARG 

@@ -202,7 +202,7 @@ public class CoursesWebService {
 			try {
 				ICourse course = loadCourse(repoEntry.getOlatResource().getResourceableId());
 				voList.add(ObjectFactory.get(repoEntry, course));
-				if(count % 33 == 0) {
+				if(count++ % 33 == 0) {
 					dbInstance.commitAndCloseSession();
 				}
 			} catch (Exception e) {
@@ -263,7 +263,7 @@ public class CoursesWebService {
 		configVO.setSharedFolderSoftKey(sharedFolderSoftKey);
 
 		int accessInt = (access == null ? RepositoryEntry.ACC_OWNERS : access.intValue());
-		boolean membersOnlyBool = (membersOnly == null ? false : membersOnly.booleanValue());
+		boolean membersOnlyBool = membersOnly != null && membersOnly.booleanValue();
 		if(!StringHelper.containsNonWhitespace(displayName)) {
 			displayName = shortTitle;
 		}
@@ -527,10 +527,6 @@ public class CoursesWebService {
 
 			// copy image if available
 			repositoryManager.copyImage(src, preparedEntry);
-			
-			
-			
-
 			ICourse course = prepareCourse(preparedEntry,shortTitle, longTitle, courseConfigVO);
 			handlerFactory.getRepositoryHandler(src).releaseLock(lockResult);
 			return course;

@@ -45,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -56,7 +55,6 @@ import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,8 +74,6 @@ public class InfoRunController extends BasicController {
 	
 	private final String businessPath;
 	
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
 
@@ -108,18 +104,14 @@ public class InfoRunController extends BasicController {
 			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
 			listenTo(subscriptionController);
 		}
-		boolean canAdd, canAdmin;
+		boolean canAdd;
+		boolean canAdmin;
 		if(userCourseEnv.isCourseReadOnly()) {
 			canAdd = false;
 			canAdmin = false;
 		} else {
 			Identity identity = getIdentity();
-			Roles roles = usess.getRoles();
-		
-			boolean isAdmin = roles.isOLATAdmin()
-					|| cgm.isIdentityCourseAdministrator(identity)
-					|| repositoryManager.isLearnResourceManagerFor(roles, cgm.getCourseEntry());
-			
+			boolean isAdmin = cgm.isIdentityCourseAdministrator(identity);
 			canAdd = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
 			canAdmin = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
 		}
@@ -155,7 +147,7 @@ public class InfoRunController extends BasicController {
 		if (url.startsWith("ROOT")) {
 			url = url.substring(4, url.length());
 		}
-		List<String> tokens = new ArrayList<String>();
+		List<String> tokens = new ArrayList<>();
 		for(StringTokenizer tokenizer = new StringTokenizer(url, "[]"); tokenizer.hasMoreTokens(); ) {
 			String token = tokenizer.nextToken();
 			if(token.startsWith("Identity")) {

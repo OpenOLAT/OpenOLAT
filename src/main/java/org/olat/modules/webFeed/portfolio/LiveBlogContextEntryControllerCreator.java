@@ -79,7 +79,7 @@ public class LiveBlogContextEntryControllerCreator  {
 			ores = OLATResourceManager.getInstance().findResourceable(ores.getResourceableId(), BlogFileResource.TYPE_NAME);
 			Feed feed = feedManager.loadFeed(ores);
 			boolean isOwner = feed.getAuthor() != null && ureq.getIdentity() != null && feed.getAuthor().equals(ureq.getIdentity().getName());
-			FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner, isOwner);
+			FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner);
 			FeedMainController controller = new FeedMainController(ores, ureq, wControl, BlogUIFactory.getInstance(ureq.getLocale()), secCallback);
 			return new LayoutMain3ColsController(ureq, wControl, controller);
 		}

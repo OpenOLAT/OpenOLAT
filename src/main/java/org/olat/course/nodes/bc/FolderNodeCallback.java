@@ -43,7 +43,7 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 	private final String relPath;
 	private Quota nodeFolderQuota;
 	private final NodeEvaluation ne;
-	private final boolean isOlatAdmin;
+	private final boolean isAdministrator;
 	private final boolean isGuestOnly;
 	private final SubscriptionContext nodefolderSubContext;
 
@@ -55,28 +55,28 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 	 * admins will have full access, regardless of their node evaluation
 	 * @param nodefolderSubContext
 	 */
-	public FolderNodeCallback(String relPath, NodeEvaluation ne, boolean isOlatAdmin, boolean isGuestOnly, SubscriptionContext nodefolderSubContext) {
+	public FolderNodeCallback(String relPath, NodeEvaluation ne, boolean isAdministrator, boolean isGuestOnly, SubscriptionContext nodefolderSubContext) {
 		this.ne = ne;
 		this.relPath = relPath;
-		this.isOlatAdmin = isOlatAdmin;
+		this.isAdministrator = isAdministrator;
 		this.isGuestOnly = isGuestOnly;
 		this.nodefolderSubContext = nodefolderSubContext;
 	}
 
 	@Override
 	public boolean canList() {
-		return isOlatAdmin || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
+		return isAdministrator || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
 	}
 
 	@Override
 	public boolean canRead() {
-		return isOlatAdmin || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
+		return isAdministrator || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
 	}
 
 	@Override
 	public boolean canWrite() {
 	    if (isGuestOnly) return false;
-		return isOlatAdmin || ne.isCapabilityAccessible("upload");
+		return isAdministrator || ne.isCapabilityAccessible("upload");
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 	@Override
 	public boolean canDelete() {
 	    if (isGuestOnly) return false;
-		return isOlatAdmin || ne.isCapabilityAccessible("upload");
+		return isAdministrator || ne.isCapabilityAccessible("upload");
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 
 	@Override
 	public boolean canDeleteRevisionsPermanently() {
-		return isOlatAdmin;
+		return isAdministrator;
 	}
 
 	@Override

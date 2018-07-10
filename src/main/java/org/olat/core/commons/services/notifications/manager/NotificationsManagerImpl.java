@@ -328,7 +328,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 		Locale locale = new Locale(identity.getUser().getPreferences().getLanguage());
 		Date compareDate = getDefaultCompareDate();
-		List<SubscriptionInfo> sis = new ArrayList<SubscriptionInfo>();
+		List<SubscriptionInfo> sis = new ArrayList<>();
 		for(Subscriber subscriber : subscribers){
 			Publisher pub = subscriber.getPublisher();
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
@@ -354,12 +354,11 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		do {
 			identities = securityManager.loadVisibleIdentities(counter, BATCH_SIZE);
 			for(Identity identity:identities) {
-				if(identity.getName().startsWith("guest_")) {
-					Roles roles = securityManager.getRoles(identity);
-					if(roles.isGuestOnly()) {
-						continue;
-					}
+				Roles roles = securityManager.getRoles(identity);
+				if(roles.isGuestOnly()) {
+					continue;
 				}
+	
 				closeConnection++;
 				processSubscribersByEmail(identity);
 				if(closeConnection % 20 == 0) {
@@ -469,16 +468,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		dbInstance.intermediateCommit();
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getCompareDateFromInterval(java.lang.String)
-	 */
+	@Override
 	public Date getCompareDateFromInterval(String interval){
 		Calendar calNow = Calendar.getInstance();
 		// get hours to subtract from now
 		Integer diffHours = INTERVAL_DEF_MAP.get(interval);
 		calNow.add(Calendar.HOUR_OF_DAY, -diffHours);
-		Date compareDate = calNow.getTime();
-		return compareDate;		
+		return calNow.getTime();	
 	}
 	
 	/**
@@ -487,7 +483,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @return
 	 */
 	private static final Map<String, Integer> buildIntervalMap(){
-		Map<String, Integer> intervalDefMap = new HashMap<String, Integer>();		
+		Map<String, Integer> intervalDefMap = new HashMap<>();		
 		intervalDefMap.put("never", 0);
 		intervalDefMap.put("monthly", 720);
 		intervalDefMap.put("weekly", 168);
@@ -633,7 +629,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 		List<Subscriber> res = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
-				.setParameter("aKey", key.longValue())
+				.setParameter("aKey", key)
 				.getResultList();
 		if (res.isEmpty()) return null;
 		if (res.size() > 1) throw new AssertException("more than one subscriber for key " + key);
@@ -747,7 +743,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, Publisher.class)
 				.setParameter("resName", resName)
-				.setParameter("resId", resId.longValue())
+				.setParameter("resId", resId)
 				.getResultList();
 	}
 	
@@ -803,8 +799,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 		if (res.size() == 0) return null;
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
-		Subscriber s = res.get(0);
-		return s;
+		return res.get(0);
 	}
 	
 	/**
@@ -975,7 +970,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			// 1. find all subscribers which can be affected
 			List<Subscriber> subscribers = getValidSubscribersOf(publisher);
 			
-			Set<Long> subsKeys = new HashSet<Long>();
+			Set<Long> subsKeys = new HashSet<>();
 			// 2. collect all keys of the affected subscribers
 			for (Subscriber subscriber:subscribers) {
 				subsKeys.add(subscriber.getKey());
@@ -1023,7 +1018,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			// 1. find all subscribers which can be affected
 			List<Subscriber> subscribers = getValidSubscribersOf(publisherType, data);
 			
-			Set<Long> subsKeys = new HashSet<Long>();
+			Set<Long> subsKeys = new HashSet<>();
 			// 2. collect all keys of the affected subscribers
 			for (Subscriber subscriber:subscribers) {
 				subsKeys.add(subscriber.getKey());
@@ -1126,7 +1121,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				.createQuery(q.toString(), Number.class)
 				.setParameter("anIdentityKey", identity.getKey())
 				.setParameter("resName", subscriptionContext.getResName())
-				.setParameter("resId", subscriptionContext.getResId().longValue())
+				.setParameter("resId", subscriptionContext.getResId())
 				.setParameter("subidentifier", subscriptionContext.getSubidentifier())
 				.getSingleResult();
 
@@ -1186,6 +1181,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param mimeType text/html or text/plain
 	 * @return the item or null if there is currently no news for this subscription
 	 */
+	@Override
 	public SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent) {
 		// calculate the item based on subscriber.getLastestReadDate()
 		// used for rss-feed, no longer than 1 month
@@ -1202,8 +1198,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private Date getDefaultCompareDate() {
 		Calendar calNow = Calendar.getInstance();
 		calNow.add(Calendar.DAY_OF_MONTH, -30);
-		Date compareDate = calNow.getTime();
-		return compareDate;
+		return calNow.getTime();
 	}
 	
 	/**
@@ -1379,16 +1374,12 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		this.defaultNotificationInterval = defaultNotificationInterval;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getDefaultNotificationInterval()
-	 */
+	@Override
 	public String getDefaultNotificationInterval() {
 		return defaultNotificationInterval;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getNotificationIntervals()
-	 */
+	@Override
 	public List<String> getEnabledNotificationIntervals() {
 		return notificationIntervals;
 	}

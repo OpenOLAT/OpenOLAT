@@ -21,6 +21,7 @@ package org.olat.core.id;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationRoles;
@@ -40,16 +41,38 @@ public class RolesByOrganisation implements Serializable {
 	
 	public RolesByOrganisation(OrganisationRef organisation, OrganisationRoles[] roles) {
 		this.organisation = organisation;
-		this.roles = roles;
+		if(roles != null && roles.length > 1) {
+			Arrays.sort(roles);
+		}
+		this.roles = roles == null ? OrganisationRoles.EMPTY_ROLES : roles;
 	}
 	
 	public RolesByOrganisation(OrganisationRef organisation, List<OrganisationRoles> roles) {
-		this.organisation = organisation;
-		this.roles = roles == null ? new OrganisationRoles[0] : roles.toArray(new OrganisationRoles[roles.size()]);
+		this(organisation, roles == null ? new OrganisationRoles[0] : roles.toArray(new OrganisationRoles[roles.size()]));
 	}
 	
-	public static RolesByOrganisation roles(OrganisationRef org, boolean guest, boolean invitee,
-			boolean user, boolean coach, boolean author,
+	public static RolesByOrganisation enhance(RolesByOrganisation original, List<OrganisationRoles> rolesToAdd, List<OrganisationRoles> rolesToRemove) {
+		List<OrganisationRoles> roles = new ArrayList<>();
+		for(OrganisationRoles role:original.roles) {
+			roles.add(role);
+		}
+		if(rolesToAdd != null) {
+			for(OrganisationRoles roleToAdd:rolesToAdd) {
+				if(!roles.contains(roleToAdd)) {
+					roles.add(roleToAdd);
+				}
+			}
+		}
+		if(rolesToRemove != null) {
+			for(OrganisationRoles roleToRemove:rolesToRemove) {
+				roles.remove(roleToRemove);
+			}
+		}
+		return new RolesByOrganisation(original.getOrganisation(), roles);
+	}
+	
+	public static RolesByOrganisation roles(OrganisationRef org,
+			boolean guest, boolean invitee, boolean user, boolean author,
 			boolean groupManager, boolean poolManager, boolean curriculummanager,
 			boolean usermanager, boolean learnresourcemanager, boolean admin) {
 		
@@ -62,9 +85,6 @@ public class RolesByOrganisation implements Serializable {
 			}
 			if(invitee) {
 				roleList.add(OrganisationRoles.invitee);
-			}
-			if(coach) {
-				roleList.add(OrganisationRoles.coach);
 			}
 			if(groupManager) {
 				roleList.add(OrganisationRoles.groupmanager);
@@ -96,10 +116,13 @@ public class RolesByOrganisation implements Serializable {
 	}
 	
 	public boolean matchOrganisation(OrganisationRef org) {
+		if(organisation == null) return true;
 		return organisation.getKey().equals(org.getKey());
 	}
 	
 	public boolean matchOrganisationOrItsParents(Organisation org) {
+		if(organisation == null) return true;
+		
 		if(organisation.getKey().equals(org.getKey())) {
 			return true;
 		}
@@ -124,10 +147,6 @@ public class RolesByOrganisation implements Serializable {
 		return hasRole(OrganisationRoles.user);
 	}
 	
-	public boolean isCoach() {
-		return hasRole(OrganisationRoles.coach);
-	}
-	
 	public boolean isAuthor() {
 		return hasRole(OrganisationRoles.author);
 	}
@@ -137,6 +156,10 @@ public class RolesByOrganisation implements Serializable {
 	}
 	
 	public boolean isUserManager() {
+		return hasRole(OrganisationRoles.usermanager);
+	}
+	
+	public boolean isRolesManager() {
 		return hasRole(OrganisationRoles.usermanager);
 	}
 	
@@ -187,5 +210,33 @@ public class RolesByOrganisation implements Serializable {
 		}
 		return false;
 	}
+	
+	@Override
+	public int hashCode() {
+		int hashCode = 31;
+		if(roles != null) {
+			for(OrganisationRoles role:roles) {
+				hashCode += role.hashCode();
+			}
+		}
+		if(organisation != null && organisation.getKey() != null) {
+			hashCode += organisation.hashCode();
+		}
+		return hashCode;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof RolesByOrganisation) {
+			RolesByOrganisation r = (RolesByOrganisation)obj;
+			if((r.organisation == null && organisation == null)
+					|| (r.organisation != null && organisation != null && r.organisation.getKey().equals(organisation.getKey()))) {
+				return Arrays.equals(r.roles, roles);
+			}
+		}
+		return false;
+	}
 }

@@ -568,12 +568,19 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles) {
-		return reToGroupDao.hasRole(identity, re, roles);
+		if(re == null || identity == null) return false;
+		return reToGroupDao.hasRole(identity, re, false, roles);
 	}
 
 	@Override
-	public boolean hasRole(Identity identity, boolean followBusinessGroups, String... roles) {
-		return reToGroupDao.hasRole(identity, followBusinessGroups, roles);
+	public boolean hasRoleExpanded(Identity identity, RepositoryEntryRef re, String... roles) {
+		if(re == null || identity == null) return false;
+		return reToGroupDao.hasRole(identity, re, true, roles);
+	}
+
+	@Override
+	public boolean hasRoleExpanded(Identity identity, String... roles) {
+		return reToGroupDao.hasRoleExpanded(identity, roles);
 	}
 
 	@Override

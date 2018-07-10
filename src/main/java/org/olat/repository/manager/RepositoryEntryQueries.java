@@ -122,7 +122,7 @@ public class RepositoryEntryQueries {
 			PersistenceHelper.appendFuzzyLike(query, "v.description", "desc", dbInstance.getDbVendor());
 		}
 
-		if (resourceTypes != null && resourceTypes.size() > 0) {
+		if (resourceTypes != null && !resourceTypes.isEmpty()) {
 			query.append(" and res.resName in (:resourcetypes)");
 		}
 

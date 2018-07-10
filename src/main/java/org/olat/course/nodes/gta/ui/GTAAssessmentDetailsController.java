@@ -33,8 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -44,7 +44,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,8 +70,6 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	private GTAManager gtaManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
 	public GTAAssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, GTACourseNode gtaNode) {
@@ -89,18 +86,18 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			List<BusinessGroup> participatingGroups = gtaManager.getParticipatingBusinessGroups(assessedIdentity, gtaNode);
-			//filters by coaching habilities
+			//filters by coaching abilities
 			if(participatingGroups.size() > 1) {
 				String msg = translate("error.duplicate.coaching");
 				mainVC.contextPut("multipleGroupsWarning", msg);
 			}
 			
-			Roles roles = ureq.getUserSession().getRoles();
-			RepositoryEntry courseRe = courseEnv.getCourseGroupManager().getCourseEntry();
-			if(!roles.isOLATAdmin() && !repositoryManager.isLearnResourceManagerFor(roles, courseRe)) {
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
+			if(!cgm.isIdentityCourseAdministrator(getIdentity())) {
+				RepositoryEntry courseRe = cgm.getCourseEntry();
 				List<String> reRoles = repositoryService.getRoles(getIdentity(), courseRe);
 				if(reRoles.contains(GroupRoles.owner.name())) {
-					//view all groups;
+					//view all groups
 				} else if(reRoles.contains(GroupRoles.coach.name())) {
 					List<BusinessGroup> coachedGroups = gtaManager.getCoachedBusinessGroups(getIdentity(), gtaNode);
 					participatingGroups.retainAll(coachedGroups);

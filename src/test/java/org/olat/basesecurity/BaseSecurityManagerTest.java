@@ -309,15 +309,15 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testUpdateRoles_giveAllRights() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser( "roles-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser( "roles-2");
 		Roles roles = securityManager.getRoles(id1);
 		Assert.assertNotNull(roles);
 		dbInstance.commitAndCloseSession();
 
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation, false, false, true, false, true, true, true, true, true, true, true);
+		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation, false, false, false, true, true, true, true, true, true, true);
 		securityManager.updateRoles(id2, id1, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -329,8 +329,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertFalse(reloadRoles.isGuestOnly());
 		Assert.assertTrue(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
-		Assert.assertTrue(reloadRoles.isOLATAdmin());
-		Assert.assertTrue(reloadRoles.isQPoolManager());
+		Assert.assertTrue(reloadRoles.isAdministrator());
+		Assert.assertTrue(reloadRoles.isPoolManager());
 		Assert.assertTrue(reloadRoles.isCurriculumManager());
 		Assert.assertTrue(reloadRoles.isUserManager());
 	}
@@ -340,15 +340,15 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testUpdateRoles_someRights() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "roles-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser( "roles-3");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser( "roles-4");
 		Roles roles = securityManager.getRoles(id1);
 		Assert.assertNotNull(roles);
 		dbInstance.commitAndCloseSession();
 
 		//update roles
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation, false, false, true, false, true, false, false, true, true, false, false);
+		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation, false, false, false, true, false, false, true, true, false, false);
 		securityManager.updateRoles(id2, id1, modifiedRoles);
 		dbInstance.commitAndCloseSession();
 		
@@ -360,8 +360,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertFalse(reloadRoles.isGuestOnly());
 		Assert.assertFalse(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
-		Assert.assertFalse(reloadRoles.isOLATAdmin());
-		Assert.assertFalse(reloadRoles.isQPoolManager());
+		Assert.assertFalse(reloadRoles.isAdministrator());
+		Assert.assertFalse(reloadRoles.isPoolManager());
 		Assert.assertTrue(reloadRoles.isCurriculumManager());
 		Assert.assertTrue(reloadRoles.isUserManager());
 	}
@@ -391,7 +391,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(reloadRoles.isGuestOnly());
 		Assert.assertFalse(reloadRoles.isLearnResourceManager());
 		Assert.assertFalse(reloadRoles.isInvitee());
-		Assert.assertFalse(reloadRoles.isOLATAdmin());
+		Assert.assertFalse(reloadRoles.isAdministrator());
 		Assert.assertFalse(reloadRoles.isUserManager());
 	}
 	

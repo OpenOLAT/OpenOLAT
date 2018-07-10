@@ -27,9 +27,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -46,14 +44,11 @@ import org.olat.course.nodes.openmeetings.OpenMeetingsPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRoomEditController;
 import org.olat.modules.openmeetings.ui.OpenMeetingsRunController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -106,37 +101,16 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
 
-		Roles roles = ureq.getUserSession().getRoles();
-
 		// check if user is moderator of the virtual classroom
-		boolean admin = roles.isOLATAdmin();
-		boolean moderator = admin;
-		RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-
-		if (!admin) {
-			RepositoryManager rm = RepositoryManager.getInstance();
-			if (re != null) {
-				admin = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re)
-						|| rm.isLearnResourceManagerFor(roles, re);
-				moderator = admin 
-						|| rm.isIdentityInTutorSecurityGroup(ureq.getIdentity(), re)
-						|| isCoach(re, ureq.getIdentity());
-			}
-		}
+		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		boolean admin = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+		boolean moderator = admin || cgm.isIdentityAnyCourseCoach(ureq.getIdentity());
 
 		// create run controller
-		OLATResourceable ores = OresHelper.clone(
-				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+		OLATResourceable ores = OresHelper.clone(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), admin, moderator, userCourseEnv.isCourseReadOnly());
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_openmeetings_icon");
 		return new NodeRunConstructionResult(controller);
-	}
-	
-	private final boolean isCoach(RepositoryEntry re, Identity identity) {
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
-		int count = bgs.countBusinessGroups(params, re);
-		return count > 0;
 	}
 
 	@Override

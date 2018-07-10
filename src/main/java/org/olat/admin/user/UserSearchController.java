@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
@@ -128,6 +129,8 @@ public class UserSearchController extends BasicController {
 	protected BaseSecurityModule securityModule;
 	@Autowired
 	protected OrganisationService organisationService;
+	@Autowired
+	private IdentityPowerSearchQueries identitySearchQueries;
 	
 	/**
 	 * 
@@ -353,6 +356,6 @@ public class UserSearchController extends BasicController {
 		SearchIdentityParams params = new SearchIdentityParams(login, userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
 				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
-		return securityManager.getIdentitiesByPowerSearch(params, 0, maxResults);
+		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, maxResults);
 	}
 }

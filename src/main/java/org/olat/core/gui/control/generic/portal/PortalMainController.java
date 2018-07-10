@@ -78,9 +78,7 @@ public class PortalMainController extends BasicController {
 				portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("guestportal"));
 				portalEditButton.setEnabled(false);
 				portalEditButton.setVisible(false);
-			} else if((roles.isGroupManager() || roles.isLearnResourceManager() || roles.isOLATAdmin()
-					|| roles.isQPoolManager() || roles.isUserManager() || roles.isCurriculumManager())
-					&& CoreSpringFactory.containsBean("authorportal")) {
+			} else if(isConsideredManager(roles) && CoreSpringFactory.containsBean("authorportal")) {
 				portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("authorportal"));
 			} else {
 				portalTemplate = ((PortalImpl)CoreSpringFactory.getBean("homeportal"));
@@ -92,6 +90,15 @@ public class PortalMainController extends BasicController {
 		welcome.contextPut("portalEditMode", Boolean.FALSE);
 
 		putInitialPanel(welcome);
+	}
+	
+	private boolean isConsideredManager(Roles roles) {
+		return roles.isAdministrator() || roles.isGroupManager()
+				|| roles.isUserManager() || roles.isRolesManager()
+				|| roles.isLearnResourceManager() ||  roles.isCurriculumManager()
+				|| roles.isPoolManager() || roles.isQualityManager()
+				|| roles.isLectureManager() || roles.isLineManager()
+				|| roles.isPrincipal();
 	}
 	
 	@Override

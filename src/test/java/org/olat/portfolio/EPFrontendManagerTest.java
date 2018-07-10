@@ -828,7 +828,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 
 		//delete
 		RepositoryEntry reloadedRe = repositoryService.loadByKey(re.getKey());
-		Roles roles = new Roles(true, false, false, false, false, false, false);
+		Roles roles = Roles.administratorRoles();
 		repositoryService.deletePermanently(reloadedRe, id, roles, Locale.GERMAN);
 		dbInstance.commit();	
 	}

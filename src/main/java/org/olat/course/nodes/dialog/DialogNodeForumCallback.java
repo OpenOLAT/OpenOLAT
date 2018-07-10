@@ -30,9 +30,6 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.fo.ForumCallback;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for DialogNodeForumCallback
- * <P>
  * Initial Date: 21.11.2005 <br>
  * 
  * @author guido
@@ -62,18 +59,12 @@ public class DialogNodeForumCallback implements ForumCallback {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayOpenNewThread()
-	 */
 	@Override
 	public boolean mayOpenNewThread() {
 		if (isGuestOnly) return false;
 		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayReplyMessage()
-	 */
 	@Override
 	public boolean mayReplyMessage() {
 		if (isGuestOnly) return false;
@@ -90,46 +81,30 @@ public class DialogNodeForumCallback implements ForumCallback {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayEditMessageAsModerator()
-	 */
 	@Override
 	public boolean mayEditMessageAsModerator() {
 		if (isGuestOnly) return false;
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayDeleteMessageAsModerator()
-	 */
 	@Override
 	public boolean mayDeleteMessageAsModerator() {
 		if (isGuestOnly) return false;
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.modules.fo.ForumCallback#mayArchiveForum()
-	 */
 	@Override
 	public boolean mayArchiveForum() {
 		if (isGuestOnly) return false;
 		else return true;
 	}
-	
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayFilterForUser()
-	 */
+
 	@Override
 	public boolean mayFilterForUser() {
 		if (isGuestOnly) return false;
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#getSubscriptionContext()
-	 */
 	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return (isGuestOnly ? null : subscriptionContext);

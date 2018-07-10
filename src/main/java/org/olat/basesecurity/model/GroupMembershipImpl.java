@@ -113,7 +113,8 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
+
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -154,11 +155,13 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 		return StringHelper.containsNonWhitespace(inheritanceModeString)
 				? GroupMembershipInheritance.valueOf(inheritanceModeString) : GroupMembershipInheritance.none;
 	}
-	
+
+	@Override
 	public void setInheritanceMode(GroupMembershipInheritance mode) {
 		inheritanceModeString = mode == null ? GroupMembershipInheritance.none.name() : mode.name(); 
 	}
 
+	@Override
 	public Group getGroup() {
 		return group;
 	}

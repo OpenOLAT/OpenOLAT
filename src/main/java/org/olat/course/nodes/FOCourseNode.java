@@ -201,7 +201,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	
 	private Forum saveMultiForums(final CourseEnvironment courseEnv) {
 		final ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
-		final OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, new Long(getIdent()));
+		final OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, Long.valueOf(getIdent()));
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseNodeResourceable, new SyncerCallback<Forum>(){
 			@Override
 			public Forum execute() {

@@ -378,7 +378,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete the course
-		Roles roles = new Roles(true, false, false, false, false, false, false);
+		Roles roles = Roles.administratorRoles();
 		repositoryService.deletePermanently(entry, identity, roles, Locale.ENGLISH);
 		dbInstance.commitAndCloseSession();
 		
@@ -423,7 +423,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete the course
-		Roles roles = new Roles(true, false, false, false, false, false, false);
+		Roles roles = Roles.administratorRoles();
 		repositoryService.deletePermanently(entryToDelete, identity, roles, Locale.ENGLISH);
 		dbInstance.commitAndCloseSession();
 		

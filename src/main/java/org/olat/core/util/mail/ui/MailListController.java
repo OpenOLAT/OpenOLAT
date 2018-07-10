@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -356,7 +357,9 @@ public class MailListController extends BasicController implements Activateable2
 						DBMailLight mail = (DBMailLight) tableCtr.getTableDataModel().getObject(i);						
 						MailerResult result = forwardToMyRealMail(mail);
 						if(result.getReturnCode() != MailerResult.OK) {
-							MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+							Roles roles = ureq.getUserSession().getRoles();
+							boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+							MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
 						} else {
 							showInfo("mail.action.send.real.success", mail.getSubject());
 						}

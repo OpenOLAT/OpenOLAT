@@ -45,8 +45,8 @@ public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 
 	@Override
 	public void setRoles(Roles roles) {
-		admin = roles.isOLATAdmin();
-		poolAdmin = roles.isQPoolManager();
+		admin = roles.isAdministrator();
+		poolAdmin = roles.isPoolManager();
 		olatAuthor = roles.isAuthor();
 	}
 

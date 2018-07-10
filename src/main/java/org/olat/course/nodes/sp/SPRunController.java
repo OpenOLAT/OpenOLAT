@@ -47,7 +47,6 @@ import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
@@ -62,9 +61,7 @@ import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -94,9 +91,6 @@ public class SPRunController extends BasicController implements Activateable2 {
 	private final UserCourseEnvironment userCourseEnv;
 	
 	private static final String[] EDITABLE_TYPES = new String[] { "html", "htm", "xml", "xhtml" };
-
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
 	/**
 	 * Constructor for single page run controller 
@@ -142,22 +136,11 @@ public class SPRunController extends BasicController implements Activateable2 {
 		}
 		
 		if(isFileTypeEditable(fileName)) {
-			Roles roles = ureq.getUserSession().getRoles();
-			if(roles.isOLATAdmin()) {
-				return true;
-			}
-
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			if(roles.isLearnResourceManager() &&
-				repositoryManager.isLearnResourceManagerFor(roles, cgm.getCourseEntry())) {
-				return true;
-			}
-			if(config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false)
-					&& cgm.isIdentityCourseCoach(ureq.getIdentity())) {
-				return true;
-			}
-			return cgm.isIdentityCourseAdministrator(getIdentity())
+			return config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && cgm.isIdentityCourseCoach(ureq.getIdentity())
+					|| cgm.isIdentityCourseAdministrator(getIdentity())
 					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
+
 		}
 		return false;
 	}

@@ -267,13 +267,21 @@ public interface RepositoryService {
 	 * @return True if the specified role(s) was found.
 	 */
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles);
-
+	
 	/**
-	 * Has specific role in any resource (follow or not the business groups).
+	 * Has specific role in the specified resource (via the resource itself or a
+	 * business group, organization or a curriculum element).
 	 *
 	 * @return True if the specified role(s) was found.
 	 */
-	public boolean hasRole(Identity identity, boolean followBusinessGroups, String... roles);
+	public boolean hasRoleExpanded(Identity identity, RepositoryEntryRef re, String... roles);
+
+	/**
+	 * Has specific role in any resource (follow or not the business groups, organizations an).
+	 *
+	 * @return True if the specified role(s) was found.
+	 */
+	public boolean hasRoleExpanded(Identity identity, String... roles);
 
 
 	public void addRole(Identity identity, RepositoryEntry re, String role);

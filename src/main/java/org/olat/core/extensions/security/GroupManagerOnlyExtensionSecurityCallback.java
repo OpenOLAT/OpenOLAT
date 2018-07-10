@@ -43,6 +43,6 @@ public class GroupManagerOnlyExtensionSecurityCallback implements ActionExtensio
 		}
 		
 		Roles roles = usess.getRoles();
-		return roles.isOLATAdmin() || roles.isGroupManager();
+		return roles.isAdministrator() || roles.isGroupManager();
 	}
 }

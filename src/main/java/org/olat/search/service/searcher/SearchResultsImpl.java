@@ -205,7 +205,7 @@ public class SearchResultsImpl implements SearchResults {
 				res.add(rDoc);
 			}
 			
-			if(!roles.isOLATAdmin() && i % 10 == 0) {
+			if(i % 10 == 0) {
 				// Do commit after certain number of documents because the transaction should not be too big
 				DBFactory.getInstance().commitAndCloseSession();
 			}

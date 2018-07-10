@@ -229,7 +229,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(LAST_USER_MODIFICATION)) {
 			
 			int counter = 0;
-			final Roles roles = new Roles(true, true, true, true, false, true, false);
+			final Roles roles = Roles.administratorAndManagersRoles();
 			final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 			params.setRoles(roles);
 			params.setResourceTypes(Collections.singletonList("CourseModule"));

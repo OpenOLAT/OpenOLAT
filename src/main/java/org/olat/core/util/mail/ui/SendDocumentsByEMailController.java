@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -229,7 +230,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			bodySb.append(bodyElement.getValue()).append('\n').append('\n');
 		}
 
-		attachments = new ArrayList<File>();
+		attachments = new ArrayList<>();
 		long fileSize = 0l;
 		for (VFSLeaf file : files) {
 			MetaInfo infos = null;
@@ -550,8 +551,10 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			bundle.setContent(subject, body, attachmentArray);
 			result.append(mailManager.sendMessage(bundle));
 		}
-
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, ureq.getLocale());
 	}
 
 	public class FileInfo {

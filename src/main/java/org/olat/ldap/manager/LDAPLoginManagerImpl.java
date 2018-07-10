@@ -1072,52 +1072,45 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
 			Roles roles = securityManager.getRoles(identity);
 			switch(role) {
-				case coach: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							true, roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
 				case author: {
 					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isCoach(), true, roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+							true, roles.isGroupManager(), roles.isPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
 					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
 				}
 				case usermanager: {
 					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
-							true, roles.isLearnResourceManager(), roles.isOLATAdmin());
+							roles.isAuthor(), roles.isGroupManager(), roles.isPoolManager(), roles.isCurriculumManager(),
+							true, roles.isLearnResourceManager(), roles.isAdministrator());
 					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
 				}
 				case groupmanager: {
 					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isCoach(), roles.isAuthor(), true, roles.isQPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+							roles.isAuthor(), true, roles.isPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
 					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
 				}
 				case poolmanager: {
 					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), true, roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+							roles.isAuthor(), roles.isGroupManager(), true, roles.isCurriculumManager(),
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
 					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
 				}
 				case curriculummanager: {
 					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), true,
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isOLATAdmin());
+							roles.isAuthor(), roles.isGroupManager(), roles.isPoolManager(), true,
+							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
 					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
 				}
 				case learnresourcemanager: {
 					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isCoach(), roles.isAuthor(), roles.isGroupManager(), roles.isQPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), true, roles.isOLATAdmin());
+							roles.isAuthor(), roles.isGroupManager(), roles.isPoolManager(), roles.isCurriculumManager(),
+							roles.isUserManager(), true, roles.isAdministrator());
 					securityManager.updateRoles(null, identity, modifiedRoles);
 					break;
 				}

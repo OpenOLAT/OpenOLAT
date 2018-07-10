@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -100,6 +101,17 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertTrue(owner);
 		boolean participant = repositoryEntryRelationDao.hasRole(id, re, GroupRoles.participant.name());
 		Assert.assertFalse(participant);
+	}
+	
+	@Test
+	public void hasRole_admin() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-role-3-");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null, 0, defOrganisation);
+		dbInstance.commit();
+		
+		boolean admin = repositoryEntryRelationDao.hasRole(id, re, true, OrganisationRoles.administrator.name());
+		Assert.assertTrue(admin);
 	}
 	
 	@Test

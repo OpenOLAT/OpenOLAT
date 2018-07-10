@@ -140,14 +140,14 @@ public class EPPerformanceTest extends OlatTestCase {
 		EPFilterSettings filterSettings = new EPFilterSettings();
 		filterSettings.setTagFilter(new ArrayList<String>(Arrays.asList("Schule")));
 		start = System.currentTimeMillis();
-		artList = epFrontendManager.filterArtefactsByFilterSettings(filterSettings, ident1, new Roles(false, false, false, false, false, false, false));
+		artList = epFrontendManager.filterArtefactsByFilterSettings(filterSettings, ident1, Roles.userRoles());
 		now = System.currentTimeMillis();
 		logger.info("filter artefacts by one tag took: " + (now - start) + " ms.");
 		assertEquals(artList.size(), artefactAmount/2);
 		
 		filterSettings.setTagFilter(tagList1);
 		start = System.currentTimeMillis();
-		artList = epFrontendManager.filterArtefactsByFilterSettings(filterSettings, ident1, new Roles(false, false, false, false, false, false, false));
+		artList = epFrontendManager.filterArtefactsByFilterSettings(filterSettings, ident1, Roles.userRoles());
 		now = System.currentTimeMillis();
 		logger.info("filter artefacts by tagList1 took: " + (now - start) + " ms.");
 		assertEquals(artList.size(), artefactAmount/2);

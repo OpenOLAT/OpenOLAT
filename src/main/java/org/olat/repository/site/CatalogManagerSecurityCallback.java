@@ -56,9 +56,8 @@ public class CatalogManagerSecurityCallback implements SiteSecurityCallback {
 				|| usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
 			return false;
 		}
-		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isLearnResourceManager()) {
-			return true;
-		}
-		return catalogManager.isOwner(ureq.getIdentity());
+		return usess.getRoles().isAdministrator()
+				|| usess.getRoles().isLearnResourceManager()
+				||  catalogManager.isOwner(ureq.getIdentity());
 	}
 }

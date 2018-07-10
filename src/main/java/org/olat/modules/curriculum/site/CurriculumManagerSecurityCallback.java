@@ -48,6 +48,6 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 		if (usess.getRoles() == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		return roles.isOLATAdmin() || roles.isCurriculumManager();
+		return roles.isAdministrator() || roles.isCurriculumManager();
 	}
 }

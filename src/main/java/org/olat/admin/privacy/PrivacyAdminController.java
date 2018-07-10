@@ -22,7 +22,7 @@ package org.olat.admin.privacy;
 import java.util.Collection;
 
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,54 +40,52 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class PrivacyAdminController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[]{ "on" };
+	
 	private MultipleSelectionElement adminPropsEl;
 	private MultipleSelectionElement lastloginEl;
 	private MultipleSelectionElement tunnelEl;
 
-	private final BaseSecurityModule module;
+	@Autowired
+	private BaseSecurityModule module;
 	
-	private String[] adminPropKeys = new String[]{
-			"users","authors", "usermanagers", "groupmanagers", "administrators"
-	};
-	private String[] onKeys = new String[]{ "on" };
 	
 	public PrivacyAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		module = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		FormLayoutContainer propsCont = FormLayoutContainer.createDefaultFormLayout("props", getTranslator());
 		formLayout.add(propsCont);
 		propsCont.setFormTitle(translate("admin.menu.title"));
 		propsCont.setFormDescription(translate("admin.props.desc"));
-		
-		String[] adminPropValues = new String[]{
-				translate("admin.props.users"),
-				translate("admin.props.authors"),
-				translate("admin.props.usermanagers"),
-				translate("admin.props.groupmanagers"),
-				translate("admin.props.administrators")
-		};
+
+		OrganisationRoles[] roles = BaseSecurityModule.getUserAllowedRoles();
+		String[] adminPropKeys = new String[roles.length];
+		String[] adminPropValues = new String[roles.length];
+		for(int i=roles.length; i-->0; ) {
+			adminPropKeys[i] = roles[i].name();
+			adminPropValues[i] = translate("admin.props." + roles[i].name() + "s");
+		}
+
 		adminPropsEl = uifactory.addCheckboxesVertical("admin.props", propsCont, adminPropKeys, adminPropValues, 1);
-		adminPropsEl.select("users", "enabled".equals(module.getUserSearchAdminPropsForUsers()));
-		adminPropsEl.select("authors", "enabled".equals(module.getUserSearchAdminPropsForAuthors()));
-		adminPropsEl.select("usermanagers", "enabled".equals(module.getUserSearchAdminPropsForUsermanagers()));
-		adminPropsEl.select("groupmanagers", "enabled".equals(module.getUserSearchAdminPropsForGroupmanagers()));
-		adminPropsEl.select("administrators", "enabled".equals(module.getUserSearchAdminPropsForAdministrators()));
+		for(OrganisationRoles adminProp:roles) {
+			if("enabled".equals(module.getUserSearchAdminPropsFor(adminProp))) {
+				adminPropsEl.select(adminProp.name(), true);
+			}
+		}
 		adminPropsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("admin.space.1", propsCont, true);
 
 		lastloginEl = uifactory.addCheckboxesVertical("last.login", propsCont, adminPropKeys, adminPropValues, 1);
-		lastloginEl.select("users", "enabled".equals(module.getUserLastLoginVisibleForUsers()));
-		lastloginEl.select("authors", "enabled".equals(module.getUserLastLoginVisibleForAuthors()));
-		lastloginEl.select("usermanagers", "enabled".equals(module.getUserLastLoginVisibleForUsermanagers()));
-		lastloginEl.select("groupmanagers", "enabled".equals(module.getUserLastLoginVisibleForGroupmanagers()));
-		lastloginEl.select("administrators", "enabled".equals(module.getUserLastLoginVisibleForAdministrators()));
+		for(OrganisationRoles role:roles) {
+			if("enabled".equals(module.getUserLastLoginVisibleFor(role))) {
+				lastloginEl.select(role.name(), true);
+			}
+		}
 		lastloginEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer tuCont = FormLayoutContainer.createDefaultFormLayout("tu", getTranslator());
@@ -108,22 +107,24 @@ public class PrivacyAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == adminPropsEl) {
 			Collection<String> selectedKeys = adminPropsEl.getSelectedKeys();
-			module.setUserSearchAdminPropsForUsers(selectedKeys.contains("users") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForAuthors(selectedKeys.contains("authors") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
-			module.setUserSearchAdminPropsForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
+			OrganisationRoles[] roleArray = BaseSecurityModule.getUserAllowedRoles();
+			for(OrganisationRoles adminProp:roleArray) {
+				module.setUserSearchAdminPropsFor(adminProp, getEnable(selectedKeys.contains(adminProp.name())));
+			}
 		} else if(source == lastloginEl) {
 			Collection<String> selectedKeys = lastloginEl.getSelectedKeys();
-			module.setUserLastLoginVisibleForUsers(selectedKeys.contains("users") ? "enabled" : "disabled");
-			module.setUserLastLoginVisibleForAuthors(selectedKeys.contains("authors") ? "enabled" : "disabled");
-			module.setUserLastLoginVisibleForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
-			module.setUserLastLoginVisibleForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
-			module.setUserLastLoginVisibleForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
+			OrganisationRoles[] roleArray = BaseSecurityModule.getUserAllowedRoles();
+			for(OrganisationRoles adminProp:roleArray) {
+				module.setUserLastLoginVisibleFor(adminProp, getEnable(selectedKeys.contains(adminProp.name())));
+			}
 		} else if (source == tunnelEl) {
 			Collection<String> selectedKeys = tunnelEl.getSelectedKeys();
 			module.setUserInfosTunnelCourseBuildingBlock(selectedKeys.contains("on") ? "enabled" : "disabled");
 		}
+	}
+	
+	private String getEnable(boolean enabled) {
+		return enabled ?  "enabled" : "disabled";
 	}
 
 	@Override

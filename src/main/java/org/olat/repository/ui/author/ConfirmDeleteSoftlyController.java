@@ -78,7 +78,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 		this.rows = rows;
 		this.notAllDeleteable = notAllDeleteable;
 		numOfMembers = repositoryService.countMembers(rows, getIdentity());
-		references = referenceManager.getReferencesInfos(rows, getIdentity(), ureq.getUserSession().getRoles());
+		references = referenceManager.getReferencesInfos(rows, getIdentity());
 		if(references.size() > 1) {
 			Collections.sort(references, new ReferenceInfosComparator(Collator.getInstance(getLocale())));
 		}

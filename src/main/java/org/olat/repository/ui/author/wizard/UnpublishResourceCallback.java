@@ -34,6 +34,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
@@ -83,7 +84,7 @@ public class UnpublishResourceCallback implements StepRunnerCallback {
 		MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
 		
 		if (mailTemplate != null) {
-			List<Identity> ownerList = new ArrayList<Identity>();
+			List<Identity> ownerList = new ArrayList<>();
 			// owners
 			if (repositoryService.hasRole(ureq.getIdentity(), repositoryEntry, GroupRoles.owner.name())) {
 				ownerList = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
@@ -100,9 +101,11 @@ public class UnpublishResourceCallback implements StepRunnerCallback {
 				result.append(mailManager.sendMessage(ccBundle));
 			}
 			
-			StringBuilder errorMessage = new StringBuilder();
-			StringBuilder warningMessage = new StringBuilder();
-			MailHelper.appendErrorsAndWarnings(result, errorMessage, warningMessage, ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
+			StringBuilder errorMessage = new StringBuilder(1024);
+			StringBuilder warningMessage = new StringBuilder(1024);
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
+			MailHelper.appendErrorsAndWarnings(result, errorMessage, warningMessage, detailedErrorOutput, ureq.getLocale());
 			if (warningMessage.length() > 0) {
 				wControl.setWarning(warningMessage.toString());
 			}

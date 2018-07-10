@@ -70,9 +70,6 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		return ctrl;
 	}
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
-	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		BusinessGroup bgroup = getBusinessGroup(ce);
@@ -101,7 +98,7 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 			UserSession usess = ureq.getUserSession();
 			Object wildcard = usess.getEntry("wild_card_" + bgroup.getKey());
 			authorized = (wildcard != null && Boolean.TRUE.equals(wildcard))
-				|| usess.getRoles().isOLATAdmin()
+				|| usess.getRoles().isAdministrator()
 				|| usess.getRoles().isGroupManager() 
 				|| CoreSpringFactory.getImpl(BusinessGroupService.class).isIdentityInBusinessGroup(ureq.getIdentity(), bgroup)  
 				|| isAccessControlled(bgroup);

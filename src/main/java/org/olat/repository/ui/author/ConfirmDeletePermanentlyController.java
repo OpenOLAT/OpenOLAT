@@ -76,8 +76,6 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 	
 	private static final String[] yesNo = new String[] { "yes", "no" };
 	
-	private String[] referenceKeys;
-	
 	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
@@ -90,7 +88,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 		this.rows = rows;
 		this.notAllDeleteable = notAllDeleteable;
 		numOfMembers = repositoryService.countMembers(rows, getIdentity());
-		references = referenceManager.getReferencesInfos(rows, getIdentity(), ureq.getUserSession().getRoles());
+		references = referenceManager.getReferencesInfos(rows, getIdentity());
 		if(references.size() > 1) {
 			Collections.sort(references, new ReferenceInfosComparator(Collator.getInstance(getLocale())));
 		}
@@ -121,7 +119,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 			
 			int pos = 0;
 			boolean hasOrphans = false;
-			referenceKeys = new String[references.size()];
+			String[] referenceKeys = new String[references.size()];
 			String[] referenceValues = new String[references.size()];
 			for(ReferenceInfos reference:references) {
 				hasOrphans |= reference.isOrphan() && reference.isOwner() && !reference.isManaged();

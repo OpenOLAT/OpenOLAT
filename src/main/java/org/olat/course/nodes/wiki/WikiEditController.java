@@ -26,6 +26,8 @@
 package org.olat.course.nodes.wiki;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
@@ -60,7 +62,9 @@ import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <BR/>Edit controller for single page course nodes <P/> Initial
@@ -95,6 +99,9 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 	private VelocityContainer editAccessVc;
 	private ConditionEditController editCondContr;
 	private ICourse course;
+	
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * Constructor for wiki page editor controller
@@ -166,37 +173,13 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		main.setContent(content);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-			if (source == previewLink) {				
-			// Preview as modal dialogue only if the config is valid		
-				RepositoryEntry re = getWikiRepoReference(moduleConfiguration, false);
-			if (re == null) { // we cannot preview it, because the repository entry
-				// had been deleted between the time when it was
-				// chosen here, and now				
-				this.showError("error.repoentrymissing");
-			} else {
-				// File cpRoot =
-				// FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
-				Identity ident = ureq.getIdentity();
-				boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-				boolean isResourceOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ident, re);
-				CourseEnvironment cenv = course.getCourseEnvironment();
-				SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(cenv, wikiCourseNode);
-				WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOlatAdmin, false, false, isResourceOwner,subsContext);
-				wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, getWindowControl(), re.getOlatResource(), callback, null);
-				cmcWikiCtr = new CloseableModalController(getWindowControl(), translate("command.close"), wikiCtr.getInitialComponent());				
-				this.listenTo(cmcWikiCtr);
-				cmcWikiCtr.activate();
-			}
+		if (source == previewLink) {				
+			doPreview(ureq);
 		} else if (source == chooseButton || source == changeButton) {
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					WikiResource.TYPE_NAME, translate("command.choose"));			
-			this.listenTo(searchController);
+			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME, translate("command.choose"));			
+			listenTo(searchController);
 			cmcSearchController = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.create"));
 			cmcSearchController.activate();			
 		}  else if (source == editLink) {
@@ -210,10 +193,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == searchController) {
 			cmcSearchController.deactivate();
@@ -254,19 +234,39 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			}
 		} 
 	}
+	
+	private void doPreview(UserRequest ureq) {
+		// Preview as modal dialogue only if the config is valid		
+		RepositoryEntry re = getWikiRepoReference(moduleConfiguration, false);
+		if (re == null) { // we cannot preview it, because the repository entry
+			// had been deleted between the time when it was
+			// chosen here, and now				
+			showError("error.repoentrymissing");
+		} else {
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean isAdministrator = (roles.isAdministrator() || roles.isLearnResourceManager())
+					&& repositoryService.hasRoleExpanded(getIdentity(), re,
+							OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+			boolean isResourceOwner = repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
+			
+			CourseEnvironment cenv = course.getCourseEnvironment();
+			SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(cenv, wikiCourseNode);
+			WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isAdministrator, false, false, isResourceOwner, subsContext);
+			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, getWindowControl(), re.getOlatResource(), callback, null);
+			cmcWikiCtr = new CloseableModalController(getWindowControl(), translate("command.close"), wikiCtr.getInitialComponent());				
+			listenTo(cmcWikiCtr);
+			cmcWikiCtr.activate();
+		}
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabs = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), editAccessVc);
 		tabbedPane.addTab(translate(PANE_TAB_WIKICONFIG), main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
     //child controllers registered with listenTo() get disposed in BasicController
 		if (wikiCtr != null) {
@@ -275,16 +275,12 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		}		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController#getPaneKeys()
-	 */
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController#getTabbedPane()
-	 */
+	@Override
 	public TabbedPane getTabbedPane() {
 		return tabs;
 	}
@@ -302,9 +298,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		String repoSoftkey = (String) config.get(WikiEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repoSoftkey == null) throw new AssertException("invalid config when being asked for references");
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
-		// entry can be null only if !strict
-		return entry;
+		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
 	}
 
 	/**
@@ -344,9 +338,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			else return null;
 		}
 		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
-		// entry can be null only if !strict
-		return entry;
+		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, strict);
 	}
 
 	/**

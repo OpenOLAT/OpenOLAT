@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
@@ -150,8 +151,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private CreateEntryController createCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
 	
-	protected boolean isOlatAdmin;
 	protected boolean hasAuthorRight;
+	protected boolean hasAdministratorRight;
 	
 	private Link importLink;
 	private Dropdown createDropdown;
@@ -195,9 +196,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean learnResourceManager = roles.isLearnResourceManager();
-		isOlatAdmin = roles.isOLATAdmin() || learnResourceManager;
-		hasAuthorRight = roles.isAuthor() || learnResourceManager || roles.isOLATAdmin();
+		hasAdministratorRight = roles.isAdministrator() || roles.isLearnResourceManager();
+		hasAuthorRight =  hasAdministratorRight || roles.isAuthor();
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this, !withSearch);
 		initForm(ureq);
@@ -847,13 +847,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		if(userSearchCtr != null) return;
 		
-		Roles roles = ureq.getUserSession().getRoles();
 		List<AuthoringEntryRow> manageableRows = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.membersmanagement);
-			boolean canAddOwner = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isLearnResourceManagerFor(roles, row);
-			if(canAddOwner && !managed) {
+			if(!managed && canManage(row)) {
 				manageableRows.add(row);
 			}
 		}
@@ -885,19 +882,17 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void doConfirmCopy(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		boolean deleted = false;
-		Roles roles = ureq.getUserSession().getRoles();
+
 		List<AuthoringEntryRow> copyableRows = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
 			if(entry == null) {
 				deleted = true;
 			} else {
-				boolean isInstitutionalResourceManager = repositoryManager.isLearnResourceManagerFor(roles, row);
-				boolean isOwner = roles.isOLATAdmin()
-						|| repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-						|| isInstitutionalResourceManager;
-	
-				boolean isAuthor = roles.isOLATAdmin() || roles.isAuthor() || isInstitutionalResourceManager;
+				boolean isManager = repositoryService.hasRoleExpanded(getIdentity(), row,
+						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+				boolean isOwner = isManager || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name());
+				boolean isAuthor = isManager || repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.author.name());
 				
 				boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
 				boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
@@ -985,13 +980,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doDelete(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		Roles roles = ureq.getUserSession().getRoles();
 		List<Long> deleteableRowKeys = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
-			boolean canDelete = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| repositoryManager.isLearnResourceManagerFor(roles, row);
-			if(canDelete && !managed) {
+			if(!managed && canManage(row)) {
 				deleteableRowKeys.add(row.getKey());
 			}
 		}
@@ -1155,6 +1147,19 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 	
+	/**
+	 * Check if the user can manage the specified row. He needs
+	 * to be learn resource manager, administrator or owner of the
+	 * resource.
+	 * 
+	 * @param row
+	 * @return true if the user can edit the resource
+	 */
+	protected boolean canManage(AuthoringEntryRow row) {
+		return repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.learnresourcemanager.name(),
+				OrganisationRoles.administrator.name(), GroupRoles.owner.name());
+	}
+	
 	private class ReferencesController extends BasicController {
 
 		@Autowired
@@ -1200,25 +1205,22 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private class ToolsController extends BasicController {
-		
-		private final AuthoringEntryRow row;
 
 		private final VelocityContainer mainVC;
 		
-		private boolean isOwner;
-		private boolean isAuthor;
+		private final boolean isOwner;
+		private final boolean isAuthor;
+		private final AuthoringEntryRow row;
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row, RepositoryEntry entry) {
 			super(ureq, wControl);
 			setTranslator(AuthorListController.this.getTranslator());
 			this.row = row;
 			
-			Roles roles = ureq.getUserSession().getRoles();
-			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& repositoryManager.isLearnResourceManagerFor(roles, entry);
-			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
-						|| isInstitutionalResourceManager;
-			isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;
+			boolean isManager = repositoryService.hasRoleExpanded(getIdentity(), entry,
+					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+			isOwner = isManager || repositoryService.hasRole(getIdentity(), entry, GroupRoles.owner.name());
+			isAuthor = isManager || repositoryService.hasRoleExpanded(getIdentity(), entry, OrganisationRoles.author.name());
 			
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 

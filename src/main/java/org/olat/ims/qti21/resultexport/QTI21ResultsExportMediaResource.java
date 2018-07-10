@@ -120,8 +120,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		this.courseEnv = courseEnv;
 		
 		ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
-		Roles roles = new Roles(false, false, false, false, false, false, false);
-		ureq.getUserSession().setRoles(roles);
+		ureq.getUserSession().setRoles(Roles.userRoles());
 
 		velocityHelper = VelocityHelper.getInstance();
 		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);

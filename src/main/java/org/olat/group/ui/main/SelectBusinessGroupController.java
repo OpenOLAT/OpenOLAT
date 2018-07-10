@@ -106,7 +106,7 @@ public class SelectBusinessGroupController extends BasicController {
 	
 	private boolean isAdminSearchAllowed(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		return roles.isOLATAdmin() 
+		return roles.isAdministrator() 
 				|| roles.isGroupManager() 
 				|| (roles.isLearnResourceManager() && businessGroupModule.isResourceManagersAllowedToLinkGroups());
 	}

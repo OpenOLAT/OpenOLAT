@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -74,6 +75,8 @@ public class ViteroBookingWebService {
 	private ViteroManager viteroManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private IdentityPowerSearchQueries identitySearchQueries;
 	
 	public ViteroBookingWebService(OLATResourceable ores, String subIdentifier) {
 		this.ores = ores;
@@ -228,7 +231,7 @@ public class ViteroBookingWebService {
 			for(String email:currentEmails) {
 				SearchIdentityParams params = new SearchIdentityParams();
 				params.setUserProperties(Collections.singletonMap(UserConstants.EMAIL, email));
-				List<Identity> identities = securityManager.getIdentitiesByPowerSearch(params, 0, 1);
+				List<Identity> identities = identitySearchQueries.getIdentitiesByPowerSearch(params, 0, 1);
 				for(Identity identity:identities) {
 					GroupRole role = roles.getEmailsToRole().get(email);
 					memberList.add(new ViteroGroupMemberVO(identity.getKey(), role.name()));
@@ -297,7 +300,7 @@ public class ViteroBookingWebService {
 			for(String email:currentEmails) {
 				SearchIdentityParams params = new SearchIdentityParams();
 				params.setUserProperties(Collections.singletonMap(UserConstants.EMAIL, email));
-				List<Identity> identities = securityManager.getIdentitiesByPowerSearch(params, 0, 1);
+				List<Identity> identities = identitySearchQueries.getIdentitiesByPowerSearch(params, 0, 1);
 				for(Identity identity:identities) {
 					ViteroStatus status = viteroManager.removeFromRoom(booking, identity);
 					if(!status.isOk()) {

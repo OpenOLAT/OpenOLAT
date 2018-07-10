@@ -138,23 +138,23 @@
 	</bean>
 	
 	<bean id="restrictToUserManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="usermanager"/>
+		<property name="limitToRole" value="usermanager,rolesmanager,administrator"/>
 	</bean>
 	
 	<bean id="restrictToGroupManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="groupmanager"/>
+		<property name="limitToRole" value="groupmanager,administrator"/>
 	</bean>
 	
 	<bean id="restrictToPoolAdminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="pooladmin"/>
+		<property name="limitToRole" value="poolmanager,administrator"/>
 	</bean>
 
 	<bean id="restrictToInstResourceManagersAndAuthorsSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="author,institutionalresourcemanager"/>
+		<property name="limitToRole" value="author,learnresourcemanager,administrator"/>
 	</bean>
 
 	<bean id="restrictToInstResourceManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="institutionalresourcemanager,administrator"/>
+		<property name="limitToRole" value="learnresourcemanager,administrator"/>
 	</bean>
 	
 	<bean id="catalogManagerSiteSecurityCallback" class="org.olat.repository.site.CatalogManagerSecurityCallback">

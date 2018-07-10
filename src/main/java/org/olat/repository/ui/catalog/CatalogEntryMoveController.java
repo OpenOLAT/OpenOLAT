@@ -144,7 +144,7 @@ public class CatalogEntryMoveController extends BasicController {
 	 * @return List of repo entries
 	 */
 	private List<CatalogEntry> getOwnedEntries(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			return catalogManager.getRootCatalogEntries();
 		} else {
 			return catalogManager.getCatalogEntriesOwnedBy(getIdentity());

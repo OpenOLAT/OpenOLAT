@@ -186,7 +186,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
 		Roles roles = ureq.getUserSession().getRoles();
-		admin = roles.isOLATAdmin() || roles.isGroupManager();
+		admin = roles.isAdministrator() || roles.isGroupManager();
 		this.readOnly = readOnly;
 		this.showAdminTools = showAdminTools && admin;
 		this.userObject = userObject;
@@ -275,7 +275,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	protected boolean canCreateBusinessGroup(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isOLATAdmin() || roles.isGroupManager()
+		if(roles.isAdministrator() || roles.isGroupManager()
 				|| (roles.isAuthor() && groupModule.isAuthorAllowedCreate())
 				|| (!roles.isGuestOnly() && !roles.isInvitee() && groupModule.isUserAllowedCreate())) {
 			return true;
@@ -405,7 +405,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 */
 	private boolean toogleMark(BusinessGroupRow item) {
 		OLATResourceable bgResource = OresHelper.createOLATResourceableInstance("BusinessGroup", item.getKey());
-		//		item.getBusinessGroup().getResource();
 		if(markManager.isMarked(bgResource, getIdentity(), null)) {
 			markManager.removeMark(bgResource, getIdentity(), null);
 			item.setMarked(false);
@@ -758,7 +757,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		} 
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAuthor = roles.isOLATAdmin() || roles.isAuthor() || roles.isLearnResourceManager();
+		boolean isAuthor = roles.isAdministrator() || roles.isAuthor() || roles.isLearnResourceManager();
 
 		Step start = new BGConfigToolsStep(ureq, isAuthor);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -1067,7 +1066,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isOLATAdmin() || roles.isGroupManager()) {
+		if(roles.isAdministrator() || roles.isGroupManager()) {
 			return false;
 		}
 		
@@ -1097,7 +1096,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		Roles roles = ureq.getUserSession().getRoles();
 		for(BusinessGroup group:groups) {
 			//check security
-			boolean ow = roles.isOLATAdmin() || roles.isGroupManager()
+			boolean ow = roles.isAdministrator() || roles.isGroupManager()
 					|| businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
 
 			if (ow) {

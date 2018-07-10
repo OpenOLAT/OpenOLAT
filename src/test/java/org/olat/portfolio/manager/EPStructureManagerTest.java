@@ -697,7 +697,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertFalse(singleAuthor.contains(ident2));//owner
 		
 		securityGroupDao.getSecurityGroupsForIdentity(ident1);
-		repositoryManager.queryResourcesLimitType(ident1, new Roles(false, false, false, false, false, false, false), null, null, null, null, true, false);
+		repositoryManager.queryResourcesLimitType(ident1, Roles.userRoles(), null, null, null, null, true, false);
 	}
 	
 	

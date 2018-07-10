@@ -27,6 +27,8 @@ package org.olat.course.nodes.wiki;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -38,12 +40,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.clone.CloneController;
 import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -63,8 +65,9 @@ import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: 
@@ -79,6 +82,8 @@ public class WikiRunController extends BasicController implements Activateable2 
 	private ModuleConfiguration config;
 	private CloneController cloneCtr;
 	
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public WikiRunController(WindowControl wControl, UserRequest ureq, WikiCourseNode wikiCourseNode,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
@@ -92,14 +97,13 @@ public class WikiRunController extends BasicController implements Activateable2 
 		
 		//check role
 		UserSession usess = ureq.getUserSession();
-		boolean isOlatAdmin = usess.getRoles().isOLATAdmin();
+		Roles roles = usess.getRoles();
+		boolean isAdmininstrator = (roles.isAdministrator() || roles.isLearnResourceManager())
+				&& repositoryService.hasRoleExpanded(getIdentity(), re,
+						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
 		boolean isGuestOnly = usess.getRoles().isGuestOnly();
-		boolean isResourceOwner = false;
-		if (isOlatAdmin) isResourceOwner = true;
-		else {
-			isResourceOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
-		}
-		
+		boolean isResourceOwner = isAdmininstrator || repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
+
 		// Check for jumping to certain wiki page
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
@@ -107,9 +111,9 @@ public class WikiRunController extends BasicController implements Activateable2 
 		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(courseEnv, wikiCourseNode);
 		WikiSecurityCallback callback;
 		if(userCourseEnv.isCourseReadOnly()) {
-			callback = new WikiReadOnlySecurityCallback(isGuestOnly, (isOlatAdmin || isResourceOwner));
+			callback = new WikiReadOnlySecurityCallback(isGuestOnly, (isAdmininstrator || isResourceOwner));
 		} else {
-			callback = new WikiSecurityCallbackImpl(ne, isOlatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
+			callback = new WikiSecurityCallbackImpl(ne, isAdmininstrator, isGuestOnly, false, isResourceOwner, subsContext);
 		}
 		
 		if ( ce != null ) { //jump to a certain context
@@ -127,20 +131,15 @@ public class WikiRunController extends BasicController implements Activateable2 
 
 		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);
 		
-		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-			public ControllerCreator createLayoutControllerCreator(UserRequest uureq, final ControllerCreator contentControllerCreator) {
-				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
-					@SuppressWarnings("synthetic-access")
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						// wrapp in column layout, popup window needs a layout controller
-						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
-						layoutCtr.addDisposableChildController(ctr);
-						return layoutCtr;
-					}
+		CloneLayoutControllerCreatorCallback clccc = (uureq, contentControllerCreator) -> {
+			return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, (lureq, lwControl)  -> {
+					// wrapp in column layout, popup window needs a layout controller
+					Controller ctr = contentControllerCreator.createController(lureq, lwControl);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
+					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
+					layoutCtr.addDisposableChildController(ctr);
+					return layoutCtr;
 				});
-			}
 		};
 		
 		if (wrappedCtr instanceof CloneableController) {
@@ -158,24 +157,17 @@ public class WikiRunController extends BasicController implements Activateable2 
 		wikiCtr.activate(ureq, entries, state);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//no events yet
 	}
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

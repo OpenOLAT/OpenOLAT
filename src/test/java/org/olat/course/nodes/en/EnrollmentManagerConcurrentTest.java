@@ -415,7 +415,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 
 				sleep(Math.round(new Random().nextDouble() * 100l));
-				enrollmentManager.doEnroll(identity, JunitTestHelper.getUserRoles(), group, enNode, coursePropertyManager, EnrollmentManagerConcurrentTest.this /*WindowControl mock*/, testTranslator,
+				enrollmentManager.doEnroll(identity, Roles.userRoles(), group, enNode, coursePropertyManager, EnrollmentManagerConcurrentTest.this /*WindowControl mock*/, testTranslator,
 						new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, courseGroupManager);
 				DBFactory.getInstance().commit();
 			} catch (Exception e) {
