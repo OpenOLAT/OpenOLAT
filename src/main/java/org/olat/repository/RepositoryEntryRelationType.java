@@ -27,6 +27,8 @@ package org.olat.repository;
  */
 public enum RepositoryEntryRelationType {
 	defaultGroup,
-	notDefaultGroup,
-	both,
+	businessGroups,
+	curriculums,
+	entryAndCurriculums,
+	all
 }

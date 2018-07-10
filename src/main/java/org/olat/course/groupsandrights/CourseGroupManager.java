@@ -268,6 +268,11 @@ public interface CourseGroupManager {
 	
 	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys);
 
+	/**
+	 * The coahces in the course and its curriculums.
+	 * 
+	 * @return A list of identities
+	 */
 	public List<Identity> getCoaches();
 
 	/**
@@ -292,6 +297,11 @@ public interface CourseGroupManager {
 	
 	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys);
 	
+	/**
+	 * The participants in the course and its curriculums.
+	 * 
+	 * @return A list of identities
+	 */
 	public List<Identity> getParticipants();
 
 	/**

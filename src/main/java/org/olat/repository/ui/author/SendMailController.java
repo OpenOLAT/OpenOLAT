@@ -258,7 +258,7 @@ public class SendMailController extends FormBasicController {
 		ContactList contactList = new ContactList("");
 		Collection<String> roleList = contactEl.getSelectedKeys();
 		String[] roles = roleList.toArray(new String[roleList.size()]);
-		List<Identity> identities = repositoryService.getMembers(repoEntries, RepositoryEntryRelationType.both, roles);
+		List<Identity> identities = repositoryService.getMembers(repoEntries, RepositoryEntryRelationType.all, roles);
 		if(identities.isEmpty()) {
 			showWarning("error.contact.to.empty");
 		} else {

@@ -64,6 +64,7 @@ import org.olat.modules.quality.ui.wizard.CourseContext;
 import org.olat.modules.quality.ui.wizard.CurriculumElementContext;
 import org.olat.modules.quality.ui.wizard.IdentityContext;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -242,7 +243,7 @@ public class ParticipationListController extends FormBasicController implements 
 			for (GroupRoles role: courseContext.getRoles()) {
 				String roleName = role.name();
 				for (RepositoryEntry repositoryEntry: courseContext.getRepositoryEntries()) {
-					Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, roleName);
+					Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, roleName);
 					List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
 					for (EvaluationFormParticipation participation: participations) {
 						qualityService.createContextBuilder(dataCollection, participation, repositoryEntry, role).build();

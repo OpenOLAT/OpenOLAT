@@ -171,7 +171,7 @@ public class ReminderRuleEngine {
 		List<Identity> identities;
 		if(identitiesProviderRules.isEmpty()) {
 			//all members of repository entry
-			List<Identity> duplicatedIdentities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
+			List<Identity> duplicatedIdentities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 					GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
 			identities = new ArrayList<>(new HashSet<>(duplicatedIdentities));
 		} else {

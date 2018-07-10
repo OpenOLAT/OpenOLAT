@@ -476,7 +476,7 @@ public class BusinessGroupRelationDAO {
 		} else {
 			return Collections.emptyList();
 		}
-		return repositoryEntryRelationDao.getMembers(resource, RepositoryEntryRelationType.both, roles);
+		return repositoryEntryRelationDao.getMembers(resource, RepositoryEntryRelationType.all, roles);
 	}
 	
 	public int countResources(BusinessGroup group) {

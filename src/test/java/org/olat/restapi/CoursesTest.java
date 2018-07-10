@@ -337,7 +337,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		Assert.assertEquals(re, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 
 		// check the list of owners
-		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.owner.name());
+		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
 		Assert.assertTrue(owners.isEmpty());
 	}
@@ -375,7 +375,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		Assert.assertEquals(re, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 
 		// check the list of owners
-		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.owner.name());
+		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(1, owners.size());
 		Assert.assertEquals(adhocAuthor, owners.get(0));

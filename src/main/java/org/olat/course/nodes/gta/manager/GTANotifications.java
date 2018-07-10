@@ -69,6 +69,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 
@@ -205,7 +206,7 @@ class GTANotifications {
 			
 			boolean repoTutor = owner || (coachedGroups.isEmpty() && repositoryService.hasRole(subscriberIdentity, entry, GroupRoles.coach.name()));
 			if(repoTutor) {
-				List<Identity> courseParticipants = repositoryService.getMembers(entry, GroupRoles.participant.name());
+				List<Identity> courseParticipants = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 				for(Identity participant:courseParticipants) {
 					if(!duplicateKiller.contains(participant)
 							&& (marks == null || marks.contains(participant.getKey()))) {

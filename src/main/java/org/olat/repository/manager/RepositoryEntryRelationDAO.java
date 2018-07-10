@@ -463,36 +463,11 @@ public class RepositoryEntryRelationDAO {
 		if(res == null || res.isEmpty()) return Collections.emptyList();
 		
 		List<String> roleList = GroupRoles.toList(roles);
-		
-		String def;
-		switch(type) {
-			case defaultGroup: def = " on relGroup.defaultGroup=true"; break;
-			case notDefaultGroup: def = " on relGroup.defaultGroup=false"; break;
-			default: def = "";
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from repositoryentry as v")
-		  .append(" inner join v.groups as relGroup").append(def)
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as memberships")
-		  .append(" inner join memberships.identity as ident")
-		  .append(" inner join fetch ident.user as identUser")
-		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
-		  .append(" where v.key in (:repoKeys) and (relGroup.defaultGroup=true or businessGroup.key is not null)");
-		if(!roleList.isEmpty()) {
-			sb.append(" and memberships.role in (:roles)");
-		}
-		
-		List<Long> repoKeys = res.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());	
-		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("repoKeys", repoKeys);
-		if(!roleList.isEmpty()) {
-			query.setParameter("roles", roleList);
-		}
-		return query.getResultList();
+		List<Long> repoKeys = res.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+		return getMembers(repoKeys, roleList, type, Identity.class);
 	}
+	
+
 	
 	/**
 	 * The query is limited to the default group and the business group (as specified by
@@ -505,32 +480,47 @@ public class RepositoryEntryRelationDAO {
 	 */
 	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType type, String... roles) {
 		List<String> roleList = GroupRoles.toList(roles);
-		
-		String def;
-		switch(type) {
-			case defaultGroup: def = " on relGroup.defaultGroup=true"; break;
-			case notDefaultGroup: def = " on relGroup.defaultGroup=false"; break;
-			default: def = "";
+		List<Long> repoKeys = Collections.singletonList(re.getKey());
+		return getMembers(repoKeys, roleList, type, Long.class);
+	}
+	
+	private <U> List<U> getMembers(List<Long> repoKeys, List<String> roleList,
+			RepositoryEntryRelationType type, Class<U> resultClass) {
+		StringBuilder sb = new StringBuilder(512);
+		if(resultClass.equals(Identity.class)) {
+			sb.append("select ident");
+		} else {
+			sb.append("select memberships.identity.key");
+		}
+
+		sb.append(" from repositoryentry as v")
+		  .append(" inner join v.groups as relGroup");
+		if(type == RepositoryEntryRelationType.defaultGroup) {
+			sb.append(" on relGroup.defaultGroup=true");
+		}
+		sb.append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as memberships");
+		if(resultClass.equals(Identity.class)) {
+			sb.append(" inner join memberships.identity as ident")
+			  .append(" inner join fetch ident.user as identUser");
+		}
+		if(type == RepositoryEntryRelationType.businessGroups) {
+			sb.append(" inner join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)");
+		} else if(type == RepositoryEntryRelationType.curriculums) {
+			sb.append(" inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)");
+		} else if(type == RepositoryEntryRelationType.entryAndCurriculums) {
+			sb.append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)");
+		}
+		sb.append(" where v.key in (:repoKeys) and memberships.role in (:roles)");
+		if(type == RepositoryEntryRelationType.entryAndCurriculums) {
+			sb.append(" and (relGroup.defaultGroup=true or curEl.key is not null)");
 		}
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select members.identity.key from repositoryentry as v")
-		  .append(" inner join v.groups as relGroup").append(def)
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as members")
-		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
-		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
-		if(!roleList.isEmpty()) {
-				sb.append(" and members.role in (:roles)");
-		}
-			
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("repoKey", re.getKey());
-		if(!roleList.isEmpty()) {
-				query.setParameter("roles", roleList);
-		}
-		return query.getResultList();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), resultClass)
+				.setParameter("repoKeys", repoKeys)
+				.setParameter("roles", roleList)
+				.getResultList();
 	}
 	
 	public boolean removeMembers(RepositoryEntry re, List<Identity> members) {

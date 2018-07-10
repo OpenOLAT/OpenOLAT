@@ -78,27 +78,27 @@ public class RepositoryEntryRoleRuleSPI implements IdentitiesProviderRuleSPI  {
 			if(StringHelper.containsNonWhitespace(roles)) {
 				switch(Roles.valueOf(roles)) {
 					case owner:
-						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.defaultGroup,
+						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums,
 								GroupRoles.owner.name());
 						break;
 					case coach:
-						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
+						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 								GroupRoles.coach.name());
 						break;
 					case participant:
-						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
+						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 								GroupRoles.participant.name());
 						break;
 					case participantAndCoach:
-						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
+						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 								GroupRoles.coach.name(), GroupRoles.participant.name());
 						break;
 					case ownerAndCoach:
-						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
+						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 								GroupRoles.coach.name(), GroupRoles.owner.name());
 						break;
 					case all:
-						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
+						identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 								GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
 						break;
 				}

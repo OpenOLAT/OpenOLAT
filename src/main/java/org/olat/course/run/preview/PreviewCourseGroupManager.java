@@ -45,6 +45,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 
@@ -310,12 +311,12 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	
 	@Override
 	public List<Identity> getCoaches() {
-		return repositoryService.getMembers(getCourseEntry(), GroupRoles.coach.name());
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getParticipants() {
-		return repositoryService.getMembers(getCourseEntry(), GroupRoles.participant.name());
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 	}
 
 	@Override

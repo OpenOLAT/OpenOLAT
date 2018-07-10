@@ -32,6 +32,7 @@ import org.olat.course.nodes.MembersCourseNode;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 
 /**
@@ -47,7 +48,7 @@ public class MembersHelpers {
 	// -----------------------------------------------------
 	
 	public static List<Identity> getOwners(RepositoryService repositoryService, RepositoryEntry courseRepositoryEntry) {
-		return repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
+		return repositoryService.getMembers(courseRepositoryEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 	}
 
 	// -----------------------------------------------------

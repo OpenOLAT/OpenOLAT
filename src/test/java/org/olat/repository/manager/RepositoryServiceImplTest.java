@@ -153,7 +153,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 
 		//check that the members are removed
 		List<Identity> coachAndParticipants = repositoryEntryRelationDao
-				.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.coach.name(), GroupRoles.participant.name());
+				.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.coach.name(), GroupRoles.participant.name());
 		Assert.assertNotNull(coachAndParticipants);
 		Assert.assertEquals(0, coachAndParticipants.size());
 		

@@ -700,7 +700,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private void sendAutoCloseNotifications(LectureBlock lectureBlock) {
 		RepositoryEntry entry = lectureBlock.getEntry();
 		List<Identity> owners = repositoryEntryRelationDao
-				.getMembers(entry, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+				.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 		List<Identity> teachers = getTeachers(lectureBlock);
 		
 		for(Identity owner:owners) {

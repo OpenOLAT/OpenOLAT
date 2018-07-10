@@ -65,6 +65,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.members.Member;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -484,9 +485,9 @@ public class MembersMailController extends FormBasicController {
 					identityKeys.add(coach.getKey());
 				}
 				List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
-				ContactList coachList = new ContactList(translate("contact.list.coaches"));
-				coachList.addAllIdentites(coaches);
-				contactList.add(coachList);
+				ContactList memberList = new ContactList(translate("contact.list.coaches"));
+				memberList.addAllIdentites(coaches);
+				contactList.add(memberList);
 			}
 			
 			if(participantEl != null && participantEl.isAtLeastSelected(1)) {
@@ -495,9 +496,9 @@ public class MembersMailController extends FormBasicController {
 					identityKeys.add(participant.getKey());
 				}
 				List<Identity> participants = securityManager.loadIdentityByKeys(identityKeys);
-				ContactList participantList = new ContactList(translate("contact.list.participants"));
-				participantList.addAllIdentites(participants);
-				contactList.add(participantList);
+				ContactList memberList = new ContactList(translate("contact.list.participants"));
+				memberList.addAllIdentites(participants);
+				contactList.add(memberList);
 			}
 			
 			if(waitingEl != null && waitingEl.isAtLeastSelected(1)) {
@@ -506,17 +507,17 @@ public class MembersMailController extends FormBasicController {
 					identityKeys.add(waiter.getKey());
 				}
 				List<Identity> waiters = securityManager.loadIdentityByKeys(identityKeys);
-				ContactList waitingList = new ContactList(translate("contact.list.waiting"));
-				waitingList.addAllIdentites(waiters);
-				contactList.add(waitingList);
+				ContactList memberList = new ContactList(translate("contact.list.waiting"));
+				memberList.addAllIdentites(waiters);
+				contactList.add(memberList);
 			}
 		} else {			
 			if(ownerEl != null && ownerEl.isAtLeastSelected(1)) {
 				RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-				List<Identity> owners = repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
-				ContactList ownerList = new ContactList(translate("contact.list.owners"));
-				ownerList.addAllIdentites(owners);
-				contactList.add(ownerList);
+				List<Identity> owners = repositoryService.getMembers(courseRepositoryEntry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
+				ContactList memberList = new ContactList(translate("contact.list.owners"));
+				memberList.addAllIdentites(owners);
+				contactList.add(memberList);
 			}
 			
 			if(coachEl != null && coachEl.isAtLeastSelected(1)) {
@@ -525,10 +526,10 @@ public class MembersMailController extends FormBasicController {
 					sendToWhatYouSee.add(coach.getKey());
 				}
 				CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-				ContactList coachList = new ContactList(translate("contact.list.coaches"));
-				avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), coachList, sendToWhatYouSee);
-				avoidInvisibleMember(cgm.getCoaches(), coachList, sendToWhatYouSee);
-				contactList.add(coachList);
+				ContactList memberList = new ContactList(translate("contact.list.coaches"));
+				avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), memberList, sendToWhatYouSee);
+				avoidInvisibleMember(cgm.getCoaches(), memberList, sendToWhatYouSee);
+				contactList.add(memberList);
 			}
 			
 			if(participantEl != null && participantEl.isAtLeastSelected(1)) {
@@ -537,10 +538,10 @@ public class MembersMailController extends FormBasicController {
 					sendToWhatYouSee.add(participant.getKey());
 				}
 				CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-				ContactList participantList = new ContactList(translate("contact.list.participants"));
-				avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), participantList, sendToWhatYouSee);
-				avoidInvisibleMember(cgm.getParticipants(), participantList, sendToWhatYouSee);
-				contactList.add(participantList);
+				ContactList memberList = new ContactList(translate("contact.list.participants"));
+				avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), memberList, sendToWhatYouSee);
+				avoidInvisibleMember(cgm.getParticipants(), memberList, sendToWhatYouSee);
+				contactList.add(memberList);
 			}
 		}
 		

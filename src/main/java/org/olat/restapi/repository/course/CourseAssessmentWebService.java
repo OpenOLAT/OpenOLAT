@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -37,7 +36,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -65,8 +63,6 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.container.AssessmentContext;
 import org.olat.ims.qti.container.HttpItemInput;
@@ -83,10 +79,11 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.iq.IQManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.AssessableResultsVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -111,11 +108,14 @@ public class CourseAssessmentWebService {
 		cc.setMaxAge(-1);
 	}
 	
+	@Autowired
+	private RepositoryService repositoryService;
+	
 	/**
 	 * Retireves the version of the Course Assessment Web Service.
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -128,10 +128,10 @@ public class CourseAssessmentWebService {
 	/**
 	 * Returns the results of the course.
 	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Array of results for the whole the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVOes}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Array of results for the whole the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
 	 * @param httpRequest The HTTP request
@@ -149,8 +149,8 @@ public class CourseAssessmentWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		//fxdiff VCRP-1,2: access control of resources
-		List<Identity> courseUsers = loadUsers(course);
+
+		List<Identity> courseUsers = loadAllParticipants(course);
 		int i=0;
 		
 		Date lastModified = null;
@@ -176,9 +176,9 @@ public class CourseAssessmentWebService {
 	/**
 	 * Returns the results of the course.
 	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The result of the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The result of the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The identity or the course not found
 	 * @param courseId The course resourceable's id
@@ -195,41 +195,37 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		try {
-			Identity userIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(userIdentity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			ICourse course = CoursesWebService.loadCourse(courseId);
-			if(course == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-				
-			AssessableResultsVO results = getRootResult(userIdentity, course);
-			if(results.getLastModifiedDate() != null) {
-				Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
-				if (response != null) {
-					return response.build();
-			  }
-			}
-
-			ResponseBuilder response = Response.ok(results);
-			if(results.getLastModifiedDate() != null) {
-				response = response.lastModified(results.getLastModifiedDate()).cacheControl(cc);
-			}
-			return response.build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		Identity userIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(userIdentity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+
+		ICourse course = CoursesWebService.loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+			
+		AssessableResultsVO results = getRootResult(userIdentity, course);
+		if(results.getLastModifiedDate() != null) {
+			Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
+			if (response != null) {
+				return response.build();
+		  }
+		}
+
+		ResponseBuilder response = Response.ok(results);
+		if(results.getLastModifiedDate() != null) {
+			response = response.lastModified(results.getLastModifiedDate()).cacheControl(cc);
+		}
+		return response.build();
 	}
 	
 	/**
 	 * Exports results for an assessable course node for all students.
 	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Export all results of all user of the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Export all results of all user of the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
@@ -253,8 +249,8 @@ public class CourseAssessmentWebService {
 		} else if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		//fxdiff VCRP-1,2: access control of resources
-		List<Identity> courseUsers = loadUsers(course);
+		
+		List<Identity> courseUsers = loadAllParticipants(course);
 		int i=0;
 		Date lastModified = null;
 		AssessableResultsVO[] results = new AssessableResultsVO[courseUsers.size()];
@@ -280,10 +276,10 @@ public class CourseAssessmentWebService {
 	/**
 	 * Imports results for an assessable course node for the authenticated student.
 	 * @response.representation.qname {http://www.example.com}assessableResultsVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc A result to import
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
-   * @response.representation.200.doc Import successful
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc A result to import
+	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
+	 * @response.representation.200.doc Import successful
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The identity not found
 	 * @param courseId The resourceable id of the course
@@ -310,39 +306,33 @@ public class CourseAssessmentWebService {
 	}
 	
 	private void attachAssessableResults(Long courseResourceableId, String nodeKey, Identity requestIdentity, AssessableResultsVO resultsVO) {
-		try {
-			ICourse course = CourseFactory.openCourseEditSession(courseResourceableId);
-			CourseNode node = getParentNode(course, nodeKey);
-			if (!(node instanceof AssessableCourseNode)) { throw new IllegalArgumentException(
-					"The supplied node key does not refer to an AssessableCourseNode"); }
-			BaseSecurity securityManager = BaseSecurityManager.getInstance();
-			Identity userIdentity = securityManager.loadIdentityByKey(resultsVO.getIdentityKey());
+		ICourse course = CourseFactory.openCourseEditSession(courseResourceableId);
+		CourseNode node = getParentNode(course, nodeKey);
+		if (!(node instanceof AssessableCourseNode)) { throw new IllegalArgumentException(
+				"The supplied node key does not refer to an AssessableCourseNode"); }
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		Identity userIdentity = securityManager.loadIdentityByKey(resultsVO.getIdentityKey());
 
-			// create an identenv with no roles, no attributes, no locale
-			IdentityEnvironment ienv = new IdentityEnvironment();
-			ienv.setIdentity(userIdentity);
-			UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		// create an identenv with no roles, no attributes, no locale
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		ienv.setIdentity(userIdentity);
+		UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 
-			// Fetch all score and passed and calculate score accounting for the
-			// entire course
-			userCourseEnvironment.getScoreAccounting().evaluateAll();
+		// Fetch all score and passed and calculate score accounting for the
+		// entire course
+		userCourseEnvironment.getScoreAccounting().evaluateAll();
 
-			if (node instanceof IQTESTCourseNode) {
-				importTestItems(course, nodeKey, requestIdentity, resultsVO);
-			} else {
-				AssessableCourseNode assessableNode = (AssessableCourseNode) node;
-				ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, new Long(nodeKey));//not directly pass this key
-				assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
-			}
-
-			CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-			CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		if (node instanceof IQTESTCourseNode) {
+			importTestItems(course, nodeKey, requestIdentity, resultsVO);
+		} else {
+			AssessableCourseNode assessableNode = (AssessableCourseNode) node;
+			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, new Long(nodeKey));//not directly pass this key
+			assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 		}
-	}
-	
 
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+	}
 
 	private void importTestItems(ICourse course, String nodeKey, Identity identity, AssessableResultsVO resultsVO) {
 		try {
@@ -453,7 +443,7 @@ public class CourseAssessmentWebService {
 	}
 
 	private Map<String, ItemInput> convertToHttpItemInput(Map<Long, String> results) {
-		Map<String, ItemInput> datas = new HashMap<String, ItemInput>();
+		Map<String, ItemInput> datas = new HashMap<>();
 		for (Long key : results.keySet()) {
 			HttpItemInput iip = new HttpItemInput(results.get(key));
 			iip.putSingle(key.toString(), results.get(key));
@@ -474,9 +464,9 @@ public class CourseAssessmentWebService {
 	/**
 	 * Returns the results of a student at a specific assessable node
 	 * @response.representation.200.qname {http://www.example.com}assessableResultsVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The result of a user at a specific node
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The result of a user at a specific node
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ASSESSABLERESULTSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The identity or the course not found
 	 * @param courseId The course resourceable's id
@@ -495,29 +485,25 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		try {
-			Identity userIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-			if(userIdentity == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			ICourse course = CoursesWebService.loadCourse(courseId);
-			if(course == null) {
-				return Response.serverError().status(Status.NOT_FOUND).build();
-			}
-
-			AssessableResultsVO results = getNodeResult(userIdentity, course, nodeId);
-			if(results.getLastModifiedDate() != null) {
-				Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
-				if(response != null) {
-					return response.build();
-				}
-				return Response.ok(results).lastModified(results.getLastModifiedDate()).cacheControl(cc).build();
-			}
-			return Response.ok(results).build();
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
+		Identity userIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		if(userIdentity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+
+		ICourse course = CoursesWebService.loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		AssessableResultsVO results = getNodeResult(userIdentity, course, nodeId);
+		if(results.getLastModifiedDate() != null) {
+			Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
+			if(response != null) {
+				return response.build();
+			}
+			return Response.ok(results).lastModified(results.getLastModifiedDate()).cacheControl(cc).build();
+		}
+		return Response.ok(results).build();
 	}
 	
 	private AssessableResultsVO getRootResult(Identity identity, ICourse course) {
@@ -559,32 +545,9 @@ public class CourseAssessmentWebService {
 		return am.getScoreLastModifiedDate(courseNode, assessedIdentity);
 	}
 
-	private List<Identity> loadUsers(ICourse course) {
-		List<Identity> identities = new ArrayList<Identity>();
-		List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
-
-		Set<Long> check = new HashSet<Long>();
-		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<Identity> participants = businessGroupService.getMembers(groups, GroupRoles.participant.name());
-		for(Identity participant:participants) {
-			if(!check.contains(participant.getKey())) {
-				identities.add(participant);
-				check.add(participant.getKey());
-			}
-		}
-		
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
-		if(re != null) {
-			List<Identity> ids = repositoryService.getMembers(re, GroupRoles.participant.name());
-			for(Identity id:ids) {
-				if(!check.contains(id.getKey())) {
-					identities.add(id);
-					check.add(id.getKey());
-				}
-			}
-		}
-
-		return identities;
+	private List<Identity> loadAllParticipants(ICourse course) {
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Identity> participants = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		return new ArrayList<>(new HashSet<>(participants));
 	}
 }

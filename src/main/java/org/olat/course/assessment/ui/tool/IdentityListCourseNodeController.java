@@ -210,7 +210,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	public AssessedIdentityListState getListState() {
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
 		String filter = null;
-		if(filters != null && filters.size() > 0) {
+		if(filters != null && !filters.isEmpty()) {
 			filter = filters.get(0).getFilter();
 		}
 		return new AssessedIdentityListState(filter, tableEl.getSelectedExtendedFilters());
@@ -227,7 +227,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		}
 
-		if(rows == null || rows.isEmpty()) {
+		if(rows.isEmpty()) {
 			return Collections.emptyList();
 		}
 		
@@ -397,7 +397,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
 		assessmentEntries.stream()
 			.filter(entry -> entry.getIdentity() != null)
-			.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
+			.forEach(entry -> entryMap.put(entry.getIdentity().getKey(), entry));
 
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {

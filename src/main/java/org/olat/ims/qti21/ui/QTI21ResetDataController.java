@@ -63,6 +63,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -132,7 +133,7 @@ public class QTI21ResetDataController extends FormBasicController {
 		
 		options = new ArchiveOptions();
 		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
-			identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
+			identities = repositoryService.getMembers(assessedEntry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 			options.setIdentities(identities);
 		} else if (asOptions.getIdentities() != null) {
 			identities = asOptions.getIdentities();

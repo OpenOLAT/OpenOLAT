@@ -80,6 +80,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesRow;
@@ -183,7 +184,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		RepositoryEntry re = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		boolean repoTutor = admin || (coachedGroups.isEmpty() && repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name()));
 		if(repoTutor) {
-			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
+			List<Identity> courseParticipants = repositoryService.getMembers(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 			for(Identity participant:courseParticipants) {
 				if(!duplicateKiller.contains(participant)) {
 					participantCollector.accept(participant);

@@ -51,6 +51,7 @@ import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -419,12 +420,12 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 
 	@Override
 	public List<Identity> getCoaches() {
-		return repositoryService.getMembers(getCourseEntry(), GroupRoles.coach.name());
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getParticipants() {
-		return repositoryService.getMembers(getCourseEntry(), GroupRoles.participant.name());
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 	}
 
 	@Override

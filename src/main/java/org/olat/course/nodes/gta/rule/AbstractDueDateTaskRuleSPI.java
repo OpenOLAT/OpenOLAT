@@ -238,7 +238,7 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 			}
 		}
 
-		List<Identity> identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both, GroupRoles.participant.name());
+		List<Identity> identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
 			if(doneTasks.contains(identityIt.next())) {
 				identityIt.remove();

@@ -84,6 +84,7 @@ import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -565,7 +566,7 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<Identity> owners = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
+		List<Identity> owners = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		
 		int count = 0;
 		UserVO[] authors = new UserVO[owners.size()];
@@ -594,7 +595,7 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<Identity> coachList = repositoryService.getMembers(repositoryEntry, GroupRoles.coach.name());
+		List<Identity> coachList = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
 		
 		int count = 0;
 		UserVO[] coaches = new UserVO[coachList.size()];
@@ -623,7 +624,7 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<Identity> participantList = repositoryService.getMembers(repositoryEntry, GroupRoles.participant.name());
+		List<Identity> participantList = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 		
 		int count = 0;
 		UserVO[] participants = new UserVO[participantList.size()];

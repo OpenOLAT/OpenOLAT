@@ -42,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.quality.ui.ParticipationListController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -98,7 +99,7 @@ public class AddCourseUserRolesSelectionController extends StepFormBasicControll
 		if (!roles.isEmpty()) {
 			Collection<RepositoryEntry> repositoryEntries = courseContext.getRepositoryEntries();
 			for (RepositoryEntry repositoryEntry: repositoryEntries) {
-				List<Identity> members = repositoryService.getMembers(repositoryEntry, roleNames);
+				List<Identity> members = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, roleNames);
 				identities.addAll(members);
 			}
 		}

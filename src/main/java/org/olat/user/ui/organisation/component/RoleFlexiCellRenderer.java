@@ -19,6 +19,7 @@
  */
 package org.olat.user.ui.organisation.component;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -52,6 +53,8 @@ public class RoleFlexiCellRenderer implements FlexiCellRenderer {
 			String val = (String)cellValue;
 			if(OrganisationRoles.valid(val)) {
 				target.append(translator.translate("role.".concat(OrganisationRoles.valueOf(val).name())));
+			} else if(GroupRoles.isValueOf(val)) {
+				target.append(translator.translate("role.".concat(GroupRoles.valueOf(val).name())));
 			} else {
 				target.append(StringHelper.escapeHtml(val));
 			}

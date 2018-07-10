@@ -82,6 +82,7 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -114,7 +115,7 @@ public class RepositoryEntryWebService {
 
   private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebService.class);
 
-	public static CacheControl cc = new CacheControl();
+	public static final CacheControl cc = new CacheControl();
 	static {
 		cc.setMaxAge(-1);
 	}
@@ -847,7 +848,7 @@ public class RepositoryEntryWebService {
 	}
 	
 	private Response getIdentityInSecurityGroup(RepositoryEntry re, String role) {
-		List<Identity> identities = repositoryService.getMembers(re, role);
+		List<Identity> identities = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, role);
 		
 		int count = 0;
 		UserVO[] ownerVOs = new UserVO[identities.size()];

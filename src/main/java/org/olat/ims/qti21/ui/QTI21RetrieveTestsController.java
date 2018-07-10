@@ -54,6 +54,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +121,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 			if(courseEnv != null) {
 				identityList = ScoreAccountingHelper.loadUsers(courseEnv);
 			} else {
-				identityList = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
+				identityList = repositoryService.getMembers(assessedEntry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 			}
 		} else if (asOptions.getIdentities() != null) {
 			identityList = asOptions.getIdentities();

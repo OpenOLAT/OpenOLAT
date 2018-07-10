@@ -29,8 +29,8 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.ui.SendMailOption;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 
 /**
@@ -66,15 +66,9 @@ public class SendMembersMailOption implements SendMailOption {
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		Set<Identity> identities = new HashSet<Identity>();
-		if(role == GroupRoles.coach || role == GroupRoles.participant) {
-			List<Identity> members = CoreSpringFactory.getImpl(BusinessGroupService.class)
-					.getMembersOf(repositoryEntry, role == GroupRoles.coach, role == GroupRoles.participant);
-			identities.addAll(members);
-		}
-		
+		Set<Identity> identities = new HashSet<>();
 		List<Identity> reMembers = CoreSpringFactory.getImpl(RepositoryService.class)
-				.getMembers(repositoryEntry, role.name());
+				.getMembers(repositoryEntry, RepositoryEntryRelationType.all, role.name());
 		identities.addAll(reMembers);
 		return new ArrayList<>(identities);
 	}

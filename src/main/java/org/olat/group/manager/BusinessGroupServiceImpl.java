@@ -1082,9 +1082,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		if(coaches.isEmpty()) {
 			Collection<BusinessGroup> groups = Collections.singletonList(group);
 			List<RepositoryEntry> entries = businessGroupRelationDAO.findRepositoryEntries(groups, 0, -1);
-			for(RepositoryEntry re:entries) {
-				coaches.addAll(repositoryService.getMembers(re, GroupRoles.coach.name()));
-			}
+			coaches.addAll(repositoryService.getMembers(entries, RepositoryEntryRelationType.all, GroupRoles.coach.name()));
 			
 			if(coaches.isEmpty()) {
 				//get system administrators
@@ -1593,7 +1591,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		
 		List<BusinessGroup> groups = null;//load only if needed
 		if(coaches) {
-			List<Identity> repoTutorList = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
+			List<Identity> repoTutorList = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
 			if(!repoTutorList.isEmpty()) {
 				SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 				groups = businessGroupDAO.findBusinessGroups(params, entry, 0, -1);
@@ -1607,7 +1605,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		
 		if(participants) {
-			List<Identity> repoParticipantList = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+			List<Identity> repoParticipantList = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 			if(!repoParticipantList.isEmpty()) {
 			
 				if(groups == null) {

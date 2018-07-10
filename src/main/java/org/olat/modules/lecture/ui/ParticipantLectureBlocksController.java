@@ -73,6 +73,7 @@ import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.Participant
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LecturesCompulsoryRenderer;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -351,11 +352,11 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		
 		LectureBlock block = lectureService.getLectureBlock(row.getLectureBlockRef());
 		List<Identity> teachers = lectureService.getTeachers(block);
-		List<Identity> onwers = repositoryService.getMembers(entry, GroupRoles.owner.name());
+		List<Identity> owners = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
 		
 		ContactList contactList = new ContactList(translate("appeal.contact.list"));
 		contactList.addAllIdentites(teachers);
-		contactList.addAllIdentites(onwers);
+		contactList.addAllIdentites(owners);
 		
 		StringBuilder teacherNames = new StringBuilder();
 		for(Identity teacher:teachers) {

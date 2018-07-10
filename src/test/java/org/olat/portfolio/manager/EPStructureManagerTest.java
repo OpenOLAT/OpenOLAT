@@ -56,6 +56,7 @@ import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -661,7 +662,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertNotNull(resource);
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
 		assertNotNull(re);
-		List<Identity> authors = repositoryService.getMembers(re, GroupRoles.owner.name());
+		List<Identity> authors = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		assertEquals(2, authors.size());
 		assertTrue(authors.contains(ident1));//owner
 		assertTrue(authors.contains(ident2));//owner
@@ -683,7 +684,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertNotNull(resource);
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
 		assertNotNull(re);
-		List<Identity> authors = repositoryService.getMembers(re, GroupRoles.owner.name());
+		List<Identity> authors = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		assertEquals(2, authors.size());
 		dbInstance.commitAndCloseSession();
 		
@@ -691,7 +692,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		epStructureManager.removeAuthor(map, ident2);
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> singleAuthor = repositoryService.getMembers(re, GroupRoles.owner.name());
+		List<Identity> singleAuthor = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		assertEquals(1, singleAuthor.size());
 		assertTrue(singleAuthor.contains(ident1));//owner
 		assertFalse(singleAuthor.contains(ident2));//owner

@@ -46,9 +46,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.vitero.manager.ViteroManager;
@@ -58,6 +55,7 @@ import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroGroupRoles;
 import org.olat.modules.vitero.model.ViteroStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -91,7 +89,6 @@ public class ViteroUserToGroupController extends BasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	private CourseGroupManager courseGroupManager;
 	
 	public ViteroUserToGroupController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, ViteroBooking booking, boolean readOnly) {
 		super(ureq, wControl);
@@ -186,7 +183,7 @@ public class ViteroUserToGroupController extends BasicController {
 				}
 			} else if(event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent e = (TableMultiSelectEvent)event;
-				List<Identity> identities = new ArrayList<Identity>();
+				List<Identity> identities = new ArrayList<>();
 				for (int i = e.getSelection().nextSetBit(0); i >= 0; i = e.getSelection().nextSetBit(i + 1)) {
 					Identity identity = (Identity)tableCtr.getTableDataModel().getObject(i);
 					identities.add(identity);
@@ -258,33 +255,22 @@ public class ViteroUserToGroupController extends BasicController {
 	}
 	
 	private ResourceMembers getIdentitiesInResource(ViteroGroupRoles groupRoles) {
-		Set<Identity> owners = new HashSet<Identity>();
-		Set<Identity> coaches = new HashSet<Identity>();
-		Set<Identity> participants = new HashSet<Identity>();
-		Set<Identity> selfParticipants = new HashSet<Identity>();
+		Set<Identity> owners = new HashSet<>();
+		Set<Identity> coaches = new HashSet<>();
+		Set<Identity> participants = new HashSet<>();
+		Set<Identity> selfParticipants = new HashSet<>();
 		
 		if(group != null) {
 			owners.addAll(businessGroupService.getMembers(group, GroupRoles.coach.name()));
 			participants.addAll(businessGroupService.getMembers(group, GroupRoles.participant.name()));
 		} else {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(ores, false);
-			if ("CourseModule".equals(ores.getResourceableTypeName())) {
-				if(courseGroupManager == null) {
-					ICourse course = CourseFactory.loadCourse(repoEntry);
-					courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
-				}
-				coaches.addAll(courseGroupManager.getCoachesFromAreas());
-				coaches.addAll(courseGroupManager.getCoachesFromBusinessGroups());
-				participants.addAll(courseGroupManager.getParticipantsFromAreas());
-				participants.addAll(courseGroupManager.getParticipantsFromBusinessGroups());
-			}
-			
-			List<Identity> repoOwners = repositoryService.getMembers(repoEntry, GroupRoles.owner.name());
+			List<Identity> repoOwners = repositoryService.getMembers(repoEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 			owners.addAll(repoOwners);
-			List<Identity> repoParticipants = repositoryService.getMembers(repoEntry, GroupRoles.participant.name());
+			List<Identity> repoParticipants = repositoryService.getMembers(repoEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 			participants.addAll(repoParticipants);
-			List<Identity> repoTutors = repositoryService.getMembers(repoEntry, GroupRoles.coach.name());
-			coaches.addAll(repoTutors);
+			List<Identity> repoCoaches = repositoryService.getMembers(repoEntry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
+			coaches.addAll(repoCoaches);
 		}
 		
 		//add all self signed participants
@@ -310,10 +296,10 @@ public class ViteroUserToGroupController extends BasicController {
 	}
 	
 	public class ResourceMembers {
-		private final List<Identity> owners = new ArrayList<Identity>();
-		private final List<Identity> coaches = new ArrayList<Identity>();
-		private final List<Identity> participants = new ArrayList<Identity>();
-		private final List<Identity> selfParticipants = new ArrayList<Identity>();
+		private final List<Identity> owners = new ArrayList<>();
+		private final List<Identity> coaches = new ArrayList<>();
+		private final List<Identity> participants = new ArrayList<>();
+		private final List<Identity> selfParticipants = new ArrayList<>();
 		
 		public ResourceMembers() {
 			//
@@ -364,7 +350,7 @@ public class ViteroUserToGroupController extends BasicController {
 			this.members = members;
 			this.groupRoles = groupRoles;
 			
-			identities = new ArrayList<Identity>();
+			identities = new ArrayList<>();
 			identities.addAll(members.getOwners());
 			identities.addAll(members.getCoaches());
 			identities.addAll(members.getParticipants());

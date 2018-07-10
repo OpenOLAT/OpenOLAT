@@ -134,6 +134,7 @@ import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -1276,7 +1277,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		
 		// add qti resource owners as group
 		ContactList cl = new ContactList("qtiPkgOwners");
-		cl.addAllIdentites(repositoryService.getMembers(myEntry, GroupRoles.owner.name()));
+		cl.addAllIdentites(repositoryService.getMembers(myEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name()));
 		changeEmail.addEmailTo(cl);
 
 		StringBuilder result = new StringBuilder();
@@ -1307,8 +1308,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				// the course owners
 				RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course, false);
 				if(entry != null) {//OO-1300
-					List<Identity> stakeHoldersIds = repositoryService.getMembers(entry, GroupRoles.owner.name());
-					if(stakeHoldersIds != null && stakeHoldersIds.size() > 0) {
+					List<Identity> stakeHoldersIds = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+					if(stakeHoldersIds != null && !stakeHoldersIds.isEmpty()) {
 						// add stakeholders as group
 						cl = new ContactList(courseTitle);
 						cl.addAllIdentites(stakeHoldersIds);

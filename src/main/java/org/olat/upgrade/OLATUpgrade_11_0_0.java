@@ -115,6 +115,7 @@ import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -751,7 +752,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		
 
-		List<Identity> courseParticipants = repositoryService.getMembers(entry, GroupRoles.participant.name());
+		List<Identity> courseParticipants = repositoryService.getMembers(entry, RepositoryEntryRelationType.defaultGroup,  GroupRoles.participant.name());
 		for(Identity participant:courseParticipants) {
 			if(!duplicateKiller.contains(participant)) {
 				assessableIdentities.add(participant);

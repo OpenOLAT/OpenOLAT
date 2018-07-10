@@ -406,7 +406,7 @@ public class PFManager {
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<Identity> participants =  repositoryEntryRelationDao.getMembers(re, 
-				RepositoryEntryRelationType.both, GroupRoles.participant.name());
+				RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		participants = new ArrayList<>(new HashSet<>(participants));
 		
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
@@ -530,12 +530,13 @@ public class PFManager {
 		Set<Identity> identitySet = new HashSet<>();
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 		if(admin) {
-			List<Identity> participants = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.participant.name());
+			List<Identity> participants = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 			// deduplicate list (participants from groups and direct course membership)
 			identitySet.addAll(participants);
 		} else {
 			if(repositoryService.hasRole(id, re, GroupRoles.coach.name())) {
-				List<Identity> identities = repositoryService.getMembers(re, GroupRoles.participant.name());
+				//TODO roles 
+				List<Identity> identities = repositoryService.getMembers(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 				identitySet.addAll(identities);
 			}
 			
@@ -547,8 +548,7 @@ public class PFManager {
 				}
 			}
 		}
-		List<Identity> participants = identitySet.stream().collect(Collectors.toList());
-		return participants;
+		return identitySet.stream().collect(Collectors.toList());
 	}
 	
 	/**

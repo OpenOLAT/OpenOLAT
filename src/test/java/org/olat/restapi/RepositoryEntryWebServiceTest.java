@@ -63,6 +63,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -208,7 +209,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> owners = repositoryService.getMembers(re, GroupRoles.owner.name());
+		List<Identity> owners = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(1, owners.size());
 		Assert.assertTrue(owners.contains(owner));
@@ -240,7 +241,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> owners = repositoryService.getMembers(re, GroupRoles.owner.name());
+		List<Identity> owners = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(2, owners.size());
 		Assert.assertTrue(owners.contains(owner1));
@@ -267,7 +268,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> owners = repositoryService.getMembers(re, GroupRoles.owner.name());
+		List<Identity> owners = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(0, owners.size());
 		Assert.assertFalse(owners.contains(owner));
@@ -329,7 +330,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> coaches = repositoryService.getMembers(re, GroupRoles.coach.name());
+		List<Identity> coaches = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertEquals(1, coaches.size());
 		Assert.assertTrue(coaches.contains(coach));
@@ -361,7 +362,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> coaches = repositoryService.getMembers(re, GroupRoles.coach.name());
+		List<Identity> coaches = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertEquals(2, coaches.size());
 		Assert.assertTrue(coaches.contains(coach1));
@@ -388,7 +389,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> coaches = repositoryService.getMembers(re, GroupRoles.coach.name());
+		List<Identity> coaches = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertTrue(coaches.isEmpty());
 		Assert.assertFalse(coaches.contains(coach));
@@ -450,7 +451,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> participants = repositoryService.getMembers(re, GroupRoles.participant.name());
+		List<Identity> participants = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(1, participants.size());
 		Assert.assertTrue(participants.contains(participant));
@@ -484,7 +485,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> participants = repositoryService.getMembers(re, GroupRoles.participant.name());
+		List<Identity> participants = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(2, participants.size());
 		Assert.assertTrue(participants.contains(participant1));
@@ -512,7 +513,7 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> participants = repositoryService.getMembers(re, GroupRoles.participant.name());
+		List<Identity> participants = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertTrue(participants.isEmpty());
 		Assert.assertFalse(participants.contains(participant));

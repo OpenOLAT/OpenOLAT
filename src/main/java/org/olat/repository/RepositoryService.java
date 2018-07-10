@@ -233,13 +233,13 @@ public interface RepositoryService {
 
 	/**
 	 * Get the members of the repository entry (the method doesn't
-	 * follow the business groups).
+	 * follow the business groups or other relations).
 	 *
-	 * @param re
-	 * @param roles
-	 * @return
+	 * @param re The repository entry
+	 * @param roles The roles to search for ()
+	 * @return A list of identity which have at least one of the specified role
 	 */
-	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
+	public List<Identity> getMembers(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles);
 
 	/**
 	 * Get the

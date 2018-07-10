@@ -67,6 +67,7 @@ import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,7 +175,7 @@ public class EditLectureBlockController extends FormBasicController {
 			compulsoryEl.select(onKeys[0], true);
 		}
 
-		List<Identity> coaches = repositoryService.getMembers(entry, GroupRoles.coach.name());
+		List<Identity> coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
 		teacherKeys = new String[coaches.size() + 1];
 		teacherValues = new String[coaches.size() + 1];
 		for(int i=coaches.size() + 1; i-->1; ) {

@@ -51,6 +51,7 @@ import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
@@ -86,8 +87,8 @@ public class UnpublishResourceCallback implements StepRunnerCallback {
 		if (mailTemplate != null) {
 			List<Identity> ownerList = new ArrayList<>();
 			// owners
-			if (repositoryService.hasRole(ureq.getIdentity(), repositoryEntry, GroupRoles.owner.name())) {
-				ownerList = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
+			if (repositoryService.hasRoleExpanded(ureq.getIdentity(), repositoryEntry, GroupRoles.owner.name())) {
+				ownerList = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 			}
 
 			String businessPath = wControl.getBusinessControl().getAsString();

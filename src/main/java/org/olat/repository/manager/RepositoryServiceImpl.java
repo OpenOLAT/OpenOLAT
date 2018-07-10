@@ -652,8 +652,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public List<Identity> getMembers(RepositoryEntryRef re, String... roles) {
-		return reToGroupDao.getMembers(re, RepositoryEntryRelationType.defaultGroup, roles);
+	public List<Identity> getMembers(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles) {
+		return reToGroupDao.getMembers(Collections.singletonList(re), relationType, roles);
 	}
 
 	@Override

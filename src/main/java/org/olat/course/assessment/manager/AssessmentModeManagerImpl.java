@@ -208,15 +208,15 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		Set<Long> assessedKeys = new HashSet<>();
 		if(targetAudience == Target.course || targetAudience == Target.courseAndGroups) {
 			List<Long> courseMemberKeys = assessmentMode.isApplySettingsForCoach()
-					? repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name(), GroupRoles.participant.name())
-					: repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+					? repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name(), GroupRoles.participant.name())
+					: repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 			assessedKeys.addAll(courseMemberKeys);
 		}
 		if(targetAudience == Target.groups || targetAudience == Target.courseAndGroups) {
 			List<BusinessGroup> groups = new ArrayList<>();
 			
 			Set<AssessmentModeToArea> modeToAreas = assessmentMode.getAreas();
-			if(modeToAreas.size() > 0) {
+			if(!modeToAreas.isEmpty()) {
 				List<BGArea> areas = new ArrayList<>(modeToAreas.size());
 				for(AssessmentModeToArea modeToArea: modeToAreas) {
 					areas.add(modeToArea.getArea());
@@ -227,7 +227,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			}
 
 			Set<AssessmentModeToGroup> modeToGroups = assessmentMode.getGroups();
-			if(modeToGroups.size() > 0) {
+			if(!modeToGroups.isEmpty()) {
 				for(AssessmentModeToGroup modeToGroup: modeToGroups) {
 					groups.add(modeToGroup.getBusinessGroup());
 				}	

@@ -207,7 +207,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		res.add(re2);
 
 		//all members
-		List<Identity> coaches = repositoryEntryRelationDao.getMembers(res, RepositoryEntryRelationType.both, GroupRoles.coach.name());
+		List<Identity> coaches = repositoryEntryRelationDao.getMembers(res, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertEquals(1, coaches.size());
 		Assert.assertTrue(coaches.contains(id4));

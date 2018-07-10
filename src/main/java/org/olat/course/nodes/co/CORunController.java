@@ -53,6 +53,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,8 +90,6 @@ public class CORunController extends BasicController {
 		
 		cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 
-
-		
 		//set translator with fall back translator.
 		Translator fallback = Util.createPackageTranslator(ContactFormController.class, ureq.getLocale());
 		setTranslator(Util.createPackageTranslator(CORunController.class, ureq.getLocale(), fallback));
@@ -105,9 +104,8 @@ public class CORunController extends BasicController {
 		Boolean partipsAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
 		Boolean coachesAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
 		Boolean ownersConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
-		Stack<ContactList> contactLists = new Stack<ContactList>();
-
 		
+		Stack<ContactList> contactLists = new Stack<>();
 		String participantGroupNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
 		List<Long> participantGroupKeys = moduleConfiguration.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, Long.class);
 		if((participantGroupKeys == null || participantGroupKeys.isEmpty())  && StringHelper.containsNonWhitespace(participantGroupNames)) {
@@ -153,7 +151,7 @@ public class CORunController extends BasicController {
 			ContactList cl = retrieveCoachesFromCourse();
 			contactLists.push(cl);
 			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
-			List<Long> grp_keys = new ArrayList<Long>();
+			List<Long> grp_keys = new ArrayList<>();
 			for(BusinessGroup group:groups){
 				grp_keys.add(group.getKey());
 			}
@@ -166,7 +164,7 @@ public class CORunController extends BasicController {
 			ContactList cl = retrieveParticipantsFromCourse();
 			contactLists.push(cl);
 			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
-			List<Long> grp_keys = new ArrayList<Long>();
+			List<Long> grp_keys = new ArrayList<>();
 			for(BusinessGroup group:groups){
 				grp_keys.add(group.getKey());
 			}
@@ -232,7 +230,7 @@ public class CORunController extends BasicController {
 	
 	
 	private ContactList retrieveCoachesFromGroups(List<Long> groupKeys) {
-		List<Identity> coaches = new ArrayList<Identity>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
+		List<Identity> coaches = new ArrayList<>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		return cl;
@@ -240,7 +238,7 @@ public class CORunController extends BasicController {
 	
 	private ContactList retrieveCoachesFromAreas(List<Long> areaKeys) {
 		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
-		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
+		Set<Identity> coachesWithoutDuplicates = new HashSet<>(coaches);
 		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
@@ -275,8 +273,8 @@ public class CORunController extends BasicController {
 		return cl;
 	}
 	
-	private ContactList retrieveOwnersFromCourse(){;
-		List<Identity> ownerList = repositoryService.getMembers(cgm.getCourseEntry(), GroupRoles.owner.name());
+	private ContactList retrieveOwnersFromCourse(){
+		List<Identity> ownerList = repositoryService.getMembers(cgm.getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
 		ContactList cl = new ContactList(translate("form.message.chckbx.owners"));
 		cl.addAllIdentites(ownerList);
 		return cl;
