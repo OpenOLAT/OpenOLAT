@@ -40,11 +40,6 @@ public interface QualitySecurityCallback {
 	public boolean canDeleteDataCollection(QualityDataCollectionLight dataCollection);
 	
 	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection);
-	
-	public boolean canEditReminders();
-
-	public boolean canEditReminder(QualityReminder reminder);
 
 	public boolean canExecute(QualityExecutorParticipation participation);
-
 }

@@ -26,34 +26,20 @@ import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 08.07.2018<br>
+ * Initial date: 10.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public interface QualityReminder extends CreateInfo, ModifiedInfo {
-	
+
 	public Long getKey();
 	
-	public Boolean isSent();
+	public QualityReminderType getType();
 
-	public void setSent(Boolean sent);
+	public Date getSendPlaned();
 
-	public Date getSendDate();
+	public boolean isSent();
 	
-	public void setSendDate(Date sendDate);
-
-	public QualityReminderTo getTo();
-	
-	public void setTo(QualityReminderTo to);
-
-	public String getSubject();
-	
-	public void setSubject(String subject);
-
-	public String getBody();
-	
-	public void setBody(String body);
-
 	public QualityDataCollection getDataCollection();
-	
+
 }

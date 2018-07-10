@@ -37,11 +37,11 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.Persistable;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityReminder;
-import org.olat.modules.quality.QualityReminderTo;
+import org.olat.modules.quality.QualityReminderType;
 
 /**
  * 
- * Initial date: 09.07.2018<br>
+ * Initial date: 10.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
@@ -49,8 +49,8 @@ import org.olat.modules.quality.QualityReminderTo;
 @Table(name="o_qual_reminder")
 public class QualityReminderImpl implements QualityReminder, Persistable {
 
-	private static final long serialVersionUID = -788231567000626379L;
-	
+	private static final long serialVersionUID = -4398941736269246827L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
@@ -63,17 +63,13 @@ public class QualityReminderImpl implements QualityReminder, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="q_sent", nullable=true, insertable=true, updatable=true)
-	private Boolean sent;
-	@Column(name="q_send_date", nullable=true, insertable=true, updatable=true)
-	private Date sendDate;
 	@Enumerated(EnumType.STRING)
-	@Column(name="q_to", nullable=true, insertable=true, updatable=true)
-	private QualityReminderTo to;
-	@Column(name="q_subject", nullable=true, insertable=true, updatable=true)
-	private String subject;
-	@Column(name="q_body", nullable=true, insertable=true, updatable=true)
-	private String body;
+	@Column(name="q_type", nullable=true, insertable=true, updatable=true)
+	private QualityReminderType type;
+	@Column(name="q_send_planed", nullable=false, insertable=true, updatable=true)
+	private Date sendPlaned;
+	@Column(name="q_send_done", nullable=true, insertable=true, updatable=true)
+	private Date sendDone;
 	
 	@ManyToOne(targetEntity=QualityDataCollectionImpl.class)
 	@JoinColumn(name="fk_data_collection", nullable=false, insertable=true, updatable=false)
@@ -82,6 +78,10 @@ public class QualityReminderImpl implements QualityReminder, Persistable {
 	@Override
 	public Long getKey() {
 		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
 	}
 
 	@Override
@@ -104,53 +104,34 @@ public class QualityReminderImpl implements QualityReminder, Persistable {
 	}
 
 	@Override
-	public Boolean isSent() {
-		return sent;
+	public QualityReminderType getType() {
+		return type;
+	}
+
+	public void setType(QualityReminderType type) {
+		this.type = type;
 	}
 
 	@Override
-	public void setSent(Boolean sent) {
-		this.sent = sent;
+	public Date getSendPlaned() {
+		return sendPlaned;
 	}
 
-	@Override
-	public Date getSendDate() {
-		return sendDate;
+	public void setSendPlaned(Date sendPlaned) {
+		this.sendPlaned = sendPlaned;
 	}
 
-	@Override
-	public void setSendDate(Date sendDate) {
-		this.sendDate = sendDate;
+	public Date getSendDone() {
+		return sendDone;
 	}
 
-	@Override
-	public QualityReminderTo getTo() {
-		return to;
+	public void setSendDone(Date sendDone) {
+		this.sendDone = sendDone;
 	}
-
+	
 	@Override
-	public void setTo(QualityReminderTo to) {
-		this.to = to;
-	}
-
-	@Override
-	public String getSubject() {
-		return subject;
-	}
-
-	@Override
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-
-	@Override
-	public String getBody() {
-		return body;
-	}
-
-	@Override
-	public void setBody(String body) {
-		this.body = body;
+	public boolean isSent() {
+		return sendDone != null;
 	}
 
 	@Override
@@ -186,9 +167,10 @@ public class QualityReminderImpl implements QualityReminder, Persistable {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+	
 }

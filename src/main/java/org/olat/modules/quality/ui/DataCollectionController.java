@@ -54,14 +54,14 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	private Link configurationLink;
 	private Link participantsLink;
-	private Link reminderLink;
+	private Link remindersLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
 	private final StackedPanel mainPanel;
 	
 	private DataCollectionConfigurationController configurationCtrl;
 	private ParticipationListController participationsCtrl;
-	private ReminderListController reminderCtrl;
+	private RemindersController remindersCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	private QualityDataCollectionLight dataCollection;
@@ -79,8 +79,8 @@ public class DataCollectionController extends BasicController implements TooledC
 		segmentButtonsCmp.addButton(configurationLink, false);
 		participantsLink = LinkFactory.createLink("data.collection.participations", getTranslator(), this);
 		segmentButtonsCmp.addButton(participantsLink, false);
-		reminderLink = LinkFactory.createLink("data.collection.reminders", getTranslator(), this);
-		segmentButtonsCmp.addButton(reminderLink, false);
+		remindersLink = LinkFactory.createLink("data.collection.reminders", getTranslator(), this);
+		segmentButtonsCmp.addButton(remindersLink, false);
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("dataCollectionSegments"));
 		mainPanel.setContent(new Panel("empty"));
@@ -114,9 +114,9 @@ public class DataCollectionController extends BasicController implements TooledC
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (configurationLink == source) {
 			doOpenConfiguration(ureq);
-		} else if (participantsLink == source) {
+		} else if(participantsLink == source) {
 			doOpenParticipants(ureq);
-		} else if (reminderLink == source) {
+		} else if(remindersLink == source) {
 			doOpenReminders(ureq);
 		} else if (stackPanel == source) {
 			if (event instanceof PopEvent) {
@@ -128,7 +128,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 
 	private void doOpenConfiguration(UserRequest ureq) {
-		stackPanel.popUpToController(this);	
+		stackPanel.popUpToController(this);
 		configurationCtrl = new DataCollectionConfigurationController(ureq, getWindowControl(), secCallback, stackPanel,
 				dataCollection);
 		listenTo(configurationCtrl);
@@ -143,13 +143,12 @@ public class DataCollectionController extends BasicController implements TooledC
 		stackPanel.pushController(translate("data.collection.participations"), participationsCtrl);
 		segmentButtonsCmp.setSelectedButton(participantsLink);
 	}
-
+	
 	private void doOpenReminders(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		reminderCtrl = new ReminderListController(ureq, getWindowControl(), secCallback, stackPanel,
-				dataCollection);
-		stackPanel.pushController(translate("data.collection.reminders"), reminderCtrl);
-		segmentButtonsCmp.setSelectedButton(reminderLink);
+		remindersCtrl = new RemindersController(ureq, getWindowControl(), secCallback, dataCollection);
+		stackPanel.pushController(translate("data.collection.reminders"), remindersCtrl);
+		segmentButtonsCmp.setSelectedButton(remindersLink);
 	}
 
 	@Override

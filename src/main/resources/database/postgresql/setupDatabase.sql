@@ -1837,11 +1837,9 @@ create table o_qual_reminder (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   q_sent bool default false,
-   q_send_date timestamp,
-   q_to varchar(64),
-   q_subject varchar(1024),
-   q_body text,
+   q_type varchar(20),
+   q_send_planed timestamp,
+   q_send_done timestamp,
    fk_data_collection bigint not null,
    primary key (id)
 );
@@ -3406,7 +3404,6 @@ create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level 
 
 alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_rem_to_data_collection_idx on o_qual_reminder (fk_data_collection);
-
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

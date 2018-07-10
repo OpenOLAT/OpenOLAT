@@ -36,7 +36,10 @@ import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -60,6 +63,8 @@ public class QualityTestHelper {
 	private QualityService qualityService;
 	@Autowired
 	private QualityContextDAO qualityContextDao;
+	@Autowired
+	private QualityReminderDAO reminderDao;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -89,7 +94,7 @@ public class QualityTestHelper {
 	QualityDataCollection createDataCollection() {
 		return createDataCollection(UUID.randomUUID().toString());
 	}
-	
+
 	QualityContext createContext() {
 		return qualityContextDao.createContext(createDataCollection(), createParticipation(), QualityContextRole.owner,
 				createRepositoryEntry(), createCurriculumElement());
@@ -123,8 +128,8 @@ public class QualityTestHelper {
 		return evaluationFormManager.createParticipation(survey, identity);
 	}
 
-	void addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {
-		qualityService.addParticipations(dataCollection, executors);
+	List<EvaluationFormParticipation> addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {
+		return qualityService.addParticipations(dataCollection, executors);
 	}
 
 	Organisation createOrganisation() {
@@ -148,4 +153,15 @@ public class QualityTestHelper {
 		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, null, taxonomy);
 	}
 
+	public QualityReminder createReminder() {
+		return createReminder(createDataCollection());
+	}
+
+	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef) {
+		Date sendDate = new Date();
+		QualityReminderType type = QualityReminderType.REMINDER1;
+		return reminderDao.create(dataCollectionRef, sendDate, type);
+	}
+
 }
+

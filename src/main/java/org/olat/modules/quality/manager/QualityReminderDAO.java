@@ -23,8 +23,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.quality.model.QualityReminderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +34,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 09.07.2018<br>
+ * Initial date: 10.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
@@ -42,41 +44,52 @@ public class QualityReminderDAO {
 	@Autowired
 	private DB dbInstance;
 
-	QualityReminder create(QualityDataCollectionRef dataCollectionRef) {
+	QualityReminder create(QualityDataCollectionRef dataCollectionRef, Date sendDate, QualityReminderType type) {
 		QualityReminderImpl reminder = new QualityReminderImpl();
 		reminder.setCreationDate(new Date());
 		reminder.setLastModified(reminder.getCreationDate());
-		reminder.setSent(Boolean.FALSE);
-		QualityDataCollectionImpl dataCollection = dbInstance.getCurrentEntityManager()
+		reminder.setSendPlaned(sendDate);
+		reminder.setType(type);
+		QualityDataCollection dataCollection = dbInstance.getCurrentEntityManager()
 				.getReference(QualityDataCollectionImpl.class, dataCollectionRef.getKey());
 		reminder.setDataCollection(dataCollection);
 		dbInstance.getCurrentEntityManager().persist(reminder);
 		return reminder;
 	}
-	
-	QualityReminder save(QualityReminder reminder) {
+
+	QualityReminder update(QualityReminder reminder, Date sendDate) {
+		if (reminder instanceof QualityReminderImpl) {
+			QualityReminderImpl reminderImpl = (QualityReminderImpl) reminder;
+			reminderImpl.setSendPlaned(sendDate);
+			return save(reminderImpl);
+		}
+		return reminder;
+	}
+
+	private QualityReminder save(QualityReminder reminder) {
 		reminder.setLastModified(new Date());
 		reminder = dbInstance.getCurrentEntityManager().merge(reminder);
 		return reminder;
 	}
 
-	List<QualityReminder> loadByDataCollection(QualityDataCollectionRef dataCollectionRef) {
-		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return null;
+	QualityReminder load(QualityDataCollectionRef dataCollectionRef, QualityReminderType type) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null || type == null) return null;
 		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select reminder");
 		sb.append("  from qualityreminder as reminder");
 		sb.append(" where reminder.dataCollection.key = :dataCollectionKey");
-		sb.append(" order by reminder.sendDate asc");
+		sb.append("   and reminder.type = :reminderType");
 		
-		List<QualityReminder> reminders = dbInstance.getCurrentEntityManager()
+		 List<QualityReminder> reminders = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityReminder.class)
 				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
+				.setParameter("reminderType", type)
 				.getResultList();
-		return reminders;
+		return reminders.isEmpty() ? null : reminders.get(0);
 	}
 
-	void delete(QualityReminder reminder) {
+	public void delete(QualityReminder reminder) {
 		if (reminder == null || reminder.getKey() == null) return;
 		
 		StringBuilder sb = new StringBuilder(256);

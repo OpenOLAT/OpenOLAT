@@ -24,7 +24,6 @@ import java.util.Date;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityExecutorParticipation;
-import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
 
 /**
@@ -69,16 +68,6 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	@Override
 	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection) {
 		return !isStarted(dataCollection);
-	}
-
-	@Override
-	public boolean canEditReminders() {
-		return true;
-	}
-
-	@Override
-	public boolean canEditReminder(QualityReminder reminder) {
-		return reminder == null || !reminder.isSent();
 	}
 
 	@Override

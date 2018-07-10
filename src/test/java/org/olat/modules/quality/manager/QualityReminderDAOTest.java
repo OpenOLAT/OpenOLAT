@@ -21,27 +21,26 @@ package org.olat.modules.quality.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.GregorianCalendar;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityReminder;
-import org.olat.modules.quality.QualityReminderTo;
+import org.olat.modules.quality.QualityReminderType;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 09.07.2018<br>
+ * Initial date: 10.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualitReminderDAOTest extends OlatTestCase {
-	
+public class QualityReminderDAOTest extends OlatTestCase {
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -58,85 +57,64 @@ public class QualitReminderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateReminder() {
 		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
-		QualityReminder reminder = sut.create(dataCollectionRef);
+		Date sendDate = new Date();
+		QualityReminderType type = QualityReminderType.REMINDER1;
 		dbInstance.commitAndCloseSession();
 		
+		QualityReminder reminder = sut.create(dataCollectionRef, sendDate, type);
+		
 		assertThat(reminder).isNotNull();
-		assertThat(reminder.getKey()).isNotNull();
 		assertThat(reminder.getCreationDate()).isNotNull();
 		assertThat(reminder.getLastModified()).isNotNull();
+		assertThat(reminder.getType()).isEqualTo(type);
+		assertThat(reminder.getSendPlaned()).isCloseTo(sendDate, 1000);
 		assertThat(reminder.isSent()).isFalse();
 		assertThat(reminder.getDataCollection().getKey()).isEqualTo(dataCollectionRef.getKey());
 	}
-
+	
 	@Test
 	public void shouldUpdateReminder() {
-		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
-		QualityReminder reminder = sut.create(dataCollectionRef);
+		QualityReminder reminder = qualityTestHelper.createReminder();
 		dbInstance.commitAndCloseSession();
 		
-		Boolean sent = Boolean.TRUE;
-		reminder.setSent(sent);
-		Date sendDate = new Date();
-		reminder.setSendDate(sendDate);
-		QualityReminderTo to = QualityReminderTo.PENDING;
-		reminder.setTo(to);
-		String subject = "New survey for you";
-		reminder.setSubject(subject);
-		String body = "body";
-		reminder.setBody(body);
-		
-		reminder = sut.save(reminder);
-		
-		assertThat(reminder.isSent()).isEqualTo(sent);
-		assertThat(reminder.getSendDate()).isEqualTo(sendDate);
-		assertThat(reminder.getTo()).isEqualTo(to);
-		assertThat(reminder.getSubject()).isEqualTo(subject);
-		assertThat(reminder.getBody()).isEqualTo(body);
+		Date sendDate = (new GregorianCalendar(2013,1,28,13,24,56)).getTime();
+		reminder = sut.update(reminder, sendDate);
+
+		assertThat(reminder.getSendPlaned()).isCloseTo(sendDate, 1000);
 	}
 	
 	@Test
-	public void shouldLoadByDataCollection() {
+	public void shouldLoadReminderByDataCollectionAndType() {
+		Date sendDate = new Date();
 		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
-		QualityReminder reminderFuture = sut.create(dataCollectionRef);
-		reminderFuture.setSendDate(getDateInFuture());
-		sut.save(reminderFuture);
-		QualityReminder reminderPast = sut.create(dataCollectionRef);
-		reminderPast.setSendDate(getDateInPast());
-		sut.save(reminderPast);
-		QualityDataCollectionRef otherDataCollectionRef = qualityTestHelper.createDataCollection();
-		QualityReminder otherReminder = sut.create(otherDataCollectionRef);
+		QualityReminderType type = QualityReminderType.REMINDER1;
+		QualityReminder reminder = sut.create(dataCollectionRef, sendDate, type);
+		sut.create(dataCollectionRef, sendDate, QualityReminderType.INVITATION);
+		sut.create(qualityTestHelper.createDataCollection(), sendDate, type);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityReminder> reminders = sut.loadByDataCollection(dataCollectionRef);
-
-		assertThat(reminders)
-				.containsExactly(reminderPast, reminderFuture)
-				.doesNotContain(otherReminder);
+		QualityReminder loadedReminder = sut.load(dataCollectionRef, type);
+		
+		assertThat(loadedReminder).isEqualTo(reminder);
 	}
-	
+
 	@Test
 	public void shouldDeleteReminder() {
+		Date sendDate = new Date();
 		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
-		QualityReminder reminder = sut.create(dataCollectionRef);
+		QualityReminderType type = QualityReminderType.REMINDER1;
+		QualityReminder reminder = sut.create(dataCollectionRef, sendDate, type);
+		QualityReminderType otherType = QualityReminderType.INVITATION;
+		sut.create(dataCollectionRef, sendDate, otherType);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(reminder);
+		dbInstance.commitAndCloseSession();
 		
-		List<QualityReminder> reminders = sut.loadByDataCollection(dataCollectionRef);
-		assertThat(reminders).isEmpty();
+		QualityReminder loadedReminder = sut.load(dataCollectionRef, type);
+		assertThat(loadedReminder).isNull();
+		
+		QualityReminder otherReminder = sut.load(dataCollectionRef, otherType);
+		assertThat(otherReminder).isNotNull();
 	}
-
-	private Date getDateInPast() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.add(Calendar.DAY_OF_YEAR, -1);
-		return calendar.getTime();
-	}
-
-	private Date getDateInFuture() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.add(Calendar.DAY_OF_YEAR, 1);
-		return calendar.getTime();
-	}
-
 }

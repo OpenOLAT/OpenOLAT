@@ -19,50 +19,32 @@
  */
 package org.olat.modules.quality;
 
-import java.util.Arrays;
-
-import org.olat.core.gui.translator.Translator;
-
 /**
  * 
- * Initial date: 09.07.2018<br>
+ * Initial date: 10.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum QualityReminderTo {
+public enum QualityReminderType {
 	
-	ALL("reminder.send.to.all"),
-	PENDING("reminder.send.to.pending"),
-	DONE("reminder.send.to.done");
-
-	private final String i18nKey;
+	INVITATION("reminder.template.invitation.subject", "reminder.template.invtation.body"),
+	REMINDER1("reminder.template.reminder1.subject", "reminder.template.reminder1.body"),
+	REMINDER2("reminder.template.reminder2.subject", "reminder.template.reminder2.body");
 	
-	private QualityReminderTo(String i18nKey) {
-		this.i18nKey = i18nKey;
-	}
+	private final String subjectI18nKey;
+	private final String bodyI18nKey;
 	
-	public String getI18nKey() {
-		return i18nKey;
+	private QualityReminderType(String subjectI18nKey, String bodyI18nKey) {
+		this.subjectI18nKey = subjectI18nKey;
+		this.bodyI18nKey = bodyI18nKey;
 	}
 
-	public String getKey() {
-		return name();
-	}
-	
-	public static QualityReminderTo getEnum(String key) {
-		return QualityReminderTo.valueOf(key);
+	public String getSubjectI18nKey() {
+		return subjectI18nKey;
 	}
 
-	public static String[] getKeys() {
-		return Arrays.stream(QualityReminderTo.values())
-				.map(QualityReminderTo::name)
-				.toArray(String[]::new);
+	public String getBodyI18nKey() {
+		return bodyI18nKey;
 	}
 	
-	public static String[] getValues(Translator translator) {
-		return Arrays.stream(QualityReminderTo.values())
-				.map(type -> type.getI18nKey())
-				.map(i18n -> translator.translate(i18n))
-				.toArray(String[]::new);
-	}
 }

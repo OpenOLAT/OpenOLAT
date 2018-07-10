@@ -308,11 +308,9 @@ create table o_qual_reminder (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
-   q_sent bool number default 0,
-   q_send_date date,
-   q_to varchar2(64),
-   q_subject varchar2(1024),
-   q_body CLOB,
+   q_type varchar2(20),
+   q_send_planed date,
+   q_send_done date,
    fk_data_collection number(20) not null,
    primary key (id)
 );

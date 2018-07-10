@@ -24,13 +24,13 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityParticipation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,8 +128,8 @@ class QualityParticipationDAO {
 		return sb;
 	}
 
-	int getExecutorParticipationCount(IdentityRef executor) {
-		if (executor == null) return 0;
+	int getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {
+		if (searchParam == null) return 0;
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(participation.key)");
@@ -139,17 +139,16 @@ class QualityParticipationDAO {
 		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("   and executor.key = :executorKey");
 		
-		List<Long> counts = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("executorKey", executor.getKey())
-				.getResultList();
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendWhereParameters(query, searchParam);
+		List<Long> counts = query.getResultList();
 		return Math.toIntExact(counts.get(0));
 	}
 
-	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator, IdentityRef executor, int firstResult,
-			int maxResults, SortKey... orderBy) {
-		if (executor == null)
-			return new ArrayList<>();
+	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
+			QualityExecutorParticipationSearchParams searchParam, int firstResult, int maxResults, SortKey... orderBy) {
+		if (searchParam == null) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityExcecutorParticipationImpl(");
@@ -189,13 +188,13 @@ class QualityParticipationDAO {
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
 		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
-		sb.append("   and executor.key = :executorKey");
+		appendWhereClause(sb, searchParam);
 		
 		appendExecutorParticipationOrderBy(sb, orderBy);
 
 		TypedQuery<QualityExecutorParticipation> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QualityExecutorParticipation.class)
-				.setParameter("executorKey", executor.getKey());
+				.createQuery(sb.toString(), QualityExecutorParticipation.class);
+		appendWhereParameters(query, searchParam);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -205,7 +204,32 @@ class QualityParticipationDAO {
 		
 		return query.getResultList();
 	}
-	
+
+	private void appendWhereClause(StringBuilder sb, QualityExecutorParticipationSearchParams searchParam) {
+		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
+			sb.append(" and executor.key = :executorKey");
+		}
+		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
+			sb.append(" and collection.key = :dataCollectionKey");
+		}
+		if (searchParam.getParticipationStatus() != null) {
+			sb.append(" and participation.status = :participationStatus");
+		}
+	}
+
+	private void appendWhereParameters(TypedQuery<?> query,
+			QualityExecutorParticipationSearchParams searchParam) {
+		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
+				query.setParameter("executorKey", searchParam.getExecutorRef().getKey());
+		}
+		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
+				query.setParameter("dataCollectionKey", searchParam.getDataCollectionRef().getKey());
+		}
+		if (searchParam.getParticipationStatus() != null) {
+				query.setParameter("participationStatus", searchParam.getParticipationStatus());
+		}
+	}
+
 	private void appendExecutorParticipationOrderBy(StringBuilder sb, SortKey... orderBy) {
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			String sortKey = orderBy[0].getKey();
@@ -219,3 +243,4 @@ class QualityParticipationDAO {
 	}
 
 }
+

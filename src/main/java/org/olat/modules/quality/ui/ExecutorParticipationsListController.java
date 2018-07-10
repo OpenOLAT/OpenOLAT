@@ -44,6 +44,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorParticipationCols;
 
@@ -90,7 +91,9 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
 
-		ExecutorParticipationDataSource dataSource = new ExecutorParticipationDataSource(getTranslator(), getIdentity());
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setExecutorRef(getIdentity());
+		ExecutorParticipationDataSource dataSource = new ExecutorParticipationDataSource(getTranslator(), searchParams);
 		dataModel = new ExecutorParticipationDataModel(dataSource, columnsModel, secCallback, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "user-participations", dataModel, 25, true, getTranslator(), formLayout);
 	}

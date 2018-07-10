@@ -20,10 +20,10 @@
 package org.olat.modules.quality;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -83,10 +83,10 @@ public interface QualityService {
 	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
 			int firstResult, int maxResults, SortKey... orderBy);
 
-	public int getExecutorParticipationCount(IdentityRef executor);
+	public int getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams);
 
-	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator, IdentityRef executor,
-			int firstResult, int maxResults, SortKey[] orderBy);
+	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
+			QualityExecutorParticipationSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy);
 
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation participation);
@@ -129,14 +129,13 @@ public interface QualityService {
 	 */
 	public void deleteContextsAndParticipations(Collection<QualityContextRef> contextRefs);
 
-	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef);
+	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef, Date sendDate,
+			QualityReminderType type);
 
-	public QualityReminder saveReminder(QualityReminder reminder);
+	public QualityReminder updateReminder(QualityReminder invitation, Date sendDate);
 
-	public List<QualityReminder> loadReminders(QualityDataCollectionRef dataCollectionRef);
+	public QualityReminder loadReminder(QualityDataCollectionRef dataCollectionRef, QualityReminderType type);
 
 	public void deleteReminder(QualityReminder reminder);
-
-	public QualityReminder sendReminder(QualityReminder reminder);
 
 }

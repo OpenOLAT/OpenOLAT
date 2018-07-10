@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -31,10 +32,15 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorParticipationCols;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
@@ -59,6 +65,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
+	@Autowired
+	private EvaluationFormManager evaManager;
 	
 	@Autowired
 	private QualityParticipationDAO sut;
@@ -182,26 +190,23 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.createParticipation(otherSurvey, identity);
 		dbInstance.commitAndCloseSession();
 		
-		int count = sut.getExecutorParticipationCount(identity);
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setExecutorRef(identity);
+		int count = sut.getExecutorParticipationCount(searchParams);
 		
 		assertThat(count).isEqualTo(2);
 	}
 	
 	@Test
 	public void shouldLoadExecutorParticipations() {
-		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection();
-		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-		qualityTestHelper.addParticipations(dataCollection1, Arrays.asList(identity, otherIdentity));
-		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
-		EvaluationFormSurvey otherSurvey = qualityTestHelper.createRandomSurvey();
-		qualityTestHelper.createParticipation(otherSurvey, identity);
+		qualityTestHelper.addParticipations(dataCollection, Arrays.asList(identity));
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, identity, 0, -1);
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0, -1);
 		
-		assertThat(participations).hasSize(2);
 		QualityExecutorParticipation participation = participations.get(0);
 		assertThat(participation.getParticipationRef()).isNotNull();
 		assertThat(participation.getParticipationStatus()).isNotNull();
@@ -221,7 +226,9 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, identity, 1, 1);
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setExecutorRef(identity);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 1, 1);
 		
 		assertThat(participations).hasSize(1);
 	}
@@ -236,7 +243,9 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SortKey sortKey = new SortKey(ExecutorParticipationCols.title.name(), true);
-		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, identity, 0, -1, sortKey);
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setExecutorRef(identity);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0, -1, sortKey);
 		
 		assertThat(participations.get(0).getTitle()).isEqualTo("A");
 		assertThat(participations.get(1).getTitle()).isEqualTo("Z");
@@ -250,13 +259,80 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<ExecutorParticipationCols> excludedCols = Arrays.asList(ExecutorParticipationCols.execute);
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		for (ExecutorParticipationCols col: ExecutorParticipationCols.values()) {
 			if (!excludedCols.contains(col)) {
 				SortKey sortKey = new SortKey(col.name(), true);
-				sut.loadExecutorParticipations(TRANSLATOR, identity, 0, -1, sortKey);
+				sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0, -1, sortKey);
 			}
 		}
 		
 		// Only check that no Exception is thrown to be sure that hql syntax is ok.
+	}
+	
+	@Test
+	public void shouldFilterExecutorParticipationsByExecutor() {
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection();
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		qualityTestHelper.addParticipations(dataCollection1,
+				Arrays.asList(identity, otherIdentity));
+		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
+		EvaluationFormSurvey otherSurvey = qualityTestHelper.createRandomSurvey();
+		qualityTestHelper.createParticipation(otherSurvey, identity);
+		dbInstance.commitAndCloseSession();
+
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setExecutorRef(identity);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
+				-1);
+
+		assertThat(participations).hasSize(2);
+	}
+	
+	@Test
+	public void shouldFilterExecutorParticipationsByDataCollection() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		List<EvaluationFormParticipation> createdParticipations = qualityTestHelper.addParticipations(dataCollection,
+				Arrays.asList(identity, otherIdentity));
+		qualityTestHelper.addParticipations(otherDataCollection, Arrays.asList(identity));
+		dbInstance.commitAndCloseSession();
+
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
+				-1);
+
+		assertThat(participations).hasSize(2);
+		List<Long> loadedKeys = participations.stream().map(QualityExecutorParticipation::getParticipationRef)
+				.map(EvaluationFormParticipationRef::getKey).collect(toList());
+		Long[] expectedKeys = createdParticipations.stream().map(EvaluationFormParticipation::getKey)
+				.toArray(Long[]::new);
+		assertThat(loadedKeys).containsExactlyInAnyOrder(expectedKeys);
+	}
+	
+	@Test
+	public void shouldFilterExecutorParticipationsByParticipationStatus() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormSurvey survey = evaManager.loadSurvey(dataCollection, null);
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		qualityTestHelper.addParticipations(dataCollection, Arrays.asList(identity1, identity2, identity3));
+		EvaluationFormParticipation participation = evaManager.loadParticipationByExecutor(survey, identity1);
+		EvaluationFormSession session = evaManager.createSession(participation);
+		evaManager.finishSession(session);
+		dbInstance.commitAndCloseSession();
+
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setParticipationStatus(EvaluationFormParticipationStatus.prepared);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
+				-1);
+
+		assertThat(participations).hasSize(2);
 	}
 }

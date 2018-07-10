@@ -30,8 +30,8 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,20 +44,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<ExecutorParticipationRow> {
 	
 	private final Translator translator;
-	private final Identity executor;
+	private final QualityExecutorParticipationSearchParams searchParams;
 	
 	@Autowired
 	private QualityService qualityService;
 	
-	public ExecutorParticipationDataSource(Translator translator, Identity executor) {
+	public ExecutorParticipationDataSource(Translator translator, QualityExecutorParticipationSearchParams searchParams) {
 		this.translator = translator;
-		this.executor = executor;
+		this.searchParams = searchParams;
 		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
 	public int getRowCount() {
-		return qualityService.getExecutorParticipationCount(executor);
+		return qualityService.getExecutorParticipationCount(searchParams);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<Ex
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
 		List<QualityExecutorParticipation> participations = qualityService.loadExecutorParticipations(translator,
-				executor, firstResult, maxResults, orderBy);
+				searchParams, firstResult, maxResults, orderBy);
 		List<ExecutorParticipationRow> rows = new ArrayList<>();
 		for (QualityExecutorParticipation participation : participations) {
 			rows.add(new ExecutorParticipationRow(participation));
