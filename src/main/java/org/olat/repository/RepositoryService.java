@@ -183,7 +183,14 @@ public interface RepositoryService {
 
 	public void filterMembership(IdentityRef identity, Collection<Long> entries);
 
-	public int countMembers(RepositoryEntryRef re, String... roles);
+	/**
+	 * Count the number of member with the specified role.
+	 * 
+	 * @param re The repository entry
+	 * @param role The role (mandatory)
+	 * @return
+	 */
+	public int countMembers(RepositoryEntryRef re, String role);
 
 	/**
 	 * Count all members (following up to business groups waiting list) with the following

@@ -289,31 +289,22 @@ public class RepositoryEntryRelationDAO {
 	 * the organizations.
 	 * 
 	 * @param re The repository entry
-	 * @param roles The roles (optional)
+	 * @param roles The role (mandatory)
 	 * @return
 	 */
-	public int countMembers(RepositoryEntryRef re, String... roles) {
-		List<String> roleList = GroupRoles.toList(roles);
-		
-		StringBuilder sb = new StringBuilder();
+	public int countMembers(RepositoryEntryRef re, String role) {
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select count(members) from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
-		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
-		  .append(" where v.key=:repoKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
-		if(!roleList.isEmpty()) {
-				sb.append(" and members.role in (:roles)");
-		}
-		
-		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+		  .append(" where v.key=:repoKey and members.role=:role");
+
+		Number count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("repoKey", re.getKey());
-		if(!roleList.isEmpty()) {
-				query.setParameter("roles", roleList);
-		}
-		
-		Number count = query.getSingleResult();
+				.setParameter("repoKey", re.getKey())
+				.setParameter("role", role)
+				.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 	
