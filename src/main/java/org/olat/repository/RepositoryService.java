@@ -323,6 +323,8 @@ public interface RepositoryService {
 	 */
 	public List<Organisation> getOrganisations(RepositoryEntryRef entry);
 	
+	public void addOrganisation(RepositoryEntry entry, Organisation organisation);
+	
 	/**
 	 * 
 	 * @param entry

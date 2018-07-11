@@ -109,7 +109,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateRole(upgradeManager, uhd);
-		allOk &= migrateRepositoryEntriesTodefaultOrganisation(upgradeManager, uhd);
+		allOk &= migrateRepositoryEntriesToDefaultOrganisation(upgradeManager, uhd);
 		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
 		allOk &= migrateLecturesSendAppealDates(upgradeManager, uhd);
 		
@@ -129,7 +129,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			try {
 				List<Long> repositoryEntryKeys = getRepositoryEntryWithAuditLog();
 				for(int i=0; i<repositoryEntryKeys.size(); i++) {
-					migrateLecturesSendAppealDates(repositoryEntryKeys.get(0));
+					migrateLecturesSendAppealDates(repositoryEntryKeys.get(i));
 					if(i % 50 == 0) {
 						log.info("Migration repository entries with appeal in lectures block roll call: " + i + " / " + repositoryEntryKeys.size());
 					}
@@ -188,13 +188,13 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 				.getResultList();
 	}
 	
-	private boolean migrateRepositoryEntriesTodefaultOrganisation(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+	private boolean migrateRepositoryEntriesToDefaultOrganisation(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MIGRATE_REPO_ENTRY_DEFAULT_ORG)) {
 			try {
 				List<Long> repositoryEntryKeys = getRepositoryEntryKeys();
 				for(int i=0; i<repositoryEntryKeys.size(); i++) {
-					migrateRepositoryEntryToDefaultOrganisation(repositoryEntryKeys.get(0));
+					migrateRepositoryEntryToDefaultOrganisation(repositoryEntryKeys.get(i));
 					if(i % 50 == 0) {
 						log.info("Migration repository entries to default organisation: " + i + " / " + repositoryEntryKeys.size());
 					}

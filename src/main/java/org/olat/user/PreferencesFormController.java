@@ -146,28 +146,24 @@ public class PreferencesFormController extends FormBasicController {
 		// load preferences
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();
 
-
 		// Username
 		StaticTextElement username = uifactory.addStaticTextElement("form.username", tobeChangedIdentity.getName(), formLayout);
 		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
 
 		// Roles
-		final String[] roleKeys = new String[] {
+		String[] roleKeys = new String[] {
 			OrganisationRoles.usermanager.name(), OrganisationRoles.groupmanager.name(),
 			OrganisationRoles.poolmanager.name(), OrganisationRoles.curriculummanager.name(),
 			OrganisationRoles.author.name(), OrganisationRoles.learnresourcemanager.name(),
 			OrganisationRoles.administrator.name()
 		};
-		String iname = getIdentity().getUser().getProperty("institutionalName", null);
-		String ilabel = iname != null
-				? translate("rightsForm.isInstitutionalResourceManager.institution",iname)
-				: translate("rightsForm.isInstitutionalResourceManager");
-		
-		final String[] roleValues = new String[]{
+
+		String[] roleValues = new String[]{
 				translate("rightsForm.isUsermanager"), translate("rightsForm.isGroupmanager"),
 				translate("rightsForm.isPoolmanager"), translate("rightsForm.isCurriculummanager"),
-				translate("rightsForm.isAuthor"), ilabel, translate("rightsForm.isAdmin")
+				translate("rightsForm.isAuthor"), translate("rightsForm.isInstitutionalResourceManager"),
+				translate("rightsForm.isAdmin")
 		};
 		
 		StringBuilder userRolesSb = new StringBuilder();

@@ -51,6 +51,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.restapi.CalWebService;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -59,6 +60,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -93,6 +95,7 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.OlatResourceVO;
+import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -537,6 +540,44 @@ public class CourseWebService {
 			return Response.ok(myXStream.toXML(course.getEditorTreeModel())).build();
 		}
 		return response.build();
+	}
+
+	@GET
+	@Path("organisations")
+	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
+		if (!isManager(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> organisations = repositoryService.getOrganisations(repositoryEntry);
+		OrganisationVO[] orgVoes = new OrganisationVO[organisations.size()];
+		for(int i=organisations.size(); i-->0; ) {
+			orgVoes[i] = OrganisationVO.valueOf(organisations.get(i));
+		}
+		return Response.ok(orgVoes).build();
+	}
+	
+	@PUT
+	@Path("organisations/{organisationKey}")
+	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
+		if (!isManager(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> organisations = repositoryService.getOrganisations(repositoryEntry);
+		for(Organisation organisation:organisations) {
+			if(organisation.getKey().equals(organisationKey)) {
+				return Response.ok().status(Status.NOT_MODIFIED).build();
+			}
+		}
+		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if(organisation == null) {
+			return Response.ok().status(Status.NOT_FOUND).build();
+		}
+		repositoryService.addOrganisation(repositoryEntry, organisation);
+		return Response.ok().build();
 	}
 	
 	/**

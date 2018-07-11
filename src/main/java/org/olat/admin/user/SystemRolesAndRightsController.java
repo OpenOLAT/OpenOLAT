@@ -261,16 +261,18 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		roleKeys.add(OrganisationRoles.linemanager.name());
 		roleValues.add(translate("rightsForm.isLinemanager"));
 
+		roleKeys.add(OrganisationRoles.learnresourcemanager.name());
+		roleValues.add(translate("rightsForm.isInstitutionalResourceManager"));
+
 		roleKeys.add(OrganisationRoles.principal.name());
 		roleValues.add(translate("rightsForm.isPrincipal"));
 
 		roleKeys.add(OrganisationRoles.administrator.name());
 		roleValues.add(translate("rightsForm.isAdmin"));
 
-		roleKeys.add(OrganisationRoles.learnresourcemanager.name());
-		roleValues.add(translate("rightsForm.isInstitutionalResourceManager"));
+		roleKeys.add(OrganisationRoles.sysadmin.name());
+		roleValues.add(translate("rightsForm.isSysAdmin"));
 
-		
 		MultipleSelectionElement rolesEl = uifactory.addCheckboxesHorizontal(
 					"roles_" + (++counter), "rightsForm.roles", formLayout,
 					roleKeys.toArray(new String[roleKeys.size()]),
@@ -488,7 +490,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			wrapper.commit(OrganisationRoles.author, rolesToAdd, rolesToRemove);
 		}
 
-		// user manager, only allowed by admin
+		// manager roles, only allowed by administrator and roles manager
 		if (iAmAdmin) {
 			wrapper.commit(OrganisationRoles.groupmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.poolmanager, rolesToAdd, rolesToRemove);

@@ -58,11 +58,14 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -97,6 +100,7 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
+import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -135,6 +139,8 @@ public class RepositoryEntryWebService {
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
@@ -800,6 +806,42 @@ public class RepositoryEntryWebService {
 	}
 	
 	@GET
+	@Path("organisations")
+	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
+		if (!isAuthorEditor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		List<Organisation> organisations = repositoryService.getOrganisations(entry);
+		OrganisationVO[] orgVoes = new OrganisationVO[organisations.size()];
+		for(int i=organisations.size(); i-->0; ) {
+			orgVoes[i] = OrganisationVO.valueOf(organisations.get(i));
+		}
+		return Response.ok(orgVoes).build();
+	}
+	
+	@PUT
+	@Path("organisations/{organisationKey}")
+	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
+		Organisation organisationToAdd = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if (!isAuthorEditor(httpRequest) && !isManager(organisationToAdd, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<Organisation> organisations = repositoryService.getOrganisations(entry);
+		for(Organisation organisation:organisations) {
+			if(organisation.getKey().equals(organisationKey)) {
+				return Response.ok().status(Status.NOT_MODIFIED).build();
+			}
+		}
+		if(organisationToAdd == null) {
+			return Response.ok().status(Status.NOT_FOUND).build();
+		}
+		repositoryService.addOrganisation(entry, organisationToAdd);
+		return Response.ok().build();
+	}
+	
+	@GET
 	@Path("taxonomy/levels")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaxonomyLevels(@Context HttpServletRequest request) {	
@@ -871,5 +913,17 @@ public class RepositoryEntryWebService {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+	
+	private boolean isManager(Organisation organisation, HttpServletRequest request) {
+		try {
+			Roles roles = getUserRequest(request).getUserSession().getRoles();
+			return roles.hasRole(organisation, OrganisationRoles.administrator)
+					|| roles.hasRole(organisation, OrganisationRoles.learnresourcemanager)
+					|| roles.hasRole(organisation, OrganisationRoles.author);
+		} catch (Exception e) {
+			return false;
+		}
+		
 	}
 }
