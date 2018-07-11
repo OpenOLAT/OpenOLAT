@@ -127,8 +127,8 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationPage setGroupConfirmationForUser(boolean mandatory) {
-		By userConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='users']]");
-		By userConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='users']");
+		By userConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='user']]");
+		By userConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='user']");
 		
 		OOGraphene.waitElement(userConfirmationBy, browser);
 		OOGraphene.scrollTo(userConfirmationBy, browser);
