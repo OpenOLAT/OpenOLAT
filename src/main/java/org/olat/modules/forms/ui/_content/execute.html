@@ -1,10 +1,11 @@
+<div class="o_evaluation_execution">
 #if($messageNotDone)
 	<div class="o_warning">$r.translate("evaluation.in.progress")</div>
 #elseif($messageWithoutElements)
 	<div class="o_warning">$r.translate("evaluation.form.without.elements")</div>
 #else
 	#if($anonymous)
-		<div class="o_warning">$r.translate("evaluation.anonymous")</div>
+		<div class="o_evaluation_anonymous_info o_warning">$r.translate("evaluation.anonymous")</div>
 	#end
 	<div class="o_evaluation_form o_form form-vertical">
 		#foreach($fragment in $fragments)
@@ -22,3 +23,4 @@
 		</div>
 	</div>
 #end
+</div>
