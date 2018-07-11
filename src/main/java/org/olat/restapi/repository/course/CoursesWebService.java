@@ -22,7 +22,6 @@ package org.olat.restapi.repository.course;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -273,7 +272,7 @@ public class CoursesWebService {
 		Identity id = null;
 		if(setAuthor != null && setAuthor.booleanValue()) {
 			if (initialAuthor != null) {
-				id = getIdentity(initialAuthor);
+				id = securityManager.loadIdentityByKey(initialAuthor);
 			}
 			if (id == null) {
 				id = ureq.getIdentity();
@@ -642,5 +641,14 @@ public class CoursesWebService {
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		return CourseFactory.loadCourse(addedEntry);
+	}
+	
+	private boolean isAuthor(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isAuthor() || roles.isAdministrator() || roles.isLearnResourceManager());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

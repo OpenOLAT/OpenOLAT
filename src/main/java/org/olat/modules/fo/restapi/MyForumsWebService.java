@@ -23,7 +23,6 @@ import static org.olat.collaboration.CollaborationTools.KEY_FORUM;
 import static org.olat.collaboration.CollaborationTools.PROP_CAT_BG_COLLABTOOLS;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,8 +45,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationTools;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
@@ -67,6 +66,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.restapi.group.LearningGroupWebService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -81,6 +81,15 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
+	
+	@Autowired
+	private PropertyManager propertyManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BaseSecurityManager securityManager;
 
 	/**
 	 * Retrieves the forum of a group
@@ -143,24 +152,21 @@ public class MyForumsWebService {
 		if(retrievedUser == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		} else if(!identityKey.equals(retrievedUser.getKey())) {
-			if(isAdmin(httpRequest)) {
-				retrievedUser = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
-				roles = BaseSecurityManager.getInstance().getRoles(retrievedUser);
-			} else {
+			retrievedUser = securityManager.loadIdentityByKey(identityKey);
+			roles = securityManager.getRoles(retrievedUser);
+			if(!isAdminOf(roles, httpRequest)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		} else {
 			roles = getRoles(httpRequest);
 		}
 
-		Map<Long,Long> groupNotified = new HashMap<Long,Long>();
-		Map<Long,Collection<Long>> courseNotified = new HashMap<Long,Collection<Long>>();
-		final Set<Long> subscriptions = new HashSet<Long>();
-		
-		NotificationsManager man = NotificationsManager.getInstance();
+		Map<Long,Long> groupNotified = new HashMap<>();
+		Map<Long,Collection<Long>> courseNotified = new HashMap<>();
+		final Set<Long> subscriptions = new HashSet<>();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("Forum");
-			List<Subscriber> subs = man.getSubscribers(retrievedUser, notiTypes);
+			List<Subscriber> subs = notificationsManager.getSubscribers(retrievedUser, notiTypes);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
@@ -179,7 +185,7 @@ public class MyForumsWebService {
 			}
 		}
 		
-		final List<ForumVO> forumVOs = new ArrayList<ForumVO>();
+		final List<ForumVO> forumVOs = new ArrayList<>();
 		final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
 		for(Map.Entry<Long, Collection<Long>> e:courseNotified.entrySet()) {
 			final Long courseKey = e.getKey();
@@ -198,43 +204,14 @@ public class MyForumsWebService {
 				}
 			}, new VisibleTreeFilter());
 		}
-
-		/*
-		RepositoryManager rm = RepositoryManager.getInstance();
-		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
-		repoParams.setOnlyExplicitMember(true);
-		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);
-		for(RepositoryEntry entry:entries) {
-			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
-			if(result.isAccessible()) {
-				try {
-					final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-					final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
-					new CourseTreeVisitor(course, ienv).visit(new Visitor() {
-						@Override
-						public void visit(INode node) {
-							if(node instanceof FOCourseNode) {
-								FOCourseNode forumNode = (FOCourseNode)node;	
-								ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
-								forumVOs.add(forumVo);
-							}
-						}
-					});
-				} catch (Exception e) {
-					log.error("", e);
-				}
-			}
-		}*/
 		
 		//start found forums in groups
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		params.addTools(CollaborationTools.TOOL_FORUM);
-		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		//list forum keys
-		List<Long> groupIds = new ArrayList<Long>();
-		Map<Long,BusinessGroup> groupsMap = new HashMap<Long,BusinessGroup>();
+		List<Long> groupIds = new ArrayList<>();
+		Map<Long,BusinessGroup> groupsMap = new HashMap<>();
 		for(BusinessGroup group:groups) {
 			if(groupNotified.containsKey(group.getKey())) {
 				ForumVO forumVo = new ForumVO();
@@ -251,8 +228,7 @@ public class MyForumsWebService {
 			}
 		}
 
-		PropertyManager pm = PropertyManager.getInstance();
-		List<Property> forumProperties = pm.findProperties(OresHelper.calculateTypeName(BusinessGroup.class), groupIds, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
+		List<Property> forumProperties = propertyManager.findProperties(OresHelper.calculateTypeName(BusinessGroup.class), groupIds, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
 		for(Property prop:forumProperties) {
 			Long forumKey = prop.getLongValue();
 			if(forumKey != null && groupsMap.containsKey(prop.getResourceTypeId())) {
@@ -271,5 +247,13 @@ public class MyForumsWebService {
 		voes.setForums(forumVOs.toArray(new ForumVO[forumVOs.size()]));
 		voes.setTotalCount(forumVOs.size());
 		return Response.ok(voes).build();
+	}
+	
+	private boolean isAdminOf(Roles identityRoles, HttpServletRequest httpRequest) {
+		Roles managerRoles = getRoles(httpRequest);
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
+		
 	}
 }

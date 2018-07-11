@@ -21,9 +21,8 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getLocale;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
 import static org.olat.user.restapi.UserVOFactory.formatDbUserProperty;
 import static org.olat.user.restapi.UserVOFactory.get;
 import static org.olat.user.restapi.UserVOFactory.getManaged;
@@ -65,10 +64,13 @@ import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.ValidationError;
@@ -116,6 +118,8 @@ public class UserWebService {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
 	@Autowired
@@ -175,8 +179,8 @@ public class UserWebService {
 		// User lookup allowed for authors, usermanagers and admins. For
 		// usernamanger and up are considered "administrative" when it comes to
 		// lookup of the user properties
-		boolean isAdministrativeUser = isUserManager(httpRequest);
-		if(!isAdministrativeUser && !isAuthor(httpRequest)) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isUserManager() && !roles.isRolesManager() && !roles.isAuthor()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -191,6 +195,9 @@ public class UserWebService {
 				identities = Collections.singletonList(auth.getIdentity());
 			}
 		} else {
+
+			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+			
 			String[] authProviders = null;
 			if(StringHelper.containsNonWhitespace(authProvider)) {
 				authProviders = new String[]{authProvider};
@@ -232,7 +239,6 @@ public class UserWebService {
 	@Path("managed")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getManagedUsers(@Context HttpServletRequest httpRequest) {
-		
 		if(!isUserManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -315,9 +321,8 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}/roles")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
-	public Response getRoles(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManager(request);
-		if(!isUserManager) {
+	public Response getIdentityRoles(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		if(!isUserManagerOf(identityKey, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
@@ -346,7 +351,7 @@ public class UserWebService {
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateRoles(@PathParam("identityKey") Long identityKey, RolesVO roles, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManager(request);
+		boolean isUserManager = isUserManagerOf(identityKey, request);
 		if(!isUserManager) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -384,7 +389,7 @@ public class UserWebService {
 	@Path("{identityKey}/status")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getStatus(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManager(request);
+		boolean isUserManager = isUserManagerOf(identityKey, request);
 		if(!isUserManager) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -424,7 +429,7 @@ public class UserWebService {
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updateStatus(@PathParam("identityKey") Long identityKey, StatusVO status, @Context HttpServletRequest request) {
 		Identity actingIdentity = getIdentity(request);
-		boolean isUserManager = isUserManager(request);
+		boolean isUserManager = isUserManagerOf(identityKey, request);
 		if(actingIdentity == null || !isUserManager) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -455,7 +460,7 @@ public class UserWebService {
 	@Path("{identityKey}/preferences")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getUserPreferences(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManager(request);
+		boolean isUserManager = isUserManagerOf(identityKey, request);
 		if(!isUserManager) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -486,7 +491,7 @@ public class UserWebService {
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response updatePreferences(@PathParam("identityKey") Long identityKey, PreferencesVO preferences, @Context HttpServletRequest request) {
-		boolean isUserManager = isUserManager(request);
+		boolean isUserManager = isUserManagerOf(identityKey, request);
 		if(!isUserManager) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -526,7 +531,7 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		boolean isUserManager = isUserManager(httpRequest);
+		boolean isUserManager = isUserManagerOf(identityKey, httpRequest);
 		UserVO userVO = get(identity, null, true, isUserManager, withPortrait);
 		return Response.ok(userVO).build();
 	}
@@ -670,7 +675,7 @@ public class UserWebService {
 			}
 			
 			Identity authIdentity = getUserRequest(request).getIdentity();
-			if(!isUserManager(request) && !identity.getKey().equals(authIdentity.getKey())) {
+			if(!isUserManagerOf(identityKey, request) && !identity.getKey().equals(authIdentity.getKey())) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 			partsReader = new MultipartReader(request);
@@ -700,7 +705,7 @@ public class UserWebService {
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
+		} else if(!isUserManagerOf(identityKey, request) && !identity.equalsByPersistableKey(authIdentity)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 	
@@ -714,7 +719,9 @@ public class UserWebService {
 		if(retrievedUser == null) {
 			return null;
 		}
-		return new MyGroupWebService(retrievedUser);
+		MyGroupWebService ws = new MyGroupWebService(retrievedUser);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 
 	/**
@@ -746,7 +753,7 @@ public class UserWebService {
 		if(user == null) {
 			return Response.serverError().status(Status.NO_CONTENT).build();
 		}
-		if(!isUserManager(request)) {
+		if(!isUserManagerOf(identityKey, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -852,7 +859,7 @@ public class UserWebService {
 	@Path("{identityKey}")
 	public Response delete(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity actingIdentity = getIdentity(request);
-		if(actingIdentity == null || !isUserManager(request)) {
+		if(actingIdentity == null || !isUserManagerOf(identityKey, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -866,5 +873,24 @@ public class UserWebService {
 		} else {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
+	}
+	
+	private boolean isUserManager(HttpServletRequest request) {
+		Roles managerRoles = getRoles(request);
+		return managerRoles.isUserManager() || managerRoles.isRolesManager() || managerRoles.isAdministrator();
+	}
+	
+	private boolean isUserManagerOf(Long identityKey, HttpServletRequest request) {
+		if(identityKey == null) return false;
+		
+		Roles managerRoles = getRoles(request);
+		if(!managerRoles.isUserManager() && !managerRoles.isRolesManager() && !managerRoles.isAdministrator()) {
+			return false;
+		}
+		Roles identityRoles = securityManager.getRoles(new IdentityRefImpl(identityKey));
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
+		
 	}
 }

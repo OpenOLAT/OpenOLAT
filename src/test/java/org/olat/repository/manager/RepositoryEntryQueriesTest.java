@@ -106,7 +106,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Organisation organisation = organisationService.createOrganisation("Test repo query", "test-repo-query", null, defOrganisation, null);
 		dbInstance.commit();
 		
-		admin = JunitTestHelper.createAndPersistIdentityAsAdmin("queryAdministrator");
+		admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("queryAdministrator");
 		
 		user1 = JunitTestHelper.createAndPersistIdentityAsAuthor(author + "1");
 		user1.getUser().setProperty(UserConstants.FIRSTNAME, author + "1");

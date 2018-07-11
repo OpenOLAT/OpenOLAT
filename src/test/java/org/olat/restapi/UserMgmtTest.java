@@ -63,6 +63,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -71,6 +73,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -158,6 +161,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -898,6 +903,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		User user = userManager.createUser(login, login, login + "@openolat.com");
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@openolat.com");
 		Identity id = securityManager.createAndPersistIdentityAndUser(login, null, user, "OLAT", login,"secret");
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		organisationService.addMember(organisation, id, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals("inst" + login + "@openolat.com", id.getUser().getInstitutionalEmail());
 		
@@ -951,7 +958,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetRoles() throws IOException, URISyntaxException {
 		//create an author
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-");
 		dbInstance.commitAndCloseSession();
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -976,7 +983,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetRoles_xml() throws IOException, URISyntaxException {
 		//create an author
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-");
 		dbInstance.commitAndCloseSession();
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));

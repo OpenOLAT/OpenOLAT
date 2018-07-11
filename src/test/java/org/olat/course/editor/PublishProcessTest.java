@@ -77,7 +77,7 @@ public class PublishProcessTest extends OlatTestCase {
 	 */
 	@Test
 	public void testPublishProcess() throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course.zip");
 
 		//change node 1
@@ -111,7 +111,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishANotPublishedNode()
 	throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course.zip");
 		
 		//change node 1
@@ -134,7 +134,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishANotReallyNewNode()
 	throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course_err1_new.zip");
 		
 		//change node 1
@@ -165,7 +165,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishANotReallyNewNodeButDeleted()
 	throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course_err2_new_deleted.zip");
 		
 		//change node 1
@@ -196,7 +196,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishNewNodeButNotMarkedAsSuch()
 	throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course_err3_not_new.zip");
 		
 		//change node 1
@@ -227,7 +227,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishNewNodeButNotMarkedAsSuchAndDeleted()
 	throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course_err4_not_new_deleted.zip");
 		
 		//change node 1
@@ -259,7 +259,7 @@ public class PublishProcessTest extends OlatTestCase {
 	@Test
 	public void testPublishNewNodeNotMarkedAsSuchAndNotPublished()
 	throws URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAdmin("publisher-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin("publisher-");
 		RepositoryEntry re = deployTestCourse("simple_course_err5_not_new_or_published.zip");
 		
 		//change node 1

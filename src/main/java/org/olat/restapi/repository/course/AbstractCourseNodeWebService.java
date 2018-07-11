@@ -25,14 +25,16 @@
 package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.support.ObjectFactory.get;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -43,12 +45,15 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.CourseNodeVO;
 
 public abstract class AbstractCourseNodeWebService {
@@ -66,7 +71,6 @@ public abstract class AbstractCourseNodeWebService {
 		return new CourseEditSession(course, lock);
 	}
 	
-	//fxdiff FXOLAT-122: course management
 	protected Response update(Long courseId, String nodeId, String shortTitle, String longTitle, String objectives,
 			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
 		return attach(courseId, null, nodeId, null, null, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
@@ -79,10 +83,6 @@ public abstract class AbstractCourseNodeWebService {
 	
 	protected Response attach(Long courseId, String parentNodeId, String nodeId, String type, Integer position, String shortTitle, String longTitle, 
 			String objectives, String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
 		if(config != null && !config.isValid()) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
@@ -121,13 +121,9 @@ public abstract class AbstractCourseNodeWebService {
 	}
 	
 	protected Response attachNodeConfig(Long courseId, String nodeId, FullConfigDelegate config, HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		if(config == null || !config.isValid())
+		if(config == null || !config.isValid()) {
 			return Response.serverError().status(Status.CONFLICT).build();
-		
+		}
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -261,6 +257,19 @@ public abstract class AbstractCourseNodeWebService {
 		CourseFactory.saveCourseEditorTreeModel(editSession.getCourseId());
 		CourseFactory.fireModifyCourseEvent(editSession.getCourseId());//close the edit session too
 		CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(editSession.getLock());
+	}
+	
+	protected boolean isAuthorEditor(ICourse course, HttpServletRequest request) {
+		try {
+			Identity identity = getUserRequest(request).getIdentity();
+			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			return repositoryService.hasRoleExpanded(identity, cgm.getCourseEntry(),
+					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+					GroupRoles.owner.name()) || cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 	
 	public interface CustomConfigDelegate {

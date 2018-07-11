@@ -19,8 +19,6 @@
  */
 package org.olat.user.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +48,8 @@ import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -101,8 +101,7 @@ public class OrganisationsWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -131,8 +130,7 @@ public class OrganisationsWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putOrganisation(OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		Organisation savedOrganisation = saveOrganisation(organisation);
@@ -159,8 +157,7 @@ public class OrganisationsWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		Organisation savedOrganisation = saveOrganisation(organisation);
@@ -183,8 +180,7 @@ public class OrganisationsWebService {
 	@Path("{organisationKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -217,8 +213,7 @@ public class OrganisationsWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(@PathParam("organisationKey") Long organisationKey, OrganisationVO organisation,
 			@Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		if(organisation.getKey() == null) {
@@ -294,8 +289,7 @@ public class OrganisationsWebService {
 	@Path("{organisationKey}/{role}")
 	public Response getMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return getMembers(organisationKey, getRoles(role));
@@ -336,8 +330,7 @@ public class OrganisationsWebService {
 	public Response putMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@PathParam("identityKey") Long identityKey, @QueryParam("inheritanceMode") String inheritanceMode,
 			@Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return putMember(organisationKey, identityKey, getRoles(role), inheritanceMode);
@@ -385,8 +378,7 @@ public class OrganisationsWebService {
 	public Response putMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@QueryParam("inheritanceMode") String inheritanceMode, UserVO[] members,
 			@Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -430,8 +422,7 @@ public class OrganisationsWebService {
 	@Path("{organisationKey}/{role}/{identityKey}")
 	public Response deleteMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
-		boolean isSystemAdministrator = isAdmin(httpRequest);
-		if(!isSystemAdministrator) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return deleteMember(organisationKey, identityKey, getRoles(role));
@@ -483,5 +474,14 @@ public class OrganisationsWebService {
 			entryVOs[i++] = OrganisationVO.valueOf(organisation);
 		}
 		return entryVOs;
+	}
+	
+	private boolean isAdministrator(HttpServletRequest request) {
+		try {
+			Roles roles = RestSecurityHelper.getRoles(request);
+			return roles.isAdministrator() || roles.isSystemAdmin();
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

@@ -111,7 +111,7 @@ public class MonitoringWebService {
 		vo.setType(SystemRegistrationManager.PRODUCT);
 		vo.setDescription(module.getDescription());
 		
-		List<MonitoringDependencyVO> dependencies = new ArrayList<MonitoringDependencyVO>();
+		List<MonitoringDependencyVO> dependencies = new ArrayList<>();
 		InstantMessagingModule imConfig = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if(imConfig.isEnabled()) {
 			MonitoringDependencyVO dependency = new MonitoringDependencyVO();

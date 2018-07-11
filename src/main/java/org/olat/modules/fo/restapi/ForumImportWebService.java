@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.manager.ForumManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -46,6 +47,9 @@ import org.springframework.stereotype.Component;
 public class ForumImportWebService {
 	
 	private static final String VERSION  = "1.0";
+	
+	@Autowired
+	private ForumManager forumManager;
 	
 	/**
 	 * The version of the Forum Web Service
@@ -68,8 +72,9 @@ public class ForumImportWebService {
 	 */
 	@Path("{forumKey}")
 	public ForumWebService getForumWebservice(@PathParam("forumKey") Long forumKey) {
-		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
-		Forum forum = fom.loadForum(forumKey);
-		return new ForumWebService(forum);
+		Forum forum = forumManager.loadForum(forumKey);
+		ForumWebService ws = new ForumWebService(forum);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 }

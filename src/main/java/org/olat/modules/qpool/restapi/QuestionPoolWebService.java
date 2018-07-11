@@ -19,7 +19,7 @@
  */
 package org.olat.modules.qpool.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.isQuestionPoolManager;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.io.File;
 import java.util.Collections;
@@ -43,6 +43,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
@@ -309,5 +310,14 @@ public class QuestionPoolWebService {
 		List<QuestionItemShort> items = Collections.singletonList(item);
 		poolService.removeAuthors(authors, items);
 		return Response.ok().build();
-	}	
+	}
+	
+	private boolean isQuestionPoolManager(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isPoolManager() || roles.isAdministrator());
+		} catch (Exception e) {
+			return false;
+		}
+	}
 }

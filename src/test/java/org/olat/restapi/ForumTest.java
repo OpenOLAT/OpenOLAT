@@ -59,7 +59,7 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -92,12 +92,14 @@ public class ForumTest extends OlatJerseyTestCase {
 	private static Identity id1;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private ForumManager forumManager;
 	
 	@Before
 	public void setUp() throws Exception {
 
-		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-zero");
+		id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-zero");
 		
 		forum = forumManager.addAForum();
 		
@@ -111,7 +113,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		m2.setBody("Body of Thread-2");
 		forumManager.addTopMessage(m2);
 		
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		
 		m3 = forumManager.createMessage(forum, id1, false);
 		m3.setTitle("Message-1.1");
@@ -128,7 +130,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		m5.setBody("Body of Message-1.2");
 		forumManager.replyToMessage(m5, m1);
 
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 	}
 	
 	@Test

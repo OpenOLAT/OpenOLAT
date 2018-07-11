@@ -184,7 +184,8 @@ public interface OrganisationService {
 	public List<OrganisationMember> getMembers(Organisation organisation);
 	
 	public List<Identity> getMembersIdentity(Organisation organisation, OrganisationRoles role);
-
+	
+	public boolean hasRole(IdentityRef identity, OrganisationRoles role);
 	
 	/**
 	 * Return true if the specified user has a role in the list of specified roles
@@ -199,8 +200,6 @@ public interface OrganisationService {
 	
 	
 	public List<Identity> getDefaultsSystemAdministator();
-	
-	public boolean hasRole(IdentityRef identity, OrganisationRoles role);
 	
 	public List<Identity> getIdentitiesWithRole(OrganisationRoles role);
 

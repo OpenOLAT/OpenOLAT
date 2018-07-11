@@ -19,8 +19,6 @@
  */
 package org.olat.restapi.group;
 
-import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
-import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.List;
@@ -37,18 +35,22 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupInfoVOes;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.GroupVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,6 +64,11 @@ import org.olat.restapi.support.vo.GroupVOes;
 public class MyGroupWebService {
 	
 	private final Identity retrievedUser;
+	
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public MyGroupWebService(Identity retrievedUser) {
 		this.retrievedUser = retrievedUser;
@@ -146,8 +153,6 @@ public class MyGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, owner, participant);
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			params.setExternalId(externalId);
@@ -156,8 +161,8 @@ public class MyGroupWebService {
 		
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgs.countBusinessGroups(params, null);
-			groups = bgs.findBusinessGroups(params, null, start, limit);
+			int totalCount = businessGroupService.countBusinessGroups(params, null);
+			groups = businessGroupService.findBusinessGroups(params, null, start, limit);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -169,7 +174,7 @@ public class MyGroupWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			groups = bgs.findBusinessGroups(params, null, 0, -1);
+			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -208,7 +213,6 @@ public class MyGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			params.setExternalId(externalId);
@@ -217,8 +221,8 @@ public class MyGroupWebService {
 		
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgs.countBusinessGroups(params, null);
-			groups = bgs.findBusinessGroups(params, null, start, limit);
+			int totalCount = businessGroupService.countBusinessGroups(params, null);
+			groups = businessGroupService.findBusinessGroups(params, null, start, limit);
 			
 			int count = 0;
 			GroupInfoVO[] groupVOs = new GroupInfoVO[groups.size()];
@@ -235,7 +239,19 @@ public class MyGroupWebService {
 	}
 	
 	private boolean hasAccess(@Context HttpServletRequest httpRequest) {
-		return isUserManager(httpRequest) || isGroupManager(httpRequest)
-				|| getIdentity(httpRequest).getKey().equals(retrievedUser.getKey());
+		Identity identity = getIdentity(httpRequest);
+		if(identity.getKey().equals(retrievedUser.getKey())) {
+			return true;
+		}
+		
+		Roles managerRoles = RestSecurityHelper.getRoles(httpRequest);
+		if(managerRoles.isGroupManager()) {
+			return true;
+		}
+		
+		Roles identityRoles = securityManager.getRoles(retrievedUser);
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles);
 	}
 }

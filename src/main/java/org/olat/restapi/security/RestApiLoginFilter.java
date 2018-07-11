@@ -25,6 +25,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -72,6 +73,7 @@ public class RestApiLoginFilter implements Filter {
 	private static OLog log = Tracing.createLoggerFor(RestApiLoginFilter.class);
 
 	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
+	public static final String SYSTEM_MARKER = UUID.randomUUID().toString();
 
 	private static List<String> openUrls;
 	private static List<String> alwaysEnabledUrls;
@@ -82,7 +84,7 @@ public class RestApiLoginFilter implements Filter {
 	 * The survive time of the session used by token based authentication. For every request
 	 * is a new session created.
 	 */
-	private static int TOKEN_BASED_SESSION_TIMEOUT = 120;
+	private static final int TOKEN_BASED_SESSION_TIMEOUT = 120;
 
 	@Override
 	public void init(FilterConfig filterConfig) {
@@ -261,9 +263,9 @@ public class RestApiLoginFilter implements Filter {
 
 	private void followForAuthentication(String requestURI, UserSession uress, HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws IOException, ServletException {
-	//create a session for login without security check
+		//create a session for login without security check
 		if(uress == null) {
-			uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
+			CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		}
 		UserRequest ureq = null;
 		try{
@@ -346,7 +348,7 @@ public class RestApiLoginFilter implements Filter {
 			//upon creation URL is checked for
 			String requestURI = request.getRequestURI();
 			ureq = new UserRequestImpl(requestURI, request, response);
-			ureq.getUserSession().putEntryInNonClearedStore(RestSecurityHelper.SYSTEM_MARKER, Boolean.TRUE);
+			ureq.getUserSession().putEntryInNonClearedStore(SYSTEM_MARKER, Boolean.TRUE);
 		} catch(NumberFormatException nfe) {
 			response.sendError(401);
 			return;
@@ -430,7 +432,7 @@ public class RestApiLoginFilter implements Filter {
 	private List<String> getAlwaysEnabledURIs() {
 		if(alwaysEnabledUrls == null && isWebappHelperInitiated() ) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
-			List<String > urls = new ArrayList<String>();
+			List<String > urls = new ArrayList<>();
 			urls.add(context + "/i18n");
 			urls.add(context + "/api");
 			urls.add(context + "/ping");
@@ -444,7 +446,7 @@ public class RestApiLoginFilter implements Filter {
 	private List<String> getOpenURIs() {
 		if(openUrls == null && isWebappHelperInitiated()) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
-			List<String > urls = new ArrayList<String>();
+			List<String > urls = new ArrayList<>();
 			urls.add(context + "/i18n");
 			urls.add(context + "/api");
 			urls.add(context + "/ping");

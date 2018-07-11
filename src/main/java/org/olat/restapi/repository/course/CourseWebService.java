@@ -21,10 +21,6 @@ package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
-import static org.olat.restapi.security.RestSecurityHelper.isInstitutionalResourceManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -217,12 +213,8 @@ public class CourseWebService {
 	public Response publishCourse(@QueryParam("locale") Locale locale,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
 			@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
 		UserRequest ureq = getUserRequest(request);
-		if (!isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if (!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -245,7 +237,7 @@ public class CourseWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@Context HttpServletRequest httpRequest) {
-		if (!isCourseAccessible(course, false, httpRequest)) {
+		if (!isCourseAccessible(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
@@ -256,7 +248,7 @@ public class CourseWebService {
 	@Path("resource")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOlatResource(@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
+		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		OlatResourceVO vo = new OlatResourceVO(course);
@@ -287,7 +279,7 @@ public class CourseWebService {
 		
 		Identity identity = getIdentity(request);
 		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
-		if (isAdmin(request) || repositoryService.hasRole(identity, re, GroupRoles.owner.name())) {
+		if (isManager(request)) {
 			canDownload = true;
 		} else if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -336,7 +328,7 @@ public class CourseWebService {
 	@DELETE
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCourse(@Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -372,7 +364,7 @@ public class CourseWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
 	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -423,7 +415,7 @@ public class CourseWebService {
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getConfiguration(@Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(course, request) && !isInstitutionalResourceManager(request)) {
+		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseConfigVO vo = ObjectFactory.getConfig(course);
@@ -458,7 +450,7 @@ public class CourseWebService {
 			@FormParam("cssLayoutRef") String cssLayoutRef, @FormParam("efficencyStatement") Boolean efficencyStatement,
 			@FormParam("glossarySoftkey") String glossarySoftkey, @FormParam("sharedFolderSoftkey") String sharedFolderSoftkey,
 			@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
+		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -506,7 +498,7 @@ public class CourseWebService {
 	@Path("runstructure")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response findRunStructureById(@Context HttpServletRequest httpRequest, @Context Request request) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -534,7 +526,7 @@ public class CourseWebService {
 	@Path("editortreemodel")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response findEditorTreeModelById(@Context HttpServletRequest httpRequest, @Context Request request) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		VFSItem editorModelItem = course.getCourseBaseContainer().resolve("editortreemodel.xml");
@@ -561,7 +553,7 @@ public class CourseWebService {
 	@Path("authors")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthors(@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -590,7 +582,7 @@ public class CourseWebService {
 	@Path("tutors")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTutors(@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -619,7 +611,7 @@ public class CourseWebService {
 	@Path("participants")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -650,7 +642,7 @@ public class CourseWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -677,7 +669,7 @@ public class CourseWebService {
 	@Path("authors/{identityKey}")
 	public Response addAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -707,7 +699,7 @@ public class CourseWebService {
 	@Path("authors")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addAuthors(UserVO[] authors, @Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -743,7 +735,7 @@ public class CourseWebService {
 	@Path("authors/{identityKey}")
 	public Response removeAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -774,7 +766,7 @@ public class CourseWebService {
 	@Path("tutors/{identityKey}")
 	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -798,7 +790,7 @@ public class CourseWebService {
 	@Path("tutors")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCoaches(UserVO[] coaches, @Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -826,7 +818,7 @@ public class CourseWebService {
 	@Path("tutors/{identityKey}")
 	public Response removeCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -857,7 +849,7 @@ public class CourseWebService {
 	@Path("participants/{identityKey}")
 	public Response addParticipant(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -891,7 +883,7 @@ public class CourseWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addParticipants(UserVO[] participants,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -919,7 +911,7 @@ public class CourseWebService {
 	@Path("participants/{identityKey}")
 	public Response removeParticipant(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if (!isAuthorEditor(course, httpRequest) && !isInstitutionalResourceManager(httpRequest)) {
+		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -945,16 +937,33 @@ public class CourseWebService {
 		return securityManager.loadIdentityByKeys(identityKeys);
 	}
 	
-	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
-		if(isAdmin(request)) {
-			return true;
-		}
-		if(authorRightsMandatory && !isAuthor(request)) {
-			return false;
-		}
-
+	private boolean isAuthor(HttpServletRequest request) {
+		UserRequest ureq = getUserRequest(request);
+		Identity identity = ureq.getIdentity();
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		return repositoryService.hasRoleExpanded(identity, entry, OrganisationRoles.author.name());
+	}
+	
+	private boolean isManager(HttpServletRequest request) {
+		UserRequest ureq = getUserRequest(request);
+		Identity identity = ureq.getIdentity();
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		return repositoryService.hasRoleExpanded(identity, entry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				GroupRoles.owner.name());
+	}
+	
+	public static boolean isCourseAccessible(ICourse course, HttpServletRequest request) {
 		Identity identity = getIdentity(request);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		boolean manager = repositoryService.hasRoleExpanded(identity, entry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				GroupRoles.owner.name());
+		if(manager) {
+			return true;
+		}
+
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
 		AccessResult result = acManager.isAccessible(entry, identity, false);
 		return result.isAccessible();

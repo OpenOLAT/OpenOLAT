@@ -19,7 +19,7 @@
  */
 package org.olat.user.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +44,7 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeManagedFlag;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
+import org.olat.core.id.Roles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +75,7 @@ public class OrganisationTypesWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -103,7 +104,7 @@ public class OrganisationTypesWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putOrganisationType(OrganisationTypeVO organisationType, @Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		OrganisationType savedOrganisationType = saveOrganisationType(organisationType);
@@ -130,7 +131,7 @@ public class OrganisationTypesWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisationType(OrganisationTypeVO organisationType, @Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		OrganisationType savedOrganisationType = saveOrganisationType(organisationType);
@@ -161,7 +162,7 @@ public class OrganisationTypesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(@PathParam("organisationTypeKey") Long organisationTypeKey, OrganisationTypeVO organisationType,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		if(organisationType.getKey() == null) {
@@ -209,7 +210,7 @@ public class OrganisationTypesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisations(@PathParam("organisationTypeKey") Long organisationTypeKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -238,7 +239,7 @@ public class OrganisationTypesWebService {
 	@Path("{organisationTypeKey}/allowedSubTypes")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAllowedSubTypes(@PathParam("organisationTypeKey") Long organisationTypeKey, @Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -274,7 +275,7 @@ public class OrganisationTypesWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response allowSubTaxonomyLevelType(@PathParam("organisationTypeKey") Long organisationTypeKey, @PathParam("subTypeKey") Long subTypeKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -303,7 +304,7 @@ public class OrganisationTypesWebService {
 	@Path("{organisationTypeKey}/allowedSubTypes/{subTypeKey}")
 	public Response disalloweSubTaxonomyLevelType(@PathParam("organisationTypeKey") Long organisationTypeKey, @PathParam("subTypeKey") Long subTypeKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAdmin(httpRequest)) {
+		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -323,6 +324,15 @@ public class OrganisationTypesWebService {
 			entryVOs[i++] = OrganisationTypeVO.valueOf(organisationType);
 		}
 		return entryVOs;
+	}
+	
+	public static boolean isAdministrator(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return roles.isAdministrator() || roles.isSystemAdmin();
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 }

@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.en;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 import static org.olat.restapi.support.ObjectFactory.get;
 
 import java.util.ArrayList;
@@ -42,7 +40,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -54,6 +51,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.GroupVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -68,18 +66,21 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("repo/courses/{courseId}/elements/enrollment")
 public class ENWebService extends AbstractCourseNodeWebService {
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * This attaches an enrollment element onto a given course, the element will be
 	 * inserted underneath the supplied parentNodeId
-   * @response.representation.mediaType application/x-www-form-urlencoded
-   * @response.representation.doc The course node metadatas
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+	 * @response.representation.doc The course node metadatas
 	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The course node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The course node metadatas
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
+	 * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this structure
 	 * @param position The node's position relative to its sibling nodes (optional)
@@ -110,14 +111,14 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	/**
 	 * This attaches an enrollment element onto a given course, the element will be
 	 * inserted underneath the supplied parentNodeId
-   * @response.representation.mediaType application/x-www-form-urlencoded
-   * @response.representation.doc The course node metadatas
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+	 * @response.representation.doc The course node metadatas
 	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The course node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The course node metadatas
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
+	 * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this
 	 *          structure
@@ -148,11 +149,11 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	/**
 	 * Retrieves the groups where the enrollment happens
 	 * @response.representation.200.qname {http://www.example.com}groupVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The groups
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The groups
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
+	 * @response.representation.404.doc The course or course node not found
 	 * @param nodeId The node's id
 	 * @param httpRequest The HTTP request
 	 * @return An array of groups
@@ -161,34 +162,29 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	@Path("{nodeId}/groups")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroups(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
-		
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
+		}
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
 		CourseNode node = getParentNode(course, nodeId);
 		ModuleConfiguration config = node.getModuleConfiguration();
 		String groupNames = (String)config.get(ENCourseNode.CONFIG_GROUPNAME);
 		@SuppressWarnings("unchecked")
 		List<Long> groupKeys = (List<Long>)config.get(ENCourseNode.CONFIG_GROUP_IDS);
 		if(groupKeys == null && StringHelper.containsNonWhitespace(groupNames)) {
-			groupKeys = bgs.toGroupKeys(groupNames, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry()); 
+			groupKeys = businessGroupService.toGroupKeys(groupNames, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry()); 
 		}
 		
 		if(groupKeys == null || groupKeys.isEmpty()) {
 			return Response.ok(new GroupVO[0]).build();
 		}
 
-		List<GroupVO> voes = new ArrayList<GroupVO>();
-		List<BusinessGroup> groups = bgs.loadBusinessGroups(groupKeys);
+		List<GroupVO> voes = new ArrayList<>();
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
 		for(BusinessGroup group:groups) {
 			voes.add(get(group));
 		}
@@ -219,9 +215,9 @@ public class ENWebService extends AbstractCourseNodeWebService {
 			moduleConfig.set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnabled);
 		}
 		
-		//fxdiff 
+		
 		private String getGroupNamesToString() {
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder buffer = new StringBuilder();
 			for(String groupName:groups) {
 				if(buffer.length() > 0) {
 					buffer.append(',');
@@ -232,18 +228,17 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		}
 		
 		private List<String> getGroupNames(String groupIds) {
-			List<String> groupNames = new ArrayList<String>();
+			List<String> groupNames = new ArrayList<>();
 			
 			if(StringHelper.containsNonWhitespace(groupIds)) {
 				String[] groupIdArr = groupIds.split(";");
-				BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
-				
-				List<Long> keys = new ArrayList<Long>();
+			
+				List<Long> keys = new ArrayList<>();
 				for(String groupId:groupIdArr) {
-					Long groupKey = new Long(groupId);
+					Long groupKey = Long.valueOf(groupId);
 					keys.add(groupKey);
 				}
-				List<BusinessGroupShort> groupsShort = bgm.loadShortBusinessGroups(keys);
+				List<BusinessGroupShort> groupsShort = businessGroupService.loadShortBusinessGroups(keys);
 				for(BusinessGroupShort bg:groupsShort) {
 					groupNames.add(bg.getName());
 				}

@@ -19,7 +19,7 @@
  */
 package org.olat.course.assessment.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.Date;
 
@@ -36,14 +36,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.EfficiencyStatementVO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -56,25 +58,27 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses/{resourceKey}/statements")
 public class EfficiencyStatementWebService {
 	
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementManager;
+	
 	@GET
 	@Path("{identityKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
-		
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
+		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
+		if(!isAdminOf(assessedIdentity, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 
-		UserEfficiencyStatement efficiencyStatement = CoreSpringFactory
-				.getImpl(EfficiencyStatementManager.class)
-				.getUserEfficiencyStatementLightByResource(resourceKey, assessedIdentity);
+		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementLightByResource(resourceKey, assessedIdentity);
 		if(efficiencyStatement == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
@@ -117,18 +121,13 @@ public class EfficiencyStatementWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 						EfficiencyStatementVO efficiencyStatementVO, @Context HttpServletRequest request) {
-		
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
+		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
-
-		EfficiencyStatementManager efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
+		if(!isAdminOf(assessedIdentity, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 
 		EfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByResourceKey(resourceKey, assessedIdentity);
 		if(efficiencyStatement != null) {
@@ -139,7 +138,6 @@ public class EfficiencyStatementWebService {
 		Float score = efficiencyStatementVO.getScore();
 		Boolean passed = efficiencyStatementVO.getPassed();
 
-		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 		OLATResource resource = resourceManager.findResourceById(resourceKey);
 		if(resource == null) {
 			String courseTitle = efficiencyStatementVO.getCourseTitle();
@@ -149,5 +147,13 @@ public class EfficiencyStatementWebService {
 		}
 		return Response.ok().build();
 	}
-
+	
+	private boolean isAdminOf(Identity assessedIdentity, HttpServletRequest httpRequest) {
+		Roles managerRoles = getRoles(httpRequest);
+		if(!managerRoles.isAdministrator()) {
+			return false;
+		}
+		Roles identityRoles = securityManager.getRoles(assessedIdentity);
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
+	}
 }

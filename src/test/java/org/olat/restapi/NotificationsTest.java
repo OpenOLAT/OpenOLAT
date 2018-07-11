@@ -322,7 +322,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetBusinessGroupFolderNotifications() throws IOException, URISyntaxException {
 		//create a business group with folder notifications
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("rest-not-5-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-5-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 2", "REST folder notifications for group", null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FOLDER, true);

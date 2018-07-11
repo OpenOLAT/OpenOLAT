@@ -19,7 +19,7 @@
  */
 package org.olat.course.certificate.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.io.File;
 import java.util.Date;
@@ -42,8 +42,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -72,7 +74,7 @@ import org.springframework.stereotype.Component;
 public class CertificationWebService {
 	
 	@Autowired
-	private BaseSecurity baseSecurity;
+	private BaseSecurity securityManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -83,13 +85,12 @@ public class CertificationWebService {
 	@Produces({"application/pdf"})
 	public Response getCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		if(!isAdminOf(identity, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
@@ -130,14 +131,14 @@ public class CertificationWebService {
 	@Produces({"application/pdf"})
 	public Response getCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
+		if(!isAdminOf(identity, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
 		Certificate certificate = certificatesManager.getLastCertificate(identity, resourceKey);
 		if(certificate == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -154,13 +155,12 @@ public class CertificationWebService {
 	@Path("{identityKey}")
 	public Response deleteCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		if(!isAdminOf(identity, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
@@ -202,14 +202,12 @@ public class CertificationWebService {
 			@QueryParam("score") Float score, @QueryParam("passed") Boolean passed,
 			@QueryParam("creationDate") String creationDate,
 			@Context HttpServletRequest request) {
-		
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
+		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		if(!isAdminOf(assessedIdentity, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		OLATResource resource = resourceManager.findResourceById(resourceKey);
@@ -258,11 +256,6 @@ public class CertificationWebService {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
 			@Context HttpServletRequest request) {
-		
-		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
 		MultipartReader partsReader = null;
 		try {
 			partsReader = new MultipartReader(request);
@@ -274,11 +267,14 @@ public class CertificationWebService {
 				creationDate = ObjectFactory.parseDate(creationDateStr);
 			}
 
-			Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
+			Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 			if(assessedIdentity == null) {
 				return Response.serverError().status(Response.Status.NOT_FOUND).build();
 			}
-
+			if(!isAdminOf(assessedIdentity, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
 			OLATResource resource = resourceManager.findResourceById(resourceKey);
 			if(resource == null) {
 				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, resourceKey, tmpFile);
@@ -291,5 +287,14 @@ public class CertificationWebService {
 		}	finally {
 			MultipartReader.closeQuietly(partsReader);
 		}
+	}
+	
+	private boolean isAdminOf(Identity assessedIdentity, HttpServletRequest httpRequest) {
+		Roles managerRoles = getRoles(httpRequest);
+		if(!managerRoles.isUserManager() && !managerRoles.isRolesManager() && !managerRoles.isAdministrator()) {
+			return false;
+		}
+		Roles identityRoles = securityManager.getRoles(assessedIdentity);
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 	}
 }

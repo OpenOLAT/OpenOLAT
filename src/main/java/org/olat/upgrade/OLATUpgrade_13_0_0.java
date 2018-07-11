@@ -233,9 +233,14 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 				} else {
 					Organisation defOrganisation = defOrganisations.get(0);
 					migrate(defOrganisation, "fxadmins", OrganisationRoles.sysadmin);
+					migrate(defOrganisation, "fxadmins", OrganisationRoles.administrator);
+					migrate(defOrganisation, "fxadmins", OrganisationRoles.rolesmanager);
 					migrate(defOrganisation, "admins", OrganisationRoles.administrator);
+					migrate(defOrganisation, "admins", OrganisationRoles.sysadmin);
+					migrate(defOrganisation, "admins", OrganisationRoles.rolesmanager);
 					migrate(defOrganisation, "users", OrganisationRoles.user);
 					migrate(defOrganisation, "usermanagers", OrganisationRoles.usermanager);
+					migrate(defOrganisation, "usermanagers", OrganisationRoles.rolesmanager);
 					migrate(defOrganisation, "authors", OrganisationRoles.author);
 					migrate(defOrganisation, "instoresmanager", OrganisationRoles.learnresourcemanager);
 					migrate(defOrganisation, "groupmanagers", OrganisationRoles.groupmanager);
@@ -257,9 +262,9 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 
 	private void migrate(Organisation organisation, String secGroupName, OrganisationRoles role) {
 		log.info("Start migration of " + secGroupName);
-		List<Long> identitiyKeys = getIdentityInSecurityGroup(secGroupName);
-		for(int i=0; i<identitiyKeys.size(); i++) {
-			Identity member = dbInstance.getCurrentEntityManager().getReference(IdentityImpl.class, identitiyKeys.get(i));
+		List<Long> identitiesKeys = getIdentityInSecurityGroup(secGroupName);
+		for(int i=0; i<identitiesKeys.size(); i++) {
+			Identity member = dbInstance.getCurrentEntityManager().getReference(IdentityImpl.class, identitiesKeys.get(i));
 			organisationService.addMember(organisation, member, role);
 			if(i % 20 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -269,7 +274,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			}
 		}
 		dbInstance.commit();
-		log.info("End migration of " + identitiyKeys.size() + " " + secGroupName);
+		log.info("End migration of " + identitiesKeys.size() + " " + secGroupName);
 	}
 	
 	public List<Long> getIdentityInSecurityGroup(String securityGroupName) {

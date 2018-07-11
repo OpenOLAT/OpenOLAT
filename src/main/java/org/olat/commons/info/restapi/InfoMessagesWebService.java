@@ -21,7 +21,7 @@
 package org.olat.commons.info.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.Collections;
 
@@ -40,10 +40,12 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -60,11 +62,16 @@ public class InfoMessagesWebService {
 	
 	private static final String VERSION = "1.0";
 	
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private InfoMessageFrontendManager messageManager;
+	
 	/**
 	 * The version of the Info messages Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -77,18 +84,18 @@ public class InfoMessagesWebService {
 	/**
 	 * Creates a new info message
 	 * @response.representation.200.qname {http://www.example.com}infoMessageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The info message
-   * @response.representation.200.example {@link org.olat.commons.info.restapi.Examples#SAMPLE_INFOMESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The info message
+	 * @response.representation.200.example {@link org.olat.commons.info.restapi.Examples#SAMPLE_INFOMESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param resName The OLAT Resourceable name
-   * @param resId The OLAT Resourceable id
-   * @param resSubPath The resource sub path (optional)
-   * @param businessPath The business path
-   * @param authorKey The identity key of the author
-   * @param title The title
-   * @param message The message
-   * @param request The HTTP request
+	 * @param resName The OLAT Resourceable name
+	 * @param resId The OLAT Resourceable id
+	 * @param resSubPath The resource sub path (optional)
+	 * @param businessPath The business path
+	 * @param authorKey The identity key of the author
+	 * @param title The title
+	 * @param message The message
+	 * @param request The HTTP request
 	 * @return It returns the id of the newly info message
 	 */
 	@PUT
@@ -102,31 +109,19 @@ public class InfoMessagesWebService {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-
-		OLATResourceable ores = new OLATResourceable() {
-			@Override
-			public String getResourceableTypeName() {
-				return resName;
-			}
-			@Override
-			public Long getResourceableId() {
-				return resId;
-			}
-		};
 		
 		Identity author;
 		UserRequest ureq = getUserRequest(request);
 		if(authorKey == null) {
 			author = ureq.getIdentity();
 		} else {
-			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			author = securityManager.loadIdentityByKey(authorKey, false);
 			if(author == null) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
-		
-		InfoMessageFrontendManager messageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
 		InfoMessage msg = messageManager.createInfoMessage(ores, resSubPath, businessPath, author);
 		msg.setTitle(title);
 		msg.setMessage(message);
@@ -137,8 +132,16 @@ public class InfoMessagesWebService {
 	
 	@Path("{infoMessageKey}")
 	public InfoMessageWebService getInfoMessageWebservice(@PathParam("infoMessageKey") Long infoMessageKey) {
-		InfoMessageFrontendManager messageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
 		InfoMessage msg = messageManager.loadInfoMessage(infoMessageKey);
 		return new InfoMessageWebService(msg);
+	}
+	
+	private boolean isAuthor(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isAuthor() || roles.isAdministrator() || roles.isLearnResourceManager());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

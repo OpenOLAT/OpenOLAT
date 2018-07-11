@@ -28,7 +28,7 @@ package org.olat.restapi.repository;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.io.File;
 import java.net.URI;
@@ -55,6 +55,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
@@ -72,7 +73,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
-import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -257,7 +257,7 @@ public class RepositoryEntriesWebService {
 				List<RepositoryEntry> lstRepos = rm.queryByOwner(identity, restrictedType ? new String[] {type} : null);
 				boolean restrictedName = !name.equals("*");
 				boolean restrictedAuthor = !author.equals("*");
-				if(restrictedName | restrictedAuthor) {
+				if(restrictedName || restrictedAuthor) {
 					// filter by search conditions
 					for(RepositoryEntry re : lstRepos) {
 						boolean nameOk = restrictedName ? re.getDisplayname().toLowerCase().contains(name.toLowerCase()) : true;
@@ -310,13 +310,14 @@ public class RepositoryEntriesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response putResource(@Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
+		Roles roles = getRoles(request);
+		if(!roles.isAdministrator() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		MultipartReader partsReader = null;
 		try {
-			Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
+			Identity identity = getUserRequest(request).getIdentity();
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
 			long length = tmpFile.length();
@@ -333,10 +334,15 @@ public class RepositoryEntriesWebService {
 				} else {
 					organisation = organisationService.getDefaultOrganisation();
 				}
-
-				RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access, organisation);
-				RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
-				return Response.ok(vo).build();
+				
+				boolean hasAdminRights = roles.hasSomeRoles(organisation, OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				if(hasAdminRights) {
+					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access, organisation);
+					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
+					return Response.ok(vo).build();
+				} else {
+					return Response.serverError().status(Status.UNAUTHORIZED).build();
+				}
 			}
 			return Response.serverError().status(Status.NO_CONTENT).build();
 		} catch (Exception e) {

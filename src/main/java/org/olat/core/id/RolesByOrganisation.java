@@ -239,4 +239,12 @@ public class RolesByOrganisation implements Serializable {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(64);
+		sb.append("organisation[key=").append(organisation == null ? "NULL" : organisation.getKey()).append("]")
+		  .append(roles == null ? "[]" : roles.toString());
+		return sb.toString();
+	}
 }

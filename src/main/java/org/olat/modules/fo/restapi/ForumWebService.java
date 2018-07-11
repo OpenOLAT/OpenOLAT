@@ -21,7 +21,6 @@
 package org.olat.modules.fo.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,10 +58,11 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -78,10 +78,12 @@ import org.olat.core.util.vfs.restapi.VFSStreamingOutput;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -96,17 +98,20 @@ public class ForumWebService {
 	
 	private static final OLog log = Tracing.createLoggerFor(ForumWebService.class);
 	
-	public static CacheControl cc = new CacheControl();
+	public static final CacheControl cc = new CacheControl();
 	static {
 		cc.setMaxAge(-1);
 	}
 	
 	private final Forum forum;
-	private final ForumManager fom;
+	
+	@Autowired
+	private ForumManager fom;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	public ForumWebService(Forum forum) {
 		this.forum = forum;
-		fom = CoreSpringFactory.getImpl(ForumManager.class);
 	}
 	
 	/**
@@ -176,13 +181,13 @@ public class ForumWebService {
 	
 	/**
 	 * Creates a new thread in the forum of the course node
-   * @response.representation.mediaType application/x-www-form-urlencoded
+	 * @response.representation.mediaType application/x-www-form-urlencoded
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author, forum or message not found
+	 * @response.representation.404.doc The author, forum or message not found
 	 * @param forumKey The id of the forum
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
@@ -203,11 +208,11 @@ public class ForumWebService {
 	/**
 	 * Creates a new thread in the forum of the course node
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author, forum or message not found
+	 * @response.representation.404.doc The author, forum or message not found
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
 	 * @param authorKey The author user key (optional)
@@ -236,11 +241,11 @@ public class ForumWebService {
 	/**
 	 * Retrieves the messages in the thread
 	 * @response.representation.200.qname {http://www.example.com}messageVOes
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author, forum or message not found
+	 * @response.representation.404.doc The author, forum or message not found
 	 * @param threadKey The key of the thread
 	 * @param start
 	 * @param limit
@@ -280,13 +285,13 @@ public class ForumWebService {
 	
 	/**
 	 * Creates a new reply in the forum of the course node
-   * @response.representation.mediaType application/x-www-form-urlencoded
+	 * @response.representation.mediaType application/x-www-form-urlencoded
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author or message not found
+	 * @response.representation.404.doc The author or message not found
 	 * @param messageKey The id of the reply message
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
@@ -308,11 +313,11 @@ public class ForumWebService {
 	/**
 	 * Creates a new reply in the forum of the course node
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author or message not found
+	 * @response.representation.404.doc The author or message not found
 	 * @param messageKey The id of the reply message
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
@@ -335,11 +340,11 @@ public class ForumWebService {
 	/**
 	 * Creates a new reply in the forum of the course node
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author or message not found
+	 * @response.representation.404.doc The author or message not found
 	 * @param messageKey The id of the reply message
 	 * @param reply The reply object
 	 * @param httpRequest The HTTP request
@@ -363,20 +368,14 @@ public class ForumWebService {
 		}
 		
 		Identity author;
-		if(isAdmin(httpRequest)) {
-			if(authorKey == null) {
-				author = identity;
-			} else {
-				author = getMessageAuthor(authorKey, httpRequest);
-			}
+		if(authorKey == null) {
+			author = identity;
+		} else if(authorKey.equals(identity.getKey())) {
+			author = identity;
+		} else if(isAdminOf(authorKey, httpRequest)) {
+			author = getMessageAuthor(authorKey, httpRequest);
 		} else {
-			if(authorKey == null) {
-				author = identity;
-			} else if(authorKey.equals(identity.getKey())) {
-				author = identity;
-			} else {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		// load message
@@ -436,7 +435,7 @@ public class ForumWebService {
 	 * Retrieves the attachment of the message
 	 * @response.representation.200.mediaType application/octet-stream
 	 * @response.representation.200.doc The portrait as image
-   * @response.representation.404.doc The identity or the portrait not found
+	 * @response.representation.404.doc The identity or the portrait not found
 	 * @param messageKey The identity key of the user being searched
 	 * @param filename The name of the attachment
 	 * @param request The REST request
@@ -604,7 +603,7 @@ public class ForumWebService {
 	
 	private FileVO[] getAttachments(Message mess, UriInfo uriInfo) {
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
-		List<FileVO> attachments = new ArrayList<FileVO>();
+		List<FileVO> attachments = new ArrayList<>();
 		for(VFSItem item: container.getItems(new SystemItemFilter())) {
 			UriBuilder attachmentUri = uriInfo.getBaseUriBuilder().path("repo")
 					.path("forums").path(mess.getForum().getKey().toString())
@@ -647,11 +646,10 @@ public class ForumWebService {
 	}
 	
 	private Identity getMessageAuthor(Long authorKey, HttpServletRequest httpRequest) {
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity author;
 		if(authorKey == null) {
 			author = getIdentity(httpRequest);
-		} else if(isAdmin(httpRequest)) {
+		} else if(isAdminOf(authorKey, httpRequest)) {
 			author = securityManager.loadIdentityByKey(authorKey, false);
 		} else {
 			author = getIdentity(httpRequest);
@@ -665,5 +663,17 @@ public class ForumWebService {
 		}
 		
 		return author;
+	}
+	
+	private boolean isAdminOf(Long identityKey, HttpServletRequest httpRequest) {
+		if(identityKey == null) return false;
+		
+		Roles managerRoles = RestSecurityHelper.getRoles(httpRequest);
+		if(!managerRoles.isAdministrator()) {
+			return false;
+		}
+		
+		Roles identityRoles = securityManager.getRoles(new IdentityRefImpl(identityKey));
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 	}
 }

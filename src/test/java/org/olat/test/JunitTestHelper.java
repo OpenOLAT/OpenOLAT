@@ -168,6 +168,7 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
+		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
@@ -182,7 +183,7 @@ public class JunitTestHelper {
 	 * @param login
 	 * @return
 	 */
-	public static final Identity createAndPersistIdentityAsAdmin(String login) {
+	private static final Identity createAndPersistIdentityAsAdmin(String login) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = securityManager.findIdentityByName(login);
 		if (identity != null) {
@@ -193,6 +194,7 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		addToDefaultOrganisation(identity, OrganisationRoles.administrator);
+		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}

@@ -25,6 +25,7 @@
                         <property name="password" value="openolat" />
                         <property name="language" value="${defaultlang}" />
                         <property name="admin" value="true" />
+                        <property name="sysAdmin" value="true" />
                 </bean>
 			</list>
        </constructor-arg>

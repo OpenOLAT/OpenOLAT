@@ -20,7 +20,6 @@
 package org.olat.course.nodes.bc;
 
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -109,7 +108,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		final ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+		} else if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -273,7 +272,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+		} else if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -312,12 +311,13 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 */
 	@Path("{nodeId}/files")
 	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
-		boolean author = isAuthor(request);
-
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-		} else if (!author && !CourseWebService.isCourseAccessible(course, false, request)) {
+		}
+		
+		boolean author = isAuthorEditor(course, request);
+		if (!author && !CourseWebService.isCourseAccessible(course, request)) {
 			throw new WebApplicationException( Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		

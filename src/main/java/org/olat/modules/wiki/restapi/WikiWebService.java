@@ -19,9 +19,6 @@
  */
 package org.olat.modules.wiki.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -32,13 +29,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,10 +135,12 @@ public class WikiWebService {
 	 */
 	private boolean isAllowedToExportWiki(RepositoryEntry re, HttpServletRequest request) {
 		Identity identity = RestSecurityHelper.getIdentity(request);
-		boolean canDownload = re.getCanDownload() ;
-		if (isAdmin(request) || repositoryService.hasRole(identity, re, GroupRoles.owner.name())) {
+		Roles roles = RestSecurityHelper.getRoles(request);		
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, re);
+		boolean canDownload = re.getCanDownload();
+		if (reSecurity.isEntryAdmin()) {
 			canDownload = true;
-		} else if(!isAuthor(request)) {
+		} else if(!reSecurity.isAuthor()) {
 			return false;
 		}
 		return canDownload;

@@ -25,14 +25,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -42,8 +37,6 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.dispatcher.LocaleNegotiator;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -57,9 +50,6 @@ public class RestSecurityHelper {
 	public static final String SEC_TOKEN = "X-OLAT-TOKEN";
 	public static final String SEC_USER_REQUEST = "olat-user-request";
 	
-	protected static final String SYSTEM_MARKER = UUID.randomUUID().toString();
-	
-	
 	public static UserRequest getUserRequest(HttpServletRequest request) {
 		return (UserRequest)request.getAttribute(SEC_USER_REQUEST);
 	}
@@ -68,19 +58,6 @@ public class RestSecurityHelper {
 		UserRequest ureq = (UserRequest)request.getAttribute(SEC_USER_REQUEST);
 		if(ureq == null) return null;
 		return ureq.getIdentity();
-	}
-	
-	public static Identity getIdentity(Long identityKey) {
-		return BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
-	}
-	
-	public static boolean isUserManager(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			return (roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator());
-		} catch (Exception e) {
-			return false;
-		}
 	}
 	
 	public static boolean isCurriculumManager(HttpServletRequest request) {
@@ -101,36 +78,6 @@ public class RestSecurityHelper {
 		}
 	}
 	
-	public static boolean isAuthor(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			return (roles.isAuthor() || roles.isAdministrator() || roles.isLearnResourceManager());
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	public static boolean isAuthorEditor(ICourse course, HttpServletRequest request) {
-		try {
-			Identity identity = getUserRequest(request).getIdentity();
-			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-			return isAuthorEditor(cgm.getCourseEntry(), request) || cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR);
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	public static boolean isAuthorEditor(RepositoryEntry entry, HttpServletRequest request) {
-		try {
-			Identity identity = getUserRequest(request).getIdentity();
-			RepositoryService rm = CoreSpringFactory.getImpl(RepositoryService.class);
-			return rm.hasRoleExpanded(identity, entry, OrganisationRoles.administrator.name(),
-					OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
 	public static boolean isAuthorGrpManager(ICourse course, HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
@@ -142,47 +89,6 @@ public class RestSecurityHelper {
 				return cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
 			}
 			return false;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	public static boolean isInstitutionalResourceManager(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			return (roles.isLearnResourceManager() || roles.isAdministrator());
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	public static boolean isQuestionPoolManager(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			return (roles.isPoolManager() || roles.isAdministrator());
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	public static boolean isAdmin(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			return roles.isAdministrator();
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	public static boolean isAdminOrSystem(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			if(roles.isAdministrator()) {
-				return true;
-			}
-			UserRequest ureq = (UserRequest)request.getAttribute(SEC_USER_REQUEST);
-			return ureq != null && ureq.getUserSession() != null
-					&& ureq.getUserSession().getEntry(SYSTEM_MARKER) != null;
 		} catch (Exception e) {
 			return false;
 		}

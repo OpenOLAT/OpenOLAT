@@ -26,7 +26,9 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.repository.RepositoryModule;
 
 /**
@@ -39,10 +41,20 @@ public class CatalogAdminSiteDef extends AbstractSiteDefinition implements SiteD
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		if(ureq == null) {
+			return null;
+		}
+		UserSession usess = ureq.getUserSession();
+		if(usess == null) {
+			return null;
+		}
+		
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new CatalogAdminSite(this, ureq.getLocale());
-		} else if(ureq.getUserSession().getRoles().isLearnResourceManager()) {
-			// only for admins
+		}
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isLearnResourceManager() || roles.isAdministrator()) {
 			return new CatalogAdminSite(this, ureq.getLocale());
 		}
 		return null;

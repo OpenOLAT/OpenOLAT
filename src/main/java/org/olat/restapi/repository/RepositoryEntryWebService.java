@@ -26,8 +26,6 @@ package org.olat.restapi.repository;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.io.File;
 import java.io.InputStream;
@@ -65,6 +63,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -206,7 +205,7 @@ public class RepositoryEntryWebService {
 	@Path("owners")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return getIdentityInSecurityGroup(entry, GroupRoles.owner.name());
@@ -225,7 +224,7 @@ public class RepositoryEntryWebService {
 	@PUT
 	@Path("owners/{identityKey}")
 	public Response addOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -244,7 +243,7 @@ public class RepositoryEntryWebService {
 	@Path("owners")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addOwners(UserVO[] owners, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -269,7 +268,7 @@ public class RepositoryEntryWebService {
 	@Path("owners/{identityKey}")
 	public Response removeOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
-			if (!isAuthorEditor(entry, request)) {
+			if (!isAuthorEditor(request)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 
@@ -302,7 +301,7 @@ public class RepositoryEntryWebService {
 	@Path("coaches")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCoaches(@Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return getIdentityInSecurityGroup(entry, GroupRoles.coach.name());
@@ -322,7 +321,7 @@ public class RepositoryEntryWebService {
 	@Path("coaches/{identityKey}")
 	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -341,7 +340,7 @@ public class RepositoryEntryWebService {
 	@Path("coaches")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCoach(UserVO[] coaches, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -365,7 +364,7 @@ public class RepositoryEntryWebService {
 	@DELETE
 	@Path("coaches/{identityKey}")
 	public Response removeCoach(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		if (!isAuthorEditor(entry, request)) {
+		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -394,7 +393,7 @@ public class RepositoryEntryWebService {
 	@Path("participants")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants( @Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return getIdentityInSecurityGroup(entry, GroupRoles.participant.name());
@@ -413,7 +412,7 @@ public class RepositoryEntryWebService {
 	@PUT
 	@Path("participants/{identityKey}")
 	public Response addParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -432,7 +431,7 @@ public class RepositoryEntryWebService {
 	@Path("participants")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addParticipants(UserVO[] participants, @Context HttpServletRequest request) {
-		if(!isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -464,7 +463,7 @@ public class RepositoryEntryWebService {
 	@DELETE
 	@Path("participants/{identityKey}")
 	public Response removeParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
-		if (!isAuthorEditor(entry, request)) {
+		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -552,7 +551,7 @@ public class RepositoryEntryWebService {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response updateEntry(RepositoryEntryVO vo, @Context HttpServletRequest request) {
-		if (!RestSecurityHelper.isAuthor(request)) {
+		if (!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -613,7 +612,7 @@ public class RepositoryEntryWebService {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	public Response replaceResource(@Context HttpServletRequest request) {
-		if (!RestSecurityHelper.isAuthor(request)) {
+		if (!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -675,7 +674,7 @@ public class RepositoryEntryWebService {
 				String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
 				String relUnzipDir = frm.getUnzippedDirRel(re.getOlatResource());
 				File unzipDir = new File(repositoryHome, relUnzipDir);
-				if (unzipDir != null && unzipDir.exists()) {
+				if (unzipDir.exists()) {
 					FileUtils.deleteDirsAndFiles(unzipDir, true, true);
 				}
 				frm.unzipFileResource(re.getOlatResource());
@@ -706,7 +705,7 @@ public class RepositoryEntryWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		if (!isAuthorEditor(entry, request)) {
+		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
@@ -740,10 +739,7 @@ public class RepositoryEntryWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
 	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		if (!isAuthorEditor(entry, request)) {
+		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -781,7 +777,7 @@ public class RepositoryEntryWebService {
 	@Path("access")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAccess(@Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(entry, request)) {
+		if(!isAuthor(request) && !isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		RepositoryEntryAccessVO accessVo = RepositoryEntryAccessVO.valueOf(entry);
@@ -793,7 +789,7 @@ public class RepositoryEntryWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateAccess(RepositoryEntryAccessVO accessVo, @Context HttpServletRequest request) {
-		if(!isAuthor(request) && !isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		if(accessVo.getRepoEntryKey() != null && !accessVo.getRepoEntryKey().equals(entry.getKey())) {
@@ -807,7 +803,7 @@ public class RepositoryEntryWebService {
 	@Path("taxonomy/levels")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaxonomyLevels(@Context HttpServletRequest request) {	
-		if(!isAuthor(request) && !isAuthorEditor(entry, request)) {
+		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -856,5 +852,24 @@ public class RepositoryEntryWebService {
 			ownerVOs[count++] = UserVOFactory.get(identity, true, true);
 		}
 		return Response.ok(ownerVOs).build();
+	}
+	
+	private boolean isAuthor(HttpServletRequest request) {
+		try {
+			Roles roles = getUserRequest(request).getUserSession().getRoles();
+			return roles.isAdministrator() || roles.isLearnResourceManager() || roles.isAuthor();
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	private boolean isAuthorEditor(HttpServletRequest request) {
+		try {
+			Identity identity = getUserRequest(request).getIdentity();
+			return repositoryService.hasRoleExpanded(identity, entry, OrganisationRoles.administrator.name(),
+					OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

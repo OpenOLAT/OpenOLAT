@@ -25,8 +25,6 @@
 package org.olat.modules.fo.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
-import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +50,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
@@ -76,6 +73,7 @@ import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -91,14 +89,21 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses/{courseId}/elements/forum")
 public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	
+	@Autowired
+	private ForumManager forumManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	
 	/**
 	 * Retrieves metadata of the published course node
 	 * @response.representation.200.qname {http://www.example.com}forumVOes
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The course node metadatas
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The course node metadatas
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
+	 * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable's id
 	 * @param httpRequest The HTTP request
 	 * @return The persisted structure element (fully populated)
@@ -109,22 +114,22 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		final ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+		}
+		if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
 
-		final Set<Long> subcribedForums = new HashSet<Long>();
-		NotificationsManager man = NotificationsManager.getInstance();
+		final Set<Long> subcribedForums = new HashSet<>();
 		List<String> notiTypes = Collections.singletonList("Forum");
-		List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
+		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes);
 		for(Subscriber sub:subs) {
 			Long forumKey = Long.parseLong(sub.getPublisher().getData());
 			subcribedForums.add(forumKey);
 		}
 
-		final List<ForumVO> forumVOs = new ArrayList<ForumVO>();
+		final List<ForumVO> forumVOs = new ArrayList<>();
 		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(new Visitor() {
 			@Override
 			public void visit(INode node) {
@@ -146,11 +151,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * This attaches a Forum Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
 	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The course node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The course node metadatas
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
+	 * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this single
 	 *          page
@@ -180,11 +185,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * This attaches a Forum Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
 	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The course node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The course node metadatas
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
+	 * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable id
 	 * @param parentNodeId The node's id which will be the parent of this single
 	 *          page
@@ -212,11 +217,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	/**
 	 * Retrieves metadata of the published course node
 	 * @response.representation.200.qname {http://www.example.com}forumVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The course node metadatas
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The course node metadatas
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
+	 * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The node's id
 	 * @param httpRequest The HTTP request
@@ -229,12 +234,12 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+		} else if (!CourseWebService.isCourseAccessible(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
-		if(courseNode == null || !(courseNode instanceof FOCourseNode)) {
+		if(!(courseNode instanceof FOCourseNode)) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
@@ -243,10 +248,9 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		if(courseVisitor.isAccessible(courseNode, new VisibleTreeFilter())) {
 			FOCourseNode forumNode = (FOCourseNode)courseNode;
 
-			Set<Long> subscriptions = new HashSet<Long>();
-			NotificationsManager man = NotificationsManager.getInstance();
+			Set<Long> subscriptions = new HashSet<>();
 			List<String> notiTypes = Collections.singletonList("Forum");
-			List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
+			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes);
 			for(Subscriber sub:subs) {
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
 				subscriptions.add(forumKey);
@@ -264,12 +268,13 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
-		} else if (!CourseWebService.isCourseAccessible(course, false, request)) {
+		}
+		if (!CourseWebService.isCourseAccessible(course, request)) {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
-		if(courseNode == null || !(courseNode instanceof FOCourseNode)) {
+		if(!(courseNode instanceof FOCourseNode)) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
 		
@@ -278,7 +283,9 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		if(courseVisitor.isAccessible(courseNode, new VisibleTreeFilter())) {
 			FOCourseNode forumNode = (FOCourseNode)courseNode;
 			Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
-			return new ForumWebService(forum);
+			ForumWebService ws = new ForumWebService(forum);
+			CoreSpringFactory.autowireObject(ws);
+			return ws;
 		} else {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
@@ -287,13 +294,13 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	/**
 	 * Creates a new thread in the forum of the course node
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author, forum or message not found
-   * @param courseId The id of the course.
-   * @param nodeId The id of the course node.
+	 * @response.representation.404.doc The author, forum or message not found
+	 * @param courseId The id of the course.
+	 * @param nodeId The id of the course node.
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
 	 * @param identityName The author identity name (optional)
@@ -316,14 +323,14 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	/**
 	 * Creates a new forum message in the forum of the course node
 	 * @response.representation.200.qname {http://www.example.com}messageVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The root message of the thread
-   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The author, forum or message not found
-   * @param courseId The id of the course.
-   * @param nodeId The id of the course node.
-   * @param parentMessageId The id of the parent message.
+	 * @response.representation.404.doc The author, forum or message not found
+	 * @param courseId The id of the course.
+	 * @param nodeId The id of the course node.
+	 * @param parentMessageId The id of the parent message.
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
 	 * @param identityName The author identity name (optional)
@@ -358,12 +365,14 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @return
 	 */
 	private Response addMessage(Long courseId, String nodeId, Long parentMessageId, String title, String body, String identityName, Boolean isSticky, HttpServletRequest request) {
-		if(!isAuthor(request)) {
+		//load forum
+		ICourse course = CoursesWebService.loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		
+
 		Identity identity;
 		if (identityName != null) {
 			identity = securityManager.findIdentityByName(identityName);
@@ -374,15 +383,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
-		//load forum
-		ICourse course = CoursesWebService.loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
+
 		CourseNode courseNode = getParentNode(course, nodeId);
 		if(courseNode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -391,11 +392,10 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property forumKeyProp = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);
 		Forum forum = null;
-		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		if(forumKeyProp!=null) {
       // Forum does already exist, load forum with key from properties
 		  Long forumKey = forumKeyProp.getLongValue();
-		  forum = fom.loadForum(forumKey);
+		  forum = forumManager.loadForum(forumKey);
 		}
 		
 		if(forum == null) {
@@ -406,7 +406,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		
 		if(parentMessageId == null || parentMessageId == 0L) {
 			// creating the thread (a message without a parent message)
-			Message newThread = fom.createMessage(forum, identity, false);
+			Message newThread = forumManager.createMessage(forum, identity, false);
 			if (isSticky != null && isSticky.booleanValue()) {
 				// set sticky
 				org.olat.modules.fo.Status status = new org.olat.modules.fo.Status();
@@ -416,28 +416,28 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			newThread.setTitle(title);
 			newThread.setBody(body);
 			// open a new thread
-			fom.addTopMessage(newThread);
+			forumManager.addTopMessage(newThread);
 			
 			vo = new MessageVO(newThread);
 		} else {
 			// adding response message (a message with a parent message)
-			Message threadMessage = fom.loadMessage(parentMessageId);
+			Message threadMessage = forumManager.loadMessage(parentMessageId);
 			
 			if(threadMessage == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			// create new message
-			Message message = fom.createMessage(forum, identity, false);
+			Message message = forumManager.createMessage(forum, identity, false);
 			message.setTitle(title);
 			message.setBody(body);
-			fom.replyToMessage(message, threadMessage);
+			forumManager.replyToMessage(message, threadMessage);
 			
 			vo = new MessageVO(message);
 		}
 		
 		return Response.ok(vo).build();
 	}
-	//fxdiff: RESTAPI add special expert rules for forums
+	
 	private class ForumCustomConfig implements CustomConfigDelegate {
 		
 		private final String preConditionModerator;
@@ -458,9 +458,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			// create the forum
-			ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 			CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-			Forum forum = fom.addAForum();
+			Forum forum = forumManager.addAForum();
 			Long forumKey = forum.getKey();
 			Property forumKeyProperty = cpm.createCourseNodePropertyInstance(newNode, null, null, FOCourseNode.FORUM_KEY, null, forumKey, null, null);
 			cpm.saveProperty(forumKeyProperty);

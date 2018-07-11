@@ -55,7 +55,6 @@ import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -119,7 +118,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		} catch(Exception e) {
 			//
 		}
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		
 		assertTrue(conn.login("administrator", "openolat"));
 
@@ -212,7 +211,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		Identity adminIdent = securityManager.findIdentityByName("administrator");
 		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		
 		//delete an authentication token
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth/" + authentication.getKey()).build();

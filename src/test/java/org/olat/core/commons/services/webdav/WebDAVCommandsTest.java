@@ -828,7 +828,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	@Test
 	public void customizingFolder()
 	throws IOException, URISyntaxException {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsAdmin("admin-webdav");
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-webdav");
 		dbInstance.commitAndCloseSession();
 		
 		WebDAVConnection conn = new WebDAVConnection();

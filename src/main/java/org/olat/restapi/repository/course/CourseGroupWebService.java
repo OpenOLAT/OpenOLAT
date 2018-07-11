@@ -157,7 +157,9 @@ public class CourseGroupWebService {
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
 			Forum forum = collabTools.getForum();
-			return new ForumWebService(forum);
+			ForumWebService ws = new ForumWebService(forum);
+			CoreSpringFactory.autowireObject(ws);
+			return ws;
 		}
 		return null;
 	}

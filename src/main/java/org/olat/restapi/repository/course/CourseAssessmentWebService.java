@@ -19,7 +19,7 @@
  */
 package org.olat.restapi.repository.course;
 
-import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,9 +45,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
@@ -55,6 +54,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -109,6 +110,10 @@ public class CourseAssessmentWebService {
 	}
 	
 	@Autowired
+	private IQManager iqManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	
 	/**
@@ -141,13 +146,12 @@ public class CourseAssessmentWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
-		if(!RestSecurityHelper.isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isAuthorEditor(course, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		List<Identity> courseUsers = loadAllParticipants(course);
@@ -191,17 +195,16 @@ public class CourseAssessmentWebService {
 	@Path("users/{identityKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResultsOf(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest, @Context Request request) {
-		if(!RestSecurityHelper.isAuthor(httpRequest)) {
+		ICourse course = CoursesWebService.loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		Identity userIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+		Identity userIdentity = securityManager.loadIdentityByKey(identityKey, false);
 		if(userIdentity == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-
-		ICourse course = CoursesWebService.loadCourse(courseId);
-		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 			
@@ -239,14 +242,11 @@ public class CourseAssessmentWebService {
 	@Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
-		if(!RestSecurityHelper.isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
+		}
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -293,24 +293,26 @@ public class CourseAssessmentWebService {
 	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response postAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			AssessableResultsVO resultsVO, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isAuthor(request)) {
+		ICourse course = CourseFactory.openCourseEditSession(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
+
 		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		attachAssessableResults(courseId, nodeId, identity, resultsVO);
+		attachAssessableResults(course, nodeId, identity, resultsVO);
 		return Response.ok().build();
 	}
 	
-	private void attachAssessableResults(Long courseResourceableId, String nodeKey, Identity requestIdentity, AssessableResultsVO resultsVO) {
-		ICourse course = CourseFactory.openCourseEditSession(courseResourceableId);
+	private void attachAssessableResults(ICourse course, String nodeKey, Identity requestIdentity, AssessableResultsVO resultsVO) {
 		CourseNode node = getParentNode(course, nodeKey);
 		if (!(node instanceof AssessableCourseNode)) { throw new IllegalArgumentException(
 				"The supplied node key does not refer to an AssessableCourseNode"); }
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		Identity userIdentity = securityManager.loadIdentityByKey(resultsVO.getIdentityKey());
 
 		// create an identenv with no roles, no attributes, no locale
@@ -326,7 +328,7 @@ public class CourseAssessmentWebService {
 			importTestItems(course, nodeKey, requestIdentity, resultsVO);
 		} else {
 			AssessableCourseNode assessableNode = (AssessableCourseNode) node;
-			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, new Long(nodeKey));//not directly pass this key
+			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, Long.valueOf(nodeKey));//not directly pass this key
 			assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 		}
 
@@ -336,8 +338,6 @@ public class CourseAssessmentWebService {
 
 	private void importTestItems(ICourse course, String nodeKey, Identity identity, AssessableResultsVO resultsVO) {
 		try {
-			IQManager iqManager = CoreSpringFactory.getImpl(IQManager.class);
-
 			// load the course and the course node
 			CourseNode courseNode = getParentNode(course, nodeKey);
 			ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
@@ -406,19 +406,6 @@ public class CourseAssessmentWebService {
 
 				navigator.submitAssessment();
 
-				// persist the QTIResultSet (o_qtiresultset and o_qtiresult) on the
-				// database
-				// TODO iqManager.persistResults(ai, course.getResourceableId(),
-				// courseNode.getIdent(), identity, "127.0.0.1");
-
-				// write the reporting file on the file system
-				// The path is <olatdata> / resreporting / <username> / Assessment /
-				// <assessId>.xml
-				// TODO Document docResReporting = iqManager.getResultsReporting(ai,
-				// identity, Locale.getDefault());
-				// TODO FilePersister.createResultsReporting(docResReporting, identity,
-				// ai.getFormattedType(), ai.getAssessID());
-
 				// prepare all instances needed to save the score at the course node
 				// level
 				CourseEnvironment cenv = course.getCourseEnvironment();
@@ -429,7 +416,7 @@ public class CourseAssessmentWebService {
 				// update scoring overview for the user in the current course
 				Float score = ac.getScore();
 				Boolean passed = ac.isPassed();
-				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, passed, new Long(nodeKey));//perhaps don't pass this key directly
+				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, passed, Long.valueOf(nodeKey));//perhaps don't pass this key directly
 				AssessableCourseNode acn = (AssessableCourseNode) courseNode;
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;
@@ -444,10 +431,10 @@ public class CourseAssessmentWebService {
 
 	private Map<String, ItemInput> convertToHttpItemInput(Map<Long, String> results) {
 		Map<String, ItemInput> datas = new HashMap<>();
-		for (Long key : results.keySet()) {
-			HttpItemInput iip = new HttpItemInput(results.get(key));
-			iip.putSingle(key.toString(), results.get(key));
-			//TODO somehow obtain answer from value
+		for (Map.Entry<Long, String> entry:results.entrySet()) {
+			Long key = entry.getKey();
+			HttpItemInput iip = new HttpItemInput(entry.getValue());
+			iip.putSingle(key.toString(), entry.getValue());
 			datas.put(iip.getIdent(), iip);
 		}
 		return datas;
@@ -481,17 +468,16 @@ public class CourseAssessmentWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseNodeResultsForNode(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
-		if(!RestSecurityHelper.isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		Identity userIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
-		if(userIdentity == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isAuthorEditor(course, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		Identity userIdentity = securityManager.loadIdentityByKey(identityKey, false);
+		if(userIdentity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
@@ -549,5 +535,17 @@ public class CourseAssessmentWebService {
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> participants = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		return new ArrayList<>(new HashSet<>(participants));
+	}
+	
+	private boolean isAuthorEditor(ICourse course, HttpServletRequest request) {
+		try {
+			Identity identity = getUserRequest(request).getIdentity();
+			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+			return repositoryService.hasRoleExpanded(identity, cgm.getCourseEntry(),
+					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+					GroupRoles.owner.name()) || cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

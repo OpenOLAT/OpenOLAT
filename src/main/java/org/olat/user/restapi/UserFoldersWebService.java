@@ -21,7 +21,6 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +41,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -169,9 +169,9 @@ public class UserFoldersWebService {
 		if(ureqIdentity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		} else if(!identity.getKey().equals(ureqIdentity.getKey())) {
-			if(isAdmin(httpRequest)) {
+			roles = BaseSecurityManager.getInstance().getRoles(identity);
+			if(isAdminOf(roles, httpRequest)) {
 				ureqIdentity = identity;
-				roles = BaseSecurityManager.getInstance().getRoles(identity);
 			} else {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
@@ -245,5 +245,12 @@ public class UserFoldersWebService {
 		voes.setFolders(folderVOs.toArray(new FolderVO[folderVOs.size()]));
 		voes.setTotalCount(folderVOs.size());
 		return Response.ok(voes).build();
+	}
+	
+	private boolean isAdminOf(Roles identityRoles, HttpServletRequest httpRequest) {
+		Roles managerRoles = getRoles(httpRequest);
+		return managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 	}
 }
