@@ -929,13 +929,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	
 	@Override
 	public List<LectureBlockIdentityStatistics> getLecturesStatistics(LectureStatisticsSearchParameters params,
-			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin) {
+			List<UserPropertyHandler> userPropertyHandlers, Identity identity) {
 		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
-		return lectureBlockRollCallDao.getStatistics(params, userPropertyHandlers, identity, admin, 
+		return lectureBlockRollCallDao.getStatistics(params, userPropertyHandlers, identity, 
 				authorizedAbsenceEnabled, absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
 				calculateAttendanceRate, defaultRequiredAttendanceRate);
 	}

@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -365,8 +364,7 @@ public class FeedManagerImpl extends FeedManager {
 	public List<Item> loadFilteredAndSortedItems(Feed feed, List<Long> filteredItemIds, FeedSecurityCallback callback, Identity identity) {
 		List<Item> items = itemDAO.loadItems(feed, filteredItemIds);
 		List<Item> filteredItems = new ArrayList<>();
-		final Roles roles = securityManager.getRoles(identity);
-		if (roles != null && (roles.isOLATAdmin() || feed.isExternal())) {
+		if (feed.isExternal()) {
 			// show all items
 			filteredItems = items;
 		} else {
@@ -382,9 +380,7 @@ public class FeedManagerImpl extends FeedManager {
 					// scheduled items and drafts of oneself are shown
 					filteredItems.add(item);
 				} else if (item.isDraft()) {
-					if(callback.mayViewAllDrafts()) {
-						filteredItems.add(item);
-					} else if (identity.getKey() == item.getModifierKey()) {
+					if(callback.mayViewAllDrafts() || identity.getKey().equals(item.getModifierKey())) {
 						filteredItems.add(item);
 					}
 				}

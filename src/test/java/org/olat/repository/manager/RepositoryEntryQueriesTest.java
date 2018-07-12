@@ -188,7 +188,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void testOneShootQueryWithRoles() {
 		//roles: admin
 		Roles adminRoles = securityManager.getRoles(admin);
-		Assert.assertTrue(adminRoles.isOLATAdmin());
+		Assert.assertTrue(adminRoles.isAdministrator());
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(admin, adminRoles, TEST_RES_NAME);
 		List<RepositoryEntry> resultOneShootInstitut = repositoryEntryQueries.searchEntries(params, 0, -1, true);
 		Assert.assertNotNull(resultOneShootInstitut);

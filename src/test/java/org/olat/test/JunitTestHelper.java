@@ -200,8 +200,7 @@ public class JunitTestHelper {
 	}
 	
 	private static void addToDefaultOrganisation(Identity identity, OrganisationRoles role) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-		organisationService.addMember(identity, role);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(identity, role);
 	}
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry() {

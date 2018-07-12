@@ -31,17 +31,11 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
  */
 public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayCreateItems()
-	 */
 	@Override
 	public boolean mayCreateItems() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayDeleteItems()
-	 */
 	@Override
 	public boolean mayDeleteItems() {
 		return false;
@@ -51,10 +45,7 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 	public boolean mayDeleteOwnItems() {
 		return false;
 	}
-	
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditItems()
-	 */
+
 	@Override
 	public boolean mayEditItems() {
 		return false;
@@ -65,18 +56,11 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 		return false;
 	}
 
-
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditMetadata()
-	 */
 	@Override
 	public boolean mayEditMetadata() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
-	 */
 	@Override
 	public boolean mayViewAllDrafts() {
 		return false;

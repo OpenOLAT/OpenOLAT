@@ -40,13 +40,18 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.db.CourseDBEntry;
 import org.olat.course.db.CourseDBManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.KeyValuePair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -62,6 +67,9 @@ import org.springframework.stereotype.Component;
 public class CourseDbWebService {
 	
 	private static final String VERSION	= "1.0";
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	/**
 	 * Retrieves the version of the Course DB Web Service.
@@ -255,10 +263,9 @@ public class CourseDbWebService {
 	@Path("values/{name}")
 	public Response deleteValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, 
 			@PathParam("name") String name, @Context HttpServletRequest request) {
-		Roles roles = RestSecurityHelper.getRoles(request);
-		if(roles.isAuthor() || roles.isOLATAdmin()) {
-			ICourse course = loadCourse(courseId);
-			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+		ICourse course = loadCourse(courseId);
+		if(isManager(course, ureq)) {
 			boolean ok = CoreSpringFactory.getImpl(CourseDBManager.class)
 					.deleteValue(course, ureq.getIdentity(), category, name);
 			if(ok) {
@@ -305,7 +312,14 @@ public class CourseDbWebService {
 	
 	private ICourse loadCourse(Long potentialCourseId) {
 		Long courseId = CoreSpringFactory.getImpl(CourseDBManager.class).getCourseId(potentialCourseId);
-		ICourse course = CourseFactory.loadCourse(courseId);
-		return course;
+		return CourseFactory.loadCourse(courseId);
+	}
+	
+	private boolean isManager(ICourse course, UserRequest ureq) {
+		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		Identity identity = ureq.getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, re);
+		return reSecurity.isEntryAdmin();
 	}
 }

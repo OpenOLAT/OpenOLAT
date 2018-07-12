@@ -90,19 +90,19 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		}
 		
 		UserSession usess = ureq.getUserSession();
-		if(re.getAccess() == RepositoryEntry.DELETED) {
-			Roles roles = usess.getRoles();
-			if(!roles.isLearnResourceManager() && !roles.isOLATAdmin()) {
-				return messageController(ureq, wControl, "repositoryentry.deleted");
-			}
-		}
-		
 		if(usess.isInAssessmentModeProcess() && !usess.matchLockResource(re.getOlatResource())) {
 			return null;
 		}
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, re);
+		if(re.getAccess() == RepositoryEntry.DELETED) {
+			Roles roles = usess.getRoles();
+			if(!reSecurity.isEntryAdmin() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
+				return messageController(ureq, wControl, "repositoryentry.deleted");
+			}
+		}
+		
 		if (!reSecurity.canLaunch()) {
 			return messageController(ureq, wControl, "launch.noaccess");
 		}

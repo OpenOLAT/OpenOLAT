@@ -456,7 +456,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             layoutCont.contextPut("numUsers", numUsers);
             
             // Where is it in use
-            if(isAuthor || roles.isOLATAdmin() || roles.isLearnResourceManager()) {
+            if(isAuthor || roles.isAdministrator() || roles.isLearnResourceManager()) {
 				List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());
 				if(!refs.isEmpty()) {
 					List<String> refLinks = new ArrayList<>(refs.size());

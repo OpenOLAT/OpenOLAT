@@ -497,7 +497,8 @@ public class CollaborationTools implements Serializable {
 
 		Roles roles = ureq.getUserSession().getRoles();
 		SubscriptionContext subContext = new SubscriptionContext(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, roles.isOLATAdmin(), roles.isGuestOnly(), true, false, subContext);
+		boolean administrator = roles.isAdministrator() || roles.isGroupManager();
+		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, administrator, roles.isGuestOnly(), true, false, subContext);
 		String initialPage = null;
 		if (ce != null) { //jump to a certain context
 			OLATResourceable ceOres = ce.getOLATResourceable();

@@ -44,7 +44,7 @@ public class DocumentPoolSiteDef extends AbstractSiteDefinition implements SiteD
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		UserSession usess = ureq.getUserSession();
 		Roles roles = usess.getRoles();
-		if(roles.isOLATAdmin()) {
+		if(roles.isAdministrator()) {
 			return new DocumentPoolSite(this, ureq.getLocale());
 		} else if(roles.isGuestOnly() || roles.isInvitee()) {
 			return null;

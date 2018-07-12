@@ -25,6 +25,8 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -56,6 +58,8 @@ public class CurriculumDAOTest extends OlatTestCase {
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void createCurriculum() {
@@ -234,6 +238,37 @@ public class CurriculumDAOTest extends OlatTestCase {
 		List<Identity> coaches = curriculumDao.getMembersIdentity(curriculum, CurriculumRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertTrue(coaches.isEmpty());
+	}
+	
+	@Test
+	public void hasRoleExpanded() {
+		// add a curriculum manager
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		dbInstance.commitAndCloseSession();
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		// is curriculum manager
+		boolean isCurriculumManager = curriculumDao.hasRoleExpanded(curriculum, manager, CurriculumRoles.curriculummanager.name());
+		Assert.assertTrue(isCurriculumManager);
+		boolean isAdministrator = curriculumDao.hasRoleExpanded(curriculum, manager, OrganisationRoles.administrator.name());
+		Assert.assertFalse(isAdministrator);
+	}
+	
+	@Test
+	public void hasRoleExpanded_organisation() {
+		// add a curriculum manager
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-cur-manager-1");
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", organisation);
+		dbInstance.commitAndCloseSession();
+		
+		// is curriculum manager
+		boolean isCurriculumManager = curriculumDao.hasRoleExpanded(curriculum, manager, CurriculumRoles.curriculummanager.name());
+		Assert.assertFalse(isCurriculumManager);
+		boolean isAdministrator = curriculumDao.hasRoleExpanded(curriculum, manager, OrganisationRoles.administrator.name());
+		Assert.assertTrue(isAdministrator);
 	}
 	
 }

@@ -58,7 +58,7 @@ implements FilterableFlexiTableModel  {
 	
 	@Override
 	public void filter(List<FlexiTableFilter> filters) {
-		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			Set<Long> typeKeys = new HashSet<>();
 			boolean noType = false;
 			boolean showAll = false;
@@ -66,7 +66,7 @@ implements FilterableFlexiTableModel  {
 				if("-".equals(filter.getFilter())) {
 					noType = true;
 				} else if(StringHelper.isLong(filter.getFilter())) {
-					typeKeys.add(new Long(filter.getFilter()));
+					typeKeys.add(Long.valueOf(filter.getFilter()));
 				} else if(filter.isShowAll()) {
 					showAll = true;
 				}

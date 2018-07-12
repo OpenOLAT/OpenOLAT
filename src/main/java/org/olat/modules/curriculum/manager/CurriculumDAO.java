@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -278,4 +279,30 @@ public class CurriculumDAO {
 				.setParameter("role", role)
 				.getResultList();
 	}
+	
+	public boolean hasRoleExpanded(CurriculumRef curriculum, IdentityRef identity, String... roles) {
+		List<String> roleList = GroupRoles.toList(roles);
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select cur.key from curriculum cur")
+		  .append(" inner join cur.group baseGroup")
+		  .append(" left join baseGroup.members membership")
+		  .append(" left join cur.organisation organisation")
+		  .append(" left join organisation.group orgGroup")
+		  .append(" left join orgGroup.members orgMembership")
+		  .append(" where cur.key=:curriculumKey and (")
+		  .append("  (membership.identity.key=:identityKey and membership.role in (:roles))")
+		  .append("  or")
+		  .append("  (orgMembership.identity.key=:identityKey and orgMembership.role in (:roles))")
+		  .append(")");
+		List<Long> has = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("curriculumKey", curriculum.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roleList)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return has != null && !has.isEmpty() && curriculum.getKey().equals(has.get(0));
+	}
+	
 }

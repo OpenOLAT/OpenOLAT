@@ -86,13 +86,12 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	@Override
 	public final void setObjects(List<U> objects) {
 		backupRows = objects;
-		if(openedRows != null) {
-			List<U> rowList = objects.stream()
-					.filter(o -> openedRows.contains(o))
-					.collect(Collectors.toList());
-			openedRows.clear();
-			openedRows.addAll(rowList);
-		}
+		List<U> rowList = objects.stream()
+				.filter(o -> openedRows.contains(o))
+				.collect(Collectors.toList());
+		openedRows.clear();
+		openedRows.addAll(rowList);
+		
 		super.setObjects(objects);
 		if(focusedNode != null) {
 			if(objects.contains(focusedNode)) {

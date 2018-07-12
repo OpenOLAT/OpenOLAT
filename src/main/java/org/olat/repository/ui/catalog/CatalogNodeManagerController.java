@@ -142,7 +142,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 
 	private final boolean isGuest;
 	private final boolean isAuthor;
-	private final boolean isOLATAdmin;
+	private final boolean isAdministrator;
 	private final boolean isLocalTreeAdmin;
 	
 	private CatalogEntry catalogEntry;
@@ -177,9 +177,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		Roles roles = ureq.getUserSession().getRoles();
 		isAuthor = roles.isAuthor();
 		isGuest = roles.isGuestOnly();
-		isOLATAdmin = roles.isOLATAdmin();
+		isAdministrator = roles.isAdministrator() || roles.isLearnResourceManager();
 		
-		if(isOLATAdmin) {
+		if(isAdministrator) {
 			isLocalTreeAdmin = false;
 		} else {
 			isLocalTreeAdmin = localTreeAdmin || catalogManager.isOwner(catalogEntry, getIdentity());
@@ -364,9 +364,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	protected void initToolbar() {
-		boolean canAddLinks = isOLATAdmin || isAuthor; // author is allowed to add!
-		boolean canAdministrateCategory = isOLATAdmin || isLocalTreeAdmin;
-		boolean canAddSubCategories = isOLATAdmin || isLocalTreeAdmin;
+		boolean canAddLinks = isAdministrator || isAuthor; // author is allowed to add!
+		boolean canAdministrateCategory = isAdministrator || isLocalTreeAdmin;
+		boolean canAddSubCategories = isAdministrator || isLocalTreeAdmin;
 	
 		if (canAdministrateCategory || canAddLinks) {
 			if (canAdministrateCategory) {
@@ -397,7 +397,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			}
 		}
 
-		if(isOLATAdmin || isLocalTreeAdmin || isAuthor) {
+		if(isAdministrator || isLocalTreeAdmin || isAuthor) {
 			if (canAddSubCategories) {
 				addCategoryLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.category"), this, "o_icon_catalog_sub");
 				addCategoryLink.setElementCssClass("o_sel_catalog_add_category");
@@ -681,7 +681,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, new String[0], null);
 		listenTo(entrySearchCtrl);
 		// OLAT-Admin has search form
-		if (isOLATAdmin) {
+		if (isAdministrator) {
 			entrySearchCtrl.displaySearchForm();
 		}
 		// an Author gets the list of his repository

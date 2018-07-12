@@ -125,6 +125,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public boolean hasRoleExpanded(CurriculumRef curriculum, IdentityRef identity, String... roles) {
+		return curriculumDao.hasRoleExpanded(curriculum, identity, roles);
+	}
+
+	@Override
 	public void addMember(Curriculum curriculum, Identity identity, CurriculumRoles role) {
 		if(!groupDao.hasRole(curriculum.getGroup(), identity, role.name())) {
 			groupDao.addMembershipOneWay(curriculum.getGroup(), identity, role.name(), GroupMembershipInheritance.none);

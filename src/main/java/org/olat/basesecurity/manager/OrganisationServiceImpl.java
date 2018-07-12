@@ -322,10 +322,6 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			return Collections.emptyList();
 		}
 		
-		if(roles.isOLATAdmin()) {
-			return organisationDao.find();
-		}
-		
 		Set<OrganisationRef> organisations = new HashSet<>();
 		for(OrganisationRoles organisationRole:organisationRoles) {
 			if(organisationRole != null) {
@@ -370,21 +366,12 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public void addMember(Organisation organisation, Identity member, OrganisationRoles role) {
 		GroupMembershipInheritance inheritanceMode;
-		if(isRoleDefaultInherited(role)) {
+		if(OrganisationRoles.isInheritedByDefault(role)) {
 			inheritanceMode = GroupMembershipInheritance.root;
 		} else {
 			inheritanceMode = GroupMembershipInheritance.none;
 		}
 		addMember(organisation, member, role, inheritanceMode);
-	}
-	
-	private boolean isRoleDefaultInherited(OrganisationRoles role) {
-		return role == OrganisationRoles.author
-				|| role == OrganisationRoles.usermanager || role == OrganisationRoles.rolesmanager
-				|| role == OrganisationRoles.groupmanager || role == OrganisationRoles.learnresourcemanager
-				|| role == OrganisationRoles.poolmanager || role == OrganisationRoles.curriculummanager
-				|| role == OrganisationRoles.lecturemanager || role == OrganisationRoles.qualitymanager
-				|| role == OrganisationRoles.linemanager || role == OrganisationRoles.principal;
 	}
 
 	@Override
@@ -465,18 +452,20 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	
 	@Override
 	public boolean hasRole(String organisationIdentifier, IdentityRef identity, OrganisationRoles... roles) {
-		List<String> roleList = new ArrayList<>();
-		if(roles != null && roles.length > 0 && roles[0] != null) {
-			for(int i=0; i<roles.length; i++) {
-				if(roles[i] != null) {
-					roleList.add(roles[i].name());
-				}
-			}
-		}
+		List<String> roleList = OrganisationRoles.toList(roles);
 		if(roleList.isEmpty()) {
 			return false;
 		}
-		return organisationDao.hasRole(identity, organisationIdentifier, roleList.toArray(new String[roleList.size()]));
+		return organisationDao.hasRole(identity, organisationIdentifier, null, roleList.toArray(new String[roleList.size()]));
+	}
+
+	@Override
+	public boolean hasRole(IdentityRef identity, OrganisationRef organisation, OrganisationRoles... roles) {
+		List<String> roleList = OrganisationRoles.toList(roles);
+		if(roleList.isEmpty()) {
+			return false;
+		}
+		return organisationDao.hasRole(identity, null, organisation, roleList.toArray(new String[roleList.size()]));
 	}
 
 	@Override
@@ -486,7 +475,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public boolean hasRole(IdentityRef identity, OrganisationRoles role) {
-		return organisationDao.hasRole(identity, null, role.name());
+		return organisationDao.hasRole(identity, null, null, role.name());
 	}
 
 	@Override

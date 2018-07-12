@@ -21,8 +21,6 @@ package org.olat.course.site;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
@@ -36,7 +34,6 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
@@ -49,17 +46,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 
 /**
- * 
- * Description:<br>
- * based on Intranet-Site (goodsolutions) 
- * more config-options (see NetworkSiteDef / olat_extensions.xml) 
- * 
- * TODO:RH: use repositoryuifactory instead of manually do things like, incrementing, building businesspath, etc...
- * 
- * <P>
  * Initial Date: 19.07.2005 <br>
  * 
  * @author Felix Jost
@@ -88,9 +76,6 @@ public class CourseSite extends AbstractSiteInstance {
 		this.siteSecCallback = siteSecCallback;
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#getNavElement()
-	 */
 	@Override
 	public NavElement getNavElement() {
 		return curNavElem;
@@ -132,20 +117,13 @@ public class CourseSite extends AbstractSiteInstance {
 		
 		
 		// load course (admins always see content) or alternative controller if course is not launchable
-		if (hasAccess || usess.getRoles().isOLATAdmin()) {
+		if (hasAccess || reSecurity.isEntryAdmin()) {
 			rs.incrementLaunchCounter(entry); 
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true);	
 			CourseRuntimeController runCtr = new CourseRuntimeController(ureq, bwControl, entry, reSecurity,
-				new RuntimeControllerCreator() {
-					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl,
-							TooledStackedPanel toolbarPanel, RepositoryEntry re, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-						return new RunMainController(uureq, wwControl, toolbarPanel,
-								CourseFactory.loadCourse(re), re, security, assessmentMode);
-					}
-				}, false, true);
-			
+				(uureq, wwControl, toolbarPanel, re, security, assessmentMode) -> 
+					new RunMainController(uureq, wwControl, toolbarPanel, CourseFactory.loadCourse(re), re, security, assessmentMode), false, true);
 			// Configure run controller
 			// a: don't show close link, is opened as site not tab
 			runCtr.setCourseCloseEnabled(false);

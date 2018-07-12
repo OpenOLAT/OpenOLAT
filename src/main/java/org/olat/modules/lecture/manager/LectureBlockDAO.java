@@ -31,6 +31,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -291,6 +292,13 @@ public class LectureBlockDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" block.endDate<=:endDate");
 		}
+		if(searchParams.getManager() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
+	         .append("    where rel.entry.key=entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+	         .append("      and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.learnresourcemanager.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
+	         .append("  )");
+		}
 		return where;
 	}
 	
@@ -308,6 +316,9 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getEndDate() != null) {
 			query.setParameter("endDate", searchParams.getEndDate(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getManager() != null) {
+			query.setParameter("managerKey", searchParams.getManager().getKey());
 		}
 	}
 

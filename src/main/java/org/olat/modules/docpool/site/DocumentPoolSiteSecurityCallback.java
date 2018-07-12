@@ -45,9 +45,6 @@ public class DocumentPoolSiteSecurityCallback implements SiteSecurityCallback {
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		UserSession usess = ureq == null ? null : ureq.getUserSession();
@@ -57,13 +54,13 @@ public class DocumentPoolSiteSecurityCallback implements SiteSecurityCallback {
 		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isOLATAdmin()) {
+		if (roles.isAdministrator()) {
 			return true;
 		}
 		
 		String taxonomyKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
-			TaxonomyRef taxonomy = new TaxonomyRefImpl(new Long(taxonomyKey));
+			TaxonomyRef taxonomy = new TaxonomyRefImpl(Long.valueOf(taxonomyKey));
 			return taxonomyService.hasTaxonomyCompetences(taxonomy, ureq.getIdentity(), ureq.getRequestTimestamp());
 		}
 		return false;

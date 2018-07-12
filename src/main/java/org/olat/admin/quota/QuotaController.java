@@ -77,7 +77,7 @@ public class QuotaController extends BasicController {
 		super(ureq, wControl);
 
 		UserSession usess = ureq.getUserSession();
-		if (!usess.getRoles().isOLATAdmin() && !usess.getRoles().isSystemAdmin()) {
+		if (!usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin()) {//TODO quota roles
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
 		}
 

@@ -31,6 +31,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
@@ -544,7 +545,7 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	public List<LectureBlockIdentityStatistics> getStatistics(LectureStatisticsSearchParameters params,
-			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin,
+			List<UserPropertyHandler> userPropertyHandlers, Identity identity,
 			boolean authorizedAbsenceEnabled,
 			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
@@ -583,19 +584,18 @@ public class LectureBlockRollCallDAO {
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" where config.lectureEnabled=true and membership.role='").append(GroupRoles.participant.name()).append("'");
-		if(!admin) {
-			sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
-			  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
-			  .append("     and membership.role='").append(GroupRoles.owner.name()).append("'")
-			  .append("     and re.access >= ").append(RepositoryEntry.ACC_OWNERS)
-			  .append(" ) or exists (select membership.key from bgroupmember as membership ")
-			  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("     and (re.access >= ").append(RepositoryEntry.ACC_USERS)
-			  .append("     or (re.access = ").append(RepositoryEntry.ACC_OWNERS).append(" and re.membersOnly=true))")
-			  .append(" ))");
-		} else {
-			sb.append(" and re.access >= ").append(RepositoryEntry.ACC_OWNERS);
-		}
+	
+		// check access permission
+		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
+		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
+		  .append("     and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
+		  .append("     and re.access >= ").append(RepositoryEntry.ACC_OWNERS)
+		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
+		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("     and (re.access >= ").append(RepositoryEntry.ACC_USERS)
+		  .append("     or (re.access = ").append(RepositoryEntry.ACC_OWNERS).append(" and re.membersOnly=true))")
+		  .append(" ))");
+	
 
 		if(params.getLifecycle() != null) {
 			sb.append(" and re.lifecycle.key=:lifecycleKey");
@@ -606,7 +606,7 @@ public class LectureBlockRollCallDAO {
 		if(params.getEndDate() != null) {
 			sb.append(" and block.endDate<=:endDate");
 		}
-		if(params.getBulkIdentifiers() != null && params.getBulkIdentifiers().size() > 0) {
+		if(params.getBulkIdentifiers() != null && !params.getBulkIdentifiers().isEmpty()) {
 			sb.append(" and (")
 			  .append("  lower(ident.name) in (:bulkIdentifiers)")
 			  .append("  or lower(ident.externalId) in (:bulkIdentifiers)")
@@ -620,7 +620,8 @@ public class LectureBlockRollCallDAO {
 		appendUsersStatisticsSearchParams(params, queryParams, userPropertyHandlers, sb);
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey());
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			rawQuery.setParameter("login", params.getLogin());
 		}
@@ -633,14 +634,11 @@ public class LectureBlockRollCallDAO {
 		if(params.getEndDate() != null) {
 			rawQuery.setParameter("endDate", params.getEndDate(), TemporalType.TIMESTAMP);
 		}
-		if(params.getBulkIdentifiers() != null && params.getBulkIdentifiers().size() > 0) {
+		if(params.getBulkIdentifiers() != null && !params.getBulkIdentifiers().isEmpty()) {
 			rawQuery.setParameter("bulkIdentifiers", params.getBulkIdentifiers());
 		}
 		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
 			rawQuery.setParameter(entry.getKey(), entry.getValue());
-		}
-		if(!admin) {
-			rawQuery.setParameter("identityKey", identity.getKey());
 		}
 
 		Date now = new Date();

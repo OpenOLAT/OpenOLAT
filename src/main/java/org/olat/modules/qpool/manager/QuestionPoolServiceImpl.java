@@ -456,7 +456,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public List<Pool> getPools(Identity identity, Roles roles) {
-		if(roles.isOLATAdmin()) {
+		if(roles.isAdministrator() || roles.isPoolManager()) {//TODO roles question pool
 			return poolDao.getPools(0, -1);
 		}
 		return poolDao.getPools(identity, 0, -1);

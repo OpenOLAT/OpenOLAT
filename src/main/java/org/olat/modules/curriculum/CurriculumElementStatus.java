@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 19 juin 2018<br>
@@ -28,6 +30,18 @@ package org.olat.modules.curriculum;
 public enum CurriculumElementStatus {
 	active,
 	inactive,
-	deleted
+	deleted;
+	
+	public static boolean isValueOf(String val) {
+		boolean ok = false;
+		if(StringHelper.containsNonWhitespace(val)) {
+			for(CurriculumElementStatus status:values()) {
+				if(status.name().equals(val)) {
+					ok = true;
+				}
+			}
+		}
+		return ok;
+	}
 
 }

@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -45,6 +43,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDocumentFactory;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -118,7 +117,8 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
     * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext, java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
     */
 	@Override
-	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
+	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter)
+	throws IOException,InterruptedException {
 		final Roles roles = Roles.administratorRoles();
 
 		final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
@@ -208,43 +208,39 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		if (debug) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
 		
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
-		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(repositoryKey);
 		if (repositoryEntry == null) {
 			return false;
 		}
 		if(roles.isGuestOnly() && repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
 			return false;
 		}
-			
-		boolean isOwner = repositoryService.hasRoleExpanded(identity, repositoryEntry,
-				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
-				GroupRoles.owner.name());
+		
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, repositoryEntry);
+		
 		boolean isAllowedToLaunch = false;
-		if (!isOwner) {
-			isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
-			if(isAllowedToLaunch) {
-				List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
-				if(entries.size() > 1) {
-					boolean hasAccess = false;
-					ACService acService = CoreSpringFactory.getImpl(ACService.class);
-					AccessResult acResult = acService.isAccessible(repositoryEntry, identity, false); 
-					if (acResult.isAccessible()) {
-						hasAccess = true;
-					} else if (!acResult.getAvailableMethods().isEmpty()) {
-						for(OfferAccess offer:acResult.getAvailableMethods()) {
-							String type = offer.getMethod().getType();
-							if (type.equals(FreeAccessHandler.METHOD_TYPE) || type.equals(PaypalAccessHandler.METHOD_TYPE)) {
-								hasAccess = true;
-							}
+		if (!reSecurity.isEntryAdmin() && reSecurity.canLaunch()) {
+			List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
+			if(entries.size() > 1) {
+				boolean hasAccess = false;
+				ACService acService = CoreSpringFactory.getImpl(ACService.class);
+				AccessResult acResult = acService.isAccessible(repositoryEntry, identity, false); 
+				if (acResult.isAccessible()) {
+					hasAccess = true;
+				} else if (!acResult.getAvailableMethods().isEmpty()) {
+					for(OfferAccess offer:acResult.getAvailableMethods()) {
+						String type = offer.getMethod().getType();
+						if (type.equals(FreeAccessHandler.METHOD_TYPE) || type.equals(PaypalAccessHandler.METHOD_TYPE)) {
+							hasAccess = true;
 						}
 					}
-					isAllowedToLaunch = hasAccess;
 				}
+				isAllowedToLaunch = hasAccess;
 			}
 		}
-			
-		if (debug) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
-		if (isOwner || isAllowedToLaunch) {
+	
+		if (debug) logDebug("isOwner=" + reSecurity.isEntryAdmin() + "  isAllowedToLaunch=" + isAllowedToLaunch);
+		if (reSecurity.isEntryAdmin() || isAllowedToLaunch) {
 			Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
 			if (debug) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
 			if (repositoryEntryIndexer != null) {

@@ -185,7 +185,7 @@ public class SearchResultsImpl implements SearchResults {
 		totalHits = docs.totalHits;
 		totalDocs = (docs.scoreDocs == null ? 0 : docs.scoreDocs.length);
 		int numOfDocs = Math.min(maxHits, docs.totalHits);
-		List<ResultDocument> res = new ArrayList<ResultDocument>(maxReturns + 1);
+		List<ResultDocument> res = new ArrayList<>(maxReturns + 1);
 		for (int i=firstResult; i<numOfDocs && res.size() < maxReturns; i++) {
 			Document doc;
 			if(doHighlight) {
@@ -226,18 +226,12 @@ public class SearchResultsImpl implements SearchResults {
 	 */
 	private ResultDocument createResultDocument(Document doc, int pos, Query query, Analyzer analyzer, boolean doHighlight, Identity identity, Roles roles) 
 	throws IOException {
-		boolean hasAccess = false;
-		if(roles.isOLATAdmin()) {
-			hasAccess = true;
-		} else {
-			String resourceUrl = doc.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
-			if(resourceUrl == null) {
-				resourceUrl = "";
-			}
-				
-			BusinessControl businessControl = BusinessControlFactory.getInstance().createFromString(resourceUrl);
-			hasAccess = mainIndexer.checkAccess(null, businessControl, identity, roles);
-		}
+		String resourceUrl = doc.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
+		if(resourceUrl == null) {
+			resourceUrl = "";
+		}	
+		BusinessControl businessControl = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+		boolean hasAccess = mainIndexer.checkAccess(null, businessControl, identity, roles);
 		
 		ResultDocument resultDoc;
 		if(hasAccess) {

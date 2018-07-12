@@ -95,8 +95,8 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		
 		Roles roles = usess.getRoles();
 
-		boolean canSeeToolController = roles.isAuthor()
-				|| roles.isOLATAdmin()
+		boolean canSeeToolController = roles.isAuthor()//TODO roles repo
+				|| roles.isAdministrator()
 				|| roles.isLearnResourceManager();
 		boolean showToolController = true;
 		if (!canSeeToolController && !courseConfig.isToolbar()) {
@@ -140,7 +140,7 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 			myLangConfig = defaultLangConfig;
 		}
 		
-		if(myLangConfig == null && config.getConfigurations().size() > 0) {
+		if(myLangConfig == null && !config.getConfigurations().isEmpty()) {
 			myLangConfig = config.getConfigurations().get(0);
 		}
 		

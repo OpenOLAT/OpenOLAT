@@ -30,8 +30,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,6 +50,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -81,17 +82,23 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	
 	private FormItem errorKeyDisplay; // using this for common errorKey output
 	
-	private boolean showChooseOwners;
-	private boolean showChoosePartips;
-	private boolean showWaitingList;
+	private final boolean showChooseOwners;
+	private final boolean showChoosePartips;
+	private final boolean showWaitingList;
 	
-	private boolean isAdmin;
+	private final boolean isAdmin;
+	private final boolean isAdministrativeUser;
 	
-	public final static String NLS_RADIO_ALL = "all";
-	public final static String NLS_RADIO_NOTHING = "nothing";
-	public final static String NLS_RADIO_CHOOSE = "choose";
+	public static final String NLS_RADIO_ALL = "all";
+	public static final String NLS_RADIO_NOTHING = "nothing";
+	public static final String NLS_RADIO_CHOOSE = "choose";
 	
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	/**
 	 * @param name
@@ -102,9 +109,8 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 
 		this.businessGroup = businessGroup;
 		this.isAdmin = isAdmin;
-		
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+
 		// check 'members can see owners' and 'members can see participants' 
 		showChooseOwners  = businessGroup.isOwnersVisibleIntern();
 		showChoosePartips = businessGroup.isParticipantsVisibleIntern();
@@ -127,7 +133,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 			// Owner MultiSelection
 			List<Identity> owners = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());
 			keysOwner = getMemberKeys(owners);
-			valuesOwner = getMemberValues(ureq, owners); 
+			valuesOwner = getMemberValues(owners); 
 			ArrayHelper.sort(keysOwner, valuesOwner, false, true, false);
 		} else {
 
@@ -157,7 +163,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 			// Participant MultiSelection
 			List<Identity> participants = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());
 			keysPartips = getMemberKeys(participants);
-			valuesPartips = getMemberValues(ureq, participants); 
+			valuesPartips = getMemberValues(participants); 
 			ArrayHelper.sort(keysPartips, valuesPartips, false, true, false);
 		} else {
 			radioKeysPartips = new String[]{ NLS_RADIO_ALL, NLS_RADIO_NOTHING };
@@ -182,7 +188,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		  // Waitings MultiSelection
 			List<Identity> waitingList = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
 			keysWaitings = getMemberKeys(waitingList);
-			valuesWaitings = getMemberValues(ureq, waitingList);			
+			valuesWaitings = getMemberValues(waitingList);			
 			ArrayHelper.sort(keysWaitings, valuesWaitings, false, true, false);
 		} else {
 			keysWaitings = new String[]{};
@@ -199,18 +205,19 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	 * @param securityGroup
 	 * @return
 	 */
-	private String[] getMemberValues(UserRequest ureq, List<Identity> membersList) {
-		String[] values = new String[0];		
-		List<UserPropertyHandler> propHandlers = UserManager.getInstance().getUserPropertyHandlersFor(this.getClass().getCanonicalName(), ureq.getUserSession().getRoles().isOLATAdmin());	
-		values = new String[membersList.size()];
+	private String[] getMemberValues(List<Identity> membersList) {
+		List<UserPropertyHandler> propHandlers = userManager.getUserPropertyHandlersFor(this.getClass().getCanonicalName(), isAdministrativeUser);	
+		String[] values = new String[membersList.size()];
 		for (int i = 0; i < membersList.size(); i++) {			
 			User currentUser = membersList.get(i).getUser();
-			StringBuffer userInfo = new StringBuffer();
+			StringBuilder userInfo = new StringBuilder();
 			for (UserPropertyHandler userProp : propHandlers) {
 				userInfo.append(userProp.getUserProperty(currentUser, getLocale()));
 				userInfo.append(" ");
 			}
-			userInfo.append("[").append(membersList.get(i).getName().toString()).append("]");
+			if(isAdministrativeUser) {
+				userInfo.append("[").append(membersList.get(i).getName()).append("]");
+			}
 			values[i] = userInfo.toString();	
 		}
 		return values;
@@ -223,8 +230,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	 * @return
 	 */
 	private String[] getMemberKeys(List<Identity> membersList ) {
-		String[] keys = new String[0];			
-		keys = new String[membersList.size()];
+		String[] keys = new String[membersList.size()];
 		for (int i = 0; i < membersList.size(); i++) {
 			keys[i] = membersList.get(i).getKey().toString();			
 		}
@@ -237,21 +243,21 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		errorKeyDisplay.clearError();
 		if (multiSelectionOwnerKeys != null) {
 			multiSelectionOwnerKeys.clearError();
-			if (multiSelectionOwnerKeys.isVisible() && multiSelectionOwnerKeys.getSelectedKeys().size() == 0) {
+			if (multiSelectionOwnerKeys.isVisible() && multiSelectionOwnerKeys.getSelectedKeys().isEmpty()) {
 				multiSelectionOwnerKeys.setErrorKey("sendtochooser.form.error.norecipent", null);
 				return false;
 			}
 		}
 		if (multiSelectionPartipKeys != null) {
 			multiSelectionPartipKeys.clearError();
-			if (multiSelectionPartipKeys.isVisible() && multiSelectionPartipKeys.getSelectedKeys().size() == 0) {
+			if (multiSelectionPartipKeys.isVisible() && multiSelectionPartipKeys.getSelectedKeys().isEmpty()) {
 				multiSelectionPartipKeys.setErrorKey("sendtochooser.form.error.norecipent", null);
 				return false;
 			}
 		}
 		if (multiSelectionWaitingKeys != null) {
 			multiSelectionWaitingKeys.clearError();
-			if (multiSelectionWaitingKeys.isVisible() && multiSelectionWaitingKeys.getSelectedKeys().size() == 0) {
+			if (multiSelectionWaitingKeys.isVisible() && multiSelectionWaitingKeys.getSelectedKeys().isEmpty()) {
 				multiSelectionWaitingKeys.setErrorKey("sendtochooser.form.error.norecipent", null);
 				return false;
 			}
@@ -313,14 +319,14 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	 * @return
 	 */
 	private boolean isMultiSelectionOwnerKeys() {
-		return isAdmin ? true : showChooseOwners;
+		return isAdmin || showChooseOwners;
 	}
 	
 	/**
 	 * @return
 	 */
 	private boolean isMultiSelectionPartipKeys() {
-		return isAdmin ? true : showChoosePartips;
+		return isAdmin || showChoosePartips;
 	}
 
 	/**
@@ -346,12 +352,12 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	
 	private List<Long> getSelectedKeyOf(MultipleSelectionElement multiSelectionElements) {
 		if (multiSelectionElements == null) {
-			return new ArrayList<Long>();
+			return new ArrayList<>();
 		}
 		Collection<String> selectedKeys = multiSelectionElements.getSelectedKeys();
-		List<Long> selectedKeysLong = new ArrayList<Long>();
+		List<Long> selectedKeysLong = new ArrayList<>();
 		for (String key : selectedKeys) {
-			selectedKeysLong.add(Long.parseLong(key.toString()));
+			selectedKeysLong.add(Long.parseLong(key));
 		}
 		return selectedKeysLong;
 	}

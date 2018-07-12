@@ -58,6 +58,7 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 			case key: return organisation.getKey();
 			case displayName: return organisation.getDisplayName();
 			case identifier: return organisation.getIdentifier();
+			case externalId: return organisation.getExternalId();
 			case typeIdentifier: {
 				String typeIdentifier = organisation.getTypeIdentifier();
 				if(StringHelper.containsNonWhitespace(typeIdentifier)) {
@@ -79,6 +80,7 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 		key("table.header.key"),
 		displayName("table.header.displayName"),
 		identifier("table.header.identifier"),
+		externalId("table.header.external.id"),
 		typeIdentifier("table.header.type.identifier"),
 		tools("table.header.tools");
 		

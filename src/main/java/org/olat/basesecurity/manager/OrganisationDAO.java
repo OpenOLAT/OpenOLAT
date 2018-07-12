@@ -39,6 +39,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -354,7 +355,7 @@ public class OrganisationDAO {
 		return memberships != null && !memberships.isEmpty() && memberships.get(0) != null && memberships.get(0).longValue() > 0;	
 	}
 	
-	public boolean hasRole(IdentityRef identity, String organisationIdentifier, String... role) {
+	public boolean hasRole(IdentityRef identity, String organisationIdentifier, OrganisationRef organisation, String... role) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select membership.key from organisation org")
 		  .append(" inner join org.group baseGroup")
@@ -368,16 +369,14 @@ public class OrganisationDAO {
 		if(StringHelper.containsNonWhitespace(organisationIdentifier)) {
 			sb.append(" and org.identifier=:identifier");
 		}
+		if(organisation != null) {
+			sb.append(" and org.key=:organisationKey");
+		}
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("identityKey", identity.getKey());
 		if(hasRole) {
-			List<String> roleList = new ArrayList<>(role.length);
-			for(String r:role) {
-				if(StringHelper.containsNonWhitespace(r)) {
-					roleList.add(r);
-				}
-			}
+			List<String> roleList = PersistenceHelper.toList(role);
 			query.setParameter("role", roleList);
 		}
 		if(StringHelper.containsNonWhitespace(organisationIdentifier)) {

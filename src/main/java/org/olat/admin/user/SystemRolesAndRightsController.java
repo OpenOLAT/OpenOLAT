@@ -26,6 +26,7 @@
 package org.olat.admin.user;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -168,12 +169,12 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		formLayout.add(anonymousCont);
 		
 		anonymousEl = uifactory.addRadiosVertical(
-				"anonymous", "rightsForm.isAnonymous", anonymousCont, 
+				"anonymous", "role.guest", anonymousCont, 
 				new String[]{"true", "false"},
-				new String[]{translate("rightsForm.isAnonymous.true"), translate("rightsForm.isAnonymous.false")}
+				new String[]{translate("role.guest.true"), translate("role.guest.false")}
 		);
 		uifactory.addSpacerElement("syssep", anonymousCont, false);
-		if (iAmAdmin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS.booleanValue()) {
+		if (iAmAdmin) {
 			anonymousEl.addActionListener(FormEvent.ONCLICK);
 		} else {
 			anonymousCont.setVisible(false);
@@ -229,49 +230,49 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		List<String> roleValues = new ArrayList<>();
 
 		roleKeys.add(OrganisationRoles.invitee.name());
-		roleValues.add(translate("rightsForm.isInvitee"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.invitee.name())));
 
 		roleKeys.add(OrganisationRoles.user.name());
-		roleValues.add(translate("rightsForm.isUser"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.user.name())));
 
 		roleKeys.add(OrganisationRoles.author.name());
-		roleValues.add(translate("rightsForm.isAuthor"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.author.name())));
 
 		roleKeys.add(OrganisationRoles.usermanager.name());
-		roleValues.add(translate("rightsForm.isUsermanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.usermanager.name())));
 
 		roleKeys.add(OrganisationRoles.rolesmanager.name());
-		roleValues.add(translate("rightsForm.isRolesmanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.rolesmanager.name())));
 
 		roleKeys.add(OrganisationRoles.groupmanager.name());
-		roleValues.add(translate("rightsForm.isGroupmanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.groupmanager.name())));
 
 		roleKeys.add(OrganisationRoles.poolmanager.name());
-		roleValues.add(translate("rightsForm.isPoolmanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.poolmanager.name())));
 
 		roleKeys.add(OrganisationRoles.curriculummanager.name());
-		roleValues.add(translate("rightsForm.isCurriculummanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.curriculummanager.name())));
 
 		roleKeys.add(OrganisationRoles.lecturemanager.name());
-		roleValues.add(translate("rightsForm.isLecturemanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.lecturemanager.name())));
 
 		roleKeys.add(OrganisationRoles.qualitymanager.name());
-		roleValues.add(translate("rightsForm.isQualitymanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.qualitymanager.name())));
 
 		roleKeys.add(OrganisationRoles.linemanager.name());
-		roleValues.add(translate("rightsForm.isLinemanager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.linemanager.name())));
 
 		roleKeys.add(OrganisationRoles.learnresourcemanager.name());
-		roleValues.add(translate("rightsForm.isInstitutionalResourceManager"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.learnresourcemanager.name())));
 
 		roleKeys.add(OrganisationRoles.principal.name());
-		roleValues.add(translate("rightsForm.isPrincipal"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.principal.name())));
 
 		roleKeys.add(OrganisationRoles.administrator.name());
-		roleValues.add(translate("rightsForm.isAdmin"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.administrator.name())));
 
 		roleKeys.add(OrganisationRoles.sysadmin.name());
-		roleValues.add(translate("rightsForm.isSysAdmin"));
+		roleValues.add(translate("role.".concat(OrganisationRoles.sysadmin.name())));
 
 		MultipleSelectionElement rolesEl = uifactory.addCheckboxesHorizontal(
 					"roles_" + (++counter), "rightsForm.roles", formLayout,
@@ -281,6 +282,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			rolesEl.setLabel("rightsForm.roles.for", new String[] { organisation.getDisplayName() });
 		}
 		rolesEl.setUserObject(new RolesElement(roleKeys, organisation, rolesEl));
+		rolesEl.addActionListener(FormEvent.ONCHANGE);
 		
 		if(admin) {
 			rolesEl.setEnabled(new HashSet<>(roleKeys), true);
@@ -332,6 +334,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		for(OrganisationRoles role:OrganisationRoles.values()) {
 			wrapper.setRole(role, editedRolesByOrg.hasRole(role));
 		}
+		wrapper.saveSelectedRoles();
 		
 		if(editedRolesByOrg.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.sysadmin, OrganisationRoles.rolesmanager)) {
 			statusEl.setEnabled(false);
@@ -389,6 +392,11 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addToOrganisationButton == source) {
 			doAddToOrganisation(ureq);
+		} else if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement el = (MultipleSelectionElement)source;
+			if(el.getUserObject() instanceof RolesElement) {
+				((RolesElement)el.getUserObject()).checkInvitee();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -436,7 +444,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		// 1) general user type - anonymous or user
 		// anonymous users
 		boolean isAnonymous = editedRoles.isGuestOnly();
-		if (admin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS.booleanValue()) {
+		if (admin) {
 			isAnonymous = anonymousEl.getSelectedKey().equals("true");
 		}
 		
@@ -520,6 +528,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		private final List<String> roleKeys;
 		private final Organisation organisation;
 		private final MultipleSelectionElement rolesEl;
+		private List<String> selectedRoles = new ArrayList<>();
 		
 		public RolesElement(List<String> roleKeys, Organisation organisation, MultipleSelectionElement rolesEl) {
 			this.roleKeys = roleKeys;
@@ -553,6 +562,28 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			if(roleKeys.contains(k.name()) && enabled) {
 				rolesEl.select(k.name(), enabled);
 			}
+		}
+		
+		public void checkInvitee() {
+			Collection<String> keys = rolesEl.getSelectedKeys();
+			if(selectedRoles.contains(OrganisationRoles.invitee.name())) {
+				if(keys.contains(OrganisationRoles.invitee.name()) && keys.size() > 1)  {
+					rolesEl.uncheckAll();
+					for(String role:keys) {
+						if(!OrganisationRoles.invitee.name().equals(role)) {
+							rolesEl.select(role, true);
+						}
+					}
+				}
+			} else if(keys.contains(OrganisationRoles.invitee.name())) {
+				rolesEl.uncheckAll();
+				rolesEl.select(OrganisationRoles.invitee.name(), true);
+			}
+			saveSelectedRoles();
+		}
+
+		public void saveSelectedRoles() {
+			selectedRoles = new ArrayList<>(rolesEl.getSelectedKeys());
 		}
 	}
 }

@@ -36,11 +36,12 @@ import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
@@ -51,10 +52,8 @@ import org.olat.core.util.WebappHelper;
  *  
  * @author Christian Guretzki
  */
-public class TabbedPaneController extends DefaultController implements ControllerEventListener, Activateable2 {
+public class TabbedPaneController extends BasicController implements ControllerEventListener, Activateable2 {
 
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(TabbedPaneController.class);
-	
 	private static final String NLS_ERROR_NOACCESS_TO_USER = "error.noaccess.to.user";
 	
 	private VelocityContainer myContent;
@@ -75,44 +74,40 @@ public class TabbedPaneController extends DefaultController implements Controlle
 	 * @param identity
 	 */
 	public TabbedPaneController(UserRequest ureq, WindowControl wControl) {
-		super(wControl);
+		super(ureq, wControl);
 	
 		translator = Util.createPackageTranslator(TabbedPaneController.class, ureq.getLocale());
 
 		Boolean canDelete = BaseSecurityModule.USERMANAGER_CAN_DELETE_USER;
-		if ( canDelete.booleanValue() || ureq.getUserSession().getRoles().isOLATAdmin() ) {
-			myContent = new VelocityContainer("deleteTabbedPane", VELOCITY_ROOT + "/deleteTabbedPane.html", translator, this);
+		Roles roles = ureq.getUserSession().getRoles();
+		if ((roles.isUserManager() && canDelete.booleanValue()) || roles.isRolesManager() || roles.isAdministrator()) {
+			myContent = createVelocityContainer("deleteTabbedPane", "deleteTabbedPane");
 			initTabbedPane(ureq);
-			setInitialComponent(myContent);
+			putInitialPanel(myContent);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
 			getWindowControl().setWarning(translator.translate(NLS_ERROR_NOACCESS_TO_USER, new String[]{supportAddr}));
-			setInitialComponent(new Panel("empty"));
+			putInitialPanel(new Panel("empty"));
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event.getCommand().equals(TabbedPaneChangedEvent.TAB_CHANGED)) {
 			userSelectionCtr.updateUserList();
 			userDeleteStatusCtr.updateUserList();
 			readyToDeleteCtr.updateUserList();
-			//fxdiff BAKS-7 Resume function
 			userDeleteTabP.addToHistory(ureq, getWindowControl());
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
 	}
 
 	
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries != null && entries.isEmpty()) return;
 		userDeleteTabP.activate(ureq, entries, state);
@@ -129,38 +124,22 @@ public class TabbedPaneController extends DefaultController implements Controlle
 		userDeleteTabP.addListener(this);
 		
 		userSelectionCtr = new SelectionController(ureq, getWindowControl());
-		userSelectionCtr.addControllerListener(this);
+		listenTo(userSelectionCtr);
 		userDeleteTabP.addTab(translator.translate("delete.workflow.tab.start.process"), userSelectionCtr.getInitialComponent());
 
 		userDeleteStatusCtr = new StatusController(ureq, getWindowControl());
-		userDeleteStatusCtr.addControllerListener(this);
+		listenTo(userDeleteStatusCtr);
 		userDeleteTabP.addTab(translator.translate("delete.workflow.tab.status.email"), userDeleteStatusCtr.getInitialComponent());
 
 		readyToDeleteCtr = new ReadyToDeleteController(ureq, getWindowControl());
-		readyToDeleteCtr.addControllerListener(this);
+		listenTo(readyToDeleteCtr);
 		userDeleteTabP.addTab(translator.translate("delete.workflow.tab.select.delete"), readyToDeleteCtr.getInitialComponent());
 				
 		myContent.put("userDeleteTabP", userDeleteTabP);
 	}
 
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
-		if (userSelectionCtr != null) {
-			userSelectionCtr.dispose();
-			userSelectionCtr = null;
-		}
-		if (userDeleteStatusCtr != null) {
-			userDeleteStatusCtr.dispose();
-			userDeleteStatusCtr = null;
-		}
-		if (readyToDeleteCtr != null) {
-			readyToDeleteCtr.dispose();
-			readyToDeleteCtr = null;
-		}
+		//
 	}
-
 }

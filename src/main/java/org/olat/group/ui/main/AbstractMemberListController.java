@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -212,12 +213,21 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	public void overrideManaged(UserRequest ureq, boolean override) {
-		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if(isAllowedToOverrideManaged(ureq)) {
 			overrideManaged = override;
 			editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 			removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 			flc.setDirty(true);
 		}
+	}
+	
+	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
+		if(repoEntry != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			return roles.isAdministrator() && repositoryService.hasRoleExpanded(getIdentity(), repoEntry,
+					OrganisationRoles.administrator.name());
+		}
+		return false;
 	}
 	
 	@Override
@@ -748,8 +758,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected abstract void doOpenAssessmentTool(UserRequest ureq, MemberRow member);
 	
 	protected List<Long> getMemberKeys(List<MemberRow> members) {
-		List<Long> keys = new ArrayList<Long>(members.size());
-		if(members != null && !members.isEmpty()) {
+		List<Long> keys = new ArrayList<>(members.size());
+		if(!members.isEmpty()) {
 			for(MemberRow member:members) {
 				keys.add(member.getIdentityKey());
 			}
@@ -896,7 +906,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		private void cleanSeparator(List<String> links) {
-			if(links.size() > 0 && links.get(links.size() - 1).equals("-")) {
+			if(!links.isEmpty() && links.get(links.size() - 1).equals("-")) {
 				links.remove(links.size() - 1);
 			}
 		}

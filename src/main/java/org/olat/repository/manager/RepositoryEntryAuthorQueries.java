@@ -332,7 +332,7 @@ public class RepositoryEntryAuthorQueries {
 			return false;
 		}
 
-		if(roles.isOLATAdmin()) {
+		if(roles.isAdministrator()) {//TODO roles repo
 			if(params.isDeleted()) {
 				sb.append(" v.access=").append(RepositoryEntry.DELETED);
 			} else {

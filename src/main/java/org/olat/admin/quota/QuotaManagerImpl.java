@@ -143,9 +143,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public Set<String> getDefaultQuotaIdentifyers() {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
 		return defaultQuotas.keySet();
 	}
 	
@@ -158,9 +155,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public Quota getDefaultQuota(String identifyer) {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
 		return defaultQuotas.get(identifyer);
 	}
 
@@ -173,10 +167,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public Quota getCustomQuota(String path) {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
-		
 		StringBuilder query = new StringBuilder();
 		query.append("select prop.name, prop.stringValue from ").append(Property.class.getName()).append(" as prop where ")
 		     .append(" prop.category='").append(QUOTA_CATEGORY).append("'")
@@ -205,9 +195,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public void setCustomQuotaKB(Quota quota) {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
 		PropertyManager pm = PropertyManager.getInstance();
 		Property p = pm.findProperty(null, null, quotaResource, QUOTA_CATEGORY, quota.getPath());
 		if (p == null) { // create new entry
@@ -250,9 +237,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public List<Quota> listCustomQuotasKB() {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
 		List<Quota> results = new ArrayList<>();
 		PropertyManager pm = PropertyManager.getInstance();
 		List<Property> props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
@@ -284,8 +268,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		if (delim == -1) return null;
 		Quota q = null;
 		try {
-			Long quotaKB = new Long(s.substring(0, delim));
-			Long ulLimitKB = new Long(s.substring(delim + 1));
+			Long quotaKB = Long.valueOf(s.substring(0, delim));
+			Long ulLimitKB = Long.valueOf(s.substring(delim + 1));
 			q = createQuota(name, quotaKB, ulLimitKB);
 		} catch (NumberFormatException e) {
 			// will return null if quota parsing failed
@@ -306,7 +290,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public Quota getDefaultQuotaDependingOnRole(Identity identity, Roles roles) {
-		if (roles.isOLATAdmin() || roles.isAuthor()) {
+		if (isPowerUser(roles)) {//TODO quota roles
 			return getDefaultQuotaPowerUsers();
 		}
 		return getDefaultQuotaUsers();
@@ -323,12 +307,15 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, Roles roles, String relPath) {
 		Quota quota = getCustomQuota(relPath);
 		if (quota == null) { // no custom quota
-			if (roles.isAuthor() || roles.isOLATAdmin()) {
-				return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
-			}
-			return createQuota(relPath, getDefaultQuotaUsers().getQuotaKB(), getDefaultQuotaUsers().getUlLimitKB());
+			//TODO quota roles
+			Quota defQuota = isPowerUser(roles) ? getDefaultQuotaPowerUsers() : getDefaultQuotaUsers();
+			return createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 		return quota;
+	}
+	
+	private boolean isPowerUser(Roles roles) {
+		return roles.isAdministrator() || roles.isLearnResourceManager() || roles.isAuthor();
 	}
 
 	/**
@@ -339,9 +326,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 * @return Quota
 	 */
 	private Quota getDefaultQuotaUsers() {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
 		return defaultQuotas.get(QuotaConstants.IDENTIFIER_DEFAULT_USERS);
 	}
 
@@ -353,9 +337,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 * @return Quota
 	 */
 	private Quota getDefaultQuotaPowerUsers() {
-		if (defaultQuotas == null) {
-			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
-		}
 		return defaultQuotas.get(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
 	}
 
@@ -419,7 +400,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		}
 	}
 	
-
 	@Override
 	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath) {
 		return new GenericQuotaViewController(ureq, wControl, relPath);
@@ -427,7 +407,9 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 
 	@Override
 	public boolean hasQuotaEditRights(Identity identity, Roles roles, List<OrganisationRef> organisationOwnerships) {
-		return roles.isOLATAdmin()
+		return roles.hasRole(organisationOwnerships, OrganisationRoles.administrator)
+				|| roles.hasRole(organisationOwnerships, OrganisationRoles.sysadmin)
+				|| roles.hasRole(organisationOwnerships, OrganisationRoles.rolesmanager)
 				|| roles.hasRole(organisationOwnerships, OrganisationRoles.usermanager)
 				|| roles.hasRole(organisationOwnerships, OrganisationRoles.learnresourcemanager);
 	}

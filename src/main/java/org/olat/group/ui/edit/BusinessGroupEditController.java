@@ -32,7 +32,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.tabbedpane.TabCreator;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -185,18 +184,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		
 		editDetailsController.setAllowWaitingList(tabAccessCtrl == null || !tabAccessCtrl.isPaymentMethodInUse());
 		tabbedPane.addTab(translate("group.edit.tab.details"), editDetailsController.getInitialComponent());
-		tabbedPane.addTab(translate("group.edit.tab.collabtools"), new TabCreator() {
-			@Override
-			public Component create(UserRequest uureq) {
+		tabbedPane.addTab(translate("group.edit.tab.collabtools"), uureq -> {
 				collaborationToolsController = new BusinessGroupToolsController(uureq, getWindowControl(), currBusinessGroup);
 				listenTo(collaborationToolsController);
 				return collaborationToolsController.getInitialComponent();
-			}
-		});
+			});
 		
-		membersTab = tabbedPane.addTab(translate("group.edit.tab.members"), new TabCreator() {
-			@Override
-			public Component create(UserRequest uureq) {
+		membersTab = tabbedPane.addTab(translate("group.edit.tab.members"), uureq -> {
 				if(membersController == null) {
 					membersController = new BusinessGroupMembersController(uureq, getWindowControl(), toolbarPanel, currBusinessGroup);
 					listenTo(membersController);
@@ -204,22 +198,18 @@ public class BusinessGroupEditController extends BasicController implements Cont
 					membersController.updateBusinessGroup(currBusinessGroup);
 				}
 				return membersController.getInitialComponent();
-			}
-		});
+			});
 		
 		//resources (optional)
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean resourceEnabled = roles.isOLATAdmin() || roles.isGroupManager() || roles.isAuthor() || hasResources;
+		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor() || hasResources;
 		if(resourceEnabled) {
-			tabbedPane.addTab(translate("group.edit.tab.resources"), new TabCreator() {
-				@Override
-				public Component create(UserRequest uureq) {
-					if(resourceController == null) {
-						resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
-						listenTo(resourceController);
-					}
-					return resourceController.getInitialComponent();
+			tabbedPane.addTab(translate("group.edit.tab.resources"), uureq -> {
+				if(resourceController == null) {
+					resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
+					listenTo(resourceController);
 				}
+				return resourceController.getInitialComponent();
 			});
 		} else {
 			removeAsListenerAndDispose(resourceController);
@@ -227,12 +217,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		}
 
 		if(tabAccessCtrl != null) {
-			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), new TabCreator() {
-				@Override
-				public Component create(UserRequest uureq) {
-					return tabAccessCtrl.getInitialComponent();
-				}
-			});
+			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), uureq -> tabAccessCtrl.getInitialComponent());
 		}
 
 		if(currentSelectedPane > 0) {
@@ -257,10 +242,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		return tabAccessCtrl;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		 if (source == tabbedPane && event instanceof TabbedPaneChangedEvent) {
@@ -271,10 +252,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == collaborationToolsController) {
@@ -309,18 +286,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				currBusinessGroup = membersController.getGroup();
 				fireEvent(ureq, event);
 			}
-		} else if (source == tabAccessCtrl) {
-			setAllTabs(ureq);
-			fireEvent(ureq, event);
-		} else if (source == resourceController) {
+		} else if (source == tabAccessCtrl || source == resourceController) {
 			setAllTabs(ureq);
 			fireEvent(ureq, event);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
@@ -338,15 +309,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	}
 
 	/**
-	 * @return true if lock on group has been acquired, flase otherwhise
+	 * @return true if lock on group has been acquired, false otherwhise
 	 */
 	public boolean isLockAcquired() {
 		return lockEntry.isSuccess();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean asynchronous)
-	 */
 	@Override
 	protected void doDispose() {
 		if(currBusinessGroup != null) {

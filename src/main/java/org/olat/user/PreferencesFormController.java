@@ -20,12 +20,13 @@
 package org.olat.user;
 
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -150,36 +151,17 @@ public class PreferencesFormController extends FormBasicController {
 		StaticTextElement username = uifactory.addStaticTextElement("form.username", tobeChangedIdentity.getName(), formLayout);
 		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
-
-		// Roles
-		String[] roleKeys = new String[] {
-			OrganisationRoles.usermanager.name(), OrganisationRoles.groupmanager.name(),
-			OrganisationRoles.poolmanager.name(), OrganisationRoles.curriculummanager.name(),
-			OrganisationRoles.author.name(), OrganisationRoles.learnresourcemanager.name(),
-			OrganisationRoles.administrator.name()
-		};
-
-		String[] roleValues = new String[]{
-				translate("rightsForm.isUsermanager"), translate("rightsForm.isGroupmanager"),
-				translate("rightsForm.isPoolmanager"), translate("rightsForm.isCurriculummanager"),
-				translate("rightsForm.isAuthor"), translate("rightsForm.isInstitutionalResourceManager"),
-				translate("rightsForm.isAdmin")
-		};
 		
 		StringBuilder userRolesSb = new StringBuilder();
-		List<String> roles = securityManager.getRolesAsString(tobeChangedIdentity);
+		Set<String> roles = new HashSet<>(securityManager.getRolesAsString(tobeChangedIdentity));
 		for(String role:roles) {
-			for(int i=0; i<roleKeys.length; i++) {
-				if(roleKeys[i].equals(role)) {
-					if(userRolesSb.length() > 0) userRolesSb.append(", ");
-					userRolesSb.append(roleValues[i]);
-				}
-			}
+			if(userRolesSb.length() > 0) userRolesSb.append(", ");
+			userRolesSb.append(translate("role.".concat(role)));
 		}
 		
 		String userRoles;
 		if (userRolesSb.length() == 0) {
-			userRoles = translate("rightsForm.isAnonymous.false");
+			userRoles = translate("role.guest.false");
 		} else {
 			userRoles = userRolesSb.toString();
 		}

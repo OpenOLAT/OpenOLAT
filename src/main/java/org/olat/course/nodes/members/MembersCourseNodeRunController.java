@@ -111,7 +111,7 @@ public class MembersCourseNodeRunController extends BasicController {
 			showParticipants = true;
 		}
 		
-		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), courseEnv, null,
+		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), userCourseEnv, null,
 				owners, coaches, participants, new ArrayList<>(), canEmail, canDownload, deduplicateList, showOwners, showCoaches,
 				showParticipants, false, true);
 		listenTo(membersDisplayRunController);

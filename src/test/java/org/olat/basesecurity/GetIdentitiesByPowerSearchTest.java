@@ -686,7 +686,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		for (Identity resultIdentity:results) {
 			boolean foundIdentityInSecGroup = false;
 			for (int i = 0; i < roles.length; i++) {
-				if (organisationDao.hasRole(resultIdentity, null, roles[i].name())) {
+				if (organisationDao.hasRole(resultIdentity, null, null, roles[i].name())) {
 					foundIdentityInSecGroup = true;
 				}
 			}

@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -84,11 +85,12 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 	public DocumentPoolMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		isTaxonomyAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		Roles roles = ureq.getUserSession().getRoles();
+		isTaxonomyAdmin = roles.isAdministrator() || roles.isSystemAdmin();
 		
 		String taxonomyKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
-			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(new Long(taxonomyKey));
+			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyKey));
 			taxonomy = taxonomyService.getTaxonomy(taxonomyRef);
 		}
 

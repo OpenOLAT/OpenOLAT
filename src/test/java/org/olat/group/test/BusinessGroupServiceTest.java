@@ -1149,7 +1149,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		for(Identity contact:contactList) {
 			Roles roles = securityManager.getRoles(contact);
 			Assert.assertNotNull(roles);
-			Assert.assertTrue(roles.isOLATAdmin());
+			Assert.assertTrue(roles.isAdministrator());
 		}
 	}
 	

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.restapi;
 
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,19 +110,16 @@ public class CurriculumsWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculums(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
-		if(!roles.isOLATAdmin()) {
-			List<OrganisationRef> organisations = roles.getOrganisationsWithRole(OrganisationRoles.curriculummanager);
-			if(organisations.isEmpty()) {
-				return Response.serverError().status(Status.UNAUTHORIZED).build();
-			}
-			params.setOrganisations(organisations);
+		List<OrganisationRef> organisations = roles.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
+		if(organisations.isEmpty()) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-
+		params.setOrganisations(organisations);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
 		List<CurriculumVO> voes = new ArrayList<>(curriculums.size());
 		for(Curriculum curriculum:curriculums) {
@@ -133,7 +131,7 @@ public class CurriculumsWebService {
 
 	public CurriculumElementTypesWebService getCurriculumElementTypesWebService(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		return new CurriculumElementTypesWebService();
@@ -160,11 +158,11 @@ public class CurriculumsWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculum(CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		Curriculum savedCurriculum = saveCurriculum(curriculum, roles);
+		Curriculum savedCurriculum = saveCurriculum(curriculum, httpRequest);
 		return Response.ok(CurriculumVO.valueOf(savedCurriculum)).build();
 	}
 	
@@ -189,11 +187,11 @@ public class CurriculumsWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculum(CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		Curriculum savedCurriculum = saveCurriculum(curriculum, roles);
+		Curriculum savedCurriculum = saveCurriculum(curriculum, httpRequest);
 		return Response.ok(CurriculumVO.valueOf(savedCurriculum)).build();
 	}
 	
@@ -213,13 +211,10 @@ public class CurriculumsWebService {
 	@Path("{curriculumKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculum(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
+		if(!isManager(curriculum, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
-		allowedOrganisation(curriculum.getOrganisation(), roles);
 		CurriculumVO curriculumVo = CurriculumVO.valueOf(curriculum);
 		return Response.ok(curriculumVo).build();
 	}
@@ -231,7 +226,9 @@ public class CurriculumsWebService {
 		if(curriculum == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
-		allowedOrganisation(curriculum.getOrganisation(), getRoles(httpRequest));
+		if(!isManager(curriculum, httpRequest)) {
+			throw new WebApplicationException(Status.UNAUTHORIZED);
+		}
 		return new CurriculumElementsWebService(curriculum);
 	}
 	
@@ -259,7 +256,7 @@ public class CurriculumsWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculum(@PathParam("curriculumKey") Long curriculumKey, CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -269,11 +266,13 @@ public class CurriculumsWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 
-		Curriculum savedCurriculum = saveCurriculum(curriculum, roles);
+		Curriculum savedCurriculum = saveCurriculum(curriculum, httpRequest);
 		return Response.ok(CurriculumVO.valueOf(savedCurriculum)).build();
 	}
 	
-	private Curriculum saveCurriculum(CurriculumVO curriculum, Roles roles) {
+	private Curriculum saveCurriculum(CurriculumVO curriculum, HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		
 		Curriculum curriculumToSave = null;
 		Organisation organisation = null;
 		if(curriculum.getOrganisationKey() != null) {
@@ -286,7 +285,9 @@ public class CurriculumsWebService {
 					curriculum.getDescription(), organisation);
 		} else {
 			curriculumToSave = curriculumService.getCurriculum(new CurriculumRefImpl(curriculum.getKey()));
-			allowedOrganisation(curriculumToSave.getOrganisation(), roles);//check if the user can manipulate this curriculum
+			if(!isManager(curriculumToSave, httpRequest)) {
+				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			}
 			
 			curriculumToSave.setDisplayName(curriculum.getDisplayName());
 			curriculumToSave.setIdentifier(curriculum.getIdentifier());
@@ -302,7 +303,7 @@ public class CurriculumsWebService {
 	}
 	
 	private void allowedOrganisation(Organisation organisation, Roles roles) {
-		if(roles.isOLATAdmin() || organisation == null) return;
+		if(roles.isAdministrator() || organisation == null) return;
 
 		List<OrganisationRef> managedOrganisations = roles.getOrganisationsWithRole(OrganisationRoles.curriculummanager);
 		for(OrganisationRef managedOrganisation:managedOrganisations) {
@@ -319,7 +320,7 @@ public class CurriculumsWebService {
 	public Response searchCurriculumElement(@QueryParam("externalId") String externalId, @QueryParam("identifier") String identifier,
 			@QueryParam("key") Long key, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -351,15 +352,14 @@ public class CurriculumsWebService {
 	}
 
 	private Response getMembers(Long curriculumKey, CurriculumRoles role, HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin() && !roles.isCurriculumManager()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		if(curriculum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		if(!isManager(curriculum, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
 		List<Identity> members = curriculumService.getMembersIdentity(curriculum, role);
 		List<UserVO> voList = new ArrayList<>(members.size());
 		for(Identity member:members) {
@@ -380,14 +380,18 @@ public class CurriculumsWebService {
 	 */
 	@PUT
 	@Path("{curriculumKey}/curriculummanagers/{identityKey}")
-	public Response putCurriculumManager(@PathParam("curriculumKey") Long curriculumKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager);
+	public Response putCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return putMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager, httpRequest);
 	}
 	
-	private Response putMember(Long curriculumKey, Long identityKey, CurriculumRoles role) {
+	private Response putMember(Long curriculumKey, Long identityKey, CurriculumRoles role, HttpServletRequest httpRequest) {
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		if(curriculum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isManager(curriculum, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
@@ -411,15 +415,19 @@ public class CurriculumsWebService {
 	@DELETE
 	@Path("{curriculumKey}/curriculummanagers/{identityKey}")
 	public Response deleteCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
-			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager);
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return deleteMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager, httpRequest);
 	}
 	
-	private Response deleteMember(Long curriculumKey, Long identityKey, CurriculumRoles role) {
+	private Response deleteMember(Long curriculumKey, Long identityKey, CurriculumRoles role, HttpServletRequest httpRequest) {
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		if(curriculum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		if(!isManager(curriculum, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -427,5 +435,12 @@ public class CurriculumsWebService {
 		
 		curriculumService.removeMember(curriculum, identity, role);
 		return Response.ok().build();
+	}
+	
+	private boolean isManager(Curriculum curriculum, HttpServletRequest httpRequest) {
+		Identity identity = getIdentity(httpRequest);
+		return curriculumService.hasRoleExpanded(curriculum, identity,
+				OrganisationRoles.administrator.name(), OrganisationRoles.curriculummanager.name(),
+				CurriculumRoles.curriculummanager.name(), CurriculumRoles.owner.name());
 	}
 }

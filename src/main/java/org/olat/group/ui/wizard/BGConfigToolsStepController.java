@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -76,6 +77,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 		boolean first = true;
 		
 		String containerPage = velocity_root + "/tool_config_container.html";
+		Roles roles = ureq.getUserSession().getRoles();
 		
 		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		for (String k : availableTools) {
@@ -115,7 +117,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 				config.folderCtrl.getInitialFormItem().setVisible(false);
 				
 				//add quota configuration for admin only
-				if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+				if(roles.isAdministrator()) {//TODO quota roles
 					Quota quota = quotaManager.createQuota(null, null, null);
 					config.quotaCtrl = new BGConfigQuotaController(ureq, getWindowControl(), quota, mainForm);
 					config.configContainer.add("quota", config.quotaCtrl.getInitialFormItem());
@@ -151,6 +153,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		BGConfigBusinessGroup configuration = new BGConfigBusinessGroup();
+		Roles roles = ureq.getUserSession().getRoles();
 		for(MultipleSelectionElement toolEl:toolList) {
 			if(toolEl.isAtLeastSelected(1)) {
 				ToolConfig config = (ToolConfig)toolEl.getUserObject();
@@ -168,7 +171,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 				} else if (tool.equals(CollaborationTools.TOOL_FOLDER)) {
 					configuration.setFolderAccess(config.folderCtrl.getFolderAccess());
 					//only admin are allowed to configure quota
-					if(ureq.getUserSession().getRoles().isOLATAdmin() && config.quotaCtrl != null) {
+					if(roles.isAdministrator() && config.quotaCtrl != null) {//TODO quota roles
 						Long quotaKB = config.quotaCtrl.getQuotaKB();
 						Long ulLimit = config.quotaCtrl.getULLimit();
 						Quota quota = quotaManager.createQuota(null, quotaKB, ulLimit);

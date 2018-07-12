@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
@@ -141,6 +142,29 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocks(entry);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		LectureBlock loadedBlock = blocks.get(0);
+		Assert.assertEquals(lectureBlock, loadedBlock);
+	}
+	
+	@Test
+	public void searchLectureBlocks() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
+		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecture manager");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(lectureManager);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		LectureBlock loadedBlock = blocks.get(0);

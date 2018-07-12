@@ -89,7 +89,7 @@ public class TaxonomyLevelLibraryIndexer extends DefaultIndexer {
 
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		if(roles.isOLATAdmin()) return true;
+		if(roles.isAdministrator() || roles.isSystemAdmin()) return true;
 		
 		if("TaxonomyLevel".equals(contextEntry.getOLATResourceable().getResourceableTypeName())) {
 			Long levelKey = contextEntry.getOLATResourceable().getResourceableId();

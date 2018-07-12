@@ -104,6 +104,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(NotificationsTest.class);
 
+	private static Identity id3;
 	private static Identity userSubscriberId;
 	private static Identity userAndForumSubscriberId;
 	
@@ -128,9 +129,9 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Before
 	public void setUp() throws Exception {
 		if(!setup) {
-			userSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-1");
-			userAndForumSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-2");
-			JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-3");
+			userSubscriberId = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-notifications-test-1");
+			userAndForumSubscriberId = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-notifications-test-2");
+			id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-notifications-test-3");
 			//for the news
 			organisationService.addMember(userSubscriberId, OrganisationRoles.usermanager);
 			organisationService.addMember(userAndForumSubscriberId, OrganisationRoles.usermanager);
@@ -158,8 +159,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 			notificationManager.markPublisherNews(forumSubContext, userSubscriberId, true);
 
 			//generate one notification
-			String randomLogin = UUID.randomUUID().toString().replace("-", "");
-			JunitTestHelper.createAndPersistIdentityAsUser(randomLogin);
+			JunitTestHelper.createAndPersistIdentityAsRndUser("rnd");
 			setup = true;
 		}
 		
@@ -169,7 +169,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetNotifications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("rest-notifications-test-1", "A6B7C8"));
+		assertTrue(conn.login(userSubscriberId.getName(), JunitTestHelper.PWD));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("notifications").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -194,7 +194,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetUserNotifications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("rest-notifications-test-1", "A6B7C8"));
+		assertTrue(conn.login(userSubscriberId.getName(), JunitTestHelper.PWD));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "User");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -219,7 +219,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetUserForumNotifications() throws URISyntaxException, IOException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
+		assertTrue(conn.login(userAndForumSubscriberId.getName(), JunitTestHelper.PWD));
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
@@ -240,7 +240,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetUserForumNotificationsByType() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
+		assertTrue(conn.login(userAndForumSubscriberId.getName(), JunitTestHelper.PWD));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -265,7 +265,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetNoNotifications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("rest-notifications-test-3", "A6B7C8"));
+		assertTrue(conn.login(id3.getName(), JunitTestHelper.PWD));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/notifications").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -282,7 +282,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetBusinessGroupForumNotifications() throws IOException, URISyntaxException {
 		//create a business group with forum notifications
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("rest-not-4-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-4-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
@@ -301,7 +301,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -344,7 +344,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -365,7 +365,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetCourseForumNotifications() throws IOException, URISyntaxException {
 		//create a course with a forum
-		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("rest-not-6-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-not-6-");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
@@ -393,7 +393,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -415,7 +415,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetCourseFolderNotifications() throws IOException, URISyntaxException {
 		//create a course with a forum
-		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("rest-not-7-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-not-7-");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
@@ -443,7 +443,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 
 		//get the notification
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id.getName(), "A6B7C8"));
+		assertTrue(conn.login(id.getName(), JunitTestHelper.PWD));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);

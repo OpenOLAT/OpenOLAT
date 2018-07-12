@@ -438,8 +438,8 @@ public class LoginModule extends AbstractSpringModule {
 	 * @return A number of seconds
 	 */
 	public int getPasswordAgePolicy(Roles roles) {
-		int age = passwordMaxAge;
-		if(roles.isOLATAdmin()) {
+		int age = passwordMaxAge;//TODO roles max age policy
+		if(roles.isAdministrator()) {
 			age = getMaxAgeOrDefault(age, passwordMaxAgeAdministrator);
 		}
 		if(roles.isUserManager()) {

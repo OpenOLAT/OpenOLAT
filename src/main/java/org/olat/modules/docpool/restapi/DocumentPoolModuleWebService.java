@@ -67,7 +67,7 @@ public class DocumentPoolModuleWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getModuleConfiguration(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator() && !roles.isSystemAdmin()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -81,7 +81,7 @@ public class DocumentPoolModuleWebService {
 	@Path("{taxonomyKey}")
 	public TaxonomyWebService getTaxonomyWebService(@PathParam("taxonomyKey") Long taxonomyKey, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator() && !roles.isSystemAdmin()) {
 			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		if(taxonomyKey == null || taxonomyKey.longValue() <= 0) {

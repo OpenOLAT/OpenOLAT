@@ -21,6 +21,8 @@ package org.olat.modules.lecture.model;
 
 import java.util.Date;
 
+import org.olat.core.id.Identity;
+
 /**
  * 
  * Initial date: 27 juin 2017<br>
@@ -32,6 +34,7 @@ public class LecturesBlockSearchParameters {
 	private String searchString;
 	private Date startDate;
 	private Date endDate;
+	private Identity manager;
 
 	public String getSearchString() {
 		return searchString;
@@ -55,5 +58,22 @@ public class LecturesBlockSearchParameters {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	/**
+	 * Identity which want to access the data (for permission restrictions)
+	 * @return
+	 */
+	public Identity getManager() {
+		return manager;
+	}
+
+	/**
+	 * Identity which want to access the data (for permission restrictions)
+	 * 
+	 * @param identity
+	 */
+	public void setManager(Identity manager) {
+		this.manager = manager;
 	}
 }

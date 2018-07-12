@@ -170,7 +170,7 @@ public class RestApiLoginFilter implements Filter {
 					String credentials = st.nextToken();
 					String userPass = StringHelper.decodeBase64(credentials);
 					// The decoded string is in the form "userID:password".
-					int p = userPass.indexOf(":");
+					int p = userPass.indexOf(':');
 					if (p != -1) {
 						String username = userPass.substring(0, p);
 						String password = userPass.substring(p + 1);

@@ -280,12 +280,9 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	}
 
 	public boolean isAllowedCreate(Roles roles) {
-		if(roles.isOLATAdmin() || roles.isGroupManager()
+		return roles.isAdministrator() || roles.isGroupManager()
 				|| (roles.isAuthor() && isAuthorAllowedCreate())
-				|| (!roles.isGuestOnly() && !roles.isInvitee() && isUserAllowedCreate())) {
-			return true;
-		}
-		return false;
+				|| (!roles.isGuestOnly() && !roles.isInvitee() && isUserAllowedCreate());
 	}
 
 	public boolean isUserAllowedCreate() {

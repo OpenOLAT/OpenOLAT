@@ -42,14 +42,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -64,14 +62,10 @@ import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.course.nodes.bc.BCCourseNodeRunController;
 import org.olat.course.nodes.bc.BCPeekviewController;
 import org.olat.course.nodes.bc.BCPreviewController;
-import org.olat.course.nodes.bc.FolderNodeCallback;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -210,19 +204,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		String path = getFoldernodePathRelToFolderBase(courseEnv, node);
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
 		return new OlatNamedContainerImpl(node.getShortTitle(), rootFolder);
-	}
-	
-	public static OlatNamedContainerImpl getSecurisedNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv, IdentityEnvironment ienv) {
-		boolean isOlatAdmin = ienv.getRoles().isOLATAdmin();
-		boolean isGuestOnly = ienv.getRoles().isGuestOnly();
-		
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
-
-		OlatNamedContainerImpl container = getNodeFolderContainer(node, courseEnv);
-		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, isOlatAdmin, isGuestOnly, null);
-		container.setLocalSecurityCallback(secCallback);
-		return container;
 	}
 
 	@Override
@@ -417,9 +398,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		postExportCondition(preConditionDownloaders, envMapper, backwardsCompatible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
-	 */
+	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();

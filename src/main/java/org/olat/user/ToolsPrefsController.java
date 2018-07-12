@@ -26,9 +26,7 @@ import java.util.Set;
 
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
-import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -59,8 +57,6 @@ public class ToolsPrefsController extends FormBasicController {
 	private MultipleSelectionElement presetEl;
 	
 	@Autowired
-	private ExtManager extManager;
-	@Autowired
 	private UserToolsModule userToolsModule;
 	
 	public ToolsPrefsController(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
@@ -76,7 +72,7 @@ public class ToolsPrefsController extends FormBasicController {
 		if(enabled) {
 			Set<String> aToolSet = userToolsModule.getAvailableUserToolSet();
 			userTools = userToolsModule.getAllUserToolExtensions(ureq);
-			if(aToolSet.size() > 0) {
+			if(!aToolSet.isEmpty()) {
 				for(Iterator<UserToolExtension> it=userTools.iterator(); it.hasNext(); ) {
 					UserToolExtension userToolExt = it.next();
 					if(!aToolSet.contains(userToolExt.getUniqueExtensionID()) || userToolExt.isShortCutOnly()) {
@@ -130,11 +126,6 @@ public class ToolsPrefsController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

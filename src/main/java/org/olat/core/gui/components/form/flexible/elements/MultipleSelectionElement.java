@@ -43,7 +43,7 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 */
 	public Collection<String> getSelectedKeys();
 	
-	public void setKeysAndValues(String[] keys, String values[]);
+	public void setKeysAndValues(String[] keys, String[] values);
 
 	/**
 	 * 
@@ -54,7 +54,7 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 *            each key-value pair or NULL not not use special styling.
 	 * @param iconLeftCSS
 	 */
-	public void setKeysAndValues(String[] keys, String values[], String[] cssClasses, String[] iconLeftCSS);
+	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses, String[] iconLeftCSS);
 	
 	public Set<String> getKeys();
 	

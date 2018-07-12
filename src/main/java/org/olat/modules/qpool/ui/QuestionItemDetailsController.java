@@ -216,7 +216,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void setCommentsController(UserRequest ureq) {		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean moderator = roles.isOLATAdmin();
+		boolean moderator = roles.isAdministrator() || roles.isPoolManager();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
 		commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
 		removeAsListenerAndDispose(commentsAndRatingCtr);

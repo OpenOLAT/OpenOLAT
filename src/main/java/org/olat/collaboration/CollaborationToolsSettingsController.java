@@ -103,12 +103,12 @@ public class CollaborationToolsSettingsController extends BasicController {
 			vc_collabtools.contextPut("newsToolEnabled", Boolean.FALSE);
 		}
 		
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if (ureq.getUserSession().getRoles().isAdministrator()) {//TODO quota roles
 			vc_collabtools.contextPut("isOlatAdmin", Boolean.TRUE);
 			if(managed) {
 				quotaCtr = quotaManager.getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			} else {
-				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), null);//TODO quota roles
+				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), null);
 			}
 			listenTo(quotaCtr);
 		} else {
@@ -137,7 +137,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 		// update quota form: only show when enabled
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
-			if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+			if(ureq.getUserSession().getRoles().isAdministrator()) {//TODO quota roles
 				vc_collabtools.put("quota", quotaCtr.getInitialComponent());
 			}
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
@@ -238,7 +238,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 				folderForm.setEnabled(!managed);
 				listenTo(folderForm);
 				vc_collabtools.put("folderform", folderForm.getInitialComponent());
-				if (ureq.getUserSession().getRoles().isOLATAdmin()) {
+				if (ureq.getUserSession().getRoles().isAdministrator()) {//TODO quota roles
 					vc_collabtools.put("quota", quotaCtr.getInitialComponent());
 				}
 			} else {
@@ -251,13 +251,12 @@ public class CollaborationToolsSettingsController extends BasicController {
 			}
 			
 		} else if (source == calendarForm) {	
-			collabTools.saveCalendarAccess(new Long(calendarForm.getCalendarAccess()));
+			collabTools.saveCalendarAccess(Long.valueOf(calendarForm.getCalendarAccess()));
 			// notify calendar components to refresh their calendars
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
-					new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
-			);
+					new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
 		} else if (source == folderForm) {
-			collabTools.saveFolderAccess(new Long(folderForm.getFolderAccess()));
+			collabTools.saveFolderAccess(Long.valueOf(folderForm.getFolderAccess()));
 		}
 	}
 

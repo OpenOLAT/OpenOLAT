@@ -78,7 +78,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private int counter = 0;
-	private final boolean isOlatAdmin;
 	private final CurriculumSecurityCallback secCallback;
 
 	@Autowired
@@ -89,7 +88,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		super(ureq, wControl, "manage_curriculum");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
-		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 
 		initForm(ureq);
 		loadModel(null, true);
@@ -131,9 +129,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private void loadModel(String searchString, boolean reset) {
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setSearchString(searchString);
-		if(!isOlatAdmin) {
-			params.setManagerIdentity(getIdentity());
-		}
+		params.setManagerIdentity(getIdentity());
 		List<CurriculumInfos> curriculums = curriculumService.getCurriculumsWithInfos(params);
 		List<CurriculumRow> rows = curriculums.stream()
 				.map(this::forgeRow).collect(Collectors.toList());

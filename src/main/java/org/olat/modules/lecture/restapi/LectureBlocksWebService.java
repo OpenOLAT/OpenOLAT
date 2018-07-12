@@ -20,7 +20,6 @@
 package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
-import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -59,12 +57,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LectureBlocksWebService {
 	
 	private final RepositoryEntry entry;
+	private final boolean administrator;
 	
 	@Autowired
 	private LectureService lectureService;
 	
-	public LectureBlocksWebService(RepositoryEntry entry) {
+	public LectureBlocksWebService(RepositoryEntry entry, boolean administrator) {
 		this.entry = entry;
+		this.administrator = administrator;
 	}
 	
 	/**
@@ -81,8 +81,7 @@ public class LectureBlocksWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getLectureBlocks(@Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -104,15 +103,13 @@ public class LectureBlocksWebService {
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param block The lecture block
-	 * @param request The HTTP request
 	 * @return It returns the updated / created lecture block.
 	 */
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+	public Response putLectureBlocks(LectureBlockVO block) {
+		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		LectureBlock updatedBlock = saveLectureBlock(block);
@@ -131,15 +128,13 @@ public class LectureBlocksWebService {
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param block The lecture block
-	 * @param request The HTTP request
 	 * @return It returns the updated / created lecture block.
 	 */
 	@POST
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+	public Response postLectureBlocks(LectureBlockVO block) {
+		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		LectureBlock updatedBlock = saveLectureBlock(block);
@@ -219,8 +214,7 @@ public class LectureBlocksWebService {
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getConfiguration(@Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -244,16 +238,14 @@ public class LectureBlocksWebService {
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param configuration The configuration
-	 * @param request The HTTP request
 	 * @return It returns the updated configuration.
 	 */
 	@POST
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response updateConfiguration(RepositoryEntryLectureConfigurationVO configuration, @Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+	public Response updateConfiguration(RepositoryEntryLectureConfigurationVO configuration) {
+		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
@@ -291,8 +283,7 @@ public class LectureBlocksWebService {
 	@Path("{lectureBlockKey}")
 	public LectureBlockWebService getLectureBlockWebService(@PathParam("lectureBlockKey") Long lectureBlockKey, @Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!administrator) {
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
 		LectureBlock lectureBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlockKey));
@@ -325,8 +316,7 @@ public class LectureBlocksWebService {
 	@GET
 	@Path("adaptation")
 	public Response adapatation(@Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		

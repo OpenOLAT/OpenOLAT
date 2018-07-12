@@ -85,16 +85,15 @@ public class MergedCourseContainer extends MergeSource {
 			setLocalSecurityCallback(new ReadOnlyCallback());
 		}
 
-		if(identityEnv == null || identityEnv.getRoles().isOLATAdmin()) {
+		if(identityEnv == null) {
 			VFSContainer courseContainer = persistingCourse.getIsolatedCourseFolder();
 			if(courseReadOnly) {
 				courseContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 			}
 			addContainersChildren(courseContainer, true);
 		} else {
-			RepositoryEntry re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			RepositoryEntrySecurity reSecurity = RepositoryManager.getInstance()
-					.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), re);
+					.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), courseRe);
 			if(reSecurity.isEntryAdmin()) {
 				VFSContainer courseContainer = persistingCourse.getIsolatedCourseFolder();
 				if(courseReadOnly) {

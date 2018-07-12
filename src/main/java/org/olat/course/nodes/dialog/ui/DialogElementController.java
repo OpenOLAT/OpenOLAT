@@ -85,13 +85,13 @@ public class DialogElementController extends BasicController implements Activate
 
 		Forum forum = element.getForum();
 		UserSession usess = ureq.getUserSession();
-		boolean isOlatAdmin = usess.getRoles().isOLATAdmin();
+		boolean isAdministrator = userCourseEnv.isAdmin();
 		boolean isGuestOnly = usess.getRoles().isGuestOnly();
 		
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode, forum.getKey().toString());
 		ForumCallback forumCallback = userCourseEnv.isCourseReadOnly() ?
-				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext) :
-				new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
+				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext) :
+				new DialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext);
 		forumCtr = new ForumController(ureq, wControl, forum, forumCallback, !isGuestOnly);		
 		listenTo(forumCtr);
 		

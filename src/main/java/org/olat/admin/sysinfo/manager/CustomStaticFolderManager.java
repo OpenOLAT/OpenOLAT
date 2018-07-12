@@ -48,10 +48,8 @@ public class CustomStaticFolderManager implements InitializingBean, WebDAVProvid
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		File file = new File(WebappHelper.getUserDataRoot(), STATIC_FOLDER);
-		if(!file.exists()) {
-			if(!file.mkdirs()) {
-				log.error("/customizing/static/ folder cannot be created");
-			}
+		if(!file.exists() && !file.mkdirs()) {
+			log.error("/customizing/static/ folder cannot be created");
 		}
 	}
 
@@ -71,12 +69,14 @@ public class CustomStaticFolderManager implements InitializingBean, WebDAVProvid
 	
 	@Override
 	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null && identityEnv.getRoles() != null && identityEnv.getRoles().isOLATAdmin();
+		return identityEnv != null && identityEnv.getRoles() != null
+				&& (identityEnv.getRoles().isAdministrator() || identityEnv.getRoles().isSystemAdmin());
 	}
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		if(identityEnv != null && identityEnv.getRoles() != null && identityEnv.getRoles().isOLATAdmin()) {
+		if(identityEnv != null && identityEnv.getRoles() != null
+				&& (identityEnv.getRoles().isAdministrator() || identityEnv.getRoles().isSystemAdmin())) {
 			return getRootContainer();
 		}
 		return null;

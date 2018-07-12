@@ -54,7 +54,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
@@ -65,6 +64,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.nodes.members.Member;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -94,7 +94,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<UserPropertyHandler> userPropertyAvatarHandlers;
 
-	private final CourseEnvironment courseEnv;
+	private final UserCourseEnvironment userCourseEnv;
 	private final String avatarBaseURL;
 	
 	private Link printLink;
@@ -149,15 +149,15 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private RepositoryEntry repoEntry;
 	
 	
-	public MembersAvatarDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv, BusinessGroup businessGroup,
+	public MembersAvatarDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, UserCourseEnvironment userCourseEnv, BusinessGroup businessGroup,
 			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean canDownload, 
 			  boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl, "members", translator);
 		setTranslator(translator);
 		
-		this.courseEnv = courseEnv;
+		this.userCourseEnv = userCourseEnv;
 		this.businessGroup = businessGroup;
-		this.repoEntry = courseEnv != null ? courseEnv.getCourseGroupManager().getCourseEntry() : null;
+		this.repoEntry = userCourseEnv != null ? userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry() : null;
 
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -197,10 +197,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			allEmailLink.setIconLeftCSS("o_icon o_icon_mail");
 		}
 		
-		IdentityEnvironment idEnv = ureq.getUserSession().getIdentityEnvironment();
-		Identity ownId = idEnv.getIdentity();
-		Roles roles = idEnv.getRoles();
-		if (editable && (roles.isOLATAdmin() || roles.isGroupManager() || owners.contains(ownId) || coaches.contains(ownId)
+		Identity ownId = getIdentity();
+		if (editable && (isManager(ureq) || owners.contains(ownId) || coaches.contains(ownId)
 				|| (canDownload && !waiting.contains(ownId)))) {
 			downloadLink = uifactory.addFormLink("download", "members.download", null, formLayout, Link.BUTTON);
 			downloadLink.setIconLeftCSS("o_icon o_icon_download");
@@ -229,6 +227,14 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			layoutCont.contextPut("showWaiting", showWaiting);
 			layoutCont.contextPut("hasWaiting", Boolean.valueOf(!waitingtList.isEmpty()));
 		}
+	}
+	
+	private boolean isManager(UserRequest ureq) {
+		if(businessGroup != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			return roles.isAdministrator() || roles.isGroupManager();
+		}
+		return userCourseEnv != null && userCourseEnv.isAdmin();
 	}
 	
 	private List<Member> initFormMemberList(String name, List<Identity> ids, Set<Long> duplicateCatcher, FormItemContainer formLayout, boolean withEmail) {
@@ -423,7 +429,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		if(mailCtrl != null || cmc != null) return;
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(mailCtrl);
-		mailCtrl = new MembersMailController(ureq, getWindowControl(), getTranslator(), courseEnv,
+		mailCtrl = new MembersMailController(ureq, getWindowControl(), getTranslator(), userCourseEnv.getCourseEnvironment(),
 				ownerList, coachList, participantList, waitingtList, createBodyTemplate());
 		listenTo(mailCtrl);
 		
@@ -450,10 +456,10 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private void doSendEmailToMember(Member member, UserRequest ureq) {
 		if (!editable) return;
 		ContactList memberList;
-		if (courseEnv == null) {
+		if (userCourseEnv == null) {
 			memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), businessGroup.getName() }));
 		} else {
-			memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), courseEnv.getCourseTitle() }));
+			memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), userCourseEnv.getCourseEnvironment().getCourseTitle() }));
 		}
 		Identity identity = securityManager.loadIdentityByKey(member.getKey());
 		memberList.add(identity);
@@ -480,7 +486,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	}
 	
 	private String createBodyTemplate() {
-		if (courseEnv == null) {
+		if (userCourseEnv == null) {
 			String groupName = businessGroup.getName();
 			// Build REST URL to business group,
 			StringBuilder groupLink = new StringBuilder();
@@ -488,6 +494,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 				.append("/url/BusinessGroup/").append(businessGroup.getKey());
 			return translate("email.body.template", new String[]{groupName, groupLink.toString()});	
 		} else {
+			CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 			String courseName = courseEnv.getCourseTitle();
 			// Build REST URL to course element, use hack via group manager to access repo entry
 			StringBuilder courseLink = new StringBuilder();
@@ -507,14 +514,13 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator printControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
-				return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
-						participants, waiting, showOwners, showCoaches, showParticipants, showWaiting, 
-						courseEnv != null ? courseEnv.getCourseTitle() : businessGroup.getName());
-			}					
+		final String title = businessGroup != null
+				? businessGroup.getName() : userCourseEnv.getCourseEnvironment().getCourseTitle();
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
+			return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
+					participants, waiting, showOwners, showCoaches, showParticipants, showWaiting, 
+					title);
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);

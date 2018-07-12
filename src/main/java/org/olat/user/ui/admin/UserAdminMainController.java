@@ -161,7 +161,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 
 	private void initTools() {
-		if (identityRoles.isAdministrator() || ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_CREATE_USER.booleanValue())) {
+		if (identityRoles.isAdministrator() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
 			createLink = LinkFactory.createToolLink("ucreate", translate("menu.ucreate"), this, "o_icon_add_member");
 			createLink.setElementCssClass("o_sel_useradmin_create");
 			content.addTool(createLink, Align.right);
@@ -171,7 +171,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			content.addTool(importLink, Align.right);
 		}
 
-		if (identityRoles.isAdministrator() ||((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue())) {
+		if (identityRoles.isAdministrator() || ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue())) {
 			deleteLink = LinkFactory.createToolLink("userdelete", translate("menu.userdelete"), this, "o_icon_delete");
 			deleteLink.setElementCssClass("o_sel_useradmin_delete");
 			content.addTool(deleteLink, Align.right);
@@ -290,6 +290,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "usearch":
 			case "useradmin": return createUserSearchController(ureq, bwControl);
 			case "admingroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.administrator);
+			case "sysadmingroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.sysadmin);
 			case "usermanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.usermanager);
 			case "groupmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.groupmanager);
 			case "authorgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.author);
@@ -508,7 +509,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private void buildTreeAccessSubMenu(GenericTreeNode accessNode) {
 		appendNode("menu.usergroup", "menu.usergroup.alt", "usergroup", "o_sel_useradmin_usergroup", accessNode);
 		
-		if (identityRoles.isAdministrator() || identityRoles.isPrincipal() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
+		boolean isAdministrator = identityRoles.isAdministrator() || identityRoles.isPrincipal()
+				|| identityRoles.isUserManager() || identityRoles.isRolesManager();
+		if (isAdministrator) {
 			appendNode("menu.authorgroup", "menu.authorgroup.alt", "authorgroup", "o_sel_useradmin_authorgroup", accessNode);
 			appendNode("menu.coauthors", "menu.coauthors.alt", "coauthors", "o_sel_useradmin_coauthors", accessNode);
 			appendNode("menu.resourceowners", "menu.resourceowners.alt", "resourceowners", "o_sel_useradmin_resourceowners", accessNode);
@@ -517,20 +520,19 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		appendNode("menu.coursecoach", "menu.coursecoach.alt", "coursecoach", "o_sel_useradmin_coursecoach", accessNode);
 		appendNode("menu.courseparticipants", "menu.courseparticipants.alt", "courseparticipants", "o_sel_useradmin_courseparticipants", accessNode);
 
-		if (identityRoles.isAdministrator() || identityRoles.isPrincipal()
-				|| ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS.booleanValue())) {
+		if (isAdministrator) {
 			appendNode("menu.groupmanagergroup", "menu.groupmanagergroup.alt", "groupmanagergroup", "o_sel_useradmin_groupmanagergroup", accessNode);
 			appendNode("menu.groupcoach", "menu.groupcoach.alt", "groupcoach", "o_sel_useradmin_groupcoach", accessNode);
 		}
 		
 		// admin group and user manager group always restricted to admins
-		if (identityRoles.isAdministrator() || identityRoles.isPrincipal()) {
+		if (isAdministrator) {
 			appendNode("menu.usermanagergroup", "menu.usermanagergroup.alt", "usermanagergroup", "o_sel_useradmin_usermanagergroup", accessNode);
 			appendNode("menu.admingroup", "menu.admingroup.alt", "admingroup", "o_sel_useradmin_admingroup", accessNode);
+			appendNode("menu.sysadmingroup", "menu.sysadmingroup.alt", "sysadmingroup", "o_sel_useradmin_sysadmingroup", accessNode);
 		}
 		
-		if (identityRoles.isAdministrator() || identityRoles.isPrincipal()
-				|| ((identityRoles.isUserManager() || identityRoles.isRolesManager()) && BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS.booleanValue())) {
+		if (identityRoles.isRolesManager() && identityRoles.isAdministrator()) {
 			appendNode("menu.anonymousgroup", "menu.anonymousgroup.alt", "anonymousgroup", "o_sel_useradmin_anonymousgroup", accessNode);
 		}
 		
@@ -541,7 +543,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 	private void buildTreeQueriesSubMenu(GenericTreeNode queriesNode) {
 		appendNode("menu.userswithoutgroup", "menu.userswithoutgroup.alt", "userswithoutgroup", "o_sel_useradmin_userswithoutgroup", queriesNode);
-		if(identityRoles.isAdministrator() || identityRoles.isPrincipal()) {
+		if(identityRoles.isRolesManager() && identityRoles.isAdministrator()) {
 			appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
 			appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
 		}

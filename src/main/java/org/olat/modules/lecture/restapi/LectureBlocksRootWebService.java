@@ -21,6 +21,7 @@ package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.parseDate;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +44,7 @@ import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -54,6 +56,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("repo/lectures")
 public class LectureBlocksRootWebService {
+	
+	@Autowired
+	private LectureService lectureService;
 	
 	
 	/**
@@ -71,7 +76,7 @@ public class LectureBlocksRootWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response searchLectureBlocks(@QueryParam("date") String date, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator() && !roles.isLectureManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -83,7 +88,8 @@ public class LectureBlocksRootWebService {
 			searchParams.setStartDate(startDate);
 			searchParams.setEndDate(endDate);
 		}
-		List<LectureBlock> blockList = CoreSpringFactory.getImpl(LectureService.class).getLectureBlocks(searchParams);
+		searchParams.setManager(getIdentity(httpRequest));
+		List<LectureBlock> blockList = lectureService.getLectureBlocks(searchParams);
 		List<LectureBlockVO> voList = new ArrayList<>(blockList.size());
 		for(LectureBlock block:blockList) {
 			voList.add(new LectureBlockVO(block, block.getEntry().getKey()));
@@ -94,6 +100,8 @@ public class LectureBlocksRootWebService {
 
 	@Path("rollcalls")
 	public LectureBlockRollCallWebService getLectureBlockRollCallWebService() {
-		return new LectureBlockRollCallWebService();
+		LectureBlockRollCallWebService ws = new LectureBlockRollCallWebService();
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
 	}
 }

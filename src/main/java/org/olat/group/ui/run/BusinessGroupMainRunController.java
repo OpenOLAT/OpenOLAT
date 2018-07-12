@@ -299,7 +299,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		UserSession usess = ureq.getUserSession();
 		Object wcard = usess.removeEntry("wild_card_" + businessGroup.getKey());
 		
-		isGroupsAdmin = usess.getRoles().isOLATAdmin()
+		isGroupsAdmin = usess.getRoles().isAdministrator()
 				|| usess.getRoles().isGroupManager();
 		
 		chatAvailable = isChatAvailable();

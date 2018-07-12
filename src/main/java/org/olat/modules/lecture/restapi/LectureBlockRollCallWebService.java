@@ -22,6 +22,7 @@
 package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +41,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,6 +60,11 @@ import org.olat.modules.lecture.LectureService;
  *
  */
 public class LectureBlockRollCallWebService {
+	
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	/**
 	 * Return a list lecture block roll call.
@@ -76,11 +88,10 @@ public class LectureBlockRollCallWebService {
 			@QueryParam("lectureBlockKey") Long lectureBlockKey,
 			@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator() && !roles.isLectureManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
 		if(hasAbsence != null) {
 			searchParams.setHasAbsence(hasAbsence);
@@ -94,6 +105,7 @@ public class LectureBlockRollCallWebService {
 		if(lectureBlockKey != null) {
 			searchParams.setLectureBlockKey(lectureBlockKey);
 		}
+		searchParams.setIdentity(getIdentity(httpRequest));
 		
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(searchParams);
 		List<LectureBlockRollCallVO> voList = new ArrayList<>(rollCalls.size());
@@ -122,16 +134,19 @@ public class LectureBlockRollCallWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRollCall(@PathParam("rollCallKey") Long rollCallKey, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator() && !roles.isLectureManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
 		searchParams.setRollCallKey(rollCallKey);
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(searchParams);
 		if(rollCalls.size() == 1) {
 			LectureBlockRollCall rollCall = rollCalls.get(0);
+			if(!isManagerOf(rollCall, httpRequest)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+
 			LectureBlockRollCallVO vo = new LectureBlockRollCallVO(rollCall);
 			return Response.ok(vo).build();
 		}
@@ -185,20 +200,19 @@ public class LectureBlockRollCallWebService {
 	}
 
 	private Response updateLectureBlockRollCall(LectureBlockRollCallVO rollCallVo, HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
 		if(rollCallVo.getKey() == null) {
 			return Response.serverError().status(Status.BAD_REQUEST).build();
 		}
 		
-		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
 		searchParams.setRollCallKey(rollCallVo.getKey());
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(searchParams);
 		if(rollCalls.size() == 1) {
 			LectureBlockRollCall rollCall = rollCalls.get(0);
+			if(!isManagerOf(rollCall, httpRequest)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+
 			rollCall.setAbsenceSupervisorNotificationDate(rollCallVo.getAbsenceSupervisorNotificationDate());
 			if(rollCallVo.getAbsenceReason() != null) {
 				rollCall.setAbsenceReason(rollCallVo.getAbsenceReason());
@@ -211,6 +225,14 @@ public class LectureBlockRollCallWebService {
 			return Response.ok(vo).build();
 		}
 		return Response.serverError().status(Status.NOT_FOUND).build();
+	}
+	
+	private boolean isManagerOf(LectureBlockRollCall rollCall, HttpServletRequest httpRequest) {
+		RepositoryEntry entry = rollCall.getLectureBlock().getEntry();
+		Identity identity = RestSecurityHelper.getIdentity(httpRequest);
+		return repositoryService.hasRoleExpanded(identity, entry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name());
 	}
 
 }

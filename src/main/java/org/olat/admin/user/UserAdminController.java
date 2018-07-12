@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
-import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -164,7 +163,7 @@ public class UserAdminController extends BasicController implements Activateable
 		editedIdentity = identity;
 		editedRoles = securityManager.getRoles(editedIdentity);
 
-		allowedToManage = allowedToManageUser(ureq);
+		allowedToManage = allowedToManageUser();
 		if (allowedToManage) {
 			myContent = createVelocityContainer("udispatcher");
 			backLink = LinkFactory.createLinkBack(myContent, this);
@@ -302,10 +301,10 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param identity
 	 * @return boolean
 	 */
-	private boolean allowedToManageUser(UserRequest ureq) {
+	private boolean allowedToManageUser() {
 		// prevent editing of users that are in sysadmin / superadmin group
 		Roles identityRoles = securityManager.getRoles(editedIdentity);
-		if(identityRoles.hasRole(OrganisationRoles.sysadmin)){
+		if(identityRoles.hasRole(OrganisationRoles.sysadmin)) {
 			return getIdentity().equals(editedIdentity)
 					|| organisationService.hasRole(getIdentity(), OrganisationRoles.sysadmin)
 					|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
@@ -314,11 +313,16 @@ public class UserAdminController extends BasicController implements Activateable
 
 		// if user is guest only allowed to edit if configured
 		if(identityRoles.isGuestOnly()) {
-			return false;
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			return organisationService.hasRole(getIdentity(), defOrganisation,
+					OrganisationRoles.administrator, OrganisationRoles.rolesmanager);
 		}
 		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
-				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles);
+				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
+				|| managerRoles.isMyInvitee(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isMyInvitee(OrganisationRoles.rolesmanager, identityRoles)
+				|| managerRoles.isMyInvitee(OrganisationRoles.usermanager, identityRoles);
 	}
 
 	/**
@@ -460,11 +464,8 @@ public class UserAdminController extends BasicController implements Activateable
 				// it's an ldap-user
 				return ldapLoginModule.isPropagatePasswordChangedOnLdapServer();
 			}
-
-			Authentication olatAuth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-			return olatAuth != null;
+			return true;
 		}
-
 		return false;
 	}
 

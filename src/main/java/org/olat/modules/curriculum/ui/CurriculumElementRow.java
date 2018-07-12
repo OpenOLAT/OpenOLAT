@@ -118,4 +118,20 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		return resourcesLink;
 	}
 
+	@Override
+	public int hashCode() {
+		return element.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CurriculumElementRow) {
+			CurriculumElementRow row = (CurriculumElementRow)obj;
+			return element != null && element.equals(row.element);
+		}
+		return false;
+	}
 }

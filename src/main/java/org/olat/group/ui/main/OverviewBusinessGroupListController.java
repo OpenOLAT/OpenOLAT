@@ -93,7 +93,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		segmentView.addSegment(openGroupsLink, false);
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isGroupManager() || roles.isOLATAdmin()) {
+		if(roles.isGroupManager() || roles.isAdministrator()) {
 			searchOpenLink = LinkFactory.createLink("opengroups.search.admin", mainVC, this);
 			searchOpenLink.setElementCssClass("o_sel_group_search_groups_seg");
 			segmentView.addSegment(searchOpenLink, false);

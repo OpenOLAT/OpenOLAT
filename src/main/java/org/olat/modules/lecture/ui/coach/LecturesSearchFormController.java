@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -79,10 +80,12 @@ public class LecturesSearchFormController extends FormBasicController {
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
-	public LecturesSearchFormController(UserRequest ureq, WindowControl wControl, boolean admin) {
+	public LecturesSearchFormController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.admin = admin;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		admin = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isLectureManager() || roles.isAuthor();
 		adminProps = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		initForm(ureq);

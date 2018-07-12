@@ -32,6 +32,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -60,10 +61,16 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 	@Autowired
 	private LectureService lectureService;
 	
+	/**
+	 * Only administrator and lecture managers have access to this REST API
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
-	public void getLecturesBlock()
+	public void getLecturesBlock_administrator()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-root-all");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
 		
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -95,10 +102,38 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 		Assert.assertEquals(entry.getKey(), lectureBlockVo.getRepoEntryKey());
 	}
 	
+	/**
+	 * Only administrator and lecture managers have access to this REST API
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getLecturesBlock_permissionDenied()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-hacker");
+		
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(block, author);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login(user.getName(), JunitTestHelper.PWD));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+		EntityUtils.consumeQuietly(response.getEntity());
+	}
+	
 	@Test
 	public void getLecturesBlock_date()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-root-1");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-1");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();

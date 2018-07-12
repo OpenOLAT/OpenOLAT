@@ -99,7 +99,7 @@ public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer
 
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		if(roles.isOLATAdmin()) return true;
+		if(roles.isAdministrator() || roles.isSystemAdmin()) return true;
 		
 		List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
 		if(entries.size() == 1) {

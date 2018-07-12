@@ -105,14 +105,14 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 			SubscriptionInfo si;
 			String taxonomyKey = documentPoolModule.getTaxonomyTreeKey();
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews) && StringHelper.isLong(taxonomyKey)) {
-				Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyKey)));
+				Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(Long.valueOf(taxonomyKey)));
 				if(taxonomy == null) {
 					return notificationsManager.getNoSubscriptionInfo();
 				}
 				
 				Identity identity = subscriber.getIdentity();
 				Roles roles = securityManager.getRoles(identity);
-				boolean isTaxonomyAdmin = roles.isOLATAdmin();
+				boolean isTaxonomyAdmin =  roles.isAdministrator() || roles.isSystemAdmin();
 				
 				Translator translator = Util.createPackageTranslator(DocumentPoolMainController.class, locale);
 				String templates = translator.translate("document.pool.templates");
@@ -194,7 +194,7 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 	private TitleItem getTitleItemForPublisher() {
 		String taxonomyKey = documentPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
-			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyKey)));
+			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(Long.valueOf(taxonomyKey)));
 			if(taxonomy != null) {
 				return getTitleItemForTaxonomy(taxonomy);
 			}

@@ -75,13 +75,13 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 		
 		String taxonomyTreeKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyTreeKey)) {
-			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyTreeKey)));
+			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey)));
 			if(taxonomy != null) {
 				String  templatesDir = Util.createPackageTranslator(DocumentPoolMainController.class, identityEnv.getLocale())
 					.translate("document.pool.templates");
 				
 				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identityEnv.getIdentity(), null,
-						identityEnv.getRoles().isOLATAdmin(), docPoolModule.isTemplatesDirectoryEnabled(), templatesDir, null);
+						identityEnv.getRoles().isAdministrator(), docPoolModule.isTemplatesDirectoryEnabled(), templatesDir, null);
 				TreeModel model = builder.buildTreeModel();
 				TreeNode rootNode = model.getRootNode();
 				for(int i=0; i<rootNode.getChildCount(); i++) {

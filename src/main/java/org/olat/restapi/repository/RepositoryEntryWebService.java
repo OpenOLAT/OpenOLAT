@@ -189,9 +189,10 @@ public class RepositoryEntryWebService {
 	 * @return The web service for lecture blocks.
 	 */
 	@Path("lectureblocks")
-	public LectureBlocksWebService getLectureBlocksWebService()
+	public LectureBlocksWebService getLectureBlocksWebService(@Context HttpServletRequest request)
 	throws WebApplicationException {
-		LectureBlocksWebService service = new LectureBlocksWebService(entry);
+		boolean administrator = isLectureManager(request);
+		LectureBlocksWebService service = new LectureBlocksWebService(entry, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
@@ -915,6 +916,17 @@ public class RepositoryEntryWebService {
 		}
 	}
 	
+	private boolean isLectureManager(HttpServletRequest request) {
+		try {
+			Identity identity = getUserRequest(request).getIdentity();
+			return repositoryService.hasRoleExpanded(identity, entry, OrganisationRoles.administrator.name(),
+					OrganisationRoles.learnresourcemanager.name(), OrganisationRoles.lecturemanager.name(),
+					GroupRoles.owner.name());
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	private boolean isManager(Organisation organisation, HttpServletRequest request) {
 		try {
 			Roles roles = getUserRequest(request).getUserSession().getRoles();
@@ -924,6 +936,5 @@ public class RepositoryEntryWebService {
 		} catch (Exception e) {
 			return false;
 		}
-		
 	}
 }

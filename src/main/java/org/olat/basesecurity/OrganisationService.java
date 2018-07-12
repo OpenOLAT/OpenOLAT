@@ -188,6 +188,16 @@ public interface OrganisationService {
 	public boolean hasRole(IdentityRef identity, OrganisationRoles role);
 	
 	/**
+	 * Check if the specified user has the list of roles in the organization.
+	 * 
+	 * @param organisation The organization
+	 * @param identity The identity
+	 * @param roles The roles (at least one)
+	 * @return true if at least a role is found
+	 */
+	public boolean hasRole(IdentityRef identity, OrganisationRef organisation, OrganisationRoles... roles);
+	
+	/**
 	 * Return true if the specified user has a role in the list of specified roles
 	 * for an organization with the specified identifier.
 	 * 

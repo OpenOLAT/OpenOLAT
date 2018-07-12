@@ -93,6 +93,12 @@ public interface CurriculumService {
 	public List<Identity> getMembersIdentity(CurriculumRef curriculum, CurriculumRoles role);
 	
 	/**
+	 * 
+	 * @return
+	 */
+	public boolean hasRoleExpanded(CurriculumRef curriculum, IdentityRef identity, String... role);
+	
+	/**
 	 * Add a member to the curriculum with the specified role.
 	 * 
 	 * @param curriculum The curriculum

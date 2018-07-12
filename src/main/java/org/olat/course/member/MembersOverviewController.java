@@ -22,6 +22,7 @@ package org.olat.course.member;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -68,6 +69,7 @@ import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +116,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -144,7 +148,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		selectedCtrl = updateAllMembers(ureq);
 		
 		managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
-		if(managed && ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if(managed &&  isAllowedToOverrideManaged(ureq)) {
 			overrideLink = LinkFactory.createButton("override.member", mainVC, this);
 			overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
 			
@@ -169,6 +173,15 @@ public class MembersOverviewController extends BasicController implements Activa
 		mainVC.put("dedupMembers", dedupLink);
 		
 		putInitialPanel(mainVC);
+	}
+	
+	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
+		if(repoEntry != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			return roles.isAdministrator() && repositoryService.hasRoleExpanded(getIdentity(), repoEntry,
+					OrganisationRoles.administrator.name());
+		}
+		return false;
 	}
 	
 	@Override

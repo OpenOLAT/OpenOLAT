@@ -21,6 +21,7 @@ package org.olat.modules.lecture;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -40,6 +41,8 @@ public class LectureBlockRollCallSearchParameters {
 	
 	private RepositoryEntryRef entry;
 	private List<LectureBlockAppealStatus> appealStatus;
+	
+	private Identity identity;
 
 	public Boolean getClosed() {
 		return closed;
@@ -96,5 +99,25 @@ public class LectureBlockRollCallSearchParameters {
 	public void setAppealStatus(List<LectureBlockAppealStatus> appealStatus) {
 		this.appealStatus = appealStatus;
 	}
+
+	/**
+	 * Identity which want to access the data (for permission restrictions)
+	 * 
+	 * @return
+	 */
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	/**
+	 * Identity which want to access the data (for permission restrictions)
+	 * 
+	 * @param identity
+	 */
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+	
+	
 
 }

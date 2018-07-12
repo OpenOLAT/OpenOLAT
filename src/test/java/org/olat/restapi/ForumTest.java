@@ -136,7 +136,6 @@ public class ForumTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetThreads() throws IOException, URISyntaxException  {
 		RestConnection conn = new RestConnection();
-		
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = getForumUriBuilder().path("threads").build();
@@ -301,7 +300,6 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetAttachment() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		//set a attachment
 		VFSLeaf attachment = null;
 		VFSContainer container = forumManager.getMessageContainer(m1.getForum().getKey(), m1.getKey());
@@ -314,6 +312,7 @@ public class ForumTest extends OlatJerseyTestCase {
 			log.error("", e);
 		}
 
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
@@ -344,7 +343,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	@Test
 	public void testUploadAttachment() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		assertTrue(conn.login(id1.getName(), JunitTestHelper.PWD));
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())

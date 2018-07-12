@@ -68,7 +68,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
 	private AuthorDeletedListController deletedEntriesCtrl;
 
-	private final boolean isOlatAdmin;
+	private final boolean isAdministrator;
 	private final boolean isGuestOnly;
 	private boolean favoritDirty, myDirty, deletedDirty;
 	private final EventBus eventBus;
@@ -79,7 +79,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		
 		UserSession usess = ureq.getUserSession();
 		isGuestOnly = usess.getRoles().isGuestOnly();
-		isOlatAdmin = usess.getRoles().isOLATAdmin();
+		isAdministrator = usess.getRoles().isAdministrator() || usess.getRoles().isLearnResourceManager();
 		
 		mainPanel = new MainPanel("authoringMainPanel");
 		mainPanel.setDomReplaceable(false);
@@ -294,7 +294,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		if(deletedEntriesCtrl == null) {
 			SearchAuthorRepositoryEntryViewParams searchParams
 				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-			if(!isOlatAdmin) {
+			if(!isAdministrator) {
 				searchParams.setOwnedResourcesOnly(true);
 			}
 			searchParams.setDeleted(true);

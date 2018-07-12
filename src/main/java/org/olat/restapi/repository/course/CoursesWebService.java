@@ -415,6 +415,7 @@ public class CoursesWebService {
 		} else {
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		}
+		//TODO roles check organisation roles
 
 		RepositoryHandler handler = handlerFactory.getRepositoryHandler(CourseModule.getCourseTypeName());
 		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, organisation, Locale.ENGLISH, fCourseImportZIP, null);

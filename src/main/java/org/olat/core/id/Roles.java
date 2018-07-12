@@ -225,10 +225,6 @@ public class Roles implements Serializable {
 	public boolean isPrincipal() {
 		return hasRole(OrganisationRoles.principal);
 	}
-	
-	public boolean isOLATAdmin() {
-		return hasRole(OrganisationRoles.administrator);
-	}
 
 	public boolean isAuthor() {
 		return hasRole(OrganisationRoles.author);
@@ -280,6 +276,11 @@ public class Roles implements Serializable {
 	
 	public boolean isManagerOf(OrganisationRoles role, Roles targetRoles) {
 		List<OrganisationRef> targetOrganisations = targetRoles.getOrganisationsWithRole(OrganisationRoles.user);
+		return hasRole(targetOrganisations, role);
+	}
+	
+	public boolean isMyInvitee(OrganisationRoles role, Roles targetRoles) {
+		List<OrganisationRef> targetOrganisations = targetRoles.getOrganisationsWithRole(OrganisationRoles.invitee);
 		return hasRole(targetOrganisations, role);
 	}
 

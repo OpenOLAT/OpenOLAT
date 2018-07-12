@@ -191,7 +191,7 @@ public class RepositoryEntryQueries {
 	 * @return
 	 */
 	private boolean appendAccessSubSelects(StringBuilder sb, Roles roles, boolean onlyExplicitMember) {
-		if(roles.isOLATAdmin()) {
+		if(roles.isAdministrator()) {//TODO roles repo
 			sb.append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS);
 			return false;	
 		}

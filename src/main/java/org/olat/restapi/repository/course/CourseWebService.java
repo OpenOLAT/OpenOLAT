@@ -191,9 +191,10 @@ public class CourseWebService {
 	 * @return The web service for lecture blocks.
 	 */
 	@Path("lectureblocks")
-	public LectureBlocksWebService getLectureBlocksWebService() {
+	public LectureBlocksWebService getLectureBlocksWebService(@Context HttpServletRequest request) {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		LectureBlocksWebService service = new LectureBlocksWebService(courseRe);
+		boolean administrator = isManagerWithLectures(request);
+		LectureBlocksWebService service = new LectureBlocksWebService(courseRe, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
@@ -992,6 +993,15 @@ public class CourseWebService {
 		return repositoryService.hasRoleExpanded(identity, entry,
 				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
 				GroupRoles.owner.name());
+	}
+	
+	private boolean isManagerWithLectures(HttpServletRequest request) {
+		UserRequest ureq = getUserRequest(request);
+		Identity identity = ureq.getIdentity();
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		return repositoryService.hasRoleExpanded(identity, entry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+				OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name());
 	}
 	
 	public static boolean isCourseAccessible(ICourse course, HttpServletRequest request) {

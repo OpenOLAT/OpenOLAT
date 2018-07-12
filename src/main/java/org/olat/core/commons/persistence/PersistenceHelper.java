@@ -357,7 +357,7 @@ public class PersistenceHelper {
 	 * @return
 	 */
 	public static List<Long> toKeys(Collection<? extends Persistable> list) {
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(Persistable obj:list) {
 			keys.add(obj.getKey());
 		}
@@ -377,6 +377,17 @@ public class PersistenceHelper {
 			}
 		}
 		return keys;
+	}
+	
+	public static List<String> toList(String... strings) {
+		List<String> stringList = new ArrayList<>();
+		if(strings != null && strings.length > 0)
+		for(String string:strings) {
+			if(StringHelper.containsNonWhitespace(string)) {
+				stringList.add(string);
+			}
+		}
+		return stringList;
 	}
 	
 	public static Long extractLong(Object[] results, int pos) {

@@ -20,8 +20,6 @@
 package org.olat.restapi.repository;
 
 
-import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -42,8 +40,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.id.Roles;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -57,6 +53,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.LinkVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -72,17 +69,13 @@ import org.springframework.stereotype.Component;
 public class SharedFolderWebService {
 
 	private static final String VERSION = "1.0";
-	public static CacheControl cc = new CacheControl();
-
-	private final RepositoryManager repositoryManager;
-	
+	public static final CacheControl cc = new CacheControl();
 	static {
 		cc.setMaxAge(-1);
 	}
-
-	public SharedFolderWebService() {
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-	}
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	/**
 	 * Retrieves the version of the Catalog Web Service.
@@ -117,25 +110,6 @@ public class SharedFolderWebService {
 	}
 
 	/**
-	 * This retrieves the files in the shared folder
-	 * @response.representation.200.doc The list of files
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @response.representation.404.doc The shared folder is not found
-	 * @param repoEntryKey The course resourceable's id
-	 * @param path The path of the file or directory
-	 * @param uri The uri infos
-	 * @param httpRequest The HTTP request
-	 * @param request The REST request
-	 * @return 
-	 */
-	/*@GET
-	@Path("{repoEntryKey}/{path:.*}")
-	public Response getSharedFiles(@PathParam("repoEntryKey") Long repoEntryKey, @PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo,
-			@Context HttpServletRequest httpRequest, @Context Request request) {
-		return getFiles(repoEntryKey, path, uriInfo, httpRequest, request);
-	}*/
-
-	/**
 	 * This retrieves the files in the shared folder and give full access to
 	 * the folder, read, write, delete.
 	 * 
@@ -158,20 +132,15 @@ public class SharedFolderWebService {
 		if(container == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		}
-		
-		Roles roles = getRoles(httpRequest);
-		if(roles.isOLATAdmin()){
+	
+		RepositoryEntrySecurity reSecurity = repositoryManager
+			.isAllowed(RestSecurityHelper.getIdentity(httpRequest), RestSecurityHelper.getRoles(httpRequest), re);
+		if(reSecurity.isEntryAdmin()) {
 			// all ok
+		} else if(reSecurity.isMember()) {
+			container.setLocalSecurityCallback(new ReadOnlyCallback());
 		} else {
-			RepositoryEntrySecurity reSecurity = repositoryManager
-				.isAllowed(RestSecurityHelper.getIdentity(httpRequest), RestSecurityHelper.getRoles(httpRequest), re);
-			if(reSecurity.isEntryAdmin()) {
-				// all ok
-			} else if(reSecurity.isMember()) {
-				container.setLocalSecurityCallback(new ReadOnlyCallback());
-			} else {
-				throw new WebApplicationException( Response.serverError().status(Status.UNAUTHORIZED).build());
-			}
+			throw new WebApplicationException( Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		return new VFSWebservice(container);
 	}

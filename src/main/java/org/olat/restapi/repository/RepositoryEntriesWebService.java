@@ -335,7 +335,9 @@ public class RepositoryEntriesWebService {
 					organisation = organisationService.getDefaultOrganisation();
 				}
 				
-				boolean hasAdminRights = roles.hasSomeRoles(organisation, OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				boolean hasAdminRights = roles.hasSomeRoles(organisation,
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager,
+						OrganisationRoles.author);
 				if(hasAdminRights) {
 					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access, organisation);
 					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);

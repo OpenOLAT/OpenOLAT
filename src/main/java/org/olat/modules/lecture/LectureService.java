@@ -390,7 +390,7 @@ public interface LectureService {
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
 	
 	/**
-	 * Search lecture blocks.
+	 * Search lecture blocks. It returns only lecture blocks with a teacher.
 	 * 
 	 * @param searchParams The search parameters
 	 * @return A list of lecture blocks
@@ -516,7 +516,7 @@ public interface LectureService {
 	 * @return
 	 */
 	public List<LectureBlockIdentityStatistics> getLecturesStatistics(LectureStatisticsSearchParameters params,
-			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin);
+			List<UserPropertyHandler> userPropertyHandlers, Identity identity);
 	
 	/**
 	 * The list of roll calls within the specified course for the specified user

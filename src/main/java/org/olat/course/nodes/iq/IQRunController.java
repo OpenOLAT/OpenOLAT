@@ -217,7 +217,7 @@ public class IQRunController extends BasicController implements GenericEventList
 
 		//re could be null, but if we are here it should not be null!
 		Roles userRoles = ureq.getUserSession().getRoles();
-		boolean showAll = userRoles.isAuthor() || userRoles.isOLATAdmin();
+		boolean showAll = userRoles.isAuthor() || userRoles.isAdministrator() || userRoles.isLearnResourceManager();
 		//get changelog
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
 		ImsRepositoryResolver resolver = new ImsRepositoryResolver(referenceTestEntry);

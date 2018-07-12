@@ -115,7 +115,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key, "select"));
 
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer();
-		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
@@ -134,7 +133,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(toolsColumn);
 		
 		tableModel = new CurriculumComposerTableModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");
 		tableEl.setEmtpyTableMessageKey("table.curriculum.element.empty");

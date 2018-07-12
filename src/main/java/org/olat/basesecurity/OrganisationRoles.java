@@ -19,6 +19,9 @@
  */
 package org.olat.basesecurity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.util.StringHelper;
 
 /**
@@ -68,18 +71,47 @@ public enum OrganisationRoles {
 		return OrganisationRoles.isValue(value);
 	}
 	
+	public static List<String> toList(OrganisationRoles... roles) {
+		List<String> roleList = new ArrayList<>();
+		if(roles != null && roles.length > 0 && roles[0] != null) {
+			for(int i=0; i<roles.length; i++) {
+				if(roles[i] != null) {
+					roleList.add(roles[i].name());
+				}
+			}
+		}
+		return roleList;
+	}
+	
 	public static OrganisationRoles[] valuesWithoutGuestAndInvitee() {
 		return new OrganisationRoles[]{
 				sysadmin,
 				administrator,
 				usermanager,
+				rolesmanager,
 				learnresourcemanager,
+				lecturemanager,
 				groupmanager,
 				poolmanager,
 				curriculummanager,
+				qualitymanager,
+				linemanager,
 				principal,
 				author,
-				user,
-			};
+				user };
+	}
+	
+	/**
+	 * @param role The role to check
+	 * @return true if the role is by default inherited in the organisation tree
+	 */
+	public static boolean isInheritedByDefault(OrganisationRoles role) {
+		return role == OrganisationRoles.author
+				|| role == OrganisationRoles.usermanager || role == OrganisationRoles.rolesmanager
+				|| role == OrganisationRoles.groupmanager || role == OrganisationRoles.learnresourcemanager
+				|| role == OrganisationRoles.poolmanager || role == OrganisationRoles.curriculummanager
+				|| role == OrganisationRoles.lecturemanager || role == OrganisationRoles.qualitymanager
+				|| role == OrganisationRoles.linemanager || role == OrganisationRoles.principal
+				|| role == OrganisationRoles.administrator || role == OrganisationRoles.sysadmin;
 	}
 }

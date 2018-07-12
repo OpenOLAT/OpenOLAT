@@ -1062,7 +1062,7 @@ public class RepositoryManager {
 			 .append(" left join v.groups as relGroup")
 			 .append(" left join relGroup.group as baseGroup")
 			 .append(" left join baseGroup.members as membership");
-		if(roles.isOLATAdmin()) {
+		if(roles.isAdministrator()) {//TODO roles repo
 			query.append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		} else {
 			query.append(" where membership.identity.key=:identityKey and (");
@@ -1128,7 +1128,7 @@ public class RepositoryManager {
 		// create query an set query data
 		TypedQuery<RepositoryEntry> dbquery = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), RepositoryEntry.class);
-		if(!roles.isOLATAdmin()) {
+		if(!roles.isAdministrator()) {//TODO roles repo
 			dbquery.setParameter("identityKey", identity.getKey());
 		}
 		

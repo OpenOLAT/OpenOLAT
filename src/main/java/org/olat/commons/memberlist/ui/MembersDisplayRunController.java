@@ -33,7 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -57,7 +57,7 @@ public class MembersDisplayRunController extends BasicController {
 	private Link tableCustomLink, tableLink;
 	
 	private BusinessGroup businessGroup;
-	private CourseEnvironment courseEnv;
+	private UserCourseEnvironment userCourseEnv;
 	private String courseOrGroupIdentifier;
 	
 	private List<Identity> owners;
@@ -75,15 +75,15 @@ public class MembersDisplayRunController extends BasicController {
 	private final boolean deduplicateList;
 	
 	
-	public MembersDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv, BusinessGroup businessGroup,
+	public MembersDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, UserCourseEnvironment userCourseEnv, BusinessGroup businessGroup,
 			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean canDownload,
 			boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl);
 		setTranslator(translator);
-		this.courseOrGroupIdentifier = courseEnv == null ? GUIPREF_KEY_GROUPMEMBER + businessGroup.getKey()
-				: GUIPREF_KEY_COURSEMEMBER + courseEnv.getCourseGroupManager().getCourseEntry().getKey();
+		this.courseOrGroupIdentifier = userCourseEnv == null ? GUIPREF_KEY_GROUPMEMBER + businessGroup.getKey()
+				: GUIPREF_KEY_COURSEMEMBER + userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
 		this.businessGroup = businessGroup;
-		this.courseEnv = courseEnv;
+		this.userCourseEnv = userCourseEnv;
 		// lists
 		this.owners = owners;
 		this.coaches = coaches;
@@ -140,7 +140,7 @@ public class MembersDisplayRunController extends BasicController {
 	private void doOpenPortraitView(UserRequest ureq) {
 		if (membersAvatarController == null) {
 			membersAvatarController = new MembersAvatarDisplayRunController(ureq, getWindowControl(), getTranslator(), 
-					courseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, canDownload, deduplicateList, 
+					userCourseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, canDownload, deduplicateList, 
 					showOwners, showCoaches, showParticipants, showWaiting, editable);
 			listenTo(membersAvatarController);
 		}
@@ -154,7 +154,7 @@ public class MembersDisplayRunController extends BasicController {
 	private void doOpenListView(UserRequest ureq, boolean onClick) {
 		if (membersListController == null) {
 			membersListController = new MembersListDisplayRunController(ureq, getWindowControl(), getTranslator(), 
-					courseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, canDownload, deduplicateList,
+					userCourseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, canDownload, deduplicateList,
 					showOwners, showCoaches, showParticipants, showWaiting, editable);
 			listenTo(membersListController);
 		}
