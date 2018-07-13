@@ -113,9 +113,11 @@ class QualityDataCollectionDAO {
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , form.displayname as formName");
-		sb.append("     , case collection.topicType");
+		sb.append("     , case");
+		sb.append("       when curriculumElementType is not null");
+		sb.append("       then curriculumElementType.displayName");
 		for (QualityDataCollectionTopicType topicType: QualityDataCollectionTopicType.values()) {
-			sb.append("       when '").append(topicType.toString()).append("'");
+			sb.append("       when collection.topicType = '").append(topicType.toString()).append("'");
 			sb.append("       then '").append(translator.translate(topicType.getI18nKey())).append("'");
 		}
 		sb.append("       end as topicType");
@@ -146,6 +148,7 @@ class QualityDataCollectionDAO {
 		sb.append("       left join collection.topicOrganisation as organisation");
 		sb.append("       left join collection.topicCurriculum as curriculum");
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
+		sb.append("       left join curriculumElement.type as curriculumElementType");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
 		
 		appendOrderBy(sb, orderBy);

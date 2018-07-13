@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality;
 
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+
 /**
  * 
  * Initial date: 10.07.2018<br>
@@ -27,16 +29,18 @@ package org.olat.modules.quality;
  */
 public enum QualityReminderType {
 	
-	INVITATION("reminder.template.invitation.subject", "reminder.template.invtation.body"),
-	REMINDER1("reminder.template.reminder1.subject", "reminder.template.reminder1.body"),
-	REMINDER2("reminder.template.reminder2.subject", "reminder.template.reminder2.body");
+	INVITATION("reminder.invitation.subject", "reminder.invitation.body", null),
+	REMINDER1("reminder.reminder1.subject", "reminder.reminder1.body", EvaluationFormParticipationStatus.prepared),
+	REMINDER2("reminder.reminder2.subject", "reminder.reminder2.body", EvaluationFormParticipationStatus.prepared);
 	
 	private final String subjectI18nKey;
 	private final String bodyI18nKey;
+	private final EvaluationFormParticipationStatus status;
 	
-	private QualityReminderType(String subjectI18nKey, String bodyI18nKey) {
+	private QualityReminderType(String subjectI18nKey, String bodyI18nKey, EvaluationFormParticipationStatus status) {
 		this.subjectI18nKey = subjectI18nKey;
 		this.bodyI18nKey = bodyI18nKey;
+		this.status = status;
 	}
 
 	public String getSubjectI18nKey() {
@@ -45,6 +49,10 @@ public enum QualityReminderType {
 
 	public String getBodyI18nKey() {
 		return bodyI18nKey;
+	}
+
+	public EvaluationFormParticipationStatus getParticipationStatus() {
+		return status;
 	}
 	
 }

@@ -14,6 +14,7 @@
 	<import resource="classpath:/org/olat/modules/glossary/_spring/glossaryContext.xml"/>
 	<import resource="classpath:/org/olat/modules/iq/_spring/iqContext.xml"/>
 	<import resource="classpath:/org/olat/modules/lecture/_spring/lectureContext.xml"/>
+	<import resource="classpath:/org/olat/modules/quality/_spring/qualityContext.xml"/>
 	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
 	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>
 	<import resource="classpath:/org/olat/modules/reminder/_spring/reminderContext.xml"/>
@@ -237,26 +238,6 @@
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.curriculum.ui"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
-			</list>
-		</property>
-	</bean>
-	
-		<!-- Quality management panel -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="9020" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.modules.quality.ui.QualityAdminController"/>
-			</bean>
-		</property>
-		<property name="navigationKey" value="quality" />
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
-		<property name="i18nActionKey" value="admin.menu.title"/>
-		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
-		<property name="translationPackage" value="org.olat.modules.quality.ui"/>
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.admin.SystemAdminMainController</value>		

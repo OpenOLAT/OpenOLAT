@@ -130,6 +130,25 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadBySurveyAndStatus() {
+		EvaluationFormParticipationStatus status = EvaluationFormParticipationStatus.done;
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSurvey survey2 = evaTestHelper.createSurvey();
+		EvaluationFormParticipation participation = evaTestHelper.createParticipation(survey);
+		participation = sut.changeStatus(participation, status);
+		EvaluationFormParticipation otherStatus = evaTestHelper.createParticipation(survey);
+		otherStatus = sut.changeStatus(otherStatus, EvaluationFormParticipationStatus.prepared);
+		EvaluationFormParticipation otherSurvey = evaTestHelper.createParticipation(survey2);
+		otherSurvey = sut.changeStatus(otherSurvey, status);
+		dbInstance.commitAndCloseSession();
+		
+		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, status);
+
+		assertThat(participations).contains(participation)
+				.doesNotContain(otherStatus, otherSurvey);
+	}
+	
+	@Test
 	public void shouldLoadBySurveyAndExecutor() {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,

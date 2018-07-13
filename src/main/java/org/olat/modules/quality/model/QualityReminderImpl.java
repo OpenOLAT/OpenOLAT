@@ -121,6 +121,7 @@ public class QualityReminderImpl implements QualityReminder, Persistable {
 		this.sendPlaned = sendPlaned;
 	}
 
+	@Override
 	public Date getSendDone() {
 		return sendDone;
 	}

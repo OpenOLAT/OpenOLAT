@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -73,14 +74,25 @@ public class QualityReminderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldUpdateReminder() {
+	public void shouldUpdateDatePlaned() {
 		QualityReminder reminder = qualityTestHelper.createReminder();
 		dbInstance.commitAndCloseSession();
 		
 		Date sendDate = (new GregorianCalendar(2013,1,28,13,24,56)).getTime();
-		reminder = sut.update(reminder, sendDate);
+		reminder = sut.updateDatePlaned(reminder, sendDate);
 
 		assertThat(reminder.getSendPlaned()).isCloseTo(sendDate, 1000);
+	}
+	
+	@Test
+	public void shouldUpdateDateDone() {
+		QualityReminder reminder = qualityTestHelper.createReminder();
+		dbInstance.commitAndCloseSession();
+		
+		Date date = (new GregorianCalendar(2013,1,28,13,24,56)).getTime();
+		reminder = sut.updateDateDone(reminder, date);
+
+		assertThat(reminder.isSent()).isTrue();
 	}
 	
 	@Test
@@ -96,6 +108,30 @@ public class QualityReminderDAOTest extends OlatTestCase {
 		QualityReminder loadedReminder = sut.load(dataCollectionRef, type);
 		
 		assertThat(loadedReminder).isEqualTo(reminder);
+	}
+	
+	@Test
+	public void shouldLoadPending() {
+		Date until = (new GregorianCalendar(2013,1,28,1,1,1)).getTime();
+		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
+		QualityReminderType type = QualityReminderType.REMINDER1;
+		Date afterUntil1 = (new GregorianCalendar(2013,1,28,2,1,1)).getTime();
+		QualityReminder reminderAfter1 = sut.create(dataCollectionRef, afterUntil1, type);
+		Date afterUntil2 = (new GregorianCalendar(2013,1,28,3,1,1)).getTime();
+		QualityReminder reminderAfter2 = sut.create(dataCollectionRef, afterUntil2, type);
+		Date beforeUntil1 = (new GregorianCalendar(2013,1,27,2,1,1)).getTime();
+		QualityReminder reminderBefore1 = sut.create(dataCollectionRef, beforeUntil1, type);
+		Date beforeUntil2 = (new GregorianCalendar(2013,1,26,2,1,1)).getTime();
+		QualityReminder reminderBefore2 = sut.create(dataCollectionRef, beforeUntil2, type);
+		Date beforeUntilSent = (new GregorianCalendar(2013,1,26,2,1,1)).getTime();
+		QualityReminder reminderBeforeDone = sut.create(dataCollectionRef, beforeUntilSent, type);
+		reminderBeforeDone = sut.updateDateDone(reminderBeforeDone, beforeUntilSent);
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityReminder> pending = sut.loadPending(until);
+		
+		assertThat(pending).containsExactlyInAnyOrder(reminderBefore1, reminderBefore2)
+				.doesNotContain(reminderAfter1, reminderAfter2, reminderBeforeDone);
 	}
 
 	@Test

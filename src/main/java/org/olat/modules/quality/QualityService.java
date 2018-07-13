@@ -132,10 +132,12 @@ public interface QualityService {
 	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef, Date sendDate,
 			QualityReminderType type);
 
-	public QualityReminder updateReminder(QualityReminder invitation, Date sendDate);
+	public QualityReminder updateReminderDatePlaned(QualityReminder invitation, Date datePlaned);
 
 	public QualityReminder loadReminder(QualityDataCollectionRef dataCollectionRef, QualityReminderType type);
 
 	public void deleteReminder(QualityReminder reminder);
+	
+	public void sendRemainders();
 
 }

@@ -17,31 +17,26 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality;
+package org.olat.modules.quality.manager;
 
-import java.util.Date;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.modules.quality.QualityService;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
  * 
- * Initial date: 10.07.2018<br>
+ * Initial date: 11.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityReminder extends CreateInfo, ModifiedInfo {
+public class QualityReminderJob extends JobWithDB {
 
-	public Long getKey();
-	
-	public QualityReminderType getType();
-
-	public Date getSendPlaned();
-	
-	public Date getSendDone();
-
-	public boolean isSent();
-	
-	public QualityDataCollection getDataCollection();
+	@Override
+	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+		QualityService qualityService = CoreSpringFactory.getImpl(QualityService.class);
+		qualityService.sendRemainders();
+	}
 
 }

@@ -114,10 +114,9 @@ public class RemindersController extends FormBasicController {
 		if (reminderEl.isEnabled()) {
 			if (reminderEl.getDate() != null) {
 				if (reminder != null) {
-					savedReminder = qualityService.updateReminder(reminder, reminderEl.getDate());
+					savedReminder = qualityService.updateReminderDatePlaned(reminder, reminderEl.getDate());
 				} else {
-					savedReminder = qualityService.createReminder(dataCollectionRef, reminderEl.getDate(),
-							QualityReminderType.INVITATION);
+					savedReminder = qualityService.createReminder(dataCollectionRef, reminderEl.getDate(), type);
 				}
 			} else {
 				qualityService.deleteReminder(reminder);

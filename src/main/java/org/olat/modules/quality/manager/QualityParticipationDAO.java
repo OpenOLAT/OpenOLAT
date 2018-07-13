@@ -46,7 +46,7 @@ class QualityParticipationDAO {
 	
 	@Autowired
 	private DB dbInstance;
-
+	
 	int getParticipationCount(QualityDataCollectionLight dataCollection) {
 		if (dataCollection == null) return 0;
 		
@@ -157,9 +157,11 @@ class QualityParticipationDAO {
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , collection.title as title");
-		sb.append("     , case collection.topicType");
+		sb.append("     , case");
+		sb.append("       when curriculumElementType is not null");
+		sb.append("       then curriculumElementType.displayName");
 		for (QualityDataCollectionTopicType topicType: QualityDataCollectionTopicType.values()) {
-			sb.append("       when '").append(topicType.toString()).append("'");
+			sb.append("       when collection.topicType = '").append(topicType.toString()).append("'");
 			sb.append("       then '").append(translator.translate(topicType.getI18nKey())).append("'");
 		}
 		sb.append("       end as topicType");
@@ -186,6 +188,7 @@ class QualityParticipationDAO {
 		sb.append("       left join collection.topicOrganisation as organisation");
 		sb.append("       left join collection.topicCurriculum as curriculum");
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
+		sb.append("       left join curriculumElement.type as curriculumElementType");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
 		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		appendWhereClause(sb, searchParam);

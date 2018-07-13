@@ -29,6 +29,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -36,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
@@ -46,6 +48,7 @@ import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
@@ -66,6 +69,8 @@ public class QualityServiceImpl implements QualityService {
 	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
 
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
 	private QualityContextDAO contextDao;
@@ -81,6 +86,8 @@ public class QualityServiceImpl implements QualityService {
 	private QualityReminderDAO reminderDao;
 	@Autowired
 	private QualityParticipationDAO participationDao;
+	@Autowired
+	private QualityMailing qualityMailing;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
@@ -232,8 +239,8 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public QualityReminder updateReminder(QualityReminder reminder, Date sendDate) {
-		return reminderDao.update(reminder, sendDate);
+	public QualityReminder updateReminderDatePlaned(QualityReminder reminder, Date datePlaned) {
+		return reminderDao.updateDatePlaned(reminder, datePlaned);
 	}
 
 	@Override
@@ -244,6 +251,38 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public void deleteReminder(QualityReminder reminder) {
 		reminderDao.delete(reminder);
+	}
+
+	@Override
+	public void sendRemainders() {
+		if (!qualityModule.isEnabled()) return;
+		
+		Date untilNow = new Date();
+		Collection<QualityReminder> reminders = reminderDao.loadPending(untilNow);
+		log.debug("Send emails for quality remiders. Number of pending reminders: " + reminders.size());
+		for (QualityReminder reminder : reminders) {
+			QualityReminder invitation = getInvitation(reminder);
+			List<EvaluationFormParticipation> participations = getParticipants(reminder);
+			for (EvaluationFormParticipation participation : participations) {
+				qualityMailing.sendMail(reminder, invitation, participation);
+			}
+			reminderDao.updateDateDone(reminder, untilNow);
+		}	
+	}
+
+	private QualityReminder getInvitation(QualityReminder reminder) {
+		if (QualityReminderType.INVITATION.equals(reminder.getType())) {
+			return reminder;
+		}
+		return reminderDao.load(reminder.getDataCollection(), QualityReminderType.INVITATION);
+	}
+
+	private List<EvaluationFormParticipation> getParticipants(QualityReminder reminder) {
+		QualityReminderType type = reminder.getType();
+		EvaluationFormParticipationStatus status = type.getParticipationStatus();
+		OLATResourceable dataCollection = reminder.getDataCollection();
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		return evaluationFormManager.loadParticipations(survey, status);
 	}
 
 }

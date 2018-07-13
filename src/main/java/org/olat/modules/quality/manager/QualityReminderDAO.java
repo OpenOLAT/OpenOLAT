@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -57,10 +58,19 @@ public class QualityReminderDAO {
 		return reminder;
 	}
 
-	QualityReminder update(QualityReminder reminder, Date sendDate) {
+	QualityReminder updateDatePlaned(QualityReminder reminder, Date datePlaned) {
 		if (reminder instanceof QualityReminderImpl) {
 			QualityReminderImpl reminderImpl = (QualityReminderImpl) reminder;
-			reminderImpl.setSendPlaned(sendDate);
+			reminderImpl.setSendPlaned(datePlaned);
+			return save(reminderImpl);
+		}
+		return reminder;
+	}
+	
+	QualityReminder updateDateDone(QualityReminder reminder, Date dateDone) {
+		if (reminder instanceof QualityReminderImpl) {
+			QualityReminderImpl reminderImpl = (QualityReminderImpl) reminder;
+			reminderImpl.setSendDone(dateDone);
 			return save(reminderImpl);
 		}
 		return reminder;
@@ -81,13 +91,30 @@ public class QualityReminderDAO {
 		sb.append(" where reminder.dataCollection.key = :dataCollectionKey");
 		sb.append("   and reminder.type = :reminderType");
 		
-		 List<QualityReminder> reminders = dbInstance.getCurrentEntityManager()
+		List<QualityReminder> reminders = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityReminder.class)
 				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
 				.setParameter("reminderType", type)
 				.getResultList();
 		return reminders.isEmpty() ? null : reminders.get(0);
 	}
+
+	List<QualityReminder> loadPending(Date until) {
+		if (until == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select reminder");
+		sb.append("  from qualityreminder as reminder");
+		sb.append("  join fetch reminder.dataCollection as collection");
+		sb.append(" where reminder.sendDone is null");
+		sb.append("   and reminder.sendPlaned <= :until");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityReminder.class)
+				.setParameter("until", until)
+				.getResultList();
+	}
+
 
 	public void delete(QualityReminder reminder) {
 		if (reminder == null || reminder.getKey() == null) return;

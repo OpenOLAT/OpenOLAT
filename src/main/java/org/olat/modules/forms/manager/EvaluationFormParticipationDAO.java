@@ -105,12 +105,33 @@ class EvaluationFormParticipationDAO {
 		return participations.isEmpty() ? null : participations.get(0);
 	}
 	
+	List<EvaluationFormParticipation> loadBySurvey(EvaluationFormSurvey survey,
+			EvaluationFormParticipationStatus status) {
+		if (survey == null) return null;
+		
+		StringBuilder query = new StringBuilder();
+		query.append("select participation from evaluationformparticipation as participation");
+		query.append("  left join participation.executor executor");
+		query.append(" where participation.survey.key=:surveyKey");
+		if (status != null) {
+			query.append("   and participation.status=:status");
+		}
+
+		TypedQuery<EvaluationFormParticipation> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), EvaluationFormParticipation.class)
+				.setParameter("surveyKey", survey.getKey());
+		if (status != null) {
+			typedQuery.setParameter("status", status);
+		}
+		return typedQuery.getResultList();
+	}
+	
 	EvaluationFormParticipation loadByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
 		if (survey == null || executor == null) return null;
 		
 		StringBuilder query = new StringBuilder();
 		query.append("select participation from evaluationformparticipation as participation");
-		query.append(" inner join participation.executor executor");
+		query.append("  left join participation.executor executor");
 		query.append(" where participation.survey.key=:surveyKey");
 		query.append("   and participation.executor.key=:executorKey");
 

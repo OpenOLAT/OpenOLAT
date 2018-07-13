@@ -109,6 +109,7 @@ public class FeedFileStorge {
 		xstream.omitField(ItemImpl.class, "key");
 		xstream.omitField(ItemImpl.class, "feed");
 		xstream.alias("enclosure", Enclosure.class, EnclosureImpl.class);
+		xstream.ignoreUnknownElements();
 	}
 
 	/**
