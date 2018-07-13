@@ -263,16 +263,6 @@ public class FeedManagerImplTest {
 	}
 
 	@Test
-	public void importShouldNothingDoIfNoXmlFileIsPresent() {
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(null);
-
-		sut.importFeedFromXML(any(OLATResource.class), true);
-
-		verifyZeroInteractions(feedDAOMock);
-		verifyZeroInteractions(itemDAOMock);
-	}
-
-	@Test
 	public void importShouldSaveFeedToDatabase() {
 		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedDAOMock.createFeed(any(Feed.class))).thenReturn(internatFeedMock);
