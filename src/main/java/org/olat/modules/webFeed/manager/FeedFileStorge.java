@@ -109,6 +109,7 @@ public class FeedFileStorge {
 		xstream.omitField(ItemImpl.class, "key");
 		xstream.omitField(ItemImpl.class, "feed");
 		xstream.alias("enclosure", Enclosure.class, EnclosureImpl.class);
+		xstream.ignoreUnknownElements();
 	}
 
 	/**
@@ -395,9 +396,6 @@ public class FeedFileStorge {
 				} catch (Exception e) {
 					log.warn("Item XML-File could not be read. Item container: " + leaf);
 				}
-			} else {
-				log.warn("Item XML-File could not be found on file system."
-						+ " Item container: " + itemContainer.getName());
 			}
 		}
 
