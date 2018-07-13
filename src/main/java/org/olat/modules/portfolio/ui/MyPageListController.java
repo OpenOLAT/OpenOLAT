@@ -141,6 +141,7 @@ public class MyPageListController extends AbstractPageListController {
 
 		timelineEl.setPoints(points);
 		disposeRows();//clean up the posters
+		model.setFlat(true);
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();

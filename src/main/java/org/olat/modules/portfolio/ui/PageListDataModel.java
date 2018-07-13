@@ -47,18 +47,26 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 	
 	private static final OLog log = Tracing.createLoggerFor(PageListDataModel.class);
 	
+	private boolean flat;
 	private final Locale locale;
 	private List<PortfolioElementRow> backup;
-	
-	
+
 	public PageListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	}
 	
+	public boolean isFlat() {
+		return flat;
+	}
+
+	public void setFlat(boolean flat) {
+		this.flat = flat;
+	}
+
 	@Override
 	public void sort(SortKey orderBy) {
-		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, locale);
+		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, flat, locale);
 		List<PortfolioElementRow> rows;
 		try {
 			rows = sorter.sort();

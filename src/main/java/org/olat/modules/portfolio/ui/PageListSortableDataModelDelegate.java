@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
@@ -42,8 +41,11 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
  */
 public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDelegate<PortfolioElementRow> {
 	
-	public PageListSortableDataModelDelegate(SortKey orderBy, SortableFlexiTableDataModel<PortfolioElementRow> tableModel, Locale locale) {
+	private final boolean flat;
+	
+	public PageListSortableDataModelDelegate(SortKey orderBy, PageListDataModel tableModel, boolean flat, Locale locale) {
 		super(orderBy, tableModel, locale);
+		this.flat = flat;
 	}
 
 	@Override
@@ -63,7 +65,11 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			comparator = new ReverseComparator(comparator);
 		}
 		
-		Collections.sort(rows, new ClassicComparator(comparator));
+		if(flat) {
+			Collections.sort(rows, comparator);
+		} else {
+			Collections.sort(rows, new ClassicComparator(comparator));
+		}
 	}
 
 	@Override
@@ -88,10 +94,12 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 	private final class CommentsComparator implements Comparator<PortfolioElementRow> {
 		@Override
 		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
-			long c1 = o1.getNumOfComments();
-			long c2 = o2.getNumOfComments();
-			
+			long c1 = o1.getCommentFormLink() == null ? 0 : o1.getNumOfComments();
+			long c2 = o2.getCommentFormLink() == null ? 0 : o2.getNumOfComments();
 			int c = Long.compare(c1, c2);
+			if(c == 0) {
+				c = Boolean.compare(o1.getCommentFormLink() != null, o2.getCommentFormLink() != null);
+			}
 			if(c == 0) {
 				c = compareString(o1.getTitle(), o2.getTitle());
 			}
