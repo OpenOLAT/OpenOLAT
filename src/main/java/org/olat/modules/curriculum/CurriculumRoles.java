@@ -30,6 +30,7 @@ import org.olat.core.util.StringHelper;
 public enum CurriculumRoles {
 	
 	curriculummanager,
+	curriculumowner,// own a piece of a curriculum
 	owner, //same as GroupRoles
 	coach, //same as GroupRoles
 	participant; //same as GroupRoles

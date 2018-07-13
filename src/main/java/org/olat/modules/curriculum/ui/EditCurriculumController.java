@@ -19,18 +19,29 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,11 +56,14 @@ public class EditCurriculumController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
+	private SingleSelection organisationEl;
 	
 	private Curriculum curriculum;
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	/**
 	 * Create a new curriculum.
@@ -92,6 +106,8 @@ public class EditCurriculumController extends FormBasicController {
 		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
 		
+		initFormOrganisations(formLayout, ureq.getUserSession());
+		
 		String description = curriculum == null ? "" : curriculum.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
@@ -101,6 +117,24 @@ public class EditCurriculumController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
+		Roles roles = usess.getRoles();
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
+		
+		List<String> keyList = new ArrayList<>();
+		List<String> valueList = new ArrayList<>();
+		for(Organisation organisation:organisations) {
+			keyList.add(organisation.getKey().toString());
+			valueList.add(organisation.getDisplayName());
+		}
+		organisationEl = uifactory.addDropdownSingleselect("curriculum.organisation", formLayout,
+				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
+		if(curriculum != null && curriculum.getOrganisation() != null) {
+			organisationEl.select(curriculum.getOrganisation().getKey().toString(), true);
+		}
 	}
 
 	@Override
@@ -131,8 +165,16 @@ public class EditCurriculumController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(curriculum == null) {
 			//create a new one
+			Organisation organisation;
+			if(organisationEl != null && organisationEl.isOneSelected()) {
+				organisation = organisationService
+						.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
+			} else {
+				organisation = organisationService.getDefaultOrganisation();
+			}
 			curriculum = curriculumService
-					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), null);
+					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), organisation);
+			curriculumService.addMember(curriculum, getIdentity(), CurriculumRoles.curriculummanager);
 		} else {
 			curriculum = curriculumService.getCurriculum(curriculum);
 			curriculum.setIdentifier(identifierEl.getValue());
