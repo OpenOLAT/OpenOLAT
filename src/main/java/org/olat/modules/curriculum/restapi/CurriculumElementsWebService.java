@@ -246,7 +246,6 @@ public class CurriculumElementsWebService {
 					curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));
-			checkCurriculum(elementToSave);
 			elementToSave.setDisplayName(curriculumElement.getDisplayName());
 			elementToSave.setIdentifier(curriculumElement.getIdentifier());
 			elementToSave.setBeginDate(curriculumElement.getBeginDate());

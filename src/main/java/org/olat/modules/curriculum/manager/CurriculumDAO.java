@@ -28,6 +28,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -172,8 +173,8 @@ public class CurriculumDAO {
 		  .append("  where curElement.curriculum.key=cur.key")
 		  .append(" ) as numOfElements")
 		  .append(" from curriculum cur")
-		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis")
-		  .append(" inner join fetch cur.group baseGroup");
+		  .append(" inner join fetch cur.group baseGroup")
+		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis");
 		
 		boolean where = false;
 		if(!params.getOrganisations().isEmpty()) {
@@ -204,8 +205,8 @@ public class CurriculumDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append("exists (select membership.key from bgroupmember as membership")
 			  .append("  where membership.identity.key=:managerKey")
-			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
-			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("')")
+			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
+			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("','").append(OrganisationRoles.principal).append("')")
 			  .append(")");
 		}
 

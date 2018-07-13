@@ -19,11 +19,15 @@
  */
 package org.olat.user.ui.organisation;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -34,13 +38,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class OrganisationUserManagementTableModel extends DefaultFlexiTableDataModel<OrganisationUserRow>
 implements SortableFlexiTableDataModel<OrganisationUserRow> {
 	
-	public OrganisationUserManagementTableModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public OrganisationUserManagementTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<OrganisationUserRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override
@@ -66,7 +76,7 @@ implements SortableFlexiTableDataModel<OrganisationUserRow> {
 
 	@Override
 	public DefaultFlexiTableDataModel<OrganisationUserRow> createCopyWithEmptyList() {
-		return new OrganisationUserManagementTableModel(getTableColumnModel());
+		return new OrganisationUserManagementTableModel(getTableColumnModel(), locale);
 	}
 	
 	public enum MemberCols implements FlexiSortableColumnDef {

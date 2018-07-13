@@ -138,11 +138,12 @@ public class OrganisationUserManagementController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new RoleFlexiCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.inheritance, new InheritanceModeFlexiCellRenderer(getTranslator())));
 
-		tableModel = new OrganisationUserManagementTableModel(columnsModel); 
+		tableModel = new OrganisationUserManagementTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-user-list");
 	}
 	
 	private void loadModel(boolean reset) {
