@@ -54,8 +54,8 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.olat.modules.quality.ui.wizard.AddCourseUser_1_ChooseCourseStep;
 import org.olat.modules.quality.ui.wizard.AddCurriculumElementUser_1_ChooseCurriculumElementStep;
@@ -243,7 +243,7 @@ public class ParticipationListController extends FormBasicController implements 
 			for (GroupRoles role: courseContext.getRoles()) {
 				String roleName = role.name();
 				for (RepositoryEntry repositoryEntry: courseContext.getRepositoryEntries()) {
-					Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, roleName);
+					Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, roleName);
 					List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
 					for (EvaluationFormParticipation participation: participations) {
 						qualityService.createContextBuilder(dataCollection, participation, repositoryEntry, role).build();
