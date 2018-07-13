@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1123,7 +1124,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			reloadedIdentity.setDeletedBy(getDeletedByName(doer));
 			reloadedIdentity.setDeletedDate(new Date());
 			
-			List<String> deletedRoles = getRolesSummaryWithResources(reloadedIdentity);
+			Collection<String> deletedRoles = new HashSet<>(getRolesSummaryWithResources(reloadedIdentity));
 			StringBuilder deletedRoleBuffer = new StringBuilder();
 			for(String deletedRole:deletedRoles) {
 				if(deletedRoleBuffer.length() > 0) deletedRoleBuffer.append(",");
