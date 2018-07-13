@@ -793,13 +793,12 @@ public class FeedManagerImpl extends FeedManager {
 	@Override
 	public void importFeedFromXML(OLATResource ores, boolean removeIdentityKeys) {
 		Feed feedFromXml = feedFileStorage.loadFeedFromXML(ores);
-		if (feedFromXml == null) return;
 
 		// Check if the feed already exits or create it. The feed exists
 		// possibly, if a previous migration from an XML feed was not
 		// successful.
 		Feed feed = feedDAO.loadFeed(ores);
-		if (feed == null) {
+		if (feed == null && feedFromXml != null) {
 			feedFromXml.setResourceableId(ores.getResourceableId());
 			// Use the display name instead of the username
 			if (!removeIdentityKeys && feedFromXml.getAuthor() != null) {
@@ -812,35 +811,37 @@ public class FeedManagerImpl extends FeedManager {
 			log.info("Feed imported " + "(" + ores.getResourceableTypeName() + "): " + ores.getResourceableId());
 		}
 
-		List<Item> itemsFromXml = feedFileStorage.loadItemsFromXML(ores);
-		itemsFromXml = fixFeedVersionIssues(feedFromXml, itemsFromXml);
-		for (Item itemFromXml : itemsFromXml) {
-			// Check if the item already exits or create it.
-			Item item = itemDAO.loadItemByGuid(feed.getKey(), itemFromXml.getGuid());
-			if (item == null) {
-				if (removeIdentityKeys) {
-					itemFromXml.setAuthorKey(null);
-					itemFromXml.setModifierKey(null);
-				} else {
-					// Check if the identity exists
-					if (itemFromXml.getAuthorKey() != null
-							&& securityManager.loadIdentityShortByKey(itemFromXml.getAuthorKey()) == null) {
+		if (feed != null) {
+			List<Item> itemsFromXml = feedFileStorage.loadItemsFromXML(ores);
+			itemsFromXml = fixFeedVersionIssues(feedFromXml, itemsFromXml);
+			for (Item itemFromXml : itemsFromXml) {
+				// Check if the item already exits or create it.
+				Item item = itemDAO.loadItemByGuid(feed.getKey(), itemFromXml.getGuid());
+				if (item == null) {
+					if (removeIdentityKeys) {
 						itemFromXml.setAuthorKey(null);
-					}
-					if (itemFromXml.getModifierKey() != null
-							&& securityManager.loadIdentityShortByKey(itemFromXml.getModifierKey()) == null) {
 						itemFromXml.setModifierKey(null);
+					} else {
+						// Check if the identity exists
+						if (itemFromXml.getAuthorKey() != null
+								&& securityManager.loadIdentityShortByKey(itemFromXml.getAuthorKey()) == null) {
+							itemFromXml.setAuthorKey(null);
+						}
+						if (itemFromXml.getModifierKey() != null
+								&& securityManager.loadIdentityShortByKey(itemFromXml.getModifierKey()) == null) {
+							itemFromXml.setModifierKey(null);
+						}
 					}
+					itemDAO.createItem(feed, itemFromXml);
+					log.info("Item imported: " + itemFromXml.getGuid());
 				}
-				itemDAO.createItem(feed, itemFromXml);
-				log.info("Item imported: " + itemFromXml.getGuid());
+				feedFileStorage.deleteItemXML(itemFromXml);
 			}
-			feedFileStorage.deleteItemXML(itemFromXml);
-		}
 
-		if (feed.isExternal()) {
-			saveExternalItems(feed);
-			saveExternalFeed(feed);
+			if (feed.isExternal()) {
+				saveExternalItems(feed);
+				saveExternalFeed(feed);
+			}
 		}
 
 		feedFileStorage.deleteFeedXML(feed);

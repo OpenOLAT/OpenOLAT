@@ -126,6 +126,11 @@ public class BinderPageListController extends AbstractPageListController {
 			initialPanel.setCssClass("o_edit_mode");
 		}
 	}
+
+	@Override
+	protected String getTimelineSwitchPreferencesName() {
+		return "binder-timeline-switch-" + binder.getKey();
+	}
 	
 	private String getGuiPrefsKey(OLATResourceable binderOres) {
 		return new StringBuilder()

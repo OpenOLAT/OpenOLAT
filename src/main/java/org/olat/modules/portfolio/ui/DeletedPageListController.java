@@ -84,6 +84,11 @@ public class DeletedPageListController extends AbstractPageListController {
 	}
 
 	@Override
+	protected String getTimelineSwitchPreferencesName() {
+		return "del-timeline-switch";
+	}
+
+	@Override
 	protected void loadModel(UserRequest ureq, String searchString) {
 		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfCommentsOnOwnedPage(getIdentity());
 		

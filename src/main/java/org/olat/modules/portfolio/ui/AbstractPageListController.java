@@ -194,7 +194,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			timelineSwitchOffButton = uifactory.addFormLink("timeline.switch.off", formLayout, Link.BUTTON_SMALL); 
 			timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
 			timelineSwitchOffButton.setElementCssClass("o_sel_timeline_off");
-			doSwitchTimelineOn();
+			
+			Object prefs = ureq.getUserSession().getGuiPreferences().get(this.getClass(), getTimelineSwitchPreferencesName(), "on");
+			if("on".equals(prefs)) {
+				doSwitchTimelineOn(ureq, false);
+			} else {
+				doSwitchTimelineOff(ureq, false);
+			}
 		} else {
 			flc.contextPut("timelineSwitch", Boolean.FALSE);
 		}
@@ -627,9 +633,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				}
 			}
 		} else if(timelineSwitchOnButton == source) {
-			doSwitchTimelineOff();
+			doSwitchTimelineOff(ureq, true);
 		} else if(timelineSwitchOffButton == source) {
-			doSwitchTimelineOn();
+			doSwitchTimelineOn(ureq, true);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -726,17 +732,25 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void doSwitchTimelineOn() {
+	private void doSwitchTimelineOn(UserRequest ureq, boolean savePreferences) {
 		timelineSwitchOnButton.setVisible(true);
 		timelineSwitchOffButton.setVisible(false);
 		flc.contextPut("timelineSwitch", Boolean.TRUE);
+		if(savePreferences) {
+			ureq.getUserSession().getGuiPreferences().put(this.getClass(), getTimelineSwitchPreferencesName(), "on");
+		}
 	}
 	
-	private void doSwitchTimelineOff() {
+	private void doSwitchTimelineOff(UserRequest ureq, boolean savePreferences) {
 		timelineSwitchOnButton.setVisible(false);
 		timelineSwitchOffButton.setVisible(true);
 		flc.contextPut("timelineSwitch", Boolean.FALSE);
+		if(savePreferences) {
+			ureq.getUserSession().getGuiPreferences().put(this.getClass(), getTimelineSwitchPreferencesName(), "off");
+		}
 	}
+	
+	protected abstract String getTimelineSwitchPreferencesName();
 	
 	protected Assignment doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
 		return doStartAssignment(ureq, row.getAssignment().getKey());
