@@ -1,10 +1,16 @@
 .o_qual_execute {
-  .o_qual_context_table {
-    th {
-      width: 30%;
-    }
-    td {
-      width: 70%;
-    }
-  }
+	.o_qual_context_table {
+		margin-bottom: 0;
+		
+		th {
+			width: 40%;
+			border-top: none;
+			padding: 4px 8px;
+		}
+		td {
+			width: 60%;
+			border-top: none;
+			padding: 4px 8px;
+		}
+	}
 }

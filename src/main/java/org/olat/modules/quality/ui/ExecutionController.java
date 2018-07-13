@@ -76,8 +76,6 @@ public class ExecutionController extends BasicController {
 
 	protected void initVelocityContainer(UserRequest ureq) {
 		mainVC.contextPut("title", qualityParticipation.getTitle());
-		mainVC.contextPut("topicType", qualityParticipation.getTranslatedTopicType());
-		mainVC.contextPut("topic", qualityParticipation.getTopic());
 		mainVC.contextPut("contexts", createContextWrappers());
 		
 		EvaluationFormSession session = loadOrCreateSession(qualityParticipation.getParticipationRef());
@@ -109,6 +107,14 @@ public class ExecutionController extends BasicController {
 		QualityContextRole role = context.getRole();
 		String translatedRole = translateRole(role);
 		ContextWrapper wrapper = new ContextWrapper(translatedRole);
+		KeyValue topicKeyValue = createTopicKeyValue();
+		if (topicKeyValue != null) {
+			wrapper.add(topicKeyValue);
+		}
+		KeyValue roleKeyValue = createRoleKeyValue(context);
+		if (roleKeyValue != null) {
+			wrapper.add(roleKeyValue);
+		}
 		KeyValue repositoryKeyValue = createRepositoryEntryValues(context);
 		if (repositoryKeyValue != null) {
 			wrapper.add(repositoryKeyValue);
@@ -117,15 +123,43 @@ public class ExecutionController extends BasicController {
 		wrapper.addAll(curriculumElements);
 		List<KeyValue> taxonomyLevels = createTaxonomyLevels(context);
 		wrapper.addAll(taxonomyLevels);
+		if (wrapper.getKeyValues().size() % 2 == 1) {
+			// Add empty entry to have an even number of entries
+			wrapper.add(new KeyValue("", ""));
+		}
 		return wrapper;
+	}
+
+	private KeyValue createTopicKeyValue() {
+		KeyValue keyValue = null;
+		if (qualityParticipation.getTopic() != null) {
+			String key = translate("executor.participation.topic.title");
+			String value = new StringBuilder()
+					.append(qualityParticipation.getTranslatedTopicType())
+					.append(" ")
+					.append(qualityParticipation.getTopic())
+					.toString();
+			keyValue = new KeyValue(key, value);
+		}
+		return keyValue;
+	}
+
+	private KeyValue createRoleKeyValue(QualityContext context) {
+		KeyValue keyValue = null;
+		if (context.getRole() != null) {
+			String key = translate("executor.participation.rating");
+			String value = translateRole(context.getRole());
+			keyValue = new KeyValue(key, value);
+		}
+		return keyValue;
 	}
 
 	private String translateRole(QualityContextRole role) {
 		switch (role) {
-		case owner: return translate("executor.participation.rating.as.owner");
-		case coach: return translate("executor.participation.rating.as.coach");
-		case participant: return translate("executor.participation.rating.as.participant");
-		default: return translate("executor.participation.rating.as.none");
+		case owner: return translate("executor.participation.owner");
+		case coach: return translate("executor.participation.coach");
+		case participant: return translate("executor.participation.participant");
+		default: return "";
 		}
 	}
 
