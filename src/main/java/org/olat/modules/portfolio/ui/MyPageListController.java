@@ -81,6 +81,11 @@ public class MyPageListController extends AbstractPageListController {
 		newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 		stackPanel.addTool(newEntryLink, Align.right);
 	}
+	
+	@Override
+	protected String getTimelineSwitchPreferencesName() {
+		return "entries-timeline-switch";
+	}
 
 	@Override
 	protected void loadModel(UserRequest ureq, String searchString) {
