@@ -146,7 +146,7 @@ public class ExecutionController extends BasicController {
 
 	private KeyValue createRoleKeyValue(QualityContext context) {
 		KeyValue keyValue = null;
-		if (context.getRole() != null) {
+		if (context.getRole() != null && !context.getRole().equals(QualityContextRole.none)) {
 			String key = translate("executor.participation.rating");
 			String value = translateRole(context.getRole());
 			keyValue = new KeyValue(key, value);

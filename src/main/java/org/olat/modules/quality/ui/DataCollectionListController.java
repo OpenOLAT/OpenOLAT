@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -103,7 +104,10 @@ public class DataCollectionListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.topicType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.topic));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.formName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.numberParticipants));
+		DefaultFlexiColumnModel numParticipantsColumn = new DefaultFlexiColumnModel(DataCollectionCols.numberParticipants);
+		numParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		numParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(numParticipantsColumn);
 		if (secCallback.canEditDataCollections()) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(DataCollectionCols.edit.i18nHeaderKey(),
 					DataCollectionCols.edit.ordinal(), CMD_EDIT,
