@@ -48,6 +48,7 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -79,14 +80,16 @@ public class CurriculumElementResourceListController extends FormBasicController
 	
 	private final boolean resourcesManaged;
 	private final CurriculumElement curriculumElement;
+	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public CurriculumElementResourceListController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public CurriculumElementResourceListController(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_resources");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
-		
+		this.secCallback = secCallback;
 		this.curriculumElement = curriculumElement;
 		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);
 		
@@ -96,7 +99,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!resourcesManaged) {
+		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources()) {
 			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
 			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		

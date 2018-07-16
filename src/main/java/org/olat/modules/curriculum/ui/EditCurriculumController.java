@@ -42,6 +42,7 @@ import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,6 +60,7 @@ public class EditCurriculumController extends FormBasicController {
 	private SingleSelection organisationEl;
 	
 	private Curriculum curriculum;
+	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -71,15 +73,17 @@ public class EditCurriculumController extends FormBasicController {
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 */
-	public EditCurriculumController(UserRequest ureq, WindowControl wControl) {
+	public EditCurriculumController(UserRequest ureq, WindowControl wControl, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		curriculum = null;
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	
-	public EditCurriculumController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
+	public EditCurriculumController(UserRequest ureq, WindowControl wControl, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	
@@ -98,12 +102,12 @@ public class EditCurriculumController extends FormBasicController {
 		
 		String identifier = curriculum == null ? "" : curriculum.getIdentifier();
 		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier));
+		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum());
 		identifierEl.setMandatory(true);
 
 		String displayName = curriculum == null ? "" : curriculum.getDisplayName();
 		displayNameEl = uifactory.addTextElement("curriculum.displayName", "curriculum.displayName", 255, displayName, formLayout);
-		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName));
+		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum());
 		displayNameEl.setMandatory(true);
 		
 		initFormOrganisations(formLayout, ureq.getUserSession());
@@ -111,12 +115,14 @@ public class EditCurriculumController extends FormBasicController {
 		String description = curriculum == null ? "" : curriculum.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.description));
+		descriptionEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.description) && secCallback.canEditCurriculum());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(secCallback.canEditCurriculum()) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 	
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
@@ -130,10 +136,20 @@ public class EditCurriculumController extends FormBasicController {
 			keyList.add(organisation.getKey().toString());
 			valueList.add(organisation.getDisplayName());
 		}
+		
+		String selectedOrganisationKey = null;
+		if(curriculum != null && curriculum.getOrganisation() != null) {
+			selectedOrganisationKey = curriculum.getOrganisation().getKey().toString();
+			if(!keyList.contains(selectedOrganisationKey)) {
+				keyList.add(selectedOrganisationKey);
+				valueList.add(curriculum.getOrganisation().getDisplayName());
+			}
+		}
+
 		organisationEl = uifactory.addDropdownSingleselect("curriculum.organisation", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
-		if(curriculum != null && curriculum.getOrganisation() != null) {
-			organisationEl.select(curriculum.getOrganisation().getKey().toString(), true);
+		if(selectedOrganisationKey != null && keyList.contains(selectedOrganisationKey)) {
+			organisationEl.select(selectedOrganisationKey, true);
 		}
 	}
 
@@ -144,7 +160,7 @@ public class EditCurriculumController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
@@ -158,7 +174,7 @@ public class EditCurriculumController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

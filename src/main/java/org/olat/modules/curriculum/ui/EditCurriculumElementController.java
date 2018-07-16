@@ -41,6 +41,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -66,6 +67,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	private Curriculum curriculum;
 	private CurriculumElement element;
 	private CurriculumElement parentElement;
+	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -77,19 +79,21 @@ public class EditCurriculumElementController extends FormBasicController {
 	 * @param wControl The window control
 	 */
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement parentElement, Curriculum curriculum) {
+			CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.parentElement = parentElement;
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum) {
+			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.element = element;
 		this.parentElement = parentElement;
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	
@@ -116,12 +120,12 @@ public class EditCurriculumElementController extends FormBasicController {
 		
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier));
+		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && secCallback.canEditCurriculumElement());
 		identifierEl.setMandatory(true);
 
 		String displayName = element == null ? "" : element.getDisplayName();
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
-		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName));
+		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && secCallback.canEditCurriculumElement());
 		displayNameEl.setMandatory(true);
 		
 		List<CurriculumElementType> types = getTypes();
@@ -134,7 +138,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			typeValues[i+1] = types.get(i).getDisplayName();
 		}
 		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typeKeys, typeValues, null);
-		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type));
+		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && secCallback.canEditCurriculumElement());
 		boolean typeFound = false;
 		if(element != null && element.getType() != null) {
 			String selectedTypeKey = element.getType().getKey().toString();
@@ -162,21 +166,23 @@ public class EditCurriculumElementController extends FormBasicController {
 		
 		Date begin = element == null ? null : element.getBeginDate();
 		beginEl = uifactory.addDateChooser("start", "curriculum.element.begin", begin, formLayout);
-		beginEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
+		beginEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && secCallback.canEditCurriculumElement());
 
 		Date end = element == null ? null : element.getEndDate();
 		endEl = uifactory.addDateChooser("end", "curriculum.element.end", end, formLayout);
-		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
+		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && secCallback.canEditCurriculumElement());
 		
 		String description = element == null ? "" : element.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.description));
+		descriptionEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.description) && secCallback.canEditCurriculumElement());
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(secCallback.canEditCurriculumElement()) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 	
 	private List<CurriculumElementType> getTypes() {

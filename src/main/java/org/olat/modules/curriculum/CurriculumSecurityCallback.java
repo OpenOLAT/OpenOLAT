@@ -31,8 +31,16 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canEditCurriculum();
 	
+	public boolean canManagerCurriculumUsers();
+	
 	public boolean canNewCurriculumElement();
 	
 	public boolean canEditCurriculumElement();
+	
+	public boolean canManagerCurriculumElementUsers();
+	
+	public boolean canManagerCurriculumElementResources();
+	
+	
 
 }

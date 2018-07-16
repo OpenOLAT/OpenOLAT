@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 
 /**
  * 
@@ -44,18 +45,21 @@ public class EditCurriculumElementOverviewController extends BasicController {
 	private CurriculumElementUserManagementController userManagementCtrl;
 	
 	private CurriculumElement element;
+	private final CurriculumSecurityCallback secCallback;
 	
 	public EditCurriculumElementOverviewController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement element, Curriculum curriculum) {
+			CurriculumElement element, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.element = element;
+		this.secCallback = secCallback;
 		
 		VelocityContainer mainVC = createVelocityContainer("curriculum_element_overview");
 		
 		tabPane = new TabbedPane("tabs", getLocale());
 		tabPane.addListener(this);
 		
-		metadataCtrl = new EditCurriculumElementController(ureq, getWindowControl(), element, element.getParent(), curriculum);
+		metadataCtrl = new EditCurriculumElementController(ureq, getWindowControl(),
+				element, element.getParent(), curriculum, secCallback);
 		listenTo(metadataCtrl);
 		tabPane.addTab(translate("curriculum.element.metadata"), metadataCtrl);
 		initTabPane();
@@ -67,13 +71,13 @@ public class EditCurriculumElementOverviewController extends BasicController {
 	
 	private void initTabPane() {
 		tabPane.addTab(translate("tab.resources"), uureq -> {
-			resourcesCtrl = new CurriculumElementResourceListController(uureq, getWindowControl(), element);
+			resourcesCtrl = new CurriculumElementResourceListController(uureq, getWindowControl(), element, secCallback);
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
 		});
 		
 		tabPane.addTab(translate("tab.user.management"), uureq -> {
-			userManagementCtrl = new CurriculumElementUserManagementController(uureq, getWindowControl(), element);
+			userManagementCtrl = new CurriculumElementUserManagementController(uureq, getWindowControl(), element, secCallback);
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();
 		});

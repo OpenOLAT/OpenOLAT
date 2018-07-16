@@ -57,6 +57,11 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canManagerCurriculumUsers() {
+			return admin;
+		}
+
+		@Override
 		public boolean canNewCurriculumElement() {
 			return admin;
 		}
@@ -65,6 +70,15 @@ public class CurriculumSecurityCallbackFactory {
 		public boolean canEditCurriculumElement() {
 			return admin;
 		}
-		
+
+		@Override
+		public boolean canManagerCurriculumElementUsers() {
+			return admin;
+		}
+
+		@Override
+		public boolean canManagerCurriculumElementResources() {
+			return admin;
+		}
 	}
 }

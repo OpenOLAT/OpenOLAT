@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 
 /**
  * 
@@ -42,17 +43,20 @@ public class EditCurriculumOverviewController extends BasicController {
 	private CurriculumUserManagementController userManagementCtrl;
 	
 	private Curriculum curriculum;
+	private final CurriculumSecurityCallback secCallback;
 	
-	public EditCurriculumOverviewController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
+	public EditCurriculumOverviewController(UserRequest ureq, WindowControl wControl,
+			Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
+		this.secCallback = secCallback;
 		
 		VelocityContainer mainVC = createVelocityContainer("curriculum_overview");
 		
 		tabPane = new TabbedPane("tabs", getLocale());
 		tabPane.addListener(this);
 		
-		editMetadataCtrl = new EditCurriculumController(ureq, getWindowControl(), curriculum);
+		editMetadataCtrl = new EditCurriculumController(ureq, getWindowControl(), curriculum, secCallback);
 		listenTo(editMetadataCtrl);
 		tabPane.addTab(translate("curriculum.metadata"), editMetadataCtrl);
 		initTabPane();
@@ -63,7 +67,7 @@ public class EditCurriculumOverviewController extends BasicController {
 	
 	private void initTabPane() {
 		tabPane.addTab(translate("tab.user.management"), uureq -> {
-			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum);
+			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum, secCallback);
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();
 		});

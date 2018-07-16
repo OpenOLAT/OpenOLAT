@@ -113,10 +113,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", translate("edit.icon"), "edit");
 		editCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(editCol);
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		if(secCallback.canEditCurriculum()) {
+			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
+			toolsCol.setExportable(false);
+			toolsCol.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsCol);
+		}
 		
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -223,7 +225,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private void doNewCurriculum(UserRequest ureq) {
 		if(newCurriculumCtrl != null) return;
 
-		newCurriculumCtrl = new EditCurriculumController(ureq, getWindowControl());
+		newCurriculumCtrl = new EditCurriculumController(ureq, getWindowControl(), secCallback);
 		listenTo(newCurriculumCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newCurriculumCtrl.getInitialComponent(), true, translate("add.curriculum"));
@@ -238,7 +240,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			editCurriculumCtrl = new EditCurriculumOverviewController(ureq, getWindowControl(), curriculum);
+			editCurriculumCtrl = new EditCurriculumOverviewController(ureq, getWindowControl(), curriculum, secCallback);
 			listenTo(editCurriculumCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCurriculumCtrl);
 		}
@@ -250,7 +252,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			showWarning("warning.curriculum.deleted");
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, row.getKey()), null);
-			CurriculumComposerController composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum);
+			CurriculumComposerController composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, secCallback);
 			listenTo(composerCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), composerCtrl);
 		}

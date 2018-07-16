@@ -57,6 +57,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
@@ -89,24 +90,28 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private int counter;
 	private final Curriculum curriculum;
+	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			Curriculum curriculum) {
+			Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "manage_curriculum_structure");
 		this.toolbarPanel = toolbarPanel;
 		this.curriculum = curriculum;
+		this.secCallback = secCallback;
 		initForm(ureq);
 		loadModel();
 	}
 
 	@Override
 	public void initTools() {
-		newElementButton = LinkFactory.createToolLink("add.curriculum.element", translate("add.curriculum.element"), this, "o_icon_add");
-		newElementButton.setElementCssClass("o_sel_add_curriculum_element");
-		toolbarPanel.addTool(newElementButton, Align.left);
+		if(secCallback.canNewCurriculumElement()) {
+			newElementButton = LinkFactory.createToolLink("add.curriculum.element", translate("add.curriculum.element"), this, "o_icon_add");
+			newElementButton.setElementCssClass("o_sel_add_curriculum_element");
+			toolbarPanel.addTool(newElementButton, Align.left);
+		}
 	}
 
 	@Override
@@ -127,10 +132,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(selectColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		if(secCallback.canEditCurriculumElement()) {
+			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
+			toolsColumn.setExportable(false);
+			toolsColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsColumn);
+		}
 		
 		tableModel = new CurriculumComposerTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -247,7 +254,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doNewCurriculumElement(UserRequest ureq) {
 		if(newElementCtrl != null) return;
 
-		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum);
+		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum, secCallback);
 		listenTo(newElementCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
@@ -261,7 +268,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement, curriculum);
+			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement, curriculum, secCallback);
 			newSubElementCtrl.setParentElement(parentElement);
 			listenTo(newSubElementCtrl);
 			
@@ -278,7 +285,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			showWarning("warning.curriculum.element.deleted");
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
-			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum);
+			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum, secCallback);
 			listenTo(editCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
 		}

@@ -52,6 +52,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.ui.CurriculumUserManagementTableModel.CurriculumMemberCols;
@@ -87,6 +88,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 	private final Curriculum curriculum;
 	private final boolean membersManaged;
 	private final boolean isAdministrativeUser;
+	private final CurriculumSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -96,11 +98,13 @@ public class CurriculumUserManagementController extends FormBasicController {
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public CurriculumUserManagementController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
+	public CurriculumUserManagementController(UserRequest ureq, WindowControl wControl,
+			Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_user_mgmt");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.curriculum = curriculum;
+		this.secCallback = secCallback;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -113,7 +117,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!membersManaged) {
+		if(!membersManaged && secCallback.canManagerCurriculumUsers()) {
 			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");

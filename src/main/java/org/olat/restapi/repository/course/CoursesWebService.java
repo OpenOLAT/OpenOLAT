@@ -172,7 +172,7 @@ public class CoursesWebService {
 		}
 		if(StringHelper.containsNonWhitespace(repositoryEntryKey) && StringHelper.isLong(repositoryEntryKey)) {
 			try {
-				params.setRepositoryEntryKeys(Collections.singletonList(new Long(repositoryEntryKey)));
+				params.setRepositoryEntryKeys(Collections.singletonList(Long.valueOf(repositoryEntryKey)));
 			} catch (NumberFormatException e) {
 				log.error("Cannot parse the following repository entry key: " + repositoryEntryKey);
 			}

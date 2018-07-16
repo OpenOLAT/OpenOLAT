@@ -52,6 +52,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.ui.CurriculumUserManagementTableModel.CurriculumMemberCols;
@@ -87,6 +88,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private final CurriculumElement curriculumElement;
 	private final boolean membersManaged;
 	private final boolean isAdministrativeUser;
+	private final CurriculumSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -97,11 +99,13 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private CurriculumService curriculumService;
 	
 	
-	public CurriculumElementUserManagementController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public CurriculumElementUserManagementController(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_user_mgmt");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.curriculumElement = curriculumElement;
+		this.secCallback = secCallback;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -114,7 +118,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!membersManaged) {
+		if(!membersManaged && secCallback.canManagerCurriculumElementUsers()) {
 			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
