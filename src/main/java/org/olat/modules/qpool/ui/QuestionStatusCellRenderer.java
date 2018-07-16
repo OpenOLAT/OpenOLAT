@@ -17,8 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.table;
+package org.olat.modules.qpool.ui;
 
+import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.qpool.QuestionStatus;
 
