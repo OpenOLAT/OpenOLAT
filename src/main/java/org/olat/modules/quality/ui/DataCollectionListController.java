@@ -96,6 +96,7 @@ public class DataCollectionListController extends FormBasicController implements
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.status, new DataCollectionStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.deadline));
@@ -125,6 +126,7 @@ public class DataCollectionListController extends FormBasicController implements
 		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator());
 		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getLocale(), secCallback);
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_qual_dc_list");
 	}
 
 	@Override

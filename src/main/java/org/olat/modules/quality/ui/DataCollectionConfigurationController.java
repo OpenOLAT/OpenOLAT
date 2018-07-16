@@ -20,6 +20,10 @@
 package org.olat.modules.quality.ui;
 
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
+import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
+import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
 import java.io.File;
 import java.util.Date;
@@ -30,6 +34,9 @@ import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -41,7 +48,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -62,9 +72,10 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
-import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
 import org.olat.modules.quality.ui.event.DataCollectionEvent;
 import org.olat.modules.quality.ui.event.DataCollectionEvent.Action;
@@ -80,10 +91,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionConfigurationController extends FormBasicController {
+public class DataCollectionConfigurationController extends FormBasicController implements TooledController {
 	
 
 	private static final String[] EMPTY_ARRAY = new String[] {};
+	
+	private Link statusPreparationLink;
+	private Link statusReadyLink;
+	private Link statusRunningLink;
+	private Link statusFinishedLink;
 	
 	private TextElement titleEl;
 	private FormLink evaFormPreviewLink;
@@ -100,12 +116,15 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private SingleSelection topicCurriculumElementEl;
 	private FormLink topicRepositorySelectLink;
 	private StaticTextElement topicRepositoryNameEl;
+	private FormLayoutContainer buttonLayout;
 
 	private final TooledStackedPanel stackPanel;
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController formSearchCtrl;
 	private UserSearchController topicIdentitySearchCtrl;
 	private ReferencableEntriesSearchController topicRepositorySearchCtrl;
+	private DataCollectionStartConfirmationController startConfirmationController;
+	private DataCollectionFinishConfirmationController finishConfirmationController;
 
 	private final QualitySecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
@@ -126,7 +145,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private OrganisationService organisationSevice;
 	@Autowired
 	private CurriculumService curriculumService;
-	
+
 	public DataCollectionConfigurationController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollectionLight dataCollectionLight) {
@@ -154,11 +173,9 @@ public class DataCollectionConfigurationController extends FormBasicController {
 
 		startEl = uifactory.addDateChooser("data.collection.start", dataCollection.getStart(), formLayout);
 		startEl.setDateChooserTimeEnabled(true);
-		startEl.setEnabled(secCallback.canUpdateStart(dataCollection));
 
 		deadlineEl = uifactory.addDateChooser("data.collection.deadline", dataCollection.getDeadline(), formLayout);
 		deadlineEl.setDateChooserTimeEnabled(true);
-		deadlineEl.setEnabled(secCallback.canUpdateDeadline(dataCollection));
 
 		evaFormPreviewLink = uifactory.addFormLink("data.collection.form", "", translate("data.collection.form"),
 				formLayout, Link.NONTRANSLATED);
@@ -198,7 +215,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		topicRepositorySelectLink = uifactory.addFormLink("data.collection.topic.repository.select", formLayout,
 				"btn btn-default o_xsmall");
 
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
@@ -208,8 +225,18 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean replacePossible = qualityService.isFormEntryUpdateable(dataCollection);
-		evaFormReplaceLink.setVisible(replacePossible);
+		boolean updateBaseConfiguration = secCallback.canUpdateBaseConfiguration(dataCollection);
+		titleEl.setEnabled(updateBaseConfiguration);
+		evaFormReplaceLink.setVisible(updateBaseConfiguration);
+		startEl.setEnabled(updateBaseConfiguration);
+		deadlineEl.setEnabled(updateBaseConfiguration);
+		buttonLayout.setVisible(updateBaseConfiguration);
+		topicTypeEl.setEnabled(updateBaseConfiguration);
+		topicCustomTextEl.setEnabled(updateBaseConfiguration);
+		topicIdentityNameEl.setEnabled(updateBaseConfiguration);
+		topicCurriculumEl.setEnabled(updateBaseConfiguration);
+		topicCurriculumElementEl.setEnabled(updateBaseConfiguration);
+		topicRepositoryNameEl.setEnabled(updateBaseConfiguration);
 		
 		String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());
 		evaFormPreviewLink.setI18nKey(displayname);
@@ -298,6 +325,73 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	}
 	
 	@Override
+	public void initTools() {
+		stackPanel.removeAllTools();
+		initStatusTools(); 
+	}
+
+	private void initStatusTools() {
+		Component statusCmp;
+		if (canChangeStatus()) {
+			statusCmp = buildStatusDrowdown();
+		} else {
+			statusCmp = buildStatusLink();
+		}
+		stackPanel.addTool(statusCmp, Align.left);
+	}
+	
+	private boolean canChangeStatus() {
+		return secCallback.canSetPreparation(dataCollection)
+				|| secCallback.canSetReady(dataCollection)
+				|| secCallback.canSetRunning(dataCollection)
+				|| secCallback.canSetFinished(dataCollection);
+	}
+	
+	private Dropdown buildStatusDrowdown() {
+		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
+
+		Dropdown statusDropdown = new Dropdown("process.states", "data.collection.status." + actualStatus.name().toLowerCase(), false, getTranslator());
+		statusDropdown.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
+		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
+		statusDropdown.setOrientation(DropdownOrientation.normal);
+	
+		statusPreparationLink = LinkFactory.createToolLink("data.collection.status.preparation", translate("data.collection.status.preparation"), this);
+		statusPreparationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_preparation");
+		statusPreparationLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_preparation");
+		statusPreparationLink.setVisible(secCallback.canSetPreparation(dataCollection));
+		statusDropdown.addComponent(statusPreparationLink);
+
+		statusReadyLink = LinkFactory.createToolLink("data.collection.status.ready", translate("data.collection.status.ready"), this);
+		statusReadyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_ready");
+		statusReadyLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_ready");
+		statusReadyLink.setVisible(secCallback.canSetReady(dataCollection));
+		statusDropdown.addComponent(statusReadyLink);
+		
+		statusRunningLink = LinkFactory.createToolLink("data.collection.status.running", translate("data.collection.status.running"), this);
+		statusRunningLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_running");
+		statusRunningLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_running");
+		statusRunningLink.setVisible(secCallback.canSetRunning(dataCollection));
+		statusDropdown.addComponent(statusRunningLink);
+		
+		statusFinishedLink = LinkFactory.createToolLink("data.collection.status.finished", translate("data.collection.status.finished"), this);
+		statusFinishedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_finished");
+		statusFinishedLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_finished");
+		statusFinishedLink.setVisible(secCallback.canSetFinished(dataCollection));
+		statusDropdown.addComponent(statusFinishedLink);
+		
+		return statusDropdown;
+	}
+
+	private Component buildStatusLink() {
+		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
+		Link statusLink = LinkFactory.createToolLink("status.link",
+				translate("data.collection.status." + actualStatus.name().toLowerCase()), this);
+		statusLink.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
+		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
+		return statusLink;
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == evaFormReplaceLink) {
 			doSelectFormEntry(ureq);
@@ -321,6 +415,20 @@ public class DataCollectionConfigurationController extends FormBasicController {
 			doSelectTopicRepository(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == statusPreparationLink) {
+			doSetStatusPreparation();
+		} else if (source == statusReadyLink) {
+			doSetStatusReady(ureq);
+		} else if (source == statusRunningLink) {
+			doConfirmStatusRunning(ureq);
+		} else if (source == statusFinishedLink) {
+			doConfirmStatusFinished(ureq);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -348,6 +456,18 @@ public class DataCollectionConfigurationController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == startConfirmationController) {
+			if (event.equals(Event.DONE_EVENT)) {
+				doSetStatusRunning();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == finishConfirmationController) {
+			if (event.equals(Event.DONE_EVENT)) {
+				doSetStatusFinished();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}
@@ -355,56 +475,31 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(finishConfirmationController);
+		removeAsListenerAndDispose(startConfirmationController);
 		removeAsListenerAndDispose(topicRepositorySearchCtrl);
 		removeAsListenerAndDispose(topicIdentitySearchCtrl);
 		removeAsListenerAndDispose(formSearchCtrl);
 		removeAsListenerAndDispose(cmc);
+		finishConfirmationController = null;
+		startConfirmationController = null;
 		topicRepositorySearchCtrl = null;
 		topicIdentitySearchCtrl = null;
 		formSearchCtrl = null;
 		cmc = null;
 	}
 	
-	private void doSelectFormEntry(UserRequest ureq) {
-		formSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, translate("data.collection.form.select"));
-		this.listenTo(formSearchCtrl);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				formSearchCtrl.getInitialComponent(), true, translate("data.collection.form.select"));
-		cmc.activate();
-	}
-
-	private void doUpdateFormEntry(RepositoryEntry selectedEntry) {
-		if (!selectedEntry.equals(formEntry)) {
-			formEntry = selectedEntry;
-			formEntryChanged = true;
-		}
-	}
-	
-	private void doSelectTopicIdentity(UserRequest ureq) {
-		topicIdentitySearchCtrl = new UserSearchController(ureq, getWindowControl(), true, false, true);
-		listenTo(topicIdentitySearchCtrl);
-		
-		String title = translate("data.collection.topic.identity.select");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), topicIdentitySearchCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doSelectTopicRepository(UserRequest ureq) {
-		topicRepositorySearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, "CourseModule",
-				translate("data.collection.topic.repository.select"));
-		this.listenTo(topicRepositorySearchCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				topicRepositorySearchCtrl.getInitialComponent(), true, translate("data.collection.topic.repository.select"));
-		cmc.activate();
-	}
-	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		deadlineEl.clearError();
+		topicTypeEl.clearError();
+		topicCustomTextEl.clearError();
+		topicIdentityNameEl.clearError();
+		topicCurriculumEl.clearError();
+		topicCurriculumElementEl.clearError();
+		topicRepositoryNameEl.clearError();
 		
 		titleEl.clearError();
 		String value = titleEl.getValue();
@@ -419,10 +514,85 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		Date deadline = deadlineEl.getDate();
 		if (start != null && deadline != null && deadline.before(start)) {
 			deadlineEl.setErrorKey("error.deadline.before.start", null);
-			allOk = false;		
+			allOk = false;
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateExtendedFormLogic(boolean validateStart) {
+		boolean allOk = true;
+		
+		if (!titleEl.hasError()) {
+			String value = titleEl.getValue();
+			if (!StringHelper.containsNonWhitespace(value)) {
+				titleEl.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		
+		if (validateStart) {
+			Date value = startEl.getDate();
+			if (value == null) {
+				startEl.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		
+		if (!deadlineEl.hasError()) {
+			Date deadline = deadlineEl.getDate();
+			if (deadline == null) {
+				deadlineEl.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		
+		if (topicType == null) {
+			topicTypeEl.setErrorKey("form.mandatory.hover", null);
+			allOk = false;
+		} else {
+			switch (topicType) {
+				case CUSTOM: {
+					String custom = topicCustomTextEl.getValue();
+					if (!StringHelper.containsNonWhitespace(custom)) {
+						topicCustomTextEl.setErrorKey("form.mandatory.hover", null);
+						allOk = false;
+					}
+					break;
+				}
+				case IDENTIY: {
+					if (topicIdentity == null) {
+						topicIdentityNameEl.setErrorKey("form.mandatory.hover", null);
+						allOk = false;
+					}
+					break;
+				}
+				case CURRICULUM: {
+					if (topicCurriculum == null) {
+						topicCurriculumEl.setErrorKey("form.mandatory.hover", null);
+						allOk = false;
+					}
+					break;
+				}
+				case CURRICULUM_ELEMENT: {
+					if (topicCurriculum == null) {
+						topicCurriculumElementEl.setErrorKey("form.mandatory.hover", null);
+						allOk = false;
+					}
+					break;
+				}
+				case REPOSITORY: {
+					if (topicRepository == null) {
+						topicRepositoryNameEl.setErrorKey("form.mandatory.hover", null);
+						allOk = false;
+					}
+					break;
+				}
+				default:
+			}
+		}
+		
+		return allOk;
 	}
 	
 	@Override
@@ -498,6 +668,43 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		
 		fireEvent(ureq, new DataCollectionEvent(dataCollection, Action.CHANGED));
 	}
+	
+	private void doSelectFormEntry(UserRequest ureq) {
+		formSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				EvaluationFormResource.TYPE_NAME, translate("data.collection.form.select"));
+		this.listenTo(formSearchCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				formSearchCtrl.getInitialComponent(), true, translate("data.collection.form.select"));
+		cmc.activate();
+	}
+
+	private void doUpdateFormEntry(RepositoryEntry selectedEntry) {
+		if (!selectedEntry.equals(formEntry)) {
+			formEntry = selectedEntry;
+			formEntryChanged = true;
+		}
+	}
+	
+	private void doSelectTopicIdentity(UserRequest ureq) {
+		topicIdentitySearchCtrl = new UserSearchController(ureq, getWindowControl(), true, false, true);
+		listenTo(topicIdentitySearchCtrl);
+		
+		String title = translate("data.collection.topic.identity.select");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), topicIdentitySearchCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doSelectTopicRepository(UserRequest ureq) {
+		topicRepositorySearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, "CourseModule",
+				translate("data.collection.topic.repository.select"));
+		this.listenTo(topicRepositorySearchCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				topicRepositorySearchCtrl.getInitialComponent(), true, translate("data.collection.topic.repository.select"));
+		cmc.activate();
+	}
 
 	private void doEditEvaluationForm(UserRequest ureq) {
 		if (formEntry == null) {
@@ -513,6 +720,65 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile);
 		stackPanel.pushController(translate("data.collection.form.preview.title"), previewCtrl);
+	}
+	
+	private void doSetStatusPreparation() {
+		doChangeStatus(PREPARATION);
+	}
+
+	private void doSetStatusReady(UserRequest ureq) {
+		boolean allOk = true;
+		allOk &= validateFormLogic(ureq);
+		allOk &= validateExtendedFormLogic(true);
+		if (allOk) {
+			doChangeStatus(READY);
+		}
+	}
+
+	private void doConfirmStatusRunning(UserRequest ureq) {
+		boolean allOk = true;
+		allOk &= validateFormLogic(ureq);
+		allOk &= validateExtendedFormLogic(false);
+		if (allOk) {
+			startConfirmationController = new DataCollectionStartConfirmationController(ureq, getWindowControl());
+			this.listenTo(startConfirmationController);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					startConfirmationController.getInitialComponent(), true,
+					translate("data.collection.start.confirm.title"));
+			cmc.activate();
+		}
+	}
+
+	private void doSetStatusRunning() {
+		dataCollection.setStart(new Date());
+		dataCollection = qualityService.updateDataCollection(dataCollection);
+		startEl.setDate(dataCollection.getStart());
+		doChangeStatus(RUNNING);
+	}
+
+	private void doConfirmStatusFinished(UserRequest ureq) {
+		finishConfirmationController = new DataCollectionFinishConfirmationController(ureq, getWindowControl());
+		this.listenTo(finishConfirmationController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				finishConfirmationController.getInitialComponent(), true,
+				translate("data.collection.finish.confirm.title"));
+		cmc.activate();
+	}
+
+	private void doSetStatusFinished() {
+		dataCollection.setDeadline(new Date());
+		dataCollection = qualityService.updateDataCollection(dataCollection);
+		deadlineEl.setDate(dataCollection.getDeadline());
+		doChangeStatus(FINISHED);
+	}
+
+	private void doChangeStatus(QualityDataCollectionStatus status) {
+		dataCollection.setStatus(status);
+		dataCollection = qualityService.updateDataCollection(dataCollection);
+		initTools();
+		updateUI();
 	}
 
 	@Override

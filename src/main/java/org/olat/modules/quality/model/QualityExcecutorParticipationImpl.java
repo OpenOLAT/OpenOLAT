@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 
 /**
@@ -35,6 +36,7 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	
 	private final Long participationKey;
 	private final EvaluationFormParticipationStatus participationStatus;
+	private final QualityDataCollectionStatus dataCollectionStatus;
 	private final Date start;
 	private final Date deadline;
 	private final String title;
@@ -42,11 +44,12 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	private final String topic;
 	
 	public QualityExcecutorParticipationImpl(Long participationKey,
-			EvaluationFormParticipationStatus participationStatus, Date start, Date deadline, String title,
-			String translatedTopicType, String topic) {
+			EvaluationFormParticipationStatus participationStatus, QualityDataCollectionStatus dataCollectionStatus,
+			Date start, Date deadline, String title, String translatedTopicType, String topic) {
 		super();
 		this.participationKey = participationKey;
 		this.participationStatus = participationStatus;
+		this.dataCollectionStatus = dataCollectionStatus;
 		this.start = start;
 		this.deadline = deadline;
 		this.title = title;
@@ -68,6 +71,11 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	@Override
 	public EvaluationFormParticipationStatus getParticipationStatus() {
 		return participationStatus;
+	}
+
+	@Override
+	public QualityDataCollectionStatus getDataCollectionStatus() {
+		return dataCollectionStatus;
 	}
 
 	@Override

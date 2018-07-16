@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualitySecurityCallback;
@@ -49,7 +49,7 @@ public class RemindersController extends FormBasicController {
 	private FormLayoutContainer buttonLayout;
 	
 	private final QualitySecurityCallback secCallback;
-	private final QualityDataCollectionRef dataCollectionRef;
+	private final QualityDataCollectionLight dataCollection;
 	
 	private QualityReminder invitation;
 	private QualityReminder reminder1;
@@ -59,13 +59,13 @@ public class RemindersController extends FormBasicController {
 	private QualityService qualityService;
 
 	public RemindersController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
-			QualityDataCollectionRef dataCollectionRef) {
+			QualityDataCollectionLight dataCollection) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
-		this.dataCollectionRef = dataCollectionRef;
-		this.invitation = qualityService.loadReminder(dataCollectionRef, QualityReminderType.INVITATION);
-		this.reminder1 = qualityService.loadReminder(dataCollectionRef, QualityReminderType.REMINDER1);
-		this.reminder2 = qualityService.loadReminder(dataCollectionRef, QualityReminderType.REMINDER2);
+		this.dataCollection = dataCollection;
+		this.invitation = qualityService.loadReminder(dataCollection, QualityReminderType.INVITATION);
+		this.reminder1 = qualityService.loadReminder(dataCollection, QualityReminderType.REMINDER1);
+		this.reminder2 = qualityService.loadReminder(dataCollection, QualityReminderType.REMINDER2);
 		initForm(ureq);
 	}
 
@@ -90,15 +90,10 @@ public class RemindersController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		boolean canEdit = secCallback.canEditDataCollections();
-		invitationEl.setEnabled(canEdit && isNotSent(invitation));
-		reminder1El.setEnabled(canEdit && isNotSent(reminder1));
-		reminder2El.setEnabled(canEdit && isNotSent(reminder2));
-		buttonLayout.setVisible(canEdit);
-	}
-
-	private boolean isNotSent(QualityReminder reminder) {
-		return reminder == null || !reminder.isSent();
+		invitationEl.setEnabled(secCallback.canEditReminder(dataCollection, invitation));
+		reminder1El.setEnabled(secCallback.canEditReminder(dataCollection, reminder1));
+		reminder2El.setEnabled(secCallback.canEditReminder(dataCollection, reminder2));
+		buttonLayout.setVisible(secCallback.canEditReminders() && secCallback.canUpdateBaseConfiguration(dataCollection));
 	}
 
 	@Override
@@ -116,7 +111,7 @@ public class RemindersController extends FormBasicController {
 				if (reminder != null) {
 					savedReminder = qualityService.updateReminderDatePlaned(reminder, reminderEl.getDate());
 				} else {
-					savedReminder = qualityService.createReminder(dataCollectionRef, reminderEl.getDate(), type);
+					savedReminder = qualityService.createReminder(dataCollection, reminderEl.getDate(), type);
 				}
 			} else {
 				qualityService.deleteReminder(reminder);

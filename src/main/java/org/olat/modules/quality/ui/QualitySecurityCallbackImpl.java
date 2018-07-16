@@ -19,11 +19,15 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.util.Date;
+import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
+import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
 
 /**
@@ -45,14 +49,47 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	}
 
 	@Override
-	public boolean canUpdateStart(QualityDataCollectionLight dataCollection) {
-		return !isStarted(dataCollection);
+	public boolean canUpdateBaseConfiguration(QualityDataCollectionLight dataCollection) {
+		return PREPARATION.equals(dataCollection.getStatus());
 	}
 
 	@Override
-	public boolean canUpdateDeadline(QualityDataCollectionLight dataCollection) {
-		Date deadline = dataCollection.getDeadline();
-		return deadline == null || deadline.after(new Date());
+	public boolean canSetPreparation(QualityDataCollectionLight dataCollection) {
+		return READY.equals(dataCollection.getStatus());
+	}
+
+	@Override
+	public boolean canSetReady(QualityDataCollectionLight dataCollection) {
+		return PREPARATION.equals(dataCollection.getStatus());
+	}
+
+	@Override
+	public boolean canSetRunning(QualityDataCollectionLight dataCollection) {
+		return isNotStarted(dataCollection);
+	}
+
+	@Override
+	public boolean canSetFinished(QualityDataCollectionLight dataCollection) {
+		return isNotFinished(dataCollection);
+	}
+
+	@Override
+	public boolean canAddParticipants(QualityDataCollectionLight dataCollection) {
+		return isNotFinished(dataCollection);
+	}
+
+	@Override
+	public boolean canEditReminders() {
+		return true;
+	}
+
+	@Override
+	public boolean canEditReminder(QualityDataCollectionLight dataCollection, QualityReminder reminder) {
+		return canEditReminders() && isNotSent(reminder) && isNotFinished(dataCollection);
+	}
+
+	private boolean isNotSent(QualityReminder reminder) {
+		return reminder == null || !reminder.isSent();
 	}
 
 	@Override
@@ -62,33 +99,27 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canDeleteDataCollection(QualityDataCollectionLight dataCollection) {
-		return !isStarted(dataCollection);
+		return isNotStarted(dataCollection);
 	}
 
 	@Override
 	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection) {
-		return !isStarted(dataCollection);
+		return isNotStarted(dataCollection);
 	}
 
 	@Override
 	public boolean canExecute(QualityExecutorParticipation participation) {
-		return EvaluationFormParticipationStatus.prepared.equals(participation.getParticipationStatus())
-				&& isStarted(participation.getStart())
-				&& !isFinished(participation.getDeadline());
-	}
-	
-	private boolean isStarted(QualityDataCollectionLight dataCollection) {
-		return isStarted(dataCollection.getStart());
-	}
-	
-	private boolean isStarted(Date start) {
-		Date now = new Date();
-		return start != null && start.before(now);
-	}
-	
-	private boolean isFinished(Date deadline) {
-		Date now = new Date();
-		return deadline != null && deadline.before(now);
+		return QualityDataCollectionStatus.RUNNING.equals(participation.getDataCollectionStatus())
+				&& EvaluationFormParticipationStatus.prepared.equals(participation.getParticipationStatus());
 	}
 
+	private boolean isNotStarted(QualityDataCollectionLight dataCollection) {
+		QualityDataCollectionStatus status = dataCollection.getStatus();
+		return PREPARATION.equals(status) || READY.equals(status);
+	}
+
+	private boolean isNotFinished(QualityDataCollectionLight dataCollection) {
+		return !FINISHED.equals(dataCollection.getStatus());
+	}
+	
 }

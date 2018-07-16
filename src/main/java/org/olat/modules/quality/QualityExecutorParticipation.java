@@ -35,6 +35,8 @@ public interface QualityExecutorParticipation {
 	public EvaluationFormParticipationRef getParticipationRef();
 
 	public EvaluationFormParticipationStatus getParticipationStatus();
+	
+	public QualityDataCollectionStatus getDataCollectionStatus();
 
 	public Date getStart();
 

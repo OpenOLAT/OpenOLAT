@@ -60,6 +60,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 	public Object getValueAt(int row, int col) {
 		DataCollectionRow dataCollectionRow = getObject(row);
 		switch (DataCollectionCols.values()[col]) {
+			case status: return dataCollectionRow.getStatus();
 			case title: return dataCollectionRow.getTitle();
 			case start: return dataCollectionRow.getStart();
 			case deadline: return dataCollectionRow.getDeadline();
@@ -79,6 +80,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 	}
 
 	public enum DataCollectionCols implements FlexiSortableColumnDef {
+		status("data.collection.status"),
 		title("data.collection.title"),
 		start("data.collection.start"),
 		deadline("data.collection.deadline"),

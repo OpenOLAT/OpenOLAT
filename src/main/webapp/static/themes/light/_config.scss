@@ -514,6 +514,15 @@ $o-evaluation-neutral-background-color		: #ffffbf !default;
 $o-evaluation-sufficient-background-color	: #d9ef8b !default;
 $o-evaluation-anonymous-info-display		: inherit !default;
 
+/* Quality management */
+$o-qual-status-color-dark			: #333;
+$o-qual-status-color-bright			: #fff;
+$o-qual-dc-preparation-color		: #4a6785;
+$o-qual-dc-ready-color				: #ffd351;
+$o-qual-dc-ready-color-dark			: #333;
+$o-qual-dc-running-color			: #993333;
+$o-qual-dc-finished-color			: #14892c;
+
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
 $o-portlet-border-radius		: $panel-border-radius !default;

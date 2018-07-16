@@ -154,6 +154,7 @@ class QualityParticipationDAO {
 		sb.append("select new org.olat.modules.quality.model.QualityExcecutorParticipationImpl(");
 		sb.append("       participation.key as participationKey");
 		sb.append("     , participation.status as participationStatus");
+		sb.append("     , collection.status as dataCollectionStatus");
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , collection.title as title");

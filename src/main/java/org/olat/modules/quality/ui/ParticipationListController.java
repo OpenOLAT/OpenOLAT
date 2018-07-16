@@ -133,17 +133,19 @@ public class ParticipationListController extends FormBasicController implements 
 
 	@Override
 	public void initTools() {
-		addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
-		addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
-		stackPanel.addTool(addCourseUsersLink, Align.right);
-		
-		addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.add.curele"), this);
-		addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_curele");
-		stackPanel.addTool(addCurriculumElementUsersLink, Align.right);;
-		
-		addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
-		addUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
-		stackPanel.addTool(addUsersLink, Align.right);
+		if (secCallback.canAddParticipants(dataCollection)) {
+			addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
+			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
+			stackPanel.addTool(addCourseUsersLink, Align.right);
+			
+			addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.add.curele"), this);
+			addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_curele");
+			stackPanel.addTool(addCurriculumElementUsersLink, Align.right);;
+			
+			addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
+			addUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
+			stackPanel.addTool(addUsersLink, Align.right);
+		}
 	}
 	
 	@Override

@@ -31,9 +31,21 @@ public interface QualitySecurityCallback {
 	
 	public boolean canEditDataCollections();
 	
-	public boolean canUpdateStart(QualityDataCollectionLight dataCollection);
+	public boolean canUpdateBaseConfiguration(QualityDataCollectionLight dataCollection);
 	
-	public boolean canUpdateDeadline(QualityDataCollectionLight dataCollection);
+	public boolean canSetPreparation(QualityDataCollectionLight dataCollection);
+	
+	public boolean canSetReady(QualityDataCollectionLight dataCollection);
+	
+	public boolean canSetRunning(QualityDataCollectionLight dataCollection);
+	
+	public boolean canSetFinished(QualityDataCollectionLight dataCollection);
+	
+	public boolean canAddParticipants(QualityDataCollectionLight dataCollection);
+
+	public boolean canEditReminders();
+
+	public boolean canEditReminder(QualityDataCollectionLight dataCollection, QualityReminder reminder);
 	
 	public boolean canDeleteDataCollections();
 	
