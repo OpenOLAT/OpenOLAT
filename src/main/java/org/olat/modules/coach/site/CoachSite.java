@@ -73,8 +73,7 @@ public class CoachSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CoachSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		CoachMainController mainController = new CoachMainController(ureq, bwControl);
-		return mainController;
+		return new CoachMainController(ureq, bwControl);
 	}
 
 	@Override

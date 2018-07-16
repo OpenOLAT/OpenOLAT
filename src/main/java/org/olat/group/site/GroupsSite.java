@@ -78,17 +78,15 @@ public class GroupsSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		//MainLayoutController c = new BusinessGroupMainController(ureq, bwControl);
 		return new OverviewBusinessGroupListController(ureq, bwControl);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#isKeepState()
-	 */
+	@Override
 	public boolean isKeepState() {
 		return true;
 	}
 
+	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}

@@ -276,7 +276,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		return ctrl;
 	}
-	
+
 	private Controller getController(UserRequest ureq, String uobject) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(uobject, 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
@@ -291,8 +291,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "useradmin": return createUserSearchController(ureq, bwControl);
 			case "admingroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.administrator);
 			case "sysadmingroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.sysadmin);
+			case "principalgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.principal);
 			case "usermanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.usermanager);
+			case "rolesmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.rolesmanager);
 			case "groupmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.groupmanager);
+			case "learnresourcemanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.learnresourcemanager);
+			case "linemanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.linemanager);
+			case "lecturemanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.lecturemanager);
+			case "qualitymanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.qualitymanager);
+			case "curriculummanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.curriculummanager);
+			case "poolmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.poolmanager);
 			case "authorgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.author);
 			case "usergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.user);
 			case "anonymousgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.guest);
@@ -527,7 +535,18 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		// admin group and user manager group always restricted to admins
 		if (isAdministrator) {
+			appendNode("menu.lecturemanagergroup", "menu.lecturemanagergroup.alt", "lecturemanagergroup", "o_sel_useradmin_lecturemanagergroup", accessNode);
+			appendNode("menu.qualitymanagergroup", "menu.qualitymanagergroup.alt", "qualitymanagergroup", "o_sel_useradmin_qualitymanagergroup", accessNode);
+			appendNode("menu.poolmanagergroup", "menu.poolmanagergroup.alt", "poolmanagergroup", "o_sel_useradmin_poolmanagergroup", accessNode);
+			
 			appendNode("menu.usermanagergroup", "menu.usermanagergroup.alt", "usermanagergroup", "o_sel_useradmin_usermanagergroup", accessNode);
+			appendNode("menu.rolesmanagergroup", "menu.rolesmanagergroup.alt", "rolesmanagergroup", "o_sel_useradmin_rolesmanagergroup", accessNode);
+			appendNode("menu.learnresourcemanagergroup", "menu.learnresourcemanagergroup.alt", "learnresourcemanagergroup", "o_sel_useradmin_learnresourcemanagergroup", accessNode);
+			
+			appendNode("menu.linemanagergroup", "menu.linemanagergroup.alt", "linemanagergroup", "o_sel_useradmin_linemanagergroup", accessNode);
+			
+
+			appendNode("menu.principalgroup", "menu.principalgroup.alt", "principalgroup", "o_sel_useradmin_principalgroup", accessNode);
 			appendNode("menu.admingroup", "menu.admingroup.alt", "admingroup", "o_sel_useradmin_admingroup", accessNode);
 			appendNode("menu.sysadmingroup", "menu.sysadmingroup.alt", "sysadmingroup", "o_sel_useradmin_sysadmingroup", accessNode);
 		}

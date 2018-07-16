@@ -32,9 +32,6 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
  */
 public class DisabledSecurityCallback implements SiteSecurityCallback {
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		return false;

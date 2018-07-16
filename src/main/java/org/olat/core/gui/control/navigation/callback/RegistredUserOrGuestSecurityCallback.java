@@ -22,6 +22,7 @@ package org.olat.core.gui.control.navigation.callback;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.util.UserSession;
 
 /**
  * <h3>Description:</h3>
@@ -32,16 +33,10 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
  */
 public class RegistredUserOrGuestSecurityCallback implements SiteSecurityCallback {
 
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles() == null
-				|| ureq.getUserSession().getRoles().isInvitee()) {
-			return false;
-		} else {
-			return true; 
-		}
+		UserSession usess = ureq.getUserSession();
+		return usess != null && usess.getRoles() != null && !usess.getRoles().isInvitee();
 	}
 }

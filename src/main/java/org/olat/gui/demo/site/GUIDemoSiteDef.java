@@ -44,11 +44,6 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 public class GUIDemoSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
 	@Override
-	public boolean isEnabled() {
-		return true | super.isEnabled();
-	}
-
-	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		return new GUIDemoSite(this);
 	}

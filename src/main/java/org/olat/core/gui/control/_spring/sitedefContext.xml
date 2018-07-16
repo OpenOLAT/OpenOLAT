@@ -134,27 +134,27 @@
 	</bean>
 
 	<bean id="restrictToAuthorSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="author"/>
+		<property name="limitToRole" value="author,administrator,principal"/>
 	</bean>
 	
 	<bean id="restrictToUserManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="usermanager,rolesmanager,administrator"/>
+		<property name="limitToRole" value="usermanager,rolesmanager,principal,administrator"/>
 	</bean>
 	
 	<bean id="restrictToGroupManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="groupmanager,administrator"/>
+		<property name="limitToRole" value="groupmanager,principal,administrator"/>
 	</bean>
 	
 	<bean id="restrictToPoolAdminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="poolmanager,administrator"/>
+		<property name="limitToRole" value="poolmanager,principal,administrator"/>
 	</bean>
 
 	<bean id="restrictToInstResourceManagersAndAuthorsSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="author,learnresourcemanager,administrator"/>
+		<property name="limitToRole" value="author,learnresourcemanager,principal,administrator"/>
 	</bean>
 
 	<bean id="restrictToInstResourceManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="learnresourcemanager,administrator"/>
+		<property name="limitToRole" value="learnresourcemanager,principal,administrator"/>
 	</bean>
 	
 	<bean id="catalogManagerSiteSecurityCallback" class="org.olat.repository.site.CatalogManagerSecurityCallback">

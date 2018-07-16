@@ -45,13 +45,18 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		UserSession usess = ureq.getUserSession();
-		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())
-				|| (!usess.getRoles().isGuestOnly() && !usess.getRoles().isInvitee())) {
-			if(usess.getRoles().isAdministrator() 
-					|| usess.getRoles().isUserManager() || usess.getRoles().isRolesManager()
-					|| CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity())) {
-				return new CoachSite(this, ureq.getLocale());
-			}
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly() || usess.getRoles().isInvitee()) {
+			return null;
+		}
+
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new CoachSite(this, ureq.getLocale());
+		}		
+
+		if(usess.getRoles().isAdministrator()  || usess.getRoles().isPrincipal()
+				|| usess.getRoles().isUserManager() || usess.getRoles().isRolesManager()
+				|| CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity())) {
+			return new CoachSite(this, ureq.getLocale());
 		}
 		return null;
 	}

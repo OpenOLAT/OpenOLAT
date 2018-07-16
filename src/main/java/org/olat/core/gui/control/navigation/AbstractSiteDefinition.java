@@ -61,6 +61,8 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 	
 	@Override
 	public final SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
+		if(ureq == null) return null;
+		
 		SiteConfiguration config = getSiteConfiguration();
 		
 		String secCallbackBeanId = config.getSecurityCallbackBeanId();
@@ -81,8 +83,7 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 	
 	protected SiteConfiguration getSiteConfiguration() {
 		SiteDefinitions siteModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
-		SiteConfiguration config = siteModule.getConfigurationSite(this);
-		return config;
+		return siteModule.getConfigurationSite(this);
 	}
 
 	@Override

@@ -43,12 +43,12 @@ public class DocumentPoolSiteDef extends AbstractSiteDefinition implements SiteD
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		UserSession usess = ureq.getUserSession();
-		Roles roles = usess.getRoles();
-		if(roles.isAdministrator()) {
-			return new DocumentPoolSite(this, ureq.getLocale());
-		} else if(roles.isGuestOnly() || roles.isInvitee()) {
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly() || usess.getRoles().isInvitee()) {
 			return null;
-		} else if(hasCompetence(usess.getIdentity())) {
+		}
+		
+		Roles roles = usess.getRoles();
+		if(roles.isAdministrator() || roles.isPrincipal() || hasCompetence(usess.getIdentity())) {
 			return new DocumentPoolSite(this, ureq.getLocale());
 		}
 		return null;

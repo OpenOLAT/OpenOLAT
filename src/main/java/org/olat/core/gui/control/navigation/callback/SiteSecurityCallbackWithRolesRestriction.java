@@ -38,18 +38,18 @@ public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCal
 		if (limitToRole == null || limitToRole.length == 0) {
 			// no restriction
 			return true;
-		} else {
-			Roles roles = ureq.getUserSession().getRoles();
-			if(roles != null) {
-				for (String limit : limitToRole) {
-					OrganisationRoles theRole = OrganisationRoles.valueOf(limit);
-					if(roles.hasRole(theRole)) {
-						return true;
-					}
+		}
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles != null) {
+			for (String limit : limitToRole) {
+				OrganisationRoles theRole = OrganisationRoles.valueOf(limit);
+				if(roles.hasRole(theRole)) {
+					return true;
 				}
 			}
-			return false;
 		}
+		return false;
 	}
 	
 	/**

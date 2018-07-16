@@ -47,10 +47,6 @@ public class CatalogManagerSecurityCallback implements SiteSecurityCallback {
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if(ureq == null) {
-			return false;
-		}
-		
 		UserSession usess = ureq.getUserSession();
 		if(usess == null || usess.getRoles() == null || ureq.getIdentity() == null
 				|| usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
@@ -58,6 +54,6 @@ public class CatalogManagerSecurityCallback implements SiteSecurityCallback {
 		}
 		return usess.getRoles().isAdministrator()
 				|| usess.getRoles().isLearnResourceManager()
-				||  catalogManager.isOwner(ureq.getIdentity());
+				|| catalogManager.isOwner(ureq.getIdentity());
 	}
 }

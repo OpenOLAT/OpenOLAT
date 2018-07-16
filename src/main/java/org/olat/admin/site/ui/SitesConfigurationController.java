@@ -50,6 +50,7 @@ import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
 import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Configuration of the list of sites: order, security callback, alternative controllers...
@@ -61,7 +62,8 @@ import org.olat.core.util.StringHelper;
  */
 public class SitesConfigurationController extends FormBasicController {
 	
-	private final SiteDefinitions sitesModule;
+	@Autowired
+	private SiteDefinitions sitesModule;
 	private final Map<String,SiteDefinition> siteDefs;
 	
 	private final String[] secKeys;
@@ -72,7 +74,6 @@ public class SitesConfigurationController extends FormBasicController {
 	
 	private SiteDefModel model;
 	private FlexiTableElement tableEl;
-	private FormItemContainer formLayout;
 	
 	private boolean needAlternative = false;
 	private final Map<String,SiteSecurityCallback> securityCallbacks;
@@ -80,9 +81,7 @@ public class SitesConfigurationController extends FormBasicController {
 	public SitesConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "sites_order");
 		
-		sitesModule = CoreSpringFactory.getImpl(SiteDefinitions.class);
 		siteDefs = sitesModule.getAllSiteDefinitionsList();
-
 		securityCallbacks = CoreSpringFactory.getBeansOfType(SiteSecurityCallback.class);
 		//security callbacks
 		secKeys = new String[securityCallbacks.size()];
@@ -124,8 +123,6 @@ public class SitesConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.formLayout = formLayout;
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.enabled.i18nKey(), SiteCols.enabled.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.title.i18nKey(), SiteCols.title.ordinal()));
@@ -197,13 +194,13 @@ public class SitesConfigurationController extends FormBasicController {
 	}
 	
 	protected void reload() {
-		List<SiteDefRow> configs = new ArrayList<SiteDefRow>();
+		List<SiteDefRow> configs = new ArrayList<>();
 		for(Map.Entry<String, SiteDefinition> entryDef:siteDefs.entrySet()) {
 			String id = entryDef.getKey();
 			SiteDefinition siteDef = entryDef.getValue();
 			String title = translate(siteDef.getClass().getSimpleName());
 			SiteConfiguration config = sitesModule.getConfigurationSite(id);
-			SiteDefRow row = new SiteDefRow(siteDef, config, title, formLayout);
+			SiteDefRow row = new SiteDefRow(siteDef, config, title, flc);
 			configs.add(row);
 		}
 		Collections.sort(configs, new RowOrderComparator());
@@ -232,7 +229,7 @@ public class SitesConfigurationController extends FormBasicController {
 	
 	private void doUpdateOrders() {
 		int count = 0;
-		List<SiteConfiguration> configs = new ArrayList<SiteConfiguration>();
+		List<SiteConfiguration> configs = new ArrayList<>();
 		for(SiteDefRow row:model.getObjects()) {
 			SiteConfiguration config = row.getRawConfiguration(false);
 			config.setOrder(count++);
@@ -243,7 +240,7 @@ public class SitesConfigurationController extends FormBasicController {
 	
 	private void doSaveSettings() {
 		int count = 0;
-		List<SiteConfiguration> configs = new ArrayList<SiteConfiguration>();
+		List<SiteConfiguration> configs = new ArrayList<>();
 		for(SiteDefRow row:model.getObjects()) {
 			SiteConfiguration config = row.getRawConfiguration(true);
 			config.setOrder(count++);
@@ -416,10 +413,7 @@ public class SitesConfigurationController extends FormBasicController {
 					return def.getSecurityCallbackEl();
 				}
 				case altController: return def.getAlternativeControllerEl();
-				case type: {
-					String type = def.getSiteDef().getClass().getSimpleName();
-					return type;
-				}
+				case type: return def.getSiteDef().getClass().getSimpleName();
 				case defaultOrder: return def.getOrder();
 				default: return "";
 			}

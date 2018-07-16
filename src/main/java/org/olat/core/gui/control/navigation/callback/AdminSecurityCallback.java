@@ -36,7 +36,6 @@ public class AdminSecurityCallback implements SiteSecurityCallback {
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if(ureq == null) return false;
 		UserSession usess = ureq.getUserSession();
 		return usess != null
 				&& usess.getRoles() != null

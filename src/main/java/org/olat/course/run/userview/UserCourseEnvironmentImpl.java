@@ -237,11 +237,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		}
 		return courseRepoEntry;
 	}
-	
-	public int sizeCoachedGroups() {
-		return coachedGroups == null ? 0 : coachedGroups.size();
-	}
 
+	//TODO roles groups
 	public List<BusinessGroup> getCoachedGroups() {
 		if(coachedGroups == null) {
 			return Collections.emptyList();

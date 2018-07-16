@@ -96,6 +96,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -134,12 +135,18 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private AssessedIdentityOverviewController editCtrl;
 	private CheckboxAssessmentController boxAssessmentCtrl;
 	
-	private final UserManager userManager;
-	private final BaseSecurity securityManager;
-	private final CheckboxManager checkboxManager;
-	private final RepositoryManager repositoryManager;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CheckboxManager checkboxManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -262,12 +269,13 @@ public class CheckListAssessmentController extends FormBasicController implement
 			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;
 			List<BusinessGroup> coachedGroups = env.getCoachedGroups();
 			List<FlexiTableFilter> filters = new ArrayList<>(coachedGroups.size() + 1);
-			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
 			for(int k=0; k<coachedGroups.size(); k++) {
 				BusinessGroup group = coachedGroups.get(k);
 				String groupName = StringHelper.escapeHtml(group.getName());
 				filters.add(new FlexiTableFilter(groupName, group.getKey().toString()));
 			}
+			filters.add(FlexiTableFilter.SPACER);
+			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
 			table.setFilters("participants", filters, false);
 		}
 		table.setExportEnabled(true);
@@ -321,7 +329,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		List<BusinessGroup> coachedGroups = courseAdmin ?
 				coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
 				: env.getCoachedGroups();
-		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor || courseAdmin ? re : null, coachedGroups);
+		List<AssessmentData> dataList = checkboxManager
+				.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor || courseAdmin ? re : null, coachedGroups);
 		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
 		Map<Long,CheckListAssessmentRow> identityToView = new HashMap<>();
 		for(CheckListAssessmentRow box:boxList) {

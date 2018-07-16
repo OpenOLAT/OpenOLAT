@@ -45,7 +45,7 @@ public class PoolPrivateMembersSecurityCallback implements SiteSecurityCallback 
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (!questionPoolModule.isEnabled() || ureq == null || ureq.getIdentity() == null) {
+		if (!questionPoolModule.isEnabled() || ureq.getIdentity() == null) {
 			return false;
 		}
 		
@@ -57,8 +57,7 @@ public class PoolPrivateMembersSecurityCallback implements SiteSecurityCallback 
 		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		return roles.isAdministrator()
-				|| roles.isPoolManager()
+		return roles.isAdministrator() || roles.isPrincipal() || roles.isPoolManager()
 				|| qPoolService.isMemberOfPrivatePools(ureq.getIdentity());
 	}
 }

@@ -22,6 +22,7 @@ package org.olat.core.gui.control.navigation.callback;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
+import org.olat.core.util.UserSession;
 
 /**
  * Guest can see the site, but only registred can launch it
@@ -35,22 +36,13 @@ public class RegistredUserGuestTeaserSecurityCallback implements SiteViewSecurit
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles() == null
-				|| ureq.getUserSession().getRoles().isInvitee()
-				|| ureq.getUserSession().getRoles().isGuestOnly()) {
-			return false;
-		} else {
-			return true; 
-		}
+		UserSession usess = ureq.getUserSession();
+		return usess != null && usess.getRoles() != null && !usess.getRoles().isInvitee() && !usess.getRoles().isGuestOnly();
 	}
 
 	@Override
 	public boolean isAllowedToViewSite(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles() == null
-				|| ureq.getUserSession().getRoles().isInvitee()) {
-			return false;
-		} else {
-			return true; 
-		}
+		UserSession usess = ureq.getUserSession();
+		return usess != null && usess.getRoles() != null && !usess.getRoles().isInvitee();
 	}
 }

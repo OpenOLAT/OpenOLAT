@@ -36,18 +36,10 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (ureq == null) {
-			return false;
-		}
 		UserSession usess = ureq.getUserSession();
-		if(usess == null || usess.getRoles() == null) {
-			return false;
-		}
+		if(usess == null ) return false;
 		
 		Roles roles = usess.getRoles();
-		if (usess.getRoles() == null || roles.isInvitee() || roles.isGuestOnly()) {
-			return false;
-		}
-		return roles.isAdministrator() || roles.isCurriculumManager();
+		return roles != null && (roles.isAdministrator() || roles.isPrincipal() || roles.isCurriculumManager());
 	}
 }

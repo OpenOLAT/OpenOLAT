@@ -38,7 +38,7 @@ public class ManagersSecurityCallback implements SiteSecurityCallback {
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		if (usess.getRoles() == null) {
+		if (usess == null || usess.getRoles() == null) {
 			return false;
 		}
 		

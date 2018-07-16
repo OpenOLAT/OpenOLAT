@@ -55,7 +55,7 @@ public class PoolTaxonomySecurityCallback implements SiteSecurityCallback {
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		if (!questionPoolModule.isEnabled() || !StringHelper.isLong(questionPoolModule.getTaxonomyQPoolKey())
-				|| ureq == null || ureq.getIdentity() == null ) {
+				|| ureq.getIdentity() == null ) {
 			return false;
 		}
 		
@@ -68,7 +68,7 @@ public class PoolTaxonomySecurityCallback implements SiteSecurityCallback {
 		if (roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isAdministrator() || roles.isPoolManager()) {
+		if (roles.isAdministrator() || roles.isPrincipal() || roles.isPoolManager()) {
 			return true;
 		}
 		

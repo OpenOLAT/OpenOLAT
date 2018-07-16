@@ -51,17 +51,17 @@ public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDef
 	 */
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
+			return null;
+		}
+		
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new RepositorySite(this, ureq.getLocale());
 		} 
 		
-		UserSession usess = ureq.getUserSession();
-		if(usess == null || usess.getRoles() == null) {
-			return null;
-		}
-		
 		Roles roles = usess.getRoles();
-		if(roles.isAdministrator() || roles.isAuthor() || roles.isLearnResourceManager()) {
+		if(roles.isAdministrator() || roles.isAuthor() || roles.isLearnResourceManager() || roles.isPrincipal()) {
 			// only for authors and institutional resource managers
 			return new RepositorySite(this, ureq.getLocale());
 		}

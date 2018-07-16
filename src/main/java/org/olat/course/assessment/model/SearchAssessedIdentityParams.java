@@ -124,6 +124,7 @@ public class SearchAssessedIdentityParams {
 		return businessGroupKeys;
 	}
 
+	//TODO roles groups
 	public void setBusinessGroupKeys(List<Long> businessGroupKeys) {
 		this.businessGroupKeys = businessGroupKeys;
 	}

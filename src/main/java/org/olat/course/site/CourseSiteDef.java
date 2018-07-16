@@ -72,7 +72,9 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return createSite(ureq, getCourseSiteconfiguration(), config);
-		} else if(!ureq.getUserSession().getRoles().isInvitee()) {
+		}
+		UserSession usess = ureq.getUserSession();
+		if(!usess.getRoles().isInvitee()) {
 			// only for registered users and guests
 			return createSite(ureq, getCourseSiteconfiguration(), config);
 		}

@@ -43,10 +43,6 @@ public class AssessmentData {
 		return identity;
 	}
 	
-	public Float getTotalPoints() {
-		return 2.5f;
-	}
-	
 	public List<DBCheck> getChecks() {
 		return checks;
 	}

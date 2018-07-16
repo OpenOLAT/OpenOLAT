@@ -39,15 +39,16 @@ public class QuestionPoolSiteDef extends AbstractSiteDefinition implements SiteD
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
+			return null;
+		}
+		
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			//already checked
 			return new QuestionPoolSite(this, ureq.getLocale());
 		}
-		
-		UserSession usess = ureq.getUserSession();
-		if(usess == null || usess.getRoles() == null) {
-			return null;
-		}
+
 		Roles roles = usess.getRoles();
 		if(roles.isAdministrator() || roles.isAuthor() || roles.isPoolManager()) {
 			return new QuestionPoolSite(this, ureq.getLocale());

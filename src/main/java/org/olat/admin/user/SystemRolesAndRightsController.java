@@ -169,7 +169,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		formLayout.add(anonymousCont);
 		
 		anonymousEl = uifactory.addRadiosVertical(
-				"anonymous", "role.guest", anonymousCont, 
+				"anonymous", "rightsForm.guest", anonymousCont, 
 				new String[]{"true", "false"},
 				new String[]{translate("role.guest.true"), translate("role.guest.false")}
 		);

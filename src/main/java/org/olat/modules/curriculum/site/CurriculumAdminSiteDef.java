@@ -27,6 +27,7 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.CurriculumModule;
 
 /**
@@ -42,7 +43,10 @@ public class CurriculumAdminSiteDef extends AbstractSiteDefinition implements Si
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new CurriculumAdminSite(this, ureq.getLocale());
 		}
-		if(ureq.getUserSession().getRoles().isLearnResourceManager()) {
+		
+		UserSession usess = ureq.getUserSession();
+		if(usess != null && usess.getRoles() != null &&
+				(usess.getRoles().isLearnResourceManager() || usess.getRoles().isCurriculumManager() || usess.getRoles().isPrincipal())) {
 			// only for admins
 			return new CurriculumAdminSite(this, ureq.getLocale());
 		}

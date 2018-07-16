@@ -26,7 +26,7 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.portfolio.PortfolioModule;
 
 /**
@@ -39,11 +39,11 @@ public class EPSiteDef  extends AbstractSiteDefinition implements SiteDefinition
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly()) {
 			return null;
-		} else if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
-			return new EPSite(this, ureq.getLocale());
 		}
+		
 		// only for registered users and invitee but not guests
 		return new EPSite(this, ureq.getLocale());
 	}

@@ -440,7 +440,8 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 
 	@Override
-	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re, List<BusinessGroup> businessGroups) {
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re,
+			List<BusinessGroup> businessGroups) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select check from clcheck check")
 		  .append(" inner join fetch check.checkbox box")

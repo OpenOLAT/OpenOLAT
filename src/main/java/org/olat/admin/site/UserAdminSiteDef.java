@@ -47,18 +47,17 @@ public class UserAdminSiteDef extends AbstractSiteDefinition implements SiteDefi
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		if(ureq == null) return null;
-		
 		UserSession usess = ureq.getUserSession();
-		if(usess.getRoles() == null) {
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
 			return null;
 		}
+		
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new UserAdminSite(this, ureq.getLocale());
 		} 
 		
 		Roles roles = usess.getRoles();
-		if (roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager()) {
+		if (roles.isAdministrator() || roles.isPrincipal() || roles.isUserManager() || roles.isRolesManager()) {
 			// only open for olat-usermanagers
 			return new UserAdminSite(this, ureq.getLocale());
 		} 

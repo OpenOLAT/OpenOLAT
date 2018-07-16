@@ -32,6 +32,7 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 
 /**
  * Description:<br>
@@ -49,8 +50,11 @@ public class GroupsSiteDef extends AbstractSiteDefinition implements SiteDefinit
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new GroupsSite(this, ureq.getLocale());
-		} else if (!ureq.getUserSession().getRoles().isGuestOnly()
-				&& !ureq.getUserSession().getRoles().isInvitee()) {
+		}
+		
+		UserSession usess = ureq.getUserSession();
+		if (usess != null && usess.getRoles() != null
+				&& !usess.getRoles().isGuestOnly() && !usess.getRoles().isInvitee()) {
 			// all except guests and invitees see this site
 			return new GroupsSite(this, ureq.getLocale());
 		}

@@ -89,8 +89,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	
 	private String[] statusKeys;
 	private String[] statusValues;
-	private String[] roleKeys;
-	private String[] roleValues;
+	private List<String> roleKeys;
+	private List<String> roleValues;
 	private String[] organisationKeys;
 	private String[] organisationValues;
 	private String[] authKeys;
@@ -121,25 +121,11 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(formIdentifyer, true);
 		this.manageableOrganisations = new ArrayList<>(manageableOrganisations);
 		
-		roleKeys = new String[] {
-				OrganisationRoles.administrator.name(),
-				OrganisationRoles.author.name(),
-				OrganisationRoles.groupmanager.name(),
-				OrganisationRoles.usermanager.name(),
-				OrganisationRoles.learnresourcemanager.name(),
-				OrganisationRoles.poolmanager.name(),
-				OrganisationRoles.curriculummanager.name()
-		};
-		
-		roleValues = new String[]{
-				translate("search.form.constraint.admin"),
-				translate("search.form.constraint.author"),
-				translate("search.form.constraint.groupmanager"),
-				translate("search.form.constraint.usermanager"),
-				translate("search.form.constraint.oresmanager"),
-				translate("search.form.constraint.poolmanager"),
-				translate("search.form.constraint.curriculummanager")
-		};
+		roleKeys = OrganisationRoles.toList(OrganisationRoles.values());
+		roleValues = new ArrayList<>(roleKeys.size());
+		for(int i=0; i<roleKeys.size(); i++) {
+			roleValues.add(translate("search.form.constraint.".concat(roleKeys.get(i))));
+		}
 
 		statusKeys = new String[] { 
 				Integer.toString(Identity.STATUS_VISIBLE_LIMIT),
@@ -402,11 +388,11 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 		uifactory.addSpacerElement("space1", formLayout, false);
 		
-		organisations = uifactory.addCheckboxesVertical(
-				"organisations", "search.form.title.organisations", formLayout, organisationKeys, organisationValues, 1);
+		organisations = uifactory.addCheckboxesDropdown("organisations", "search.form.title.organisations",
+				formLayout, organisationKeys, organisationValues);
 		
-		roles = uifactory.addCheckboxesVertical(
-				"roles", "search.form.title.roles", formLayout, roleKeys, roleValues, 1);
+		roles = uifactory.addCheckboxesDropdown("roles", "search.form.title.roles", formLayout,
+				roleKeys.toArray(new String[roleKeys.size()]), roleValues.toArray(new String[roleValues.size()]));
 
 		uifactory.addSpacerElement("space2", formLayout, false);
 		auth = uifactory.addCheckboxesVertical(

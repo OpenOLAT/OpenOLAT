@@ -47,14 +47,14 @@ public class DocumentPoolSiteSecurityCallback implements SiteSecurityCallback {
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		UserSession usess = ureq == null ? null : ureq.getUserSession();
+		UserSession usess = ureq.getUserSession();
 		if(usess == null) return false;
 		
 		Roles roles = usess.getRoles();
 		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isAdministrator()) {
+		if (roles.isAdministrator() || roles.isPrincipal()) {
 			return true;
 		}
 		

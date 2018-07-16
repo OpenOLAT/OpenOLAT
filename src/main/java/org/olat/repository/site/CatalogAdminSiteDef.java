@@ -41,9 +41,6 @@ public class CatalogAdminSiteDef extends AbstractSiteDefinition implements SiteD
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		if(ureq == null) {
-			return null;
-		}
 		UserSession usess = ureq.getUserSession();
 		if(usess == null) {
 			return null;
