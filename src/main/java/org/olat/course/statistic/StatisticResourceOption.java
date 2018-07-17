@@ -32,7 +32,6 @@ public class StatisticResourceOption {
 	
 	private List<Group> groups;
 
-	//TODO roles groups
 	public List<Group> getParticipantsGroups() {
 		return groups;
 	}
@@ -40,5 +39,4 @@ public class StatisticResourceOption {
 	public void setParticipantsGroups(List<Group> groups) {
 		this.groups = groups;
 	}
-
 }

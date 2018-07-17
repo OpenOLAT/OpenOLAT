@@ -102,7 +102,7 @@ public class NotificationsWebService {
 	public Response getPublisher(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
 			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		SubscriptionContext subsContext
@@ -122,7 +122,7 @@ public class NotificationsWebService {
 	public Response getSubscriber(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
 			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		SubscriptionContext subsContext
@@ -151,7 +151,7 @@ public class NotificationsWebService {
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response subscribe(PublisherVO publisherVO, @Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		SubscriptionContext subscriptionContext

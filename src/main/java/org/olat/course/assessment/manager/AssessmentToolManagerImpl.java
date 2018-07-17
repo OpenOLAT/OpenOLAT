@@ -334,6 +334,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			  .append(" inner join ident.user user ");
 		}
 		sb.append(" where ident.status<").append(Identity.STATUS_DELETED).append(" and");
+		
 		if(params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys()) {
 			sb.append("(");
 			if(params.hasBusinessGroupKeys()) {
@@ -366,6 +367,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sb.append(")");
 		} else if(params.isCoach()) {
+			
 			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
@@ -379,7 +381,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult)
 				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin() && (params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys())) {
+		if(params.isCoach() && !params.isAdmin() && !params.hasBusinessGroupKeys() && !params.hasCurriculumElementKeys()) {
 			query.setParameter("identityKey", coach.getKey());
 		}
 		if(identityKey != null) {
@@ -445,7 +447,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(StringHelper.containsNonWhitespace(search)) {
 			if(StringHelper.isLong(search)) {
 				try {
-					identityKey = new Long(search);
+					identityKey = Long.valueOf(search);
 				} catch (NumberFormatException e) {
 					//it can happens
 				}

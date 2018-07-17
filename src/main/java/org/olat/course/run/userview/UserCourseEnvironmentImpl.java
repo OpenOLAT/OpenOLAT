@@ -262,10 +262,13 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return waitingLists;
 	}
 	
+	/**
+	 * The curriculum elements are lazy loaded.
+	 */
 	@Override
 	public List<CurriculumElement> getCoachedCurriculumElements() {
 		if(coachedCurriculums == null) {
-			return Collections.emptyList();//TODO roles groups
+			coachedCurriculums = courseEnvironment.getCourseGroupManager().getCoachedCurriculumElements(identityEnvironment.getIdentity());
 		}
 		return coachedCurriculums;
 	}

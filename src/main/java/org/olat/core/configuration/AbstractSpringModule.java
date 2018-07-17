@@ -201,6 +201,8 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		// delegate to new property based config style
 		return moduleConfigProperties.getIntPropertyValue(propertyName);
 	}
+	
+	
 	/**
 	 * Set an int property
 	 * 

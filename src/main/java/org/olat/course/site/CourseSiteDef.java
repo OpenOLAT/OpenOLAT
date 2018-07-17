@@ -28,7 +28,6 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.site.model.CourseSiteConfiguration;
@@ -93,24 +92,16 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		SiteSecurityCallback siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
 		
 		UserSession usess = ureq.getUserSession();
-		if(usess == null || usess.getRoles() == null) return null;
-		
-		Roles roles = usess.getRoles();
-
-		boolean canSeeToolController = roles.isAuthor()//TODO roles repo
-				|| roles.isAdministrator()
-				|| roles.isLearnResourceManager();
-		boolean showToolController = true;
-		if (!canSeeToolController && !courseConfig.isToolbar()) {
-			showToolController = false;
+		if(usess == null || usess.getRoles() == null) {
+			return null;
 		}
-		
+
 		LanguageConfiguration langConfig = getLanguageConfiguration(ureq, courseConfig);
 		if(langConfig == null) {
 			return null;
 		}
 		String icon = courseConfig.getNavIconCssClass();
-		return createCourseSiteInstance(langConfig, showToolController, siteSecCallback, icon);
+		return createCourseSiteInstance(langConfig, courseConfig.isToolbar(), siteSecCallback, icon);
 	}
 	
 	/**

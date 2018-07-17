@@ -282,9 +282,20 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	 * Return an int value for a certain propertyName
 	 * 
 	 * @param propertyName
-	 * @return the value from the configuration or the default value or 0
+	 * @return The value from the configuration or 0
 	 */
 	public int getIntPropertyValue(String propertyName) {
+		return getIntPropertyValue(propertyName, 0);
+	}
+	
+	/**
+	 * Return an int value for a certain propertyName
+	 * 
+	 * @param propertyName The property name
+	 * @param defaultValue The default value
+	 * @return The value from the configuration or the default value
+	 */
+	public int getIntPropertyValue(String propertyName, int defaultValue) {
 		// 1) Try from configuration
 		String stringValue = configuredProperties.getProperty(propertyName);
 		// 2) Try from default configuration
@@ -302,7 +313,7 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		if(isLogDebugEnabled()) {
 			logDebug("No value found for int property::" + propertyName + ", using value=0 instead", null);
 		}
-		return 0;
+		return defaultValue;
 	}
 
 	/**

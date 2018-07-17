@@ -52,6 +52,7 @@ import javax.persistence.TypedQuery;
 import org.apache.velocity.app.VelocityEngine;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -105,10 +106,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
-import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -154,8 +152,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -268,15 +264,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public SubscriptionContext getSubscriptionContext(ICourse course) {
 		CourseNode cn = course.getRunStructure().getRootNode();
 		CourseEnvironment ce = course.getCourseEnvironment();
-		SubscriptionContext ctxt = new SubscriptionContext(ORES_CERTIFICATE, ce.getCourseResourceableId(), cn.getIdent());
-		return ctxt;
+		return new SubscriptionContext(ORES_CERTIFICATE, ce.getCourseResourceableId(), cn.getIdent());
 	}
 
 	@Override
 	public PublisherData getPublisherData(ICourse course, String businessPath) {
 		String data = String.valueOf(course.getCourseEnvironment().getCourseResourceableId());
-		PublisherData pData = new PublisherData(ORES_CERTIFICATE, data, businessPath);
-		return pData;
+		return new PublisherData(ORES_CERTIFICATE, data, businessPath);
 	}
 
 	@Override
@@ -384,7 +378,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return certififcates != null && certififcates.size() > 0;
+		return certififcates != null && !certififcates.isEmpty();
 	}
 
 	@Override
@@ -427,35 +421,18 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		  .append(" where cer.olatResource.key=:resourceKey and cer.last=true ");
 		//must be some kind of restrictions
 		boolean securityCheck = false;
-		List<Long> baseGroupKeys = null;
-		if(!security.isEntryAdmin()) {//TODO roles groups
+		if(!security.isEntryAdmin()) {
 			sb.append(" and (");
 			boolean or = false;
-			if(security.isCourseCoach()) {
+			if(security.isCoach()) {
 				or = or(sb, or);
-				sb.append(" exists (select membership.identity.key from repoentrytogroup as rel, bgroup as reBaseGroup, bgroupmember membership ")
-				  .append("   where ident.key=membership.identity.key and rel.entry.key=:repoKey and rel.group=reBaseGroup and membership.group=reBaseGroup and membership.role='").append(GroupRole.participant).append("'")
-				  .append(" )");
+				sb.append(" exists (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+				  .append("    where rel.entry.key=:repoEntryKey")
+		          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+		          .append("      and rel.group.key=participant.group.key and participant.identity.key=ident.key and participant.role='").append(GroupRoles.participant.name()).append("'")
+		          .append(" )");
 				securityCheck = true;
 			}
-			
-			if(security.isGroupCoach()) {
-				SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
-				List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, entry, 0, -1);
-				if(groups.size() > 0) {
-					or = or(sb, or);
-					sb.append(" exists (select membership.identity.key from bgroupmember membership ")
-					  .append("   where ident.key=membership.identity.key and membership.group.key in (:groups) and membership.role='").append(GroupRole.participant).append("'")
-					  .append(" )");
-					
-					baseGroupKeys = new ArrayList<>(groups.size());
-					for(BusinessGroup group:groups) {
-						baseGroupKeys.add(group.getBaseGroup().getKey());
-					}
-					securityCheck = true;
-				}
-			}
-			
 			if(security.isParticipant()) {
 				or = or(sb, or);
 				sb.append(" ident.key=:identityKey");
@@ -473,20 +450,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		TypedQuery<Certificate> certificates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
 				.setParameter("resourceKey", entry.getOlatResource().getKey());
-		
 		if(!security.isEntryAdmin()) {
-			if(security.isCourseCoach()) {
-				certificates.setParameter("repoKey", entry.getKey());
+			if(security.isCoach()) {
+				certificates.setParameter("repoEntryKey", entry.getKey());
 			}
-			
-			if(security.isCourseParticipant() || security.isGroupParticipant()) {
+			if(security.isCoach() || security.isParticipant()) {
 				certificates.setParameter("identityKey", identity.getKey());
 			}
 		}
-		
-		if(baseGroupKeys != null && !baseGroupKeys.isEmpty()) {
-			certificates.setParameter("groups", baseGroupKeys);
-		}
+
 		return certificates.getResultList();
 	}
 	
@@ -605,8 +577,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				case month: cal.add(Calendar.MONTH, time); break;
 				case year: cal.add(Calendar.YEAR, time); break;
 			}
-			Date nextCertification = cal.getTime();
-			return nextCertification;
+			return cal.getTime();
 		} else {
 			return null;
 		}		
@@ -630,7 +601,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		//reorder the last flag
 		List<Certificate> certificates = getCertificates(relaodedCertificate.getIdentity(), relaodedCertificate.getOlatResource());
 		certificates.remove(relaodedCertificate);
-		if(certificates.size() > 0) {
+		if(!certificates.isEmpty()) {
 			boolean hasLast = false;
 			for(Certificate cer:certificates) {
 				if(((CertificateImpl)cer).isLast()) {

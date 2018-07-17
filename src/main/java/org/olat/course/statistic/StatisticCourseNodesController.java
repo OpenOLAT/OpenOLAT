@@ -50,8 +50,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,18 +82,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 		options = new StatisticResourceOption();
 
 		if(!reSecurity.isEntryAdmin() && !reSecurity.isOwner()) {
-			List<Group> groups = new ArrayList<>();//TODO roles groups
-			UserCourseEnvironmentImpl userCourseEnvImpl = (UserCourseEnvironmentImpl)userCourseEnv;
-			if(reSecurity.isCourseCoach()) {
-				Group bGroup = repositoryService.getDefaultGroup(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
-				groups.add(bGroup);
-			}
-			if(reSecurity.isGroupCoach()) {
-				List<BusinessGroup> businessGroups = userCourseEnvImpl.getCoachedGroups();
-				for(BusinessGroup businessGroup:businessGroups) {
-					groups.add(businessGroup.getBaseGroup());
-				}
-			}
+			List<Group> groups = getCoachedGroups(reSecurity, userCourseEnv);
 			options.setParticipantsGroups(groups);
 		}
 
@@ -112,6 +101,27 @@ public class StatisticCourseNodesController extends BasicController implements A
 		if (tree != null && tree.getRootNode().getChildCount() > 0) {
 			doSelectNode(ureq, (TreeNode)tree.getRootNode().getChildAt(0));
 		}
+	}
+	
+	private List<Group> getCoachedGroups(RepositoryEntrySecurity reSecurity, UserCourseEnvironment userCourseEnv) {
+		List<Group> groups = new ArrayList<>();
+		if(reSecurity.isCourseCoach()) {
+			Group bGroup = repositoryService.getDefaultGroup(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+			groups.add(bGroup);
+		}
+		if(reSecurity.isGroupCoach()) {
+			List<BusinessGroup> businessGroups = userCourseEnv.getCoachedGroups();
+			for(BusinessGroup businessGroup:businessGroups) {
+				groups.add(businessGroup.getBaseGroup());
+			}
+		}
+		if(reSecurity.isCurriculumCoach()) {
+			List<CurriculumElement> curriculumElements = userCourseEnv.getCoachedCurriculumElements();
+			for(CurriculumElement curriculumElement:curriculumElements) {
+				groups.add(curriculumElement.getGroup());
+			}
+		}
+		return groups;
 	}
 	
 	@Override

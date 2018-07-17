@@ -364,7 +364,7 @@ public class OrganisationDAO {
 		
 		boolean hasRole = role != null && role.length > 0 && role[0] != null;
 		if(hasRole) {
-			sb.append(" and membership.role=:role");
+			sb.append(" and membership.role in (:roles)");
 		}
 		if(StringHelper.containsNonWhitespace(organisationIdentifier)) {
 			sb.append(" and org.identifier=:identifier");
@@ -377,11 +377,14 @@ public class OrganisationDAO {
 				.setParameter("identityKey", identity.getKey());
 		if(hasRole) {
 			List<String> roleList = PersistenceHelper.toList(role);
-			query.setParameter("role", roleList);
+			query.setParameter("roles", roleList);
 		}
 		if(StringHelper.containsNonWhitespace(organisationIdentifier)) {
 			query.setParameter("identifier", organisationIdentifier);
-		}		
+		}	
+		if(organisation != null) {
+			query.setParameter("organisationKey", organisation.getKey());
+		}	
 	
 		List<Long> memberships = query.setFirstResult(0)
 			.setMaxResults(1)

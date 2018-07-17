@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
@@ -51,6 +52,8 @@ public class OrganisationDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationDAO organisationDao;
 	@Autowired
@@ -400,7 +403,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void hasRole() {
+	public void hasRole_identifier() {
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-7");
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E2E", identifier, null, null, null);
@@ -414,6 +417,49 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertFalse(isUserManager);
 		boolean isNotPoolManager = organisationDao.hasRole(member, "something else", null, OrganisationRoles.poolmanager.name());
 		Assert.assertFalse(isNotPoolManager);
+	}
+	
+	@Test
+	public void hasRole_organisation() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-7b");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E3E", identifier, null, null, null);
+		Organisation otherOrganisation = organisationDao.createAndPersistOrganisation("OpenOLAT other one", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isPoolManager = organisationDao.hasRole(member, null, organisation, OrganisationRoles.poolmanager.name());
+		Assert.assertTrue(isPoolManager);
+		boolean isUserManager = organisationDao.hasRole(member, null, organisation, OrganisationRoles.usermanager.name());
+		Assert.assertFalse(isUserManager);
+		boolean isNotPoolManager = organisationDao.hasRole(member, null, otherOrganisation, OrganisationRoles.poolmanager.name());
+		Assert.assertFalse(isNotPoolManager);
+	}
+	
+	@Test
+	public void hasRole() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-7c");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E4E", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isManager = organisationDao.hasRole(member, identifier, organisation,
+				OrganisationRoles.poolmanager.name(), OrganisationRoles.usermanager.name());
+		Assert.assertTrue(isManager);
+	}
+	
+	@Test
+	public void hasRole_administrator() {
+		Identity administrator = securityManager.findIdentityByName("administrator");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		dbInstance.commit();
+
+		boolean isManager = organisationDao.hasRole(administrator, null, defOrganisation,
+				OrganisationRoles.administrator.name(), OrganisationRoles.usermanager.name());
+		Assert.assertTrue(isManager);
 	}
 	
 	@Test

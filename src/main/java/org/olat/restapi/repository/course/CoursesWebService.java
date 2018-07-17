@@ -48,6 +48,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
@@ -376,20 +377,17 @@ public class CoursesWebService {
 					organisationKey = Long.valueOf(organisation);
 				}
 				
-				
 				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, access, membersonly, organisationKey);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
 			return Response.serverError().status(Status.NO_CONTENT).build();
 		} catch (Exception e) {
-			log.error("Error while importing a file",e);
+			log.error("Error while importing a file", e);
 		} finally {
 			MultipartReader.closeQuietly(partsReader);
 		}
-
-		CourseVO vo = null;
-		return Response.ok(vo).build();
+		return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 	}
 
 	public static ICourse loadCourse(Long courseId) {
@@ -406,7 +404,7 @@ public class CoursesWebService {
 
 		log.info("REST Import course " + displayName + " START");
 		if(!StringHelper.containsNonWhitespace(displayName)) {
-			displayName = "import-" + UUID.randomUUID().toString();
+			displayName = "import-" + UUID.randomUUID();
 		}
 		
 		Organisation organisation;
@@ -414,8 +412,17 @@ public class CoursesWebService {
 			organisation = organisationService.getDefaultOrganisation();
 		} else {
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+			
 		}
-		//TODO roles check organisation roles
+		
+		if(organisation != null) {
+			Identity ureqIdentity = ureq.getIdentity();
+			if(!organisationService.hasRole(ureqIdentity, organisation,
+					OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager,
+					OrganisationRoles.author)) {
+				throw new WebApplicationException(Status.FORBIDDEN);
+			}
+		}
 
 		RepositoryHandler handler = handlerFactory.getRepositoryHandler(CourseModule.getCourseTypeName());
 		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, organisation, Locale.ENGLISH, fCourseImportZIP, null);

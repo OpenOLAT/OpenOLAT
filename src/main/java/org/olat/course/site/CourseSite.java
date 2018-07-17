@@ -83,7 +83,7 @@ public class CourseSite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 		if(entry == null) {
@@ -115,7 +115,6 @@ public class CourseSite extends AbstractSiteInstance {
 			}
 		}
 		
-		
 		// load course (admins always see content) or alternative controller if course is not launchable
 		if (hasAccess || reSecurity.isEntryAdmin()) {
 			rs.incrementLaunchCounter(entry); 
@@ -128,7 +127,7 @@ public class CourseSite extends AbstractSiteInstance {
 			// a: don't show close link, is opened as site not tab
 			runCtr.setCourseCloseEnabled(false);
 			// b: don't show toolbar
-			if (!showToolController) {
+			if (!showToolController && !reSecurity.isEntryAdmin()) {
 				runCtr.setToolControllerEnabled(false);
 			}
 			c = runCtr;
@@ -140,17 +139,11 @@ public class CourseSite extends AbstractSiteInstance {
 		return c;
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#isKeepState()
-	 */
 	@Override
 	public boolean isKeepState() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#reset()
-	 */
 	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
