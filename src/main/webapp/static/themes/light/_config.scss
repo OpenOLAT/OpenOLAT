@@ -522,6 +522,12 @@ $o-qual-dc-ready-color				: #ffd351;
 $o-qual-dc-ready-color-dark			: #333;
 $o-qual-dc-running-color			: #993333;
 $o-qual-dc-finished-color			: #14892c;
+$o-qual-exec-future-color			: #4a6785;
+$o-qual-exec-ready-color			: #ffd351;
+$o-qual-exec-ready-color-dark		: #333;
+$o-qual-exec-participating-color	: #993333;
+$o-qual-exec-participated-color		: #14892c;
+$o-qual-exec-over-color				: #aaa;
 
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
@@ -681,24 +687,24 @@ $o-slider-handler-border-color		: $brand-primary !default;
 $o-slider-handler-background-color	: $brand-primary !default;
 
 /* Lables */
-$o-labeled_color						: #fff;
+$o-labeled_color					: #fff;
 $o-labeled_bg-color					: #777;
 $o-labeled-light-bg-color			: $o-toolbar-bg-color;
 
 /* QPool */
 $o-qpool-arrow-bg-color				: $o-toolbar-bg-color !default;
 $o-qpool-arrow-border-bottom-width	: 3px;
-$o-qpool-arrow-selected-bg-color		: $o-navbar-link-active-bg;
+$o-qpool-arrow-selected-bg-color	: $o-navbar-link-active-bg;
 $o-qpool-arrow-selected-color		: $o-navbar-link-active-color;
 
 $o-qpool-status-color-dark			: #333;
-$o-qpool-status-color-bright			: #fff;
-$o-qpool-draft-color					: #4a6785;
+$o-qpool-status-color-bright		: #fff;
+$o-qpool-draft-color				: #4a6785;
 $o-qpool-review-color				: #ffd351;
 $o-qpool-review-color-dark			: #333;
 $o-qpool-revised-color				: #993333;
 $o-qpool-finalVersion-color			: #14892c;
-$o-qpool-endOfLife-color				: #aaa;
+$o-qpool-endOfLife-color			: #aaa;
 
 
 /* other configurations */

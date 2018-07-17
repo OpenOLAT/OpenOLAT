@@ -27,10 +27,10 @@ package org.olat.modules.quality;
  */
 public enum QualityExecutorParticipationStatus {
 	
-	FUTURE(30, "executor.participation.status.future"),
-	READY(20, "executor.participation.status.ready"),
-	STARTED(10, "executor.participation.status.started"),
-	PARTICIPATED(40, "executor.participation.status.participated"),
+	FUTURE(40, "executor.participation.status.future"),
+	READY(10, "executor.participation.status.ready"),
+	PARTICIPATING(20, "executor.participation.status.participating"),
+	PARTICIPATED(30, "executor.participation.status.participated"),
 	OVER(50, "executor.participation.status.over");
 	
 	private final int order;

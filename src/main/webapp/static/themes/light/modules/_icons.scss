@@ -676,6 +676,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qual_dc_preparation:before { content: $fa-var-edit; }
 .o_icon_qual_dc_ready:before { content: $fa-var-play-circle-o; }
 .o_icon_qual_dc_running:before { content: $fa-var-play-circle; }
+.o_icon_qual_exec_future:before { content: $fa-var-times-circle-o; }
+.o_icon_qual_exec_over:before { content: $fa-var-times-circle; }
+.o_icon_qual_exec_participating:before { content: $fa-var-play-circle; }
+.o_icon_qual_exec_participated:before { content: $fa-var-check-circle; }
+.o_icon_qual_exec_ready:before { content: $fa-var-play-circle-o; }
 .o_icon_qual_part_user_add:before { content: $fa-var-user-plus; }
 .o_icon_qual_part_user_add_course:before { content: $fa-var-user-plus; }
 .o_icon_qual_part_user_add_curele:before { content: $fa-var-user-plus; }

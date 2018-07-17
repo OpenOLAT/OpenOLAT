@@ -143,7 +143,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private final ScreenMode screenMode = new ScreenMode();
 	private WindowBackOffice wbo;
 	
-	// STARTED
+	// PARTICIPATING
 	private GuiStack currentGuiStack;
 	private Panel main, modalPanel;
 	private GUIMessage guiMessage;

@@ -40,12 +40,12 @@
 	}
 	
 	
-	/* --- Data collection dc_status in data collection list --- */
+	/* --- Data collection status in data collection list --- */
 
 	.o_qual_dc_list {
 		tbody {
 			tr {
-				// dc_status
+				// status
 				td:nth-child(1) {
 					padding-top: 3px;
 				}
@@ -68,6 +68,41 @@
 	.o_qual_dc_status_finished_light {
 		border-color: 		$o-qual-dc-finished-color;
 		color: 				$o-qual-dc-finished-color;
+	}
+	
+	
+	/* --- Status in executor participation list --- */
+
+	.o_qual_exec_list {
+		tbody {
+			tr {
+				// status
+				td:nth-child(1) {
+					padding-top: 3px;
+				}
+			}
+		}
+	}
+
+	.o_qual_exec_status_future_light {
+		border-color: 		$o-qual-exec-future-color;
+		color: 				$o-qual-exec-future-color;
+	}
+	.o_qual_exec_status_ready_light {
+		border-color: 		$o-qual-exec-ready-color;
+		color: 				$o-qual-exec-ready-color-dark;
+	}
+	.o_qual_exec_status_participating_light {
+		border-color: 		$o-qual-exec-participating-color;
+		color: 				$o-qual-exec-participating-color;
+	}
+	.o_qual_exec_status_participated_light {
+		border-color: 		$o-qual-exec-participated-color;
+		color: 				$o-qual-exec-participated-color;
+	}
+	.o_qual_exec_status_over_light {
+		border-color: 		$o-qual-exec-over-color;
+		color: 				$o-qual-exec-over-color;
 	}
 	
 }

@@ -111,7 +111,7 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	public boolean canExecute(QualityExecutorParticipation participation) {
 		QualityExecutorParticipationStatus status = participation.getExecutionStatus();
 		return QualityExecutorParticipationStatus.READY.equals(status)
-				|| QualityExecutorParticipationStatus.STARTED.equals(status);
+				|| QualityExecutorParticipationStatus.PARTICIPATING.equals(status);
 	}
 
 	private boolean isNotStarted(QualityDataCollectionLight dataCollection) {

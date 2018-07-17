@@ -19,6 +19,10 @@
  */
 package org.olat.modules.quality.ui;
 
+import static org.olat.modules.quality.QualityExecutorParticipationStatus.FUTURE;
+import static org.olat.modules.quality.QualityExecutorParticipationStatus.OVER;
+import static org.olat.modules.quality.QualityExecutorParticipationStatus.PARTICIPATED;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +48,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
@@ -84,7 +87,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.executionStatus));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.executionStatus, new QualityExecutionParticipationStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.deadline));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.title));
@@ -104,6 +107,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		ExecutorParticipationDataSource dataSource = new ExecutorParticipationDataSource(getTranslator(), searchParams);
 		dataModel = new ExecutorParticipationDataModel(dataSource, columnsModel, secCallback, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "user-participations", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_qual_exec_list");
 	}
 	
 	@Override
@@ -174,8 +178,16 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	}
 
 	private void doExecute(UserRequest ureq, QualityExecutorParticipation participation) {
-		if (EvaluationFormParticipationStatus.done.equals(participation.getExecutionStatus())) {
+		if (FUTURE.equals(participation.getExecutionStatus())) {
+			showInfo("executor.participation.future", participation.getTitle());
+			return;
+		}
+		if (PARTICIPATED.equals(participation.getExecutionStatus())) {
 			showInfo("executor.participation.already.done", participation.getTitle());
+			return;
+		}
+		if (OVER.equals(participation.getExecutionStatus())) {
+			showInfo("executor.participation.over", participation.getTitle());
 			return;
 		}
 		

@@ -55,7 +55,7 @@ public interface QualityService {
 	public void stopDataCollections(Date until);
 
 	/**
-	 * Updates the status to FINISHED of all data collections which are STARTED and have passed the deadline.
+	 * Updates the status to FINISHED of all data collections which are PARTICIPATING and have passed the deadline.
 	 * 
 	 * @param until the date to evaluate if a deadline has passed
 	 */

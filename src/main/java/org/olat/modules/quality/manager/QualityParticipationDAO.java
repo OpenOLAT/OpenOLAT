@@ -160,7 +160,7 @@ class QualityParticipationDAO {
 		sb.append("           when participation.status = '").append(EvaluationFormParticipationStatus.done).append("'");
 		sb.append("           then ").append(QualityExecutorParticipationStatus.PARTICIPATED.getOrder());
 		sb.append("           when session is not null");
-		sb.append("           then ").append(QualityExecutorParticipationStatus.STARTED.getOrder());
+		sb.append("           then ").append(QualityExecutorParticipationStatus.PARTICIPATING.getOrder());
 		sb.append("           when collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 		sb.append("           then ").append(QualityExecutorParticipationStatus.OVER.getOrder());
 		sb.append("           when collection.status = '").append(QualityDataCollectionStatus.RUNNING).append("'");
@@ -261,7 +261,7 @@ class QualityParticipationDAO {
 			sb.append(sortKey);
 			appendAsc(sb, asc);
 		} else {
-			sb.append(" order by executionStatus asc ");
+			sb.append(" order by executionStatus asc, start desc ");
 		}
 	}
 
