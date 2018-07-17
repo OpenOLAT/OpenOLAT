@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.TransformerException;
 
@@ -35,9 +36,7 @@ import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -74,9 +73,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
+import org.olat.course.nodes.cl.model.AssessedIdentity;
 import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
 import org.olat.course.nodes.cl.model.Checkbox;
@@ -84,16 +85,11 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.ui.CheckListAssessmentDataModel.Cols;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupMembership;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,17 +132,15 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private CheckboxAssessmentController boxAssessmentCtrl;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private CheckboxManager checkboxManager;
-	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -158,16 +152,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 	public CheckListAssessmentController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment coachCourseEnv,
 			OLATResourceable courseOres, CheckListCourseNode courseNode) {
 		super(ureq, wControl, "assessment_list");
-
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		
+
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
@@ -265,19 +251,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		model = new CheckListAssessmentDataModel(checkboxList, new ArrayList<>(), columnsModel, getLocale());
 		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
-		if(coachCourseEnv instanceof UserCourseEnvironmentImpl) {
-			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;
-			List<BusinessGroup> coachedGroups = env.getCoachedGroups();
-			List<FlexiTableFilter> filters = new ArrayList<>(coachedGroups.size() + 1);
-			for(int k=0; k<coachedGroups.size(); k++) {
-				BusinessGroup group = coachedGroups.get(k);
-				String groupName = StringHelper.escapeHtml(group.getName());
-				filters.add(new FlexiTableFilter(groupName, group.getKey().toString()));
-			}
-			filters.add(FlexiTableFilter.SPACER);
-			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
-			table.setFilters("participants", filters, false);
-		}
+		table.setFilters("participants", getFilters(), false);
+
 		table.setExportEnabled(true);
 		table.setCustomizeColumns(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
@@ -302,65 +277,62 @@ public class CheckListAssessmentController extends FormBasicController implement
 		boxAssessmentButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
-	private List<CheckListAssessmentRow> loadDatas() {
-		if(!(coachCourseEnv instanceof UserCourseEnvironmentImpl)) {
-			return Collections.emptyList();
+	private List<FlexiTableFilter> getFilters() {
+		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		List<BusinessGroup> coachedGroups = coachCourseEnv.isAdmin() ? cgm.getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
+		List<FlexiTableFilter> filters = new ArrayList<>(coachedGroups.size() + 1);
+		for(BusinessGroup group:coachedGroups) {
+			String groupName = StringHelper.escapeHtml(group.getName());
+			filters.add(new FlexiTableFilter(groupName, "businessgroup-".concat(group.getKey().toString())));
 		}
+		List<CurriculumElement> coachedElements = coachCourseEnv.isAdmin() ? cgm.getAllCurriculumElements() : coachCourseEnv.getCoachedCurriculumElements();
+		if(!coachedElements.isEmpty()) {
+			if(!filters.isEmpty()) {
+				filters.add(FlexiTableFilter.SPACER);
+			}
 
-		UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;
+			for(CurriculumElement coachedElement: coachedElements) {
+				String groupName = StringHelper.escapeHtml(coachedElement.getDisplayName());
+				filters.add(new FlexiTableFilter(groupName, "curriculumelement-".concat(coachedElement.getKey().toString())));
+			}
+		}
+		
+		if(!filters.isEmpty()) {
+			filters.add(FlexiTableFilter.SPACER);
+			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
+		}
+		return filters;
+	}
+	
+	private List<CheckListAssessmentRow> loadDatas() {
+		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		
 		List<Checkbox> checkboxColl = checkboxList.getList();
 		int numOfCheckbox = checkboxList.getNumOfCheckbox();
-		
-		boolean courseAdmin = env.isAdmin();
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
 
-		RepositoryEntry re = env.getCourseRepositoryEntry();
-		boolean courseTutor = repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name());
-
-		Set<Long> missingIdentityKeys = new HashSet<>(); 
-		if(courseTutor || courseAdmin) {
-			List<RepositoryEntryMembership> repoMemberships = repositoryManager.getRepositoryEntryMembership(re);
-			for(RepositoryEntryMembership repoMembership:repoMemberships) {
-				if(repoMembership.isParticipant()) {
-					missingIdentityKeys.add(repoMembership.getIdentityKey());
-				}
-			}
-		}
-
-		List<BusinessGroup> coachedGroups = courseAdmin ?
-				coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
-				: env.getCoachedGroups();
 		List<AssessmentData> dataList = checkboxManager
-				.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor || courseAdmin ? re : null, coachedGroups);
+				.getAssessmentDatas(courseOres, courseNode.getIdent(), cgm.getCourseEntry(), getIdentity(), coachCourseEnv.isAdmin());
 		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
-		Map<Long,CheckListAssessmentRow> identityToView = new HashMap<>();
-		for(CheckListAssessmentRow box:boxList) {
-			identityToView.put(box.getIdentityKey(), box);
-			missingIdentityKeys.remove(box.getIdentityKey());
-		}
+		Map<Long,CheckListAssessmentRow> identityToView = boxList.stream()
+				.collect(Collectors.toMap(CheckListAssessmentRow::getIdentityKey, row -> row, (row1, row2) -> row1));
 		
-		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupsMembership(coachedGroups);
-		for(BusinessGroupMembership membership:memberships) {
-			if(!membership.isParticipant()) continue;
-			Long identityKey = membership.getIdentityKey();
-			if(!identityToView.containsKey(identityKey)) {
-				missingIdentityKeys.add(identityKey);
+		List<AssessedIdentity> identityList = checkboxManager
+				.getAssessedIdentities(courseEntry, getIdentity(), coachCourseEnv.isAdmin());
+		for(AssessedIdentity identity:identityList) {
+			CheckListAssessmentRow row = identityToView.computeIfAbsent(identity.getIdentity().getKey(), id -> {
+				Boolean[] checked = new Boolean[numOfCheckbox];
+				Float[] scores = new Float[numOfCheckbox];
+				return new CheckListAssessmentRow(identity.getIdentity(), checked, scores, null, userPropertyHandlers, getLocale());
+			});
+			
+			List<Long> curriculumElementKeys = identity.getCurriculumElmentKeys();
+			if(!curriculumElementKeys.isEmpty()) {
+				row.setCurriculumElementKeys(curriculumElementKeys.toArray(new Long[curriculumElementKeys.size()]));
 			}
-		}
-
-		List<Identity> missingIdentities = securityManager.loadIdentityByKeys(missingIdentityKeys);
-		for(Identity missingIdentity:missingIdentities) {
-			Boolean[] checked = new Boolean[numOfCheckbox];
-			Float[] scores = new Float[numOfCheckbox];
-			CheckListAssessmentRow view = new CheckListAssessmentRow(missingIdentity, checked, scores, null,
-					userPropertyHandlers, getLocale());
-			identityToView.put(missingIdentity.getKey(), view);
-		}
-		
-		for(BusinessGroupMembership membership:memberships) {
-			if(!membership.isParticipant()) continue;
-			CheckListAssessmentRow view = identityToView.get(membership.getIdentityKey());
-			if(view != null) {
-				view.addGroupKey(membership.getGroupKey());
+			List<Long> businessGroupKeys = identity.getBusinessGroupKeys();
+			if(!businessGroupKeys.isEmpty()) {
+				row.setGroupKeys(businessGroupKeys.toArray(new Long[businessGroupKeys.size()]));
 			}
 		}
 		
@@ -375,7 +347,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		int numOfcheckbox = checkbox.size();
 		Map<String,Integer> indexed = new HashMap<>();
 		for(int i=numOfcheckbox; i-->0; ) {
-			indexed.put(checkbox.get(i).getCheckboxId(), new Integer(i));
+			indexed.put(checkbox.get(i).getCheckboxId(), Integer.valueOf(i));
 		}
 		
 		for(AssessmentData data:datas) {
@@ -491,7 +463,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private void reloadTable() {
-		DBFactory.getInstance().commit();//make sure all changes are on the database
+		dbInstance.commit();//make sure all changes are on the database
 		model.setObjects(loadDatas());
 		table.reloadData();
 	}
@@ -564,7 +536,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 				for(int i=0; i<numOfCheckbox; i++) {
 					MultipleSelectionElement checkEl = checkedEls[i];
 					boolean editedValue = checkEl.isAtLeastSelected(1);
-					editedChecked[i] = new Boolean(editedValue);
+					editedChecked[i] = Boolean.valueOf(editedValue);
 					
 					boolean currentValue;
 					if(checked != null && checked.length > 0 && i<checked.length && checked[i] != null) {
@@ -576,7 +548,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 					if(editedValue != currentValue) {
 						Checkbox checkbox = checkboxList.getList().get(i);
 						String checkboxId = checkbox.getCheckboxId();
-						Float score = editedValue ? checkbox.getPoints() : new Float(0f);
+						Float score = editedValue ? checkbox.getPoints() : Float.valueOf(0f);
 						batchElements.add(new AssessmentBatch(row.getIdentityKey(), checkboxId, score, editedValue));
 						assessedIdentityToUpdate.add(row.getIdentityKey());
 					}
@@ -590,8 +562,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		doDisableEditingMode();
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		if(assessedIdentityToUpdate.size() > 0) {
-			DBFactory.getInstance().commit();
+		if(!assessedIdentityToUpdate.isEmpty()) {
+			dbInstance.commit();
 			
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);

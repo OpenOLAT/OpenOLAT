@@ -205,7 +205,6 @@ public class CurriculumElementResourceListController extends FormBasicController
 	
 	private void doAddRepositoryEntry(RepositoryEntry entry) {
 		doAddRepositoryEntry(Collections.singletonList(entry));
-		curriculumService.addRepositoryEntry(curriculumElement, entry, false);
 	}
 	
 	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {

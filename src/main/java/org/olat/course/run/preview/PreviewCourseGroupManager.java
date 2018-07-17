@@ -44,6 +44,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -210,6 +211,16 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return new ArrayList<>(1);
 	}
 	
+	@Override
+	public List<CurriculumElement> getAllCurriculumElements() {
+		return new ArrayList<>(1);
+	}
+
+	@Override
+	public List<CurriculumElement> getCoachedCurriculumElements(Identity identity) {
+		return new ArrayList<>(1);
+	}
+
 	@Override
 	public boolean hasAreas() {
 		return areas != null && !areas.isEmpty();

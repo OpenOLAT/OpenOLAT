@@ -249,16 +249,16 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public List<Identity> getMembers(List<? extends RepositoryEntryRef> re, RepositoryEntryRelationType relationType, String... roles);
-
+	
 	/**
-	 * Return all the identities the specified role linked to a repository
-	 * entry.
-	 *
-	 *
-	 * @param rolle
-	 * @return
+	 * The participants the specified user can coach. The method is specific to
+	 * the coach role, but follow the business groups and curriculums.
+	 * 
+	 * @param coach The coach
+	 * @param re The repository entry
+	 * @return A list of identities
 	 */
-	public List<Identity> getIdentitiesWithRole(String role);
+	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re);
 
 	/**
 	 * Get the role in the specified resource, business group are included in

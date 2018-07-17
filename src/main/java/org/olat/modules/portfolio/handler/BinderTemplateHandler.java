@@ -47,7 +47,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
@@ -70,7 +69,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceManager;
 
@@ -229,24 +227,19 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		return new BinderRuntimeController(ureq, wControl, re, reSecurity,
-			new RuntimeControllerCreator() {
-				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-					PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-					if(reSecurity.isGroupParticipant() || reSecurity.isCourseParticipant()) {
-						//pick up the template
-						
-						return new BinderPickerController(uureq, wwControl, entry);
-					} else {
-						Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
-						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(reSecurity.isEntryAdmin());
-						BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForTemplate(reSecurity);
-						return new BinderController(uureq, wwControl, toolbarPanel, secCallback, binder, bConfig);
-					}
+		return new BinderRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
+				PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+				if(reSecurity.isParticipant()) {
+					//pick up the template
+					
+					return new BinderPickerController(uureq, wwControl, entry);
+				} else {
+					Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
+					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
+					BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(reSecurity.isEntryAdmin());
+					BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForTemplate(reSecurity);
+					return new BinderController(uureq, wwControl, toolbarPanel, secCallback, binder, bConfig);
 				}
 			});
 	}

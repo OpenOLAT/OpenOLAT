@@ -201,7 +201,7 @@ public class CourseOverviewController extends BasicController  {
 
 		//group membership
 		List<BusinessGroupMembership> groupMemberships =  businessGroupService.getBusinessGroupMembership(Collections.<Long>emptyList(), editedIdentity);
-		Collection<Long> groupKeys = new ArrayList<Long>(groupMemberships.size());
+		Collection<Long> groupKeys = new ArrayList<>(groupMemberships.size());
 		for(BusinessGroupMembership membership: groupMemberships) {
 			groupKeys.add(membership.getGroupKey());
 		}
@@ -219,7 +219,7 @@ public class CourseOverviewController extends BasicController  {
 			}	
 		}
 
-		Map<Long,CourseMemberView> repoKeyToViewMap = new HashMap<Long,CourseMemberView>();
+		Map<Long,CourseMemberView> repoKeyToViewMap = new HashMap<>();
 		for(RepositoryEntryMembership membership: memberships) {
 			Long repoKey = membership.getRepoKey();
 
@@ -251,7 +251,7 @@ public class CourseOverviewController extends BasicController  {
 		}
 
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
-		Map<Long,BusinessGroupShort> groupKeyToGroupMap = new HashMap<Long,BusinessGroupShort>();
+		Map<Long,BusinessGroupShort> groupKeyToGroupMap = new HashMap<>();
 		for(BusinessGroupShort group:groups) {
 			groupKeyToGroupMap.put(group.getKey(), group);
 		}
@@ -298,7 +298,7 @@ public class CourseOverviewController extends BasicController  {
 		}
 		
 		List<RepositoryEntry> entries = repositoryManager.lookupRepositoryEntries(repoKeyToViewMap.keySet());
-		Map<Long,RepositoryEntry> entryKeyToRepoEntryMap = new HashMap<Long,RepositoryEntry>();
+		Map<Long,RepositoryEntry> entryKeyToRepoEntryMap = new HashMap<>();
 		for(RepositoryEntry entry:entries) {
 			entryKeyToRepoEntryMap.put(entry.getKey(), entry);
 		}
@@ -314,7 +314,7 @@ public class CourseOverviewController extends BasicController  {
 			}	
 		}
 		
-		List<CourseMemberView> views = new ArrayList<CourseMemberView>(repoKeyToViewMap.values());
+		List<CourseMemberView> views = new ArrayList<>(repoKeyToViewMap.values());
 		tableDataModel.setObjects(views);
 		courseListCtr.modelChanged();
 	}
@@ -518,7 +518,7 @@ public class CourseOverviewController extends BasicController  {
 	 * @param views
 	 */
 	private void doLeave(UserRequest ureq, Collection<CourseMemberView> views) {
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		List<RepositoryEntry> repoEntryToLeave = new ArrayList<>();
 		for(CourseMemberView view:views) {
 			for(BusinessGroupShort group:view.getGroups()) {

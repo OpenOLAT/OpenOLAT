@@ -320,14 +320,14 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	public boolean isMandatoryEnrolmentEmail(Roles roles) {
 		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
 		
-		boolean allowed = false;
+		boolean mandatoryEmail = true;
 		for(OrganisationRoles role:BaseSecurityModule.getUserAllowedRoles()) {
-			if(roles.hasRole(role) && Boolean.parseBoolean(getMandatoryEnrolmentEmailFor(role))) {
-				allowed = true;
+			if(roles.hasRole(role) && !Boolean.parseBoolean(getMandatoryEnrolmentEmailFor(role))) {
+				mandatoryEmail &= false;
 				break;
 			}
 		}
-		return allowed;
+		return mandatoryEmail;
 	}
 	
 	public String getMandatoryEnrolmentEmailFor(OrganisationRoles role) {
@@ -401,14 +401,14 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	public boolean isAcceptMembership(Roles roles) {
 		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
 		
-		boolean allowed = false;
+		boolean needAccept = true;
 		for(OrganisationRoles role:BaseSecurityModule.getUserAllowedRoles()) {
-			if(roles.hasRole(role) && Boolean.parseBoolean(getAcceptMembershipFor(role))) {
-				allowed = true;
+			if(roles.hasRole(role) && !Boolean.parseBoolean(getAcceptMembershipFor(role))) {
+				needAccept &= false;
 				break;
 			}
 		}
-		return allowed;
+		return needAccept;
 	}
 	
 	public String getAcceptMembershipFor(OrganisationRoles role) {

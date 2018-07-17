@@ -205,7 +205,7 @@ public class PFManagerTest extends OlatTestCase {
 		
 		List<Identity> ids = pfManager.getParticipants(initialAuthor, courseEnv, true);
 		//check
-		Assert.assertEquals(ids.size(), 5);
+		Assert.assertEquals(5, ids.size());
 		Assert.assertFalse(ids.contains(initialAuthor));
 	}
 }

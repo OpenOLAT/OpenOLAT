@@ -34,8 +34,9 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
@@ -45,6 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
+import org.olat.course.nodes.cl.model.AssessedIdentity;
 import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
 import org.olat.course.nodes.cl.model.Checkbox;
@@ -52,9 +54,7 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.group.BusinessGroup;
-import org.olat.modules.vitero.model.GroupRole;
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -315,7 +315,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 						//locked -> reload to make sure nobody create it
 						DBCheck reloaedCheck = loadCheck(checkbox, currentIdentity);
 						if(reloaedCheck == null) {
-							createCheck(lockedCheckbox, currentIdentity, row.getScore(), new Boolean(check));
+							createCheck(lockedCheckbox, currentIdentity, row.getScore(), Boolean.valueOf(check));
 						} else {
 							currentCheck = reloaedCheck;
 						}
@@ -325,14 +325,14 @@ public class CheckboxManagerImpl implements CheckboxManager {
 				
 				if(currentCheck != null) {
 					currentCheck.setScore(row.getScore());
-					currentCheck.setChecked(new Boolean(check));
+					currentCheck.setChecked(Boolean.valueOf(check));
 					em.merge(currentCheck);
 				}
 				
 				//save check
 			} else if(currentCheck != null) {
 				currentCheck.setChecked(Boolean.FALSE);
-				currentCheck.setScore(new Float(0f));
+				currentCheck.setScore(Float.valueOf(0f));
 				em.merge(currentCheck);
 			}	
 		}
@@ -438,11 +438,70 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		Number numOfChecks = query.getSingleResult();
 		return numOfChecks == null ? 0.0f : numOfChecks.floatValue();
 	}
+	
+	
+	
+	@Override
+	public List<AssessedIdentity> getAssessedIdentities(RepositoryEntryRef re, IdentityRef coach, boolean admin) {
+
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select ident, curEl.key, grp.key from repositoryentry v")
+		  .append(" inner join v.olatResource as res")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as memberships")
+		  .append(" inner join memberships.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" left join businessgroup as grp on (grp.baseGroup.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and memberships.role='").append(GroupRoles.participant.name()).append("'");
+		
+		if(admin) {
+			sb.append(" and exists (select participant.key from bgroupmember as participant")
+	          .append("      baseGroup.key=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append(" )");
+		} else {
+			sb.append(" and exists (select participant.key from bgroupmember as participant, bgroupmember as coach")
+	          .append("    where")
+	          .append("      baseGroup.key=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:coachKey")
+	          .append("      and baseGroup.key=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append(" )");
+		}
+	
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("repoKey", re.getKey());
+		if(!admin) {
+			query.setParameter("coachKey", coach.getKey());
+		}
+		
+		List<Object[]> rawObjects =	query.getResultList();
+		List<AssessedIdentity> assessedIdentities = new ArrayList<>(rawObjects.size());
+		Map<Identity,AssessedIdentity> assessedIdentityMap = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			Identity identity = (Identity)rawObject[0];
+			Long curriculumElementKey = (Long)rawObject[1];
+			Long businessGroupKey = (Long)rawObject[2];
+			
+			AssessedIdentity assessment = assessedIdentityMap.computeIfAbsent(identity, id -> {
+				AssessedIdentity assessedIdentity = new AssessedIdentity(id);
+				assessedIdentities.add(assessedIdentity);
+				return assessedIdentity;
+			});
+			if(businessGroupKey != null) {
+				assessment.getBusinessGroupKeys().add(businessGroupKey);
+			}
+			if(curriculumElementKey != null) {
+				assessment.getCurriculumElmentKeys().add(curriculumElementKey);
+			}
+		}
+		return assessedIdentities;
+	}
 
 	@Override
-	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re,
-			List<BusinessGroup> businessGroups) {
-		StringBuilder sb = new StringBuilder();
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re,
+			IdentityRef coach, boolean admin) {
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select check from clcheck check")
 		  .append(" inner join fetch check.checkbox box")
 		  .append(" inner join fetch check.identity ident")
@@ -452,50 +511,31 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			sb.append(" and box.resSubPath=:resSubPath");
 		}
 
-		boolean hasBusinessGroups = businessGroups != null && businessGroups.size() > 0;
-		if(hasBusinessGroups) {
-			sb.append(" and ");
-			if(re != null) {
-				sb.append(" ( ");
-			}
-			
-			sb.append(" check.identity.key in ( select membership.identity.key from bgroupmember membership ")
-			  .append("   where membership.group in (:baseGroups) and membership.role='").append(GroupRole.participant).append("'")
-			  .append(" )");
-		}
-		if(re != null) {
-			if(hasBusinessGroups) {
-				sb.append(" or ");
-			} else {
-				sb.append(" and ");
-			}
-			
-			sb.append(" check.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroup as reBaseGroup, bgroupmember membership ")
-			  .append("   where rel.entry.key=:repoKey and rel.group=reBaseGroup and membership.group=reBaseGroup and membership.role='").append(GroupRole.participant).append("'")
-			  .append(" )");
-
-			if(hasBusinessGroups) {
-				sb.append(" ) ");
-			} 
+		sb.append(" and ident.key in ");
+		if(admin) {
+			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("    and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append(" )");
+		} else {
+			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("    and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:coachKey")
+	          .append("    and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append(" )");
 		}
 
 		TypedQuery<DBCheck> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), DBCheck.class)
 				.setParameter("resName", ores.getResourceableTypeName())
-				.setParameter("resId", ores.getResourceableId());
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("repoEntryKey", re.getKey());
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			query.setParameter("resSubPath", resSubPath);
 		}
 
-		if(hasBusinessGroups) {
-			List<Group> groups = new ArrayList<>(businessGroups.size());
-			for(BusinessGroup businessGroup:businessGroups) {
-				groups.add(businessGroup.getBaseGroup());
-			}
-			query.setParameter("baseGroups", groups);
-		}
-		if(re != null) {
-			query.setParameter("repoKey", re.getKey());
+		if(!admin) {
+			query.setParameter("coachKey", coach.getKey());
 		}
 		
 		List<DBCheck> checks = query.getResultList();

@@ -662,8 +662,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public List<Identity> getIdentitiesWithRole(String role) {
-		return reToGroupDao.getIdentitiesWithRole(role);
+	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re) {
+		return reToGroupDao.getCoachedParticipants(coach, re);
 	}
 
 	@Override

@@ -207,7 +207,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				coachedGroups = assessmentCallback.getCoachedGroups();
 			}
 
-			if(coachedGroups.size() > 0) {
+			if(!coachedGroups.isEmpty()) {
 				List<FlexiTableFilter> groupFilters = new ArrayList<>();
 				for(BusinessGroup coachedGroup:coachedGroups) {
 					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
@@ -231,7 +231,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
-		if(filters != null && filters.size() > 0) {
+		if(filters != null && !filters.isEmpty()) {
 			assessmentStatus = new ArrayList<>(filters.size());
 			for(FlexiTableFilter filter:filters) {
 				if("passed".equals(filter.getFilter())) {
@@ -246,7 +246,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		params.setAssessmentStatus(assessmentStatus);
 		
 		List<Long> businessGroupKeys = null;
-		if(extendedFilters != null && extendedFilters.size() > 0) {
+		if(extendedFilters != null && !extendedFilters.isEmpty()) {
 			businessGroupKeys = new ArrayList<>(extendedFilters.size());
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
 				if(StringHelper.isLong(extendedFilter.getFilter())) {
@@ -274,7 +274,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 
 		usersTableModel.setObjects(rows);
-		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			usersTableModel.filter(Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reloadData();

@@ -70,7 +70,7 @@ public class IsCourseAdministratorFunction extends AbstractFunction {
 				&& inStack[0] instanceof String
 				&& AnyCourseVariable.name.equalsIgnoreCase((String)inStack[0])) {
 			//administrator of any course
-			isCourseAdmin = getUserCourseEnv().isAdminOfAnyCourse();
+			isCourseAdmin = getUserCourseEnv().isAdministratorOfAnyCourse();
 		} else {
 			isCourseAdmin = getUserCourseEnv().isAdmin();
 		}

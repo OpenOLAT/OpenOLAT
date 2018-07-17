@@ -74,7 +74,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			toolsDropdown.addComponent(membersLink);
 		}
 		
-		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
+		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 			assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 			toolsDropdown.addComponent(assessmentLink);
@@ -123,10 +123,10 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
-		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
+		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			AssessmentToolSecurityCallback secCallback
 				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(),
-						reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), null);
+						reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), null);
 
 			AssessableResource el = getAssessableElement();
 			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel,

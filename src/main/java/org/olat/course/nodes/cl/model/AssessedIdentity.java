@@ -17,28 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.statistic;
+package org.olat.course.nodes.cl.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.Group;
+import org.olat.core.id.Identity;
 
 /**
  * 
+ * Initial date: 16 juil. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StatisticResourceOption {
+public class AssessedIdentity {
 	
-	private List<Group> groups;
+	private final Identity identity;
+	private final List<Long> curriculumElmentKeys = new ArrayList<>(3);
+	private final List<Long> businessGroupKeys = new ArrayList<>(3);
 
-	//TODO roles groups
-	public List<Group> getParticipantsGroups() {
-		return groups;
-	}
-	
-	public void setParticipantsGroups(List<Group> groups) {
-		this.groups = groups;
+	public AssessedIdentity(Identity identity) {
+		this.identity = identity;
 	}
 
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public List<Long> getCurriculumElmentKeys() {
+		return curriculumElmentKeys;
+	}
+
+	public List<Long> getBusinessGroupKeys() {
+		return businessGroupKeys;
+	}
+	
+	
 }

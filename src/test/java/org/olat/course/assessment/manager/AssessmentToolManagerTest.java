@@ -103,7 +103,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		
 		// coach of group 1 with id 1 and id2
 		List<BusinessGroup> coachedGroups = Collections.singletonList(group1);
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false, true, coachedGroups);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false, true, false, coachedGroups);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 
 		// statistics

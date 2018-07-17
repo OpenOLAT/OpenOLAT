@@ -41,6 +41,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
@@ -59,6 +60,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private List<BusinessGroup> coachedGroups;
 	private List<BusinessGroup> participatingGroups;
 	private List<BusinessGroup> waitingLists;
+	private List<CurriculumElement> coachedCurriculums;
 	
 	private final WindowControl windowControl;
 	
@@ -183,7 +185,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
-	public boolean isAdminOfAnyCourse() {
+	public boolean isAdministratorOfAnyCourse() {
 		if(adminAnyCourse != null) {
 			return adminAnyCourse.booleanValue();
 		}
@@ -238,7 +240,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return courseRepoEntry;
 	}
 
-	//TODO roles groups
+	@Override
 	public List<BusinessGroup> getCoachedGroups() {
 		if(coachedGroups == null) {
 			return Collections.emptyList();
@@ -260,6 +262,14 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return waitingLists;
 	}
 	
+	@Override
+	public List<CurriculumElement> getCoachedCurriculumElements() {
+		if(coachedCurriculums == null) {
+			return Collections.emptyList();//TODO roles groups
+		}
+		return coachedCurriculums;
+	}
+
 	@Override
 	public boolean isCourseReadOnly() {
 		return courseReadOnly != null && courseReadOnly.booleanValue();

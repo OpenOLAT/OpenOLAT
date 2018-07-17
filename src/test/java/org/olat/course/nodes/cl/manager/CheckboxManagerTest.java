@@ -20,7 +20,6 @@
 package org.olat.course.nodes.cl.manager;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -266,11 +265,16 @@ public class CheckboxManagerTest extends OlatTestCase {
 	
 	@Test
 	public void loadAssessmentDatas() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-4");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-5");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-6");
+		repositoryEntryRelationDao.addRole(id1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(id2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(id3, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("checkbox-9", 2353l);
+		OLATResourceable ores = entry.getOlatResource();
 		String resSubPath = UUID.randomUUID().toString();
 		String checkboxId1 = UUID.randomUUID().toString();
 		DBCheckbox checkbox1 = checkboxManager.createDBCheckbox(checkboxId1, ores, resSubPath);
@@ -285,7 +289,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the check
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, null, null);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, entry, null, true);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(3, loadedChecks.size());
 		
@@ -308,7 +312,9 @@ public class CheckboxManagerTest extends OlatTestCase {
 	public void loadAssessmentDatas_inCourse() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("check-18");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-check-18");
 		repositoryEntryRelationDao.addRole(id, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		String checkboxId = UUID.randomUUID().toString();
@@ -318,7 +324,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load and check the check
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, null);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, coach, false);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(1, loadedChecks.size());
 		AssessmentData data = loadedChecks.get(0);
@@ -333,8 +339,10 @@ public class CheckboxManagerTest extends OlatTestCase {
 	public void loadAssessmentDatas_inGroup() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("check-19");
-		BusinessGroup group = businessGroupDao.createAndPersist(null, "gcheck", "gcheck-desc", 0, 10, true, true, false, false, false);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-check-19");
+		BusinessGroup group = businessGroupDao.createAndPersist(coach, "gcheck", "gcheck-desc", 0, 10, true, true, false, false, false);
 		businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group, entry);
 		dbInstance.commitAndCloseSession();
 		
 		String checkboxId = UUID.randomUUID().toString();
@@ -343,8 +351,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheck check = checkboxManager.createCheck(checkbox, id, null, Boolean.TRUE);
 		dbInstance.commitAndCloseSession();
 		
-		List<BusinessGroup> groups = Collections.singletonList(group);
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, null, groups);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, coach, true);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(1, loadedChecks.size());
 		AssessmentData data = loadedChecks.get(0);
@@ -356,11 +363,12 @@ public class CheckboxManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadAssessmentDatas_inGroupAndCourse() {
+	public void loadAssessmentDatas_admin() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity groupParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("check-20");
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "gcheck", "gcheck-desc", 0, 10, true, true, false, false, false);
 		businessGroupRelationDao.addRole(groupParticipant, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group, entry);
 
 		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("check-21");
 		repositoryEntryRelationDao.addRole(courseParticipant, entry, GroupRoles.participant.name());
@@ -383,8 +391,7 @@ public class CheckboxManagerTest extends OlatTestCase {
 		DBCheck checkNotVisible2 = checkboxManager.createCheck(checkbox, courseOwner, null, Boolean.FALSE);
 		dbInstance.commitAndCloseSession();
 		
-		List<BusinessGroup> groups = Collections.singletonList(group);
-		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, groups);
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(entry.getOlatResource(), resSubPath, entry, null, true);
 		Assert.assertNotNull(loadedChecks);
 		Assert.assertEquals(2, loadedChecks.size());
 		

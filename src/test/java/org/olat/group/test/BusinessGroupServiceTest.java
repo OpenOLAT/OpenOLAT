@@ -39,7 +39,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
@@ -49,7 +48,6 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.ContactList;
@@ -69,7 +67,6 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,8 +84,6 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private ACService acService;
 	@Autowired
 	private ACReservationDAO reservationDao;
@@ -104,37 +99,37 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	private MailModule mailModule;
 	
 	// Identities for tests
-	private static Identity id1 = null;
-	private static Identity id2 = null;
-	private static Identity id3 = null;
-	private static Identity id4 = null;
+	private static Identity id1;
+	private static Identity id2;
+	private static Identity id3;
+	private static Identity id4;
 	// For WaitingGroup tests
-	private static Identity wg1 = null;
+	private static Identity wg1;
 
 	// Group one
-	private static BusinessGroup one = null;
+	private static BusinessGroup one;
 	private String oneName = "First BuddyGroup";
 	private String oneDesc = "some short description for first buddygroup";
 	// Group two
-	private static BusinessGroup two = null;
+	private static BusinessGroup two;
 	private String twoName = "Second BuddyGroup";
 	private String twoDesc = "some short description for second buddygroup";
 	// Group three
-	private static BusinessGroup three = null;
+	private static BusinessGroup three;
 	private String threeName = "Third BuddyGroup";
 	private String threeDesc = "some short description for second buddygroup";
 	// For WaitingGroup tests
-	private static BusinessGroup bgWithWaitingList = null;
+	private static BusinessGroup bgWithWaitingList;
 	
 	@Before
 	public void setUp() throws Exception {
 		if(initialize) return;
 		
 			// Identities
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1-bgs-" + UUID.randomUUID().toString());
-			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2-bgs-" + UUID.randomUUID().toString());
-			id3 = JunitTestHelper.createAndPersistIdentityAsUser("id3-bgs-" + UUID.randomUUID().toString());
-			id4 = JunitTestHelper.createAndPersistIdentityAsUser("id4-bgs-" + UUID.randomUUID().toString());
+			id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("id1-bgs-");
+			id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("id2-bgs-");
+			id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("id3-bgs-");
+			id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("id4-bgs-");
 			// buddyGroups without waiting-list: groupcontext is null
 			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(id1);
 			if (l.size() == 0) {
@@ -175,18 +170,15 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			// create business-group with waiting-list
 			String bgWithWaitingListName = "Group with WaitingList";
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
-			Boolean enableWaitinglist = new Boolean(true);
-			Boolean enableAutoCloseRanks = new Boolean(true);
+			Boolean enableWaitinglist = Boolean.TRUE;
+			Boolean enableAutoCloseRanks = Boolean.TRUE;
 			RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
+			log.info("testAddToWaitingListAndFireEvent: resource=" + resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
 					bgWithWaitingListDesc, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
 			// Identities
-			String suffix = UUID.randomUUID().toString();
-			User userWg1 = userManager.createUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
-			wg1 = securityManager.createAndPersistIdentityAndUser(suffix, null, userWg1, BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, "wg1");
-
+			wg1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wg1");
 			dbInstance.commitAndCloseSession();
 
 			initialize = true;
@@ -378,12 +370,12 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void mergeGroups() {
 		//create some identities
-		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("merge-1-" + UUID.randomUUID().toString());
-		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("merge-2-" + UUID.randomUUID().toString());
-		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("merge-3-" + UUID.randomUUID().toString());
-		Identity ident4 = JunitTestHelper.createAndPersistIdentityAsUser("merge-4-" + UUID.randomUUID().toString());
-		Identity ident5 = JunitTestHelper.createAndPersistIdentityAsUser("merge-5-" + UUID.randomUUID().toString());
-		Identity ident6 = JunitTestHelper.createAndPersistIdentityAsUser("merge-6-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("merge-1-");
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsRndUser("merge-2-");
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsRndUser("merge-3-");
+		Identity ident4 = JunitTestHelper.createAndPersistIdentityAsRndUser("merge-4-");
+		Identity ident5 = JunitTestHelper.createAndPersistIdentityAsRndUser("merge-5-");
+		Identity ident6 = JunitTestHelper.createAndPersistIdentityAsRndUser("merge-6-");
 		//create groups and memberships
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "old-1", null, 0, 10, false, false, null);
 		businessGroupRelationDao.addRole(ident1, g1, GroupRoles.participant.name());
@@ -399,7 +391,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//merge
-		List<BusinessGroup> groupsToMerge = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> groupsToMerge = new ArrayList<>();
 		groupsToMerge.add(g1);
 		groupsToMerge.add(g2);
 		groupsToMerge.add(g3);
@@ -409,11 +401,11 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check merge
-		List<Identity> owners = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.coach.name());
-		Assert.assertNotNull(owners);
-		Assert.assertEquals(2, owners.size());
-		Assert.assertTrue(owners.contains(ident3));
-		Assert.assertTrue(owners.contains(ident6));
+		List<Identity> coaches = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.coach.name());
+		Assert.assertNotNull(coaches);
+		Assert.assertEquals(2, coaches.size());
+		Assert.assertTrue(coaches.contains(ident3));
+		Assert.assertTrue(coaches.contains(ident6));
 		List<Identity> participants = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());

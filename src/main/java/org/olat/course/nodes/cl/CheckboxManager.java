@@ -22,18 +22,19 @@ package org.olat.course.nodes.cl;
 import java.io.File;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.cl.model.AssessedIdentity;
 import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -93,7 +94,10 @@ public interface CheckboxManager {
 	 * @param groups
 	 * @return
 	 */
-	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re, List<BusinessGroup> groups);
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re, IdentityRef coach, boolean admin);
+	
+	public List<AssessedIdentity> getAssessedIdentities(RepositoryEntryRef re, IdentityRef coach, boolean admin);
+	
 	
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode);
 	

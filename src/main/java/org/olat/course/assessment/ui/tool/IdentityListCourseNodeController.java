@@ -101,6 +101,7 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.CompletionItem;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -250,7 +251,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		}
 		
-		ICourse course = CourseFactory.loadCourse(courseEntry);
 		String select = isSelectable() ? "select" : null;
 
 		//add the table
@@ -285,37 +285,66 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
 		tableEl.setSortSettings(options);
 		tableEl.setSelectAllEnable(true);
-
+		tableEl.setFilters("", getFilters(), false);
+		List<FlexiTableFilter> extendedFilters = getExtendedFilters();
+		if(!extendedFilters.isEmpty()) {
+			tableEl.setExtendedFilterButton(translate("filter.groups"), extendedFilters);
+		}
+		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
+	}
+	
+	protected List<FlexiTableFilter> getFilters() {
 		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
-		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
 		filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
 		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
 		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
 		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
-		tableEl.setFilters("", filters, false);
-		
-		if(assessmentCallback.canAssessBusinessGoupMembers() && group == null) {
-			List<BusinessGroup> coachedGroups = null;
-			if(assessmentCallback.isAdmin()) {
-				coachedGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
-			} else {
-				coachedGroups = assessmentCallback.getCoachedGroups(); 
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
+		return filters;
+	}
+	
+	protected List<FlexiTableFilter> getExtendedFilters() {
+		List<FlexiTableFilter> extendedFilters = new ArrayList<>();
+		if(group == null) {
+			if(assessmentCallback.canAssessBusinessGoupMembers()) {
+				List<BusinessGroup> coachedGroups;
+				if(assessmentCallback.isAdmin()) {
+					coachedGroups = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+				} else {
+					coachedGroups = assessmentCallback.getCoachedGroups(); 
+				}
+	
+				if(!coachedGroups.isEmpty()) {
+					for(BusinessGroup coachedGroup:coachedGroups) {
+						String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+						extendedFilters.add(new FlexiTableFilter(groupName, "businessgroup-" + coachedGroup.getKey(), "o_icon o_icon_group"));
+					}
+				}
 			}
-
-			if(coachedGroups.size() > 0) {
-				List<FlexiTableFilter> groupFilters = new ArrayList<>();
-				for(BusinessGroup coachedGroup:coachedGroups) {
-					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
-					groupFilters.add(new FlexiTableFilter(groupName, coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+			
+			if(assessmentCallback.canAssessCurriculumMembers()) {
+				List<CurriculumElement> coachedCurriculumElements;
+				if(assessmentCallback.isAdmin()) {
+					coachedCurriculumElements = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllCurriculumElements();
+				} else {
+					coachedCurriculumElements = coachCourseEnv.getCoachedCurriculumElements();
 				}
 				
-				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
+				if(!coachedCurriculumElements.isEmpty()) {
+					if(!extendedFilters.isEmpty()) {
+						extendedFilters.add(FlexiTableFilter.SPACER);
+					}
+					for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
+						String groupName = StringHelper.escapeHtml(coachedCurriculumElement.getDisplayName());
+						extendedFilters.add(new FlexiTableFilter(groupName, "curriculumelement-" + coachedCurriculumElement.getKey(), "o_icon o_icon_curriculum_element"));
+					}
+				}
 			}
 		}
-
-		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
+		
+		return extendedFilters;
 	}
 	
 	protected String getTableId() {
@@ -421,7 +450,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 		usersTableModel.setObjects(rows);
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
-		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			usersTableModel.filter(Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reset();
@@ -435,7 +464,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		List<FlexiTableFilter> extendedFilters = tableEl.getSelectedExtendedFilters();
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
-		if(filters != null && filters.size() > 0) {
+		if(filters != null && !filters.isEmpty()) {
 			assessmentStatus = new ArrayList<>(filters.size());
 			for(FlexiTableFilter filter:filters) {
 				if("passed".equals(filter.getFilter())) {
@@ -450,17 +479,29 @@ public class IdentityListCourseNodeController extends FormBasicController
 		params.setAssessmentStatus(assessmentStatus);
 		
 		List<Long> businessGroupKeys = null;
+		List<Long> curriculumElementKeys = null;
 		if(group != null) {
 			businessGroupKeys = Collections.singletonList(group.getKey());
-		} else if(extendedFilters != null && extendedFilters.size() > 0) {
-			businessGroupKeys = new ArrayList<>(extendedFilters.size());
+		} else if(extendedFilters != null && !extendedFilters.isEmpty()) {
+			businessGroupKeys = new ArrayList<>();
+			curriculumElementKeys = new ArrayList<>();
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
-				if(StringHelper.isLong(extendedFilter.getFilter())) {
-					businessGroupKeys.add(Long.parseLong(extendedFilter.getFilter()));
+				String filter = extendedFilter.getFilter();
+				int index = extendedFilter.getFilter().indexOf('-');
+				if(index > 0) {
+					Long key = Long.valueOf(filter.substring(index + 1));
+					if(filter.startsWith("businessgroup-")) {
+						businessGroupKeys.add(key);
+					} else if(filter.startsWith("curriculumelement-")) {
+						curriculumElementKeys.add(key);
+					}
 				}
+				
+				
 			}
 		}
 		params.setBusinessGroupKeys(businessGroupKeys);
+		params.setCurriculumElementKeys(curriculumElementKeys);
 		params.setSearchString(tableEl.getQuickSearchString());
 		return params;
 	}
@@ -759,7 +800,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		}
 		
-		if(rows == null || rows.isEmpty()) {
+		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
 		} else {
 			changeUserVisibilityCtrl = new ConfirmUserVisibilityController(ureq, getWindowControl(), rows);
@@ -804,7 +845,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		}
 
-		if(rows == null || rows.isEmpty()) {
+		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
 		} else if(courseNode instanceof AssessableCourseNode) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);

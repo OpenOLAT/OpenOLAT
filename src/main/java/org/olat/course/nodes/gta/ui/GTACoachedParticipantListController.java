@@ -73,9 +73,6 @@ import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -99,7 +96,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private CoachParticipantsTableModel tableModel;
 
 	private List<UserPropertiesRow> assessableIdentities;
-	private final UserCourseEnvironmentImpl coachCourseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -120,21 +117,19 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
 	private AssessmentService assessmentService;
 	
 	private FormLink extendButton;
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
-		super(ureq, wControl, userCourseEnv.getCourseEnvironment(), gtaNode);
+			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
+		super(ureq, wControl, coachCourseEnv.getCourseEnvironment(), gtaNode);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
+		this.coachCourseEnv = coachCourseEnv;
 		this.markedOnly = markedOnly;
 
 		assessableIdentities = new ArrayList<>();
@@ -158,38 +153,26 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	public List<Identity> getAssessableIdentities() {
 		List<Identity> identities = new ArrayList<>();
-		collectIdentities(new Consumer<Identity>() {
-			@Override
-			public void accept(Identity participant) {
-				identities.add(participant);
-			}
-		});
+		collectIdentities(participant -> identities.add(participant));
 		return identities;
 	}
 	
 	private void collectIdentities(Consumer<Identity> participantCollector) {
-		Set<Identity> duplicateKiller = new HashSet<>();
 		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		boolean admin = coachCourseEnv.isAdmin();
+		RepositoryEntry re = cgm.getCourseEntry();
+
+		List<Identity> participants;
+		if(coachCourseEnv.isAdmin()) {
+			participants = repositoryService.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		} else {
+			participants = repositoryService.getCoachedParticipants(getIdentity(), re);
+		}
 		
-		List<BusinessGroup> coachedGroups = admin ? cgm.getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
-		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
+		Set<Identity> duplicateKiller = new HashSet<>();
 		for(Identity participant:participants) {
 			if(!duplicateKiller.contains(participant)) {
 				participantCollector.accept(participant);
 				duplicateKiller.add(participant);
-			}
-		}
-		
-		RepositoryEntry re = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		boolean repoTutor = admin || (coachedGroups.isEmpty() && repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name()));
-		if(repoTutor) {
-			List<Identity> courseParticipants = repositoryService.getMembers(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
-			for(Identity participant:courseParticipants) {
-				if(!duplicateKiller.contains(participant)) {
-					participantCollector.accept(participant);
-					duplicateKiller.add(participant);
-				}
 			}
 		}
 	}

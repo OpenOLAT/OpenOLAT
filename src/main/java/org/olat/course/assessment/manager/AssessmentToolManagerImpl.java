@@ -117,7 +117,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			} else {
 				loggedIn = participantLoggedIn;
 			}
-		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+		} else if(params.isCoach()) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select participant.identity.key from repoentrytogroup as rel")
 	          .append("  inner join rel.group as bGroup")
@@ -161,7 +161,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append("    where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key=infos.identity.key")
 		          .append("  )");
 			}
-		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+		} else if(params.isCoach()) {
 			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
@@ -179,7 +179,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 
 		List<Object[]> results = infos.getResultList();
-		return results != null && results.size() > 0 && results.get(0)[0] instanceof Number
+		return results != null && !results.isEmpty() && results.get(0)[0] instanceof Number
 				? ((Number)results.get(0)[0]).intValue(): 0;
 	}
 
@@ -279,7 +279,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
 		          .append(" )");
 			}
-		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+		} else if(params.isCoach()) {
 			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
@@ -334,11 +334,24 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			  .append(" inner join ident.user user ");
 		}
 		sb.append(" where ident.status<").append(Identity.STATUS_DELETED).append(" and");
-		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
-			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
-	          .append("    where rel.entry.key=:repoEntryKey and rel.group=bgi.baseGroup and rel.group=participant.group and bgi.key in (:businessGroupKeys) ")
-			  .append("    and participant.role='").append(GroupRoles.participant.name()).append("'")
-			  .append("  )");
+		if(params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys()) {
+			sb.append("(");
+			if(params.hasBusinessGroupKeys()) {
+				sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group=bgi.baseGroup and rel.group=participant.group and bgi.key in (:businessGroupKeys) ")
+				  .append("    and participant.role='").append(GroupRoles.participant.name()).append("'")
+				  .append("  )");
+			}
+			if(params.hasCurriculumElementKeys()) {
+				if(params.hasBusinessGroupKeys()) {
+					sb.append(" or ");
+				}
+				sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, curriculumelement curEl, bgroupmember as participant")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group=curEl.group and rel.group=participant.group and curEl.key in (:curriculumElementKeys) ")
+				  .append("    and participant.role='").append(GroupRoles.participant.name()).append("'")
+				  .append("  )");
+			}
+			sb.append(")");
 		} else if(params.isAdmin()) {
 			sb.append(" (ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
@@ -352,7 +365,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append(" )");
 			}
 			sb.append(")");
-		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+		} else if(params.isCoach()) {
 			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
@@ -366,14 +379,17 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult)
 				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin() && (params.getBusinessGroupKeys() == null || params.getBusinessGroupKeys().isEmpty())) {
+		if(!params.isAdmin() && (params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys())) {
 			query.setParameter("identityKey", coach.getKey());
 		}
 		if(identityKey != null) {
 			query.setParameter("searchIdentityKey", identityKey);
 		}
-		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
+		if(params.hasBusinessGroupKeys()) {
 			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
+		}
+		if(params.hasCurriculumElementKeys()) {
+			query.setParameter("curriculumElementKeys", params.getCurriculumElementKeys());
 		}
 		appendUserSearchToQuery(searchArr, query);
 		return query;
@@ -398,7 +414,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append(" )");
 			}
 			sb.append(")");
-		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+		} else if(params.isCoach()) {
 			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
@@ -548,7 +564,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
 		          .append(" )");
 			}
-		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+		} else if(params.isCoach()) {
 			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")

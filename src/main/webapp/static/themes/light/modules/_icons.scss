@@ -90,7 +90,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_compulsory:before { content: $fa-var-asterisk; }
 .o_icon_content_popup:before { content: $fa-var-external-link; }
 .o_icon_correct_answer:before { content: $fa-var-check; color: $brand-success; }
-.o_icon_correction:before { content: $fa-var-pencil;}
+.o_icon_correction:before { content: $fa-var-pencil; }
+.o_icon_curriculum_element:before { content: $fa-var-cube; }
 .o_icon_customize:before { content: $fa-var-gear;}
 .o_icon_delete_item:before { content: $fa-var-trash;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}

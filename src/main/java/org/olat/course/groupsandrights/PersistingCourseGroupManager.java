@@ -50,6 +50,9 @@ import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
@@ -81,6 +84,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	private final RepositoryService repositoryService;
 	private final OrganisationService organisationService;
 	private final BusinessGroupService businessGroupService;
+	private final CurriculumService curriculumService;
 
 	private PersistingCourseGroupManager(OLATResourceable course) {
 		this(OLATResourceManager.getInstance().findOrPersistResourceable(course));
@@ -94,6 +98,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 	}
 	
 	private PersistingCourseGroupManager(RepositoryEntry courseRepoEntry) {
@@ -105,6 +110,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 	}
 
 	@Override
@@ -244,6 +250,17 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		return businessGroupService.findBusinessGroups(params, getCourseEntry(), 0, -1);
+	}	
+
+	@Override
+	public List<CurriculumElement> getAllCurriculumElements() {
+		return curriculumService.getCurriculumElements(getCourseEntry());
+	}
+
+	@Override
+	public List<CurriculumElement> getCoachedCurriculumElements(Identity identity) {
+		List<CurriculumRoles> coachRoles = Collections.singletonList(CurriculumRoles.coach);
+		return curriculumService.getCurriculumElements(getCourseEntry(), identity, coachRoles);
 	}
 
 	@Override

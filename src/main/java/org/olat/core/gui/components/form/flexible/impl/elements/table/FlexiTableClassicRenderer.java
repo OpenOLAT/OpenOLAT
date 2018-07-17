@@ -106,7 +106,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			if(orderBy != null && orderBy.length > 0) {
 				for(int i=orderBy.length; i-->0; ) {
 					if(sortKey.equals(orderBy[i].getKey())) {
-						asc = new Boolean(orderBy[i].isAsc());
+						asc = Boolean.valueOf(orderBy[i].isAsc());
 					}
 				}
 			}

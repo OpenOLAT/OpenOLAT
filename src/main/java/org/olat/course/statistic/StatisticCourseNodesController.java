@@ -82,7 +82,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 		options = new StatisticResourceOption();
 
 		if(!reSecurity.isEntryAdmin() && !reSecurity.isOwner()) {
-			List<Group> groups = new ArrayList<>();
+			List<Group> groups = new ArrayList<>();//TODO roles groups
 			UserCourseEnvironmentImpl userCourseEnvImpl = (UserCourseEnvironmentImpl)userCourseEnv;
 			if(reSecurity.isCourseCoach()) {
 				Group bGroup = repositoryService.getDefaultGroup(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());

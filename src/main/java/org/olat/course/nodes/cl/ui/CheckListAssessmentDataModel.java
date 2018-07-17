@@ -132,13 +132,14 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	public void filter(List<FlexiTableFilter> filters) {
 		setObjects(backupRows);
 		
-		Long groupKey = extractGroupKey(filters);
-		if(groupKey != null) {
+		Long groupKey = extractKey(filters, "businessgroup-");
+		Long elementKey = extractKey(filters, "curriculumelement-");
+		if(groupKey != null || elementKey != null) {
 			List<CheckListAssessmentRow> filteredViews = new ArrayList<>();
 			int numOfRows = getRowCount();
 			for(int i=0; i<numOfRows; i++) {
 				CheckListAssessmentRow view = getObject(i);
-				if(accept(view, groupKey)) {
+				if(accept(view, groupKey, elementKey)) {
 					filteredViews.add(view);
 				}
 			}
@@ -146,13 +147,14 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		}
 	}
 	
-	private Long extractGroupKey(List<FlexiTableFilter> filters) {
+	private Long extractKey(List<FlexiTableFilter> filters, String marker) {
 		Long key = null;
-		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			String filter = filters.get(0).getFilter();
-			if(StringHelper.isLong(filter)) {
+			if(filter.startsWith(marker)) {
 				try {
-					key = Long.parseLong(filter);
+					int index = filter.lastIndexOf('-') + 1;
+					key = Long.parseLong(filter.substring(index));
 				} catch (NumberFormatException e) {
 					//
 				}
@@ -161,12 +163,21 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		return key;
 	}
 	
-	private boolean accept(CheckListAssessmentRow view, Long groupKey) {
+	private boolean accept(CheckListAssessmentRow view, Long groupKey, Long elementKey) {
 		boolean accept = false;
-		Long[] groupKeys = view.getGroupKeys();
-		if(groupKeys != null) {
-			for(Long key:groupKeys) {
-				if(groupKey.equals(key)) {
+		
+		Long filterKey = null;
+		Long[] keyArray = null;
+		if(groupKey != null) {
+			filterKey = groupKey;
+			keyArray = view.getGroupKeys();
+		} else if(elementKey != null) {
+			filterKey = elementKey;
+			keyArray = view.getCurriculumElmentKeys();
+		}
+		if(filterKey != null && keyArray != null) {
+			for(Long key:keyArray) {
+				if(filterKey.equals(key)) {
 					accept = true;
 				}
 			}

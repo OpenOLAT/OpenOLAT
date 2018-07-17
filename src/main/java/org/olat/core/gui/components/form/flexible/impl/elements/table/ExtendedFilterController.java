@@ -57,11 +57,15 @@ public class ExtendedFilterController extends FormBasicController {
 		List<ExtendedFilter> filterNames = new ArrayList<>(filters.size());
 		for(FlexiTableFilter filter:filters) {
 			String name = "f-" + (++count);
-			FormLink filterLink = uifactory.addFormLink(name, formLayout, Link.LINK | Link.NONTRANSLATED);
-			filterLink.setI18nKey(filter.getLabel());
-			filterLink.setIconLeftCSS(filter.getIconLeftCSS());
-			filterLink.setUserObject(filter);
-			filterNames.add(new ExtendedFilter(filter, name));
+			if(FlexiTableFilter.SPACER.equals(filter)) {
+				filterNames.add(new ExtendedFilter());
+			} else {
+				FormLink filterLink = uifactory.addFormLink(name, formLayout, Link.LINK | Link.NONTRANSLATED);
+				filterLink.setI18nKey(filter.getLabel());
+				filterLink.setIconLeftCSS(filter.getIconLeftCSS());
+				filterLink.setUserObject(filter);
+				filterNames.add(new ExtendedFilter(filter, name));
+			}
 		}
 		
 		if(formLayout instanceof FormLayoutContainer) {
@@ -107,10 +111,22 @@ public class ExtendedFilterController extends FormBasicController {
 		
 		private final FlexiTableFilter filter;
 		private final String componentName;
+		private final boolean spacer;
+		
+		public ExtendedFilter() {
+			spacer = true;
+			filter = null;
+			componentName = null;
+		}
 		
 		public ExtendedFilter(FlexiTableFilter filter, String componentName) {
+			spacer = false;
 			this.filter = filter;
 			this.componentName = componentName;
+		}
+		
+		public boolean isSpacer() {
+			return spacer;
 		}
 
 		public FlexiTableFilter getFilter() {

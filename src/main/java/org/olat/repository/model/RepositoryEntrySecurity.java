@@ -38,11 +38,15 @@ public class RepositoryEntrySecurity {
 	private final boolean groupParticipant;
 	private final boolean groupCoach;
 	private final boolean groupWaiting;
+	private final boolean curriculumParticipant;
+	private final boolean curriculumCoach;
+	
 	
 	public RepositoryEntrySecurity(boolean entryAdmin, boolean owner,
 			boolean courseParticipant, boolean courseCoach,
-			boolean groupParticipant, boolean groupCoach,
-			boolean groupWaiting, boolean author,
+			boolean groupParticipant, boolean groupCoach, boolean groupWaiting,
+			boolean curriculumParticipant, boolean curriculumCoach,
+			boolean author,
 			boolean canLaunch, boolean readOnly) {
 		this.owner = owner;
 		this.canLaunch = canLaunch;
@@ -54,11 +58,31 @@ public class RepositoryEntrySecurity {
 		this.groupParticipant = groupParticipant;
 		this.groupCoach = groupCoach;
 		this.groupWaiting = groupWaiting;
+		this.curriculumParticipant = curriculumParticipant;
+		this.curriculumCoach = curriculumCoach;
 		this.readOnly = readOnly;
 	}
 	
 	public boolean isOwner() {
 		return owner;
+	}
+	
+	/**
+	 * 
+	 * @return true if the user is coach of the repository entry, a group
+	 *   or a curriculum element linked to the repository entry.
+	 */
+	public boolean isCoach() {
+		return courseCoach || groupCoach || curriculumCoach;
+	}
+	
+	/**
+	 * 
+	 * @return true if the user is participant of the repository entry, a group
+	 *   or a curriculum element linked to the repository entry.
+	 */
+	public boolean isParticipant() {
+		return courseParticipant || groupParticipant || curriculumParticipant;
 	}
 	
 	public boolean isEntryAdmin() {
@@ -93,8 +117,16 @@ public class RepositoryEntrySecurity {
 		return groupWaiting;
 	}
 
+	public boolean isCurriculumParticipant() {
+		return curriculumParticipant;
+	}
+
+	public boolean isCurriculumCoach() {
+		return curriculumCoach;
+	}
+
 	public boolean isMember() {
-		return owner || courseParticipant || courseCoach || groupParticipant || groupCoach;
+		return owner || courseParticipant || courseCoach || groupParticipant || groupCoach || curriculumParticipant || curriculumCoach;
 	}
 	
 	public boolean isAuthor() {

@@ -53,6 +53,7 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -90,7 +91,8 @@ public class CheckListExcelExport {
 	}
 	
 	public void exportAll(String filename, ZipOutputStream exportStream) {
-		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(course, courseNode.getIdent(), null, null);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(course, courseNode.getIdent(), courseEntry, null, true);
 		try(OutputStream out = new ShieldOutputStream(exportStream)) {
 			exportStream.putNextEntry(new ZipEntry(filename + ".xlsx"));
 			exportWorkbook(dataList, out);

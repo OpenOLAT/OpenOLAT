@@ -654,7 +654,7 @@ public class GTAManagerImpl implements GTAManager {
 			List<Long> areaKeys = config.getList(GTACourseNode.GTASK_AREAS, Long.class);
 
 			List<Long> consolidatedGroupKeys = new ArrayList<>();
-			if(groupKeys != null && groupKeys.size() > 0) {
+			if(groupKeys != null && !groupKeys.isEmpty()) {
 				consolidatedGroupKeys.addAll(groupKeys);
 			}
 			consolidatedGroupKeys.addAll(areaManager.findBusinessGroupKeysOfAreaKeys(areaKeys));

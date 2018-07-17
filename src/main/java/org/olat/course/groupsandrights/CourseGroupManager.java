@@ -34,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -192,6 +193,20 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups where this identity is participant
 	 */
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity);
+	
+	/**
+	 * @return A list of curriculum elements linked to this course.
+	 */
+	public List<CurriculumElement> getAllCurriculumElements();
+	
+	/**
+	 * Returns the list of curriculum elements where the specified
+	 * identity has the role "coach".
+	 * 
+	 * @param identity The coach
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElement> getCoachedCurriculumElements(Identity identity);
 	
 	/**
 	 * @return True if the course has some areas configured.

@@ -21,7 +21,6 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,7 +55,6 @@ import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -122,10 +120,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			CourseGroupManager gm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 			if(coachCourseEnv.isAdmin()) {
 				groups = gm.getAllBusinessGroups();
-			} else if (coachCourseEnv instanceof UserCourseEnvironmentImpl) {
-				groups = ((UserCourseEnvironmentImpl)coachCourseEnv).getCoachedGroups();
 			} else {
-				groups = Collections.emptyList();
+				groups = coachCourseEnv.getCoachedGroups();
 			}
 			
 			groups = gtaManager.filterBusinessGroups(groups, gtaNode);

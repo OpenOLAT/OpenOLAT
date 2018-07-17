@@ -319,9 +319,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), getWindowControl(),
 				coachedGroups, participatedGroups, waitingLists,
-				reSecurity.isCourseCoach() || reSecurity.isGroupCoach(),
-				reSecurity.isEntryAdmin(),
-				reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
+				reSecurity.isCoach(), reSecurity.isEntryAdmin(), reSecurity.isParticipant(),
 				reSecurity.isReadOnly());
 	}
 	

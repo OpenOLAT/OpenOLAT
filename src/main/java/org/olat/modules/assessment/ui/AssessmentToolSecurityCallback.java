@@ -35,16 +35,18 @@ public class AssessmentToolSecurityCallback {
 	private final boolean nonMembers;
 	private final boolean repositoryEntryMembers;
 	private final boolean businessGoupMembers;
+	private final boolean curriculumMembers;
 	
 	private final List<BusinessGroup> coachedGroups;
 	
 	public AssessmentToolSecurityCallback(boolean admin, boolean nonMembers,
-			boolean repositoryEntryMembers, boolean businessGoupMembers,
+			boolean repositoryEntryMembers, boolean businessGoupMembers, boolean curriculumMembers,
 			List<BusinessGroup> coachedGroups) {
 		this.admin = admin;
 		this.nonMembers = nonMembers;
 		this.repositoryEntryMembers = repositoryEntryMembers;
 		this.businessGoupMembers = businessGoupMembers;
+		this.curriculumMembers = curriculumMembers;
 		this.coachedGroups = coachedGroups;
 	}
 
@@ -63,6 +65,10 @@ public class AssessmentToolSecurityCallback {
 
 	public boolean canAssessBusinessGoupMembers() {
 		return businessGoupMembers || admin;
+	}
+	
+	public boolean canAssessCurriculumMembers() {
+		return curriculumMembers || admin;
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {

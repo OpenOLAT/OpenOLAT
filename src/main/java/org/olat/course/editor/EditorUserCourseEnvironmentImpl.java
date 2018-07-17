@@ -25,6 +25,9 @@
 
 package org.olat.course.editor;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
@@ -34,14 +37,16 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 
 /**
- * Description:<br>
- * TODO: patrick Class Description for EditorUserCourseEnvironment
+ * This is the user course environment implementation used
+ * within the course editor.
  * 
  * <P>
  * Initial Date:  Jul 6, 2005 <br>
@@ -114,12 +119,22 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public List<BusinessGroup> getCoachedGroups() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<CurriculumElement> getCoachedCurriculumElements() {
+		return Collections.emptyList();
+	}
+
+	@Override
 	public boolean isParticipant() {
 		return false;
 	}
 
 	@Override
-	public boolean isAdminOfAnyCourse() {
+	public boolean isAdministratorOfAnyCourse() {
 		return false;
 	}
 

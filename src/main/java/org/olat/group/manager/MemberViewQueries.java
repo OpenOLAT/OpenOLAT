@@ -190,12 +190,12 @@ public class MemberViewQueries {
 	private Map<Group,BusinessGroup> getBusinessGroups(RepositoryEntry entry) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, entry, 0, -1);
-		return groups.stream().collect(Collectors.toMap(BusinessGroup::getBaseGroup, grp -> grp));
+		return groups.stream().collect(Collectors.toMap(BusinessGroup::getBaseGroup, grp -> grp, (grp1, grp2) -> grp1));
 	}
 	
 	private Map<Group,CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
 		List<CurriculumElement> elements = curriculumElementDao.loadElements(entry);
-		return elements.stream().collect(Collectors.toMap(CurriculumElement::getGroup, el -> el));
+		return elements.stream().collect(Collectors.toMap(CurriculumElement::getGroup, el -> el, (el1, el2) -> el1));
 	}
 	
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
@@ -218,7 +218,7 @@ public class MemberViewQueries {
 		
 		List<Identity> identities = query.getResultList();
 		for(Identity identity:identities) {
-			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).setPending(true);
+			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).getMemberShip().setPending(true);
 		}
 	}
 	
@@ -371,7 +371,7 @@ public class MemberViewQueries {
 
 		if(params.isPending()) {
 			for(Iterator<MemberView> it=members.iterator(); it.hasNext(); ) {
-				if(it.next().isPending()) {
+				if(it.next().getMemberShip().isPending()) {
 					it.remove();
 				}
 			}

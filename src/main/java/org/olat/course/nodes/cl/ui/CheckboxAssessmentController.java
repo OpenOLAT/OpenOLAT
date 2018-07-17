@@ -28,8 +28,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -70,6 +69,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -86,16 +86,22 @@ public class CheckboxAssessmentController extends FormBasicController {
 	private SingleSelection checkboxEl;
 	private FormLink selectAllBoxButton;
 	private CheckboxAssessmentDataModel model;
-	private List<CheckboxAssessmentRow> boxRows;
 	private List<CheckListAssessmentRow> initialRows;
 	
 	private final CheckboxList checkboxList;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	private final UserManager userManager;
-	private final BaseSecurity securityManager;
-	private final CheckboxManager checkboxManager;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CheckboxManager checkboxManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	private final boolean withScore;
 	private int currentCheckboxIndex = 0;
@@ -114,11 +120,6 @@ public class CheckboxAssessmentController extends FormBasicController {
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		withScore = (hasScore == null || hasScore.booleanValue());	
 
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CheckListAssessmentController.USER_PROPS_ID, isAdministrativeUser);
@@ -183,7 +184,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 		Checkbox box = checkboxList.getList().get(currentCheckboxIndex);
 		boolean hasPoints = box.getPoints() != null && box.getPoints().floatValue() > 0f;
 		
-		boxRows = new ArrayList<CheckboxAssessmentRow>(initialRows.size());
+		List<CheckboxAssessmentRow> boxRows = new ArrayList<CheckboxAssessmentRow>(initialRows.size());
 		for(CheckListAssessmentRow initialRow: initialRows) {
 			Boolean[] checked = new Boolean[numOfCheckbox];
 			if(initialRow.getChecked() != null) {
@@ -379,8 +380,8 @@ public class CheckboxAssessmentController extends FormBasicController {
 		}
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		if(assessedIdentityToUpdate.size() > 0) {
-			DBFactory.getInstance().commit();
+		if(!assessedIdentityToUpdate.isEmpty()) {
+			dbInstance.commit();
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);

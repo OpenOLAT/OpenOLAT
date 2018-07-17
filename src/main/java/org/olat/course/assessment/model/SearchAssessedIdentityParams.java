@@ -39,8 +39,7 @@ public class SearchAssessedIdentityParams {
 	
 	private final boolean admin;
 	private final boolean nonMembers;
-	private final boolean repositoryEntryCoach;
-	private final boolean businessGroupCoach;
+	private final boolean coach;
 	
 	private boolean passed;
 	private boolean failed;
@@ -48,16 +47,18 @@ public class SearchAssessedIdentityParams {
 	
 	private String searchString;
 	private List<Long> businessGroupKeys;
+	private List<Long> curriculumElementKeys;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, 
 			AssessmentToolSecurityCallback secCallback) {
 		this.entry = entry;
 		this.referenceEntry = referenceEntry;
 		this.subIdent = subIdent;
-		this.admin = secCallback.isAdmin();
-		this.nonMembers = secCallback.canAssessNonMembers();
-		this.repositoryEntryCoach = secCallback.canAssessRepositoryEntryMembers();
-		this.businessGroupCoach = secCallback.canAssessBusinessGoupMembers();
+		admin = secCallback.isAdmin();
+		nonMembers = secCallback.canAssessNonMembers();
+		coach = secCallback.canAssessRepositoryEntryMembers()
+				|| secCallback.canAssessBusinessGoupMembers()
+				|| secCallback.canAssessCurriculumMembers();
 	}
 	
 	public RepositoryEntry getEntry() {
@@ -80,12 +81,8 @@ public class SearchAssessedIdentityParams {
 		return nonMembers;
 	}
 
-	public boolean isRepositoryEntryCoach() {
-		return repositoryEntryCoach;
-	}
-
-	public boolean isBusinessGroupCoach() {
-		return businessGroupCoach;
+	public boolean isCoach() {
+		return coach;
 	}
 
 	public String getSearchString() {
@@ -119,13 +116,28 @@ public class SearchAssessedIdentityParams {
 	public void setAssessmentStatus(List<AssessmentEntryStatus> assessmentStatus) {
 		this.assessmentStatus = assessmentStatus;
 	}
+	
+	public boolean hasBusinessGroupKeys() {
+		return businessGroupKeys != null && !businessGroupKeys.isEmpty();
+	}
 
 	public List<Long> getBusinessGroupKeys() {
 		return businessGroupKeys;
 	}
 
-	//TODO roles groups
 	public void setBusinessGroupKeys(List<Long> businessGroupKeys) {
 		this.businessGroupKeys = businessGroupKeys;
+	}
+	
+	public boolean hasCurriculumElementKeys() {
+		return curriculumElementKeys != null && !curriculumElementKeys.isEmpty();
+	}
+
+	public List<Long> getCurriculumElementKeys() {
+		return curriculumElementKeys;
+	}
+
+	public void setCurriculumElementKeys(List<Long> curriculumElementKeys) {
+		this.curriculumElementKeys = curriculumElementKeys;
 	}
 }

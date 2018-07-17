@@ -156,12 +156,12 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 				= new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), testEntry, assessmentCallback);
 			if(assessmentCallback.getCoachedGroups() != null) {
 				List<Long> groupKeys = assessmentCallback.getCoachedGroups()
-					.stream().map(c -> c.getKey()).collect(Collectors.toList());
+					.stream().map(BusinessGroup::getKey).collect(Collectors.toList());
 				params.setBusinessGroupKeys(groupKeys);
 			}
 			
 			List<AssessedBusinessGroup> rows = assessmentToolManager.getBusinessGroupStatistics(getIdentity(), params);
-			Set<Long> keys = rows.stream().map(c -> c.getKey()).collect(Collectors.toSet());
+			Set<Long> keys = rows.stream().map(AssessedBusinessGroup::getKey).collect(Collectors.toSet());
 			
 			List<BusinessGroup> groups;
 			if(assessmentCallback.isAdmin()) {
@@ -254,7 +254,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		
 		List<ContextEntry> entries = BusinessControlFactory.getInstance()
 				.createCEListFromString(OresHelper
-						.createOLATResourceableInstance("Node", new Long(courseNode.getIdent())));
+						.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent())));
 		treeCtrl.activate(ureq, entries, null);
 		return currentCtrl;
 	}

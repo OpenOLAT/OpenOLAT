@@ -50,7 +50,7 @@ public class EnrollmentConfigurationPage {
 	public EnrollmentConfigurationPage selectBusinessGroups() {
 		By createGroupBy = By.cssSelector("a.o_form_groupchooser");
 		browser.findElement(createGroupBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By checkGroupsBy = By.cssSelector("div.modal-body input[type='checkbox'][name='entries']");
 		List<WebElement> checkGroupEls = browser.findElements(checkGroupsBy);

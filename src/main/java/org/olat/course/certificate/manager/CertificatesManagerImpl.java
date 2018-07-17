@@ -417,7 +417,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date lastNews) {
 		Roles roles = securityManager.getRoles(identity);
 		RepositoryEntrySecurity security = repositoryManager.isAllowed(identity, roles, entry);
-		if(!security.isEntryAdmin() && !security.isCourseCoach() && !security.isGroupCoach() && !security.isCourseParticipant() && !security.isGroupParticipant()) {
+		if(!security.isEntryAdmin() && !security.isCoach() && !security.isParticipant()) {
 			return Collections.emptyList();
 		}
 
@@ -428,7 +428,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		//must be some kind of restrictions
 		boolean securityCheck = false;
 		List<Long> baseGroupKeys = null;
-		if(!security.isEntryAdmin()) {
+		if(!security.isEntryAdmin()) {//TODO roles groups
 			sb.append(" and (");
 			boolean or = false;
 			if(security.isCourseCoach()) {
@@ -456,7 +456,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				}
 			}
 			
-			if(security.isCourseParticipant() || security.isGroupParticipant()) {
+			if(security.isParticipant()) {
 				or = or(sb, or);
 				sb.append(" ident.key=:identityKey");
 				securityCheck = true;

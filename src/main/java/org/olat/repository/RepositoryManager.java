@@ -568,8 +568,10 @@ public class RepositoryManager {
 		boolean isOwner = false;
 		boolean isCourseCoach = false;
 		boolean isGroupCoach = false;
+		boolean isCurriculumCoach = false;
 		boolean isCourseParticipant = false;
 		boolean isGroupParticipant = false;
+		boolean isCurriculumParticipant = false;
 		boolean isGroupWaiting = false;
 
 		boolean isAuthor = false;
@@ -590,6 +592,7 @@ public class RepositoryManager {
 			for(Object[] roleAndDef:roleAndDefs) {
 				String role = (String)roleAndDef[0];
 				Boolean def = (Boolean)roleAndDef[1];
+				Object curriculumElementKey = roleAndDef[2];
 				
 				if(GroupRoles.isValue(role)) {
 					switch(GroupRoles.valueOf(role)) {
@@ -601,6 +604,8 @@ public class RepositoryManager {
 							boolean d = def != null && def.booleanValue();
 							if(d) {
 								isCourseCoach = true;
+							} else if(curriculumElementKey != null) {
+								isCurriculumCoach = true;
 							} else {
 								isGroupCoach = true;
 							}
@@ -610,6 +615,8 @@ public class RepositoryManager {
 							boolean d = def != null &&def.booleanValue();
 							if(d) {
 								isCourseParticipant = true;
+							} else if(curriculumElementKey != null) {
+								isCurriculumParticipant = true;
 							} else {
 								isGroupParticipant = true;
 							}
@@ -652,7 +659,7 @@ public class RepositoryManager {
 				canLaunch = true;
 			} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
 				// check if it's a member
-				if(!canLaunch && (isGroupParticipant || isGroupCoach || isCourseParticipant || isCourseCoach)) {
+				if(!canLaunch && (isGroupParticipant || isGroupCoach || isCourseParticipant || isCourseCoach || isCurriculumParticipant || isCurriculumCoach)) {
 					canLaunch = true;
 				}
 			}
@@ -662,8 +669,9 @@ public class RepositoryManager {
 
 		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
-				isGroupParticipant, isGroupCoach,
-				isGroupWaiting, isAuthor, canLaunch, readOnly);
+				isGroupParticipant, isGroupCoach, isGroupWaiting,
+				isCurriculumParticipant, isCurriculumCoach,
+				isAuthor, canLaunch, readOnly);
 	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {

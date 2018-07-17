@@ -368,11 +368,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				String cmd = event.getCommand();
-				if(FlexiTableSearchEvent.SEARCH.equals(event.getCommand())) {
-					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
-					String search = se.getSearch();
-					doSearch(search);
-				} else if(FlexiTableSearchEvent.QUICK_SEARCH.equals(event.getCommand())) {
+				if(FlexiTableSearchEvent.SEARCH.equals(event.getCommand()) || FlexiTableSearchEvent.QUICK_SEARCH.equals(event.getCommand())) {
 					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 					String search = se.getSearch();
 					doSearch(search);
@@ -805,7 +801,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			keyToMemberMap.put(identityKey, member);
 		}
 		
-		if(loadStatus.size() > 0) {
+		if(!loadStatus.isEmpty()) {
 			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
 			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
@@ -827,11 +823,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				memberView.setLastTime(date);
 			}
 		}
-		
-		//the order of the filter is important
-		//filterByRoles(memberList, params);
-		//filterByOrigin(memberList, params);
-		
+
 		memberListModel.setObjects(memberList);
 		membersTable.reset(true, true, true);
 		return memberList;

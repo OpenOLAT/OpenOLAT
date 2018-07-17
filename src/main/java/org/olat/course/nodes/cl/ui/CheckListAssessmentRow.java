@@ -39,6 +39,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class CheckListAssessmentRow {
 	
 	private Long[] groupKeys;
+	private Long[] curriculumElementKeys;
 	private final Long identityKey;
 	private final String identityName;
 	private final String[] identityProps;
@@ -86,6 +87,14 @@ public class CheckListAssessmentRow {
 
 	public void setGroupKeys(Long[] groupKeys) {
 		this.groupKeys = groupKeys;
+	}
+	
+	public Long[] getCurriculumElmentKeys() {
+		return curriculumElementKeys;
+	}
+	
+	public void setCurriculumElementKeys(Long[] curriculumElementKeys) {
+		this.curriculumElementKeys = curriculumElementKeys;
 	}
 
 	public String getIdentityProp(int index) {
