@@ -38,6 +38,7 @@ import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
@@ -139,6 +140,11 @@ public class QualityTestHelper {
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.YEAR, 1);
 		return calendar.getTime();
+	}
+	
+	QualityDataCollection updateStatus(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
+		dataCollection.setStatus(status);
+		return qualityService.updateDataCollection(dataCollection);
 	}
 
 	QualityContext createContext() {

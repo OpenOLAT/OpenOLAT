@@ -20,6 +20,8 @@
 package org.olat.modules.quality.manager;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,6 +42,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityReminder;
@@ -57,6 +60,11 @@ import org.springframework.stereotype.Service;
 class QualityMailing {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityMailing.class);
+	
+	private static final Collection<QualityDataCollectionStatus> STATUS_FILTER = Arrays.asList(
+			QualityDataCollectionStatus.READY,
+			QualityDataCollectionStatus.RUNNING,
+			QualityDataCollectionStatus.FINISHED);
 	
 	@Autowired
 	private QualityParticipationDAO participationDao;
@@ -90,6 +98,7 @@ class QualityMailing {
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setExecutorRef(executor);
 		searchParams.setDataCollectionRef(reminder.getDataCollection());
+		searchParams.setDataCollectionStatus(STATUS_FILTER);
 		List<QualityExecutorParticipation> participations = participationDao.loadExecutorParticipations(translator, searchParams , 0, -1);
 		QualityExecutorParticipation participation = null;
 		if (!participations.isEmpty()) {

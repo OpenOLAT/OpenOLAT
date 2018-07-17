@@ -21,8 +21,8 @@ package org.olat.modules.quality.ui;
 
 import java.util.Date;
 
-import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationStatus;
 
 /**
  * 
@@ -46,8 +46,8 @@ public class ExecutorParticipationRow {
 		return participation.getParticipationRef().getKey();
 	}
 
-	public EvaluationFormParticipationStatus getParticipationStatus() {
-		return participation.getParticipationStatus();
+	public QualityExecutorParticipationStatus getExecutionStatus() {
+		return participation.getExecutionStatus();
 	}
 
 	public Date getStart() {

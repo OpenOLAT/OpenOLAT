@@ -27,10 +27,13 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
+import org.olat.modules.quality.QualityExecutorParticipationStatus;
 import org.olat.modules.quality.QualityParticipation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -153,8 +156,17 @@ class QualityParticipationDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityExcecutorParticipationImpl(");
 		sb.append("       participation.key as participationKey");
-		sb.append("     , participation.status as participationStatus");
-		sb.append("     , collection.status as dataCollectionStatus");
+		sb.append("     , case");
+		sb.append("           when participation.status = '").append(EvaluationFormParticipationStatus.done).append("'");
+		sb.append("           then ").append(QualityExecutorParticipationStatus.PARTICIPATED.getOrder());
+		sb.append("           when session is not null");
+		sb.append("           then ").append(QualityExecutorParticipationStatus.STARTED.getOrder());
+		sb.append("           when collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+		sb.append("           then ").append(QualityExecutorParticipationStatus.OVER.getOrder());
+		sb.append("           when collection.status = '").append(QualityDataCollectionStatus.RUNNING).append("'");
+		sb.append("           then ").append(QualityExecutorParticipationStatus.READY.getOrder());
+		sb.append("           else ").append(QualityExecutorParticipationStatus.FUTURE.getOrder());
+		sb.append("       end as executionStatus");
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , collection.title as title");
@@ -184,6 +196,7 @@ class QualityParticipationDAO {
 		sb.append("  from evaluationformparticipation as participation");
 		sb.append("       inner join participation.survey as survey");
 		sb.append("       inner join participation.executor as executor");
+		sb.append("       left join evaluationformsession as session on session.participation.key = participation.key");
 		sb.append("       inner join qualitydatacollection as collection on collection.key = survey.resId");
 		sb.append("       left join collection.topicIdentity.user as user");
 		sb.append("       left join collection.topicOrganisation as organisation");
@@ -219,6 +232,9 @@ class QualityParticipationDAO {
 		if (searchParam.getParticipationStatus() != null) {
 			sb.append(" and participation.status = :participationStatus");
 		}
+		if (searchParam.getDataCollectionStatus() != null && !searchParam.getDataCollectionStatus().isEmpty()) {
+			sb.append(" and collection.status in :collectionStatus");
+		}
 	}
 
 	private void appendWhereParameters(TypedQuery<?> query,
@@ -232,6 +248,9 @@ class QualityParticipationDAO {
 		if (searchParam.getParticipationStatus() != null) {
 				query.setParameter("participationStatus", searchParam.getParticipationStatus());
 		}
+		if (searchParam.getDataCollectionStatus() != null && !searchParam.getDataCollectionStatus().isEmpty()) {
+			query.setParameter("collectionStatus", searchParam.getDataCollectionStatus());
+		}
 	}
 
 	private void appendExecutorParticipationOrderBy(StringBuilder sb, SortKey... orderBy) {
@@ -242,7 +261,7 @@ class QualityParticipationDAO {
 			sb.append(sortKey);
 			appendAsc(sb, asc);
 		} else {
-			sb.append(" order by participation.status asc ");
+			sb.append(" order by executionStatus asc ");
 		}
 	}
 

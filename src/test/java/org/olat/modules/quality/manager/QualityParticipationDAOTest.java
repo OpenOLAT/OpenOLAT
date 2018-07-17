@@ -21,6 +21,9 @@ package org.olat.modules.quality.manager;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
+import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
 import java.util.Arrays;
 import java.util.List;
@@ -209,7 +212,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		
 		QualityExecutorParticipation participation = participations.get(0);
 		assertThat(participation.getParticipationRef()).isNotNull();
-		assertThat(participation.getParticipationStatus()).isNotNull();
+		assertThat(participation.getExecutionStatus()).isNotNull();
 		assertThat(participation.getStart()).isNotNull();
 		assertThat(participation.getDeadline()).isNotNull();
 		assertThat(participation.getTitle()).isNotNull();
@@ -330,6 +333,28 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setParticipationStatus(EvaluationFormParticipationStatus.prepared);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
+				-1);
+
+		assertThat(participations).hasSize(2);
+	}
+	
+	@Test
+	public void shouldFilterExecutorParticipationsByDataCollectionStatus() {
+		QualityDataCollection ready = qualityTestHelper.createDataCollection();
+		ready = qualityTestHelper.updateStatus(ready, READY);
+		QualityDataCollection running = qualityTestHelper.createDataCollection();
+		running = qualityTestHelper.updateStatus(running, RUNNING);
+		QualityDataCollection finnished = qualityTestHelper.createDataCollection();
+		finnished = qualityTestHelper.updateStatus(finnished, FINISHED);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		qualityTestHelper.addParticipations(ready, Arrays.asList(identity));
+		qualityTestHelper.addParticipations(running, Arrays.asList(identity));
+		qualityTestHelper.addParticipations(finnished, Arrays.asList(identity));
+		dbInstance.commitAndCloseSession();
+
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setDataCollectionStatus(Arrays.asList(READY, RUNNING));
 		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
 				-1);
 

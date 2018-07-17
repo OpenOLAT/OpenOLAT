@@ -60,7 +60,7 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 	public Object getValueAt(int row, int col) {
 		ExecutorParticipationRow participationRow = getObject(row);
 		switch (ExecutorParticipationCols.values()[col]) {
-			case participationStatus: return participationRow.getParticipationStatus();
+			case executionStatus: return participationRow.getExecutionStatus();
 			case start: return participationRow.getStart();
 			case deadline: return participationRow.getDeadine();
 			case title: return participationRow.getTitle();
@@ -77,7 +77,7 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 	}
 
 	public enum ExecutorParticipationCols implements FlexiSortableColumnDef {
-		participationStatus("executor.participation.status"),
+		executionStatus("executor.participation.status"),
 		start("executor.participation.start"),
 		deadline("executor.participation.deadline"),
 		title("executor.participation.title"),

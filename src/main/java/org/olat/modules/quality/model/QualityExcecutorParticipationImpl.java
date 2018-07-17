@@ -22,9 +22,8 @@ package org.olat.modules.quality.model;
 import java.util.Date;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
-import org.olat.modules.forms.EvaluationFormParticipationStatus;
-import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationStatus;
 
 /**
  * 
@@ -35,21 +34,18 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 public class QualityExcecutorParticipationImpl implements QualityExecutorParticipation {
 	
 	private final Long participationKey;
-	private final EvaluationFormParticipationStatus participationStatus;
-	private final QualityDataCollectionStatus dataCollectionStatus;
+	private final QualityExecutorParticipationStatus executionStatus;
 	private final Date start;
 	private final Date deadline;
 	private final String title;
 	private final String translatedTopicType;
 	private final String topic;
 	
-	public QualityExcecutorParticipationImpl(Long participationKey,
-			EvaluationFormParticipationStatus participationStatus, QualityDataCollectionStatus dataCollectionStatus,
+	public QualityExcecutorParticipationImpl(Long participationKey, Integer executionStatusOrder,
 			Date start, Date deadline, String title, String translatedTopicType, String topic) {
 		super();
 		this.participationKey = participationKey;
-		this.participationStatus = participationStatus;
-		this.dataCollectionStatus = dataCollectionStatus;
+		this.executionStatus = QualityExecutorParticipationStatus.getEnum(executionStatusOrder);
 		this.start = start;
 		this.deadline = deadline;
 		this.title = title;
@@ -69,13 +65,8 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	}
 
 	@Override
-	public EvaluationFormParticipationStatus getParticipationStatus() {
-		return participationStatus;
-	}
-
-	@Override
-	public QualityDataCollectionStatus getDataCollectionStatus() {
-		return dataCollectionStatus;
+	public QualityExecutorParticipationStatus getExecutionStatus() {
+		return executionStatus;
 	}
 
 	@Override

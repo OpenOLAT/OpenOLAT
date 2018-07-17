@@ -23,10 +23,10 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
-import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityExecutorParticipationStatus;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
 
@@ -109,8 +109,9 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canExecute(QualityExecutorParticipation participation) {
-		return QualityDataCollectionStatus.RUNNING.equals(participation.getDataCollectionStatus())
-				&& EvaluationFormParticipationStatus.prepared.equals(participation.getParticipationStatus());
+		QualityExecutorParticipationStatus status = participation.getExecutionStatus();
+		return QualityExecutorParticipationStatus.READY.equals(status)
+				|| QualityExecutorParticipationStatus.STARTED.equals(status);
 	}
 
 	private boolean isNotStarted(QualityDataCollectionLight dataCollection) {

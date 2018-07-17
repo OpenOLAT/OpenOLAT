@@ -19,30 +19,43 @@
  */
 package org.olat.modules.quality;
 
-import java.util.Date;
-
-import org.olat.modules.forms.EvaluationFormParticipationRef;
-
 /**
  * 
- * Initial date: 20.06.2018<br>
+ * Initial date: 17.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityExecutorParticipation {
+public enum QualityExecutorParticipationStatus {
 	
-	public EvaluationFormParticipationRef getParticipationRef();
+	FUTURE(30, "executor.participation.status.future"),
+	READY(20, "executor.participation.status.ready"),
+	STARTED(10, "executor.participation.status.started"),
+	PARTICIPATED(40, "executor.participation.status.participated"),
+	OVER(50, "executor.participation.status.over");
+	
+	private final int order;
+	private final String i18nKey;
+	
+	private QualityExecutorParticipationStatus(int order, String i18nKey) {
+		this.order = order;
+		this.i18nKey = i18nKey;
+	}
+	
+	public static QualityExecutorParticipationStatus getEnum(Integer order) {
+		for (QualityExecutorParticipationStatus status: QualityExecutorParticipationStatus.values()) {
+			if (order != null && order == status.order) {
+				return status;
+			}
+		}
+		return null;
+	}
 
-	public QualityExecutorParticipationStatus getExecutionStatus();
-	
-	public Date getStart();
+	public int getOrder() {
+		return order;
+	}
 
-	public Date getDeadline();
-
-	public String getTitle();
-	
-	public String getTranslatedTopicType();
-	
-	public String getTopic();
+	public String getI18nKey() {
+		return i18nKey;
+	}
 
 }
