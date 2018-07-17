@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -111,6 +112,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userSearchFormPropertyHandlers;
 	private final List<Organisation> searchableOrganisations;
+	private final GroupRoles repositoryEntryRole;
 
 	@Autowired
 	private UserManager userManager;
@@ -123,14 +125,11 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	@Autowired
 	private IdentityPowerSearchQueries identitySearchQueries;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param cancelbutton
-	 * @param userMultiSelect
-	 * @param statusEnabled
-	 */
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
+		this(ureq, wControl, rootForm, null);
+	}
+	
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm, GroupRoles repositoryEntryRole) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
@@ -142,8 +141,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		UserSession usess = ureq.getUserSession();
 		searchableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
 				OrganisationRoles.valuesWithoutGuestAndInvitee());
+		this.repositoryEntryRole = repositoryEntryRole;
 
-		ListProvider provider = new UserSearchListProvider(searchableOrganisations);
+		ListProvider provider = new UserSearchListProvider(searchableOrganisations, repositoryEntryRole);
 		setListProvider(provider);
 		setAllowNewValues(false);
 
@@ -249,7 +249,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink) {				
+		if (source == backLink) {
 			flc.contextPut("showButton","false");
 		} else if(autoCompleterContainer != null && source == autoCompleterContainer.getComponent()) {
 			if (event.getCommand().equals(COMMAND_SELECT)) {
@@ -278,7 +278,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 					}
 				}
 			} catch (NumberFormatException e) {
-				getWindowControl().setWarning(translate("error.no.user.found"));								
+				getWindowControl().setWarning(translate("error.no.user.found"));
 			}
 		} else {
 			getWindowControl().setWarning(translate("error.search.form.notempty"));
@@ -299,7 +299,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		}
 		
 		boolean filled = !loginEl.isEmpty();
-		StringBuilder  full = new StringBuilder(loginEl.getValue().trim());  
+		StringBuilder  full = new StringBuilder(loginEl.getValue().trim());
 		FormItem lastFormElement = loginEl;
 		
 		// DO NOT validate each user field => see OLAT-3324
@@ -460,6 +460,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 				userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
 				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
+		params.setRepositoryEntryRole(repositoryEntryRole);
 		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
 	}
 }

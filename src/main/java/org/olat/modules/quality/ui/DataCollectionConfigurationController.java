@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -121,7 +120,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 	private final TooledStackedPanel stackPanel;
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController formSearchCtrl;
-	private UserSearchController topicIdentitySearchCtrl;
+	private TopicIdentitySearchController topicIdentitySearchCtrl;
 	private ReferencableEntriesSearchController topicRepositorySearchCtrl;
 	private DataCollectionStartConfirmationController startConfirmationController;
 	private DataCollectionFinishConfirmationController finishConfirmationController;
@@ -687,7 +686,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 	}
 	
 	private void doSelectTopicIdentity(UserRequest ureq) {
-		topicIdentitySearchCtrl = new UserSearchController(ureq, getWindowControl(), true, false, true);
+		topicIdentitySearchCtrl = new TopicIdentitySearchController(ureq, getWindowControl());
 		listenTo(topicIdentitySearchCtrl);
 		
 		String title = translate("data.collection.topic.identity.select");
