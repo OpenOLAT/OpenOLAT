@@ -63,6 +63,8 @@ class CurriculumElementQualityContextBuilder extends ForwardingQualityContextBui
 
 	private void initBuilder(EvaluationFormParticipation evaluationFormParticipation, CurriculumElement curriculumElement,
 			CurriculumRoles role) {
+		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);
+		
 		QualityContextRole contextRole = QualityContextRole.valueOf(role.name());
 		builder.withRole(contextRole);
 		builder.withAudiencCurriculumElement(curriculumElement);
@@ -70,7 +72,6 @@ class CurriculumElementQualityContextBuilder extends ForwardingQualityContextBui
 		List<QualityContext> contextToDelete = qualityContextDao
 				.loadByAudienceCurriculumElement(evaluationFormParticipation, curriculumElement, contextRole);
 		contextToDelete.forEach(c -> builder.addToDelete(c));
-		
 		builder.addCurriculumElement(curriculumElement);
 		Curriculum curriculum = curriculumElement.getCurriculum();
 		builder.addCurriculum(curriculum);

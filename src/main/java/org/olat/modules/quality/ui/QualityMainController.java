@@ -65,7 +65,7 @@ public class QualityMainController extends MainLayoutBasicController implements 
 	
 	public QualityMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		this.secCallback = new QualitySecurityCallbackImpl();
+		this.secCallback = new QualitySecurityCallbackImpl(ureq.getUserSession().getRoles());
 		
 		mainVC = createVelocityContainer("main");
 		

@@ -108,7 +108,7 @@ public class DataCollectionListController extends FormBasicController implements
 		numParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		numParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(numParticipantsColumn);
-		if (secCallback.canEditDataCollections()) {
+		if (secCallback.canEditDataCollections() || secCallback.canViewDataCollections()) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(DataCollectionCols.edit.i18nHeaderKey(),
 					DataCollectionCols.edit.ordinal(), CMD_EDIT,
 					new BooleanCellRenderer(
@@ -135,7 +135,7 @@ public class DataCollectionListController extends FormBasicController implements
 
 	@Override
 	public void initTools() {
-		if (secCallback.canEditDataCollections()) {
+		if (secCallback.canCreateDataCollections()) {
 			createDataCollectionLink = LinkFactory.createToolLink("data.collection.create", translate("data.collection.create"), this);
 			createDataCollectionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_dc_create");
 			stackPanel.addTool(createDataCollectionLink, Align.left);

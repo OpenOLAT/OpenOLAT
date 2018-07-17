@@ -23,6 +23,7 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
+import org.olat.core.id.Roles;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
@@ -38,49 +39,75 @@ import org.olat.modules.quality.QualitySecurityCallback;
  */
 public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
+	private final Roles roles;
+
+	public QualitySecurityCallbackImpl(Roles roles) {
+		this.roles = roles;
+	}
+
 	@Override
 	public boolean canViewDataCollections() {
-		return true;
+		return canEditDataCollections() || roles.isPrincipal();
 	}
 
 	@Override
 	public boolean canEditDataCollections() {
-		return true;
+		return roles.isQualityManager() || roles.isAdministrator();
 	}
 
 	@Override
+	public boolean canCreateDataCollections() {
+		return canEditDataCollections();
+	}
+	
+	@Override
 	public boolean canUpdateBaseConfiguration(QualityDataCollectionLight dataCollection) {
-		return PREPARATION.equals(dataCollection.getStatus());
+		return canEditDataCollections() && PREPARATION.equals(dataCollection.getStatus());
 	}
 
 	@Override
 	public boolean canSetPreparation(QualityDataCollectionLight dataCollection) {
-		return READY.equals(dataCollection.getStatus());
+		return canEditDataCollections() && READY.equals(dataCollection.getStatus());
 	}
 
 	@Override
 	public boolean canSetReady(QualityDataCollectionLight dataCollection) {
-		return PREPARATION.equals(dataCollection.getStatus());
+		return canEditDataCollections() && PREPARATION.equals(dataCollection.getStatus());
 	}
 
 	@Override
 	public boolean canSetRunning(QualityDataCollectionLight dataCollection) {
-		return isNotStarted(dataCollection);
+		return canEditDataCollections() && isNotRunning(dataCollection);
 	}
 
 	@Override
 	public boolean canSetFinished(QualityDataCollectionLight dataCollection) {
-		return isNotFinished(dataCollection);
+		return canEditDataCollections() && isNotFinished(dataCollection);
+	}
+
+	@Override
+	public boolean canDeleteDataCollections() {
+		return canEditDataCollections();
+	}
+
+	@Override
+	public boolean canDeleteDataCollection(QualityDataCollectionLight dataCollection) {
+		return canEditDataCollections() && isNotRunning(dataCollection);
 	}
 
 	@Override
 	public boolean canAddParticipants(QualityDataCollectionLight dataCollection) {
-		return isNotFinished(dataCollection);
+		return canEditDataCollections() && isNotFinished(dataCollection);
+	}
+
+	@Override
+	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection) {
+		return canEditDataCollections() && isNotRunning(dataCollection);
 	}
 
 	@Override
 	public boolean canEditReminders() {
-		return true;
+		return canEditDataCollections();
 	}
 
 	@Override
@@ -93,28 +120,13 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	}
 
 	@Override
-	public boolean canDeleteDataCollections() {
-		return true;
-	}
-
-	@Override
-	public boolean canDeleteDataCollection(QualityDataCollectionLight dataCollection) {
-		return isNotStarted(dataCollection);
-	}
-
-	@Override
-	public boolean canRevomeParticipation(QualityDataCollectionLight dataCollection) {
-		return isNotStarted(dataCollection);
-	}
-
-	@Override
 	public boolean canExecute(QualityExecutorParticipation participation) {
 		QualityExecutorParticipationStatus status = participation.getExecutionStatus();
 		return QualityExecutorParticipationStatus.READY.equals(status)
 				|| QualityExecutorParticipationStatus.PARTICIPATING.equals(status);
 	}
 
-	private boolean isNotStarted(QualityDataCollectionLight dataCollection) {
+	private boolean isNotRunning(QualityDataCollectionLight dataCollection) {
 		QualityDataCollectionStatus status = dataCollection.getStatus();
 		return PREPARATION.equals(status) || READY.equals(status);
 	}
@@ -122,5 +134,4 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	private boolean isNotFinished(QualityDataCollectionLight dataCollection) {
 		return !FINISHED.equals(dataCollection.getStatus());
 	}
-	
 }
