@@ -29,9 +29,9 @@
 		</property>
 	</bean>
 	
-	<!-- Quality reminder job -->
-	<bean id="qualityReminderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-		<property name="jobDetail" ref="qualityReminderJob.${cluster.singleton.services}" />
+	<!-- Quality job -->
+	<bean id="qualityTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="qualityJob.${cluster.singleton.services}" />
 	  	<!-- adjust cron style syntax for your notification needs 
 	   	"0 10 0 * *"  e.g. 10 minutes after midnight
 	   	
@@ -52,12 +52,12 @@
 		<property name="startDelay" value="40000" />
 	</bean>
 
-	<bean id="qualityReminderJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
-		<property name="jobClass" value="org.olat.modules.quality.manager.QualityReminderJob" />
+	<bean id="qualityJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.quality.manager.QualityJob" />
 	</bean>
 	
 	<!-- dummy bean -->
-	<bean id="qualityReminderJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+	<bean id="qualityJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	

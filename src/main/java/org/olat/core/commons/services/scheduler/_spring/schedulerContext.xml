@@ -53,7 +53,7 @@ How to add a new job:
             <ref bean="calendarImportTrigger"/>
             <ref bean="autoCloseLecturesTrigger"/>
             <ref bean="reminderLecturesTrigger"/>
-            <ref bean="qualityReminderTrigger"/>
+            <ref bean="qualityTrigger"/>
             <ref bean="deleteUserDataExportTrigger"/>
             <ref bean="cspCleanupJob"/>
         </list>

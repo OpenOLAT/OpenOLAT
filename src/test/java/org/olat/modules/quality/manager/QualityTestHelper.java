@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -80,7 +81,7 @@ public class QualityTestHelper {
 		evaTestHelper.deleteAll();
 	}
 
-	public QualityDataCollection createDataCollection(String title) {
+	QualityDataCollection createDataCollection(String title) {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(formEntry);
 		dataCollection.setTitle(title);
@@ -93,6 +94,51 @@ public class QualityTestHelper {
 	
 	QualityDataCollection createDataCollection() {
 		return createDataCollection(UUID.randomUUID().toString());
+	}
+	
+	QualityDataCollection createDataCollectionWithoutValues() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		return qualityService.createDataCollection(formEntry);
+	}
+	
+	QualityDataCollection createDataCollectionWithStartInFuture() {
+		QualityDataCollection dataCollection = createDataCollection();
+		dataCollection.setStart(getDateInFuture());
+		qualityService.updateDataCollection(dataCollection);
+		return dataCollection;
+	}
+	
+	QualityDataCollection createDataCollectionWithStartInPast() {
+		QualityDataCollection dataCollection = createDataCollection();
+		dataCollection.setStart(getDateInPast());
+		qualityService.updateDataCollection(dataCollection);
+		return dataCollection;
+	}
+	
+	QualityDataCollection createDataCollectionWithDeadlineInFuture() {
+		QualityDataCollection dataCollection = createDataCollection();
+		dataCollection.setDeadline(getDateInFuture());
+		qualityService.updateDataCollection(dataCollection);
+		return dataCollection;
+	}
+	
+	QualityDataCollection createDataCollectionWithDeadlineInPast() {
+		QualityDataCollection dataCollection = createDataCollection();
+		dataCollection.setDeadline(getDateInPast());
+		qualityService.updateDataCollection(dataCollection);
+		return dataCollection;
+	}
+
+	private Date getDateInPast() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.YEAR, -1);
+		return calendar.getTime();
+	}
+
+	private Date getDateInFuture() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.YEAR, 1);
+		return calendar.getTime();
 	}
 
 	QualityContext createContext() {
@@ -153,11 +199,11 @@ public class QualityTestHelper {
 		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, null, taxonomy);
 	}
 
-	public QualityReminder createReminder() {
+	QualityReminder createReminder() {
 		return createReminder(createDataCollection());
 	}
 
-	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef) {
+	QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef) {
 		Date sendDate = new Date();
 		QualityReminderType type = QualityReminderType.REMINDER1;
 		return reminderDao.create(dataCollectionRef, sendDate, type);

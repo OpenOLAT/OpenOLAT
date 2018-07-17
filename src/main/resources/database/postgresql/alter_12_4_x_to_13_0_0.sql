@@ -321,6 +321,8 @@ create table o_qual_reminder (
    primary key (id)
 );
 
+create index idx_dc_status_idx on o_qual_data_collection (q_status) where q_status in ('READY', 'RUNNING');
+
 alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_con_to_data_collection_idx on o_qual_context (fk_data_collection);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);

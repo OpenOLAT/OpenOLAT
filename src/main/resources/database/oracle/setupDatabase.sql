@@ -3480,6 +3480,8 @@ create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
 
 -- quality management
+create index idx_dc_status_idx on o_qual_data_collection (q_status);
+
 alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_con_to_data_collection_idx on o_qual_context (fk_data_collection);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);

@@ -46,6 +46,20 @@ public interface QualityService {
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection);
 
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef);
+	
+	/**
+	 * Updates the status to RUNNING for data collections which are READY and have passed the start date.
+	 * 
+	 * @param until the date to evaluate if a start date has passed
+	 */
+	public void stopDataCollections(Date until);
+
+	/**
+	 * Updates the status to FINISHED of all data collections which are STARTED and have passed the deadline.
+	 * 
+	 * @param until the date to evaluate if a deadline has passed
+	 */
+	public void startDataCollection(Date until);
 
 	public int getDataCollectionCount();
 
@@ -138,6 +152,11 @@ public interface QualityService {
 
 	public void deleteReminder(QualityReminder reminder);
 	
-	public void sendRemainders();
+	/**
+	 * Send all pending reminders.
+	 *
+	 * @param until all reminders with a planed date before this date
+	 */
+	public void sendRemainders(Date until);
 
 }

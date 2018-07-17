@@ -19,6 +19,9 @@
  */
 package org.olat.modules.quality.manager;
 
+import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,10 +48,10 @@ import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
-import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
@@ -68,8 +71,6 @@ public class QualityServiceImpl implements QualityService {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
 
-	@Autowired
-	private QualityModule qualityModule;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
@@ -106,6 +107,34 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef) {
 		return dataCollectionDao.loadDataCollectionByKey(dataCollectionRef);
+	}
+
+	@Override
+	public void stopDataCollections(Date until) {
+		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingStart(until);
+		log.debug("Update status to RUNNING. Number of pending data collections: " + dataCollections.size());
+		for (QualityDataCollection dataCollection: dataCollections) {
+			updateDataCollection(dataCollection, RUNNING);
+		}
+	}
+
+	@Override
+	public void startDataCollection(Date until) {
+		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingDeadline(until);
+		log.debug("Update status to FINISHED. Number of pending data collections: " + dataCollections.size());
+		for (QualityDataCollection dataCollection: dataCollections) {
+			updateDataCollection(dataCollection, FINISHED);
+		}
+	}
+
+	private void updateDataCollection(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
+		try {
+			dataCollection.setStatus(status);
+			QualityDataCollection updatedDataCollection = dataCollectionDao.updateDataCollection(dataCollection);
+			log.info("Status of quality data collection updated to " + status + ". " + updatedDataCollection.toString());
+		} catch (Exception e) {
+			log.error("Update of status of quality data collection to " + status + " failed! " + dataCollection.toString(), e);
+		}
 	}
 
 	@Override
@@ -254,20 +283,25 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public void sendRemainders() {
-		if (!qualityModule.isEnabled()) return;
-		
-		Date untilNow = new Date();
-		Collection<QualityReminder> reminders = reminderDao.loadPending(untilNow);
+	public void sendRemainders(Date until) {		
+		Collection<QualityReminder> reminders = reminderDao.loadPending(until);
 		log.debug("Send emails for quality remiders. Number of pending reminders: " + reminders.size());
-		for (QualityReminder reminder : reminders) {
-			QualityReminder invitation = getInvitation(reminder);
-			List<EvaluationFormParticipation> participations = getParticipants(reminder);
-			for (EvaluationFormParticipation participation : participations) {
-				qualityMailing.sendMail(reminder, invitation, participation);
+		for (QualityReminder reminder: reminders) {
+			try {
+				sendReminder(reminder);
+				reminderDao.updateDateDone(reminder, until);
+			} catch (Exception e) {
+				log.error("Send reminder of quality data collection failed!" + reminder.toString(), e);
 			}
-			reminderDao.updateDateDone(reminder, untilNow);
 		}	
+	}
+
+	private void sendReminder(QualityReminder reminder) {
+		QualityReminder invitation = getInvitation(reminder);
+		List<EvaluationFormParticipation> participations = getParticipants(reminder);
+		for (EvaluationFormParticipation participation : participations) {
+			qualityMailing.sendMail(reminder, invitation, participation);
+		}
 	}
 
 	private QualityReminder getInvitation(QualityReminder reminder) {
@@ -284,5 +318,4 @@ public class QualityServiceImpl implements QualityService {
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		return evaluationFormManager.loadParticipations(survey, status);
 	}
-
 }

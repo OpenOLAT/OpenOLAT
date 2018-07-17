@@ -173,5 +173,16 @@ public class QualityReminderImpl implements QualityReminder, Persistable {
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("QualityReminderImpl [key=");
+		builder.append(key);
+		builder.append(", sendPlaned=");
+		builder.append(sendPlaned);
+		builder.append("]");
+		return builder.toString();
+	}
 	
 }

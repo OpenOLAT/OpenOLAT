@@ -20,9 +20,14 @@
 package org.olat.modules.quality.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
+import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
+import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -39,6 +44,7 @@ import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.OlatTestCase;
@@ -58,6 +64,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
+	@Autowired
+	private QualityService qualityService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -142,6 +150,66 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(loadDataCollection).isEqualTo(dataCollection);
 	}
 	
+	@Test
+	public void shouldLoadDataCollectionsWithPendingStart() {
+		Date until = new Date();
+		QualityDataCollection future1 = qualityTestHelper.createDataCollectionWithStartInFuture();
+		QualityDataCollection future2 = qualityTestHelper.createDataCollectionWithStartInFuture();
+		QualityDataCollection pastReady1 = qualityTestHelper.createDataCollectionWithStartInPast();
+		pastReady1.setStatus(READY);
+		qualityService.updateDataCollection(pastReady1);
+		QualityDataCollection pastReady2 = qualityTestHelper.createDataCollectionWithStartInPast();
+		pastReady2.setStatus(READY);
+		qualityService.updateDataCollection(pastReady2);
+		QualityDataCollection pastPreparation = qualityTestHelper.createDataCollectionWithStartInPast();
+		pastPreparation.setStatus(PREPARATION);
+		qualityService.updateDataCollection(pastPreparation);
+		QualityDataCollection pastRunning = qualityTestHelper.createDataCollectionWithStartInPast();
+		pastRunning.setStatus(RUNNING);
+		qualityService.updateDataCollection(pastRunning);
+		QualityDataCollection pastFinished = qualityTestHelper.createDataCollectionWithStartInPast();
+		pastFinished.setStatus(RUNNING);
+		qualityService.updateDataCollection(pastFinished);
+		QualityDataCollection noStart = qualityTestHelper.createDataCollectionWithoutValues();
+		dbInstance.commitAndCloseSession();
+		
+		Collection<QualityDataCollection> dataCollections = sut.loadWithPendingStart(until);
+		
+		assertThat(dataCollections)
+				.containsExactlyInAnyOrder(pastReady1, pastReady2)
+				.doesNotContain(future1, future2, noStart, pastPreparation, pastRunning, pastFinished);
+	}
+	
+	@Test
+	public void shouldLoadDataCollectionsWithPendingDeadline() {
+		Date until = new Date();
+		QualityDataCollection future1 = qualityTestHelper.createDataCollectionWithDeadlineInFuture();
+		QualityDataCollection future2 = qualityTestHelper.createDataCollectionWithDeadlineInFuture();
+		QualityDataCollection pastRunning1 = qualityTestHelper.createDataCollectionWithDeadlineInPast();
+		pastRunning1.setStatus(RUNNING);
+		qualityService.updateDataCollection(pastRunning1);
+		QualityDataCollection pastRunning2 = qualityTestHelper.createDataCollectionWithDeadlineInPast();
+		pastRunning2.setStatus(RUNNING);
+		qualityService.updateDataCollection(pastRunning2);
+		QualityDataCollection pastPreparation = qualityTestHelper.createDataCollectionWithDeadlineInPast();
+		pastPreparation.setStatus(PREPARATION);
+		qualityService.updateDataCollection(pastPreparation);
+		QualityDataCollection pastReady = qualityTestHelper.createDataCollectionWithDeadlineInPast();
+		pastReady.setStatus(READY);
+		qualityService.updateDataCollection(pastReady);
+		QualityDataCollection pastFinished = qualityTestHelper.createDataCollectionWithDeadlineInPast();
+		pastFinished.setStatus(FINISHED);
+		qualityService.updateDataCollection(pastFinished);
+		QualityDataCollection noDeadline = qualityTestHelper.createDataCollectionWithoutValues();
+		dbInstance.commitAndCloseSession();
+		
+		Collection<QualityDataCollection> dataCollections = sut.loadWithPendingDeadline(until);
+		
+		assertThat(dataCollections)
+				.containsExactlyInAnyOrder(pastRunning1, pastRunning2, pastReady)
+				.doesNotContain(future1, future2, noDeadline, pastFinished, pastPreparation);
+	}
+
 	@Test
 	public void shouldGetDataCollectionCount() {
 		int numberOfDataCollections = 3;

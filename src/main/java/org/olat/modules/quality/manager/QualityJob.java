@@ -19,8 +19,11 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.Date;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -31,12 +34,18 @@ import org.quartz.JobExecutionException;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityReminderJob extends JobWithDB {
+public class QualityJob extends JobWithDB {
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+		QualityModule qualityModule = CoreSpringFactory.getImpl(QualityModule.class);
+		if (!qualityModule.isEnabled()) return;
+		
 		QualityService qualityService = CoreSpringFactory.getImpl(QualityService.class);
-		qualityService.sendRemainders();
+		Date until = new Date();
+		qualityService.startDataCollection(until);
+		qualityService.stopDataCollections(until);
+		qualityService.sendRemainders(until);
 	}
 
 }

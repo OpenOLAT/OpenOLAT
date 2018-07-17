@@ -19,6 +19,12 @@
  */
 package org.olat.modules.quality.manager;
 
+import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
+import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -79,6 +85,37 @@ class QualityDataCollectionDAO {
 				.setParameter("collectionKey", dataCollectionRef.getKey())
 				.getResultList();
 		return dataCollections.isEmpty() ? null : dataCollections.get(0);
+	}
+
+	Collection<QualityDataCollection> loadWithPendingStart(Date until) {
+		if (until == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select collection");
+		sb.append("  from qualitydatacollection as collection");
+		sb.append(" where collection.status = '").append(READY).append("'");
+		sb.append("   and collection.start <= :until");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class)
+				.setParameter("until", until)
+				.getResultList();
+	}
+
+	Collection<QualityDataCollection> loadWithPendingDeadline(Date until) {
+		if (until == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select collection");
+		sb.append("  from qualitydatacollection as collection");
+		sb.append(" where collection.status in :status");
+		sb.append("   and collection.deadline <= :until");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class)
+				.setParameter("status", Arrays.asList(READY, RUNNING))
+				.setParameter("until", until)
+				.getResultList();
 	}
 
 	void deleteDataCollection(QualityDataCollectionRef dataCollectionRef) {
@@ -185,4 +222,5 @@ class QualityDataCollectionDAO {
 		}
 		return sb;
 	}
+
 }
