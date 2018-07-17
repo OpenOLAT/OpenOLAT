@@ -933,7 +933,7 @@ public class GTAManagerImpl implements GTAManager {
 		}
 
 		AssignmentResponse response;
-		if(currentTask == null) {
+		if(currentTask == null || !StringHelper.containsNonWhitespace(currentTask.getTaskName())) {
 			TaskList reloadedTasks = loadForUpdate(tasks);
 
 			File tasksFolder = getTasksDirectory(courseEnv, cNode);
@@ -951,11 +951,20 @@ public class GTAManagerImpl implements GTAManager {
 				response = AssignmentResponse.NO_MORE_TASKS;
 			} else {
 				TaskProcess nextStep = nextStep(TaskProcess.assignment, cNode);
-				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
-				task.setAssignmentDate(new Date());
-				dbInstance.getCurrentEntityManager().persist(task);
+				TaskImpl task;
+				if(currentTask == null) {
+					task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
+					task.setAssignmentDate(new Date());
+					dbInstance.getCurrentEntityManager().persist(task);
+				} else {
+					task = (TaskImpl)currentTask;
+					task.setTaskName(taskName);
+					task.setTaskStatus(nextStep);
+					task.setAssignmentDate(new Date());
+					task = dbInstance.getCurrentEntityManager().merge(task);
+				}	
 				dbInstance.commit();
-				syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
+				syncAssessmentEntry(task, cNode, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 		} else {
