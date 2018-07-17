@@ -638,11 +638,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public List<IdentityShort> searchIdentityShort(String search, int maxResults) {
-		return searchIdentityShort(search, null, maxResults);
+		return searchIdentityShort(search, null, null, maxResults);
 	}
 
 	@Override
-	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searcheableOrgnisations, int maxResults) {
+	public List<IdentityShort> searchIdentityShort(String search,
+			List<? extends OrganisationRef> searcheableOrgnisations, GroupRoles repositoryEntryRole, int maxResults) {
 		String[] searchArr = search.split(" ");
 		String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
 		
@@ -675,6 +676,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
 			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
 		}
+		if (repositoryEntryRole != null) {
+			sb.append(" and exists (select rmember.key from repoentrytogroup as relGroup")
+			  .append("  inner join relGroup.group as rGroup")
+			  .append("  inner join rGroup.members as rmember")
+			  .append("  where rmember.identity.key=ident.key and rmember.role=:repositoryEntryRole)");
+		}
 		
 		TypedQuery<IdentityShort> searchQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
@@ -686,6 +693,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			List<Long> organisationKeys = searcheableOrgnisations.stream()
 					.map(OrganisationRef::getKey).collect(Collectors.toList());
 			searchQuery.setParameter("organisationKey", organisationKeys);
+		}
+		if (repositoryEntryRole != null) {
+			searchQuery.setParameter("repositoryEntryRole", repositoryEntryRole.name());
 		}
 
 		return searchQuery

@@ -173,10 +173,12 @@ public interface BaseSecurity {
 	 * 
 	 * @param search Search string
 	 * @param searchableOrganisations The organisations where the identities are
+	 * @param repositoryEntryRole restrict to role
 	 * @param maxResults The max results or -1
 	 * @return A list of identities (short version)
 	 */
-	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searchableOrganisations, int maxResults);
+	public List<IdentityShort> searchIdentityShort(String search,
+			List<? extends OrganisationRef> searchableOrganisations, GroupRoles repositoryEntryRole, int maxResults);
 
 	public IdentityShort loadIdentityShortByKey(Long identityKey);
 	
