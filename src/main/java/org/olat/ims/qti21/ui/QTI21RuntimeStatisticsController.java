@@ -85,8 +85,8 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 		if(asOptions.getGroup() != null) {
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);
-		} else if(asOptions.getGroups() != null) {
-			searchParams.setLimitToGroups(asOptions.getGroups());
+		} else if(asOptions.getAlternativeGroupsOfIdentities() != null) {
+			searchParams.setLimitToGroups(asOptions.getAlternativeGroupsOfIdentities());
 		}
 		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);

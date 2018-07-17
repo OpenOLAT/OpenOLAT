@@ -80,9 +80,9 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 		if(asOptions.getGroup() != null) {
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);
-		} else if(asOptions.getGroups() != null) {
+		} else if(asOptions.getAlternativeGroupsOfIdentities() != null) {
 			searchParams.setMayViewAllUsersAssessments(asOptions.isNonMembers());
-			searchParams.setLimitToGroups(asOptions.getGroups());
+			searchParams.setLimitToGroups(asOptions.getAlternativeGroupsOfIdentities());
 		}
 		
 		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();

@@ -526,17 +526,21 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options, SearchAssessedIdentityParams params) {
 		List<Group> baseGroups = new ArrayList<>();
-		if((assessmentCallback.canAssessRepositoryEntryMembers()
-				&& (assessmentCallback.getCoachedGroups() == null || assessmentCallback.getCoachedGroups().isEmpty()))
-				|| assessmentCallback.canAssessNonMembers()) {
+		if(assessmentCallback.canAssessRepositoryEntryMembers() || assessmentCallback.canAssessNonMembers()) {
 			baseGroups.add(repositoryService.getDefaultGroup(courseEntry));
 		}
-		if(assessmentCallback.getCoachedGroups() != null && assessmentCallback.getCoachedGroups().size() > 0) {
+		if(assessmentCallback.canAssessBusinessGoupMembers() && assessmentCallback.getCoachedGroups() != null && !assessmentCallback.getCoachedGroups().isEmpty()) {
 			for(BusinessGroup coachedGroup:assessmentCallback.getCoachedGroups()) {
 				baseGroups.add(coachedGroup.getBaseGroup());
 			}
 		}
-		options.setGroups(baseGroups);
+		if(assessmentCallback.canAssessCurriculumMembers()) {
+			List<CurriculumElement> coachedCurriculumElements = coachCourseEnv.getCoachedCurriculumElements();
+			for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
+				baseGroups.add(coachedCurriculumElement.getGroup());
+			}
+		}
+		options.setAlternativeGroupsOfIdentities(baseGroups);
 		options.setNonMembers(params.isNonMembers());
 	}
 

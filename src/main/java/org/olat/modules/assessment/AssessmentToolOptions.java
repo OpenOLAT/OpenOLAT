@@ -76,11 +76,17 @@ public class AssessmentToolOptions {
 		this.identities = identities;
 	}
 
-	public List<Group> getGroups() {
+	/**
+	 * This is a list of groups which eventually (if set) can
+	 * used instead of the list of identities.
+	 * 
+	 * @return A list of base groups.
+	 */
+	public List<Group> getAlternativeGroupsOfIdentities() {
 		return groups;
 	}
 
-	public void setGroups(List<Group> groups) {
+	public void setAlternativeGroupsOfIdentities(List<Group> groups) {
 		this.groups = groups;
 	}
 	

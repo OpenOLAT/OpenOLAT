@@ -109,8 +109,8 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		if(asOptions.getGroup() != null) {// filter by business group
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);
-		} else if(asOptions.getGroups() != null) {
-			searchParams.setLimitToGroups(asOptions.getGroups());
+		} else if(asOptions.getAlternativeGroupsOfIdentities() != null) {
+			searchParams.setLimitToGroups(asOptions.getAlternativeGroupsOfIdentities());
 		} else {
 			searchParams.setViewNonMembers(asOptions.isNonMembers());
 		}
