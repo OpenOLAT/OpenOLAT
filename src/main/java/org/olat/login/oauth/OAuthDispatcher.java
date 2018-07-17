@@ -78,6 +78,8 @@ public class OAuthDispatcher implements Dispatcher {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
@@ -187,7 +189,7 @@ public class OAuthDispatcher implements Dispatcher {
 					}
 				} else {
 					//update last login date and register active user
-					UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+					userDeletionManager.setIdentityAsActiv(identity);
 					MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
 					if (mr instanceof RedirectMediaResource) {
 						RedirectMediaResource rmr = (RedirectMediaResource)mr;

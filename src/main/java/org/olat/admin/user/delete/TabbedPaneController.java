@@ -28,23 +28,22 @@ package org.olat.admin.user.delete;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Roles;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Util;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 
 /** 
@@ -57,15 +56,14 @@ public class TabbedPaneController extends BasicController implements ControllerE
 	private static final String NLS_ERROR_NOACCESS_TO_USER = "error.noaccess.to.user";
 	
 	private VelocityContainer myContent;
-	
-	private Translator translator;
 
 	// controllers used in tabbed pane
 	private TabbedPane userDeleteTabP;
 	private SelectionController userSelectionCtr;
 	private StatusController userDeleteStatusCtr;
 	private ReadyToDeleteController readyToDeleteCtr;
-
+	
+	private List<OrganisationRef> manageableOrganisations;
 
 	/**
 	 * Constructor for user delete tabbed pane.
@@ -75,18 +73,23 @@ public class TabbedPaneController extends BasicController implements ControllerE
 	 */
 	public TabbedPaneController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-	
-		translator = Util.createPackageTranslator(TabbedPaneController.class, ureq.getLocale());
+		
+		UserSession usess = ureq.getUserSession();
+		if(BaseSecurityModule.USERMANAGER_CAN_DELETE_USER.booleanValue()) {
+			manageableOrganisations = usess.getRoles().getOrganisationsWithRoles(OrganisationRoles.administrator,
+				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+		} else {
+			manageableOrganisations = usess.getRoles().getOrganisationsWithRoles(OrganisationRoles.administrator,
+				OrganisationRoles.rolesmanager);
+		}
 
-		Boolean canDelete = BaseSecurityModule.USERMANAGER_CAN_DELETE_USER;
-		Roles roles = ureq.getUserSession().getRoles();
-		if ((roles.isUserManager() && canDelete.booleanValue()) || roles.isRolesManager() || roles.isAdministrator()) {
+		if (!manageableOrganisations.isEmpty()) {
 			myContent = createVelocityContainer("deleteTabbedPane", "deleteTabbedPane");
 			initTabbedPane(ureq);
 			putInitialPanel(myContent);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
-			getWindowControl().setWarning(translator.translate(NLS_ERROR_NOACCESS_TO_USER, new String[]{supportAddr}));
+			getWindowControl().setWarning(translate(NLS_ERROR_NOACCESS_TO_USER, new String[]{supportAddr}));
 			putInitialPanel(new Panel("empty"));
 		}
 	}
@@ -94,18 +97,16 @@ public class TabbedPaneController extends BasicController implements ControllerE
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event.getCommand().equals(TabbedPaneChangedEvent.TAB_CHANGED)) {
-			userSelectionCtr.updateUserList();
-			userDeleteStatusCtr.updateUserList();
-			readyToDeleteCtr.updateUserList();
+			userSelectionCtr.loadModel();
+			if(userDeleteStatusCtr != null) {
+				userDeleteStatusCtr.loadModel();
+			}
+			if(readyToDeleteCtr != null) {
+				readyToDeleteCtr.loadModel();
+			}
 			userDeleteTabP.addToHistory(ureq, getWindowControl());
 		}
 	}
-
-	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
-		super.event(ureq, source, event);
-	}
-
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -123,17 +124,25 @@ public class TabbedPaneController extends BasicController implements ControllerE
 		userDeleteTabP = new TabbedPane("userDeleteTabP", ureq.getLocale());
 		userDeleteTabP.addListener(this);
 		
-		userSelectionCtr = new SelectionController(ureq, getWindowControl());
+		userSelectionCtr = new SelectionController(ureq, getWindowControl(), manageableOrganisations);
 		listenTo(userSelectionCtr);
-		userDeleteTabP.addTab(translator.translate("delete.workflow.tab.start.process"), userSelectionCtr.getInitialComponent());
+		userDeleteTabP.addTab(translate("delete.workflow.tab.start.process"), userSelectionCtr.getInitialComponent());
 
-		userDeleteStatusCtr = new StatusController(ureq, getWindowControl());
-		listenTo(userDeleteStatusCtr);
-		userDeleteTabP.addTab(translator.translate("delete.workflow.tab.status.email"), userDeleteStatusCtr.getInitialComponent());
+		userDeleteTabP.addTab(translate("delete.workflow.tab.status.email"), uureq -> {
+			if(userDeleteStatusCtr == null) {
+				userDeleteStatusCtr = new StatusController(ureq, getWindowControl(), manageableOrganisations);
+				listenTo(userDeleteStatusCtr);
+			}
+			return userDeleteStatusCtr.getInitialComponent();
+		});
 
-		readyToDeleteCtr = new ReadyToDeleteController(ureq, getWindowControl());
-		listenTo(readyToDeleteCtr);
-		userDeleteTabP.addTab(translator.translate("delete.workflow.tab.select.delete"), readyToDeleteCtr.getInitialComponent());
+		userDeleteTabP.addTab(translate("delete.workflow.tab.select.delete"), uureq -> {
+			if(readyToDeleteCtr == null) {
+				readyToDeleteCtr = new ReadyToDeleteController(ureq, getWindowControl(), manageableOrganisations);
+				listenTo(readyToDeleteCtr);
+			}
+			return readyToDeleteCtr.getInitialComponent();
+		});
 				
 		myContent.put("userDeleteTabP", userDeleteTabP);
 	}

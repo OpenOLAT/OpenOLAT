@@ -22,7 +22,6 @@ package org.olat.ldap.ui;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
@@ -291,7 +290,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			int loginStatus = AuthHelper.doLogin(authIdentity, myProvider, ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				//update last login date and register active user
-				UserDeletionManager.getInstance().setIdentityAsActiv(authIdentity);
+				userDeletionManager.setIdentityAsActiv(authIdentity);
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {

@@ -64,6 +64,8 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	private DisclaimerController disclaimerController;
 
 	@Autowired
+	private UserDeletionManager userDeletionManager;
+	@Autowired
 	private RegistrationManager registrationManager;
 	
 	public OAuthDisclaimerController(UserRequest ureq, WindowControl wControl, OAuthUser user, OAuthUserCreator userCreator) {
@@ -138,7 +140,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 		int loginStatus = AuthHelper.doLogin(authIdentity, null, ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
-			UserDeletionManager.getInstance().setIdentityAsActiv(authIdentity);
+			userDeletionManager.setIdentityAsActiv(authIdentity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else {

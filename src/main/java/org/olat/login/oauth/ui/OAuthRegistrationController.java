@@ -84,6 +84,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private UserDeletionManager userDeletionManager;
+	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
 	private RegistrationManager registrationManager;
@@ -240,7 +242,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		int loginStatus = AuthHelper.doLogin(authIdentity, registration.getAuthProvider(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
-			UserDeletionManager.getInstance().setIdentityAsActiv(authIdentity);
+			userDeletionManager.setIdentityAsActiv(authIdentity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else {

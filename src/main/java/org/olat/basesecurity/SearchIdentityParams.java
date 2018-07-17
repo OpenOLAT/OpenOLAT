@@ -242,6 +242,12 @@ public class SearchIdentityParams {
 		return authorAndCoAuthor;
 	}
 
+	/**
+	 * Set to true, this search will overwrite the
+	 * roles and repository entry role specified.
+	 * 
+	 * @param authorAndCoAuthor
+	 */
 	private void setAuthorAndCoAuthor(boolean authorAndCoAuthor) {
 		this.authorAndCoAuthor = authorAndCoAuthor;
 	}

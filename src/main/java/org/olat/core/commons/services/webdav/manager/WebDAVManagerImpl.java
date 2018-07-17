@@ -87,6 +87,8 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private WebDAVAuthManager webDAVAuthManager;
 	@Autowired
 	private WebDAVModule webdavModule;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 	@Autowired
 	public WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
@@ -284,7 +286,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		
 			sessionManager.signOffAndClear(usess);
 			usess.setIdentity(identity);
-			UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+			userDeletionManager.setIdentityAsActiv(identity);
 			// set the roles (admin, author, guest)
 			Roles roles = securityManager.getRoles(identity);
 			usess.setRoles(roles);

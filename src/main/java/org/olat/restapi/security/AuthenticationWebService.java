@@ -32,13 +32,13 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.login.auth.OLATAuthManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -56,11 +56,20 @@ public class AuthenticationWebService {
 	
 	private static final String VERSION = "1.0";
 	
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RestSecurityBean securityBean;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
+	
 	/**
 	 * Retrieves the version of the User Authentication Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -115,12 +124,12 @@ public class AuthenticationWebService {
 	}
 	
 	private Response loginWithToken(String username, String secToken, HttpServletRequest httpRequest) {
-		Identity identity = BaseSecurityManager.getInstance().findIdentityByName(username);
+		Identity identity = securityManager.findIdentityByName(username);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		org.olat.basesecurity.Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, RestSecurityBeanImpl.REST_AUTH_PROVIDER);
+		org.olat.basesecurity.Authentication auth = securityManager.findAuthentication(identity, RestSecurityBeanImpl.REST_AUTH_PROVIDER);
 		if(auth == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -138,7 +147,6 @@ public class AuthenticationWebService {
 	
 	private Response loginWithPassword(String username, String password, HttpServletRequest httpRequest) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(httpRequest);
-		OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 		Identity identity = olatAuthenticationSpi.authenticate(null, username, password);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -146,10 +154,8 @@ public class AuthenticationWebService {
 		
 		int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
-			//fxdiff: FXOLAT-268 update last login date and register active user
-			UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+			userDeletionManager.setIdentityAsActiv(identity);
 			//Forge a new security token
-			RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 			String token = securityBean.generateToken(identity, httpRequest.getSession(true));
 			return Response.ok("<hello identityKey=\"" + identity.getKey() + "\">Hello " + username + "</hello>", MediaType.APPLICATION_XML)
 				.header(RestSecurityHelper.SEC_TOKEN, token).build();

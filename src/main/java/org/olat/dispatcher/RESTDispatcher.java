@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -75,14 +74,49 @@ import org.olat.restapi.security.RestSecurityHelper;
  * <br />
  * Example: [RepoyEntry:12323123][CourseNode:2341231456][message:123123][blablup:555555]?X-OLAT-TOKEN=xyz
  * <P>
- * TODO:pb:2009-06-02: (1) Check for Authenticated Session, otherwise send over login page (2) UZHDisparcher has a security check for
- * use of SSL -> introduce also here or maybe bring the check into webapphelper.
- * <P>
  * Initial Date:  24.04.2009 <br>
  * @author patrickb
  */
 public class RESTDispatcher implements Dispatcher {
+	
 	private static final OLog log = Tracing.createLoggerFor(RESTDispatcher.class);
+	
+	private LoginModule loginModule;
+	private RestSecurityBean restSecurityBean;
+	private UserSessionManager userSessionManager;
+	private UserDeletionManager userDeletionManager;
+	
+	/**
+	 * [used by Spring]
+	 * @param loginModule
+	 */
+	public void setLoginModule(LoginModule loginModule) {
+		this.loginModule = loginModule;
+	}
+	
+	/**
+	 * [user by Spring]
+	 * @param restSecurityBean
+	 */
+	public void setRestSecurityBean(RestSecurityBean restSecurityBean) {
+		this.restSecurityBean = restSecurityBean;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param userSessionManager
+	 */
+	public void setUserSessionManager(UserSessionManager userSessionManager) {
+		this.userSessionManager = userSessionManager;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param userDeletionManager
+	 */
+	public void setUserDeletionManager(UserDeletionManager userDeletionManager) {
+		this.userDeletionManager = userDeletionManager;
+	}
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -101,7 +135,6 @@ public class RESTDispatcher implements Dispatcher {
 		
 		String[] split = restPart.split("/");
 		if (split.length % 2 != 0) {
-			// assert(split.length % 2 == 0);
 			//The URL is not a valid business path
 			DispatcherModule.sendBadRequest(origUri, response);
 			log.warn("URL is not valid: "+restPart);
@@ -131,7 +164,7 @@ public class RESTDispatcher implements Dispatcher {
 		//
 		// create the olat ureq and get an associated main window to spawn the "tab"
 		//
-		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
+		UserSession usess = userSessionManager.getUserSession(request);
 		if(usess != null) {
 			ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(request);
 		}
@@ -152,14 +185,12 @@ public class RESTDispatcher implements Dispatcher {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
-		//XX:GUIInterna.setLoadPerformanceMode(ureq);		
 		
 		// Do auto-authenticate if url contains a X-OLAT-TOKEN Single-Sign-On REST-Token
 		String xOlatToken = ureq.getParameter(RestSecurityHelper.SEC_TOKEN);
 		if (xOlatToken != null) {
 			// Lookup identity that is associated with this token
-			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
-			Identity restIdentity = securityBean.getIdentity(xOlatToken);			
+			Identity restIdentity = restSecurityBean.getIdentity(xOlatToken);			
 			// 
 			if(log.isDebug()) {
 				if (restIdentity == null)
@@ -183,7 +214,7 @@ public class RESTDispatcher implements Dispatcher {
 					int loginStatus = AuthHelper.doLogin(restIdentity, RestSecurityHelper.SEC_TOKEN, ureq);			
 					if (loginStatus == AuthHelper.LOGIN_OK) {
 						//fxdiff: FXOLAT-268 update last login date and register active user
-						UserDeletionManager.getInstance().setIdentityAsActiv(restIdentity);
+						userDeletionManager.setIdentityAsActiv(restIdentity);
 					} else {
 						//error, redirect to login screen
 						DispatcherModule.redirectToDefaultDispatcher(response);
@@ -218,7 +249,6 @@ public class RESTDispatcher implements Dispatcher {
 			}
 		} else {
 			//prepare for redirect
-			LoginModule loginModule = CoreSpringFactory.getImpl(LoginModule.class);
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
 			if (invitationAccess != null && loginModule.isInvitationEnabled()) {
@@ -229,7 +259,7 @@ public class RESTDispatcher implements Dispatcher {
 				if ( loginStatus == AuthHelper.LOGIN_OK) {
 					Identity invite = usess.getIdentity();
 					//fxdiff: FXOLAT-268 update last login date and register active user
-					UserDeletionManager.getInstance().setIdentityAsActiv(invite);					
+					userDeletionManager.setIdentityAsActiv(invite);					
 					//logged in as invited user, continue
 					String url = getRedirectToURL(usess);
 					DispatcherModule.redirectTo(response, url);
@@ -243,7 +273,6 @@ public class RESTDispatcher implements Dispatcher {
 				String guestAccess = ureq.getParameter(AuthenticatedDispatcher.GUEST);
 				if (guestAccess == null || !loginModule.isGuestLoginLinksEnabled()) {
 					DispatcherModule.redirectToDefaultDispatcher(response);
-					return;
 				} else if (guestAccess.equals(AuthenticatedDispatcher.TRUE)) {
 					// try to log in as anonymous
 					// use the language from the lang paramter if available, otherwhise use the system default locale
@@ -269,7 +298,6 @@ public class RESTDispatcher implements Dispatcher {
 	 * @param usess
 	 * @param businessPath
 	 */
-	//fxdiff FXOLAT-113: business path in DMZ
 	private void setBusinessPathInUserSession(UserSession usess, String businessPath, String options) {
 		if(StringHelper.containsNonWhitespace(businessPath) && usess != null) {
 			if(businessPath.startsWith("[changepw:0]") || "[registration:0]".equals(businessPath) || "[guest:0]".equals(businessPath)

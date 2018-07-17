@@ -29,21 +29,27 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 
 import org.olat.admin.user.delete.SelectionController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -83,10 +89,7 @@ public class UserDeletionManager {
 	private static final String LAST_LOGIN_DURATION_PROPERTY_NAME = "LastLoginDuration";
 	private static final String DELETE_EMAIL_DURATION_PROPERTY_NAME = "DeleteEmailDuration";
 	private static final String PROPERTY_CATEGORY = "UserDeletion";
-
-	private static UserDeletionManager INSTANCE;
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
-	private static final String USER_ARCHIVE_DIR = "archive_deleted_users";
 	private static final String USER_DELETED_ACTION = "userdeleted";
 
 
@@ -104,17 +107,6 @@ public class UserDeletionManager {
 	@Autowired
 	private DB dbInstance;
 
-	/**
-	 * [used by spring]
-	 */
-	private UserDeletionManager() {
-		INSTANCE = this;
-	}
-
-	/**
-	 * @return Singleton.
-	 */
-	public static UserDeletionManager getInstance() { return INSTANCE; }
 
 	/**
 	 * Send 'delete'- emails to a list of identities. The delete email is an announcement for the user-deletion.
@@ -178,32 +170,44 @@ public class UserDeletionManager {
 	 * @param lastLoginDuration  last-login duration in month
 	 * @return List of Identity objects
 	 */
-	public List<Identity> getDeletableIdentities(int lastLoginDuration) {
+	public List<Identity> getDeletableIdentities(int lastLoginDuration, List<OrganisationRef> organisations) {
+		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+		
 		Calendar lastLoginLimit = Calendar.getInstance();
 		lastLoginLimit.add(Calendar.MONTH, - lastLoginDuration);
 		log.debug("lastLoginLimit=" + lastLoginLimit);
 		// 1. get all 'active' identities with lastlogin > x
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
-		  .append(" where ident.status=").append(Identity.STATUS_ACTIV).append(" and (ident.lastLogin = null or ident.lastLogin < :lastLogin)");
+		  .append(" where ident.status=").append(Identity.STATUS_ACTIV).append(" and (ident.lastLogin = null or ident.lastLogin < :lastLogin)")
+		  .append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
+		  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+		  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKeys) and orgtomember.role='").append(OrganisationRoles.user).append("')");
+
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("lastLogin", lastLoginLimit.getTime(), TemporalType.TIMESTAMP)
+				.setParameter("organisationKeys", organisationKeys)
 				.getResultList();
 
-		// 2. get all 'active' identities in deletion process
-		String queryStr = "select ident from org.olat.core.id.Identity as ident"
-			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
-			+ " where ident.key = le.persistentRef "
-			+ " and le.persistentTypeName ='" + IdentityImpl.class.getName() + "'"
-			+ " and le.action ='" + SEND_DELETE_EMAIL_ACTION + "' ";
-		List<Identity> identitiesInProcess = dbInstance.getCurrentEntityManager()
-				.createQuery(queryStr, Identity.class)
+		// 2. get all 'active' identities in deletion process to remove from 1.
+		StringBuilder sc = new StringBuilder(512);
+		sc.append("select le.persistentRef from ").append(LifeCycleEntry.class.getName()).append(" as le")
+		  .append(" where le.persistentTypeName ='").append(IdentityImpl.class.getName()).append("'")
+		  .append(" and le.action ='").append(SEND_DELETE_EMAIL_ACTION).append("'");
+		List<Long> identitiesInProcess = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Long.class)
 				.getResultList();
-		// 3. Remove all identities in deletion-process from all inactive-identities
-		identities.removeAll(identitiesInProcess);
-		return identities;
+		
+		Set<Long> identitiesInProcessSet = new HashSet<>(identitiesInProcess);
+		List<Identity> deletableIdentities = new ArrayList<>(identities.size());
+		for(Identity identity:identities) {
+			if(!identitiesInProcessSet.contains(identity.getKey())) {
+				deletableIdentities.add(identity);
+			}
+		}
+		return deletableIdentities;
 	}
 
 	/**
@@ -212,19 +216,26 @@ public class UserDeletionManager {
 	 * @param deleteEmailDuration  Duration of user-deletion-process in days
 	 * @return List of Identity objects
 	 */
-	public List<Identity> getIdentitiesInDeletionProcess(int deleteEmailDuration) {
+	public List<Identity> getIdentitiesInDeletionProcess(int deleteEmailDuration, List<OrganisationRef> organisations) {
+		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 		Calendar deleteEmailLimit = Calendar.getInstance();
-		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration-1));
-		log.debug("deleteEmailLimit=" + deleteEmailLimit);
-		String queryStr = "select ident from org.olat.core.id.Identity as ident"
-			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
-			+ " where ident.key = le.persistentRef "
-			+ " and ident.status = "	+ Identity.STATUS_ACTIV
-			+ " and le.persistentTypeName ='" + IdentityImpl.class.getName() + "'"
-			+ " and le.action ='" + SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp >= :deleteEmailDate ";
+		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
+		
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append( "select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" inner join ").append(LifeCycleEntry.class.getName()).append(" as le on (ident.key=le.persistentRef)")
+		  .append(" and ident.status=").append(Identity.STATUS_ACTIV)
+		  .append(" and le.persistentTypeName='").append(IdentityImpl.class.getName()).append("'")
+		  .append(" and le.action='").append(SEND_DELETE_EMAIL_ACTION).append("' and le.lcTimestamp>=:deleteEmailDate")
+		  .append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
+		  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+		  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKeys) and orgtomember.role='").append(OrganisationRoles.user).append("')");
+
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(queryStr, Identity.class)
+				.createQuery(sb.toString(), Identity.class)
 				.setParameter("deleteEmailDate", deleteEmailLimit.getTime(), TemporalType.TIMESTAMP)
+				.setParameter("organisationKeys", organisationKeys)
 				.getResultList();
 	}
 
@@ -234,19 +245,26 @@ public class UserDeletionManager {
 	 * @param deleteEmailDuration  Duration of user-deletion-process in days
 	 * @return List of Identity objects
 	 */
-	public List<Identity> getIdentitiesReadyToDelete(int deleteEmailDuration) {
+	public List<Identity> getIdentitiesReadyToDelete(int deleteEmailDuration, List<OrganisationRef> organisations) {
+		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
-		log.debug("deleteEmailLimit=" + deleteEmailLimit);
-		String queryStr = "select ident from org.olat.core.id.Identity as ident"
-			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
-			+ " where ident.key = le.persistentRef "
-			+ " and ident.status = "	+ Identity.STATUS_ACTIV
-			+ " and le.persistentTypeName ='" + IdentityImpl.class.getName() + "'"
-			+ " and le.action ='" + SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp < :deleteEmailDate ";
+		
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" inner join ").append(LifeCycleEntry.class.getName()).append(" as le on (ident.key=le.persistentRef)")
+		  .append(" where ident.status=").append(Identity.STATUS_ACTIV)
+		  .append(" and le.persistentTypeName='").append(IdentityImpl.class.getName()).append("'")
+		  .append(" and le.action='").append(SEND_DELETE_EMAIL_ACTION).append("' and le.lcTimestamp<:deleteEmailDate")
+		  .append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
+		  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+		  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKeys) and orgtomember.role='").append(OrganisationRoles.user).append("')");
+
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(queryStr, Identity.class)
+				.createQuery(sb.toString(), Identity.class)
 				.setParameter("deleteEmailDate", deleteEmailLimit.getTime(), TemporalType.TIMESTAMP)
+				.setParameter("organisationKeys", organisationKeys)
 				.getResultList();
 	}
 

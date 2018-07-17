@@ -74,6 +74,8 @@ public class UserTest extends OlatTestCase {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -354,7 +356,7 @@ public class UserTest extends OlatTestCase {
 		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// delete user now
-		UserDeletionManager.getInstance().deleteIdentity(identity, null);
+		userDeletionManager.deleteIdentity(identity, null);
 		dbInstance.commitAndCloseSession();
 		
 		// check if deleted successfully

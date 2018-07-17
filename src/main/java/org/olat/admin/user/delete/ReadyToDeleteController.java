@@ -26,14 +26,14 @@
 package org.olat.admin.user.delete;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -52,6 +52,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
@@ -76,7 +77,15 @@ public class ReadyToDeleteController extends BasicController {
 	private DialogBoxController deleteConfirmController;
 	private boolean isAdministrativeUser;
 	private Translator propertyHandlerTranslator;
+	
+	private List<OrganisationRef> manageableOrganisations;
 
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 
@@ -85,14 +94,13 @@ public class ReadyToDeleteController extends BasicController {
 	 * @param wControl
 	 * @param cancelbutton
 	 */
-	public ReadyToDeleteController(UserRequest ureq, WindowControl wControl) {
-		
+	public ReadyToDeleteController(UserRequest ureq, WindowControl wControl, List<OrganisationRef> manageableOrganisations) {
 		super(ureq, wControl);
+		this.manageableOrganisations = manageableOrganisations;
 		
 		Translator fallbackTrans = Util.createPackageTranslator(UserSearchController.class, ureq.getLocale());
 		setTranslator(Util.createPackageTranslator(ReadyToDeleteController.class, ureq.getLocale(), fallbackTrans));
-    //	use the PropertyHandlerTranslator	as tableCtr translator
-		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
+		propertyHandlerTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
 		myContent = createVelocityContainer("panel");		
 		readyToDeletePanel = new Panel("readyToDeletePanel");
@@ -100,27 +108,26 @@ public class ReadyToDeleteController extends BasicController {
 		myContent.put("panel", readyToDeletePanel);
 
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
-		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		
 		initializeTableController(ureq);
 		initializeContent();
+		loadModel();
 		putInitialPanel(myContent);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
-					int rowid = te.getRowId();
-					Identity foundIdentity = tdm.getObject(rowid);
-					UserDeletionManager.getInstance().setIdentityAsActiv(foundIdentity);
-					updateUserList();
+					doActivate(tdm.getObject(te.getRowId()));
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {
 				TableMultiSelectEvent tmse = (TableMultiSelectEvent) event;
@@ -130,7 +137,7 @@ public class ReadyToDeleteController extends BasicController {
 			} 
 		} else if (source == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				List<String> errors = new ArrayList<String>();
+				List<String> errors = new ArrayList<>();
 				deleteIdentities(readyToDeleteIdentities, errors);
 				if(errors.isEmpty()) {
 					showInfo("deleted.feedback.msg");
@@ -143,12 +150,18 @@ public class ReadyToDeleteController extends BasicController {
 					showWarning("error.delete", sb.toString());
 				}
 				initializeContent();
+				loadModel();
 			}
 		}
 	}
+	
+	private void doActivate(Identity identity) {
+		userDeletionManager.setIdentityAsActiv(identity);
+		loadModel();
+	}
 
 	private void handleDeleteButtonEvent(UserRequest ureq, TableMultiSelectEvent tmse) {
-		if (tdm.getObjects(tmse.getSelection()).size() != 0) {
+		if (!tdm.getObjects(tmse.getSelection()).isEmpty()) {
 			readyToDeleteIdentities = tdm.getObjects(tmse.getSelection());
 			deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", getUserlistAsString(readyToDeleteIdentities)), deleteConfirmController);
 		} else {
@@ -181,8 +194,7 @@ public class ReadyToDeleteController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
 		listenTo(tableCtr);
 		
-		List<Identity> l = userDeletionManager.getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
-		tdm = new UserDeleteTableModel(l, getLocale(), isAdministrativeUser);
+		tdm = new UserDeleteTableModel(Collections.emptyList(), getLocale(), isAdministrativeUser);
 		tdm.addColumnDescriptors(tableCtr, null,"table.identity.deleteEmail");	
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.activate")));				
 		tableCtr.addMultiSelectAction("action.ready.to.delete", ACTION_MULTISELECT_CHOOSE);		
@@ -191,16 +203,16 @@ public class ReadyToDeleteController extends BasicController {
 	}
 
 	private void initializeContent() {
-		updateUserList();
 		VelocityContainer readyToDeleteContent = createVelocityContainer("readyToDelete");
 		readyToDeleteContent.put("readyToDelete", tableCtr.getInitialComponent());
 		readyToDeleteContent.contextPut("header", translate("ready.to.delete.header", 
-				Integer.toString(UserDeletionManager.getInstance().getDeleteEmailDuration()) ));
+				Integer.toString(userDeletionManager.getDeleteEmailDuration()) ));
 		readyToDeletePanel.setContent(readyToDeleteContent);
 	}
 
-	protected void updateUserList() {
-		List<Identity> l = userDeletionManager.getIdentitiesReadyToDelete(UserDeletionManager.getInstance().getDeleteEmailDuration());		
+	protected void loadModel() {
+		List<Identity> l = userDeletionManager.getIdentitiesReadyToDelete(userDeletionManager.getDeleteEmailDuration(),
+				manageableOrganisations);		
 		tdm.setObjects(l);	
 		tableCtr.setTableDataModel(tdm);
 	}
@@ -209,19 +221,15 @@ public class ReadyToDeleteController extends BasicController {
 		for (Identity id:identities) {
 			boolean success = userDeletionManager.deleteIdentity(id, getIdentity());
 			if (success) {
-				DBFactory.getInstance().intermediateCommit();				
+				dbInstance.intermediateCommit();				
 			} else {
 				errors.add(id.getName());
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}
-	
-	
 }

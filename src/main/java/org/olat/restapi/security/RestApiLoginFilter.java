@@ -192,7 +192,7 @@ public class RestApiLoginFilter implements Filter {
 
 						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 						if (loginStatus == AuthHelper.LOGIN_OK) {
-							UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+							CoreSpringFactory.getImpl(UserDeletionManager.class).setIdentityAsActiv(identity);
 							//Forge a new security token
 							RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 							String token = securityBean.generateToken(identity, request.getSession());

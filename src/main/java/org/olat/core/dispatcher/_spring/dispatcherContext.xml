@@ -72,7 +72,12 @@
 	</bean>
 	
 	
-	<bean id="restdispatcher" class="org.olat.dispatcher.RESTDispatcher" />
+	<bean id="restdispatcher" class="org.olat.dispatcher.RESTDispatcher">
+		<property name="userDeletionManager" ref="userDeletionManager" />
+		<property name="userSessionManager" ref="userSessionManager" />
+		<property name="restSecurityBean" ref="restSecurityBean" />
+		<property name="loginModule" ref="loginModule" />
+	</bean>
 	
 	<bean id="oauthcallback" class="org.olat.login.oauth.OAuthDispatcher" />
 	
@@ -196,7 +201,9 @@
 		form submit method : POST (GET not allowed)
 		form action: /olat/remotelogin/
 	-->
-	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher" />
+	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher">
+		<property name="userDeletionManager" ref="userDeletionManager" />
+	</bean>
 
 	<bean id="shibbean" class="org.olat.shibboleth.ShibbolethDispatcher">
 		<property name="shibbolethModule" ref="shibbolethModule"/>

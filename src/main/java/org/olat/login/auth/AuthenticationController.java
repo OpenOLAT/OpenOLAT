@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  04.08.2004
@@ -40,6 +41,9 @@ import org.olat.core.id.Identity;
  * @author Mike Stock
  */
 public abstract class AuthenticationController extends BasicController {
+	
+	@Autowired
+	protected UserDeletionManager userDeletionManager;
 	
 
 	public AuthenticationController(UserRequest ureq, WindowControl wControl) {
@@ -56,7 +60,7 @@ public abstract class AuthenticationController extends BasicController {
 	 * @param identity
 	 */
 	public void authenticated(UserRequest ureq, Identity identity) {
-		identity = UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+		identity = userDeletionManager.setIdentityAsActiv(identity);
 		fireEvent(ureq, new AuthenticationEvent(identity));
 	}
 	

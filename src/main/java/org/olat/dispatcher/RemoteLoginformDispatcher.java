@@ -92,6 +92,16 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 	private static final String PARAM_PASSWORD = "pwd";
 	private static final OLog log = Tracing.createLoggerFor(RemoteLoginformDispatcher.class);
 	
+	private UserDeletionManager userDeletionManager;
+	
+	/**
+	 * [used by Spring]
+	 * @param userDeletionManager
+	 */
+	public void setUserDeletionManager(UserDeletionManager userDeletionManager) {
+		this.userDeletionManager = userDeletionManager;
+	}
+	
 	/**
 	 * Tries to login the user with the parameters from the POST request and
 	 * redirects to the home screen in case of success. In case of failure,
@@ -148,7 +158,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 				int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 				if (loginStatus == AuthHelper.LOGIN_OK) {
 					// redirect to authenticated environment
-					UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+					userDeletionManager.setIdentityAsActiv(identity);
 					
 					final String origUri = request.getRequestURI();
 					String restPart = origUri.substring(uriPrefix.length());
@@ -176,7 +186,6 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 							businessPath += "[" + key + ":" + value +"]";
 						}
 						
-						//UserSession usess = UserSession.getUserSession(request);
 						usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
 						String url = getRedirectToURL(usess);
 						DispatcherModule.redirectTo(response, url);

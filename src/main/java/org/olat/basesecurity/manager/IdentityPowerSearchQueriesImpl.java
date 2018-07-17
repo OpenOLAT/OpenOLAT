@@ -31,6 +31,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.AuthenticationImpl;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
@@ -170,7 +171,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			if(params.hasOrganisations()) {
 				sb.append(" and ident.key in  (select orgtomember.identity.key from bgroupmember as orgtomember ")
 				  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-				  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+				  .append("  where orgtomember.identity.key=ident.key and orgtomember.inheritanceModeString in ('").append(GroupMembershipInheritance.none).append("','").append(GroupMembershipInheritance.root).append("')")
+				  .append("  and org.key in (:organisationKey))");
 			}
 		} else if(params.hasRoles() && params.hasOrganisations()) {
 			needsAnd = checkAnd(sb, needsAnd);
@@ -185,7 +187,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+			  .append("  where orgtomember.identity.key=ident.key and orgtomember.inheritanceModeString in ('").append(GroupMembershipInheritance.none).append("','").append(GroupMembershipInheritance.root).append("')")
+			  .append("  and org.key in (:organisationKey))");
 		}
 		
 		if(params.hasExcludedRoles()) {

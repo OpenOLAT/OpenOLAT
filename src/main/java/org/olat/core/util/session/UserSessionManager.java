@@ -69,7 +69,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
+@Service("userSessionManager")
 public class UserSessionManager implements GenericEventListener {
 	
 	private static final OLog log = Tracing.createLoggerFor(UserSessionManager.class);

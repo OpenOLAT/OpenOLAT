@@ -25,12 +25,12 @@
 
 package org.olat.admin.user.delete;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -46,9 +46,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Controller for tab 'Delete Email Status'.
@@ -66,75 +68,77 @@ public class StatusController extends BasicController {
 	
 	private boolean isAdministrativeUser;
 	private Translator propertyHandlerTranslator;
-
+	private List<OrganisationRef> manageableOrganisations;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 
 	/**
 	 * @param ureq
 	 * @param wControl
 	 * @param cancelbutton
 	 */
-	public StatusController(UserRequest ureq, WindowControl wControl) {		
+	public StatusController(UserRequest ureq, WindowControl wControl, List<OrganisationRef> manageableOrganisations) {		
 		super(ureq, wControl);
+		this.manageableOrganisations = manageableOrganisations;
 		Translator fallbackTrans = Util.createPackageTranslator(UserSearchController.class, getLocale());
 		setTranslator(Util.createPackageTranslator(StatusController.class, getLocale(), fallbackTrans));
     //	use the PropertyHandlerTranslator	as tableCtr translator
-		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
+		propertyHandlerTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
 		myContent = createVelocityContainer("deletestatus");
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
-			//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 
 		userDeleteStatusPanel = new Panel("userDeleteStatusPanel");
 		userDeleteStatusPanel.addListener(this);
 		myContent.put("userDeleteStatusPanel", userDeleteStatusPanel);
 		myContent.contextPut("header", getTranslator().translate("status.delete.email.header", 
-				new String [] { Integer.toString(UserDeletionManager.getInstance().getDeleteEmailDuration()) }));
+				new String [] { Integer.toString(userDeletionManager.getDeleteEmailDuration()) }));
 
-		initializeTableController(ureq);		
+		initializeTableController(ureq);
+		loadModel();
 		
 		putInitialPanel(myContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					Identity foundIdentity = tdm.getObject(rowid);
-					UserDeletionManager.getInstance().setIdentityAsActiv(foundIdentity);
-					updateUserList();
+					doActivate(tdm.getObject(rowid));
 				}
 			} 
 		} 
 	}
-
+	
+	private void doActivate(Identity identity) {
+		userDeletionManager.setIdentityAsActiv(identity);
+		loadModel();
+	}
 
 	private void initializeTableController(UserRequest ureq) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.user.found"));
 		
 		removeAsListenerAndDispose(tableCtr);
-		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
+		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), propertyHandlerTranslator);
 		listenTo(tableCtr);
 				
-		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());
-		tdm = new UserDeleteTableModel(l, ureq.getLocale(), isAdministrativeUser);
+		tdm = new UserDeleteTableModel(Collections.emptyList(), ureq.getLocale(), isAdministrativeUser);
 		tdm.addColumnDescriptors(tableCtr, null,"table.identity.deleteEmail");	
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", translate("action.activate")));
 		
@@ -143,15 +147,14 @@ public class StatusController extends BasicController {
 		userDeleteStatusPanel.setContent(tableCtr.getInitialComponent());
 	}
 
-	protected void updateUserList() {
-		List<Identity> l = UserDeletionManager.getInstance().getIdentitiesInDeletionProcess(UserDeletionManager.getInstance().getDeleteEmailDuration());		
+	protected void loadModel() {
+		List<Identity> l = userDeletionManager.getIdentitiesInDeletionProcess(userDeletionManager.getDeleteEmailDuration(),
+				manageableOrganisations);		
 		tdm.setObjects(l); 
 		tableCtr.setTableDataModel(tdm);			
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}
