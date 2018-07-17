@@ -297,7 +297,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
-	private boolean createUserPropertiesQueryPart(SearchIdentityParams params, StringBuilder sb) {	
+	public boolean createUserPropertiesQueryPart(SearchIdentityParams params, StringBuilder sb) {	
 		boolean needsAnd = false;
 		boolean needsUserPropertiesJoin = false;
 		

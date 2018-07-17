@@ -34,6 +34,7 @@ import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -143,11 +145,15 @@ public class OrganisationUserManagementController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-user-list");
 	}
 	
 	private void loadModel(boolean reset) {
-		List<OrganisationMember> members = organisationService.getMembers(organisation);
+		SearchMemberParameters params = new SearchMemberParameters();
+		params.setSearchString(tableEl.getQuickSearchString());
+		params.setUserProperties(userPropertyHandlers);
+		List<OrganisationMember> members = organisationService.getMembers(organisation, params);
 		List<OrganisationUserRow> rows = new ArrayList<>(members.size());
 		for(OrganisationMember member:members) {
 			rows.add(new OrganisationUserRow(member, userPropertyHandlers, getLocale()));
@@ -220,6 +226,10 @@ public class OrganisationUserManagementController extends FormBasicController {
 			doRolleCallout(ureq);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
+		} else if(tableEl == source) {
+			if(event instanceof FlexiTableSearchEvent) {
+				loadModel(true);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

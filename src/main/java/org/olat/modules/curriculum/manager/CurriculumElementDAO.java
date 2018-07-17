@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupMembership;
-import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -48,7 +47,6 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
-import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -289,32 +287,6 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("elementKey", curriculumElement.getKey())
 				.getResultList();
-	}
-	
-	public List<CurriculumMember> getMembers(CurriculumElementRef element) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select ident, membership.role, membership.inheritanceModeString from curriculumelement el")
-		  .append(" inner join el.group baseGroup")
-		  .append(" inner join baseGroup.members membership")
-		  .append(" inner join membership.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where el.key=:elementKey");
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("elementKey", element.getKey())
-				.getResultList();
-		List<CurriculumMember> members = new ArrayList<>(objects.size());
-		for(Object[] object:objects) {
-			Identity identity = (Identity)object[0];
-			String role = (String)object[1];
-			String inheritanceModeString = (String)object[2];
-			GroupMembershipInheritance inheritanceMode = GroupMembershipInheritance.none;
-			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
-				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
-			}
-			members.add(new CurriculumMember(identity, role, inheritanceMode));
-		}
-		return members;
 	}
 	
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, String role) {

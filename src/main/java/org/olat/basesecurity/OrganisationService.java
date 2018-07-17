@@ -22,6 +22,7 @@ package org.olat.basesecurity;
 import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -181,7 +182,7 @@ public interface OrganisationService {
 	
 	public void setAsGuest(Identity identity);
 	
-	public List<OrganisationMember> getMembers(Organisation organisation);
+	public List<OrganisationMember> getMembers(Organisation organisation, SearchMemberParameters params);
 	
 	public List<Identity> getMembersIdentity(Organisation organisation, OrganisationRoles role);
 	

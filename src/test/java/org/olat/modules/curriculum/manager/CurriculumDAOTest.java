@@ -36,7 +36,6 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
-import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -200,23 +199,6 @@ public class CurriculumDAOTest extends OlatTestCase {
 		userParams.setManagerIdentity(user);
 		List<Curriculum> userCurriculums = curriculumDao.search(userParams);
 		Assert.assertTrue(userCurriculums.isEmpty());
-	}
-	
-	@Test
-	public void getMembers() {
-		// add a curriculum manager
-		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
-		dbInstance.commitAndCloseSession();
-		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
-		dbInstance.commitAndCloseSession();
-		
-		// get memberships
-		List<CurriculumMember> members = curriculumDao.getMembers(curriculum);
-		Assert.assertNotNull(members);
-		Assert.assertEquals(1, members.size());
-		Assert.assertEquals(CurriculumRoles.curriculummanager.name(), members.get(0).getRole());
-		Assert.assertEquals(manager, members.get(0).getIdentity());	
 	}
 	
 	@Test

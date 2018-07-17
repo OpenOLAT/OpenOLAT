@@ -40,6 +40,7 @@ import org.olat.basesecurity.OrganisationTypeRef;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -332,8 +333,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public List<OrganisationMember> getMembers(Organisation organisation) {
-		return organisationDao.getMembers(organisation);
+	public List<OrganisationMember> getMembers(Organisation organisation, SearchMemberParameters params) {
+		return organisationDao.getMembers(organisation, params);
 	}
 
 	@Override

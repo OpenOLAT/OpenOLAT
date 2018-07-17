@@ -36,7 +36,6 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
-import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -314,22 +313,6 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, descendants1_1.size());
 		Assert.assertTrue(descendants1_1.contains(element1_1_1));
 		Assert.assertTrue(descendants1_1.contains(element1_1_2));
-	}
-	
-	@Test
-	public void getMembers() {
-		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
-		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, curriculum);
-		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
-		dbInstance.commitAndCloseSession();
-		
-		List<CurriculumMember> members = curriculumElementDao.getMembers(element);
-		Assert.assertNotNull(members);
-		Assert.assertEquals(1, members.size());
-		CurriculumMember member = members.get(0);
-		Assert.assertEquals(supervisor, member.getIdentity());
-		Assert.assertEquals(CurriculumRoles.curriculummanager.name(), member.getRole());
 	}
 	
 	@Test

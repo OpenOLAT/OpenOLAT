@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,6 +56,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumUserManagementTableModel.CurriculumMemberCols;
 import org.olat.modules.curriculum.ui.event.RoleEvent;
 import org.olat.user.UserManager;
@@ -141,15 +143,19 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumMemberCols.role, new RoleFlexiCellRenderer(getTranslator())));
 
-		tableModel = new CurriculumUserManagementTableModel(columnsModel); 
+		tableModel = new CurriculumUserManagementTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setSearchEnabled(true);
 	}
 	
 	private void loadModel(boolean reset) {
-		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement);
+		SearchMemberParameters params = new SearchMemberParameters();
+		params.setSearchString(tableEl.getQuickSearchString());
+		params.setUserProperties(userPropertyHandlers);
+		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement, params);
 		List<CurriculumMemberRow> rows = new ArrayList<>(members.size());
 		for(CurriculumMember member:members) {
 			rows.add(new CurriculumMemberRow(member, userPropertyHandlers, getLocale()));
@@ -222,6 +228,10 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 			doRolleCallout(ureq);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
+		} else if(tableEl == source) {
+			if(event instanceof FlexiTableSearchEvent) {
+				loadModel(true);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

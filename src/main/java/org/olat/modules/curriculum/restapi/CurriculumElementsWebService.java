@@ -55,6 +55,7 @@ import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -505,7 +506,8 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement);
+		SearchMemberParameters params = new SearchMemberParameters();
+		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement, params);
 		List<CurriculumElementMemberVO> voList = new ArrayList<>(members.size());
 		for(CurriculumMember member:members) {
 			voList.add(CurriculumElementMemberVO.valueOf(member));

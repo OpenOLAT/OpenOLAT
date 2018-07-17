@@ -55,6 +55,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -82,6 +83,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	private GroupDAO groupDao;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumMemberQueries memberQueries;
 	@Autowired
 	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
@@ -115,8 +118,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 	
 	@Override
-	public List<CurriculumMember> getMembers(CurriculumRef curriculum) {
-		return curriculumDao.getMembers(curriculum);
+	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params) {
+		return memberQueries.getMembers(curriculum, params);
 	}
 
 	@Override
@@ -187,7 +190,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef elementType) {
 		CurriculumElementType clonedType = curriculumElementTypeDao.cloneCurriculumElementType(elementType);
 		List<CurriculumElementTypeToType> allowSubTypesToTypes = curriculumElementTypeToTypeDao.getAllowedSubTypes(elementType);
-		if(allowSubTypesToTypes.size() > 0) {
+		if(!allowSubTypesToTypes.isEmpty()) {
 			for(CurriculumElementTypeToType allowSubTypeToType:allowSubTypesToTypes) {
 				curriculumElementTypeToTypeDao.addAllowedSubType(clonedType, allowSubTypeToType.getAllowedSubType());
 			}
@@ -278,8 +281,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
-	public List<CurriculumMember> getMembers(CurriculumElement element) {
-		return curriculumElementDao.getMembers(element);
+	public List<CurriculumMember> getMembers(CurriculumElement element, SearchMemberParameters params) {
+		return memberQueries.getMembers(element, params);
 	}
 	
 	@Override

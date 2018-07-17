@@ -183,6 +183,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.coach.manager.CoachingDAOTest.class,
 	org.olat.modules.coach.CoachingLargeTest.class,
 	org.olat.modules.curriculum.manager.CurriculumDAOTest.class,
+	org.olat.modules.curriculum.manager.CurriculumMemberQueriesTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementDAOTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementTypeDAOTest.class,
 	org.olat.modules.curriculum.manager.CurriculumRepositoryEntryRelationDAOTest.class,

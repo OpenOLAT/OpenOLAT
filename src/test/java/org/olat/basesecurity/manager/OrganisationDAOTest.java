@@ -34,6 +34,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -144,7 +145,8 @@ public class OrganisationDAOTest extends OlatTestCase {
 		organisationService.addMember(organisation, member, OrganisationRoles.user);
 		dbInstance.commitAndCloseSession();
 		
-		List<OrganisationMember> members = organisationDao.getMembers(organisation);
+		SearchMemberParameters params = new SearchMemberParameters();
+		List<OrganisationMember> members = organisationDao.getMembers(organisation, params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		OrganisationMember organisationMember = members.get(0);

@@ -34,6 +34,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -80,7 +81,7 @@ public interface CurriculumService {
 	 * @param curriculum The curriculum
 	 * @return A list of memberships
 	 */
-	public List<CurriculumMember> getMembers(CurriculumRef curriculum);
+	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params);
 	
 	/**
 	 * Get the list of members of the specified curriculum with the specified
@@ -268,7 +269,7 @@ public interface CurriculumService {
 	 * @param element The curriculum element
 	 * @return The list of memberships
 	 */
-	public List<CurriculumMember> getMembers(CurriculumElement element);
+	public List<CurriculumMember> getMembers(CurriculumElement element, SearchMemberParameters params);
 	
 	/**
 	 * The list of members of the specified curriculum element with the specified role.

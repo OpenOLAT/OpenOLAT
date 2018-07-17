@@ -38,12 +38,14 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -172,17 +174,22 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
-	public List<OrganisationMember> getMembers(OrganisationRef organisation) {
+	public List<OrganisationMember> getMembers(OrganisationRef organisation, SearchMemberParameters params) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident, membership.role, membership.inheritanceModeString from organisation org")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user user")
 		  .append(" where org.key=:organisationKey");
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+		createUserPropertiesQueryPart(sb, params.getSearchString(), params.getUserProperties());
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("organisationKey", organisation.getKey())
-				.getResultList();
+				.setParameter("organisationKey", organisation.getKey());
+		createUserPropertiesQueryParameters(query, params.getSearchString());
+		
+		List<Object[]> objects = query.getResultList();
 		List<OrganisationMember> members = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			Identity identity = (Identity)object[0];
@@ -195,6 +202,29 @@ public class OrganisationDAO {
 			members.add(new OrganisationMember(identity, role, inheritanceMode));
 		}
 		return members;
+	}
+	
+	private void createUserPropertiesQueryPart(StringBuilder sb, String searchString, List<UserPropertyHandler> handlers) {
+		if(!StringHelper.containsNonWhitespace(searchString)) return;
+		
+		// treat login and userProperties as one element in this query
+		sb.append(" and ( ");			
+		PersistenceHelper.appendFuzzyLike(sb, "ident.name", "searchString", dbInstance.getDbVendor());
+		
+		for(UserPropertyHandler handler:handlers) {
+			if(handler.getDatabaseColumnName() != null) {
+				sb.append(" or ");
+				PersistenceHelper.appendFuzzyLike(sb, "user.".concat(handler.getName()), "searchString", dbInstance.getDbVendor());
+			}
+		}
+		sb.append(")");
+	}
+	
+	private void createUserPropertiesQueryParameters(TypedQuery<?> query, String searchString) {
+		if(!StringHelper.containsNonWhitespace(searchString)) return;
+		
+		String fuzzySearch = PersistenceHelper.makeFuzzyQueryString(searchString);
+		query.setParameter("searchString", fuzzySearch);
 	}
 	
 	public List<Identity> getMembersIdentity(OrganisationRef organisation, String role) {

@@ -169,7 +169,7 @@ public class SearchIdentityParams {
 	public boolean hasUserProperties() {
 		return userProperties != null && !userProperties.isEmpty();  
 	}
-	
+
 	public Map<String, String> getUserProperties() {
 		return userProperties;
 	}

@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.restapi.CurriculumElementMemberVO;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -831,8 +832,9 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
-		
-		List<CurriculumMember> members = curriculumService.getMembers(element);
+
+		SearchMemberParameters params = new SearchMemberParameters();
+		List<CurriculumMember> members = curriculumService.getMembers(element, params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(member, members.get(0).getIdentity());
@@ -980,8 +982,9 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
-		
-		List<CurriculumMember> members = curriculumService.getMembers(element);
+
+		SearchMemberParameters params = new SearchMemberParameters();
+		List<CurriculumMember> members = curriculumService.getMembers(element, params);
 		Assert.assertNotNull(members);
 		Assert.assertTrue(members.isEmpty());
 	}
