@@ -37,7 +37,6 @@ import org.olat.core.util.WebappHelper;
  */
 public class Theme {
 	public static final String DEFAULTTHEME = "light";
-	private static final String IE_COMPLETION_FILENAME = "theme_ie_completions.css";	
 	private static final String CUSTOM_JS_FILENAME = "theme.js";
 	private static final String CUSTOM_FAVICON_ICO_FILENAME = "favicon.ico"; // legacy
 	private static final String CUSTOM_FAVICON_PNG16_FILENAME = "meta/favicon16.png";
@@ -128,7 +127,7 @@ public class Theme {
 	 * @return
 	 */
 	private String buildHTMLHeaderElements() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		// 1) lookup theme in release files
 		String staticThemesPath = WebappHelper.getContextRealPath("/static/themes/");
 		if(staticThemesPath == null) {
@@ -142,12 +141,6 @@ public class Theme {
 		}
 		// Include the theme css file
 		sb.append("<link id='o_theme_css' href='").append(baseURI).append("theme.css' rel='stylesheet' type='text/css' />\n");
-		// additionally add the blessed IE css if available
-		if (new File(themeFolder,IE_COMPLETION_FILENAME).exists()) {
-			sb.append("<!--[if IE 9]>\n");
-			sb.append("<link id='o_theme_css' href='").append(baseURI).append(IE_COMPLETION_FILENAME).append("' rel='stylesheet' type='text/css' />\n");
-			sb.append("<![endif]-->\n");
-		}		
 		// Include custom theme javascript file, for login caroussel, js-based layout patches etc
 		if (new File(themeFolder,CUSTOM_JS_FILENAME).exists()) {
 			sb.append("<script type='text/javascript' src='").append(baseURI).append(CUSTOM_JS_FILENAME).append("'></script>\n");

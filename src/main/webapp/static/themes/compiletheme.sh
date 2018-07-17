@@ -37,13 +37,6 @@ searchThemes () {
 	fi
 }
 
-# Helper method to split files with too many selectors for ie <= 9
-ie9ify () {
-	css="$TARGET/theme.css"
-	[ -e $css  ] && { printf "ie9ify $TARGET:\n  "; blessc --no-imports $css "$TARGET/theme_ie_completions.css"; rm -f "$TARGET/theme_ie_completions-blessed1.css"; }
-	echo "  done"
-}
-
 # Helper method to compile the theme
 doCompile () {
 	TARGET=$1
@@ -57,7 +50,6 @@ doCompile () {
 	sass --version
 	sass --style $STYLE --no-cache $UPDATE $TARGET:$TARGET --load-path light light/modules
 	echo "sass --style $STYLE $UPDATE $TARGET:$TARGET --load-path light light/modules"
-	[ $bless -eq 0 ] && ie9ify $TARGET
 	echo "done"
 }
 
@@ -88,11 +80,6 @@ THEMES=$1
 
 # handle ctrl-c
 trap control_c SIGINT
-
-# check for blessc command needed for ie9 optimizations
-command -v blessc >/dev/null 2>&1
-bless=$?
-[ $bless -ne 0 ] && printf >&2 "\n\e[0;31mInstall blessc to optimize css for ie <= 9 (npm install -g bless)\e[0m\n\n"
 
 # Add themes to compile from given path
 doCompile ".";

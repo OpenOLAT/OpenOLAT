@@ -348,7 +348,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		sb.append("\n<script type=\"text/javascript\">\n/* <![CDATA[ */\n");
 		// Set the iframe id. Important to set before iframe.js is loaded.
 		sb.append("b_iframeid=\"").append(frameId).append("\";");
-		sb.append("b_isInlineUri=").append(Boolean.valueOf(addCheckForInlineEvents).toString()).append(";");
+		sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";");
 		sb.append("\n/* ]]> */\n</script>");
 		sb.appendStaticJs("js/openolat/iframe.js");
 		sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");

@@ -95,7 +95,6 @@ public class CalendarPrintMapper implements Mapper {
 		  .append("</title>")
 		  .append("<meta http-equiv='Content-type' content='text/html; charset=utf-8' />")
 		  .append("<link href='").append(themeBaseUri).append("theme.css' rel='stylesheet' type='text/css' />\n")
-		  .append("<!--[if IE 9]><link id='o_theme_css_ie' href='").append(themeBaseUri).append("theme_ie_completions.css' rel='stylesheet' type='text/css' /><![endif]-->\n")
 		  .append("</head><body class='o_cal_print' onload='window.focus();window.print()'>");
 		
 		//collect all events
