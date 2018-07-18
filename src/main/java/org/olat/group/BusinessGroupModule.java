@@ -20,7 +20,6 @@
 package org.olat.group;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
@@ -46,6 +45,19 @@ import org.springframework.stereotype.Service;
 public class BusinessGroupModule extends AbstractSpringModule {
 
 	public static final String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
+	
+	/**
+	 * Graduate from administrator to user by importance
+	 */
+	private static final OrganisationRoles[] privacyRoles = new OrganisationRoles[]{
+			OrganisationRoles.administrator, OrganisationRoles.sysadmin,
+			OrganisationRoles.rolesmanager, OrganisationRoles.usermanager, 
+			OrganisationRoles.learnresourcemanager, OrganisationRoles.groupmanager, 
+			OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
+			OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
+			OrganisationRoles.linemanager, OrganisationRoles.principal,
+			OrganisationRoles.author, OrganisationRoles.user,
+	};
 	
 	private static final String USER_ALLOW_CREATE_BG = "user.allowed.create";
 	private static final String AUTHOR_ALLOW_CREATE_BG = "author.allowed.create";
@@ -320,14 +332,12 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	public boolean isMandatoryEnrolmentEmail(Roles roles) {
 		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
 		
-		boolean mandatoryEmail = true;
-		for(OrganisationRoles role:BaseSecurityModule.getUserAllowedRoles()) {
-			if(roles.hasRole(role) && !Boolean.parseBoolean(getMandatoryEnrolmentEmailFor(role))) {
-				mandatoryEmail &= false;
-				break;
+		for(OrganisationRoles role:privacyRoles) {
+			if(roles.hasRole(role)) {
+				return Boolean.parseBoolean(getMandatoryEnrolmentEmailFor(role));
 			}
 		}
-		return mandatoryEmail;
+		return Boolean.parseBoolean(getMandatoryEnrolmentEmailFor(OrganisationRoles.user));
 	}
 	
 	public String getMandatoryEnrolmentEmailFor(OrganisationRoles role) {
@@ -400,15 +410,13 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	
 	public boolean isAcceptMembership(Roles roles) {
 		if(roles == null || roles.isGuestOnly() || roles.isInvitee()) return false;
-		
-		boolean needAccept = true;
-		for(OrganisationRoles role:BaseSecurityModule.getUserAllowedRoles()) {
-			if(roles.hasRole(role) && !Boolean.parseBoolean(getAcceptMembershipFor(role))) {
-				needAccept &= false;
-				break;
+	
+		for(OrganisationRoles role:privacyRoles) {
+			if(roles.hasRole(role)) {
+				return Boolean.parseBoolean(getAcceptMembershipFor(role));
 			}
 		}
-		return needAccept;
+		return Boolean.parseBoolean(getAcceptMembershipFor(OrganisationRoles.user));
 	}
 	
 	public String getAcceptMembershipFor(OrganisationRoles role) {

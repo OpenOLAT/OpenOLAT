@@ -264,9 +264,22 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
 		removeByPermissions(rows);
+		removeDeactivated(rows);
 
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private void removeDeactivated(List<CurriculumElementWithViewsRow> rows) {
+		for(Iterator<CurriculumElementWithViewsRow> it=rows.iterator(); it.hasNext(); ) {
+			CurriculumElementWithViewsRow row = it.next();
+			for(CurriculumElementWithViewsRow parent=row; parent.getParent() != null; parent=parent.getParent()) {
+				if(!parent.isActive()) {
+					it.remove();
+					break;
+				}
+			}
+		}
 	}
 	
 	private void removeByPermissions(List<CurriculumElementWithViewsRow> rows) {

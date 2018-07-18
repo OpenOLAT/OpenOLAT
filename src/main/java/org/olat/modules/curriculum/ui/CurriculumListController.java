@@ -44,7 +44,7 @@ import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * This is a list of curriculum for the ssite "My courses" for
+ * This is a list of curriculum for the site "My courses" for
  * participants.
  * 
  * Initial date: 11 mai 2018<br>

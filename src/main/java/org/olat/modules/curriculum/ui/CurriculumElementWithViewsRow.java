@@ -31,6 +31,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.ui.PriceMethod;
@@ -106,6 +107,14 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	@Override
 	public Long getKey() {
 		return element.getKey();
+	}
+	
+	public boolean isActive() {
+		if(element != null) {
+			CurriculumElementStatus status = element.getStatus();
+			return status == null || status == CurriculumElementStatus.active;
+		}
+		return true;
 	}
 	
 	public boolean isCurriculumElementOnly() {

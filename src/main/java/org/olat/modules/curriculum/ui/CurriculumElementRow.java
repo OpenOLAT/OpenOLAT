@@ -78,7 +78,8 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	}
 	
 	public CurriculumElementStatus getStatus() {
-		return element.getStatus();
+		CurriculumElementStatus status = element.getStatus();
+		return status == null ? CurriculumElementStatus.active : status;
 	}
 
 	@Override
