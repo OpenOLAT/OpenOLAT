@@ -124,6 +124,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list");
 	}
 	
 	private void loadModel() {

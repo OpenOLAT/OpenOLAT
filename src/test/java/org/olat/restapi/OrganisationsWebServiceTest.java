@@ -50,6 +50,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.OrganisationVO;
@@ -72,6 +75,8 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -428,7 +433,6 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(2, authorList.size());
 	}
 	
-	
 	@Test
 	public void removeMember_administrator()
 	throws IOException, URISyntaxException {
@@ -453,6 +457,33 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertTrue(administators.isEmpty());
 	}
 	
+	@Test
+	public void getRepositoryEntries()
+	throws IOException, URISyntaxException {
+		// prepare an organisation with a course
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 8", "REST-p-8-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.administrator);
+		dbInstance.commit();
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(member);
+		repositoryService.addOrganisation(course, organisation);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
+				.path("entries").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<RepositoryEntryVO> entries = parseRepositoryEntryArray(response.getEntity());
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(course.getKey(), entries.get(0).getKey());
+	}
+
 	protected List<UserVO> parseUserArray(HttpEntity entity) {
 		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
@@ -469,6 +500,16 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 			return mapper.readValue(in, new TypeReference<List<OrganisationVO>>(){/* */});
 		} catch (Exception e) {
 			log.error("", e);
+			return null;
+		}
+	}
+	
+	protected List<RepositoryEntryVO> parseRepositoryEntryArray(HttpEntity entity) {
+		try(InputStream in=entity.getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(in, new TypeReference<List<RepositoryEntryVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}

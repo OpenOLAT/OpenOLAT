@@ -123,9 +123,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
+		tableEl.setSearchEnabled(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
-		tableEl.setSearchEnabled(true);
 	}
 	
 	private void loadModel(String searchString, boolean reset) {

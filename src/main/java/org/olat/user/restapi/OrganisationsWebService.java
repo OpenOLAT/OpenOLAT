@@ -48,8 +48,12 @@ import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +75,8 @@ public class OrganisationsWebService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	/**
 	 * The version of the User Web Service
@@ -187,6 +193,22 @@ public class OrganisationsWebService {
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		OrganisationVO organisationVo = OrganisationVO.valueOf(organisation);
 		return Response.ok(organisationVo).build();
+	}
+	
+	@GET
+	@Path("{organisationKey}/entries")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getRepositoryEntriesInOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
+		if(!isAdministrator(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		OrganisationRef organisation = new OrganisationRefImpl(organisationKey);
+		List<RepositoryEntry> entries = repositoryService.getRepositoryEntryByOrganisation(organisation);
+		RepositoryEntryVO[] entryVOes = new RepositoryEntryVO[entries.size()];
+		for (int i=entries.size(); i-->0; ) {
+			entryVOes[i] = RepositoryEntryVO.valueOf(entries.get(i));
+		}
+		return Response.ok(entryVOes).build();
 	}
 	
 	/**

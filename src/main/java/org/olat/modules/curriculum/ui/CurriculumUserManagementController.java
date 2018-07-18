@@ -148,6 +148,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list");
 	}
 	
 	private void loadModel(boolean reset) {

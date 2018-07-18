@@ -114,6 +114,7 @@ public class OrganisationResourceListController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-resources-list");
 	}
 	
 	private void loadModel() {

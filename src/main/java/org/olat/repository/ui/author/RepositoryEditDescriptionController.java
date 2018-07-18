@@ -436,12 +436,18 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			keyList.add(organisation.getKey().toString());
 			valueList.add(organisation.getDisplayName());
 		}
+		List<Organisation> reOrganisations = repositoryService.getOrganisations(repositoryEntry);
+		repositoryEntryOrganisations = new ArrayList<>(reOrganisations.size());
+		for(Organisation reOrganisation:reOrganisations) {
+			if(!keyList.contains(reOrganisation.getKey().toString())) {
+				keyList.add(reOrganisation.getKey().toString());
+				valueList.add(reOrganisation.getDisplayName());
+			}
+		}
 		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]),
 				null, null);
-		
-		List<Organisation> reOrganisations = repositoryService.getOrganisations(repositoryEntry);
-		repositoryEntryOrganisations = new ArrayList<>(reOrganisations.size());
+		organisationsEl.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.organisations));
 		for(Organisation reOrganisation:reOrganisations) {
 			if(keyList.contains(reOrganisation.getKey().toString())) {
 				organisationsEl.select(reOrganisation.getKey().toString(), true);

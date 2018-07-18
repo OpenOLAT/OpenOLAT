@@ -251,7 +251,10 @@ public class OrganisationUserManagementController extends FormBasicController {
 	
 	private void doRemove(List<OrganisationUserRow> membersToRemove) {
 		for(OrganisationUserRow memberToRemove:membersToRemove) {
-			organisationService.removeMember(organisation, new IdentityRefImpl(memberToRemove.getIdentityKey()));
+			if(OrganisationRoles.isValue(memberToRemove.getRole()) && !OrganisationRoles.user.name().equals(memberToRemove.getRole())) {
+				organisationService.removeMember(organisation, new IdentityRefImpl(memberToRemove.getIdentityKey()),
+						OrganisationRoles.valueOf(memberToRemove.getRole()));
+			}
 		}
 		loadModel(true);
 	}

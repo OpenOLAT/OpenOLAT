@@ -147,6 +147,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
 	}
 
 	@Override

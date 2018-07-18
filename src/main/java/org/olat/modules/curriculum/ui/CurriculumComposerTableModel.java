@@ -95,7 +95,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return false;
 		}
 
 		@Override
