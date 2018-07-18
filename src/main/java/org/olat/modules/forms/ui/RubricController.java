@@ -28,7 +28,6 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -57,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RubricController extends FormBasicController implements EvaluationFormResponseController {
 	
+	private static final String NO_RESPONSE_EL_PREFIX = "no_resp_";
 	private static final String NO_RESPONSE_KEY = "enabled";
 	private static final String[] NO_RESPONSE_KEYS = new String[] { NO_RESPONSE_KEY };
 	
@@ -112,14 +112,8 @@ public class RubricController extends FormBasicController implements EvaluationF
 		sliderEl.setDomReplacementWrapperRequired(false);
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
-		MultipleSelectionElement noResponseEl = null;
-		if (element.isNoResponseEnabled()) {
-			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + CodeHelper.getRAMUniqueID(), null, flc, NO_RESPONSE_KEYS,
-					getNoResponseValue());
-			noResponseEl.setEscapeHtml(false);
-			noResponseEl.setDomReplacementWrapperRequired(false);
-			noResponseEl.addActionListener(FormEvent.ONCHANGE);
-		}
+		sliderEl.addActionListener(FormEvent.ONCHANGE);
+		SingleSelection noResponseEl = createNoResponseEl(element);
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
 		if (noResponseEl != null) {
@@ -134,14 +128,8 @@ public class RubricController extends FormBasicController implements EvaluationF
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
 		sliderEl.setStep(1);
-		MultipleSelectionElement noResponseEl = null;
-		if (element.isNoResponseEnabled()) {
-			noResponseEl = uifactory.addCheckboxesHorizontal("no_resp_" + CodeHelper.getRAMUniqueID(), null, flc, NO_RESPONSE_KEYS,
-					getNoResponseValue());
-			noResponseEl.setEscapeHtml(false);
-			noResponseEl.setDomReplacementWrapperRequired(false);
-			noResponseEl.addActionListener(FormEvent.ONCHANGE);
-		}
+		sliderEl.addActionListener(FormEvent.ONCHANGE);
+		SingleSelection noResponseEl = createNoResponseEl(element);
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl);
 		sliderEl.setUserObject(sliderWrapper);
 		if (noResponseEl != null) {
@@ -165,21 +153,15 @@ public class RubricController extends FormBasicController implements EvaluationF
 			theKeys[i] = Double.toString(theSteps[i]);
 			theValues[i] = "";
 		}
-
+		
+		SingleSelection noResponseEl = createNoResponseEl(element);
+		
 		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + CodeHelper.getRAMUniqueID(), null, flc, theKeys, theValues);
 		radioEl.setAllowNoSelection(true);
 		radioEl.setDomReplacementWrapperRequired(false);
+		radioEl.addActionListener(FormEvent.ONCHANGE);
 		int widthInPercent = RubricWrapper.getWidthInPercent(element);
 		radioEl.setWidthInPercent(widthInPercent, true);
-
-		MultipleSelectionElement noResponseEl = null;
-		if (element.isNoResponseEnabled()) {
-			noResponseEl = uifactory.addCheckboxesVertical("no_resp_" + CodeHelper.getRAMUniqueID(), flc, NO_RESPONSE_KEYS,
-					getNoResponseValue(), 0);
-			noResponseEl.setEscapeHtml(false);
-			noResponseEl.setDomReplacementWrapperRequired(false);
-			noResponseEl.addActionListener(FormEvent.ONCHANGE);
-		}
 		
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl, noResponseEl);
 		radioEl.setUserObject(sliderWrapper);
@@ -187,6 +169,19 @@ public class RubricController extends FormBasicController implements EvaluationF
 			noResponseEl.setUserObject(sliderWrapper);
 		}
 		return sliderWrapper;
+	}
+
+	private SingleSelection createNoResponseEl(Rubric element) {
+		SingleSelection noResponseEl = null;
+		if (element.isNoResponseEnabled()) {
+			noResponseEl = uifactory.addRadiosVertical(NO_RESPONSE_EL_PREFIX + CodeHelper.getRAMUniqueID(), null, flc,
+					NO_RESPONSE_KEYS, getNoResponseValue());
+			noResponseEl.setAllowNoSelection(true);
+			noResponseEl.setEscapeHtml(false);
+			noResponseEl.setDomReplacementWrapperRequired(false);
+			noResponseEl.addActionListener(FormEvent.ONCHANGE);
+		}
+		return noResponseEl;
 	}
 	
 	private String[] getNoResponseValue() {
@@ -205,13 +200,26 @@ public class RubricController extends FormBasicController implements EvaluationF
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement noResponseEl = (MultipleSelectionElement) source;
-			Object uobject = noResponseEl.getUserObject();
+		if (source instanceof SingleSelection || source instanceof SliderElement) {
+			Object uobject = source.getUserObject();
 			if (uobject instanceof SliderWrapper) {
 				SliderWrapper sliderWrapper = (SliderWrapper) uobject;
-				boolean noAnswer = noResponseEl.isAtLeastSelected(1);
-				sliderWrapper.getFormItem().setEnabled(!noAnswer);
+				if (source.getName().startsWith(NO_RESPONSE_EL_PREFIX)) {
+					// No response was clicked.
+					if (sliderWrapper.getRadioEl() != null && sliderWrapper.getRadioEl().isOneSelected()) {
+						String selectedKey = sliderWrapper.getRadioEl().getSelectedKey();
+						sliderWrapper.getRadioEl().select(selectedKey, false);
+					}
+					if (sliderWrapper.getSliderEl() != null) {
+						sliderWrapper.getSliderEl().deleteValue();
+					}
+				} else {
+					// Slider was clicked.
+					SingleSelection noResponseEl = sliderWrapper.getNoResponseEl();
+					if (noResponseEl != null) {
+						noResponseEl.select(NO_RESPONSE_KEY, false);
+					}
+				}
 				flc.setDirty(true);
 			}
 		}
@@ -224,9 +232,6 @@ public class RubricController extends FormBasicController implements EvaluationF
 			sliderWrapper.getFormItem().setEnabled(!readOnly);
 			if (sliderWrapper.getNoResponseEl() != null) {
 				sliderWrapper.getNoResponseEl().setEnabled(!readOnly);
-			}
-			if (!readOnly) {
-				disableSliderIfNoResponse(sliderWrapper);
 			}
 		}
 	}
@@ -254,20 +259,13 @@ public class RubricController extends FormBasicController implements EvaluationF
 				if (response.getNumericalResponse() != null) {
 					BigDecimal numericalResponse = response.getNumericalResponse();
 					setValue(sliderWrapper, numericalResponse);
+				} else if (response.isNoResponse()) {
+					SingleSelection noResponseEl = sliderWrapper.getNoResponseEl();
+					if (noResponseEl != null) {
+						noResponseEl.select(NO_RESPONSE_KEY, true);
+					}
 				}
-				disableSliderIfNoResponse(sliderWrapper);
 			}
-		}
-	}
-
-	private void disableSliderIfNoResponse(SliderWrapper sliderWrapper) {
-		EvaluationFormResponse response = rubricResponses.get(sliderWrapper.getId());
-		if (response != null && response.isNoResponse()) {
-			MultipleSelectionElement noResponseEl = sliderWrapper.getNoResponseEl();
-			if (noResponseEl != null) {
-				noResponseEl.select(NO_RESPONSE_KEY, true);
-			}
-			sliderWrapper.getFormItem().setEnabled(false);
 		}
 	}
 
@@ -312,7 +310,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	@Override
 	public void saveResponse(EvaluationFormSession session) {
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
-			boolean noResponseSelected = sliderWrapper.getNoResponseEl() != null && sliderWrapper.getNoResponseEl().isAtLeastSelected(1);
+			boolean noResponseSelected = sliderWrapper.getNoResponseEl() != null && sliderWrapper.getNoResponseEl().isOneSelected();
 			if (noResponseSelected) {
 				saveNoResponse(session, sliderWrapper);
 			} else {
@@ -460,18 +458,18 @@ public class RubricController extends FormBasicController implements EvaluationF
 		private final Slider slider;
 		private final SliderElement sliderEl;
 		private final SingleSelection radioEl;
-		private final MultipleSelectionElement noResponseEl;
+		private final SingleSelection noResponseEl;
 		
-		public SliderWrapper(Slider slider, SingleSelection radioEl, MultipleSelectionElement noResponseEl) {
+		public SliderWrapper(Slider slider, SingleSelection radioEl, SingleSelection noResponseEl) {
 			this(slider, radioEl, null, noResponseEl);
 		}
 		
-		public SliderWrapper(Slider slider, SliderElement sliderEl, MultipleSelectionElement noResponseEl) {
+		public SliderWrapper(Slider slider, SliderElement sliderEl, SingleSelection noResponseEl) {
 			this(slider, null, sliderEl, noResponseEl);
 		}
 		
 		private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl,
-				MultipleSelectionElement noResponseEl) {
+				SingleSelection noResponseEl) {
 			this.slider = slider;
 			this.radioEl = radioEl;
 			this.sliderEl = sliderEl;
@@ -508,7 +506,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 			return sliderEl;
 		}
 		
-		public MultipleSelectionElement getNoResponseEl() {
+		public SingleSelection getNoResponseEl() {
 			return noResponseEl;
 		}
 	}

@@ -62,6 +62,11 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 		this.value = value;
 	}
 	
+	public void deleteValue() {
+		this.hasValue = false;
+		this.value = 0;
+	}
+	
 	public boolean hasValue() {
 		return hasValue;
 	}

@@ -55,6 +55,12 @@ public interface SliderElement extends FormItem {
 	 * @return
 	 */
 	public boolean hasValue();
+	
+	/**
+	 * Removes the value. Afterwards the {@link #hasValue()} will return false.
+	 *
+	 */
+	public void deleteValue();
 
 	public void setDomReplacementWrapperRequired(boolean required);
 

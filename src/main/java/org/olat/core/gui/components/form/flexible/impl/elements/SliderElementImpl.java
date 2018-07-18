@@ -93,6 +93,11 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	}
 
 	@Override
+	public void deleteValue() {
+		component.deleteValue();
+	}
+
+	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
 		component.setDomReplacementWrapperRequired(required);
 	}

@@ -55,9 +55,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private final Layout layout;
 	private final SingleSelectionComponent component;
 	
-	/**
-	 * @param name
-	 */
 	public SingleSelectionImpl(String name) {
 		this(null, name, Layout.horizontal);
 	}
@@ -79,13 +76,11 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		component.setDomReplacementWrapperRequired(required);
 	}
 	
+	@Override
 	public String getForId() {
 		return null;//every radio box has its own label
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#getSelected()
-	 */
 	@Override
 	public int getSelected() {
 		return selectedIndex;
@@ -95,9 +90,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return layout;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#getSelectedKey()
-	 */
 	@Override
 	public String getSelectedKey() {
 		if (!isOneSelected()) throw new AssertException("no key selected");
@@ -112,17 +104,11 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#isOneSelected()
-	 */
 	@Override
 	public boolean isOneSelected() {
 		return selectedIndex != -1;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelection#setKeysAndValues(String[], String[], String[])
-	 */
 	@Override
 	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses) {
 		if (keys.length != values.length) {
@@ -138,23 +124,17 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		initSelectionElements();
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getKey(int)
-	 */
+	@Override
 	public String getKey(int which) {
 		return keys[which];
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getSize()
-	 */
+	@Override
 	public int getSize() {
 		return keys.length;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getValue(int)
-	 */
+	@Override
 	public String getValue(int which) {
 		return values[which];
 	}
@@ -191,27 +171,27 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		component.setEscapeHtml(escape);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
-	 */
 	@Override
 	public boolean isSelected(int which) {
 		return which == selectedIndex;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#select(java.lang.String, boolean)
-	 */
 	@Override
 	public void select(String key, boolean select) {
 		boolean found = false;
-		for (int i = 0; i < keys.length; i++) {
-			if (key.equals(keys[i])) {
-				selectedIndex = i;
-				found = true;
-				break;
+		if (select) {
+			for (int i = 0; i < keys.length; i++) {
+				if (key.equals(keys[i])) {
+					selectedIndex = i;
+					found = true;
+					break;
+				}
 			}
+		} else {
+			if (selectedIndex >= 0 && key.equals(keys[selectedIndex])) {
+				selectedIndex = -1;
+			}
+			found = true;
 		}
 		
 		//remember original selection
@@ -248,7 +228,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		// selection change?
 		// mark corresponding comps as dirty
 		
-		String[] reqVals = getRootForm().getRequestParameterValues(getName());		
+		String[] reqVals = getRootForm().getRequestParameterValues(getName());
 		// -> single selection reqVals.lenght == 0 | 1
 		if (reqVals != null && reqVals.length == 1) {
 			for (int i = 0; i < keys.length; i++) {
@@ -265,7 +245,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
 		}
-		clearError();			
+		clearError();
 	}
 
 	@Override
@@ -290,9 +270,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		component.setVisible(isVisible);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider#getFormDispatchId()
-	 */
 	@Override
 	public String getFormDispatchId() {
 		/**
