@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -40,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMemberQueriesTest {
+public class CurriculumMemberQueriesTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;

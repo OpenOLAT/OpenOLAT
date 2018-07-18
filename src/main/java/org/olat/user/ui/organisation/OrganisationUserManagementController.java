@@ -261,7 +261,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		removeAsListenerAndDispose(roleListCtrl);
 		
 		String title = translate("add.member");
-		roleListCtrl = new RoleListController(ureq, getWindowControl(), OrganisationRoles.values());
+		roleListCtrl = new RoleListController(ureq, getWindowControl(), OrganisationRoles.valuesWithoutGuestAndInvitee());
 		listenTo(roleListCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);

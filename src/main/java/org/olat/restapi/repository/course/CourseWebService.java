@@ -581,6 +581,21 @@ public class CourseWebService {
 		return Response.ok().build();
 	}
 	
+	@DELETE
+	@Path("organisations/{organisationKey}")
+	public Response removeOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
+		if (!isManager(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if(organisation != null) {
+			repositoryService.removeOrganisation(repositoryEntry, organisation);
+		}
+		return Response.ok().build();
+	}
+	
 	/**
 	 * Get all owners and authors of the course
 	 * @response.representation.200.qname {http://www.example.com}userVO

@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -744,6 +745,23 @@ public class RepositoryEntryRelationDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Organisation.class)
 			.setParameter("repoKey", entry.getKey())
+			.getResultList();
+	}
+	
+	public List<RepositoryEntry> getRepositoryEntries(OrganisationRef organisation) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select v from organisation as relOrg")
+		  .append(" inner join relOrg.group as bGroup")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" inner join rel.entry v")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where relOrg.key=:organisationKey");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), RepositoryEntry.class)
+			.setParameter("organisationKey", organisation.getKey())
 			.getResultList();
 	}
 }

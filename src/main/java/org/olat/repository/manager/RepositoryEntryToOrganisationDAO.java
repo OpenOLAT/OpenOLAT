@@ -71,6 +71,27 @@ public class RepositoryEntryToOrganisationDAO {
 				.collect(Collectors.toList());
 	}
 	
+	public List<RepositoryEntryToOrganisation> getRelations(RepositoryEntryRef re, OrganisationRef organisation) {
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("select reToOrganisation from repoentrytoorganisation as reToOrganisation")
+		  .append(" inner join fetch reToOrganisation.organisation org")
+		  .append(" inner join fetch reToOrganisation.entry v")
+		  .append(" where v.key=:entryKey and org.key=:organisationKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryToOrganisation.class)
+				.setParameter("entryKey", re.getKey())
+				.setParameter("organisationKey", organisation.getKey())
+				.getResultList();
+	}
+	
+	public void delete(RepositoryEntryRef re, OrganisationRef organisation) {
+		List<RepositoryEntryToOrganisation> relations = getRelations(re, organisation);
+		for(RepositoryEntryToOrganisation relation:relations) {
+			dbInstance.getCurrentEntityManager().remove(relation);
+		}
+	}
+	
 	public void delete(RepositoryEntryToOrganisation relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}

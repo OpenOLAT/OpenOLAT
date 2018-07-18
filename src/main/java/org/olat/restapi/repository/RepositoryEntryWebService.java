@@ -826,7 +826,7 @@ public class RepositoryEntryWebService {
 	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		Organisation organisationToAdd = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if (!isAuthorEditor(httpRequest) && !isManager(organisationToAdd, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<Organisation> organisations = repositoryService.getOrganisations(entry);
@@ -839,6 +839,19 @@ public class RepositoryEntryWebService {
 			return Response.ok().status(Status.NOT_FOUND).build();
 		}
 		repositoryService.addOrganisation(entry, organisationToAdd);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("organisations/{organisationKey}")
+	public Response removeOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
+		Organisation organisationToRemove = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if (!isAuthorEditor(httpRequest) && !isManager(organisationToRemove, httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		if(organisationToRemove != null) {
+			repositoryService.removeOrganisation(entry, organisationToRemove);
+		}
 		return Response.ok().build();
 	}
 	

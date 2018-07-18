@@ -697,9 +697,21 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation) {
+		return reToGroupDao.getRepositoryEntries(organisation);
+	}
+
+	@Override
 	public void addOrganisation(RepositoryEntry entry, Organisation organisation) {
 		repositoryEntryToOrganisationDao.createRelation(organisation, entry, false);
 		reToGroupDao.createRelation(organisation.getGroup(), entry);
+	}
+	
+	@Override
+	public void removeOrganisation(RepositoryEntry entry, Organisation organisation) {
+		Group group = organisation.getGroup();
+		reToGroupDao.removeRelation(group, entry);
+		repositoryEntryToOrganisationDao.delete(entry, organisation);
 	}
 
 	@Override

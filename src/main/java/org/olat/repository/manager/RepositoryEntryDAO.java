@@ -106,24 +106,22 @@ public class RepositoryEntryDAO {
 		if (externalId == null) return Collections.emptyList();
 		String query = "select v from repositoryentry as v where v.externalId=:externalId";
 
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, RepositoryEntry.class)
 				.setParameter("externalId", externalId)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
-		return entries;
 	}
 
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalRef(String externalRef) {
 		if (externalRef == null) return Collections.emptyList();
 		String query = "select v from repositoryentry as v where v.externalRef=:externalRef";
 
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, RepositoryEntry.class)
 				.setParameter("externalRef", externalRef)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
-		return entries;
 	}
 	
 	public RepositoryEntry loadByResourceId(String resourceName, Long resourceId) {

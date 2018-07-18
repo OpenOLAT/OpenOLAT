@@ -43,11 +43,13 @@ import org.olat.core.util.resource.OresHelper;
 public class OrganisationOverviewController extends BasicController {
 	
 	private final Link metadataLink;
+	private final Link resourcesLink;
 	private final Link userManagementLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
 	private EditOrganisationController metadataCtrl;
+	private OrganisationResourceListController resourcesCtrl;
 	private OrganisationUserManagementController userMgmtCtrl;
 	
 	private Organisation organisation;
@@ -64,6 +66,8 @@ public class OrganisationOverviewController extends BasicController {
 		segmentView.addSegment(metadataLink, true);
 		userManagementLink = LinkFactory.createLink("organisation.user.management", mainVC, this);
 		segmentView.addSegment(userManagementLink, false);
+		resourcesLink = LinkFactory.createLink("organisation.resources", mainVC, this);
+		segmentView.addSegment(resourcesLink, false);
 
 		putInitialPanel(mainVC);
 		doOpenMetadadata(ureq);
@@ -94,6 +98,8 @@ public class OrganisationOverviewController extends BasicController {
 					doOpenMetadadata(ureq);
 				} else if (clickedLink == userManagementLink){
 					doOpenUsermanagement(ureq);
+				} else if(clickedLink == resourcesLink) {
+					doOpenResources(ureq);
 				}
 			}
 		}
@@ -117,12 +123,24 @@ public class OrganisationOverviewController extends BasicController {
 	
 	private void doOpenUsermanagement(UserRequest ureq) {
 		if(userMgmtCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("UserMgmt"), null);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Users"), null);
 			userMgmtCtrl = new OrganisationUserManagementController(ureq, bwControl, organisation);
 			listenTo(userMgmtCtrl);
 		}
 		
 		addToHistory(ureq, userMgmtCtrl);
 		mainVC.put("segmentCmp", userMgmtCtrl.getInitialComponent());
+	}
+	
+	private void doOpenResources(UserRequest ureq) {
+		if(resourcesCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Resources"), null);
+			resourcesCtrl = new OrganisationResourceListController(ureq, bwControl, organisation);
+			listenTo(resourcesCtrl);
+		}
+
+		addToHistory(ureq, resourcesCtrl);
+		mainVC.put("segmentCmp", resourcesCtrl.getInitialComponent());
+		
 	}
 }

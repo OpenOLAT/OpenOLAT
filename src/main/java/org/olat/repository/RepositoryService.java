@@ -323,7 +323,20 @@ public interface RepositoryService {
 	 */
 	public List<Organisation> getOrganisations(RepositoryEntryRef entry);
 	
+	/**
+	 * Add a link between organization and the specified repository entry.
+	 * 
+	 * @param entry The repository entry
+	 * @param organisation The organization
+	 */
 	public void addOrganisation(RepositoryEntry entry, Organisation organisation);
+	
+	/**
+	 * Remove the link between organization and repository entry
+	 * @param entry The repository entry
+	 * @param organisation The organization
+	 */
+	public void removeOrganisation(RepositoryEntry entry, Organisation organisation);
 	
 	/**
 	 * 
@@ -348,6 +361,13 @@ public interface RepositoryService {
 	 * @return A list of repository entries
 	 */
 	public List<RepositoryEntry> getRepositoryEntryByTaxonomy(TaxonomyLevelRef taxonomyLevel);
+	
+	/**
+	 * Search the repository entries of the specified organization
+	 * @param organisation An organization
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation);
 	
 	
 	
