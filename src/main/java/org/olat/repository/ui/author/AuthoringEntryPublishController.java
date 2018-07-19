@@ -290,10 +290,10 @@ public class AuthoringEntryPublishController extends FormBasicController {
 				userConfigLayout.setVisible(true);
 				if (publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
 					authorConfigLayout.setVisible(false);
-					authorsSwitch.select(NO_KEY, false);
+					authorsSwitch.select(NO_KEY, true);
 					authorsSwitch.setEnabled(false);
 				} else {
-					authorsSwitch.select(YES_KEY, false);
+					authorsSwitch.select(YES_KEY, true);
 					authorsSwitch.setEnabled(true);
 					authorConfigLayout.setVisible(true);
 				}

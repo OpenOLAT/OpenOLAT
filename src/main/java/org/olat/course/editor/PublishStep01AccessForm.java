@@ -388,7 +388,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		private String dates;
 		private OfferAccess link;
 		private final boolean paymentMethod;
-		private int buttonId;
+		private int infoButtonId;
 		
 		public AccessInfo(String name, boolean paymentMethod, String infos, OfferAccess link) {
 			this.name = name;
@@ -398,11 +398,11 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		}
 				
 		public int getButtonId() {
-			return buttonId;
+			return infoButtonId;
 		}
 
-		public void setButtonId(int buttonId) {
-			this.buttonId = buttonId;
+		public void setButtonId(int infoButtonId) {
+			this.infoButtonId = infoButtonId;
 		}
 
 		public String getName() {
@@ -518,10 +518,10 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 				accessLayout.setVisible(true);
 				if (publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
 					authorConfigLayout.setVisible(false);
-					authorsSwitch.select(NO_KEY, false);
+					authorsSwitch.select(NO_KEY, true);
 					authorsSwitch.setEnabled(false);
 				} else {
-					authorsSwitch.select(YES_KEY, false);
+					authorsSwitch.select(YES_KEY, true);
 					authorsSwitch.setEnabled(true);
 					authorConfigLayout.setVisible(true);
 				}
