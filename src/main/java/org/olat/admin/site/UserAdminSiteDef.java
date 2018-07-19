@@ -57,7 +57,7 @@ public class UserAdminSiteDef extends AbstractSiteDefinition implements SiteDefi
 		} 
 		
 		Roles roles = usess.getRoles();
-		if (roles.isAdministrator() || roles.isPrincipal() || roles.isUserManager() || roles.isRolesManager()) {
+		if (roles.isAdministrator() || roles.isSystemAdmin() || roles.isPrincipal() || roles.isUserManager() || roles.isRolesManager()) {
 			// only open for olat-usermanagers
 			return new UserAdminSite(this, ureq.getLocale());
 		} 

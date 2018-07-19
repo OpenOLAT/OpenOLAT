@@ -59,6 +59,8 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 		return defaultSiteSecurityCallbackBeanId;
 	}
 	
+	
+	
 	@Override
 	public final SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
 		if(ureq == null) return null;

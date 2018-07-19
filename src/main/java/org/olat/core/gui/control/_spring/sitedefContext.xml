@@ -103,7 +103,8 @@
 	</bean>
 	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef">
 	   <property name="order" value="15" />
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
+	   <!-- this one is hard coded and cannot be changed -->
+	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToAdminAndSysAdminSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
 	   <property name="order" value="16" />
@@ -138,7 +139,7 @@
 	</bean>
 	
 	<bean id="restrictToUserManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="usermanager,rolesmanager,principal,administrator"/>
+		<property name="limitToRole" value="usermanager,rolesmanager,principal,administrator,sysadmin"/>
 	</bean>
 	
 	<bean id="restrictToGroupManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
@@ -159,6 +160,14 @@
 	
 	<bean id="catalogManagerSiteSecurityCallback" class="org.olat.repository.site.CatalogManagerSecurityCallback">
 		<property name="catalogManager" ref="catalogManager" />
+	</bean>
+	
+	<bean id="restrictToSysAdminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="sysadmin"/>
+	</bean>
+	
+	<bean id="restrictToAdminAndSysAdminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="administrator,sysadmin"/>
 	</bean>
 	
 	

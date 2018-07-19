@@ -30,7 +30,6 @@ import java.util.List;
 import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -317,7 +316,8 @@ public class UserAdminController extends BasicController implements Activateable
 			return organisationService.hasRole(getIdentity(), defOrganisation,
 					OrganisationRoles.administrator, OrganisationRoles.rolesmanager);
 		}
-		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+		return managerRoles.isSystemAdmin()
+				|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
 				|| managerRoles.isMyInvitee(OrganisationRoles.administrator, identityRoles)
@@ -335,6 +335,12 @@ public class UserAdminController extends BasicController implements Activateable
 		// first Initialize the user details tabbed pane
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
 		userTabP.addListener(this);
+		
+		boolean isSysAdmin = managerRoles.isSystemAdmin();
+		boolean isAdminOf = managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles);
+		boolean isPrincipalOf = managerRoles.isManagerOf(OrganisationRoles.principal, editedRoles);
+		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
+		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 
 		userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
 		listenTo(userProfileCtr);
@@ -353,12 +359,8 @@ public class UserAdminController extends BasicController implements Activateable
 				return pwdCtr.getInitialComponent();
 			});
 		}
-		
-		boolean isAdminOf = managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles);
-		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
-		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 
-		if (isAdminOf) {
+		if (isAdminOf || isSysAdmin) {
 			userTabP.addTab(translate(NLS_EDIT_UAUTH),  uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
@@ -371,21 +373,22 @@ public class UserAdminController extends BasicController implements Activateable
 				return propertiesCtr.getInitialComponent();
 			});
 		}
+		
+		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
+			userTabP.addTab(translate(NLS_VIEW_GROUPS),  uureq -> {
+				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, true);
+				listenTo(grpCtr);
+				return grpCtr.getInitialComponent();
+			});
+	
+			userTabP.addTab(translate(NLS_VIEW_COURSES), uureq -> {
+				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity);
+				listenTo(courseCtr);
+				return courseCtr.getInitialComponent();
+			});
+		}
 
-		Boolean canStartGroups = BaseSecurityModule.USERMANAGER_CAN_START_GROUPS;//true
-		userTabP.addTab(translate(NLS_VIEW_GROUPS),  uureq -> {
-			grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canStartGroups);
-			listenTo(grpCtr);
-			return grpCtr.getInitialComponent();
-		});
-
-		userTabP.addTab(translate(NLS_VIEW_COURSES), uureq -> {
-			courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity);
-			listenTo(courseCtr);
-			return courseCtr.getInitialComponent();
-		});
-
-		if (isAdminOf) {
+		if (isAdminOf || isPrincipalOf || isRolesManagerOf) {
 			userTabP.addTab(translate(NLS_VIEW_ACCESS), uureq -> {
 				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity);
 				listenTo(accessCtr);
@@ -411,6 +414,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 
+		// the controller manager is read-write permissions
 		userTabP.addTab(translate(NLS_EDIT_UROLES), uureq -> {
 			rolesCtr = new SystemRolesAndRightsController(getWindowControl(), uureq, identity);
 			listenTo(rolesCtr);
@@ -426,7 +430,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 
-		if(lectureModule.isEnabled()) {
+		if(lectureModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(translate(NLS_VIEW_LECTURES),  uureq -> {
 				lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, true, true, true, true);
 				listenTo(lecturesCtrl);
@@ -438,7 +442,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 		
-		if(taxonomyModule.isEnabled()) {
+		if(taxonomyModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(translate(NLS_VIEW_COMPETENCES),  uureq -> {
 				competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity);
 				listenTo(competencesCtrl);

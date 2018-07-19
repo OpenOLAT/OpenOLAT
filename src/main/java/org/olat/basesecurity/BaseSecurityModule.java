@@ -115,7 +115,6 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	 * default values
 	 */
 	public static final Boolean USERMANAGER_CAN_DELETE_USER = false;// fx -> true
-	public static final Boolean USERMANAGER_CAN_START_GROUPS = true;
 	public static final Boolean USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = true;
 	public static final Boolean USERMANAGER_CAN_MANAGE_POOLMANAGERS = true;
 	public static final Boolean USERMANAGER_CAN_MANAGE_CURRICULUMMANAGERS = true;

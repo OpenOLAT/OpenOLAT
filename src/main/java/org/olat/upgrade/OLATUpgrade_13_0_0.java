@@ -28,6 +28,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -63,6 +65,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_REPO_ENTRY_DEFAULT_ORG = "MIGRATE REPO ENTRY TO DEF ORG";
 	private static final String MIGRATE_PORTFOLIO_EVAL_FORM = "PORTFOLIO EVALUATION FORM";
 	private static final String MIGRATE_SEND_APPEAL_DATES = "LECTURES SEND APPEAL DATES";
+	private static final String MIGRATE_ADMIN_SITE_SEC = "MIGRATE ADMIN SITE SECURITY CALLBACK";
 	
 	@Autowired
 	private DB dbInstance;
@@ -82,6 +85,8 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private PortfolioService portfolioService;
 	@Autowired
 	private EvaluationFormManager evaManger;
+	@Autowired
+	private SiteDefinitions sitesModule;
 	
 	public OLATUpgrade_13_0_0() {
 		super();
@@ -112,6 +117,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		allOk &= migrateRepositoryEntriesToDefaultOrganisation(upgradeManager, uhd);
 		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
 		allOk &= migrateLecturesSendAppealDates(upgradeManager, uhd);
+		allOk &= migrateAdminSiteSecurityCallback(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -119,6 +125,31 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			log.audit("Finished OLATUpgrade_13_0_0 successfully!");
 		} else {
 			log.audit("OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
+		}
+		return allOk;
+	}
+	
+	private boolean migrateAdminSiteSecurityCallback(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_ADMIN_SITE_SEC)) {
+			try {
+				List<SiteConfiguration> siteConfigurations = sitesModule.getSitesConfiguration();
+				for(SiteConfiguration siteConfiguration:siteConfigurations) {
+					if("olatsites_admin".equals(siteConfiguration.getId())
+							&& "adminSiteSecurityCallback".equals(siteConfiguration.getSecurityCallbackBeanId())) {
+						siteConfiguration.setSecurityCallbackBeanId("restrictToSysAdminSiteSecurityCallback");
+						sitesModule.setSitesConfiguration(siteConfigurations);
+						log.info("Migrate admin site security callback");
+						break;
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_ADMIN_SITE_SEC, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}

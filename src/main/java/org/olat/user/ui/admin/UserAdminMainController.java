@@ -115,7 +115,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private final Roles identityRoles;
-	private List<Organisation> manageableOrganisations;
+	private final List<Organisation> manageableOrganisations;
 
 	private LockResult lock;
 	@Autowired
@@ -133,9 +133,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		UserSession usess = ureq.getUserSession();
 		identityRoles = usess.getRoles();
-	
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+		
+		if(identityRoles.isSystemAdmin()) {
+			manageableOrganisations = organisationService.getOrganisations();
+		} else {
+			manageableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
+					OrganisationRoles.administrator, OrganisationRoles.principal,
+					OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+		}
 
 		menuTree = new MenuTree("olatMenuTree");
 		menuTree.setExpandSelectedNode(false);
@@ -161,11 +166,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 
 	private void initTools() {
-		if (identityRoles.isAdministrator() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
+		if (identityRoles.isAdministrator() || identityRoles.isSystemAdmin() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
 			createLink = LinkFactory.createToolLink("ucreate", translate("menu.ucreate"), this, "o_icon_add_member");
 			createLink.setElementCssClass("o_sel_useradmin_create");
 			content.addTool(createLink, Align.right);
+		}
 
+		if (identityRoles.isAdministrator() || identityRoles.isUserManager() || identityRoles.isRolesManager()) {
 			importLink = LinkFactory.createToolLink("usersimport", translate("menu.usersimport"), this, "o_icon_import");
 			importLink.setElementCssClass("o_sel_useradmin_import");
 			content.addTool(importLink, Align.right);
@@ -222,7 +229,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	
 	private void doCreateUser(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
+		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isSystemAdmin() || roles.isRolesManager() || roles.isUserManager();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Create", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
@@ -517,8 +524,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private void buildTreeAccessSubMenu(GenericTreeNode accessNode) {
 		appendNode("menu.usergroup", "menu.usergroup.alt", "usergroup", "o_sel_useradmin_usergroup", accessNode);
 		
-		boolean isAdministrator = identityRoles.isAdministrator() || identityRoles.isPrincipal()
-				|| identityRoles.isUserManager() || identityRoles.isRolesManager();
+		boolean isAdministrator = identityRoles.isSystemAdmin() || identityRoles.isAdministrator()
+				|| identityRoles.isPrincipal() || identityRoles.isUserManager() || identityRoles.isRolesManager();
 		if (isAdministrator) {
 			appendNode("menu.authorgroup", "menu.authorgroup.alt", "authorgroup", "o_sel_useradmin_authorgroup", accessNode);
 			appendNode("menu.coauthors", "menu.coauthors.alt", "coauthors", "o_sel_useradmin_coauthors", accessNode);
@@ -551,7 +558,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			appendNode("menu.sysadmingroup", "menu.sysadmingroup.alt", "sysadmingroup", "o_sel_useradmin_sysadmingroup", accessNode);
 		}
 		
-		if (identityRoles.isRolesManager() && identityRoles.isAdministrator()) {
+		if (identityRoles.isRolesManager() || identityRoles.isAdministrator() || identityRoles.isSystemAdmin()) {
 			appendNode("menu.anonymousgroup", "menu.anonymousgroup.alt", "anonymousgroup", "o_sel_useradmin_anonymousgroup", accessNode);
 		}
 		
@@ -562,7 +569,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 	private void buildTreeQueriesSubMenu(GenericTreeNode queriesNode) {
 		appendNode("menu.userswithoutgroup", "menu.userswithoutgroup.alt", "userswithoutgroup", "o_sel_useradmin_userswithoutgroup", queriesNode);
-		if(identityRoles.isRolesManager() && identityRoles.isAdministrator()) {
+		if(identityRoles.isRolesManager() || identityRoles.isAdministrator() || identityRoles.isSystemAdmin()) {
 			appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
 			appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
 		}

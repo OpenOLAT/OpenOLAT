@@ -49,6 +49,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -143,7 +144,7 @@ class NewUserForm extends FormBasicController {
 
 	private boolean showPasswordFields = false;
 	private List<UserPropertyHandler> userPropertyHandlers;
-	private List<Organisation> manageableOrganisations;
+	private final List<Organisation> manageableOrganisations;
 	
 	private TextElement emailTextElement;
 	private TextElement usernameTextElement;
@@ -152,8 +153,7 @@ class NewUserForm extends FormBasicController {
 	private SingleSelection organisationsElement;
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
-	
-	
+
 	
 	@Autowired
 	private UserModule userModule;
@@ -175,8 +175,14 @@ class NewUserForm extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(translator);
 		this.showPasswordFields = showPasswordFields;
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-						OrganisationRoles.administrator, OrganisationRoles.usermanager);
+		
+		Roles managerRoles = ureq.getUserSession().getRoles();
+		if(managerRoles.isSystemAdmin()) {
+			manageableOrganisations = organisationService.getOrganisations();
+		} else {
+			manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+							OrganisationRoles.administrator, OrganisationRoles.rolesmanager, OrganisationRoles.usermanager);
+		}
 		initForm(ureq);
 	}	 
 	

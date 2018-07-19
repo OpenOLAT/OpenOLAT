@@ -44,10 +44,6 @@ import org.olat.core.util.UserSession;
  */
 public class AdminSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-	public AdminSiteDef() {
-		//
-	}
-
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(ureq == null) return null;

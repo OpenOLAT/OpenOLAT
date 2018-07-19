@@ -223,7 +223,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 	private void initFormRoles(FormItemContainer formLayout, Organisation organisation) {
 		boolean admin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
-				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager); 
+				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager)
+				|| managerRoles.isSystemAdmin(); 
 		boolean userManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager); 
 		
 		List<String> roleKeys = new ArrayList<>();
@@ -483,7 +484,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		Organisation organisation = wrapper.getOrganisation();
 		boolean iAmUserManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager);
 		boolean iAmAdmin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
-				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager);
+				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager)
+				|| managerRoles.isSystemAdmin();
 		
 		RolesByOrganisation editedOrganisationRoles = editedRoles.getRoles(wrapper.getOrganisation());
 

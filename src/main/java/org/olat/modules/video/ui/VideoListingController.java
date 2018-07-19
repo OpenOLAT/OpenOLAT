@@ -187,7 +187,7 @@ public class VideoListingController extends FormBasicController implements Activ
 				String rowKeyStr = ureq.getParameter("select_row");
 				if(StringHelper.isLong(rowKeyStr)) {
 					try {
-						doShowVideo(ureq, new Long(rowKeyStr));
+						doShowVideo(ureq, Long.valueOf(rowKeyStr));
 					} catch (NumberFormatException e) {
 						logWarn("Not a valid long: " + rowKeyStr, e);
 					}

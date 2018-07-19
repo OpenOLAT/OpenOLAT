@@ -64,7 +64,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 	private static final OLog log = Tracing.createLoggerFor(SiteDefinitions.class);
 
 	private Map<String,SiteDefinition> siteDefMap;
-	private Map<String,SiteConfiguration> siteConfigMap = new ConcurrentHashMap<String,SiteConfiguration>();
+	private Map<String,SiteConfiguration> siteConfigMap = new ConcurrentHashMap<>();
 	
 	private String configSite1;
 	private String configSite2;
@@ -122,13 +122,11 @@ public class SiteDefinitions extends AbstractSpringModule {
 	}
 	
 	public SiteConfiguration getConfigurationSite(String id) {
-		SiteConfiguration config = siteConfigMap.get(id);
-		if(config == null) {
-			config = new SiteConfiguration();
-			config.setId(id);
-			siteConfigMap.put(id, config);
-		}
-		return config;
+		return siteConfigMap.computeIfAbsent(id, springId -> {
+			SiteConfiguration c = new SiteConfiguration();
+			c.setId(id);
+			return c;
+		});
 	}
 	
 	public SiteConfiguration getConfigurationSite(SiteDefinition siteDef) {
@@ -214,7 +212,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 	
 	public List<SiteConfiguration> getSitesConfiguration() {
 		if(StringHelper.containsNonWhitespace(sitesSettings)) {
-			return new ArrayList<SiteConfiguration>(siteConfigMap.values());
+			return new ArrayList<>(siteConfigMap.values());
 		}
 		return Collections.emptyList();
 	}
@@ -277,10 +275,10 @@ public class SiteDefinitions extends AbstractSpringModule {
 			synchronized(this) {
 				if (siteDefMap == null) {
 					Map<String,SiteDefinition> siteDefs = CoreSpringFactory.getBeansOfType(SiteDefinition.class);
-					siteDefMap = new ConcurrentHashMap<String,SiteDefinition>(siteDefs);
+					siteDefMap = new ConcurrentHashMap<>(siteDefs);
 
 					List<SiteConfiguration> configs = getSitesConfiguration();
-					Map<String,SiteConfiguration> siteConfigs = new HashMap<String,SiteConfiguration>();
+					Map<String,SiteConfiguration> siteConfigs = new HashMap<>();
 					for(SiteConfiguration siteConfig:configs) {
 						siteConfigs.put(siteConfig.getId(), siteConfig);
 					}
@@ -308,7 +306,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 
 	public List<SiteDefinition> getSiteDefList() {
 		Map<String,SiteDefinition> allDefList = getAndInitSiteDefinitionList();
-		List<SiteDefinitionOrder> enabledOrderedSites = new ArrayList<SiteDefinitionOrder>(allDefList.size());
+		List<SiteDefinitionOrder> enabledOrderedSites = new ArrayList<>(allDefList.size());
 		for(Map.Entry<String,SiteDefinition> siteDefEntry:allDefList.entrySet()) {
 			String id = siteDefEntry.getKey();
 			SiteDefinition siteDef = siteDefEntry.getValue();
@@ -325,7 +323,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 		}
 		Collections.sort(enabledOrderedSites, new SiteDefinitionOrderComparator());
 
-		List<SiteDefinition> sites = new ArrayList<SiteDefinition>(allDefList.size());
+		List<SiteDefinition> sites = new ArrayList<>(allDefList.size());
 		for(SiteDefinitionOrder orderedSiteDef: enabledOrderedSites) {
 			sites.add(orderedSiteDef.getSiteDef());
 		}
@@ -334,7 +332,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 	
 	public Map<String,SiteDefinition> getAllSiteDefinitionsList() {
 		Map<String,SiteDefinition> allDefList = getAndInitSiteDefinitionList();
-		return new HashMap<String,SiteDefinition>(allDefList);
+		return new HashMap<>(allDefList);
 	}
 	
 	private static class SiteDefinitionOrder {

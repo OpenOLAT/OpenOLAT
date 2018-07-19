@@ -26,7 +26,6 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.coach.CoachingModule;
 import org.olat.modules.coach.CoachingService;
@@ -49,15 +48,12 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 			return null;
 		}
 
-		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
-			return new CoachSite(this, ureq.getLocale());
-		}		
-
-		if(usess.getRoles().isAdministrator()  || usess.getRoles().isPrincipal()
+		// these are the minimal security
+		if(usess.getRoles().isAdministrator() || usess.getRoles().isPrincipal()
 				|| usess.getRoles().isUserManager() || usess.getRoles().isRolesManager()
 				|| CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity())) {
 			return new CoachSite(this, ureq.getLocale());
-		}
+		}		
 		return null;
 	}
 	
