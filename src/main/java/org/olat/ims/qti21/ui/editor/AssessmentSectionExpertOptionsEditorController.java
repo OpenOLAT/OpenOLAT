@@ -89,7 +89,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		visibleEl.clearError();
 		if(!visibleEl.isOneSelected()) {
@@ -97,7 +97,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
