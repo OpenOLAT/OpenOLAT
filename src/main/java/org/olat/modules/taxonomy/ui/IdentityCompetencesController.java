@@ -68,21 +68,26 @@ public class IdentityCompetencesController extends FormBasicController implement
 	
 	private FlexiTableElement tableEl;
 	private IdentityCompetenceTableModel tableModel;
-	private FormLink addManageButton, addTeachButton, addHaveButton, addTargetButton;
+	private FormLink addManageButton;
+	private FormLink addTeachButton;
+	private FormLink addHaveButton;
+	private FormLink addTargetButton;
 	
 	private CloseableModalController cmc;
 	private SelectTaxonomyLevelController levelsSearchCtrl;
 	private DialogBoxController removeCompentenceConfirmationCtrl;
 
-	private Identity assessedIdentity;
+	private final boolean canModify;
+	private final Identity assessedIdentity;
 
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	public IdentityCompetencesController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
+	public IdentityCompetencesController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean canModify) {
 		super(ureq, wControl, "identity_competences");
+		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
@@ -92,17 +97,18 @@ public class IdentityCompetencesController extends FormBasicController implement
 	
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		//this.stackPanel = stackPanel;
+		//
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addManageButton = uifactory.addFormLink("add.competence.manage", formLayout, Link.BUTTON);
-		addTeachButton = uifactory.addFormLink("add.competence.teach", formLayout, Link.BUTTON);
-		addHaveButton = uifactory.addFormLink("add.competence.have", formLayout, Link.BUTTON);
-		addTargetButton = uifactory.addFormLink("add.competence.target", formLayout, Link.BUTTON);
+		if(canModify) {
+			addManageButton = uifactory.addFormLink("add.competence.manage", formLayout, Link.BUTTON);
+			addTeachButton = uifactory.addFormLink("add.competence.teach", formLayout, Link.BUTTON);
+			addHaveButton = uifactory.addFormLink("add.competence.have", formLayout, Link.BUTTON);
+			addTargetButton = uifactory.addFormLink("add.competence.target", formLayout, Link.BUTTON);
+		}
 
-		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyIdentifier));
@@ -114,9 +120,10 @@ public class IdentityCompetencesController extends FormBasicController implement
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyLevelType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.type, new TaxonomyCompetenceTypeRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.expiration, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", IdCompetenceCols.remove.ordinal(), "remove",
+		if(canModify) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", IdCompetenceCols.remove.ordinal(), "remove",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("remove"), "remove"), null)));
-		
+		}
 		tableModel = new IdentityCompetenceTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
@@ -126,7 +133,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 	private void loadModel() {
 		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(assessedIdentity);
 		List<IdentityCompetenceRow> rows = competences.stream()
-				.map(c -> new IdentityCompetenceRow(c))
+				.map(IdentityCompetenceRow::new)
 				.collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(false, true, true);

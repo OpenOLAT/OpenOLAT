@@ -154,7 +154,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			showSolutionEl.select(key, true);
 		} else {
 			String key = allowInherit ? INHERIT : NO;
-			showSolutionEl.select(key, false);
+			showSolutionEl.select(key, true);
 		}
 	}
 

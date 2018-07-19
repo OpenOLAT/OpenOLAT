@@ -44,7 +44,7 @@ class UserInterestsRenderer extends DefaultComponentRenderer {
 		UserInterestsComponent uiCmp = (UserInterestsComponent)source;
 		UserInterestsElement uiFte = uiCmp.getUserInterestsElement();
 		List<String> userInterests = uiFte.getUserInterests();
-		if(userInterests.size() > 0) {
+		if(!userInterests.isEmpty()) {
 			sb.append("<ul class='list-unstyled'>");
 			for(String userInterest:userInterests) {
 				sb.append("<li>").append(userInterest).append("</li>");
@@ -52,10 +52,12 @@ class UserInterestsRenderer extends DefaultComponentRenderer {
 			sb.append("</ul>");
 		}
 		
-		FormLink editLink = uiFte.getEditLink();
-		if(editLink != null && editLink.isVisible()) {
-			Component cmp = editLink.getComponent();
-			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+		if(uiCmp.isEnabled()) {
+			FormLink editLink = uiFte.getEditLink();
+			if(editLink != null && editLink.isVisible()) {
+				Component cmp = editLink.getComponent();
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+			}
 		}
 	}
 }

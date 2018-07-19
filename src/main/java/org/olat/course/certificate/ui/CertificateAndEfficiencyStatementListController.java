@@ -110,8 +110,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private DialogBoxController confirmDeleteCtr;
 	private ArtefactWizzardStepsController ePFCollCtrl;
 	
+	private final boolean canModify;
 	private final boolean linkToCoachingTool;
-	private Identity assessedIdentity;
+	private final Identity assessedIdentity;
 	
 	@Autowired
 	private EfficiencyStatementManager esm;
@@ -129,13 +130,14 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private EfficiencyStatementMediaHandler mediaHandler;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getUserSession().getIdentity(), false);
+		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true);
 	}
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean linkToCoachingTool) {
+			Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify) {
 		super(ureq, wControl, "cert_statement_list");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
 		
@@ -196,21 +198,25 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
 		
-		DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel(Cols.deleteEfficiencyStatement.i18nHeaderKey(), Cols.deleteEfficiencyStatement.ordinal(), CMD_DELETE,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.delete"), CMD_DELETE), null));
-		tableColumnModel.addFlexiColumnModel(deleteColumn);
+		if(canModify) {
+			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel(Cols.deleteEfficiencyStatement.i18nHeaderKey(), Cols.deleteEfficiencyStatement.ordinal(), CMD_DELETE,
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.delete"), CMD_DELETE), null));
+			tableColumnModel.addFlexiColumnModel(deleteColumn);
+		}
 		
 		//artefact
-		if(portfolioV2Module.isEnabled()) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
-					Cols.efficiencyStatement.ordinal(), CMD_MEDIA,
-					new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer())));
-		} else {
-			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-			if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
+		if(assessedIdentity.equals(getIdentity())) {
+			if(portfolioV2Module.isEnabled()) {
 				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
-						Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
-						new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
+						Cols.efficiencyStatement.ordinal(), CMD_MEDIA,
+						new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer())));
+			} else {
+				EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
+				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
+					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
+							Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
+							new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
+				}
 			}
 		}
 		

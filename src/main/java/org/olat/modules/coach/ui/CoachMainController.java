@@ -69,16 +69,21 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private LayoutMain3ColsController columnLayoutCtr;
 	private LecturesSearchController lecturesSearchCtrl;
 	
+	private final boolean userSearch;
+	
 	@Autowired
 	private LectureModule lectureModule;
 	
 	public CoachMainController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		userSearch = roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator() || roles.isPrincipal();
 
 		menu = new MenuTree(null, "coachMenu", this);
 		menu.setExpandSelectedNode(false);
 		menu.setRootVisible(false);
-		menu.setTreeModel(buildTreeModel(ureq));
+		menu.setTreeModel(buildTreeModel());
 
 		content = new TooledStackedPanel("coaching-stack", getTranslator(), this);
 		content.setNeverDisposeRootController(true);
@@ -152,7 +157,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(courseListCtrl);
 			}
 			selectedCtrl = courseListCtrl;
-		} else if("lectures".equalsIgnoreCase(cmd)) {
+		} else if("lectures".equalsIgnoreCase(cmd) && lectureModule.isEnabled()) {
 			if(lecturesSearchCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -161,7 +166,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(lecturesSearchCtrl);
 			}
 			selectedCtrl = lecturesSearchCtrl;
-		} else if("search".equalsIgnoreCase(cmd)) {
+		} else if("search".equalsIgnoreCase(cmd) && userSearch) {
 			if(userSearchCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -173,18 +178,21 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		}
 		
 		if(selectedCtrl != null) {
+			String title = "Root";
 			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menu.getTreeModel().getRootNode());
-			if (selTreeNode != null && !selTreeNode.getIdent().equals(menu.getSelectedNodeId())) {
-				menu.setSelectedNodeId(selTreeNode.getIdent());
+			if (selTreeNode != null) {
+				title = selTreeNode.getTitle();
+				if(!selTreeNode.getIdent().equals(menu.getSelectedNodeId())) {
+					menu.setSelectedNodeId(selTreeNode.getIdent());
+				}
 			}
-			
-			content.rootController(selTreeNode.getTitle(), selectedCtrl);
+			content.rootController(title, selectedCtrl);
 			addToHistory(ureq, selectedCtrl);
 		}
 		return (Activateable2)selectedCtrl;
 	}
 	
-	private TreeModel buildTreeModel(UserRequest ureq) {
+	private TreeModel buildTreeModel() {
 		GenericTreeModel gtm = new GenericTreeModel();
 		GenericTreeNode root = new GenericTreeNode();
 		gtm.setRootNode(root);
@@ -215,8 +223,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(lectures);
 		}
 		
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator()) {
+		if(userSearch) {
 			GenericTreeNode search = new GenericTreeNode();
 			search.setUserObject("Search");
 			search.setTitle(translate("search.menu.title"));

@@ -102,7 +102,9 @@ public class CourseOverviewController extends BasicController  {
 	private static final String TABLE_ACTION_UNSUBSCRIBE = "unsubscribe";
 	
 	private final VelocityContainer vc;
-	private final Link addAsOwner, addAsTutor, addAsParticipant;
+	private Link addAsOwner;
+	private Link addAsTutor;
+	private Link addAsParticipant;
 	private TableController courseListCtr;
 	private MembershipDataModel tableDataModel;
 	private final CourseMembershipComparator membershipComparator = new CourseMembershipComparator();
@@ -130,7 +132,7 @@ public class CourseOverviewController extends BasicController  {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public CourseOverviewController(UserRequest ureq, WindowControl wControl, Identity identity) {
+	public CourseOverviewController(UserRequest ureq, WindowControl wControl, Identity identity, boolean canModify) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseMembership.class, ureq.getLocale()));
 		this.setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
@@ -177,19 +179,22 @@ public class CourseOverviewController extends BasicController  {
 		if(isLastVisitVisible) {
 			courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.lastTime.i18n(), MSCols.lastTime.ordinal(), null, getLocale()));
 		}
-		courseListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
-		courseListCtr.addColumnDescriptor(new BooleanColumnDescriptor(MSCols.allowLeave.i18n(), MSCols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
-
-		courseListCtr.setMultiSelect(true);
-		courseListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
+		if(canModify) {
+			courseListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
+			courseListCtr.addColumnDescriptor(new BooleanColumnDescriptor(MSCols.allowLeave.i18n(), MSCols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
+			courseListCtr.setMultiSelect(true);
+			courseListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
+		}
 		tableDataModel = new MembershipDataModel();
 		courseListCtr.setTableDataModel(tableDataModel);
 		
 		updateModel();
 
-		addAsOwner = LinkFactory.createButton("add.course.owner", vc, this);
-		addAsTutor = LinkFactory.createButton("add.course.tutor", vc, this);		
-		addAsParticipant = LinkFactory.createButton("add.course.participant", vc, this);		
+		if(canModify) {
+			addAsOwner = LinkFactory.createButton("add.course.owner", vc, this);
+			addAsTutor = LinkFactory.createButton("add.course.tutor", vc, this);
+			addAsParticipant = LinkFactory.createButton("add.course.participant", vc, this);
+		}
 		vc.put("table.courses", courseListCtr.getInitialComponent());	
 		
 		putInitialPanel(vc);
@@ -762,7 +767,7 @@ public class CourseOverviewController extends BasicController  {
 		}
 		
 		public void addGroup(BusinessGroupShort group) {
-			if(groups == null) groups = new ArrayList<BusinessGroupShort>();
+			if(groups == null) groups = new ArrayList<>();
 			groups.add(group);
 		}
 
@@ -771,7 +776,7 @@ public class CourseOverviewController extends BasicController  {
 		}
 		
 		public List<BusinessGroupShort> getGroups() {
-			return groups == null ? Collections.<BusinessGroupShort>emptyList() : new ArrayList<BusinessGroupShort>(groups);
+			return groups == null ? Collections.<BusinessGroupShort>emptyList() : new ArrayList<>(groups);
 		}
 		
 		public boolean isFullyManaged() {

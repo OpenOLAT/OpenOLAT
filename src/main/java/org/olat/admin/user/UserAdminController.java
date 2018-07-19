@@ -70,6 +70,7 @@ import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.ProfileAndHomePageEditController;
+import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
@@ -123,6 +124,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
 	private Link exportDataButton;
+	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
@@ -289,7 +291,6 @@ public class UserAdminController extends BasicController implements Activateable
 				true, title);
 		listenTo(cmc);
 		cmc.activate();
-		
 	}
 
 	/**
@@ -318,9 +319,11 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		return managerRoles.isSystemAdmin()
 				|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isManagerOf(OrganisationRoles.principal, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
 				|| managerRoles.isMyInvitee(OrganisationRoles.administrator, identityRoles)
+				|| managerRoles.isMyInvitee(OrganisationRoles.principal, identityRoles)
 				|| managerRoles.isMyInvitee(OrganisationRoles.rolesmanager, identityRoles)
 				|| managerRoles.isMyInvitee(OrganisationRoles.usermanager, identityRoles);
 	}
@@ -342,15 +345,23 @@ public class UserAdminController extends BasicController implements Activateable
 		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
 		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 
-		userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
-		listenTo(userProfileCtr);
-		userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
+		if(isAdminOf || isSysAdmin || isUserManagerOf || isRolesManagerOf) {
+			userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
+			listenTo(userProfileCtr);
+			userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
+		} else {
+			profileCtr = new ProfileFormController(ureq, getWindowControl(), identity, true, false);
+			listenTo(profileCtr);
+			userTabP.addTab(translate(NLS_EDIT_UPROFILE), profileCtr.getInitialComponent());
+		}
 
-		userTabP.addTab(translate(NLS_EDIT_UPREFS), uureq -> {
-			prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity);
-			listenTo(prefsCtr);
-			return prefsCtr.getInitialComponent();
-		});
+		if(isAdminOf || isSysAdmin || isUserManagerOf || isRolesManagerOf) {
+			userTabP.addTab(translate(NLS_EDIT_UPREFS), uureq -> {
+				prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity);
+				listenTo(prefsCtr);
+				return prefsCtr.getInitialComponent();
+			});
+		}
 
 		if (isPasswordChangesAllowed(identity)) {
 			userTabP.addTab(translate(NLS_EDIT_UPCRED), uureq -> {
@@ -376,13 +387,15 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
 			userTabP.addTab(translate(NLS_VIEW_GROUPS),  uureq -> {
-				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, true);
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
+				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(grpCtr);
 				return grpCtr.getInitialComponent();
 			});
 	
 			userTabP.addTab(translate(NLS_VIEW_COURSES), uureq -> {
-				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity);
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
+				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity, canModify);
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();
 			});
@@ -396,7 +409,9 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 
 			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
-				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(), identity, true);
+				boolean canModify = isAdminOf || isRolesManagerOf;
+				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(),
+						identity, true, canModify);
 				listenTo(efficicencyCtrl);
 				BreadcrumbedStackedPanel efficiencyPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
 				efficiencyPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
@@ -444,7 +459,8 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if(taxonomyModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(translate(NLS_VIEW_COMPETENCES),  uureq -> {
-				competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity);
+				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
+				competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity, canModify);
 				listenTo(competencesCtrl);
 				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
 				competencePanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);

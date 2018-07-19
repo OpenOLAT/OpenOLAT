@@ -160,7 +160,8 @@ public class ProfileAndHomePageEditController extends BasicController implements
 
 	private ProfileFormController doOpenProfile(UserRequest ureq) {
 		if(profileFormController == null) {
-			profileFormController = new ProfileFormController(ureq, getWindowControl(), identityToModify, isAdministrativeUser);
+			profileFormController = new ProfileFormController(ureq, getWindowControl(),
+					identityToModify, isAdministrativeUser, true);
 			listenTo(profileFormController);
 		}
 

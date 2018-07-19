@@ -1,8 +1,18 @@
 <fieldset>
 	<legend><i class="o_icon o_CourseModule_icon"> </i> $r.translate("add.courses.title")</legend>
+	#if($r.available("add.course.owner") || $r.available("add.course.tutor") || $r.available("add.course.participant"))
 	<div class="o_button_group o_button_group_right">
-		$r.render("add.course.owner") $r.render("add.course.tutor") $r.render("add.course.participant")
+		#if($r.available("add.course.owner"))
+			$r.render("add.course.owner")
+		#end
+		#if($r.available("add.course.tutor"))
+			$r.render("add.course.tutor")
+		#end
+		#if($r.available("add.course.participant"))
+			$r.render("add.course.participant")
+		#end
 	</div>
+	#end
 	$r.render("table.courses")
 </fieldset>
 

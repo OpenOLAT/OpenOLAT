@@ -62,21 +62,23 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 			FormJSHelper.setFlexiFormDirtyOnLoad(sb, smsFte.getRootForm());
 		}
 
-		sb.append("<div class='form-inline'>");
-		FormLink editLink = smsFte.getEditLink();
-		if(editLink != null && editLink.isVisible()) {
-			Component cmp = editLink.getComponent();
-			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
-		}
-
-		if(StringHelper.containsNonWhitespace(phoneNumber)) {
-			sb.append("&nbsp;");
-			FormLink removeLink = smsFte.getRemoveLink();
-			if(removeLink != null && removeLink.isVisible()) {
-				Component cmp = removeLink.getComponent();
+		if(smsCmp.isEnabled()) {
+			sb.append("<div class='form-inline'>");
+			FormLink editLink = smsFte.getEditLink();
+			if(editLink != null && editLink.isVisible()) {
+				Component cmp = editLink.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
 			}
+	
+			if(StringHelper.containsNonWhitespace(phoneNumber)) {
+				sb.append("&nbsp;");
+				FormLink removeLink = smsFte.getRemoveLink();
+				if(removeLink != null && removeLink.isVisible()) {
+					Component cmp = removeLink.getComponent();
+					cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				}
+			}
+			sb.append("</div>");
 		}
-		sb.append("</div>");
 	}
 }

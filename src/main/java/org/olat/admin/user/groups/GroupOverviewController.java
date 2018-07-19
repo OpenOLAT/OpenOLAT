@@ -78,9 +78,9 @@ public class GroupOverviewController extends BasicController {
 	private static final String TABLE_ACTION_LAUNCH = "bgTblLaunch";
 	private static final String TABLE_ACTION_UNSUBSCRIBE = "unsubscribe";
 	
-	private VelocityContainer vc;
-	private TableController groupListCtr;
-	private BusinessGroupTableModelWithType tableDataModel;
+	private final VelocityContainer vc;
+	private final TableController groupListCtr;
+	private final BusinessGroupTableModelWithType tableDataModel;
 	
 	private Link addGroups;
 	private DialogBoxController confirmSendMailBox;
@@ -93,7 +93,7 @@ public class GroupOverviewController extends BasicController {
 	
 	private final Identity identity;
 
-	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, Boolean canStartGroups) {
+	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, boolean canEdit) {
 		super(ureq, control, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));
 		
@@ -105,23 +105,25 @@ public class GroupOverviewController extends BasicController {
 		
 		groupListCtr = new TableController(null, ureq, control, getTranslator());
 		listenTo(groupListCtr);
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(canStartGroups ? TABLE_ACTION_LAUNCH : null, getLocale()));
+		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
 		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
 		CustomCellRenderer roleRenderer = new BGRoleCellRenderer(getLocale());
 		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.role.i18n(), Cols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
-		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
+		if(canEdit) {
+			groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(),
+					TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
+			
+			groupListCtr.setMultiSelect(true);
+			groupListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
+			addGroups = LinkFactory.createButton("add.groups", vc, this);
+		}
 		
-		groupListCtr.setMultiSelect(true);
-		groupListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
 		tableDataModel = new BusinessGroupTableModelWithType(getTranslator(), 4);
-		groupListCtr.setTableDataModel(tableDataModel);
-		
-		updateModel();
-		
-		addGroups = LinkFactory.createButton("add.groups", vc, this);		
+		groupListCtr.setTableDataModel(tableDataModel);		
 		vc.put("table.groups", groupListCtr.getInitialComponent());	
+		updateModel();
 		putInitialPanel(vc);
 	}
 
@@ -165,17 +167,11 @@ public class GroupOverviewController extends BasicController {
 		groupListCtr.modelChanged();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(	UserRequest ureq, Component source, Event event) {
 		if (source == addGroups){
@@ -187,10 +183,7 @@ public class GroupOverviewController extends BasicController {
 			cmc.activate();
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);

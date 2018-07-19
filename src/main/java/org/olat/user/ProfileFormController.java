@@ -95,6 +95,7 @@ public class ProfileFormController extends FormBasicController {
 	private FileElement logoUpload;
 	private FileElement portraitUpload;
 	
+	private final boolean canModify;
 	private final boolean logoEnabled;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -128,7 +129,7 @@ public class ProfileFormController extends FormBasicController {
 	 * @param wControl
 	 */
 	public ProfileFormController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getIdentity(), false);
+		this(ureq, wControl, ureq.getIdentity(), false, true);
 	}
 
 	/**
@@ -143,11 +144,11 @@ public class ProfileFormController extends FormBasicController {
 	 *          user manager; false: use is editing his own profile
 	 */
 	public ProfileFormController(UserRequest ureq, WindowControl wControl,
-			Identity identityToModify, boolean isAdministrativeUser) {
+			Identity identityToModify, boolean isAdministrativeUser, boolean canModify) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setFormStyle("o_user_profile_form");
-		
+		this.canModify = canModify;
 		this.identityToModify = identityToModify;
 		logoEnabled = userModule.isLogoByProfileEnabled();
 		
@@ -194,6 +195,10 @@ public class ProfileFormController extends FormBasicController {
 			
 			// add input field to container
 			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), user, usageIdentifier, isAdministrativeUser, groupContainer);
+			if(formItem.isEnabled() && !canModify) {
+				formItem.setEnabled(canModify);
+			}
+			
 			String propertyName = userPropertyHandler.getName();
 			formItems.put(propertyName, formItem);
 			
@@ -239,6 +244,7 @@ public class ProfileFormController extends FormBasicController {
 		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text",
 				conf.getTextAboutMe(), 10, -1, false, null, null, groupContainer,
 				ureq.getUserSession(), getWindowControl());
+		textAboutMe.setEnabled(canModify);
 		textAboutMe.setMaxLength(10000);
 		
 		//upload image
@@ -260,6 +266,7 @@ public class ProfileFormController extends FormBasicController {
 		portraitUpload.addActionListener(FormEvent.ONCHANGE);
 		portraitUpload.setHelpTextKey("ul.select.fhelp", null);
 		portraitUpload.setDeleteEnabled(true);
+		portraitUpload.setEnabled(canModify);
 		if(portraitFile != null) {
 			portraitUpload.setInitialFile(portraitFile);
 		}
@@ -278,6 +285,7 @@ public class ProfileFormController extends FormBasicController {
 			logoUpload.addActionListener(FormEvent.ONCHANGE);
 			logoUpload.setHelpTextKey("ul.select.fhelp", null);
 			logoUpload.setDeleteEnabled(true);
+			logoUpload.setEnabled(canModify);
 			if(logoFile != null) {
 				logoUpload.setInitialFile(logoFile);
 			}
@@ -289,7 +297,9 @@ public class ProfileFormController extends FormBasicController {
 		formLayout.add(buttonLayoutWrappper);
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayoutInner", getTranslator());
 		buttonLayoutWrappper.add(buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		if(canModify) {
+			uifactory.addFormSubmitButton("save", buttonLayout);
+		}
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
