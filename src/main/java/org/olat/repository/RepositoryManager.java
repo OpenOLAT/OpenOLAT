@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -848,25 +847,37 @@ public class RepositoryManager {
 		}
 
 		if(organisations != null) {
+			// sync the relation re_to_group
+			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(reloadedRe);
+			for(Organisation currentOrganisation:currentOrganisationsByGroups) {
+				if(!organisations.contains(currentOrganisation)) {
+					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);
+				}
+			}
+			for(Organisation organisation:organisations) {
+				if(!currentOrganisationsByGroups.contains(organisation)) {
+					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe);
+					reloadedRe.getGroups().add(relToGroup);
+				}
+			}
+			
+			// sync the relation repository entry to organisation	
 			Set<RepositoryEntryToOrganisation> currentRelations = reloadedRe.getOrganisations();
 			List<RepositoryEntryToOrganisation> copyRelations = new ArrayList<>(currentRelations);
-			Set<Organisation> currentOrganisations = new HashSet<>();
+			List<Organisation> currentOrganisationsByRelations = new ArrayList<>();
 			for(RepositoryEntryToOrganisation relation:copyRelations) {
 				if(!organisations.contains(relation.getOrganisation())) {
 					repositoryEntryToOrganisationDao.delete(relation);
-					repositoryEntryRelationDao.removeRelation(relation.getOrganisation().getGroup());
+					currentRelations.remove(relation);
 				} else {
-					currentOrganisations.add(relation.getOrganisation());
+					currentOrganisationsByRelations.add(relation.getOrganisation());
 				}
 			}
 			
 			for(Organisation organisation:organisations) {
-				if(!currentOrganisations.contains(organisation)) {
-					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao
-							.createRelation(organisation, reloadedRe, false);
+				if(!currentOrganisationsByRelations.contains(organisation)) {
+					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao.createRelation(organisation, reloadedRe, false);
 					currentRelations.add(newRelation);
-					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe);
-					reloadedRe.getGroups().add(relToGroup);
 				}
 			}
 		}
