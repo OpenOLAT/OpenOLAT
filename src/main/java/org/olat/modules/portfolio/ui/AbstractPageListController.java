@@ -737,7 +737,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		timelineSwitchOffButton.setVisible(false);
 		flc.contextPut("timelineSwitch", Boolean.TRUE);
 		if(savePreferences) {
-			ureq.getUserSession().getGuiPreferences().put(this.getClass(), getTimelineSwitchPreferencesName(), "on");
+			ureq.getUserSession().getGuiPreferences().putAndSave(this.getClass(), getTimelineSwitchPreferencesName(), "on");
 		}
 	}
 	
@@ -746,7 +746,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		timelineSwitchOffButton.setVisible(true);
 		flc.contextPut("timelineSwitch", Boolean.FALSE);
 		if(savePreferences) {
-			ureq.getUserSession().getGuiPreferences().put(this.getClass(), getTimelineSwitchPreferencesName(), "off");
+			ureq.getUserSession().getGuiPreferences().putAndSave(this.getClass(), getTimelineSwitchPreferencesName(), "off");
 		}
 	}
 	
