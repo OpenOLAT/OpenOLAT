@@ -65,6 +65,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	private final Component formHeader;
+	private EvaluationFormExecutionController executionCtrl;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -165,9 +166,9 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
 		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(Collections.singletonList(reloadedSession));
 		String legendName = reportHelper.getLegend(reloadedSession).getName();
-		EvaluationFormExecutionController controller = new EvaluationFormExecutionController(ureq, getWindowControl(),
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(),
 				reloadedSession, responses, form, formHeader);
-		stackPanel.pushController(legendName, controller);
+		stackPanel.pushController(legendName, executionCtrl);
 	}
 
 	@Override
@@ -177,7 +178,8 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(executionCtrl);
+		executionCtrl = null;
 	}
 
 }

@@ -36,7 +36,9 @@ import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.ui.HTMLRawEditorController;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
+import org.olat.modules.forms.ui.model.EvaluationFormComponentReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
@@ -106,9 +108,9 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 	}
 
 	@Override
-	public Component getReportComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
 			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
-		return getComponent(element);
+		return new EvaluationFormComponentReportElement(getComponent(element));
 	}
 
 }

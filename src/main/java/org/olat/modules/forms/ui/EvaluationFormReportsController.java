@@ -48,7 +48,8 @@ public class EvaluationFormReportsController extends BasicController {
 	
 	private Link printLink;
 	private Link exportLink;
-	
+
+	private EvaluationFormReportSegmentsController segmentsController;	
 	private CloseableCalloutWindowController calloutCtrl;
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
 	
@@ -86,7 +87,7 @@ public class EvaluationFormReportsController extends BasicController {
 		exportLink = LinkFactory.createButtonSmall(CMD_EXPORT, mainVC, this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
-		EvaluationFormReportSegmentsController segmentsController = new EvaluationFormReportSegmentsController(ureq,
+		segmentsController = new EvaluationFormReportSegmentsController(ureq,
 				getWindowControl(), form, sessions, formHeader, figures, reportHelper);
 		mainVC.put("segments", segmentsController.getInitialComponent());
 
@@ -117,7 +118,9 @@ public class EvaluationFormReportsController extends BasicController {
 	
 	@Override
 	protected void doDispose() {
+		removeAsListenerAndDispose(segmentsController);
 		removeAsListenerAndDispose(printSelectionCtrl);
+		segmentsController = null;
 		printSelectionCtrl = null;
 	}
 

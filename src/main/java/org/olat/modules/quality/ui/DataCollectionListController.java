@@ -216,7 +216,7 @@ public class DataCollectionListController extends FormBasicController implements
 			doSelectEvaluationForm(ureq);
 		} else if (stackPanel == source && event instanceof PopEvent && stackPanel.getLastController() == this) {
 			tableEl.reset(true, false, true);
-		}
+		} 
 		super.event(ureq, source, event);
 	}
 
