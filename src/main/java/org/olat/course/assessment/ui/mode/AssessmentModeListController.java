@@ -66,25 +66,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeListController extends FormBasicController implements GenericEventListener {
 
+	private FormLink addLink;
+	private FormLink deleteLink;
 	private FlexiTableElement tableEl;
-	private FormLink addLink, deleteLink;
 	private AssessmentModeListModel model;
 	private final TooledStackedPanel toolbarPanel;
 
-	private DialogBoxController startDialogBox, stopDialogBox,deleteDialogBox;
+	private DialogBoxController startDialogBox, stopDialogBox, deleteDialogBox;
 	private AssessmentModeEditController editCtrl;
 	
 	private final RepositoryEntry entry;
+	private final AssessmentModeSecurityCallback secCallback;
 	
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
-	public AssessmentModeListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+	public AssessmentModeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			RepositoryEntry entry, AssessmentModeSecurityCallback secCallback) {
 		super(ureq, wControl, "mode_list");
 		this.entry = entry;
+		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		toolbarPanel.addListener(this);
 		
@@ -105,13 +108,14 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addLink = uifactory.addFormLink("add", "add", "add.mode", null, formLayout, Link.BUTTON);
-		addLink.setElementCssClass("o_sel_assessment_mode_add");
-		addLink.setIconLeftCSS("o_icon o_icon_add");
-		
-		
-		deleteLink = uifactory.addFormLink("delete", "delete", "delete.mode", null, formLayout, Link.BUTTON);
-		deleteLink.setIconLeftCSS("o_icon o_icon_delete");
+		if(secCallback.canEditAssessmentMode()) {
+			addLink = uifactory.addFormLink("add", "add", "add.mode", null, formLayout, Link.BUTTON);
+			addLink.setElementCssClass("o_sel_assessment_mode_add");
+			addLink.setIconLeftCSS("o_icon o_icon_add");
+			
+			deleteLink = uifactory.addFormLink("delete", "delete", "delete.mode", null, formLayout, Link.BUTTON);
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete");
+		}
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -126,16 +130,21 @@ public class AssessmentModeListController extends FormBasicController implements
 				true, Cols.followupTime.name(), new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
 				true, Cols.target.name(), new TargetAudienceCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start", Cols.start.ordinal(), "start",
+		
+		if(secCallback.canStartStopAssessment()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start", Cols.start.ordinal(), "start",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		}
+		if(secCallback.canEditAssessmentMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		}
 		
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
+		tableEl.setMultiSelect(secCallback.canEditAssessmentMode());
+		tableEl.setSelectAllEnable(secCallback.canEditAssessmentMode());
 	}
 	
 	private void loadModel() {
@@ -143,9 +152,10 @@ public class AssessmentModeListController extends FormBasicController implements
 		model.setObjects(modes);
 		tableEl.reloadData();
 		// don't show table and button if there is nothing
-		tableEl.setVisible(modes.size() > 0);
-		deleteLink.setVisible(modes.size() > 0);
-
+		tableEl.setVisible(!modes.isEmpty());
+		if(deleteLink != null) {
+			deleteLink.setVisible(!modes.isEmpty());
+		}
 	}
 
 	@Override
@@ -210,7 +220,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			if(index == null || index.isEmpty()) {
 				showWarning("error.atleastone");
 			} else {
-				List<AssessmentMode> rows = new ArrayList<AssessmentMode>(index.size());
+				List<AssessmentMode> rows = new ArrayList<>(index.size());
 				for(Integer i:index) {
 					rows.add(model.getObject(i.intValue()));
 				}

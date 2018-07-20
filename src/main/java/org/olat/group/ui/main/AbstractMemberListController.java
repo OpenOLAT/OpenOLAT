@@ -151,9 +151,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
 	
-	private final boolean readOnly;
 	private boolean overrideManaged = false;
 	private final boolean globallyManaged;
+	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
 	private MemberViewQueries memberQueries;
@@ -183,28 +183,28 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private UserSessionManager sessionManager;
 
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
-			String page,boolean readOnly,  TooledStackedPanel stackPanel) {
-		this(ureq, wControl, repoEntry, null, page, readOnly, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
+			String page, MemberListSecurityCallback secCallback,  TooledStackedPanel stackPanel) {
+		this(ureq, wControl, repoEntry, null, page, secCallback, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
 	}
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, BusinessGroup group,
-			String page, boolean readOnly, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, null, group, page, readOnly, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
+			String page, MemberListSecurityCallback secCallback, TooledStackedPanel stackPanel) {
+		this(ureq, wControl, null, group, page, secCallback, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
 	}
 	
 	protected AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, BusinessGroup group,
-			String page, boolean readOnly, TooledStackedPanel stackPanel, Translator translator) {
+			String page, MemberListSecurityCallback secCallback, TooledStackedPanel stackPanel, Translator translator) {
 		super(ureq, wControl, page, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), translator));
 		
 		this.businessGroup = group;
 		this.repoEntry = repoEntry;
 		this.toolbarPanel = stackPanel;
-		this.readOnly = readOnly;
+		this.secCallback = secCallback;
 
 		globallyManaged = calcGloballyManaged();
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled() && !readOnly;
+		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled() && !secCallback.isReadonly();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		isLastVisitVisible = securityModule.isUserLastVisitVisible(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -215,8 +215,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	public void overrideManaged(UserRequest ureq, boolean override) {
 		if(isAllowedToOverrideManaged(ureq)) {
 			overrideManaged = override;
-			editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
-			removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
+			editButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
+			removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
 			flc.setDirty(true);
 		}
 	}
@@ -253,10 +253,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
-		editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
+		editButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
 		mailButton = uifactory.addFormLink("table.header.mail", formLayout, Link.BUTTON);
 		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
-		removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
+		removeButton.setVisible((!globallyManaged || overrideManaged) && !secCallback.isReadonly());
 	}
 	
 	private boolean calcGloballyManaged() {
@@ -288,7 +288,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	private SortKey initColumns(FlexiTableColumnModel columnsModel) {
 		SortKey defaultSortKey = null;
-		String editAction = readOnly ? null : TABLE_ACTION_EDIT;
+		String editAction = secCallback.isReadonly() ? null : TABLE_ACTION_EDIT;
 		
 		if(chatEnabled) {
 			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
@@ -691,7 +691,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			Map<BusinessGroup, List<Identity>> graduatesMap = new HashMap<>();
 			for(MemberRow member:members) {
 				List<BusinessGroupShort> groups = member.getGroups();
-				if(groups != null && groups.size() > 0) {
+				if(groups != null && !groups.isEmpty()) {
 					Identity memberIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
 					for(BusinessGroupShort group:groups) {
 						if(businessGroupService.hasRoles(memberIdentity, group, GroupRoles.waiting.name())) {
@@ -881,15 +881,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			
 			links.add("-");
 			
-			if(row.getMembership().isBusinessGroupWaiting() && !readOnly) {
+			if(row.getMembership().isBusinessGroupWaiting() && !secCallback.isReadonly()) {
 				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon_graduate", links);
 			}
 
-			if(!readOnly) {
+			if(!secCallback.isReadonly()) {
 				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
 			}
 			
-			if(!globallyManaged || overrideManaged) {
+			if((!globallyManaged || overrideManaged) && secCallback.canRemoveMembers()) {
 				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon_remove", links);
 			}
 			cleanSeparator(links);

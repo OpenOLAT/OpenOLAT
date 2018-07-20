@@ -48,6 +48,7 @@ import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
@@ -61,6 +62,8 @@ import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * The members list specific to the repository entries (except courses which
+ * have a specialized one).
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -79,7 +82,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private BusinessGroupService businessGroupService;
 
 	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, null, "all_member_list", false, stackPanel,
+		super(ureq, wControl, repoEntry, null, "all_member_list", MemberListSecurityCallbackFactory.adminRights(), stackPanel,
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 						Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 

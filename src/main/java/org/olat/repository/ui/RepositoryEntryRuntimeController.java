@@ -770,7 +770,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(!reSecurity.isEntryAdmin()) return null;
 
 		WindowControl bwControl = getSubWindowControl("MembersMgmt");
-		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, addToHistory(ureq, bwControl), toolbarPanel ,re);
+		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, addToHistory(ureq, bwControl), toolbarPanel, re);
 		listenTo(ctrl);
 		membersEditController = pushController(ureq, translate("details.members"), ctrl);
 		currentToolCtr = membersEditController;
@@ -790,7 +790,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
-		if(security.isEntryAdmin()) {
+		if(security.isEntryAdmin() || security.isPrincipal()) {
 			launchContent(ureq, security);
 		} else {
 			// guest are allowed to see resource with BARG 
@@ -803,7 +803,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				} else if (re != null
 						&& !re.getRepositoryEntryStatus().isUnpublished()
 						&& !re.getRepositoryEntryStatus().isClosed()
-						&& acResult.getAvailableMethods().size() > 0) {
+						&& !acResult.getAvailableMethods().isEmpty()) {
 					//try auto booking
 					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
 					acResult = autoResult.getAcResult();

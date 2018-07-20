@@ -62,6 +62,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.DedupMembersConfirmationController;
+import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.curriculum.CurriculumService;
@@ -112,6 +113,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private boolean overrideManaged = false;
 	private final RepositoryEntry repoEntry;
 	private final UserCourseEnvironment coachCourseEnv;
+	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -123,11 +125,12 @@ public class MembersOverviewController extends BasicController implements Activa
 	private BusinessGroupService businessGroupService;
 	
 	public MembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv) {
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
 		this.toolbarPanel = toolbarPanel;
 		this.coachCourseEnv = coachCourseEnv;
+		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("members_overview");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -352,12 +355,9 @@ public class MembersOverviewController extends BasicController implements Activa
 		removeAsListenerAndDispose(importMembersWizard);
 
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, overrideManaged);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(uureq, runContext);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(uureq, runContext);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -370,15 +370,12 @@ public class MembersOverviewController extends BasicController implements Activa
 		removeAsListenerAndDispose(importMembersWizard);
 
 		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, overrideManaged);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(uureq, runContext);
-				if(runContext.containsKey("notFounds")) {
-					showWarning("user.notfound", runContext.get("notFounds").toString());
-				}
-				return StepsMainRunController.DONE_MODIFIED;
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(uureq, runContext);
+			if(runContext.containsKey("notFounds")) {
+				showWarning("user.notfound", runContext.get("notFounds").toString());
 			}
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -457,7 +454,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, GroupRoles.owner, GroupRoles.coach, GroupRoles.participant);
-			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, null);
+			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, null);
 			listenTo(allMemberListCtrl);
 		}
 		
@@ -475,7 +472,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.owner);
 			String infos = translate("owners.infos");
-			ownersCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
+			ownersCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, infos);
 			listenTo(ownersCtrl);
 		}
 		
@@ -493,7 +490,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.coach);
 			String infos = translate("tutors.infos");
-			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
+			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, infos);
 			listenTo(tutorsCtrl);
 		}
 		
@@ -511,7 +508,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.participant);
 			String infos = translate("participants.infos");
-			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
+			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, infos);
 			listenTo(participantsCtrl);
 		}
 		
@@ -529,7 +526,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, GroupRoles.waiting);
 			String infos = translate("waiting.infos");
-			waitingCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
+			waitingCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback, searchParams, infos);
 			listenTo(waitingCtrl);
 		}
 		
@@ -545,7 +542,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_SEARCH_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchCtrl = new MemberSearchController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv);
+			searchCtrl = new MemberSearchController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback);
 			listenTo(searchCtrl);
 		}
 	

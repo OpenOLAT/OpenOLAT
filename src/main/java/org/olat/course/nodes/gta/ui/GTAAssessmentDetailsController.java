@@ -93,7 +93,7 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 			}
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			if(!cgm.isIdentityCourseAdministrator(getIdentity())) {
+			if(!coachCourseEnv.isAdmin()) {
 				RepositoryEntry courseRe = cgm.getCourseEntry();
 				List<String> reRoles = repositoryService.getRoles(getIdentity(), courseRe);
 				if(reRoles.contains(GroupRoles.owner.name())) {

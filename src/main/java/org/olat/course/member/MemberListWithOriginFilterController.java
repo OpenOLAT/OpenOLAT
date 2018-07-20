@@ -32,6 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
@@ -53,8 +54,8 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 	private final UserCourseEnvironment coachCourseEnv;
 	
 	public MemberListWithOriginFilterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "member_list_origin_filter", coachCourseEnv.isCourseReadOnly(), toolbarPanel);
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback, SearchMembersParams searchParams, String infos) {
+		super(ureq, wControl, repoEntry, "member_list_origin_filter", secCallback, toolbarPanel);
 		this.searchParams = searchParams;
 		this.coachCourseEnv = coachCourseEnv;
 		

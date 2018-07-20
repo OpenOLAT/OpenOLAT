@@ -110,8 +110,7 @@ public class InfoRunController extends BasicController {
 			canAdd = false;
 			canAdmin = false;
 		} else {
-			Identity identity = getIdentity();
-			boolean isAdmin = cgm.isIdentityCourseAdministrator(identity);
+			boolean isAdmin = userCourseEnv.isAdmin();
 			canAdd = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
 			canAdmin = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
 		}

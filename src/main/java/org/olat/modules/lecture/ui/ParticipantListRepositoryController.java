@@ -94,9 +94,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private final boolean rollCallEnabled;
 	private final boolean authorizedAbsenceEnabled;
 	
-	private final boolean admin;
 	private final boolean printView;
 	private final RepositoryEntry entry;
+	private final LecturesSecurityCallback secCallback;
 	private RepositoryEntryLectureConfiguration lectureConfig;
 	
 	@Autowired
@@ -111,13 +111,13 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private BaseSecurity securityManager;
 	
 	public ParticipantListRepositoryController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, boolean printView, boolean admin) {
+			RepositoryEntry entry, LecturesSecurityCallback secCallback, boolean printView) {
 		super(ureq, wControl, "participant_list_overview");
 		this.entry = entry;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		this.admin = admin;
 		this.printView = printView;
+		this.secCallback = secCallback;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -200,7 +200,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		infoCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(infoCol);
 		
-		if(!printView) {
+		if(!printView && secCallback.canChangeRates()) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 					new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 			editColumn.setExportable(false);
@@ -217,15 +217,10 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<Identity> participants;
-		if(admin) {
-			participants = lectureService.getParticipants(entry);
-		} else {
-			participants = lectureService.getParticipants(entry, getIdentity());
-		}
-		
+		List<Identity> participants = lectureService.getParticipants(entry);
 		List<LectureBlockStatistics> statistics = lectureService.getParticipantsLecturesStatistics(entry);
-		Map<Long, LectureBlockStatistics> identityToStatisticsMap = statistics.stream().collect(Collectors.toMap(s -> s.getIdentityKey(), s -> s));
+		Map<Long, LectureBlockStatistics> identityToStatisticsMap = statistics.stream()
+				.collect(Collectors.toMap(LectureBlockStatistics::getIdentityKey, s -> s));
 		
 		List<ParticipantRow> rows = new ArrayList<>(participants.size());
 		for(Identity participant:participants) {
@@ -304,14 +299,11 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator printControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-				Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, true, admin);
-				listenTo(printCtrl);
-				return printCtrl;
-			}					
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
+			Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, secCallback, true);
+			listenTo(printCtrl);
+			return printCtrl;
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);

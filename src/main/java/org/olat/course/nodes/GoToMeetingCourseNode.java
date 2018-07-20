@@ -109,9 +109,8 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
 			// check if user is moderator of the virtual classroom
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean admin = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
-			boolean moderator = admin || cgm.isIdentityCourseCoach(ureq.getIdentity());
+			boolean admin = userCourseEnv.isAdmin();
+			boolean moderator = admin || userCourseEnv.isCoach();
 
 			// create run controller
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

@@ -32,6 +32,7 @@ public class RepositoryEntrySecurity {
 	private final boolean entryAdmin;
 	private final boolean readOnly;
 	private final boolean author;
+	private final boolean principal;
 	
 	private final boolean courseParticipant;
 	private final boolean courseCoach;
@@ -46,12 +47,13 @@ public class RepositoryEntrySecurity {
 			boolean courseParticipant, boolean courseCoach,
 			boolean groupParticipant, boolean groupCoach, boolean groupWaiting,
 			boolean curriculumParticipant, boolean curriculumCoach,
-			boolean author,
+			boolean author, boolean principal,
 			boolean canLaunch, boolean readOnly) {
 		this.owner = owner;
 		this.canLaunch = canLaunch;
 		this.entryAdmin = entryAdmin;
 		this.author = author;
+		this.principal = principal;
 		
 		this.courseParticipant = courseParticipant;
 		this.courseCoach = courseCoach;
@@ -129,7 +131,27 @@ public class RepositoryEntrySecurity {
 		return owner || courseParticipant || courseCoach || groupParticipant || groupCoach || curriculumParticipant || curriculumCoach;
 	}
 	
+	/**
+	 * @return true if the user has the role author in an organization
+	 * 		linked by the repository entry
+	 */
 	public boolean isAuthor() {
 		return author;
+	}
+	
+	/**
+	 * @return true if the user has the role principal
+	 */
+	public boolean isPrincipal() {
+		return principal;
+	}
+	
+	/**
+	 * @return true if the user has the role principal but
+	 * 		is not a member or an administrator of the repository
+	 * 		entry.
+	 */
+	public boolean isOnlyPrincipal() {
+		return principal && !isMember() && !isEntryAdmin();
 	}
 }

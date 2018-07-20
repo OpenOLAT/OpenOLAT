@@ -90,6 +90,8 @@ import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
+import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
+import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallbackFactory;
 import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
@@ -126,6 +128,8 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.note.NoteController;
@@ -271,8 +275,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		// group rights
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
-			uce.setUserRoles(security.isEntryAdmin(), security.isCoach(), security.isParticipant());
-			if(security.isReadOnly()) {
+			uce.setUserRoles(security.isEntryAdmin() || security.isPrincipal(), security.isCoach(), security.isParticipant());
+			if(security.isOnlyPrincipal()) {
+				uce.setCourseReadOnly(Boolean.TRUE);
+			} else if(security.isReadOnly()) {
 				if(overrideReadOnly) {
 					uce.setCourseReadOnly(Boolean.FALSE);
 				} else {
@@ -300,7 +306,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private boolean hasCourseRight(String right) {
 		Boolean bool = courseRightsCache.get(right);
-		return bool == null ? false : bool.booleanValue();
+		return bool != null && bool.booleanValue();
 	}
 	
 	private UserCourseEnvironmentImpl getUserCourseEnvironment() {
@@ -447,7 +453,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void setCourseClosedMessage(UserCourseEnvironment uce) {
-		if(uce != null && uce.isCourseReadOnly()) {
+		if(uce != null &&  getRepositoryEntry().getRepositoryEntryStatus().isClosed()) {
 			toolbarPanel.setMessage(translate("course.closed"));
 			toolbarPanel.setMessageCssClass("o_warning");
 		} else {
@@ -457,7 +463,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void initTools(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {
 		// 1) administrative tools
-		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()
+		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach()
 				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
@@ -474,19 +480,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				editLink.setEnabled(!corrupted && !managed);
 				editLink.setVisible(!readOnly);
 				tools.addComponent(editLink);
+			}
 				
+			if (uce != null && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR))) {
 				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
 				folderLink.setElementCssClass("o_sel_course_folder");
 				tools.addComponent(folderLink);
 				tools.addComponent(new Spacer(""));
 			}
 			
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
 				membersLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_icon_membersmanagement");
 				membersLink.setElementCssClass("o_sel_course_members");
 				tools.addComponent(membersLink);
 			}
-			if (reSecurity.isEntryAdmin() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 				assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessmentLink);
@@ -498,11 +506,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			tools.addComponent(new Spacer(""));
 			
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this, "o_icon_statistics_tool");
 				tools.addComponent(courseStatisticLink);
 			}
-			if (uce != null && (reSecurity.isEntryAdmin() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS))) {
+			if (uce != null && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS))) {
 				final AtomicInteger testNodes = new AtomicInteger();
 				final AtomicInteger surveyNodes = new AtomicInteger();
 				new TreeVisitor(new Visitor() {
@@ -549,7 +557,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected void initSettingsTools(Dropdown settings) {
 		boolean courseAuthorRight = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
-		if (courseAuthorRight || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
+		if (courseAuthorRight || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			UserCourseEnvironment uce = getUserCourseEnvironment();
 			if(uce == null) {
@@ -611,7 +619,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				settings.addComponent(reminderLink);
 			}
 			
-			if(courseAuthorRight && lectureModule.isEnabled()) {
+			if((courseAuthorRight || reSecurity.isPrincipal()) && lectureModule.isEnabled()) {
 				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
 				lecturesAdminLink.setElementCssClass("o_sel_course_lectures_admin");
 				lecturesAdminLink.setVisible(!uce.isCourseReadOnly());
@@ -781,6 +789,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void initGeneralTools(ICourse course) {
 		boolean assessmentLock = isAssessmentLock();
+		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 
 		CourseConfig cc = course.getCourseConfig();
 		if (!assessmentLock && showInfos) {
@@ -790,7 +799,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
 				&& calendarModule.isEnableCourseToolCalendar() && reSecurity.canLaunch();
-		if (calendarIsEnabled && getUserCourseEnvironment() != null) {
+		if (calendarIsEnabled && userCourseEnv != null) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
@@ -819,7 +828,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//add group chat to toolbox
 		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled()
 				&& imModule.isCourseEnabled() && reSecurity.canLaunch();
-		if(chatIsEnabled && getUserCourseEnvironment() != null && !getUserCourseEnvironment().isCourseReadOnly()) {
+		if(chatIsEnabled && userCourseEnv != null && !userCourseEnv.isCourseReadOnly()) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
 			chatLink.setVisible(imModule.isCourseEnabled() && cc.isChatEnabled());
 			toolbarPanel.addTool(chatLink);
@@ -1113,7 +1122,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 
 		entries = removeRepositoryEntry(entries);
-		if(entries != null && entries.size() > 0) {
+		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Payment".equalsIgnoreCase(type)) {
 				doPostSuccessfullAccess(ureq);
@@ -1164,7 +1173,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}	
 			} else if ("assessmentTool".equalsIgnoreCase(type) || "assessmentToolv2".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
-				if(reSecurity.isEntryAdmin() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				if(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 					try {
 						Activateable2 assessmentCtrl = doAssessmentTool(ureq);
 						if(assessmentCtrl != null) {
@@ -1182,7 +1191,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
-				if(reSecurity.isEntryAdmin() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				if(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 					try {
 						Activateable2 assessmentCtrl = null;
 						if("TestStatistics".equalsIgnoreCase(type)) {
@@ -1268,15 +1277,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected Activateable2 doMembers(UserRequest ureq) {
 		if(delayedClose == Delayed.members || requestForClose(ureq)) {
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
 				removeCustomCSS();
 				if(currentToolCtr instanceof MembersManagementMainController) {
 					((MembersManagementMainController)currentToolCtr).activate(ureq, null, null);
 				} else {
 					WindowControl bwControl = getSubWindowControl("MembersMgmt");
 					MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel,
-							getRepositoryEntry(), getUserCourseEnvironment(), reSecurity.isEntryAdmin(), hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT),
-							hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT));
+							getRepositoryEntry(), getUserCourseEnvironment(), reSecurity.isEntryAdmin(), reSecurity.isPrincipal(),
+							hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT), hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT));
 					listenTo(ctrl);
 					membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
 					setActiveTool(membersLink);
@@ -1303,7 +1312,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void doConfirmLeave(UserRequest ureq) {
 		String title = translate("sign.out");
 
-		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), this.getRepositoryEntry());
+		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), getRepositoryEntry());
 		listenTo(leaveDialogBox);
 		cmc = new CloseableModalController(getWindowControl(), "close", leaveDialogBox.getInitialComponent(), true, title);
 		listenTo(cmc);
@@ -1339,7 +1348,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void doLifeCycleChange(UserRequest ureq) {
 		List<Link> breadCrumbs = toolbarPanel.getBreadCrumbs();
 		BreadCrumb lastCrumb = null;
-		if (breadCrumbs.size() > 0) {
+		if (!breadCrumbs.isEmpty()) {
 			lastCrumb = (BreadCrumb) breadCrumbs.get(breadCrumbs.size()-1).getUserObject();
 		}
 		if (lastCrumb == null || lastCrumb.getController() != lifeCycleChangeCtr) {
@@ -1389,10 +1398,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void doAssessmentMode(UserRequest ureq) {
 		if(delayedClose == Delayed.assessmentMode || requestForClose(ureq)) {
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 				removeCustomCSS();
+				
+				boolean canManage = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE);
+				AssessmentModeSecurityCallback secCallback = AssessmentModeSecurityCallbackFactory.getSecurityCallback(canManage);
 				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, getWindowControl(),
-						toolbarPanel, getRepositoryEntry());
+						toolbarPanel, getRepositoryEntry(), secCallback);
 				assessmentModeCtrl = pushController(ureq, translate("command.assessment.mode"), ctrl);
 				setActiveTool(assessmentModeLink);
 				currentToolCtr = assessmentModeCtrl;
@@ -1437,12 +1449,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private LectureRepositoryAdminController doLecturesAdmin(UserRequest ureq) {
 		if(delayedClose == Delayed.lecturesAdmin || requestForClose(ureq)) {
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
 
 				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
 				WindowControl swControl = addToHistory(ureq, ores, null);
-				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry());
+				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
+						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR));
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
@@ -1550,7 +1564,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void doCourseStatistics(UserRequest ureq) {
 		if(delayedClose == Delayed.courseStatistics || requestForClose(ureq)) {
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal()|| hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 				removeCustomCSS();
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				StatisticMainController ctrl = new StatisticMainController(ureq, getWindowControl(), course);
@@ -1598,7 +1612,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		OLATResourceable ores = OresHelper.createOLATResourceableType(typeName);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		if (reSecurity.isEntryAdmin() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
+		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 			removeCustomCSS();
 			UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 			StatisticCourseNodesController ctrl = new StatisticCourseNodesController(ureq, swControl, toolbarPanel,  reSecurity, uce, type);
@@ -1617,17 +1631,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
-			boolean admin = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT);
+			boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT);
 			boolean nonMembers = reSecurity.isEntryAdmin();
 			List<BusinessGroup> coachedGroups = null;
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 			if(reSecurity.isGroupCoach()) {
-				coachedGroups = getUserCourseEnvironment().getCoachedGroups();
+				coachedGroups = userCourseEnv.getCoachedGroups();
 			}
 			AssessmentToolSecurityCallback secCallBack
 				= new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups);
 
 			removeCustomCSS();
-			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), getUserCourseEnvironment(), secCallBack);
+			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), userCourseEnv, secCallBack);
 			ctrl.activate(ureq, null, null);
 			listenTo(ctrl);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
@@ -1795,30 +1810,27 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(allowGlossaryEditing ? "true" : "false");
 			dts.activate(ureq, dt, entries);
 		} else {
-			ControllerCreator ctrlCreator = new ControllerCreator() {
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					GlossaryMainController glossaryController = CourseGlossaryFactory.createCourseGlossaryMainRunController(lwControl, lureq, cc, allowGlossaryEditing);
-					listenTo(glossaryController);
-					if (glossaryController == null) {
-						// happens in the unlikely event of a user who is in a course and
-						// now
-						// tries to access the glossary
-						String text = translate("error.noglossary");
-						return MessageUIFactory.createInfoMessage(lureq, lwControl, null, text);
-					} else {
-						// use a one-column main layout
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, glossaryController);
-						// dispose glossary on layout dispose
-						layoutCtr.addDisposableChildController(glossaryController);
-						return layoutCtr;
-					}
+			ControllerCreator ctrlCreator = (lureq, lwControl) -> {
+				GlossaryMainController glossaryController = CourseGlossaryFactory.createCourseGlossaryMainRunController(lwControl, lureq, cc, allowGlossaryEditing);
+				listenTo(glossaryController);
+				if (glossaryController == null) {
+					// happens in the unlikely event of a user who is in a course and
+					// now
+					// tries to access the glossary
+					String text = translate("error.noglossary");
+					return MessageUIFactory.createInfoMessage(lureq, lwControl, null, text);
+				} else {
+					// use a one-column main layout
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, glossaryController);
+					// dispose glossary on layout dispose
+					layoutCtr.addDisposableChildController(glossaryController);
+					return layoutCtr;
 				}
 			};
 
 			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
 			// open in new browser window
 			openInNewBrowserWindow(ureq, layoutCtrlr);
-			return;// immediate return after opening new browser window!
 		}
 	}
 	

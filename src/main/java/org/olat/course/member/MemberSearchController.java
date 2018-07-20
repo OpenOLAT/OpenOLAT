@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
@@ -46,8 +47,8 @@ public class MemberSearchController extends AbstractMemberListController {
 	private AssessmentIdentityCourseController identityAssessmentController;
 	
 	public MemberSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv) {
-		super(ureq, wControl, repoEntry, "all_member_list", coachCourseEnv.isCourseReadOnly(), toolbarPanel);
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback) {
+		super(ureq, wControl, repoEntry, "all_member_list", secCallback, toolbarPanel);
 		this.coachCourseEnv = coachCourseEnv;
 	}
 

@@ -151,9 +151,8 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		
 		backButton = LinkFactory.createLinkBack(mainVC, this);
 		
-		if (!userCourseEnv.isCourseReadOnly() && (isAdministrator
-					|| cgm.isIdentityCourseAdministrator(getIdentity())
-					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
+		if (!userCourseEnv.isCourseReadOnly()
+				&& (isAdministrator || userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
 			copyButton = LinkFactory.createButton("dialog.copy.file", mainVC, this);
 		}
 		

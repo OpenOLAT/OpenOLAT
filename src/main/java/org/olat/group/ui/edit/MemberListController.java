@@ -24,10 +24,12 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.group.ui.main.SearchMembersParams;
 
 /**
+ * The list of members specific to the business groups.
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
@@ -37,7 +39,7 @@ public class MemberListController extends AbstractMemberListController {
 	
 	public MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BusinessGroup group, SearchMembersParams searchParams) {
-		super(ureq, wControl, group, "all_member_list", false, stackPanel);
+		super(ureq, wControl, group, "all_member_list", MemberListSecurityCallbackFactory.adminRights(), stackPanel);
 		this.searchParams = searchParams;
 	}
 	

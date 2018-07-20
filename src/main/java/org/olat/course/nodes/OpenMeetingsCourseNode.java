@@ -102,9 +102,8 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(false);
 
 		// check if user is moderator of the virtual classroom
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		boolean admin = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
-		boolean moderator = admin || cgm.isIdentityAnyCourseCoach(ureq.getIdentity());
+		boolean admin = userCourseEnv.isAdmin();
+		boolean moderator = admin || userCourseEnv.isCoach();
 
 		// create run controller
 		OLATResourceable ores = OresHelper.clone(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());

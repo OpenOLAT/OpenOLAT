@@ -90,23 +90,21 @@ public class CourseCalendars {
 	 * @param ne
 	 * @return
 	 */
-	public static KalendarRenderWrapper getCourseCalendarWrapper(UserRequest ureq, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
+	public static KalendarRenderWrapper getCourseCalendarWrapper(UserRequest ureq, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		// add course calendar
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseResourceableId());
+		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		boolean isPrivileged = !courseEnv.isCourseReadOnly() &&
-				(courseEnv.isAdmin()
-				  || (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
-				  || cgm.isIdentityCourseAdministrator(ureq.getIdentity()));
+		boolean isPrivileged = !userCourseEnv.isCourseReadOnly() &&
+				(userCourseEnv.isAdmin()
+				  || (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID)));
 		
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 			courseKalendarWrapper.setPrivateEventsVisible(true);
 		} else {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			courseKalendarWrapper.setPrivateEventsVisible(courseEnv.isAdmin() || courseEnv.isCoach() || courseEnv.isParticipant());
+			courseKalendarWrapper.setPrivateEventsVisible(userCourseEnv.isAdmin() || userCourseEnv.isCoach() || userCourseEnv.isParticipant());
 		}
 		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(courseKalendarWrapper.getKalendar(), ureq.getIdentity());
 		if (config != null) {
@@ -115,10 +113,10 @@ public class CourseCalendars {
 		return courseKalendarWrapper;
 	}
 
-	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
+	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		List<KalendarRenderWrapper> calendars = new ArrayList<>();
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseResourceableId());
-		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, courseEnv, ne);
+		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, userCourseEnv, ne);
 		// add link provider
 		
 		CourseLinkProviderController clpc = new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl);
@@ -130,25 +128,25 @@ public class CourseCalendars {
 
 		// add course group calendars
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isGroupManager = roles.isGroupManager() || cgm.isIdentityCourseAdministrator(identity)
+		boolean isGroupManager = roles.isGroupManager() || userCourseEnv.isAdmin()
 				|| cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
-		boolean readOnly = courseEnv.isCourseReadOnly();
+		boolean readOnly = userCourseEnv.isCourseReadOnly();
 		
 		if (isGroupManager) {
 			// learning groups
 			List<BusinessGroup> allGroups = cgm.getAllBusinessGroups();
-			addCalendars(ureq, courseEnv, allGroups, !readOnly, clpc, calendars);
+			addCalendars(ureq, userCourseEnv, allGroups, !readOnly, clpc, calendars);
 		} else {
 			// learning groups
 			List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
-			addCalendars(ureq, courseEnv, ownerGroups, !readOnly, clpc, calendars);
+			addCalendars(ureq, userCourseEnv, ownerGroups, !readOnly, clpc, calendars);
 			List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
 			for (BusinessGroup ownerGroup : ownerGroups) {
 				if (attendedGroups.contains(ownerGroup)) {
 					attendedGroups.remove(ownerGroup);
 				}
 			}
-			addCalendars(ureq, courseEnv, attendedGroups, false, clpc, calendars);
+			addCalendars(ureq, userCourseEnv, attendedGroups, false, clpc, calendars);
 		}
 		return new CourseCalendars(courseKalendarWrapper, calendars);
 	}

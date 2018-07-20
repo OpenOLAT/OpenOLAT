@@ -1,7 +1,11 @@
 <fieldset class="o_sel_assessment_mode_list">
 	<legend>$r.translate("modes.title")</legend>
 	<div class="o_info">$r.translate("modes.description")</div>
-	<div class="o_button_group o_button_group_right">$r.render("add")</div>
+	#if($r.available("add"))
+		<div class="o_button_group o_button_group_right">$r.render("add")</div>
+	#end
 	$r.render("table")
-	<div class="o_button_group">$r.render("delete")</div>
+	#if($r.available("delete"))
+		<div class="o_button_group">$r.render("delete")</div>
+	#end
 </fieldset>

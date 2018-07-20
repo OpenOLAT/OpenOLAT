@@ -39,7 +39,6 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.vitero.ViteroEditController;
 import org.olat.course.nodes.vitero.ViteroPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -103,8 +102,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			runCtr = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
 			// check if user is moderator of the virtual classroom
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean moderator = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+			boolean moderator = userCourseEnv.isAdmin();
 			// create run controller
 			Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);

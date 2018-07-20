@@ -340,6 +340,10 @@ public class RepositoryEntryAuthorQueries {
 			}
 			return false;
 		}
+		if(roles.isPrincipal()) {//TODO roles repo
+			sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			return false;
+		}
 		
 		sb.append(" (v.access>=").append(RepositoryEntry.ACC_USERS);
 		if(roles.isAuthor()) {

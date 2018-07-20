@@ -106,7 +106,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		VFSSecurityCallback scallback;
 		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
 			OlatNamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
-			boolean isAdministrator = cgm.isIdentityCourseAdministrator(getIdentity());
+			boolean isAdministrator = userCourseEnv.isAdmin();
 			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			target = directory;
 		} else if(courseNode.isSharedFolder()) {
@@ -152,7 +152,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				} else {
 					relPath = VFSManager.getRelativeItemPath(target, courseContainer, null);
 				}
-				boolean isAdministrator = cgm.isIdentityCourseAdministrator(getIdentity());
+				boolean isAdministrator = userCourseEnv.isAdmin();
 				scallback = new FolderNodeCallback(relPath, ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			}
 		}
@@ -167,7 +167,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 
 			VFSContainer courseContainer = null;
 			if(scallback.canWrite() && scallback.canCopy()) {
-				if (cgm.isIdentityCourseAdministrator(getIdentity()) || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR)) {
+				if (userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR)) {
 					// use course folder as copy source
 					courseContainer = courseEnv.getCourseFolderContainer();
 				}

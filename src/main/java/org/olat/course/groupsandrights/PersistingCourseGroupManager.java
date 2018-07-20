@@ -278,7 +278,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		// not really a group management method, for your convenience we have a
 		// shortcut here...
 		return repositoryService.hasRoleExpanded(identity, getCourseEntry(), OrganisationRoles.administrator.name(),
-				OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
+				OrganisationRoles.principal.name(), OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
 	}
 
 	@Override

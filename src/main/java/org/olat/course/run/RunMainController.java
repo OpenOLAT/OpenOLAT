@@ -94,7 +94,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -137,9 +136,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private String courseTitle;
 	private Link nextLink, previousLink;
 	private GlossaryMarkupItemController glossaryMarkerCtr;
-	
-	@Autowired
-	private RepositoryManager repositoryManager;
+
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -206,7 +203,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		currentCourseNode = updateTreeAndContent(ureq, currentCourseNode, null);
 
-		if (courseRepositoryEntry != null && repositoryManager.createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
+		if (courseRepositoryEntry != null && courseRepositoryEntry.getRepositoryEntryStatus().isClosed()) {
 			wControl.setWarning(translate("course.closed"));
 		}
 
@@ -319,8 +316,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), getWindowControl(),
 				coachedGroups, participatedGroups, waitingLists,
-				reSecurity.isCoach(), reSecurity.isEntryAdmin(), reSecurity.isParticipant(),
-				reSecurity.isReadOnly());
+				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal(), reSecurity.isParticipant(),
+				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal());
 	}
 	
 	/**

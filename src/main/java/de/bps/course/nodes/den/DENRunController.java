@@ -45,7 +45,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -110,9 +109,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 		runVC = new VelocityContainer("dateVC", VELOCITY_ROOT + "/run.html", getTranslator(), this);
 		
 		//show only the options for managing dates and participants if user is admin or course coach
-		
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		if(cgm.isIdentityCourseAdministrator(ureq.getIdentity()) || cgm.isIdentityCourseCoach(ureq.getIdentity())) {
+		if(userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
 			// subscription
 			subsContext = new SubscriptionContext(course, courseNode.getIdent());
 			// if sc is null, then no subscription is desired

@@ -176,9 +176,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 					userCourseEnv.getCourseEnvironment().isPreview());
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean hasEditRights = (cgm.isIdentityCourseAdministrator(ureq.getIdentity()) 
-					|| cgm.hasRight(ureq.getIdentity(),CourseRights.RIGHT_COURSEEDITOR))
-					|| (getModuleConfiguration().getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && cgm.isIdentityCourseCoach(ureq.getIdentity()));
+			boolean hasEditRights = userCourseEnv.isAdmin() || cgm.hasRight(ureq.getIdentity(),CourseRights.RIGHT_COURSEEDITOR)
+					|| (getModuleConfiguration().getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && userCourseEnv.isCoach());
 			
 			if (hasEditRights) {
 				spCtr.allowPageEditing();

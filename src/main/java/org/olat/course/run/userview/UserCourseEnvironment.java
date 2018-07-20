@@ -67,8 +67,8 @@ public interface UserCourseEnvironment {
 	public ScoreAccounting getScoreAccounting();
 	
 	/**
-	 * Is admin of the course, as administrator in OpenOLAT, resource manager
-	 * or owner of the course.
+	 * Is admin of a course an administrator, learn resource manager or principal
+	 * of an organization linked to the course or an owner of the course.
 	 * @return
 	 */
 	public boolean isAdmin();

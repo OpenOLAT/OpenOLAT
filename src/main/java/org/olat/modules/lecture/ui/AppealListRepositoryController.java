@@ -77,6 +77,7 @@ public class AppealListRepositoryController extends FormBasicController {
 	private final boolean absenceDefaultAuthorized;
 	
 	private final RepositoryEntry entry;
+	private final LecturesSecurityCallback secCallback;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -89,9 +90,11 @@ public class AppealListRepositoryController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public AppealListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public AppealListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "appeal_table");
 		this.entry = entry;
+		this.secCallback = secCallback;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -140,9 +143,12 @@ public class AppealListRepositoryController extends FormBasicController {
 				new LectureBlockRollCallStatusCellRenderer(authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppealCols.appealStatus,
 				new LectureBlockAppealStatusCellRenderer(getTranslator())));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), "edit");
-		editColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(editColumn);
+		
+		if(secCallback.canApproveAppeal()) {
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), "edit");
+			editColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(editColumn);
+		}
 		
 		tableModel = new AppealListRepositoryDataModel(columnsModel,authorizedAbsenceEnabled, absenceDefaultAuthorized, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -225,7 +231,7 @@ public class AppealListRepositoryController extends FormBasicController {
 	}
 	
 	private void doEditAppeal(UserRequest ureq, LectureBlockRollCall rollCall) {
-		if(appealCtrl != null) return;
+		if(appealCtrl != null || !secCallback.canApproveAppeal()) return;
 		
 		appealCtrl = new EditAppealController(ureq, getWindowControl(), rollCall);
 		listenTo(appealCtrl);

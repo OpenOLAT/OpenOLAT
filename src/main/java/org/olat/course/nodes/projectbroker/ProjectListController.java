@@ -155,7 +155,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		mainPanel = new SimpleStackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		if ((projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode ) && !previewMode)
-				|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())) {
+				|| userCourseEnv.isAdmin()) {
 			contentVC.contextPut("isAccountManager", true);
 			createNewProjectButton = LinkFactory.createButtonSmall("create.new.project.button", contentVC, this);
 			createNewProjectButton.setIconLeftCSS("o_icon o_icon_add");

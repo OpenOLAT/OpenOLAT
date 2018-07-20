@@ -575,6 +575,7 @@ public class RepositoryManager {
 
 		boolean isAuthor = false;
 		boolean isEntryAdmin = false;
+		boolean isPrincipal = false;
 		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
 		
@@ -638,6 +639,9 @@ public class RepositoryManager {
 						case learnresourcemanager:
 							isLearnRessourceManager = true;
 							break;
+						case principal:
+							isPrincipal = true;
+							break;
 						default: break;
 					}
 				}
@@ -649,6 +653,8 @@ public class RepositoryManager {
 			if(isOwner || isAdministrator || isLearnRessourceManager) {
 				canLaunch = true;
 				isEntryAdmin = true;
+			} else if(isPrincipal) {
+				canLaunch = true;
 			}
 			if (isAuthor && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) {
 				// allow for authors if access granted at least for authors
@@ -670,7 +676,7 @@ public class RepositoryManager {
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach, isGroupWaiting,
 				isCurriculumParticipant, isCurriculumCoach,
-				isAuthor, canLaunch, readOnly);
+				isAuthor, isPrincipal, canLaunch, readOnly);
 	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {

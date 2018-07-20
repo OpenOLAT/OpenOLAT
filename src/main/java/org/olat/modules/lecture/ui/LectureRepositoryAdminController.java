@@ -59,12 +59,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureRepositoryAdminController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link archiveLink, logLink;
+	private Link logLink;
+	private Link archiveLink;
+	private Link settingsLink;
+	private final Link appealsLink;
+	private final Link lecturesLink;
+	private final Link participantsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
-	private final Link lecturesLink, appealsLink, settingsLink, participantsLink;
-	
+
 	private AppealListRepositoryController appealsCtrl;
 	private LectureListRepositoryController lecturesCtrl;
 	private final LectureRepositorySettingsController settingsCtrl;
@@ -74,6 +78,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private boolean configurationChanges = false;
 	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
+	private final LecturesSecurityCallback secCallback;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -83,10 +88,11 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private BaseSecurityModule securityModule;
 	
 	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry entry) {
+			RepositoryEntry entry, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -100,12 +106,10 @@ public class LectureRepositoryAdminController extends BasicController implements
 		lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
 		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
 		appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
-		settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
-		
+
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Settings"), null);
 		settingsCtrl = new LectureRepositorySettingsController(ureq, swControl, entry);
 		listenTo(settingsCtrl);
-		
 		if(settingsCtrl.isLectureEnabled()) {
 			segmentView.addSegment(lecturesLink, true);
 			segmentView.addSegment(participantsLink, false);
@@ -116,7 +120,11 @@ public class LectureRepositoryAdminController extends BasicController implements
 		} else {
 			doOpenSettings(ureq);
 		}
-		segmentView.addSegment(settingsLink, !settingsCtrl.isLectureEnabled());
+		
+		if(secCallback.canEditConfiguration()) {
+			settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
+			segmentView.addSegment(settingsLink, !settingsCtrl.isLectureEnabled());
+		}
 
 		putInitialPanel(mainVC);
 	}
@@ -158,7 +166,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 		} else if("Participants".equalsIgnoreCase(name)) {
 			doOpenParticipants(ureq);
 			segmentView.select(participantsLink);
-		} else if("Settings".equalsIgnoreCase(name)) {
+		} else if("Settings".equalsIgnoreCase(name) && settingsLink != null) {
 			doOpenSettings(ureq);
 			segmentView.select(settingsLink);
 		} else if("Appeals".equalsIgnoreCase(name)) {
@@ -227,7 +235,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(lecturesCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LectureBlocks");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry);
+			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry, secCallback);
 			listenTo(lecturesCtrl);
 		} else {
 			addToHistory(ureq, lecturesCtrl);
@@ -244,7 +252,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(participantsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("Participants");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			participantsCtrl = new ParticipantListRepositoryController(ureq, swControl, entry, false, true);
+			participantsCtrl = new ParticipantListRepositoryController(ureq, swControl, entry, secCallback, false);
 			listenTo(participantsCtrl);
 		} else {
 			addToHistory(ureq, participantsCtrl);
@@ -256,7 +264,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(appealsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("Appeals");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			appealsCtrl = new AppealListRepositoryController(ureq, swControl, entry);
+			appealsCtrl = new AppealListRepositoryController(ureq, swControl, entry, secCallback);
 			listenTo(appealsCtrl);
 		} else {
 			addToHistory(ureq, appealsCtrl);

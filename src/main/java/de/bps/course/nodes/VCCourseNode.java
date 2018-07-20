@@ -35,7 +35,6 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.StatusDescriptionHelper;
@@ -134,8 +133,7 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		// check if user is moderator of the virtual classroom
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		boolean moderator = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+		boolean moderator = userCourseEnv.isAdmin();
 
 		// load configuration
 		final String providerId = getModuleConfiguration().getStringValue(CONF_PROVIDER_ID);

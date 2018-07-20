@@ -114,7 +114,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		if (fileName == null) throw new AssertException("bad configuration at lauchtime: fileName cannot be null in SinglePage!");
 		this.courseFolderContainer = courseFolderContainer;
 		
-		hasEditRights = hasEditRights(ureq);
+		hasEditRights = hasEditRights();
 
 		if (hasEditRights) {
 			linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
@@ -126,7 +126,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		putInitialPanel(main);
 	}
 	
-	private boolean hasEditRights(UserRequest ureq) {
+	private boolean hasEditRights() {
 		if(userCourseEnv.isCourseReadOnly()) return false;
 		
 		if(fileName != null && fileName.startsWith("/_sharedfolder")) {
@@ -137,9 +137,8 @@ public class SPRunController extends BasicController implements Activateable2 {
 		
 		if(isFileTypeEditable(fileName)) {
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			return config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && cgm.isIdentityCourseCoach(ureq.getIdentity())
-					|| cgm.isIdentityCourseAdministrator(getIdentity())
-					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
+			return (config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && userCourseEnv.isCoach())
+					|| userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
 
 		}
 		return false;

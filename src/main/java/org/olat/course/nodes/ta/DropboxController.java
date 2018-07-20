@@ -129,9 +129,7 @@ public class DropboxController extends BasicController {
 		this.config = config;
 		this.node = node;
 		this.userCourseEnv = userCourseEnv;
-		boolean isCourseAdmin = userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity());
-		boolean isCourseCoach = userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseCoach(ureq.getIdentity());
-		boolean hasNotification = (isCourseAdmin || isCourseCoach);
+		boolean hasNotification = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		init(ureq, wControl, previewMode, hasNotification);
 	}
 	

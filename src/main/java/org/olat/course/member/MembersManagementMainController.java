@@ -47,6 +47,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.GroupsAndRightsController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.ui.main.MemberListSecurityCallback;
+import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.resource.accesscontrol.ACService;
@@ -84,7 +86,11 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private RepositoryEntry repoEntry;
 	private final UserCourseEnvironment coachCourseEnv;
 	
-	private final boolean entryAdmin, groupManagementRight, memberManagementRight;
+	private final boolean entryAdmin;
+	private final boolean principal;
+	private final boolean groupManagementRight;
+	private final boolean memberManagementRight;
+	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
 	private ACService acService;
@@ -92,15 +98,18 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private AccessControlModule acModule;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin,
+			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin, boolean principal,
 			boolean groupManagementRight, boolean memberManagementRight) {
 		super(ureq, wControl);
 		this.repoEntry = re;
 		this.toolbarPanel = toolbarPanel;
 		this.entryAdmin = entryAdmin;
+		this.principal = principal;
 		this.groupManagementRight = groupManagementRight;
 		this.memberManagementRight = memberManagementRight;
 		this.coachCourseEnv = coachCourseEnv;
+		secCallback = MemberListSecurityCallbackFactory.getSecurityCallback(coachCourseEnv.isCourseReadOnly(),
+				entryAdmin || groupManagementRight || memberManagementRight);
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -119,7 +128,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		
-		if(entryAdmin || memberManagementRight) {
+		if(entryAdmin || principal || memberManagementRight) {
 			selectMenuItem(ureq, CMD_MEMBERS);
 		} else if(groupManagementRight) {
 			selectMenuItem(ureq, CMD_GROUPS);
@@ -133,21 +142,21 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		root.setAltText(translate("menu.members.alt"));
 		gtm.setRootNode(root);
 		
-		if(entryAdmin || memberManagementRight) {
+		if(entryAdmin || principal || memberManagementRight) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.members"), CMD_MEMBERS);
 			node.setAltText(translate("menu.members.alt"));
 			node.setCssClass("o_sel_membersmgt_members");
 			root.addChild(node);
 		}
 
-		if(entryAdmin || memberManagementRight || groupManagementRight) {
+		if(entryAdmin || principal || memberManagementRight || groupManagementRight) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.groups"), CMD_GROUPS);
 			node.setAltText(translate("menu.groups.alt"));
 			node.setCssClass("o_sel_membersmgt_groups");
 			root.addChild(node);
 		}
 
-		if(acModule.isEnabled() && (entryAdmin || memberManagementRight)) {
+		if(acModule.isEnabled() && (entryAdmin || principal ||  memberManagementRight)) {
 			//check if the course is managed and/or has offers
 			if(!RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.bookings)
 					|| acService.isResourceAccessControled(repoEntry.getOlatResource(), null)) {
@@ -158,7 +167,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			}
 		}
 
-		if(entryAdmin) {
+		if(entryAdmin || principal) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.rights"), CMD_RIGHTS);
 			node.setAltText(translate("menu.rights.alt"));
 			node.setCssClass("o_sel_membersmgt_rights");
@@ -214,9 +223,9 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		
 		Controller selectedCtrl = null;
 		if(CMD_MEMBERS.equals(cmd)) {
-			if(entryAdmin || memberManagementRight) {
+			if(entryAdmin ||  principal || memberManagementRight) {
 				if(membersOverviewCtrl == null) {
-					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv);
+					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, secCallback);
 					listenTo(membersOverviewCtrl);
 				} else if(membersDirty) {
 					membersOverviewCtrl.reloadMembers();
@@ -225,7 +234,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				selectedCtrl = membersOverviewCtrl;
 			}
 		} else if(CMD_GROUPS.equals(cmd)) {
-			if(entryAdmin || memberManagementRight || groupManagementRight) {
+			if(entryAdmin ||  principal || memberManagementRight || groupManagementRight) {
 				if(groupsCtrl == null) {
 					groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry, entryAdmin || groupManagementRight, coachCourseEnv.isCourseReadOnly());
 					listenTo(groupsCtrl);
@@ -235,7 +244,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				selectedCtrl = groupsCtrl;
 			}
 		} else if(CMD_BOOKING.equals(cmd)) {
-			if(acModule.isEnabled() && (entryAdmin || memberManagementRight)) {
+			if(acModule.isEnabled() && (entryAdmin ||  principal || memberManagementRight)) {
 				if(ordersController == null) {
 					ordersController = new OrdersAdminController(ureq, bwControl, toolbarPanel, repoEntry.getOlatResource());
 					listenTo(ordersController);
@@ -244,7 +253,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				selectedCtrl = ordersController;
 			}
 		} else if(CMD_RIGHTS.equals(cmd)) {
-			if(entryAdmin) {
+			if(entryAdmin ||  principal) {
 				if(rightsController == null) {
 					rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry, coachCourseEnv.isCourseReadOnly());
 					listenTo(rightsController);

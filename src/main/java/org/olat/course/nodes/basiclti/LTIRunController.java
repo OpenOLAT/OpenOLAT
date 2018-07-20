@@ -53,7 +53,6 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.SortedProperties;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -477,8 +476,7 @@ public class LTIRunController extends BasicController {
 		if (roles.isGuestOnly()) {
 			return "Guest";
 		}
-		CourseGroupManager groupManager = courseEnv.getCourseGroupManager();
-		boolean admin = groupManager.isIdentityCourseAdministrator(getIdentity());
+		boolean admin = userCourseEnv.isAdmin();
 		if(admin) {
 			String authorRole = config.getStringValue(BasicLTICourseNode.CONFIG_KEY_AUTHORROLE);
 			if(StringHelper.containsNonWhitespace(authorRole)) {
@@ -486,7 +484,7 @@ public class LTIRunController extends BasicController {
 			}
 			return "Instructor,Administrator";
 		}
-		boolean coach = groupManager.isIdentityCourseCoach(getIdentity());
+		boolean coach = userCourseEnv.isCoach();
 		if(coach) {
 			String coachRole = config.getStringValue(BasicLTICourseNode.CONFIG_KEY_COACHROLE);
 			if(StringHelper.containsNonWhitespace(coachRole)) {

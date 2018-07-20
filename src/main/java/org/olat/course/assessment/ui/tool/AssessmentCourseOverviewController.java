@@ -84,7 +84,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		boolean hasAssessableNodes = course.hasAssessableNodes();
-		mainVC.contextPut("hasAssessableNodes", new Boolean(hasAssessableNodes));
+		mainVC.contextPut("hasAssessableNodes", Boolean.valueOf(hasAssessableNodes));
 		
 		// assessment changes subscription
 		if (hasAssessableNodes) {

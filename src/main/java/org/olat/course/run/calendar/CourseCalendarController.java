@@ -88,7 +88,7 @@ public class CourseCalendarController extends BasicController {
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		KalendarRenderWrapper courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		boolean isPrivileged = isPrivileged(cgm);
+		boolean isPrivileged = isPrivileged();
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 			courseKalendarWrapper.setPrivateEventsVisible(true);
@@ -121,9 +121,8 @@ public class CourseCalendarController extends BasicController {
 		return calendars;
 	}
 	
-	private boolean isPrivileged(CourseGroupManager cgm) {
-		return !userCourseEnv.isCourseReadOnly()
-				&& (userCourseEnv.isAdmin() || cgm.isIdentityCourseAdministrator(getIdentity()));
+	private boolean isPrivileged() {
+		return !userCourseEnv.isCourseReadOnly() && userCourseEnv.isAdmin();
 	}
 	
 	private void addCalendars(List<BusinessGroup> groups, boolean isOwner, LinkProvider linkProvider,

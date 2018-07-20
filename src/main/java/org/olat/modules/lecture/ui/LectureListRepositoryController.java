@@ -91,9 +91,9 @@ public class LectureListRepositoryController extends FormBasicController {
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 
 	private int counter = 0;
-	private RepositoryEntry entry;
-	
+	private final RepositoryEntry entry;
 	private final boolean lectureManagementManaged;
+	private final LecturesSecurityCallback secCallback;
 	
 	@Autowired
 	private UserManager userManager;
@@ -102,9 +102,10 @@ public class LectureListRepositoryController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.entry = entry;
+		this.secCallback = secCallback;
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		
 		initForm(ureq);
@@ -113,7 +114,7 @@ public class LectureListRepositoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!lectureManagementManaged) {
+		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
@@ -129,21 +130,17 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers));
-		
-		if(lectureManagementManaged) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "edit"));//edit check it
-		} else {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-					new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
-			editColumn.setExportable(false);
-			editColumn.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(editColumn);
+
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
+				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+		editColumn.setExportable(false);
+		editColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(editColumn);
 			
-			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(BlockCols.tools);
-			toolsColumn.setExportable(false);
-			toolsColumn.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsColumn);
-		}
+		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(BlockCols.tools);
+		toolsColumn.setExportable(false);
+		toolsColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(toolsColumn);
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -182,8 +179,10 @@ public class LectureListRepositoryController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		
-		deleteLecturesButton.setVisible(!rows.isEmpty());
+
+		if(deleteLecturesButton != null) {
+			deleteLecturesButton.setVisible(!rows.isEmpty());
+		}
 	}
 	
 	@Override
@@ -279,7 +278,8 @@ public class LectureListRepositoryController extends FormBasicController {
 		if(editLectureCtrl != null) return;
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block);
+		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
@@ -288,7 +288,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(editLectureCtrl != null) return;
+		if(editLectureCtrl != null || !secCallback.canNewLectureBlock()) return;
 		
 		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
 		listenTo(editLectureCtrl);
@@ -392,11 +392,13 @@ public class LectureListRepositoryController extends FormBasicController {
 			
 			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
 			
-			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
-			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
-			if(!LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
-				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
-				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			if(secCallback.canNewLectureBlock()) {
+				copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
+				copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+				if(!LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
+					deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+					deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+				}
 			}
 			logLink = LinkFactory.createLink("log", "log", getTranslator(), mainVC, this, Link.LINK);
 			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log"); 

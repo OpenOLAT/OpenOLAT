@@ -228,7 +228,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs.i18nKey(), CGCols.numOfSubmissionDocs.ordinal(),
 				true, CGCols.numOfSubmissionDocs.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
-		if(gtaManager.isDueDateEnabled(gtaNode)) {
+		if(gtaManager.isDueDateEnabled(gtaNode) && !coachCourseEnv.isCourseReadOnly()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
 		}
 		tableModel = new CoachParticipantsTableModel(userPropertyHandlers, getLocale(), columnsModel);

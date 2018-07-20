@@ -196,13 +196,12 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		boolean canEdit = cgm.isIdentityCourseAdministrator(ureq.getIdentity());
+		boolean canEdit = userCourseEnv.isAdmin();
 		boolean canManage;
 		if(canEdit) {
 			canManage = true;
 		} else {
-			canManage = cgm.isIdentityCourseCoach(ureq.getIdentity())
-					|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT);
+			canManage = userCourseEnv.isCoach() || cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT);
 		}
 		Checklist checklist = loadOrCreateChecklist(userCourseEnv.getCourseEnvironment().getCoursePropertyManager());
 		ChecklistDisplayController checkController = new ChecklistDisplayController(ureq, wControl, checklist,
