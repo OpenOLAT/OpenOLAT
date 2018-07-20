@@ -41,6 +41,8 @@ public interface QualityExecutorParticipation {
 
 	public String getTitle();
 	
+	public QualityDataCollectionTopicType getTopicType();
+	
 	public String getTranslatedTopicType();
 	
 	public String getTopic();

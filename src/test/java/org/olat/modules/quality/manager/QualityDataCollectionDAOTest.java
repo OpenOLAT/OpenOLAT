@@ -252,7 +252,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityTestHelper.createDataCollection();
 		dbInstance.commitAndCloseSession();
 		
-		List<DataCollectionCols> excludedCols = Arrays.asList(DataCollectionCols.edit, DataCollectionCols.delete);
+		List<DataCollectionCols> excludedCols = Arrays.asList(DataCollectionCols.edit, DataCollectionCols.delete,
+				DataCollectionCols.report);
 		for (DataCollectionCols col: DataCollectionCols.values()) {
 			if (!excludedCols.contains(col)) {
 				SortKey sortKey = new SortKey(col.name(), true);

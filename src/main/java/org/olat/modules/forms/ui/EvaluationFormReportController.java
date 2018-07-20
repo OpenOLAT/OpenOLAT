@@ -49,26 +49,41 @@ public class EvaluationFormReportController extends FormBasicController {
 	private final EvaluationFormReportProvider provider;
 	private final ReportHelper reportHelper;
 	
+	private final Component header;
 	private final List<ReportFragment> fragments = new ArrayList<>();
 	
 	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
 			List<? extends EvaluationFormSessionRef> sessions) {
-			this(ureq, wControl, form, sessions, null, null);
+			this(ureq, wControl, form, sessions, null, null, null);
+	}
+	
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
+			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider) {
+		this(ureq, wControl, form, sessions, provider, null, null);
+	}
+	
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
+			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider, ReportHelper reportHelper) {
+		this(ureq, wControl, form, sessions, provider, reportHelper, null);
 	}
 
 	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider,
-			ReportHelper reportHelper) {
+			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider, ReportHelper reportHelper,
+			Component header) {
 		super(ureq, wControl, "report");
 		this.form = form;
 		this.sessions = sessions;
 		this.provider = provider != null? provider: new DefaultReportProvider();
 		this.reportHelper = reportHelper != null? reportHelper: ReportHelper.builder(getLocale()).build();
+		this.header = header;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (header != null) {
+			flc.put("header", header);
+		}
 		for (AbstractElement element: form.getElements()) {
 			EvaluationFormReportHandler reportHandler = provider.getReportHandler(element);
 			if (reportHandler != null) {

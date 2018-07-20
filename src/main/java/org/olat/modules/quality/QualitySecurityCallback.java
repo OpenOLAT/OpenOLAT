@@ -55,6 +55,10 @@ public interface QualitySecurityCallback {
 
 	public boolean canEditReminder(QualityDataCollectionLight dataCollection, QualityReminder reminder);
 
+	public boolean canViewReports();
+
+	public boolean canViewReport(QualityDataCollectionLight dataCollection);
+
 	public boolean canExecute(QualityExecutorParticipation participation);
 
 }

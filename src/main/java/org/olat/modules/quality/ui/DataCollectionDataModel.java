@@ -70,6 +70,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 			case numberParticipants: return dataCollectionRow.getNumberOfParticipants();
 			case edit: return Boolean.TRUE;
 			case delete: return secCallback.canDeleteDataCollection(dataCollectionRow.getDataCollection());
+			case report: return secCallback.canViewReport(dataCollectionRow.getDataCollection());
 			default: return null;
 		}
 	}
@@ -89,7 +90,8 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 		formName("data.collection.form"),
 		numberParticipants("data.collection.number.of.participants"),
 		edit("data.collection.edit"),
-		delete("data.collection.delete");
+		delete("data.collection.delete"),
+		report("data.collection.report");
 		
 		private final String i18nKey;
 		

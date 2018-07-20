@@ -67,14 +67,16 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 
 	private final Form form;
 	private final List<EvaluationFormSession> sessions;
+	private final List<EvaluationFormFigure> figures;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormPrintSelection printSelection;
 
 	public EvaluationFormPrintSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions, ReportHelper reportHelper) {
+			List<EvaluationFormSession> sessions, List<EvaluationFormFigure> figures, ReportHelper reportHelper) {
 		super(ureq, wControl, "report_print_selection");
 		this.form = form;
 		this.sessions = sessions;
+		this.figures = figures;
 		this.reportHelper = reportHelper;
 		this.printSelection = new EvaluationFormPrintSelection();
 		this.printSelection.setOverview(true);
@@ -139,7 +141,7 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				EvaluationFormPrintController printCtrl = new EvaluationFormPrintController(lureq, lwControl, form,
-						sessions, reportHelper, printSelection);
+						sessions, figures, reportHelper, printSelection);
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
 				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
 				return layoutCtr;

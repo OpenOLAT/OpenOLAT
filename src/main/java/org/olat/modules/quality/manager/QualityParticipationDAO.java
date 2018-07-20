@@ -170,6 +170,7 @@ class QualityParticipationDAO {
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
 		sb.append("     , collection.title as title");
+		sb.append("     , collection.topicType as topicType");
 		sb.append("     , case");
 		sb.append("       when curriculumElementType is not null");
 		sb.append("       then curriculumElementType.displayName");

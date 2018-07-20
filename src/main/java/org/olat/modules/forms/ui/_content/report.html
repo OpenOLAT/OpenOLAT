@@ -1,4 +1,7 @@
 <div class="o_evaluation_form">
+	#if($r.available("header"))
+		$r.render("header")
+	#end
 	#foreach($fragment in $fragments)
 		<div class="o_report_block">
 			<div class="$fragment.cssClass">$r.render($fragment.componentName)</div>

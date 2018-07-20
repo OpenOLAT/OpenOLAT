@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
+import static org.olat.modules.quality.QualityDataCollectionTopicType.CUSTOM;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +35,9 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
 
 /**
@@ -45,6 +50,25 @@ public class QualityUIFactory {
 
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = (c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
+	
+	public static String formatTopic(QualityDataCollectionView dataCollectionView) {
+		return formatTopic(dataCollectionView.getTopicType(), dataCollectionView.getTranslatedTopicType(),
+				dataCollectionView.getTopic());
+	}
+
+	public static String formatTopic(QualityExecutorParticipation qualityParticipation) {
+		return formatTopic(qualityParticipation.getTopicType(), qualityParticipation.getTranslatedTopicType(),
+				qualityParticipation.getTopic());
+	}
+
+	public static String formatTopic(QualityDataCollectionTopicType type, String translatedType, String topic) {
+		StringBuilder formatedTopic = new StringBuilder();
+		if (!CUSTOM.equals(type)) {
+			formatedTopic.append(translatedType).append(" ");
+		}
+		formatedTopic.append(topic);
+		return formatedTopic.toString();
+	}
 	
 	public static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums) {
 		String[] keys = curriculums.stream()
@@ -217,6 +241,5 @@ public class QualityUIFactory {
 		}
 		
 	}
-
 
 }

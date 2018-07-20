@@ -21,7 +21,6 @@ package org.olat.modules.quality.ui;
 
 import java.util.Date;
 
-import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionView;
 
@@ -39,7 +38,7 @@ class DataCollectionRow {
 		this.dataCollectionView = dataCollectionView;
 	}
 	
-	QualityDataCollectionLight getDataCollection() {
+	QualityDataCollectionView getDataCollection() {
 		return dataCollectionView;
 	}
 

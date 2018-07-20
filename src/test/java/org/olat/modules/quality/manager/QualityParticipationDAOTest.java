@@ -216,6 +216,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		assertThat(participation.getStart()).isNotNull();
 		assertThat(participation.getDeadline()).isNotNull();
 		assertThat(participation.getTitle()).isNotNull();
+		assertThat(participation.getTopicType()).isNotNull();
 		assertThat(participation.getTranslatedTopicType()).isNotNull();
 		assertThat(participation.getTopic()).isNotNull();
 	}

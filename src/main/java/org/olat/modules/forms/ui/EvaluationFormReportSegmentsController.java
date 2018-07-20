@@ -69,13 +69,18 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	
 	private final Form form;
 	private final List<EvaluationFormSession> sessions;
+	private final Component formHeader;
+	private final List<EvaluationFormFigure> figures;
 	private final ReportHelper reportHelper;
-	
+
 	public EvaluationFormReportSegmentsController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions, ReportHelper reportHelper) {
+			List<EvaluationFormSession> sessions, Component formHeader, List<EvaluationFormFigure> figures,
+			ReportHelper reportHelper) {
 		super(ureq, wControl);
 		this.form = form;
 		this.sessions = sessions;
+		this.formHeader = formHeader;
+		this.figures = figures;
 		this.reportHelper = reportHelper;
 		
 		mainVC = createVelocityContainer("segments");
@@ -115,7 +120,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 
 	private void doOpenOverviewReport(UserRequest ureq) {
 		if (overviewCtrl == null) {
-			overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, sessions);
+			overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, sessions, figures);
 		}
 		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
 	}
@@ -126,7 +131,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 			provider.put(Rubric.TYPE, new RubricTableHandler());
 			provider.put(SingleChoice.TYPE, new SingleChoiceTableHandler());
 			provider.put(MultipleChoice.TYPE, new MultipleChoiceTableHandler());
-			tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
+			tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper, formHeader);
 			listenTo(tableReportCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, tableReportCtrl.getInitialComponent());
@@ -135,7 +140,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	private void doOpenDiagramReport(UserRequest ureq) {
 		if (diagramReportCtrl == null) {
 			DefaultReportProvider provider = new DefaultReportProvider();
-			diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
+			diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper, formHeader);
 			listenTo(diagramReportCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, diagramReportCtrl.getInitialComponent());
@@ -143,7 +148,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 
 	private void doOpenSessionSelection(UserRequest ureq) {
 		if (sessionSelectionCtrl == null) {
-			sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, sessions, reportHelper);
+			sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, sessions, reportHelper, formHeader);
 			stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), sessionSelectionCtrl);
 			stackedSessionPanel.pushController(translate("reports.session.forms"), sessionSelectionCtrl);
 			sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);

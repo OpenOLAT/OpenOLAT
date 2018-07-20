@@ -1,6 +1,6 @@
 <div class="o_qual_execute">
 	#if( $r.isNotNull($title) )
-		<h2>$title</h2>
+		<h2>$r.escapeHtml($title)</h2>
 	#end
 	#foreach($context in $contexts)
 		<div class="panel panel-default">
@@ -10,7 +10,7 @@
 					<table class="table o_qual_context_table"><tbody>
 						<tr>
 						<th>$keyValue.key</th>
-						<td>$keyValue.value</td>
+						<td>$r.escapeHtml($keyValue.value)</td>
 						</tr>
 					</tbody></table>
 				</div>

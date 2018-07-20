@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
+import static org.olat.modules.quality.ui.QualityUIFactory.formatTopic;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -134,11 +136,7 @@ public class ExecutionController extends BasicController {
 		KeyValue keyValue = null;
 		if (qualityParticipation.getTopic() != null) {
 			String key = translate("executor.participation.topic.title");
-			String value = new StringBuilder()
-					.append(qualityParticipation.getTranslatedTopicType())
-					.append(" ")
-					.append(qualityParticipation.getTopic())
-					.toString();
+			String value = formatTopic(qualityParticipation);
 			keyValue = new KeyValue(key, value);
 		}
 		return keyValue;

@@ -120,12 +120,26 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	}
 
 	@Override
+	public boolean canViewReports() {
+		return canViewDataCollections() ;
+	}
+
+	@Override
+	public boolean canViewReport(QualityDataCollectionLight dataCollection) {
+		return canViewReports() && isRunning(dataCollection);
+	}
+
+	@Override
 	public boolean canExecute(QualityExecutorParticipation participation) {
 		QualityExecutorParticipationStatus status = participation.getExecutionStatus();
 		return QualityExecutorParticipationStatus.READY.equals(status)
 				|| QualityExecutorParticipationStatus.PARTICIPATING.equals(status);
 	}
 
+	private boolean isRunning(QualityDataCollectionLight dataCollection) {
+		return !isNotRunning(dataCollection);
+	}
+	
 	private boolean isNotRunning(QualityDataCollectionLight dataCollection) {
 		QualityDataCollectionStatus status = dataCollection.getStatus();
 		return PREPARATION.equals(status) || READY.equals(status);

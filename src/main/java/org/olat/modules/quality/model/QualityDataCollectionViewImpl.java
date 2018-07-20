@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 
 /**
@@ -39,12 +40,14 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final Date start;
 	private final Date deadline;
 	private final String formName;
+	private final QualityDataCollectionTopicType topicType;
 	private final String translatedTopicType;
 	private final String topic;
 	private final Long numberOfParticipants;
 	
 	public QualityDataCollectionViewImpl(Long key, QualityDataCollectionStatus status, String title, Date start,
-			Date deadline, String formName, String translatedTopicType, String topic, Long numberOfParticipants) {
+			Date deadline, String formName, QualityDataCollectionTopicType topicType, String translatedTopicType,
+			String topic, Long numberOfParticipants) {
 		super();
 		this.key = key;
 		this.status = status;
@@ -52,6 +55,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		this.start = start;
 		this.deadline = deadline;
 		this.formName = formName;
+		this.topicType = topicType;
 		this.translatedTopicType = translatedTopicType;
 		this.topic = topic;
 		this.numberOfParticipants = numberOfParticipants;
@@ -95,6 +99,11 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	@Override
 	public String getFormName() {
 		return formName;
+	}
+
+	@Override
+	public QualityDataCollectionTopicType getTopicType() {
+		return topicType;
 	}
 		
 	@Override

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -63,16 +64,18 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private final Form form;
 	private final List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
+	private final Component formHeader;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
-	
+
 	public EvaluationFormSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions, ReportHelper reportHelper) {
+			List<EvaluationFormSession> sessions, ReportHelper reportHelper, Component formHeader) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
 		this.sessions = sessions;
 		this.reportHelper = reportHelper;
+		this.formHeader = formHeader;
 		initForm(ureq);
 	}
 
@@ -163,7 +166,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(Collections.singletonList(reloadedSession));
 		String legendName = reportHelper.getLegend(reloadedSession).getName();
 		EvaluationFormExecutionController controller = new EvaluationFormExecutionController(ureq, getWindowControl(),
-				reloadedSession, responses, form);
+				reloadedSession, responses, form, formHeader);
 		stackPanel.pushController(legendName, controller);
 	}
 

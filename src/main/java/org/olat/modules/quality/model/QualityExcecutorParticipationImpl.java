@@ -22,6 +22,7 @@ package org.olat.modules.quality.model;
 import java.util.Date;
 
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
 
@@ -38,17 +39,20 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	private final Date start;
 	private final Date deadline;
 	private final String title;
+	private final QualityDataCollectionTopicType topicType;
 	private final String translatedTopicType;
 	private final String topic;
 	
-	public QualityExcecutorParticipationImpl(Long participationKey, Integer executionStatusOrder,
-			Date start, Date deadline, String title, String translatedTopicType, String topic) {
+	public QualityExcecutorParticipationImpl(Long participationKey, Integer executionStatusOrder, Date start,
+			Date deadline, String title, QualityDataCollectionTopicType topicType, String translatedTopicType,
+			String topic) {
 		super();
 		this.participationKey = participationKey;
 		this.executionStatus = QualityExecutorParticipationStatus.getEnum(executionStatusOrder);
 		this.start = start;
 		this.deadline = deadline;
 		this.title = title;
+		this.topicType = topicType;
 		this.translatedTopicType = translatedTopicType;
 		this.topic = topic;
 	}
@@ -82,6 +86,11 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	@Override
 	public String getTitle() {
 		return title;
+	}
+
+	@Override
+	public QualityDataCollectionTopicType getTopicType() {
+		return topicType;
 	}
 	
 	@Override

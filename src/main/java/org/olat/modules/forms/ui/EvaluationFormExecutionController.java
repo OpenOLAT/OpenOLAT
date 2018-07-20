@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -80,6 +81,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private DialogBoxController confirmDoneCtrl;
 	
 	private final Form form;
+	private final Component header;
 	private boolean readOnly;
 	private boolean showDoneButton;
 	
@@ -92,31 +94,33 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private DB dbInstance;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
-	
+
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, null, session, null, false, true);
+		this(ureq, wControl, null, session, null, null, false, true);
 	}
 	
 	/**
 	 * Optimized to use already loaded responses and form.
+	 * @param formHeader 
 	 * 
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
-			EvaluationFormResponses responses, Form form) {
-		this(ureq, wControl, form, session, responses, false, true);
+			EvaluationFormResponses responses, Form form, Component header) {
+		this(ureq, wControl, form, session, responses, header, false, true);
 	}
 	
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton) {
-		this(ureq, wControl, null, session, null, readOnly, showDoneButton);
+		this(ureq, wControl, null, session, null, null, readOnly, showDoneButton);
 	}
 	
 	private EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form,
-			EvaluationFormSession session, EvaluationFormResponses responses, boolean readOnly,
+			EvaluationFormSession session, EvaluationFormResponses responses, Component header, boolean readOnly,
 			boolean showDoneButton) {
 		super(ureq, wControl, "execute");
 		
 		this.session = session;
+		this.header = header;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
 		
@@ -147,6 +151,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		
 		this.session = null;
 		this.responses = null;
+		this.header = null;
 		this.readOnly = false;
 		this.showDoneButton = false;
 		
@@ -164,6 +169,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		loadElements(ureq);
 		loadResponses();
 		propagateReadOnly();
+		
+		if (header != null) {
+			flc.put("header", header);
+		}
 		
 		boolean notAnonymous = session != null
 				&& session.getParticipation() != null

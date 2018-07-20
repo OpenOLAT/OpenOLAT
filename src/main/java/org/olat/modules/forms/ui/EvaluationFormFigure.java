@@ -17,24 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality;
+package org.olat.modules.forms.ui;
 
 /**
  * 
- * Initial date: 16.06.2018<br>
+ * Initial date: 20.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityDataCollectionView extends QualityDataCollectionLight {
+public class EvaluationFormFigure {
 	
-	public String getFormName();
+	private final String name;
+	private final String value;
 	
-	public String getTranslatedTopicType();
+	public EvaluationFormFigure(String name, String value) {
+		this.name = name;
+		this.value = value;
+	}
 
-	public QualityDataCollectionTopicType getTopicType();
-	
-	public String getTopic();
-	
-	public Long getNumberOfParticipants();
+	public String getName() {
+		return name;
+	}
+
+	public String getValue() {
+		return value;
+	}
 
 }

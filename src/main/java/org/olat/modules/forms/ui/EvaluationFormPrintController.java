@@ -63,7 +63,7 @@ public class EvaluationFormPrintController extends BasicController {
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions, ReportHelper reportHelper,
+			List<EvaluationFormSession> sessions, List<EvaluationFormFigure> figures, ReportHelper reportHelper,
 			EvaluationFormPrintSelection printSelection) {
 		super(ureq, wControl);
 		this.form = form;
@@ -72,7 +72,7 @@ public class EvaluationFormPrintController extends BasicController {
 
 		mainVC = createVelocityContainer("report_print");
 		if (printSelection.isOverview()) {
-			Controller overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, sessions);
+			Controller overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, sessions, figures);
 			mainVC.put("overview", overviewCtrl.getInitialComponent());
 		}
 		
@@ -115,7 +115,7 @@ public class EvaluationFormPrintController extends BasicController {
 		String componentName = "se_" + CodeHelper.getRAMUniqueID();
 		String legendName = reportHelper.getLegend(session).getName();
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), session,
-				responses, form);
+				responses, form, null);
 		mainVC.put(componentName, controller.getInitialComponent());
 		return new SessionWrapper(legendName, componentName);
 	}

@@ -59,21 +59,29 @@ public class EvaluationFormOverviewController extends BasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl,
-			Form form, List<? extends EvaluationFormSessionRef> sessions) {
+	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl, Form form,
+			List<? extends EvaluationFormSessionRef> sessions, List<EvaluationFormFigure> figures) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("overview");
 
 		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(sessions);
-		mainVC.contextPut("numDoneSession", statistic.getNumOfDoneSessions());
 		String submissionPeriod = EvaluationFormFormatter.period(statistic.getFirstSubmission(),
 				statistic.getLastSubmission(), getLocale());
-		mainVC.contextPut("submissionPeriod", submissionPeriod);
-		mainVC.contextPut("averageDuration", EvaluationFormFormatter.duration(statistic.getAverageDuration()));
-		
+		List<EvaluationFormFigure> allFigures = new ArrayList<>();
+		if (figures != null) {
+			allFigures.addAll(figures);
+		}
+		allFigures.add(new EvaluationFormFigure(translate("report.overview.figures.number.done.session"),
+				String.valueOf(statistic.getNumOfDoneSessions())));
+		allFigures.add(
+				new EvaluationFormFigure(translate("report.overview.figures.submission.period"), submissionPeriod));
+		allFigures.add(new EvaluationFormFigure(translate("report.overview.figures.average.duration"),
+				EvaluationFormFormatter.duration(statistic.getAverageDuration())));
+		mainVC.contextPut("figures", allFigures);
+
 		if (hasRubrics(form)) {
-			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, sessions, PROVIDER, null);
+			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, sessions, PROVIDER);
 			mainVC.put("report", reportCtrl.getInitialComponent());
 		}
 

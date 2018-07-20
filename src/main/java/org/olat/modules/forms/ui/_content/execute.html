@@ -1,4 +1,7 @@
 <div class="o_evaluation_execution">
+#if($r.available("header") && $r.visible("header"))
+	$r.render("header")
+#end
 #if($messageNotDone)
 	<div class="o_warning">$r.translate("evaluation.in.progress")</div>
 #elseif($messageWithoutElements)

@@ -54,13 +54,20 @@ public class EvaluationFormReportsController extends BasicController {
 	
 	private final Form form;
 	private final List<EvaluationFormSession> sessions;
+	private final List<EvaluationFormFigure> figures;
 	private final ReportHelper reportHelper;
-
+	
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form,
 			List<EvaluationFormSession> sessions) {
+		this(ureq, wControl, form, sessions, null, null);
+	}
+
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form,
+			List<EvaluationFormSession> sessions, Component formHeader, List<EvaluationFormFigure> figures) {
 		super(ureq, wControl);
 		this.form = form;
 		this.sessions = sessions;
+		this.figures = figures;
 		
 		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
 		sessions.sort(comparator);
@@ -80,7 +87,7 @@ public class EvaluationFormReportsController extends BasicController {
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
 		EvaluationFormReportSegmentsController segmentsController = new EvaluationFormReportSegmentsController(ureq,
-				getWindowControl(), form, sessions, reportHelper);
+				getWindowControl(), form, sessions, formHeader, figures, reportHelper);
 		mainVC.put("segments", segmentsController.getInitialComponent());
 
 		putInitialPanel(mainVC);
@@ -122,7 +129,7 @@ public class EvaluationFormReportsController extends BasicController {
 	private void doOpenPrintSelection(UserRequest ureq) {
 		if (printSelectionCtrl == null) {
 			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, sessions,
-					reportHelper);
+					figures, reportHelper);
 			listenTo(printSelectionCtrl);
 		}
 
