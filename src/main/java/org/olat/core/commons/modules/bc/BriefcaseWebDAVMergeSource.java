@@ -85,8 +85,7 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
 			String path = PersonalFolderManager.getRootPathFor(identity);
 			Quota quota = qm.getCustomQuotaOrDefaultDependingOnRole(identity, roles, path);
-			FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(quota);
-			setLocalSecurityCallback(secCallback);
+			setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
 		}
 		return super.getLocalSecurityCallback();
 	}

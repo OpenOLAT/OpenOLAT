@@ -112,7 +112,7 @@ public class CountingCallback implements VFSSecurityCallback {
 
 	@Override
 	public void setQuota(Quota quota) {
-		
+		//
 	}
 
 	@Override

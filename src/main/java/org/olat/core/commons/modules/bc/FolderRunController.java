@@ -75,6 +75,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
@@ -119,6 +120,8 @@ public class FolderRunController extends BasicController implements Activateable
 	
 	@Autowired
 	private SearchModule searchModule;
+	@Autowired
+	private QuotaManager quotaManager;
 
 	/**
 	 * Default Constructor, results in showing users personal folder, used by Spring
@@ -504,10 +507,12 @@ public class FolderRunController extends BasicController implements Activateable
 		} 
 		
 		Boolean newEditQuota = Boolean.FALSE;
-		if (usess.getRoles().isAdministrator() || usess.getRoles().isLearnResourceManager()) {//TODO quota roles
+		if (quotaManager.hasMinimalRolesToEditquota(usess.getRoles())) {
 			// Only sys admins or institutonal resource managers can have the quota button
 			Quota q = VFSManager.isTopLevelQuotaContainer(folderComponent.getCurrentContainer());
-			newEditQuota = (q == null)? Boolean.FALSE : Boolean.TRUE;
+			if(q != null) {
+				newEditQuota = quotaManager.hasQuotaEditRights(ureq.getIdentity(), usess.getRoles(), q);
+			}
 		}
 
 		Boolean currentEditQuota = (Boolean) folderContainer.contextGet("editQuota");

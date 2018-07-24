@@ -1,11 +1,10 @@
 #if($editQuota)
 	<fieldset class="clearfix">
+		#if($r.isTrue($withLegend))
 		<legend>$r.translate("qf.edit")</legend>
+		#end
 		#if($r.isNotNull($notEnoughPrivilege) && $notEnoughPrivilege)
 		<div class="o_warning">$r.translate("warning.qd.not.enough.privilege")</div>
-		#end
-		#if(!$isEmptyQuota)
-		<div class="o_button_group o_button_group_right">$r.render("qf.del")</div>
 		#end
 		$r.render("quotaform")
 	</fieldset>

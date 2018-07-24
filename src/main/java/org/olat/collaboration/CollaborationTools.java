@@ -399,14 +399,15 @@ public class CollaborationTools implements Serializable {
 	 * Return the root VFS container with security callback set
 	 * @return
 	 */
-	public OlatRootFolderImpl getSecuredFolder(BusinessGroup businessGroup, SubscriptionContext subsContext, Identity identity, boolean isAdmin) {
+	public OlatRootFolderImpl getSecuredFolder(BusinessGroup businessGroup, SubscriptionContext subsContext,
+			Identity identity, boolean isBusinessGroupAdmin) {
 		if(!isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			return null;
 		}
 
 		boolean writeAccess;
 		boolean isOwner = CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, businessGroup, GroupRoles.coach.name());
-		if (!(isAdmin || isOwner)) {
+		if (!(isBusinessGroupAdmin || isOwner)) {
 				// check if participants have read/write access
 			int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
 			Long lFolderAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupFolderAccess();

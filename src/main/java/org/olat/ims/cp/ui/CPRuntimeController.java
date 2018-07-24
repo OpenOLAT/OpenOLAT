@@ -129,7 +129,8 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 			OLATResource resource = entry.getOlatResource();
 			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
 			WindowControl bwControl = getSubWindowControl("Quota");
-			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), cpRoot.getRelPath(), getOrganisations());
+			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), cpRoot.getRelPath(),
+					true, false);
 			pushController(ureq, translate("tab.quota.edit"), quotaCtrl);
 			setActiveTool(quotaLink);
 		}

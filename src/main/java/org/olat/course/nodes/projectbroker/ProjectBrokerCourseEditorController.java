@@ -405,16 +405,12 @@ class FolderCallback implements VFSSecurityCallback {
 		this.folderQuota = folderQuota;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canRead(org.olat.modules.bc.Path)
-	 */
+	@Override
 	public boolean canRead() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canWrite(org.olat.modules.bc.Path)
-	 */
+	@Override
 	public boolean canWrite() {
 		return !folderLocked;
 	}
@@ -424,44 +420,32 @@ class FolderCallback implements VFSSecurityCallback {
 		return !folderLocked;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
-	 */
+	@Override
 	public boolean canDelete() {
 		return !folderLocked;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canList(org.olat.modules.bc.Path)
-	 */
+	@Override
 	public boolean canList() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canCopy()
-	 */
+	@Override
 	public boolean canCopy() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getQuotaKB(org.olat.modules.bc.Path)
-	 */
+	@Override
 	public Quota getQuota() {
 		return folderQuota;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#setQuota(org.olat.admin.quota.Quota)
-	 */
+	@Override
 	public void setQuota(Quota quota) {
 		folderQuota = quota;
 	}
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getSubscriptionContext()
-	 */
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return null;
 	}

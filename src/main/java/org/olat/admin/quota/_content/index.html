@@ -1,8 +1,9 @@
 <fieldset>
 	<legend>$r.translate("qf.title")</legend>
-	<div class="btn-toolbar"><div class="pull-right">
+	#if($r.available("qf.new"))
+	<div class="o_button_group o_button_group_right">
 		$r.render("qf.new")
-	</div></div>
-	<h5 class="clearfix">$r.translate("qf.list")</h5>
+	</div>
+	#end
 	$r.render("quotatable")
 </fieldset>

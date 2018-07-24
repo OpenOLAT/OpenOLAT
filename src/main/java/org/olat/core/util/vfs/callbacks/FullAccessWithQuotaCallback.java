@@ -42,11 +42,13 @@ public class FullAccessWithQuotaCallback implements VFSSecurityCallback {
 	public FullAccessWithQuotaCallback(Quota quota) {
 		this.quota = quota;
 	}
-	
+
+	@Override
 	public boolean canRead() {
 		return true;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return true;
 	}
@@ -56,30 +58,37 @@ public class FullAccessWithQuotaCallback implements VFSSecurityCallback {
 		return true;
 	}
 
+	@Override
 	public boolean canDelete() {
 		return true;
 	}
 
+	@Override
 	public boolean canList() {
 		return true;
 	}
 
+	@Override
 	public boolean canCopy() {
 		return true;
 	}
-	
+
+	@Override
 	public boolean canDeleteRevisionsPermanently() {
 		return true;
 	}
 
+	@Override
 	public Quota getQuota() {
 		return quota;
 	}
 
+	@Override
 	public void setQuota(Quota quota) {
 		this.quota = quota;
 	}
-	
+
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return subContext;
 	}

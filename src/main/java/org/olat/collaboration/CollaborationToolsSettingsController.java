@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
@@ -103,12 +104,14 @@ public class CollaborationToolsSettingsController extends BasicController {
 			vc_collabtools.contextPut("newsToolEnabled", Boolean.FALSE);
 		}
 		
-		if (ureq.getUserSession().getRoles().isAdministrator()) {//TODO quota roles
+		UserSession usess = ureq.getUserSession();
+		
+		if (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin()) {
 			vc_collabtools.contextPut("isOlatAdmin", Boolean.TRUE);
 			if(managed) {
 				quotaCtr = quotaManager.getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			} else {
-				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), null);
+				quotaCtr = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), true, false);
 			}
 			listenTo(quotaCtr);
 		} else {
@@ -137,7 +140,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 		// update quota form: only show when enabled
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
-			if(ureq.getUserSession().getRoles().isAdministrator()) {//TODO quota roles
+			if(usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin()) {
 				vc_collabtools.put("quota", quotaCtr.getInitialComponent());
 			}
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
@@ -238,7 +241,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 				folderForm.setEnabled(!managed);
 				listenTo(folderForm);
 				vc_collabtools.put("folderform", folderForm.getInitialComponent());
-				if (ureq.getUserSession().getRoles().isAdministrator()) {//TODO quota roles
+				if (ureq.getUserSession().getRoles().isAdministrator()) {
 					vc_collabtools.put("quota", quotaCtr.getInitialComponent());
 				}
 			} else {

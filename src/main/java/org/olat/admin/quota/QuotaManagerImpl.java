@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -52,6 +53,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.InitializingBean;
@@ -78,14 +82,14 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private PropertyManager propertyManager;
 	@Autowired
 	private OLATResourceManager resourceManager;
-	
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
-	/**
-	 * @see org.olat.core.util.vfs.QuotaManager#createQuota(java.lang.String, java.lang.Long, java.lang.Long)
-	 */
 	@Override
 	public Quota createQuota(String path, Long quotaKB, Long ulLimitKB) {
 		return new QuotaImpl(path, quotaKB, ulLimitKB);
@@ -238,8 +242,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	@Override
 	public List<Quota> listCustomQuotasKB() {
 		List<Quota> results = new ArrayList<>();
-		PropertyManager pm = PropertyManager.getInstance();
-		List<Property> props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
+		List<Property> props = propertyManager.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
 		if (props == null || props.isEmpty()) return results;
 		for (Iterator<Property> iter = props.iterator(); iter.hasNext();) {
 			Property prop = iter.next();
@@ -290,7 +293,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public Quota getDefaultQuotaDependingOnRole(Identity identity, Roles roles) {
-		if (isPowerUser(roles)) {//TODO quota roles
+		if (isPowerUser(roles)) {
 			return getDefaultQuotaPowerUsers();
 		}
 		return getDefaultQuotaUsers();
@@ -307,7 +310,6 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, Roles roles, String relPath) {
 		Quota quota = getCustomQuota(relPath);
 		if (quota == null) { // no custom quota
-			//TODO quota roles
 			Quota defQuota = isPowerUser(roles) ? getDefaultQuotaPowerUsers() : getDefaultQuotaUsers();
 			return createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
@@ -389,9 +391,10 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	}
 
 	@Override
-	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, List<? extends OrganisationRef> resourceOwnerships) {
+	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath,
+			boolean withLegend, boolean withCancel) {
 		try {
-			return new GenericQuotaEditController(ureq, wControl, relPath, resourceOwnerships);
+			return new GenericQuotaEditController(ureq, wControl, relPath, withLegend, withCancel);
 		} catch (OLATSecurityException e) {
 			log.warn("Try to access the quota editor without enough privilege", e);
 			GenericQuotaViewController viewCtrl = new GenericQuotaViewController(ureq, wControl, relPath);
@@ -403,6 +406,96 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	@Override
 	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath) {
 		return new GenericQuotaViewController(ureq, wControl, relPath);
+	}
+	
+	@Override
+	public boolean hasMinimalRolesToEditquota(Roles roles) {
+		return roles.isAdministrator() || roles.isSystemAdmin()
+				|| roles.isRolesManager() || roles.isUserManager()
+				|| roles.isLearnResourceManager();
+	}
+
+	@Override
+	public boolean hasQuotaEditRights(Identity identity, Roles roles, Quota quota) {
+		if(identity == null || roles == null || quota == null || quota.getPath() == null) {
+			return false;
+		}
+
+		String path = quota.getPath();
+		if(path.startsWith("::DEFAULT")) {
+			return roles.isSystemAdmin();
+		} else if(path.startsWith("/cts/folders/BusinessGroup/")) {
+			return roles.isSystemAdmin() || roles.isAdministrator();
+		} else if(path.startsWith("/repository/")) {
+			return canEditRepositoryResources(path, identity, roles);
+		} else if(path.startsWith("/course/")) {
+			return canEditRepositoryResources(path, identity, roles) ;
+		} else if(path.startsWith("/homes/")) {
+			return canEditUser(path, roles);
+		}
+		
+		return roles.isSystemAdmin();
+	}
+	
+	private boolean canEditUser(String path, Roles roles) {
+		if(!roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager() && !roles.isUserManager()) {
+			return false;
+		}
+		
+		try {
+			int start = "/homes/".length();
+			int index = path.indexOf('/', start + 1);
+			if(index >= 0 && start < path.length()) {
+				String username = path.substring(start, index);
+				Identity editedIdentity = securityManager.findIdentityByName(username);
+				Roles editedRoles = securityManager.getRoles(editedIdentity);
+				return (roles.isAdministrator() && roles.isManagerOf(OrganisationRoles.administrator, editedRoles))
+						|| (roles.isSystemAdmin() && roles.isManagerOf(OrganisationRoles.sysadmin, editedRoles))
+						|| (roles.isRolesManager() && roles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles))
+						|| (roles.isUserManager() && roles.isManagerOf(OrganisationRoles.usermanager, editedRoles));
+			}
+			return false;
+		} catch (NumberFormatException e) {
+			log.error("Cannot parse this quota path: " + path, e);
+			return false;
+		}
+	}
+	
+	private boolean canEditRepositoryResources(String path, Identity identity, Roles roles) {
+		if(!roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isLearnResourceManager()) {
+			return false;
+		}
+		
+		try {
+			int start = path.indexOf('/', 2) + 1;
+			int index = path.indexOf('/', start + 1);
+			if(index == -1) {
+				index = path.length();
+			}
+			if(start >= 0 && start <= path.length() && index >= 0 && index <= path.length()) {
+				String resIdString = path.substring(start, index);
+				Long resId = Long.valueOf(resIdString);
+				RepositoryEntryRef re = getRepositoryEntryKey(resId);
+				return re != null && repositoryEntryRelationDao.hasRole(identity, re, true,
+						OrganisationRoles.administrator.name(), OrganisationRoles.sysadmin.name(), OrganisationRoles.learnresourcemanager.name());
+			}
+			return false;
+		} catch (NumberFormatException e) {
+			log.error("Cannot parse this quota path: " + path, e);
+			return false;
+		}
+	}
+	
+	private RepositoryEntryRef getRepositoryEntryKey(Long resId) {
+		String query = "select v.key from repositoryentry v inner join v.olatResource as ores where ores.resId=:resId";
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("resId", resId)
+				.getResultList();
+		if(!keys.isEmpty()) {
+			return new RepositoryEntryRefImpl(keys.get(0));
+		}
+		return null;
 	}
 
 	@Override

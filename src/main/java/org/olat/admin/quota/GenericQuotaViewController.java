@@ -74,7 +74,7 @@ public class GenericQuotaViewController extends BasicController {
 			initQuotaForm(ureq, currentQuota);			
 		}
 		myContent.contextPut("editQuota", Boolean.FALSE);	
-	  putInitialPanel(myContent);
+		putInitialPanel(myContent);
 	}
 	
 	public void setNotEnoughPrivilegeMessage() {
@@ -97,22 +97,18 @@ public class GenericQuotaViewController extends BasicController {
 		if (quotaForm != null) {
 			removeAsListenerAndDispose(quotaForm);
 		}
-		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, false);
+		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, false, false, false);
 		listenTo(quotaForm);
 		myContent.put("quotaform", quotaForm.getInitialComponent());
 		myContent.contextPut("editQuota", Boolean.TRUE);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-		
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	
+	@Override
 	protected void doDispose() {
 		//
 	}

@@ -26,15 +26,17 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.admin.quota.QuotaController;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -42,7 +44,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CmdEditQuota extends DefaultController implements FolderCommand, ControllerEventListener {
+public class CmdEditQuota extends BasicController implements FolderCommand, ControllerEventListener {
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	private Controller quotaEditController;
@@ -51,8 +53,8 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 	@Autowired
 	private QuotaManager quotaManager;
 	
-	protected CmdEditQuota(WindowControl wControl) {
-		super(wControl);
+	protected CmdEditQuota(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, Util.createPackageTranslator(QuotaController.class, ureq.getLocale()));
 	}
 
 	@Override
@@ -67,10 +69,11 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 		// cleanup old controller first
 		if (quotaEditController != null) quotaEditController.dispose();
 		// create a edit controller
-		quotaEditController = quotaManager.getQuotaEditorInstance(ureq, wControl, currentSecCallback.getQuota().getPath(), null);//TODO quota roles
+		quotaEditController = quotaManager.getQuotaEditorInstance(ureq, wControl, currentSecCallback.getQuota().getPath(),
+				false, true);
 		quotaEditController.addControllerListener(this);
 		if (quotaEditController != null) {
-			setInitialComponent(quotaEditController.getInitialComponent());
+			putInitialPanel(quotaEditController.getInitialComponent());
 			return this;
 		}
 		// do nothing, quota can't be edited
@@ -90,12 +93,9 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 	
 	@Override
 	public String getModalTitle() {
-		return null;
+		return translate("qf.edit");
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.ControllerEventListener#dispatchEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == quotaEditController) {

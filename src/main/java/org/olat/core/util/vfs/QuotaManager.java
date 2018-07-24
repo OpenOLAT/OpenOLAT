@@ -148,12 +148,24 @@ public interface QuotaManager {
 	 * </ul>
 	 * @param ureq
 	 * @param wControl
-	 * @param relPath
+	 * @param relPath Path of the quota
+	 * @param withLegend Add the title as legend of the form
+	 * @param withCancel Add a cancel button
 	 * @return
 	 */
-	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, List<? extends OrganisationRef> resourceOwnership);
+	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath,
+			boolean withLegend, boolean withCancel);
 	
 	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath);
+	
+	/**
+	 * Check quickly if the user has the minimal roles to edit some quota.
+	 * To check permission on a specific quota, use the method below.
+	 * 
+	 * @param roles
+	 * @return
+	 */
+	public boolean hasMinimalRolesToEditquota(Roles roles);
 	
 	/**
 	 * Check if a user has the rights to launch the quota editor tool
@@ -162,5 +174,14 @@ public interface QuotaManager {
 	 * @return true: user is allowed to launch quota editor ; false: user is not
 	 *         allowed to launch quota editor
 	 */
-	public boolean hasQuotaEditRights(Identity identity, Roles roles, List<OrganisationRef> resourceOwnership);
+	public boolean hasQuotaEditRights(Identity identity, Roles roles, Quota quota);
+	
+	/**
+	 * Check if a user has the rights to launch the quota editor tool
+	 * 
+	 * @param identity The identity that requests to change a quota
+	 * @return true: user is allowed to launch quota editor ; false: user is not
+	 *         allowed to launch quota editor
+	 */
+	public boolean hasQuotaEditRights(Identity identity, Roles roles, List<OrganisationRef> owners);
 }

@@ -50,16 +50,12 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 		this.relPath = relPath;
 	}
 
-	/**
-	 * @return boolean
-	 */
+	@Override
 	public boolean canRead() {
 		return true;
 	}
 
-	/**
-	 * @return boolean
-	 */
+	@Override
 	public boolean canWrite() {
 		return true;
 	}
@@ -69,36 +65,27 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 		return true;
 	}
 
-	/**
-	 * @return boolean
-	 */
+	@Override
 	public boolean canDelete() {
 		return true;
 	}
-	/**
-	 * @return boolean
-	 */
+
+	@Override
 	public boolean canList() {
 		return true;
 	}
 
-	/**
-	 * @return boolean
-	 */
+	@Override
 	public boolean canCopy() {
 		return true;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canDeleteRevisionsPermanently()
-	 */
+
+	@Override
 	public boolean canDeleteRevisionsPermanently() {
 		return true;
 	}
 
-	/**
-	 * @return boolean
-	 */
+	@Override
 	public Quota getQuota() {
 		if(sharedFolderQuota == null) {
 			initSharedFolderQuota(relPath);
@@ -106,13 +93,12 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 		return sharedFolderQuota;
 	}
 
+	@Override
 	public void setQuota(Quota quota) {
 		sharedFolderQuota = quota;
 	}
-	
-	/**
-	 * @return boolean
-	 */
+
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return null;
 	}

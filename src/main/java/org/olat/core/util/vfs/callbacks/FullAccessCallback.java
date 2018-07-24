@@ -30,11 +30,13 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 
 public class FullAccessCallback implements VFSSecurityCallback {
-
+	
+	@Override
 	public boolean canRead() {
 		return true;
 	}
-
+	
+	@Override
 	public boolean canWrite() {
 		return true;
 	}
@@ -43,31 +45,38 @@ public class FullAccessCallback implements VFSSecurityCallback {
 	public boolean canCreateFolder() {
 		return true;
 	}
-
+	
+	@Override
 	public boolean canDelete() {
 		return true;
 	}
-
+	
+	@Override
 	public boolean canList() {
 		return true;
 	}
-
+	
+	@Override
 	public boolean canCopy() {
 		return true;
 	}
 	
+	@Override
 	public boolean canDeleteRevisionsPermanently() {
 		return true;
 	}
 
+	@Override
 	public Quota getQuota() {
 		return null;
 	}
-
+	
+	@Override
 	public void setQuota(Quota quota) {
 		// nothing to do here.
 	}
 	
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return null;
 	}

@@ -117,7 +117,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 				config.folderCtrl.getInitialFormItem().setVisible(false);
 				
 				//add quota configuration for admin only
-				if(roles.isAdministrator()) {//TODO quota roles
+				if(quotaManager.hasMinimalRolesToEditquota(roles)) {
 					Quota quota = quotaManager.createQuota(null, null, null);
 					config.quotaCtrl = new BGConfigQuotaController(ureq, getWindowControl(), quota, mainForm);
 					config.configContainer.add("quota", config.quotaCtrl.getInitialFormItem());
@@ -171,7 +171,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 				} else if (tool.equals(CollaborationTools.TOOL_FOLDER)) {
 					configuration.setFolderAccess(config.folderCtrl.getFolderAccess());
 					//only admin are allowed to configure quota
-					if(roles.isAdministrator() && config.quotaCtrl != null) {//TODO quota roles
+					if(quotaManager.hasMinimalRolesToEditquota(roles) && config.quotaCtrl != null) {
 						Long quotaKB = config.quotaCtrl.getQuotaKB();
 						Long ulLimit = config.quotaCtrl.getULLimit();
 						Quota quota = quotaManager.createQuota(null, quotaKB, ulLimit);

@@ -25,9 +25,6 @@
 
 package org.olat.admin.quota;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,9 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,13 +54,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class GenericQuotaEditController extends BasicController {
 
-	private VelocityContainer myContent;
 	private QuotaForm quotaForm;
-	
+	private Link addQuotaButton;
+	private VelocityContainer myContent;
+
 	private Quota currentQuota;
-	private Link delQuotaButton;
-	
-	private List<OrganisationRef> organisations;
+	private final boolean canEditQuota;
+	private final boolean withCancel;
 	
 	@Autowired
 	private QuotaManager quotaManager;
@@ -81,21 +76,20 @@ class GenericQuotaEditController extends BasicController {
 	 * @param wControl
 	 * @param quotaPath The path for which the quota should be edited
 	 */
-	GenericQuotaEditController(UserRequest ureq, WindowControl wControl, String relPath, List<? extends OrganisationRef> organisations) {
+	GenericQuotaEditController(UserRequest ureq, WindowControl wControl, String relPath,
+			boolean embedded, boolean withCancel) {
 		super(ureq, wControl);
+		this.withCancel = withCancel;
 
-		this.organisations = organisations == null ? null : new ArrayList<>(organisations);
-		
-		// check if quota foqf.cannot.del.defaultr this path already exists
 		currentQuota = quotaManager.getCustomQuota(relPath);
-		// init velocity context
-		initMyContent(ureq);
 		if (currentQuota == null) {
-			currentQuota = quotaManager.createQuota(relPath, null, null);
-			myContent.contextPut("editQuota", Boolean.FALSE);			
-		} else {
-			initQuotaForm(ureq, currentQuota);			
+			currentQuota = quotaManager.createQuota(relPath, null, null);		
 		}
+		canEditQuota = quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles(), currentQuota);
+
+		initMyContent();
+		initQuotaForm(ureq, currentQuota, canEditQuota);
+		myContent.contextPut("withLegend", Boolean.valueOf(embedded));
 		putInitialPanel(myContent);
 	}
 
@@ -106,20 +100,15 @@ class GenericQuotaEditController extends BasicController {
 	 * @param wControl
 	 * @param quota The existing quota or null. If null, a new quota is generated
 	 */
-	public GenericQuotaEditController(UserRequest ureq, WindowControl wControl, Quota quota) {
+	public GenericQuotaEditController(UserRequest ureq, WindowControl wControl, Quota quota, boolean withLegend) {
 		super(ureq, wControl);
+		withCancel = true;
+		currentQuota = quota;
+		canEditQuota = quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles(), currentQuota);
 		
-		initMyContent(ureq);
-		
-		// start with neq quota if quota is empty
-		if (quota == null) {
-			currentQuota = quotaManager.createQuota(null, null, null);
-			myContent.contextPut("isEmptyQuota", true);
-		} else {
-			currentQuota = quota;
-		}
-		initQuotaForm(ureq, currentQuota);
-		
+		initMyContent();
+		initQuotaForm(ureq, currentQuota, canEditQuota);
+		myContent.contextPut("withLegend", Boolean.valueOf(withLegend));
 		putInitialPanel(myContent);
 	}
 
@@ -132,25 +121,24 @@ class GenericQuotaEditController extends BasicController {
 	 */
 	public GenericQuotaEditController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		initMyContent(ureq);
-		
-		// start with new quota
+		withCancel = true;
+		canEditQuota = true;	
 		currentQuota = quotaManager.createQuota(null, null, null);
-		myContent.contextPut("isEmptyQuota", true);
-		initQuotaForm(ureq, currentQuota);
-		
+
+		// start with new quota
+		initMyContent();
+		initQuotaForm(ureq, currentQuota, false);
+		myContent.contextPut("isEmptyQuota", Boolean.TRUE);
+		myContent.contextPut("withLegend", Boolean.FALSE);
 		putInitialPanel(myContent);
 	}
 
-	private void initMyContent(UserRequest ureq) {
-		if (!quotaManager.hasQuotaEditRights(ureq.getIdentity(), ureq.getUserSession().getRoles(), organisations)) {
-			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
-		}
-
+	private void initMyContent() {
 		myContent = createVelocityContainer("edit");
-		LinkFactory.createButtonSmall("qf.new", myContent, this);
-		delQuotaButton = LinkFactory.createButtonSmall("qf.del", myContent, this);
+		
+		if(canEditQuota) {
+			addQuotaButton = LinkFactory.createButtonSmall("qf.new", myContent, this);
+		}
 		
 		myContent.contextPut("users", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
 		myContent.contextPut("powerusers", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
@@ -159,14 +147,13 @@ class GenericQuotaEditController extends BasicController {
 		myContent.contextPut("coursefolder", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE));
 		myContent.contextPut("nodefolder", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES));
 		myContent.contextPut("feeds", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS));
-		
 	}
 	
-	private void initQuotaForm(UserRequest ureq, Quota quota) {
+	private void initQuotaForm(UserRequest ureq, Quota quota, boolean withDelete) {
 		if (quotaForm != null) {
 			removeAsListenerAndDispose(quotaForm);
 		}
-		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, true);
+		quotaForm = new QuotaForm(ureq, getWindowControl(), quota, canEditQuota, withDelete, withCancel);
 		listenTo(quotaForm);
 		myContent.put("quotaform", quotaForm.getInitialComponent());
 		myContent.contextPut("editQuota", Boolean.TRUE);
@@ -174,27 +161,20 @@ class GenericQuotaEditController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		initQuotaForm(ureq, currentQuota);
-		if (source == delQuotaButton){
-			boolean deleted = quotaManager.deleteCustomQuota(currentQuota);
-			if (deleted) {
-				myContent.remove(quotaForm.getInitialComponent());
-				myContent.contextPut("editQuota", Boolean.FALSE);
-				showInfo("qf.deleted", currentQuota.getPath());
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else {
-				showError("qf.cannot.del.default");
-			}
-		}	
+		if(source == addQuotaButton) {
+			doAddQuota(ureq);
+		}
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == quotaForm) {
 			if (event == Event.DONE_EVENT) {
-				currentQuota = quotaManager.createQuota(quotaForm.getPath(), new Long(quotaForm.getQuotaKB()), new Long(quotaForm.getULLimit()));
-				quotaManager.setCustomQuotaKB(currentQuota);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				doSaveQuota(ureq);
+			} else if(event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, event);
+			} else if(event instanceof DeleteQuotaEvent) {
+				doDelete(ureq);
 			}
 		}
 	}
@@ -204,6 +184,29 @@ class GenericQuotaEditController extends BasicController {
 			throw new AssertException("getQuota called but currentQuota is null");
 		}
 		return currentQuota;
+	}
+	
+	private void doAddQuota(UserRequest ureq) {
+		initQuotaForm(ureq, currentQuota, canEditQuota);
+	}
+	
+	private void doSaveQuota(UserRequest ureq) {
+		currentQuota = quotaManager.createQuota(quotaForm.getPath(),
+				Long.valueOf(quotaForm.getQuotaKB()), Long.valueOf(quotaForm.getULLimit()));
+		quotaManager.setCustomQuotaKB(currentQuota);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doDelete(UserRequest ureq) {
+		boolean deleted = quotaManager.deleteCustomQuota(currentQuota);
+		if (deleted) {
+			myContent.remove(quotaForm.getInitialComponent());
+			myContent.contextPut("editQuota", Boolean.FALSE);
+			showInfo("qf.deleted", currentQuota.getPath());
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else {
+			showError("qf.cannot.del.default");
+		}
 	}
 		
 	@Override

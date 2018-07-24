@@ -439,8 +439,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
 			userTabP.addTab(translate(NLS_EDIT_UQUOTA),  uureq -> {
 				String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
-				List<Organisation> identityOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.values());
-				quotaCtr = quotaManager.getQuotaEditorInstance(uureq, getWindowControl(), relPath, identityOrganisations);
+				quotaCtr = quotaManager.getQuotaEditorInstance(uureq, getWindowControl(), relPath, true, false);
 				return quotaCtr.getInitialComponent();
 			});
 		}

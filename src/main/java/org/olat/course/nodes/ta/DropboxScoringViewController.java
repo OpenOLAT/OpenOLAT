@@ -403,45 +403,52 @@ public class DropboxScoringViewController extends BasicController {
 
 class ReadOnlyAndDeleteCallback implements VFSSecurityCallback {
 
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canList(org.olat.modules.bc.Path)
-	 */
-	public boolean canList() { return true; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canRead(org.olat.modules.bc.Path)
-	 */
-	public boolean canRead() { return true; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canWrite(org.olat.modules.bc.Path)
-	 */
-	public boolean canWrite() { return false; }
 	@Override
-	public boolean canCreateFolder() { return false; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
-	 */
-	public boolean canDelete() { return true; }
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canCopy()
-	 */
-	public boolean canCopy() { return true; }
+	public boolean canList() {
+		return true;
+	}
+
+	@Override
+	public boolean canRead() {
+		return true;
+	}
+
+	@Override
+	public boolean canWrite() {
+		return false;
 	
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDeleteRevisionsPermanently()
-	 */
-	public boolean canDeleteRevisionsPermanently() { return false; }
-	
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getQuotaKB(org.olat.modules.bc.Path)
-	 */
-	public Quota getQuota() { return null; }
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#setQuota(org.olat.admin.quota.Quota)
-	 */
-	public void setQuota(Quota quota) {}
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getSubscriptionContext()
-	 */
+	}
+	@Override
+	public boolean canCreateFolder() {
+		return false;
+	}
+
+	@Override
+	public boolean canDelete() {
+		return true;
+	}
+
+	@Override
+	public boolean canCopy() {
+		return true;
+	}
+
+	@Override
+	public boolean canDeleteRevisionsPermanently() {
+		return false;
+	}
+
+	@Override
+	public Quota getQuota() {
+		return null;
+	}
+
+	@Override
+	public void setQuota(Quota quota) {
+		//
+	}
+
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return null;
 	}
@@ -460,48 +467,55 @@ class ReturnboxFullAccessCallback implements VFSSecurityCallback {
 			quota = quotaManager.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 	}
-	
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canList(org.olat.modules.bc.Path)
-	 */
-	public boolean canList() { return true; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canRead(org.olat.modules.bc.Path)
-	 */
-	public boolean canRead() { return true; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canWrite(org.olat.modules.bc.Path)
-	 */
-	public boolean canWrite() { return true; }
+
 	@Override
-	public boolean canCreateFolder() { return true; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#canDelete(org.olat.modules.bc.Path)
-	 */
-	public boolean canDelete() { return true; }
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canCopy()
-	 */
-	public boolean canCopy() { return true; }
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canDeleteRevisionsPermanently()
-	 */
-	public boolean canDeleteRevisionsPermanently() { return false; }
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getQuotaKB(org.olat.modules.bc.Path)
-	 */
+	public boolean canList() {
+		return true;
+	}
+
+	@Override
+	public boolean canRead() {
+		return true;
+	}
+
+	@Override
+	public boolean canWrite() {
+		return true;
+	}
+	
+	@Override
+	public boolean canCreateFolder() {
+		return true;
+	}
+
+	@Override
+	public boolean canDelete() {
+		return true;
+	}
+
+	@Override
+	public boolean canCopy() {
+		return true;
+	}
+
+	@Override
+	public boolean canDeleteRevisionsPermanently() {
+		return false;
+	}
+	
+	
+
+	@Override
 	public Quota getQuota() {
 		return quota;
 	}
-	/**
-	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#setQuota(org.olat.admin.quota.Quota)
-	 */
+
+	@Override
 	public void setQuota(Quota quota) {
 		this.quota = quota;
 	}
-	/**
-	 * @see org.olat.modules.bc.callbacks.SecurityCallback#getSubscriptionContext()
-	 */
+
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
 		return subscriptionContext;
 	} 

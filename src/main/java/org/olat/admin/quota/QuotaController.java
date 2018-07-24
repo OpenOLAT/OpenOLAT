@@ -29,7 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -43,7 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -57,15 +56,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost
  */
 public class QuotaController extends BasicController {
-
-	private VelocityContainer myContent;
+	
+	private Link addQuotaButton;
+	private final VelocityContainer myContent;
 	private QuotaTableModel quotaTableModel;
 
-	private GenericQuotaEditController quotaEditCtr;
-	private Panel main;
 	private TableController tableCtr;
-	private Link addQuotaButton;
-	
+	private CloseableModalController cmc;
+	private GenericQuotaEditController quotaEditCtr;
+
 	@Autowired
 	private QuotaManager quotaManager;
 
@@ -75,15 +74,13 @@ public class QuotaController extends BasicController {
 	 */
 	public QuotaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		myContent = createVelocityContainer("index");
 
 		UserSession usess = ureq.getUserSession();
-		if (!usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin()) {//TODO quota roles
-			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
-		}
-
-		main = new Panel("quotamain");
-		myContent = createVelocityContainer("index");
+		boolean isAdministrator = usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin();
+		
 		addQuotaButton = LinkFactory.createButton("qf.new", myContent, this);
+		addQuotaButton.setVisible(isAdministrator);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
@@ -96,26 +93,20 @@ public class QuotaController extends BasicController {
 				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.limit", 2, null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.edit", "table.action", translate("edit")));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.del", "table.action", translate("delete")));
+		if(isAdministrator) {
+			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.edit", "table.action", translate("edit")));
+			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.del", "table.action", translate("delete")));
+		}
 		tableCtr.setTableDataModel(quotaTableModel);
 		
 		myContent.put("quotatable", tableCtr.getInitialComponent());
-		main.setContent(myContent);
-
-		putInitialPanel(main);
+		putInitialPanel(myContent);
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == addQuotaButton){
-			// clean up old controller first
-			if (quotaEditCtr != null) removeAsListenerAndDispose(quotaEditCtr);
-			// start edit workflow in dedicated quota edit controller
-			removeAsListenerAndDispose(quotaEditCtr);
-			quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl());
-			listenTo(quotaEditCtr);
-			main.setContent(quotaEditCtr.getInitialComponent());
+			doAddQuota(ureq);
 		}
 	}
 
@@ -126,38 +117,67 @@ public class QuotaController extends BasicController {
 				quotaTableModel.setObjects(quotaManager.listCustomQuotasKB());
 				tableCtr.setTableDataModel(quotaTableModel);
 			}
-			// else cancel event. in any case set content to list
-			main.setContent(myContent);
-		}
-
-		if (source == tableCtr && event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent)event;
-				Quota q = quotaTableModel.getRowData(te.getRowId());
-				if (te.getActionId().equals("qf.edit")) {
-					// clean up old controller first
-					// start edit workflow in dedicated quota edit controller
-					removeAsListenerAndDispose(quotaEditCtr);
-					quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl(), q);
-					listenTo(quotaEditCtr);
-					main.setContent(quotaEditCtr.getInitialComponent());
-
-				} else if (te.getActionId().equals("qf.del")) {
-					// try to delete quota
-					boolean deleted = quotaManager.deleteCustomQuota(q);
-					if (deleted) {
-						quotaTableModel.setObjects(quotaManager.listCustomQuotasKB());
-						tableCtr.setTableDataModel(quotaTableModel);
-						showInfo("qf.deleted", q.getPath());
-					} else {
-						// default quotas can not be deleted
-						showError("qf.cannot.del.default");
-					}
-				}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
+		} else if (source == tableCtr && event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
+			TableEvent te = (TableEvent)event;
+			Quota q = quotaTableModel.getRowData(te.getRowId());
+			if (te.getActionId().equals("qf.edit")) {
+				doEditQuota(ureq, q);
+			} else if (te.getActionId().equals("qf.del")) {
+				// try to delete quota
+				doDeleteQuota(q);
 			}
 		}
-
-		@Override
-		protected void doDispose() {
-			//
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(quotaEditCtr);
+		removeAsListenerAndDispose(cmc);
+		quotaEditCtr = null;
+		cmc = null;
+	}
+	
+	private void doDeleteQuota(Quota q) {
+		boolean deleted = quotaManager.deleteCustomQuota(q);
+		if (deleted) {
+			quotaTableModel.setObjects(quotaManager.listCustomQuotasKB());
+			tableCtr.setTableDataModel(quotaTableModel);
+			showInfo("qf.deleted", q.getPath());
+		} else {
+			// default quotas can not be deleted
+			showError("qf.cannot.del.default");
 		}
 	}
+	
+	private void doEditQuota(UserRequest ureq, Quota q) {
+		if(quotaEditCtr != null) return;
+		
+		quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl(), q, false);
+		listenTo(quotaEditCtr);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", quotaEditCtr.getInitialComponent(), true, translate("qf.edit"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doAddQuota(UserRequest ureq) {
+		if(quotaEditCtr != null) return;
+		
+		// start edit workflow in dedicated quota edit controller
+		removeAsListenerAndDispose(quotaEditCtr);
+		quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl());
+		listenTo(quotaEditCtr);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", quotaEditCtr.getInitialComponent(), true, translate("qf.new"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+}

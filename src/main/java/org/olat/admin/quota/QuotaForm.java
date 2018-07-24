@@ -27,10 +27,14 @@ package org.olat.admin.quota;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -46,11 +50,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuotaForm extends FormBasicController {
 
 	private TextElement path;
-	private IntegerElement quotaKB;
-	private IntegerElement ulLimitKB;
+	private TextElement quotaKB;
+	private TextElement ulLimitKB;
+	private FormLink deleteButton;
 	
 	private Quota quota;
 	private final boolean editable;
+	private final boolean deletable;
+	private final boolean cancelable;
 	
 	@Autowired
 	private QuotaManager quotaManager;
@@ -59,10 +66,13 @@ public class QuotaForm extends FormBasicController {
 	 * @param name component name of form
 	 * @param quota the quota used to initialize the form or null if empty form is used
 	 */
-	public QuotaForm(UserRequest ureq, WindowControl wControl, Quota quota, boolean editable) {
+	public QuotaForm(UserRequest ureq, WindowControl wControl, Quota quota,
+			boolean editable, boolean deletable, boolean cancelable) {
 		super(ureq, wControl);
 		this.quota = quota;
 		this.editable = editable;
+		this.deletable = deletable;
+		this.cancelable = cancelable;
 		initForm(ureq);
 	}
 
@@ -88,25 +98,12 @@ public class QuotaForm extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	@Override
-	protected boolean validateFormLogic (UserRequest ureq) {
-		if (!quotaManager.isValidQuotaPath(path.getValue())) {
-			path.setErrorKey("qf.error.path.invalid", null);
-			return false;	
-		}
-		return true;
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		if (quota != null && quota.getPath() != null && !quota.getPath().equals("")) {
 			path = uifactory.addTextElement("qf_path", "qf.path", 255, quota.getPath(), formLayout);
-			if (quota != null) path.setEnabled(false);
+			if (quota != null) {
+				path.setEnabled(false);
+			}
 		} else {
 			path = uifactory.addTextElement("qf_path", "qf.path", 255, "", formLayout);
 			path.setNotEmptyCheck("qf.error.path.invalid");
@@ -115,24 +112,63 @@ public class QuotaForm extends FormBasicController {
 		path.setEnabled(editable);
 		
 		if (quota != null && quota.getQuotaKB() != null) {
-			quotaKB = uifactory.addIntegerElement("qf_quota", "qf.quota", quota.getQuotaKB().intValue(), formLayout);
+			quotaKB = uifactory.addTextElement("qf_quota", "qf.quota", 16, String.valueOf(quota.getQuotaKB()), formLayout);
 		} else {	
-			quotaKB = uifactory.addIntegerElement("qf_quota", "qf.quota",(int)FolderConfig.getDefaultQuotaKB() , formLayout);
+			quotaKB = uifactory.addTextElement("qf_quota", "qf.quota", 16, String.valueOf(FolderConfig.getDefaultQuotaKB()), formLayout);
 		}
 		quotaKB.setMandatory(true);
 		quotaKB.setEnabled(editable);
 		
 		if (quota != null && quota.getUlLimitKB() != null) {
-			ulLimitKB = uifactory.addIntegerElement("qf_limit", "qf.limit", quota.getUlLimitKB().intValue(), formLayout);
+			ulLimitKB = uifactory.addTextElement("qf_limit", "qf.limit", 16, String.valueOf(quota.getUlLimitKB()), formLayout);
 		} else {
-			ulLimitKB = uifactory.addIntegerElement("qf_limit", "qf.limit",(int)FolderConfig.getLimitULKB() , formLayout);
+			ulLimitKB = uifactory.addTextElement("qf_limit", "qf.limit", 16, String.valueOf(FolderConfig.getLimitULKB()), formLayout);
 		}
 		ulLimitKB.setMandatory(true);
 		ulLimitKB.setEnabled(editable);
 		
-		if(editable) {
-			uifactory.addFormSubmitButton("submit", formLayout);
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonLayout);
+		
+		if(cancelable) {
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
+		if(editable) {
+			uifactory.addFormSubmitButton("submit", buttonLayout);
+		}
+		if(editable && deletable) {
+			deleteButton = uifactory.addFormLink("qf.del", buttonLayout, Link.BUTTON);
+		}
+	}
+
+	@Override
+	protected boolean validateFormLogic (UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if (!quotaManager.isValidQuotaPath(path.getValue())) {
+			path.setErrorKey("qf.error.path.invalid", null);
+			allOk &= false;	
+		}
+		
+		return allOk;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == deleteButton) {
+			fireEvent(ureq, new DeleteQuotaEvent());
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override
