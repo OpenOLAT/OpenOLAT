@@ -32,6 +32,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -44,6 +45,7 @@ import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.CatalogEntryImpl;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
@@ -114,7 +116,7 @@ public class RepositoryEntryMyCourseQueries {
 		for(Object[] object:objects) {
 			RepositoryEntry re = (RepositoryEntry)object[0];
 			Number numOfMarks = (Number)object[1];
-			boolean hasMarks = numOfMarks == null ? false : numOfMarks.longValue() > 0;
+			boolean hasMarks = numOfMarks != null && numOfMarks.longValue() > 0;
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
 			Integer myRating = (Integer)object[3];
@@ -135,7 +137,7 @@ public class RepositoryEntryMyCourseQueries {
 			}
 		}
 		
-		if(effKeys.size() > 0) {
+		if(!effKeys.isEmpty()) {
 			List<UserEfficiencyStatementLight> efficiencyStatements =
 					efficiencyStatementManager.findEfficiencyStatementsLight(effKeys);
 			for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatements) {
@@ -157,7 +159,7 @@ public class RepositoryEntryMyCourseQueries {
 		boolean needIdentityKey = false;
 		boolean count = Number.class.equals(type);
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(2048);
 		
 		if(count) {
 			sb.append("select count(v.key) ")
@@ -211,9 +213,9 @@ public class RepositoryEntryMyCourseQueries {
 
 		if(params.getClosed() != null) {
 			if(params.getClosed().booleanValue()) {
-				sb.append(" and v.statusCode>0");
+				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.closed);
 			} else {
-				sb.append(" and v.statusCode=0");
+				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 			}
 		}
 		
@@ -257,8 +259,6 @@ public class RepositoryEntryMyCourseQueries {
 
 		String text = params.getText();
 		if (StringHelper.containsNonWhitespace(text)) {
-			//displayName = '%' + displayName.replace('*', '%') + '%';
-			//query.append(" and v.displayname like :displayname");
 			text = PersistenceHelper.makeFuzzyQueryString(text);
 			sb.append(" and (");
 			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "displaytext", dbInstance.getDbVendor());
@@ -362,66 +362,49 @@ public class RepositoryEntryMyCourseQueries {
 		return dbQuery;
 	}
 	
-	private boolean appendMyViewAccessSubSelect(StringBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
-		boolean needIdentityKey = false;
-		
-		sb.append("(v.access >= ");
-		if (roles.isAuthor()) {
-			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
-		} else if (roles.isGuestOnly()) {
-			sb.append(RepositoryEntry.ACC_USERS_GUESTS);
-		} else {
-			sb.append(RepositoryEntry.ACC_USERS);
+	private boolean appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
+		if(roles.isGuestOnly()) {
+			sb.append(" v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());//TODO repo access	
+			return false;
 		}
 
-		StringBuilder inRoles = new StringBuilder();
-		if(filters != null && filters.size() > 0) {
+		List<GroupRoles> inRoles = new ArrayList<>();
+		if(filters != null && !filters.isEmpty()) {
 			for(Filter filter: filters) {
 				if(Filter.asAuthor.equals(filter)) {
-					if(inRoles.length() > 0) inRoles.append(",");
-					inRoles.append("'").append(GroupRoles.owner.name()).append("'");
+					inRoles.add(GroupRoles.owner);
 				} else if(Filter.asCoach.equals(filter)) {
-					if(inRoles.length() > 0) inRoles.append(",");
-					inRoles.append("'").append(GroupRoles.coach.name()).append("'");
+					inRoles.add(GroupRoles.coach);
 				} else if (Filter.asParticipant.equals(filter)) {
-					if(inRoles.length() > 0) inRoles.append(",");
-					inRoles.append("'").append(GroupRoles.participant.name()).append("'");
+					inRoles.add(GroupRoles.participant);
 				}
 			}
 		}
-
 		//+ membership
-		if(roles.isGuestOnly()) {
-			sb.append(")");
+		sb.append(" v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" and ");
+		if(inRoles.isEmpty() && !membershipMandatory) {
+			//sub select are very quick
+			sb.append(" (v.allUsers=true or v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    and membership.role ").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
+			  .append(" ))");
 		} else {
-			if(inRoles.length() == 0 && !membershipMandatory) {
-				needIdentityKey = true;
-				//sub select are very quick
-				sb.append(" or (")
-				  .append("  v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
-				  .append("  and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-				  .append("      and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-				  .append("  )")
-				  .append(" )")
-				  .append(")");
-			} else {
-				if(inRoles.length() == 0) {
-					inRoles.append("'").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("'");
-				}
-				needIdentityKey = true;
-				//make sure that in all case the role is mandatory
-				sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
-				  .append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-				  .append("      and membership.role in (").append(inRoles).append(")")
-				  .append(" )");
+			if(inRoles.isEmpty()) {
+				inRoles.add(GroupRoles.owner);
+				inRoles.add(GroupRoles.coach);
+				inRoles.add(GroupRoles.participant);
 			}
+		
+			//make sure that in all case the role is mandatory
+			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    and membership.role ").in(inRoles.toArray(new GroupRoles[inRoles.size()]))
+			  .append(" )");
 		}
-		return needIdentityKey;
+		return true;
 	}
 	
-	private boolean appendFiltersInWhereClause(Filter filter, StringBuilder sb) {
+	private boolean appendFiltersInWhereClause(Filter filter, QueryBuilder sb) {
 		boolean needIdentityKey = false;
 		switch(filter) {
 			case showAll: break;
@@ -465,7 +448,7 @@ public class RepositoryEntryMyCourseQueries {
 	 * @param sb
 	 * @return
 	 */
-	private boolean appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, StringBuilder sb) {
+	private boolean appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, QueryBuilder sb) {
 		boolean needIdentityKey = false;
 		OrderBy orderBy = params.getOrderBy();
 		if(orderBy != null) {
@@ -495,7 +478,7 @@ public class RepositoryEntryMyCourseQueries {
 		return needIdentityKey;
 	}
 	
-	private void appendOrderBy(OrderBy orderBy, boolean asc, StringBuilder sb) {
+	private void appendOrderBy(OrderBy orderBy, boolean asc, QueryBuilder sb) {
 		if(orderBy != null) {
 			switch(orderBy) {
 				case automatic://! the sorting is reverse
@@ -595,8 +578,8 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleStart:
-					sb.append(" order by lifecycle.validFrom ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					sb.append(" order by lifecycle.validFrom ")
+					  .appendAsc(asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleEnd:
 					sb.append(" order by lifecycle.validTo ");
@@ -613,7 +596,7 @@ public class RepositoryEntryMyCourseQueries {
 		}
 	}
 	
-	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+	private final QueryBuilder appendAsc(QueryBuilder sb, boolean asc) {
 		if(asc) {
 			sb.append(" asc");
 		} else {

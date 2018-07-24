@@ -80,7 +80,7 @@ public class MergedCourseContainer extends MergeSource {
 		super.init();
 		
 		RepositoryEntry courseRe = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		courseReadOnly = !overrideReadOnly && (courseRe.getRepositoryEntryStatus().isClosed() || courseRe.getRepositoryEntryStatus().isUnpublished());
+		courseReadOnly = !overrideReadOnly && courseRe.getEntryStatus().decommissioned();
 		if(courseReadOnly) {
 			setLocalSecurityCallback(new ReadOnlyCallback());
 		}

@@ -168,7 +168,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 
 			// access control
 			List<PriceMethod> types = new ArrayList<>();
-			if (entry.isMembersOnly()) {
+			if (!entry.isAllUsers() && !entry.isGuests()) {//TODO repo access
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			} else {

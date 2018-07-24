@@ -30,6 +30,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryService;
 import org.olat.test.OlatTestCase;
@@ -56,7 +57,8 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createRelation() {
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, null);
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-400", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 	
@@ -69,7 +71,8 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createAndGetRelation() {
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-401", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
@@ -87,7 +90,8 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getTaxonomyLevels() {
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
@@ -102,7 +106,8 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRepositoryEntries() {
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, null);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);

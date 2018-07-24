@@ -69,6 +69,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -116,7 +117,8 @@ public class CourseTest extends OlatJerseyTestCase {
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
 			auth2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-two");
 			
-			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
+					RepositoryEntryStatusEnum.preparation, false, false);
 			course1 = CourseFactory.loadCourse(courseEntry);
 			
 			dbInstance.closeSession();
@@ -225,7 +227,8 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteCourses() throws IOException, URISyntaxException {
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
+				RepositoryEntryStatusEnum.preparation, false, false);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 		
@@ -241,6 +244,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		Roles roles = Roles.administratorRoles();
 
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters("*", "*", "*", courseType, null, roles);
+		params.setIdentity(admin);
 		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(repoEntries);
 		
@@ -579,7 +583,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 		
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(courseToClose, true);
-		Assert.assertTrue(repositoryEntry.getRepositoryEntryStatus().isClosed());
+		Assert.assertEquals(RepositoryEntryStatusEnum.closed, repositoryEntry.getEntryStatus());
 	}
 	
 	@Test
@@ -599,7 +603,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 		
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(courseToClose, true);
-		Assert.assertEquals(0, repositoryEntry.getAccess());
+		Assert.assertEquals(RepositoryEntryStatusEnum.trash, repositoryEntry.getEntryStatus());
 	}
 	
 	@Test

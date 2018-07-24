@@ -250,10 +250,10 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
 	private void updateRoles(Organisation organisation, RolesByOrganisation roles, List<String> currentRoles, OrganisationRoles role,
 			Identity actingIdentity, Identity updatedIdentity) {
-		boolean hasBeenAdmin = currentRoles.contains(role.name());
-		boolean isOLATAdmin = roles.hasRole(role) && !roles.isGuestOnly() && !roles.isInvitee();
+		boolean hasBeenRole = currentRoles.contains(role.name());
+		boolean isRole = roles.hasRole(role) && !roles.isGuestOnly() && !roles.isInvitee();
 		updateRolesInOrganisation(organisation, actingIdentity, updatedIdentity,
-				role, hasBeenAdmin, isOLATAdmin);	
+				role, hasBeenRole, isRole);	
 	}
 	
 	private void updateRolesInOrganisation(Organisation organisation, Identity actingIdentity, Identity updatedIdentity,

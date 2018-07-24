@@ -59,6 +59,11 @@ public interface CourseGroupManager {
 	public OLATResource getCourseResource();
 	
 	public RepositoryEntry getCourseEntry();
+	
+	/**
+	 * @return true if the status of the course allow notifications
+	 */
+	public boolean isNotificationsAllowed();
 
 	/**
 	 * Checks users course rights in any of the available right group context of

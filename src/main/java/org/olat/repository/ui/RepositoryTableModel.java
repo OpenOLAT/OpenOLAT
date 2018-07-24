@@ -51,7 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -133,16 +133,16 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			public int compareTo(int rowa, int rowb) {
 				Object o1 = table.getTableDataModel().getObject(rowa);
 				Object o2 = table.getTableDataModel().getObject(rowb);
-				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
-				if(o2 == null || !(o2 instanceof RepositoryEntry)) return 1;
+				if(!(o1 instanceof RepositoryEntry)) return -1;
+				if(!(o2 instanceof RepositoryEntry)) return 1;
 				RepositoryEntry re1 = (RepositoryEntry)o1;
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				
-				if(re1.isMembersOnly()) {
-					if(!re2.isMembersOnly()) {
+				if(!re1.isAllUsers() && !re1.isGuests()) {
+					if(re2.isAllUsers() || re2.isGuests()) {
 						return 1;
 					}
-				} else if(re2.isMembersOnly()) {
+				} else if(!re1.isAllUsers() && !re1.isGuests()) {
 					return -1;
 				}
 				
@@ -186,18 +186,18 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				Object o1 = table.getTableDataModel().getValueAt(rowa, 1);
 				Object o2 = table.getTableDataModel().getValueAt(rowb, 1);
 				
-				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
-				if(o2 == null || !(o2 instanceof RepositoryEntry)) return 1;
+				if(!(o1 instanceof RepositoryEntry)) return -1;
+				if(!(o2 instanceof RepositoryEntry)) return 1;
 				RepositoryEntry re1 = (RepositoryEntry)o1;
 				RepositoryEntry re2 = (RepositoryEntry)o2;
-				boolean c1 = RepositoryManager.getInstance().createRepositoryEntryStatus(re1.getStatusCode()).isClosed();
-				boolean c2 = RepositoryManager.getInstance().createRepositoryEntryStatus(re2.getStatusCode()).isClosed();
+				boolean c1 = re1.getEntryStatus() == RepositoryEntryStatusEnum.closed;
+				boolean c2 = re2.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				int result = (c2 == c1 ? 0 : (c1 ? 1 : -1));//same as Boolean compare
 				if(result == 0) {
 					Object a = table.getTableDataModel().getValueAt(rowa, dataColumn);
 					Object b = table.getTableDataModel().getValueAt(rowb, dataColumn);
-					if(a == null || !(a instanceof String)) return -1;
-					if(b == null || !(b instanceof String)) return 1;
+					if(!(a instanceof String)) return -1;
+					if(!(b instanceof String)) return 1;
 					String s1 = (String)a;
 					String s2 = (String)b;
 					result = compareString(s1, s2);
@@ -222,16 +222,18 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				Object o1 = table.getTableDataModel().getValueAt(rowa, 1);
 				Object o2 = table.getTableDataModel().getValueAt(rowb, 1);
 				
-				if(o1 == null || !(o1 instanceof RepositoryEntry)) return -1;
-				if(o2 == null || !(o2 instanceof RepositoryEntry)) return 1;
+				if(!(o1 instanceof RepositoryEntry)) return -1;
+				if(!(o2 instanceof RepositoryEntry)) return 1;
 				RepositoryEntry re1 = (RepositoryEntry)o1;
 				RepositoryEntry re2 = (RepositoryEntry)o2;
-				int ar1 = re1.getAccess();
-				if(re1.isMembersOnly()) {
+				
+				int ar1 = re1.getEntryStatus().ordinal();
+				if(!re1.isAllUsers() && !re1.isGuests()) {//TODO repo access
 					ar1 = 99;
 				}
-				int ar2 = re2.getAccess();
-				if(re2.isMembersOnly()) {
+				
+				int ar2 = re2.getEntryStatus().ordinal();
+				if(!re2.isAllUsers() && !re2.isGuests()) {
 					ar2 = 99;
 				}
 				if(ar1 < ar2) return -1;
@@ -271,7 +273,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		RepositoryEntry re = getObject(row);
 		switch (RepoCols.values()[col]) {
 			case ac: {
-				if (re.isMembersOnly()) {
+				if (!re.isAllUsers() && !re.isGuests()) {
 					// members only always show lock icon
 					return Collections.singletonList("o_ac_membersonly");
 				}
@@ -285,24 +287,15 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			case displayname: return getDisplayName(re, translator.getLocale());
 			case author: return getFullname(re.getInitialAuthor());
 			case access: {
-				if(re.isMembersOnly()) {
-					return translator.translate("table.header.access.membersonly"); 
+				StringBuilder sb = new StringBuilder(32);
+				sb.append(translator.translate("table.status.".concat(re.getEntryStatus().name())));
+				if(re.isAllUsers()) {
+					sb.append(translator.translate("table.allusers"));
 				}
-				switch (re.getAccess()) {
-					case RepositoryEntry.ACC_OWNERS: return translator.translate("table.header.access.owner");
-					case RepositoryEntry.ACC_OWNERS_AUTHORS: return translator.translate("table.header.access.author");
-					case RepositoryEntry.ACC_USERS: return translator.translate("table.header.access.user");
-					case RepositoryEntry.ACC_USERS_GUESTS: {
-						if(!loginModule.isGuestLoginLinksEnabled()) {
-							return translator.translate("table.header.access.user");
-						}
-						return translator.translate("table.header.access.guest");
-					}
-					default:						
-						// OLAT-6272 in case of broken repo entries with no access code
-						// return error instead of nothing
-						return "ERROR";
+				if(re.isGuests() && loginModule.isGuestLoginEnabled()) {
+					sb.append(translator.translate("table.guests"));
 				}
+				return sb.toString();
 			}
 			case creationDate: return re.getCreationDate();
 			case lastUsage: return re.getStatistics().getLastUsage();
@@ -414,7 +407,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 */
 	private String getDisplayName(RepositoryEntry repositoryEntry, Locale locale) {
 		String displayName = repositoryEntry.getDisplayname();
-		if (repositoryEntry.getRepositoryEntryStatus().isClosed()) {
+		if (repositoryEntry.getEntryStatus().decommissioned()) {
 			Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
 		}

@@ -72,25 +72,33 @@ public class QuickPublishController extends BasicController {
 		String accessI18CssClass = "o_success";
 		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(courseResource, false);
-		if(entry.isMembersOnly()) {
-			accessI18n = translate("cif.access.membersonly");
-		} else {
-			switch (entry.getAccess()) {
-				case 0: accessI18n = "ERROR";
-					accessI18CssClass = "o_error";
-					break;
-				case 1: accessI18n = translate("cif.access.owners");
-					accessI18CssClass = "o_warning";			
-					break;
-				case 2: accessI18n = translate("cif.access.owners_authors");
+
+		switch (entry.getEntryStatus()) {
+			case preparation:
+				accessI18n = translate("cif.status.preparation");
+				accessI18CssClass = "o_warning";
+				break;
+			case review:
+				accessI18n = translate("cif.status.review");
+				accessI18CssClass = "o_warning";			
+				break;
+			case coachpublished:
+				accessI18n = translate("cif.status.coachpublished");
+				accessI18CssClass = "o_warning";			
+				break;
+				
+			case published:
+				accessI18n = translate("cif.status.published");
+				if(!entry.isAllUsers() && !entry.isGuests()) {
 					accessI18CssClass = "o_warning";
-					break;
-				case 3: accessI18n = translate("cif.access.users");
-					break;
-				case 4: accessI18n = translate("cif.access.users_guests");
-					break;
-			}
+				}
+				break;
+			default:
+				accessI18n = "ERROR";
+				accessI18CssClass = "o_error";			
+				break;		
 		}
+
 		mainVC.contextPut("accessI18n", accessI18n);
 		mainVC.contextPut("accessI18CssClass", accessI18CssClass);
 		

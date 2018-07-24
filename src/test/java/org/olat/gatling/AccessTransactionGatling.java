@@ -24,8 +24,10 @@ import java.util.List;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
@@ -63,12 +65,12 @@ public class AccessTransactionGatling extends OlatTestCase {
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		AccessMethod method = methods.get(0);
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where ores.resName='CourseModule' and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+		  .append(" left join fetch v.lifecycle as lifecycle")//TODO repo access
+		  .append(" where ores.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		
 		List<RepositoryEntry> courses= dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)

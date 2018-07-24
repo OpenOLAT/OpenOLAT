@@ -20,7 +20,6 @@
 package org.olat.repository.ui.author;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -28,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,6 +38,7 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -55,6 +54,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public class AuthoringEntryPublishController extends FormBasicController {
+	
+	private static final String YES_KEY = "y";
+	private static final String[] yesKeys = new String[] { YES_KEY };
 
 	private RepositoryEntry entry;
 	private StaticTextElement resourceName;
@@ -63,21 +65,13 @@ public class AuthoringEntryPublishController extends FormBasicController {
 	private SelectionElement canCopy;
 	private SelectionElement canReference;
 	private SelectionElement canDownload;
+	private SelectionElement allUsers;
+	private SelectionElement guests;
+	private SingleSelection publishedStatus;
 	
 	private RepositoryHandler handler;
-
-	private SingleSelection authorsSwitch, usersSwitch;
-	private SingleSelection publishedForUsers;
-	private FormLayoutContainer authorConfigLayout, userConfigLayout;
 	
-	private static final String YES_KEY = "y";
-	private static final String NO_KEY = "n";
-	private static final String[] yesNoKeys = new String[]{YES_KEY, NO_KEY};
-
-	private static final String OAU_KEY = "u";
-	private static final String OAUG_KEY = "g";
-	private static final String MEMBERSONLY_KEY = "m";
-	private String[] publishedKeys;
+	
 
 	@Autowired
 	private LoginModule loginModule;
@@ -99,13 +93,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		if (typeName != null) {
 			handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(typeName);
 		}
-		
-		if (loginModule.isGuestLoginLinksEnabled()) {
-			publishedKeys = new String[]{OAU_KEY, OAUG_KEY, MEMBERSONLY_KEY};
-		} else {
-			publishedKeys = new String[]{OAU_KEY, MEMBERSONLY_KEY};
-		} 
-						
+				
 		initForm(ureq);
 	}
 
@@ -150,35 +138,20 @@ public class AuthoringEntryPublishController extends FormBasicController {
 	public boolean canDownload() {
 		return canDownload.isSelected(0);
 	}
-
-	/**
-	 * Return selected access key (ACC_OWNERS, ACC_OWNERS_AUTHORS, ACC_USERS,
-	 * ACC_USERS_GUESTS)
-	 */
-	public int getAccess() {
-		// default only for owners
-		int access = RepositoryEntry.ACC_OWNERS;
-		if (authorsSwitch.getSelectedKey().equals(YES_KEY)) {
-			// raise to author level
-			access = RepositoryEntry.ACC_OWNERS_AUTHORS;
-		}
-		if (usersSwitch.getSelectedKey().equals(YES_KEY)) {
-			if (publishedForUsers.getSelectedKey().equals(OAU_KEY)) {
-				// further raise to user level
-				access = RepositoryEntry.ACC_USERS;
-			} else if (publishedForUsers.getSelectedKey().equals(OAUG_KEY)) {
-				// further raise to guest level
-				access = RepositoryEntry.ACC_USERS_GUESTS;
-			} else if (publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
-			// Members-only is either owner or owner-author level, never user level
-				access = RepositoryEntry.ACC_OWNERS;
-			}
-		}
-		return access;
+	
+	public boolean isAllUsers() {
+		return allUsers.isSelected(0);
+	}
+	
+	public boolean isGuests() {
+		return guests.isSelected(0);
 	}
 
-	public boolean isMembersOnly() {
-		return (usersSwitch.getSelectedKey().equals(YES_KEY) && publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY));
+	/**
+	 * Return the publication status
+	 */
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return RepositoryEntryStatusEnum.valueOf(publishedStatus.getSelectedKey());
 	}
 
 	@Override
@@ -203,38 +176,39 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		// make configuration read only when managed by external system
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
 		final boolean managedAccess = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.access);
+		
+		String[] publishedKeys = new String[] {
+				RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
+				RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name()
+		};
+		String[] publishedValues = new String[] {
+				translate("cif.status.preparation"), translate("cif.status.review"),
+				translate("cif.status.coachpublished"), translate("cif.status.published")
+		};
+		publishedStatus = uifactory.addDropdownSingleselect("publishedStatus", "cif.publish", formLayout, publishedKeys, publishedValues, null);
+		publishedStatus.setElementCssClass("o_sel_repositoryentry_access_publication");
+		publishedStatus.setEnabled(!managedAccess);
+		publishedStatus.addActionListener(FormEvent.ONCHANGE);
 
-		String[] yesNoValues = new String[]{translate("yes"), translate("no")};		
-		authorsSwitch = uifactory.addRadiosHorizontal("authorsSwitch", "rentry.publish.authors", formLayout, yesNoKeys, yesNoValues);
-		authorsSwitch.setEnabled(!managedAccess);
-		authorsSwitch.addActionListener(FormEvent.ONCHANGE);
-		authorConfigLayout = FormLayoutContainer.createBareBoneFormLayout("authorConfigLayout", getTranslator());
-		formLayout.add(authorConfigLayout);
-		canReference = uifactory.addCheckboxesVertical("cif_canReference",null, authorConfigLayout, new String[] { YES_KEY }, new String[] { translate("cif.canReference") }, 1);
+		uifactory.addSpacerElement("usersSpacer", formLayout, true);
+		
+		allUsers = uifactory.addCheckboxesVertical("cif.allusers", "cif.allusers", formLayout, yesKeys, new String[] { translate("cif.release") }, 1);
+		allUsers.setElementCssClass("o_sel_repositoryentry_access_all_users");
+		allUsers.setEnabled(!managedAccess);
+		guests = uifactory.addCheckboxesVertical("cif.guests", "cif.guests", formLayout, yesKeys, new String[] { translate("cif.release") }, 1);
+		guests.setElementCssClass("o_sel_repositoryentry_access_all_users");
+		guests.setEnabled(!managedAccess);
+		guests.setVisible(loginModule.isGuestLoginEnabled());
+		
+		uifactory.addSpacerElement("authorSpacer", formLayout, true);
+
+		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.author.can", formLayout, yesKeys, new String[] { translate("cif.canReference") }, 1);
 		canReference.setEnabled(!managedSettings);
-		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", null, authorConfigLayout, new String[] { YES_KEY }, new String[] { translate("cif.canCopy") }, 1);
+		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", null, formLayout, yesKeys, new String[] { translate("cif.canCopy") }, 1);
 		canCopy.setEnabled(!managedSettings);
-		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", null, authorConfigLayout, new String[] { YES_KEY }, new String[] { translate("cif.canDownload") }, 1);
+		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", null, formLayout, yesKeys, new String[] { translate("cif.canDownload") }, 1);
 		canDownload.setEnabled(!managedSettings);
 		canDownload.setVisible(handler.supportsDownload());
-		uifactory.addSpacerElement("authorSpacer", authorConfigLayout, true);
-
-		String[] publishedValues;
-		if (loginModule.isGuestLoginLinksEnabled()) {
-			publishedValues = new String[]{translate("cif.access.users"), translate("cif.access.users_guests"), translate("cif.access.membersonly")};
-		} else {
-			publishedValues = new String[]{translate("cif.access.users"), translate("cif.access.membersonly")};
-		}
-			
-		usersSwitch = uifactory.addRadiosHorizontal("usersSwitch", "rentry.publish.users", formLayout, yesNoKeys, yesNoValues);
-		usersSwitch.addActionListener(FormEvent.ONCHANGE);
-		usersSwitch.setEnabled(!managedAccess);
-		userConfigLayout = FormLayoutContainer.createBareBoneFormLayout("userConfigLayout", getTranslator());
-		formLayout.add(userConfigLayout);
-		publishedForUsers = uifactory.addDropdownSingleselect("publishedForUsers", null, userConfigLayout, publishedKeys, publishedValues, null);
-		publishedForUsers.setEnabled(!managedAccess);
-		publishedForUsers.addActionListener(FormEvent.ONCHANGE);
-		uifactory.addSpacerElement("userSpacer", userConfigLayout, true);
 
 		if (!managedAccess || !managedSettings) {
 			uifactory.addFormSubmitButton("submit", formLayout);
@@ -248,60 +222,9 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		canReference.select(YES_KEY, entry.getCanReference()); 
 		canCopy.select(YES_KEY, entry.getCanCopy()); 
 		canDownload.select(YES_KEY, entry.getCanDownload());
-		if (entry.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) {
-			authorsSwitch.select(YES_KEY, true);
-		} else {
-			authorsSwitch.select(NO_KEY, true);
-			authorConfigLayout.setVisible(false);
-		}
-		// init user visibility
-		if (entry.getAccess() == RepositoryEntry.ACC_USERS) {
-			publishedForUsers.select(OAU_KEY, true);
-			usersSwitch.select(YES_KEY, true);
-		} else if (loginModule.isGuestLoginLinksEnabled() && entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS){
-			publishedForUsers.select(OAUG_KEY, true);			
-			usersSwitch.select(YES_KEY, true);
-		} else if (entry.isMembersOnly()) {
-			publishedForUsers.select(MEMBERSONLY_KEY, true);
-			usersSwitch.select(YES_KEY, true);
-			authorsSwitch.setEnabled(false);
-		} else {
-			publishedForUsers.select(OAU_KEY, true);
-			usersSwitch.select(NO_KEY, true);
-			userConfigLayout.setVisible(false);
-		}
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		super.formInnerEvent(ureq, source, event);
-		if (source == authorsSwitch) {
-			if (authorsSwitch.getSelectedKey().equals(YES_KEY)) {			
-				authorConfigLayout.setVisible(true);
-			} else {
-				authorConfigLayout.setVisible(false);
-				if (!publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
-					usersSwitch.select(NO_KEY, false);
-					userConfigLayout.setVisible(false);
-				}
-			}
-		} else if (source == usersSwitch || source == publishedForUsers) {
-			if (usersSwitch.getSelectedKey().equals(YES_KEY)) {			
-				userConfigLayout.setVisible(true);
-				if (publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
-					authorConfigLayout.setVisible(false);
-					authorsSwitch.select(NO_KEY, true);
-					authorsSwitch.setEnabled(false);
-				} else {
-					authorsSwitch.select(YES_KEY, true);
-					authorsSwitch.setEnabled(true);
-					authorConfigLayout.setVisible(true);
-				}
-			} else {
-				userConfigLayout.setVisible(false);
-				authorsSwitch.setEnabled(true);
-			}
-		}
+		allUsers.select(YES_KEY, entry.isAllUsers());
+		guests.select(YES_KEY, entry.isGuests());
+		publishedStatus.select(entry.getEntryStatus().name(), true);
 	}
 	
 	@Override

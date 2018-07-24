@@ -34,6 +34,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 
@@ -94,7 +95,8 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 				List<Long> publiclyReadableFoldersKeys = getSharedKeys();	
 				List<RepositoryEntry> entries = repoManager.lookupRepositoryEntries(publiclyReadableFoldersKeys);
 				for (RepositoryEntry entry:entries) {
-					if (entry.getAccess() >= RepositoryEntry.ACC_USERS || (entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly())) {
+					if (entry.getEntryStatus() == RepositoryEntryStatusEnum.published
+							|| entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 						// add folder (which is a repo entry) to root container if not present
 						addReadonlyFolder(entry, sfm, addedEntries, containers);
 					} else {

@@ -181,6 +181,15 @@ alter table o_re_to_tax_level add constraint re_to_lev_re_idx foreign key (fk_en
 alter table o_re_to_tax_level add constraint re_to_lev_tax_lev_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 
 
+alter table o_repositoryentry add column status varchar(16) default 'preparation' not null;
+alter table o_repositoryentry add column allusers bit default 0 not null;
+alter table o_repositoryentry add column guests bit default 0 not null;
+alter table o_repositoryentry modify column canlaunch bit default 0 not null;
+alter table o_repositoryentry modify column accesscode integer default 0 not null;
+alter table o_repositoryentry modify column statuscode integer default 0 not null;
+
+create index re_status_idx on o_repositoryentry (status);
+
 -- drop policy
 alter table o_bs_policy drop foreign key FK9A1C5101E2E76DB;
 

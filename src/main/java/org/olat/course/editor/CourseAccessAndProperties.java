@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 /**
@@ -33,8 +34,9 @@ import org.olat.resource.accesscontrol.OfferAccess;
 public class CourseAccessAndProperties {
 	private RepositoryEntry repoEntry;
 	private RepositoryEntryAllowToLeaveOptions setting;
-	private int access;
-	private boolean membersOnly;
+	private RepositoryEntryStatusEnum status;
+	private boolean allUsers;
+	private boolean guests;
 	private boolean canCopy;
 	private boolean canReference;
 	private boolean canDownload;	
@@ -47,12 +49,14 @@ public class CourseAccessAndProperties {
 		this.repoEntry = re;
 	}
 	
-	public CourseAccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting, int access,
-			boolean membersOnly, boolean canCopy, boolean canReference, boolean canDownload) {
+	public CourseAccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
+			boolean canCopy, boolean canReference, boolean canDownload) {
 		this.repoEntry = re;
 		this.setting = setting;
-		this.access = access;
-		this.membersOnly = membersOnly;
+		this.status = status;
+		this.allUsers = allUsers;
+		this.guests = guests;
 		this.canCopy = canCopy;
 		this.canReference = canReference;
 		this.canDownload = canDownload;
@@ -90,20 +94,28 @@ public class CourseAccessAndProperties {
 		this.setting = setting;
 	}
 
-	public int getAccess() {
-		return access;
+	public RepositoryEntryStatusEnum getStatus() {
+		return status;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
+	public void setStatus(RepositoryEntryStatusEnum status) {
+		this.status = status;
 	}
 
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public boolean isAllUsers() {
+		return allUsers;
 	}
 
-	public void setMembersOnly(boolean membersOnly) {
-		this.membersOnly = membersOnly;
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+
+	public boolean isGuests() {
+		return guests;
+	}
+
+	public void setGuests(boolean guests) {
+		this.guests = guests;
 	}
 
 	public boolean isCanCopy() {

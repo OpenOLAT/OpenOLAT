@@ -95,6 +95,7 @@ import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -407,15 +408,17 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		AuthoringEntryRow row = model.getObject(pos);
-		if(row == null || row.getAccess() == 0) {
+		if(row == null || row.getEntryStatus() == RepositoryEntryStatusEnum.trash
+				|| row.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 			return "o_entry_deleted";
 		}
-		if(row.getRepositoryEntryStatus().isClosed()) {
+		if(row.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			return "o_entry_closed";
 		}
-		if(row.getRepositoryEntryStatus().isUnpublished()) {
+		/*
+		if(row.getRepositoryEntryStatus().isUnpublished()) {//TODO repo unpublished
 			return "o_entry_unpublished";
-		}
+		}*/
 		return null;
 	}
 
@@ -1260,8 +1263,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			
 			boolean canClose = OresHelper.isOfType(entry.getOlatResource(), CourseModule.class)
 					&& !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close)
-					&& !entry.getRepositoryEntryStatus().isClosed()
-					&& !entry.getRepositoryEntryStatus().isUnpublished();
+					&& !entry.getEntryStatus().decommissioned();
 			
 			if(isOwner) {
 				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
@@ -1269,7 +1271,7 @@ public class AuthorListController extends FormBasicController implements Activat
 					links.add("-");
 				}
 				
-				boolean closed = entry.getRepositoryEntryStatus().isClosed();
+				boolean closed = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				if(closed && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 					addLink("details.override.close", "override-close", "o_icon o_icon-fw o_icon_close_resource", links);
 				} else if(canClose) {

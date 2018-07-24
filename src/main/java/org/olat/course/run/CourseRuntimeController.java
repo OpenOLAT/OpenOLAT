@@ -136,6 +136,7 @@ import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -453,7 +454,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void setCourseClosedMessage(UserCourseEnvironment uce) {
-		if(uce != null &&  getRepositoryEntry().getRepositoryEntryStatus().isClosed()) {
+		if(uce != null &&  getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			toolbarPanel.setMessage(translate("course.closed"));
 			toolbarPanel.setMessageCssClass("o_warning");
 		} else {

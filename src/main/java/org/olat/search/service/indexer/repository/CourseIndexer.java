@@ -49,7 +49,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
@@ -85,9 +85,9 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		if (isLogDebugEnabled()) logDebug("Analyse Course... repositoryEntry=" + repositoryEntry);
 		try {
-			RepositoryEntryStatus status = RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode());
-			if(status.isClosed()) {
-				if(isLogDebugEnabled()) logDebug("Course not indexed because it's closed: repositoryEntry=" + repositoryEntry);
+			RepositoryEntryStatusEnum status = repositoryEntry.getEntryStatus();
+			if(status.decommissioned()) {
+				if(isLogDebugEnabled()) logDebug("Course not indexed because it's " + status + ": repositoryEntry=" + repositoryEntry);
 				return;
 			}
 
@@ -165,10 +165,8 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
 		if (isLogDebugEnabled()) logDebug("repositoryEntry=" + repositoryEntry );
 
-		if(roles.isGuestOnly()) {
-			if(repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
-				return false;
-			}
+		if(roles.isGuestOnly() && repositoryEntry.isGuests()) {
+			return false;
 		}
 		
 		Long nodeId = bcContextEntry.getOLATResourceable().getResourceableId();

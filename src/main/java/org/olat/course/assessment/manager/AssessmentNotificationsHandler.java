@@ -289,8 +289,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	
 	private boolean courseStatus(ICourse course) {
 		return course != null
-				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isUnpublished()
-				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
+				&& course.getCourseEnvironment().getCourseGroupManager().isNotificationsAllowed();
 	}
 
 	@Override

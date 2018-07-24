@@ -218,7 +218,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			layoutCont.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
 			layoutCont.contextPut("cssClass", cssClass);
-			boolean closed = entry.getRepositoryEntryStatus().isClosed() || entry.getRepositoryEntryStatus().isUnpublished();
+			boolean closed = entry.getEntryStatus().decommissioned();
 			layoutCont.contextPut("closed", Boolean.valueOf(closed));
 			
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
@@ -330,7 +330,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			//access control
 			String accessI18n = null;
 			List<PriceMethod> types = new ArrayList<>();
-			if (entry.isMembersOnly()) {
+			if (!entry.isAllUsers() && !entry.isGuests()) {
 				// members only
 				if(isMember) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
@@ -338,7 +338,6 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					startLink.setElementCssClass("o_start btn-block");
 					startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 					startLink.setPrimary(true);
-
 				}
 				accessI18n = translate("cif.access.membersonly");
 			} else {
@@ -347,7 +346,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
 					startLink.setElementCssClass("o_start btn-block");
-				} else if (acResult.getAvailableMethods().size() > 0) {
+				} else if (!acResult.getAvailableMethods().isEmpty()) {
 					for(OfferAccess access:acResult.getAvailableMethods()) {
 						AccessMethod method = access.getMethod();
 						String type = (method.getMethodCssClass() + "_icon").intern();
@@ -363,11 +362,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
 					startLink.setElementCssClass("o_book btn-block");
 					if(guestOnly) {
-						if(entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
-							startLink.setVisible(true);
-						} else {
-							startLink.setVisible(false);
-						}
+						startLink.setVisible(entry.isGuests());
 					} else {
 						startLink.setVisible(true);
 					}
@@ -380,19 +375,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);
 				startLink.setFocus(true);
-				
-				switch (entry.getAccess()) {
-					case 0: accessI18n = "ERROR";
-						break;
-					case 1: accessI18n = translate("cif.access.owners");			
-						break;
-					case 2: accessI18n = translate("cif.access.owners_authors");
-						break;
-					case 3: accessI18n = translate("cif.access.users");
-						break;
-					case 4: accessI18n = translate("cif.access.users_guests");
-						break;
-				}
+				accessI18n = translate("cif.access.".concat(entry.getEntryStatus().name()));
 			}
 			layoutCont.contextPut("accessI18n", accessI18n);
 			
@@ -476,13 +459,11 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             // Link to bookmark entry
             String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
             layoutCont.contextPut("extlink", url);
-            Boolean guestAllowed = (entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS && loginModule.isGuestLoginLinksEnabled())
-            		? Boolean.TRUE : Boolean.FALSE;
+            Boolean guestAllowed = Boolean.valueOf(entry.isGuests() && loginModule.isGuestLoginLinksEnabled());
             layoutCont.contextPut("isGuestAllowed", guestAllowed);
 
-
 			//Owners
-			List<String> authorLinkNames = new ArrayList<String>(authorKeys.size());
+			List<String> authorLinkNames = new ArrayList<>(authorKeys.size());
 			Map<Long,String> authorNames = userManager.getUserDisplayNamesByKey(authorKeys);
 			int counter = 0;
 			for(Map.Entry<Long, String> author:authorNames.entrySet()) {

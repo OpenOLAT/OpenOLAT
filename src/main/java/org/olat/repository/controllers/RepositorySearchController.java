@@ -406,7 +406,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		
 	private void doSearchMyCoursesStudent(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.myAsStudent;
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(ureq.getIdentity(), null, 0, -1);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(getIdentity(), limitType, 0, -1);
 		filterRepositoryEntries(entries);
 		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
 	}

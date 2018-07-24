@@ -452,11 +452,10 @@ create table if not exists o_repositoryentry (
    fk_olatresource bigint unique,
    description longtext,
    initialauthor varchar(128) not null,
-   accesscode integer not null default 0,
-   membersonly bit default 0,
-   statuscode integer,
+   status varchar(16) default 'preparation' not null,
+   allusers bit default 0 not null,
+   guests bit default 0 not null,
    allowtoleave varchar(16),
-   canlaunch bit not null,
    candownload bit not null,
    cancopy bit not null,
    canreference bit not null,
@@ -3050,7 +3049,7 @@ create index id_idx on o_olatresource (resid);
 -- repository
 alter table o_repositoryentry add constraint FK2F9C439888C31018 foreign key (fk_olatresource) references o_olatresource (resource_id);
 
-create index access_idx on o_repositoryentry (accesscode);
+create index re_status_idx on o_repositoryentry (status);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
 create index displayname_idx on o_repositoryentry (displayname);

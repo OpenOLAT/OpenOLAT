@@ -68,6 +68,7 @@ import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -105,8 +106,8 @@ public class WikiHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		WikiResource wikiResource = WikiManager.getInstance().createWiki();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null,
-				WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -128,8 +129,8 @@ public class WikiHandler implements RepositoryHandler {
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		File rootDirectory = WikiManager.getInstance().getWikiRootContainer(resource).getBasefile();
 		WikiManager.getInstance().importWiki(file, filename, rootDirectory);
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-			.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname,
+				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

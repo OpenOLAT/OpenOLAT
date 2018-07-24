@@ -366,7 +366,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		RepositoryEntry entry = repositoryService.loadByResourceKey(resourceKey);
 		if(entry == null) {
 			showWarning("efficiencyStatements.course.noexists");
-		} else if (!repositoryManager.isAllowedToLaunch(ureq, entry)) {
+		} else if (!repositoryManager.isAllowedToLaunch(getIdentity(), ureq.getUserSession().getRoles(), entry)) {
 			showWarning("efficiencyStatements.course.noaccess");
 		} else {
 			try {

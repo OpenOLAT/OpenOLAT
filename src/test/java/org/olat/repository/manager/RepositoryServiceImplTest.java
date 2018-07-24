@@ -39,6 +39,7 @@ import org.olat.repository.CatalogEntry;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -75,7 +76,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String resourceName = "ServiceTest";
 		String description = "Test the brand new service";
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(re);
@@ -92,7 +94,8 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String resourceName = "ServiceTest";
 		String description = "Test the brand new service";
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, resourceName, displayName, description, null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		
@@ -111,7 +114,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		Assert.assertFalse(re.getCanCopy());
 		Assert.assertFalse(re.getCanDownload());
 		Assert.assertFalse(re.getCanReference());
-		Assert.assertEquals(0, re.getAccess());
+		Assert.assertEquals(RepositoryEntryStatusEnum.trash, re.getEntryStatus());
 	}
 	
 	@Test
@@ -170,7 +173,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		
 		RepositoryEntry reloadEntry = repositoryService.loadByKey(re.getKey());
 		Assert.assertNotNull(reloadEntry);
-		Assert.assertEquals(0, reloadEntry.getAccess());
+		Assert.assertEquals(RepositoryEntryStatusEnum.trash, reloadEntry.getEntryStatus());
 		Assert.assertNotNull(reloadEntry.getDeletionDate());
 		Assert.assertEquals(initialAuthor, reloadEntry.getDeletedBy());
 	}

@@ -58,6 +58,7 @@ import org.olat.modules.webFeed.ui.FeedRuntimeController;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -91,7 +92,8 @@ public class PodcastHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResourceable ores = FeedManager.getInstance().createPodcastResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -115,8 +117,8 @@ public class PodcastHandler implements RepositoryHandler {
 		File blogRoot = new File(fResourceFileroot, FeedManager.getInstance().getFeedKind(resource));
 		FileResource.copyResource(file, filename, blogRoot);
 		FeedManager.getInstance().importFeedFromXML(resource, true);
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

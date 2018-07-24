@@ -33,7 +33,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntryMyView;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
@@ -61,8 +61,9 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	private String shortenedDescription;
 	
-	private int access;
-	private boolean isMembersOnly;
+	private RepositoryEntryStatusEnum status;
+	private boolean allUsers;
+	private boolean guests;
 	private List<PriceMethod> accessTypes;
 
 	private boolean member;
@@ -96,10 +97,11 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 			parentKey = element.getKey();
 		}
 		
-		isMembersOnly = repositoryEntryView.isMembersOnly();
+		guests = repositoryEntryView.isGuests();
+		allUsers = repositoryEntryView.isAllUsers();
+		status = repositoryEntryView.getEntryStatus();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
-		access = repositoryEntryView.getAccess();
 		marked = repositoryEntryView.isMarked();
 		setShortenedDescription(repositoryEntryView.getDescription());
 	}
@@ -111,8 +113,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	public boolean isActive() {
 		if(element != null) {
-			CurriculumElementStatus status = element.getStatus();
-			return status == null || status == CurriculumElementStatus.active;
+			return element.getStatus() == null || element.getStatus() == CurriculumElementStatus.active;
 		}
 		return true;
 	}
@@ -174,9 +175,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	}
 	
 	public boolean isClosed() {
-		return repositoryEntry == null
-				? false : new RepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()
-						|| new RepositoryEntryStatus(repositoryEntry.getStatusCode()).isUnpublished() ;
+		return status.decommissioned();
 	}
 
 	public boolean isSingleEntry() {
@@ -191,12 +190,16 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		this.marked = marked;
 	}
 	
-	public int getAccess() {
-		return access;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return status;
 	}
 	
-	public boolean isMembersOnly() {
-		return isMembersOnly;
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+	
+	public boolean isGuests() {
+		return guests;
 	}
 	
 	public boolean isThumbnailAvailable() {

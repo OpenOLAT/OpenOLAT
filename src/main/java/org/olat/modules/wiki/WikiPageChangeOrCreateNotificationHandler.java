@@ -213,9 +213,7 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 	
 	private boolean courseStatus(ICourse course) {
 		return course != null
-				&& course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getAccess() !=  RepositoryEntry.DELETED
-				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isUnpublished()
-				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
+				&& course.getCourseEnvironment().getCourseGroupManager().isNotificationsAllowed();
 	}
 	
 	private void checkPublisher(Publisher p) {

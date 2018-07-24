@@ -89,7 +89,7 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 					if(!checkPublisher(p)) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
-				} else if(re.getRepositoryEntryStatus().isClosed()) {
+				} else if(re.getEntryStatus().decommissioned()) {
 					return NotificationsManager.getInstance().getNoSubscriptionInfo();
 				}
 				

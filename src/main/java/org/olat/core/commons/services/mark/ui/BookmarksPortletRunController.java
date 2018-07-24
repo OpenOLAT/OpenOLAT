@@ -64,6 +64,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -144,7 +145,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 	 * @return
 	 */
 	private List<PortletEntry<Bookmark>> convertBookmarkToPortletEntryList(List<Bookmark> items) {
-		List<PortletEntry<Bookmark>> convertedList = new ArrayList<PortletEntry<Bookmark>>();
+		List<PortletEntry<Bookmark>> convertedList = new ArrayList<>();
 		for(Bookmark mark:items) {
 			convertedList.add(new BookmarkPortletEntry(mark));
 		}
@@ -152,9 +153,9 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 	}
 	
 	private  List<Bookmark> convertMarkToBookmark(List<Mark> items) {
-		List<Bookmark> convertedList = new ArrayList<Bookmark>();
+		List<Bookmark> convertedList = new ArrayList<>();
 		
-		List<Long> reKeys = new ArrayList<Long>();
+		List<Long> reKeys = new ArrayList<>();
 		for(Mark mark:items) {
 			reKeys.add(mark.getOLATResourceable().getResourceableId());
 		}
@@ -336,7 +337,8 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 		private String getBookmarkTitle(Bookmark bookmark) {
 			String title = bookmark.getTitle();
 			
-			if (RepositoryManager.getInstance().createRepositoryEntryStatus(bookmark.getStatusCode()).isClosed()) {
+			RepositoryEntryStatusEnum status = bookmark.getEntryStatus();
+			if (status.decommissioned()) {
 				Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 				title = "[" + pT.translate("title.prefix.closed") + "] ".concat(title);
 			}

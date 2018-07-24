@@ -61,6 +61,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
@@ -702,7 +703,8 @@ public class CatalogTest extends OlatJerseyTestCase {
 		RepositoryEntry d = repositoryManager.lookupRepositoryEntry(resourceable, false);
 		if(d == null) {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
-			d = repositoryService.create(null, "Rei Ayanami", "-", displayName, "Repo entry", r, 0, defOrganisation);
+			d = repositoryService.create(null, "Rei Ayanami", "-", displayName, "Repo entry",
+					r, RepositoryEntryStatusEnum.trash, defOrganisation);
 			dbInstance.saveObject(d);
 		}
 		dbInstance.intermediateCommit();

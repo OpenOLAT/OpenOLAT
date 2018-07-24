@@ -47,9 +47,12 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRollCallRefImpl;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
+import org.olat.upgrade.model.RepositoryEntryAccessUpgrade;
+import org.olat.upgrade.model.RepositoryEntryAccessUpgradeStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +69,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_PORTFOLIO_EVAL_FORM = "PORTFOLIO EVALUATION FORM";
 	private static final String MIGRATE_SEND_APPEAL_DATES = "LECTURES SEND APPEAL DATES";
 	private static final String MIGRATE_ADMIN_SITE_SEC = "MIGRATE ADMIN SITE SECURITY CALLBACK";
+	private static final String MIGRATE_REPO_ENTRY_ACCESS = "MIGRATE REPO ENTRY ACCESS";
 	
 	@Autowired
 	private DB dbInstance;
@@ -118,6 +122,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
 		allOk &= migrateLecturesSendAppealDates(upgradeManager, uhd);
 		allOk &= migrateAdminSiteSecurityCallback(upgradeManager, uhd);
+		allOk &= migrateRepositoryEntriesAccess(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -219,6 +224,79 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 				.getResultList();
 	}
 	
+	private boolean migrateRepositoryEntriesAccess(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_REPO_ENTRY_ACCESS)) {
+			try {
+				List<Long> repositoryEntryKeys = getRepositoryEntryKeys();
+				for(int i=0; i<repositoryEntryKeys.size(); i++) {
+					migrateRepositoryEntryAccess(repositoryEntryKeys.get(i));
+					if(i % 50 == 0) {
+						log.info("Migration repository entries access flags: " + i + " / " + repositoryEntryKeys.size());
+						dbInstance.commitAndCloseSession();
+					}
+				}
+				log.info("Migration repository entries access flags done: " + repositoryEntryKeys.size());
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_REPO_ENTRY_ACCESS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateRepositoryEntryAccess(Long repositoryEntryKey) {
+		RepositoryEntryAccessUpgrade oldEntry = dbInstance.getCurrentEntityManager()
+				.find(RepositoryEntryAccessUpgrade.class, repositoryEntryKey);
+		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
+		if(oldEntry != null && entry != null) {
+			int access = oldEntry.getAccess();
+			boolean isMembersOnly = oldEntry.isMembersOnly();
+			if(access == RepositoryEntryAccessUpgrade.ACC_USERS) {
+				entry.setAllUsers(true);
+				entry.setGuests(false);
+			} else if(access == RepositoryEntryAccessUpgrade.ACC_USERS_GUESTS) {
+				entry.setAllUsers(true);
+				entry.setGuests(true);
+			} else {
+				entry.setAllUsers(false);
+				entry.setGuests(false);
+			}
+			
+			RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.preparation;
+			RepositoryEntryAccessUpgradeStatus statusCode = new RepositoryEntryAccessUpgradeStatus(oldEntry.getStatusCode());
+			if(access == RepositoryEntryAccessUpgrade.DELETED) {
+				status = RepositoryEntryStatusEnum.trash;
+			} else if(statusCode.isClosed()) {
+				status = RepositoryEntryStatusEnum.closed;		
+			} else if(statusCode.isUnpublished()) {
+				if(access == RepositoryEntryAccessUpgrade.ACC_OWNERS) {
+					status = RepositoryEntryStatusEnum.preparation;
+				} else if(access == RepositoryEntryAccessUpgrade.ACC_OWNERS_AUTHORS) {
+					status = RepositoryEntryStatusEnum.review;
+				}	
+			} else if(access == RepositoryEntryAccessUpgrade.ACC_OWNERS) {
+				if(isMembersOnly) {
+					status = RepositoryEntryStatusEnum.published;
+				} else {
+					status = RepositoryEntryStatusEnum.preparation;
+				}
+			} else if(access == RepositoryEntryAccessUpgrade.ACC_OWNERS_AUTHORS) {
+				status = RepositoryEntryStatusEnum.review;
+			} else if(access == RepositoryEntryAccessUpgrade.ACC_USERS || access == RepositoryEntryAccessUpgrade.ACC_USERS_GUESTS) {
+				status = RepositoryEntryStatusEnum.published;
+			}
+			
+			entry.setEntryStatus(status);
+			dbInstance.getCurrentEntityManager().merge(entry);
+			dbInstance.commit();
+		}
+	}
+	
 	private boolean migrateRepositoryEntriesToDefaultOrganisation(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MIGRATE_REPO_ENTRY_DEFAULT_ORG)) {
@@ -228,6 +306,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 					migrateRepositoryEntryToDefaultOrganisation(repositoryEntryKeys.get(i));
 					if(i % 50 == 0) {
 						log.info("Migration repository entries to default organisation: " + i + " / " + repositoryEntryKeys.size());
+						dbInstance.commitAndCloseSession();
 					}
 				}
 				log.info("Migration repository entries to default organisation done: " + repositoryEntryKeys.size());

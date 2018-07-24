@@ -31,7 +31,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
 
@@ -55,12 +55,12 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private final String expenditureOfWork;
 	private String thumbnailRelPath;
 	private final String shortenedDescription;
-	private final int access;
-	private final int statusCode;
+	private final RepositoryEntryStatusEnum status;
+	private final boolean allUsers;
+	private final boolean guests;
 	
 	private final String score;
 	private final Boolean passed;
-	private final boolean isMembersOnly;
 	
 	private boolean member;
 	
@@ -107,9 +107,9 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		location = entry.getLocation();
 		expenditureOfWork = entry.getExpenditureOfWork();
 		launchCounter = entry.getLaunchCounter();
-		isMembersOnly = entry.isMembersOnly();
-		access = entry.getAccess();
-		statusCode = entry.getStatusCode();
+		status = entry.getEntryStatus();
+		allUsers = entry.isAllUsers();
+		guests = entry.isGuests();
 		
 		//bookmark
 		setMarked(entry.isMarked());
@@ -135,11 +135,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 			}
 		}
 	}
-
-	public boolean isMembersOnly() {
-		return isMembersOnly;
-	}
 	
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -149,15 +146,19 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	}
 
 	public boolean isClosed() {
-		return new RepositoryEntryStatus(statusCode).isClosed() || new RepositoryEntryStatus(statusCode).isUnpublished() ;
+		return status.decommissioned();
 	}
 
-	public int getAccess() {
-		return access;
+	public RepositoryEntryStatusEnum getStatus() {
+		return status;
 	}
-
-	public int getStatusCode() {
-		return statusCode;
+	
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+	
+	public boolean isGuests() {
+		return guests;
 	}
 
 	public String getExternalId() {

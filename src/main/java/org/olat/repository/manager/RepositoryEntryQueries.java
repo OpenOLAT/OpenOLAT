@@ -28,10 +28,12 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +71,7 @@ public class RepositoryEntryQueries {
 		String displayName = params.getDisplayName();
 		List<String> resourceTypes = params.getResourceTypes();
 
-		StringBuilder query = new StringBuilder(2048);
+		QueryBuilder query = new QueryBuilder(2048);
 		if(Number.class.equals(type)) {
 			query.append("select count(v.key) from repositoryentry v ");
 			query.append(" inner join v.olatResource as res");
@@ -190,13 +192,9 @@ public class RepositoryEntryQueries {
 	 * @param roles
 	 * @return
 	 */
-	private boolean appendAccessSubSelects(StringBuilder sb, Roles roles, boolean onlyExplicitMember) {
-		if(roles.isAdministrator()) {//TODO roles repo
-			sb.append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS);
-			return false;	
-		}
+	private boolean appendAccessSubSelects(QueryBuilder sb, Roles roles, boolean onlyExplicitMember) {
 		if(roles.isGuestOnly()) {
-			sb.append(" where v.access>=").append(RepositoryEntry.ACC_USERS_GUESTS);
+			sb.append(" where v.guests=true and v.status not in ('").append(RepositoryEntryStatusEnum.trash).append("','").append(RepositoryEntryStatusEnum.deleted).append("')");
 			return false;
 		}
 		
@@ -205,35 +203,39 @@ public class RepositoryEntryQueries {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey and");
-		
+
 		if(onlyExplicitMember) {
-			sb.append(" (v.access>=").append(RepositoryEntry.ACC_USERS)
-		      .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
-		      .append("   and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-		      .append(" ))");
+			sb.append("(")
+			  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+			  .append(" or")
+			  .append(" (membership.role='").append(GroupRoles.owner.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")")
+			  .append(" or")
+			  .append(" (membership.role='").append(GroupRoles.coach.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")")
+			  .append(" or")
+			  .append(" (membership.role='").append(GroupRoles.participant.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+			  .append(")");
 			return true;
 		}
 
 		//access rules as user
-		sb.append("(v.access>=").append(RepositoryEntry.ACC_USERS);
-		if(roles.isLearnResourceManager()) {
-			// as learn resource manager
-			sb.append(" or (v.access>=").append(RepositoryEntry.ACC_OWNERS)
-			  .append("  and membership.role='").append(OrganisationRoles.learnresourcemanager.name()).append("')");
-		}
-		
+		sb.append("(")
+		  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+		// administrator, learn resource manager and owner
+		sb.append(" or (membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+		  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
 		if(roles.isAuthor()) {
 			// as author
-			sb.append(" or (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
-			  .append("  and membership.role='").append(OrganisationRoles.author.name()).append("')");
+			sb.append(" or (membership.role ").in(OrganisationRoles.author)
+			  .append("  and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(")");
 		}
-		// as owner
-		sb.append(" or (v.access>=").append(RepositoryEntry.ACC_OWNERS)
-		  .append("  and membership.role='").append(GroupRoles.owner.name()).append("')");
+		// as coach
+		sb.append(" or (membership.role ").in(GroupRoles.coach)
+		  .append("  and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")");
 		// as member
-		sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
-		  .append("  and membership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("'))")
-		  .append(")");
+		sb.append(" or (membership.role ").in(GroupRoles.participant)
+		  .append("  and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+		
+		sb.append(")");
 
 		return true;
 	}

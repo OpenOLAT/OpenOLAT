@@ -271,9 +271,9 @@ public class CourseCreationHelper {
 			CourseAccessAndProperties accessAndProps = courseConfig.getAccessAndProperties();
 			RepositoryManager manager = RepositoryManager.getInstance();			
 			
-			addedEntry = manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(), accessAndProps.getAccess(),
-					accessAndProps.isMembersOnly(), accessAndProps.isCanCopy(), accessAndProps.isCanReference(),
-					accessAndProps.isCanDownload());
+			addedEntry = manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(),
+					accessAndProps.getStatus(), accessAndProps.isAllUsers(), accessAndProps.isGuests(),
+					accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload());
 			addedEntry = manager.setLeaveSetting(addedEntry, accessAndProps.getSetting());
 			
 			List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();

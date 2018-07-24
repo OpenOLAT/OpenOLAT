@@ -55,6 +55,7 @@ import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -353,7 +354,8 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		dbInstance.intermediateCommit();
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry d = repositoryService.create(null, "Kanu Unchou", "QTIStatisticsTest", "QTIStatisticsTest", "Repo entry", r, 0, defOrganisation);
+		RepositoryEntry d = repositoryService.create(null, "Kanu Unchou", "QTIStatisticsTest", "QTIStatisticsTest", "Repo entry",
+				r, RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.saveObject(d);
 		dbInstance.intermediateCommit();
 		return d;

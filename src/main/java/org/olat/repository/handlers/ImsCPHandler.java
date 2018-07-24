@@ -70,6 +70,7 @@ import org.olat.ims.cp.ui.CPRuntimeController;
 import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -97,8 +98,8 @@ public class ImsCPHandler extends FileHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance("FileResource.IMSCP");
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 
 		Translator translator = Util.createPackageTranslator(CPContentController.class, locale);
@@ -128,8 +129,8 @@ public class ImsCPHandler extends FileHandler {
 
 		ImsCPFileResource cpResource = new ImsCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(cpResource);
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);

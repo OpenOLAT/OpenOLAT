@@ -65,6 +65,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -98,7 +99,8 @@ public class GlossaryHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
+				RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -127,7 +129,8 @@ public class GlossaryHandler implements RepositoryHandler {
 		//copy resources
 		File glossyPath = GlossaryManager.getInstance().getGlossaryRootFolder(glossaryResource).getBasefile();
 		FileResource.copyResource(file, filename, glossyPath);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
+				RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

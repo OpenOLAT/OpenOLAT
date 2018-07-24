@@ -64,6 +64,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -539,23 +540,26 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		//check
 		Assert.assertNotNull(accessVo);
 		Assert.assertEquals(re.getKey(), accessVo.getRepoEntryKey());
-		Assert.assertEquals(re.getAccess(), accessVo.getAccess());
-		Assert.assertEquals(re.isMembersOnly(), accessVo.isMembersOnly());
+		Assert.assertEquals(re.getStatus(), accessVo.getStatus());
+		Assert.assertEquals(re.isAllUsers(), accessVo.isAllUsers());
+		Assert.assertEquals(re.isGuests(), accessVo.isGuests());
 	}
 	
 	@Test
 	public void updateAccess() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
 		dbInstance.commitAndCloseSession();
-		Assert.assertFalse(re.isMembersOnly());
+		Assert.assertTrue(re.isAllUsers());
+		Assert.assertFalse(re.isGuests());
 
 		//remove the owner
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		RepositoryEntryAccessVO accessVo = new RepositoryEntryAccessVO();
-		accessVo.setAccess(RepositoryEntry.ACC_OWNERS);
-		accessVo.setMembersOnly(true);
+		accessVo.setStatus(RepositoryEntryStatusEnum.published.name());
+		accessVo.setAllUsers(false);
+		accessVo.setGuests(false);
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("access").build();
@@ -569,13 +573,15 @@ public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 		// check return value
 		Assert.assertNotNull(updatedAccessVo);
 		Assert.assertEquals(re.getKey(), updatedAccessVo.getRepoEntryKey());
-		Assert.assertEquals(RepositoryEntry.ACC_OWNERS, updatedAccessVo.getAccess());
-		Assert.assertEquals(true, updatedAccessVo.isMembersOnly());
+		Assert.assertEquals(RepositoryEntryStatusEnum.published.name(), updatedAccessVo.getStatus());
+		Assert.assertFalse(updatedAccessVo.isAllUsers());
+		Assert.assertFalse(updatedAccessVo.isGuests());
 		
 		// check database value
 		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
-		Assert.assertEquals(RepositoryEntry.ACC_OWNERS, updatedRe.getAccess());
-		Assert.assertEquals(true, updatedRe.isMembersOnly());
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, updatedRe.getEntryStatus());
+		Assert.assertFalse(updatedRe.isAllUsers());
+		Assert.assertFalse(updatedRe.isGuests());
 	}
 	
 	@Test

@@ -31,6 +31,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.SentReminder;
@@ -39,6 +40,7 @@ import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.SentReminderImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -136,11 +138,11 @@ public class ReminderDAO {
 	 * @return A list of reminders
 	 */
 	public List<Reminder> getReminders(Date startDate) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select rem from reminder rem")
 		  .append(" inner join rem.entry entry")
 		  .append(" where (rem.startDate is null or rem.startDate<=:startDate)")
-		  .append(" and entry.statusCode=0 and entry.access>").append(RepositoryEntry.DELETED);
+		  .append(" and entry.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Reminder.class)

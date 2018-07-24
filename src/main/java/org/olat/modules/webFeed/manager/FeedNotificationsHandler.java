@@ -49,6 +49,7 @@ import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,7 +89,8 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				try {
 					RepositoryEntry re = repoManager.lookupRepositoryEntry(
 							OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
-					if (re.getAccess() == RepositoryEntry.DELETED || re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					RepositoryEntryStatusEnum status = re.getEntryStatus();
+					if (status.decommissioned()) {
 						return notificationsManager.getNoSubscriptionInfo();
 					}
 					String displayName = re.getDisplayname();

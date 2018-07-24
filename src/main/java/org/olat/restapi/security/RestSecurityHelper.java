@@ -37,6 +37,7 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.dispatcher.LocaleNegotiator;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
@@ -108,6 +109,15 @@ public class RestSecurityHelper {
 		UserRequest ureq= (UserRequest)request.getAttribute(SEC_USER_REQUEST);
 		if(ureq == null) return I18nModule.getDefaultLocale();
 		return LocaleNegotiator.getPreferedLocale(ureq);
+	}
+	
+	public static RepositoryEntryStatusEnum convertToEntryStatus(int accessCode, boolean membersOnly) {
+		switch(accessCode) {
+			case 0: return RepositoryEntryStatusEnum.trash;
+			case 1: return membersOnly ? RepositoryEntryStatusEnum.published : RepositoryEntryStatusEnum.preparation;
+			case 2: return RepositoryEntryStatusEnum.review;
+			default: return RepositoryEntryStatusEnum.published;
+		}
 	}
 	
 	public static Date parseDate(String date, Locale locale) {

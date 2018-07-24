@@ -126,6 +126,11 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		return courseRepoEntry;
 	}
 	
+	@Override
+	public boolean isNotificationsAllowed() {
+		return false;
+	}
+
 	public void updateRepositoryEntry(RepositoryEntry entry) {
 		courseRepoEntry = entry;
 	}

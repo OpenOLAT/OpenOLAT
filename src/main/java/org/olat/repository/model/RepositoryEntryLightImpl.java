@@ -38,6 +38,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.core.id.Persistable;
 import org.olat.repository.RepositoryEntryLight;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 
@@ -72,18 +73,15 @@ public class RepositoryEntryLightImpl implements RepositoryEntryLight, Persistab
 
 	@Column(name="displayname", nullable=false, insertable=false, updatable=false)
 	private String displayname;
-	
 	@Column(name="description", nullable=false, insertable=false, updatable=false)
 	private String description;
 
-	@Column(name="accesscode", nullable=false, insertable=false, updatable=false)
-	private int access;
-
-	@Column(name="membersonly", nullable=false, insertable=false, updatable=false)
-	private boolean membersOnly;
-	
-	@Column(name="statuscode", nullable=false, insertable=false, updatable=false)
-	private int statusCode;
+	@Column(name="status", nullable=false, insertable=true, updatable=true)
+	private String status;
+	@Column(name="allusers", nullable=false, insertable=true, updatable=true)
+	private boolean allUsers;
+	@Column(name="guests", nullable=false, insertable=true, updatable=true)
+	private boolean guests;
 	
 	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_olatresource", nullable=false, insertable=true, updatable=false)
@@ -136,29 +134,34 @@ public class RepositoryEntryLightImpl implements RepositoryEntryLight, Persistab
 		this.groups = groups;
 	}
 
-	public int getAccess() {
-		return access;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
-	}
-
-	public boolean isMembersOnly() {
-		return membersOnly;
-	}
-
-	public void setMembersOnly(boolean membersOnly) {
-		this.membersOnly = membersOnly;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	@Override
-	public int getStatusCode() {
-		return statusCode;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return RepositoryEntryStatusEnum.valueOf(status);
 	}
-	
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
+
+	@Override
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+	@Override
+	public boolean isGuests() {
+		return guests;
+	}
+
+	public void setGuests(boolean guests) {
+		this.guests = guests;
 	}
 
 	@Override

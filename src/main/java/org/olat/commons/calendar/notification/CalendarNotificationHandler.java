@@ -49,6 +49,7 @@ import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,7 +101,8 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 				String title = null;
 				if (type.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
 					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance("CourseModule", id), false);
-					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					RepositoryEntryStatusEnum status = re.getEntryStatus();
+					if(status.decommissioned()) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
 					String displayName = re.getDisplayname();

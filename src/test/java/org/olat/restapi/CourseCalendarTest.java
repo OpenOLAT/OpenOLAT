@@ -65,6 +65,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -103,7 +104,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1, RepositoryEntry.ACC_OWNERS);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1,
+					RepositoryEntryStatusEnum.preparation, false, false);
 			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 			
@@ -193,7 +195,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		CourseConfigVO config = new CourseConfigVO();
 		config.setCalendar(Boolean.TRUE);
 		
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
+				RepositoryEntryStatusEnum.preparation, false, false);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		

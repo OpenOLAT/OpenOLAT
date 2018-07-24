@@ -31,6 +31,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -39,6 +40,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -124,7 +126,7 @@ public class RepositoryEntryAuthorQueries {
 
 		boolean count = Number.class.equals(type);
 		boolean needIdentity = false;
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(2048);
 		if(count) {
 			sb.append("select count(v.key) ")
 			  .append(" from repositoryentry as v")
@@ -162,9 +164,9 @@ public class RepositoryEntryAuthorQueries {
 		
 		if(params.getClosed() != null) {
 			if(params.getClosed().booleanValue()) {
-				sb.append(" and v.statusCode>0");
+				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.closed);
 			} else {
-				sb.append(" and v.statusCode=0");
+				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 			}
 		}
 		
@@ -312,62 +314,52 @@ public class RepositoryEntryAuthorQueries {
 		return dbQuery;
 	}
 	
-	private boolean appendAccessSubSelect(StringBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
+	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
 		if(params.isOwnedResourcesOnly()) {
 			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
 			if(params.isDeleted()) {
-				sb.append(" and v.access=").append(RepositoryEntry.DELETED);
+				sb.append(" and v.status='").append(RepositoryEntryStatusEnum.trash).append("'");
 			} else {
-				sb.append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 			}
 			return true;
 		}
 		
 		Roles roles = params.getRoles();
 		if(roles == null) {
-			sb.append(" v.access>=").append(RepositoryEntry.ACC_USERS);
+			sb.append(" v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			return false;
 		}
 
-		if(roles.isAdministrator()) {//TODO roles repo
-			if(params.isDeleted()) {
-				sb.append(" v.access=").append(RepositoryEntry.DELETED);
-			} else {
-				sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
-			}
-			return false;
-		}
-		if(roles.isPrincipal()) {//TODO roles repo
-			sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
-			return false;
-		}
-		
-		sb.append(" (v.access>=").append(RepositoryEntry.ACC_USERS);
-		if(roles.isAuthor()) {
-			sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
-			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("       and membership.role = '").append(OrganisationRoles.author).append("'")
-			  .append("   )")
-			  .append(" )");
-		} 
-		sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
-		  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+		sb.append("(")
+		  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+		  // or owner, principal, lear resource manager and administrator which can see all
+		  .append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 		  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("       and membership.role in ('").append(GroupRoles.owner.name()).append("'");
-		if(roles.isLearnResourceManager()) {
-			sb.append(",'").append(OrganisationRoles.learnresourcemanager.name()).append("'");
+		  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(")")
+		  .append("     and v.status ");
+		if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {// only administrator and learn resource manager see the trash
+			sb.append("='").append(RepositoryEntryStatusEnum.trash).append("'");
+		} else {
+			sb.in(RepositoryEntryStatusEnum.preparationToClosed());
 		}
-		sb.append("     )")//close in
-		  .append("   )")
-		  .append(" ))");
+		sb.append(")");// End or of owner
+		
+		if(roles.isAuthor()) {
+			sb.append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("     and membership.role ='").append(OrganisationRoles.author).append("')")
+			  .append("     and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
+			  .append(")");// End or of autho
+		}
+		sb.append(")");
 		return true;
 	}
 	
-	private void appendAuthorViewOrderBy(SearchAuthorRepositoryEntryViewParams params, StringBuilder sb) {
+	private void appendAuthorViewOrderBy(SearchAuthorRepositoryEntryViewParams params, QueryBuilder sb) {
 		OrderBy orderBy = params.getOrderBy();
 		boolean asc = params.isOrderByAsc();
 		
@@ -406,9 +398,9 @@ public class RepositoryEntryAuthorQueries {
 					break;
 				case access:
 					if(asc) {
-						sb.append(" order by v.membersOnly asc, v.access asc, lower(v.displayname) asc");
+						sb.append(" order by v.allUsers asc, v.status asc, lower(v.displayname) asc");
 					} else {
-						sb.append(" order by v.membersOnly desc, v.access desc, lower(v.displayname) desc");
+						sb.append(" order by v.allUsers desc, v.status desc, lower(v.displayname) desc");
 					}
 					break;
 				case ac:
@@ -477,7 +469,7 @@ public class RepositoryEntryAuthorQueries {
 		}
 	}
 	
-	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+	private final QueryBuilder appendAsc(QueryBuilder sb, boolean asc) {
 		if(asc) {
 			sb.append(" asc");
 		} else {

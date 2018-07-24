@@ -76,7 +76,7 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -164,12 +164,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt, String resourceName,
-			String displayname, String description, OLATResource resource, int access, Organisation organisation) {
-		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, access, organisation);
+			String displayname, String description, OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation) {
+		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, status, organisation);
 	}
 
 	private RepositoryEntry create(String initialAuthorName, Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource, int access, Organisation organisation) {
+			String displayname, String description, OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation) {
 		Date now = new Date();
 
 		RepositoryEntry re = new RepositoryEntry();
@@ -182,11 +182,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 		}
 		re.setCreationDate(now);
 		re.setLastModified(now);
-		re.setAccess(access);
+		re.setEntryStatus(status);
 		re.setCanDownload(false);
 		re.setCanCopy(false);
 		re.setCanReference(false);
-		re.setCanLaunch(true);
 		re.setDisplayname(displayname);
 		re.setResourcename(StringHelper.containsNonWhitespace(resourceName) ? resourceName : "-");
 		re.setDescription(description == null ? "" : description);
@@ -251,7 +250,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
-				sourceEntry.getDescription(), copyResource, RepositoryEntry.ACC_OWNERS, null);
+				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);
 
 		//copy all fields
 		copyEntry.setAuthors(sourceEntry.getAuthors());
@@ -367,7 +366,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
-		reloadedRe.setAccess(RepositoryEntry.DELETED);
+		reloadedRe.setAllUsers(false);
+		reloadedRe.setGuests(false);
+		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
+		
 		if(reloadedRe.getDeletionDate() == null) {
 			// don't write the name of an admin which make a restore -> delete operation
 			reloadedRe.setDeletedBy(deletedBy);
@@ -397,11 +399,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
-		reloadedRe.setAccess(RepositoryEntry.ACC_OWNERS);
+		reloadedRe.setAllUsers(false);
+		reloadedRe.setGuests(false);
 		if("CourseModule".equals(reloadedRe.getOlatResource().getResourceableTypeName())) {
-			reloadedRe.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
+			reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		} else {
-			reloadedRe.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_OPEN);
+			reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.preparation);
 		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
@@ -509,7 +512,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
-		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
+		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
 		return reloadedEntry;
@@ -518,7 +521,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
-		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_OPEN);
+		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.published);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
 		return reloadedEntry;
@@ -527,7 +530,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
-		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_UNPUBLISHED);
+		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.trash);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
 		// remove catalog entries

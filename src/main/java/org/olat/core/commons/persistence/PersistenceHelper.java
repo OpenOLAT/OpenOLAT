@@ -26,6 +26,7 @@
 
 package org.olat.core.commons.persistence;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.olat.core.id.Persistable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -46,6 +49,8 @@ import org.olat.core.util.filter.FilterFactory;
  * @author gnaegi 
  */
 public class PersistenceHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(PersistenceHelper.class);
 	private static boolean charCountNativeUTF8 = true;
 	
 	/**
@@ -143,16 +148,21 @@ public class PersistenceHelper {
 		return appended;
 	}
 	
-	public static final void appendFuzzyLike(StringBuilder sb, String var, String key, String dbVendor) {
-		if(dbVendor.equals("mysql")) {
-			sb.append(" ").append(var).append(" like :").append(key);
-		} else {
-			sb.append(" lower(").append(var).append(") like :").append(key);
-		}
-		if(dbVendor.equals("oracle")) {
-			sb.append(" escape '\\'");
+	public static final void appendFuzzyLike(Appendable sb, String var, String key, String dbVendor) {
+		try {
+			if(dbVendor.equals("mysql")) {
+				sb.append(" ").append(var).append(" like :").append(key);
+			} else {
+				sb.append(" lower(").append(var).append(") like :").append(key);
+			}
+			if(dbVendor.equals("oracle")) {
+				sb.append(" escape '\\'");
+			}
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
+
 	
 	/**
 	 * Helper method that replaces * with % and appends and

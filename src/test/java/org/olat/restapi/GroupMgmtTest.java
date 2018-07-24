@@ -76,6 +76,7 @@ import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -143,7 +144,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
 		course = rm.findOrPersistResourceable(resourceable);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "administrator", "-", "rest-re", null, course, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "administrator", "-", "rest-re", null, course,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commit();
 		assertNotNull(re);
 		

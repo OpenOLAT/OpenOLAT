@@ -32,6 +32,7 @@ import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 
 /**
@@ -55,24 +56,22 @@ public class AccessRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
 		if(val instanceof RepositoryEntryLight) {
 			RepositoryEntryLight re = (RepositoryEntryLight)val;
-			render(sb, re.getAccess(), re.isMembersOnly());
+			render(sb, re.getEntryStatus(), re.isAllUsers(), re.isGuests());
 		} else if(val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry)val;
-			render(sb, re.getAccess(), re.isMembersOnly());
+			render(sb, re.getEntryStatus(), re.isAllUsers(), re.isGuests());
 		}
 	}
 	
-	private void render(StringOutput sb, int access, boolean membersOnly) {
-		if(access == RepositoryEntry.DELETED) {
+	private void render(StringOutput sb, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
+		if(status == RepositoryEntryStatusEnum.trash || status == RepositoryEntryStatusEnum.deleted) {
 			sb.append(translator.translate("table.header.access.deleted"));
-		} else if(membersOnly) {
+		} else if(!allUsers && !guests) {
 			sb.append(translator.translate("table.header.access.membersonly")); 
 		} else {
+			//TODO repo access
+			/*
 			switch (access) {
-				case RepositoryEntry.DELETED: {
-					sb.append(translator.translate("table.header.access.deleted"));
-					break;
-				}
 				case RepositoryEntry.ACC_OWNERS:
 					sb.append(translator.translate("table.header.access.owner"));
 					break;
@@ -94,6 +93,7 @@ public class AccessRenderer implements FlexiCellRenderer {
 					// return error instead of nothing
 					sb.append("ERROR");
 			}
+			*/
 		}
 	}
 }

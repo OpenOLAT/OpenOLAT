@@ -68,11 +68,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -322,8 +324,25 @@ public class RepositoryEntriesWebService {
 			File tmpFile = partsReader.getFile();
 			long length = tmpFile.length();
 			if(length > 0) {
+				boolean guests = false;
+				boolean allUsers = false;
+				RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.preparation;
+				
 				Long accessRaw = partsReader.getLongValue("access");
-				int access = accessRaw != null ? accessRaw.intValue() : RepositoryEntry.ACC_OWNERS;
+				String statusRaw = partsReader.getValue("status");
+				String allUsersRaw = partsReader.getValue("allUsers");
+				String guestsRaw = partsReader.getValue("guests");
+				
+				if(RepositoryEntryStatusEnum.isValid(statusRaw)) {
+					status = RepositoryEntryStatusEnum.valueOf(statusRaw);
+					allUsers = "true".equals(allUsersRaw);
+					guests = "true".equals(guestsRaw);
+				} else if(accessRaw != null) {
+					status = RestSecurityHelper.convertToEntryStatus(accessRaw.intValue(), false);
+					allUsers = accessRaw.longValue() >= 3;
+					guests = accessRaw.longValue() >= 4;
+				}
+
 				String softkey = partsReader.getValue("softkey");
 				String resourcename = partsReader.getValue("resourcename");
 				String displayname = partsReader.getValue("displayname");	
@@ -339,7 +358,7 @@ public class RepositoryEntriesWebService {
 						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager,
 						OrganisationRoles.author);
 				if(hasAdminRights) {
-					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, access, organisation);
+					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname, softkey, status, allUsers, guests, organisation);
 					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
 					return Response.ok(vo).build();
 				} else {
@@ -356,7 +375,7 @@ public class RepositoryEntriesWebService {
 	}
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
-			String displayname, String softkey, int access, Organisation organisation) {
+			String displayname, String softkey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Organisation organisation) {
 		try {
 			RepositoryHandler handler = null;
 			for(String type:handlerFactory.getSupportedTypes()) {
@@ -381,11 +400,9 @@ public class RepositoryEntriesWebService {
 				if(StringHelper.containsNonWhitespace(softkey)) {
 					addedEntry.setSoftkey(softkey);
 				}
-				if(access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS) {
-					addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-				} else {
-					addedEntry.setAccess(access);
-				}
+				addedEntry.setEntryStatus(status);
+				addedEntry.setAllUsers(allUsers);
+				addedEntry.setGuests(guests);
 				addedEntry = repositoryService.update(addedEntry);
 			}
 			return addedEntry;

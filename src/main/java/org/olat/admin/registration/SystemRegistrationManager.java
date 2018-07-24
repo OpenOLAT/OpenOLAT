@@ -61,7 +61,6 @@ import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -249,8 +248,8 @@ public class SystemRegistrationManager implements InitializingBean {
 		msgProperties.put("debuggingEnabled", String.valueOf(Settings.isDebuging()));
 		
 		// Course counts
-		int allCourses = repositoryManager.countByTypeLimitAccess(CourseModule.ORES_TYPE_COURSE, RepositoryEntry.ACC_OWNERS);
-		int publishedCourses = repositoryManager.countByTypeLimitAccess(CourseModule.ORES_TYPE_COURSE, RepositoryEntry.ACC_USERS);
+		int allCourses = repositoryManager.countByType(CourseModule.ORES_TYPE_COURSE);
+		int publishedCourses = repositoryManager.countPublished(CourseModule.ORES_TYPE_COURSE);
 		msgProperties.put("courses", String.valueOf(allCourses));
 		msgProperties.put("coursesPublished", String.valueOf(publishedCourses));
 		

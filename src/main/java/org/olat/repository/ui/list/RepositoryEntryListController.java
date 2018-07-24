@@ -590,17 +590,17 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeStartLink(RepositoryEntryRow row) {
 		String label;
 		boolean isStart = true;
-		if(!row.isMembersOnly() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
-			if(guestOnly) {
+		if((row.isAllUsers() || row.isGuests()) && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
+			/*if(guestOnly) {
 				if(row.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
 					label = "start";
 				} else {
 					return;
 				}
-			} else {
+			} else {*/ //TODO repo access
 				label = "book";
 				isStart = false;
-			}
+			//}
 		} else {
 			label = "start";
 		}

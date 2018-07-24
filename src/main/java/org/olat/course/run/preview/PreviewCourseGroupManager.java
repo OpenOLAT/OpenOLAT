@@ -47,6 +47,7 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 
@@ -94,6 +95,18 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	@Override
 	public RepositoryEntry getCourseEntry() {
 		return courseResource;
+	}
+
+	@Override
+	public boolean isNotificationsAllowed() {
+		RepositoryEntry re = getCourseEntry();
+		if(re == null || re.getEntryStatus() == null) {
+			return false;
+		}
+		RepositoryEntryStatusEnum status = re.getEntryStatus();
+		return status != RepositoryEntryStatusEnum.closed
+				&& status != RepositoryEntryStatusEnum.trash
+				&& status != RepositoryEntryStatusEnum.deleted;
 	}
 
 	@Override

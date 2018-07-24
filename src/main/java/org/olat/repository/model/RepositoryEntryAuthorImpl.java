@@ -25,6 +25,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 
 /**
@@ -50,9 +51,9 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	private final String externalRef;
 	private final RepositoryEntryManagedFlag[] managedFlags;
 	
-	private final boolean membersOnly;
-	private final int access;
-	private final int statusCode;
+	private final RepositoryEntryStatusEnum status;
+	private final boolean allUsers;
+	private final boolean guests;
 	
 	private final Date lastUsage;
 	
@@ -83,9 +84,9 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		externalRef = re.getExternalRef();
 		managedFlags = re.getManagedFlags();
 		
-		membersOnly = re.isMembersOnly();
-		access = re.getAccess();
-		statusCode = re.getStatusCode();
+		status = re.getEntryStatus();
+		allUsers = re.isAllUsers();
+		guests = re.isGuests();
 		
 		lastUsage = re.getStatistics().getLastUsage();
 		
@@ -113,11 +114,6 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public String getResourceType() {
 		return olatResource.getResourceableTypeName();
-	}
-
-	@Override
-	public int getStatusCode() {
-		return statusCode;
 	}
 
 	@Override
@@ -175,13 +171,18 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	}
 
 	@Override
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return status;
 	}
 
 	@Override
-	public int getAccess() {
-		return access;
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+
+	@Override
+	public boolean isGuests() {
+		return guests;
 	}
 
 	@Override

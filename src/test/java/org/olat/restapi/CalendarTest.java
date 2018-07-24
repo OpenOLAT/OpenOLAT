@@ -60,6 +60,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.CourseConfigVO;
@@ -103,7 +104,8 @@ public class CalendarTest extends OlatJerseyTestCase {
 			//create a course with a calendar
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id1, RepositoryEntry.ACC_OWNERS);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id1,
+					RepositoryEntryStatusEnum.preparation, false, false);
 			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 			
@@ -131,7 +133,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 			calendarManager.addEventTo(calendarWrapper.getKalendar(), event2);
 			
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course1, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_USERS, false);
+			entry = repositoryManager.setAccess(entry, RepositoryEntryStatusEnum.published, true, false);
 			repositoryService.addRole(id1, entry, GroupRoles.participant.name());
 			
 			dbInstance.commit();
@@ -141,7 +143,8 @@ public class CalendarTest extends OlatJerseyTestCase {
 			//create a course with a calendar
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
-			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id2, RepositoryEntry.ACC_OWNERS);
+			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id2,
+					RepositoryEntryStatusEnum.preparation, false, false);
 			course2 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 
@@ -149,7 +152,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 			Assert.assertNotNull(calendarWrapper);
 
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course2, false);
-			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_USERS, false);
+			entry = repositoryManager.setAccess(entry, RepositoryEntryStatusEnum.published, true, false);
 			dbInstance.commit();
 		}
 	}

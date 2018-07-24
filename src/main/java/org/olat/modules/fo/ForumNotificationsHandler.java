@@ -52,6 +52,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -91,7 +92,9 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 				
 				if("CourseModule".equals(p.getResName())) {
 					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
-					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					if(re == null || re.getEntryStatus() == RepositoryEntryStatusEnum.closed
+							|| re.getEntryStatus() == RepositoryEntryStatusEnum.trash
+							|| re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
 				}

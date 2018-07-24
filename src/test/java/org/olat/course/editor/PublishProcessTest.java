@@ -44,6 +44,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -302,7 +303,7 @@ public class PublishProcessTest extends OlatTestCase {
 		
 		//deploy a course
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		RepositoryEntry re = deployRawCourseFromZIP(courseFile, softKey, 1);
+		RepositoryEntry re = deployRawCourseFromZIP(courseFile, softKey);
 		Assert.assertNotNull(re);
 		return re;
 	}
@@ -314,7 +315,7 @@ public class PublishProcessTest extends OlatTestCase {
 	 * @param access
 	 * @return
 	 */
-	private RepositoryEntry deployRawCourseFromZIP(File exportedCourseZIPFile, String softKey, int access) {
+	private RepositoryEntry deployRawCourseFromZIP(File exportedCourseZIPFile, String softKey) {
 		// create the course instance
 		OLATResource newCourseResource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, exportedCourseZIPFile);
@@ -333,11 +334,13 @@ public class PublishProcessTest extends OlatTestCase {
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, importExport.getInitialAuthor(), importExport.getResourceName(),
-				importExport.getDisplayName(), importExport.getDescription(), newCourseResource, 0, defOrganisation);
+				importExport.getDisplayName(), importExport.getDescription(), newCourseResource,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		// ok, continue import
 		re.setSoftkey(softKey);
 		// set access configuration
-		re.setAccess(access);
+		//TODO repo was only 1
+		re.setEntryStatus(RepositoryEntryStatusEnum.preparation);
 		// save the repository entry
 		re = repositoryService.update(re);
 

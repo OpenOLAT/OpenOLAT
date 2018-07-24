@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
+import org.olat.selenium.page.repository.UserAccess;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -101,29 +101,28 @@ public class PublisherPageFragment {
 	}
 	
 	public PublisherPageFragment selectAccess(UserAccess access) {
-		if(access == UserAccess.none) {
-			By labelSwitchBy = By.xpath("//div[@id='o_cousersSwitch']//label[input[@name='usersSwitch'][@type='radio'][@value='n']]");
-			browser.findElement(labelSwitchBy).click();
-			OOGraphene.waitBusy(browser);
-		} else {
-			By labelSwitchBy = By.xpath("//div[@id='o_cousersSwitch']//label[input[@name='usersSwitch'][@type='radio'][@value='y']]");
-			browser.findElement(labelSwitchBy).click();
+		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
+		OOGraphene.scrollTo(publishStatusBy, browser);
+		WebElement publishStatusEl = browser.findElement(publishStatusBy);
+		Select publishStatusSelect = new Select(publishStatusEl);
+		publishStatusSelect.selectByValue("published");
+
+		if(access == UserAccess.registred || access == UserAccess.guest) {
+			By allUsersBy = By.xpath("//label/input[@name='cif.allusers' and @value='y']");
+			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
 			
 			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
-			OOGraphene.waitElement(accessConfigurationBy, 5, browser);
+			OOGraphene.waitElement(accessConfigurationBy, browser);
+		}
+		if(access == UserAccess.guest) {
+			By guestsBy = By.xpath("//label[input[@name='cif.guests' and @value='y']]");
+			By labelGuestsBy = By.xpath("//label/input[@name='cif.guests' and @value='y']");
+			OOGraphene.scrollTo(guestsBy, browser);
 			
-			By publishForUserBy = By.id("o_fiopublishedForUsers_SELBOX");
-			OOGraphene.scrollTo(publishForUserBy, browser);
-			WebElement publishForUserEl = browser.findElement(publishForUserBy);
-			Select publishForUserSelect = new Select(publishForUserEl);
-			switch(access) {
-				case registred: publishForUserSelect.selectByValue("u"); break;
-				case guest: publishForUserSelect.selectByValue("g"); break;
-				case membersOnly: publishForUserSelect.selectByValue("m"); break;
-				default: {}
-			}
-			OOGraphene.waitBusy(browser);
+			WebElement guestsEl = browser.findElement(guestsBy);
+			WebElement labelGuestsEl = browser.findElement(labelGuestsBy);
+			OOGraphene.check(labelGuestsEl, guestsEl, Boolean.TRUE);
 		}
 		return this;
 	}

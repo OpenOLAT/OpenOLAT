@@ -77,6 +77,7 @@ import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -138,7 +139,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		ImsQTI21Resource ores = new ImsQTI21Resource();
 		
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		dbInstance.commit();
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
@@ -286,8 +288,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			}
 		} 
 
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
+					resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

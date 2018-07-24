@@ -102,7 +102,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testOptions()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-1-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-1-");
 		
 		//list root content of its webdav folder
 		WebDAVConnection conn = new WebDAVConnection();
@@ -139,7 +139,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testHead()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-2-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2-");
 
 		WebDAVConnection conn = new WebDAVConnection();
 		conn.setCredentials(user.getName(), "A6B7C8");
@@ -167,7 +167,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testPropFind()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-2-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2-");
 
 		WebDAVConnection conn = new WebDAVConnection();
 		conn.setCredentials(user.getName(), "A6B7C8");
@@ -192,7 +192,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testMkcol_public()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2a-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2a-");
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
@@ -226,7 +226,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testMove_public()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2b-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2b-");
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
@@ -260,7 +260,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testCopy_public()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2b-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2b-");
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
@@ -296,7 +296,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testPut_course()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-3-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-3-");
 		deployTestCourse(author, null);
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -337,7 +337,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testPut_PropPatch_home()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-3-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-3-");
 		deployTestCourse(author, null);
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -397,8 +397,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
-		Identity assistant = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-5-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-4-");
+		Identity assistant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-5-");
 		deployTestCourse(author, assistant);
 
 		WebDAVConnection authorConn = new WebDAVConnection();
@@ -458,8 +458,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock_propfind_lockedInOpenOLAT()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
-		Identity assistant = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-5-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-4-");
+		Identity assistant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-5-");
 		RepositoryEntry re = deployTestCourse(author, assistant);
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
 		Assert.assertNotNull(course);
@@ -506,7 +506,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	public void testLock_guilike_lockedWithWebdAV()
 	throws IOException, URISyntaxException {
 		//create a user
-		Identity user = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-2c-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-2c-");
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
@@ -651,7 +651,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		webDAVModule.setEnableLearnersBookmarksCourse(true);
 		webDAVModule.setEnableLearnersParticipatingCourses(true);
 		
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-webdav");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("auth-webdav");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-webdav");
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
 		RepositoryEntry course = deployTestCourse(author, null, "WebDAV course", courseWithForumsUrl);
@@ -684,7 +684,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		webDAVModule.setEnableLearnersBookmarksCourse(true);
 		webDAVModule.setEnableLearnersParticipatingCourses(true);
 		
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-webdav");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("auth-webdav");
 		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
 		deployTestCourse(author, null, "WebDAV course", courseWithForumsUrl);
 		dbInstance.commitAndCloseSession();
@@ -723,7 +723,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		webDAVModule.setEnableLearnersParticipatingCourses(true);
 		
 		//create a user
-		Identity auth = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
+		Identity auth = JunitTestHelper.createAndPersistIdentityAsRndAuthor("webdav-4-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-5");
 		RepositoryEntry courseEntry = deployMkdirsCourse(auth);
 		repositoryEntryRelationDao.addRole(participant, courseEntry, GroupRoles.participant.name());

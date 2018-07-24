@@ -38,11 +38,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryOrder;
 import org.olat.repository.RepositoryManager;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseVO;
@@ -90,8 +90,8 @@ public class UserCoursesWebService {
 			@Context Request request) {
 		
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsStudent(identity, null, start, limit, RepositoryEntryOrder.nameAsc);
-			int totalCount= repositoryManager.countLearningResourcesAsStudent(identity);
+			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsStudent(identity, "CourseModule", start, limit, RepositoryEntryOrder.nameAsc);
+			int totalCount= repositoryManager.countLearningResourcesAsStudent(identity, "CourseModule");
 
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
@@ -99,7 +99,7 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsStudent(identity, null, 0, -1, RepositoryEntryOrder.nameAsc);
+			List<RepositoryEntry> repoEntries = repositoryManager.getLearningResourcesAsStudent(identity, "CourseModule", 0, -1, RepositoryEntryOrder.nameAsc);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
@@ -189,11 +189,11 @@ public class UserCoursesWebService {
 		int count=0;
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
-				ICourse course = CoursesWebService.loadCourse(repoEntry.getOlatResource().getResourceableId());
+				ICourse course = CourseFactory.loadCourse(repoEntry);
 				if(course != null) {
 					voList.add(ObjectFactory.get(repoEntry, course));
 				}
-				if(count % 33 == 0) {
+				if(count++ % 33 == 0) {
 					dbInstance.commitAndCloseSession();
 				}
 			} catch (Exception e) {

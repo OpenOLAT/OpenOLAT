@@ -57,6 +57,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -723,7 +724,8 @@ public class EPStructureManagerTest extends OlatTestCase {
 		epStructureManager.fillStructureElement(el, title, description);
 
 		//create a repository entry with default security settings
-		RepositoryEntry re = repositoryService.create(identity, null, "-", title, null, el.getOlatResource(), RepositoryEntry.ACC_OWNERS, defOrganisation);
+		RepositoryEntry re = repositoryService.create(identity, null, "-", title, null, el.getOlatResource(),
+				RepositoryEntryStatusEnum.preparation, defOrganisation);
 				
 		dbInstance.commit();
 		

@@ -45,7 +45,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21CorrectionPage;
 import org.olat.selenium.page.qti.QTI21Page;
-import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
+import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;

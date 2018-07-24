@@ -63,6 +63,7 @@ import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.Price;
@@ -1390,8 +1391,8 @@ public class BusinessGroupDAO {
 		}
 
 		@Override
-		public int getStatusCode() {
-			return 0;
+		public RepositoryEntryStatusEnum getEntryStatus() {
+			return null;
 		}
 
 		@Override

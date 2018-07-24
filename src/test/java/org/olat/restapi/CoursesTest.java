@@ -68,6 +68,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -113,9 +114,9 @@ public class CoursesTest extends OlatJerseyTestCase {
 			// create course and persist as OLATResourceImpl
 			admin = securityManager.findIdentityByName("administrator");
 			
-			re1 = JunitTestHelper.deployBasicCourse(admin, "courses1", RepositoryEntry.ACC_OWNERS);
-			re2 = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
-			re3 = JunitTestHelper.deployBasicCourse(admin, RepositoryEntry.ACC_OWNERS);
+			re1 = JunitTestHelper.deployBasicCourse(admin, "courses1", RepositoryEntryStatusEnum.preparation, false, false);
+			re2 = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+			re3 = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
 			dbInstance.commit();
 
 			externalId = UUID.randomUUID().toString();

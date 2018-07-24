@@ -45,17 +45,17 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public Date getCreationDate();
 	
-	public int getAccess();
-	
-	public int getStatusCode();
-	
 	public String getAuthors();
 	
 	public String getLocation();
 	
 	public String getExpenditureOfWork();
 	
-	public boolean isMembersOnly();
+	public RepositoryEntryStatusEnum getEntryStatus();
+	
+	public boolean isAllUsers();
+	
+	public boolean isGuests();
 	
 	public OLATResource getOlatResource();
 	

@@ -26,6 +26,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 
 /**
@@ -49,9 +50,9 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String authors;
 	private final String location;
 	private final String expenditureOfWork;
-	private final boolean membersOnly;
-	private final int access;
-	private final int statusCode;
+	private final RepositoryEntryStatusEnum status;
+	private final boolean allUsers;
+	private final boolean guests;
 	
 	private final OLATResource olatResource;
 	private final RepositoryEntryLifecycle lifecycle;
@@ -82,9 +83,9 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		authors = re.getAuthors();
 		location = re.getLocation();
 		expenditureOfWork = re.getExpenditureOfWork();
-		membersOnly = re.isMembersOnly();
-		access = re.getAccess();
-		statusCode = re.getStatusCode();
+		status = re.getEntryStatus();
+		allUsers = re.isAllUsers();
+		guests = re.isGuests();
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
@@ -145,19 +146,20 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		this.lastModified = lastModified;
 	}
 
+
 	@Override
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return status;
 	}
 
 	@Override
-	public int getAccess() {
-		return access;
+	public boolean isAllUsers() {
+		return allUsers;
 	}
 
 	@Override
-	public int getStatusCode() {
-		return statusCode;
+	public boolean isGuests() {
+		return guests;
 	}
 
 	@Override

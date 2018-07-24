@@ -31,6 +31,6 @@ public interface RepositoryEntryShort extends RepositoryEntryRef {
 	
 	public String getResourceType();
 	
-	public int getStatusCode();
+	public RepositoryEntryStatusEnum getEntryStatus();
 	
 }

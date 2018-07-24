@@ -55,6 +55,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.fileresource.types.ImageFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -102,8 +103,8 @@ public class JunitTestHelper {
 				.createOLATResourceInstance(new ImageFileResource());
 		Organisation defOrganisation = CoreSpringFactory.getImpl(OrganisationService.class)
 				.getDefaultOrganisation();
-		return CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(author, "", "-", "Image - " + resource.getResourceableId(), "", resource, 1, defOrganisation);
+		return CoreSpringFactory.getImpl(RepositoryService.class).create(author, "", "-", "Image - " + resource.getResourceableId(), "",
+				resource, RepositoryEntryStatusEnum.preparation, defOrganisation);
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {
@@ -199,6 +200,32 @@ public class JunitTestHelper {
 		return identity;
 	}
 	
+	public static final Identity createAndPersistIdentityAsRndLearnResourceManager(String prefixLogin) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsLearnResourceManager(login);
+	}
+	
+	/**
+	 * Create an identity with admin permissions
+	 * @param login
+	 * @return
+	 */
+	private static final Identity createAndPersistIdentityAsLearnResourceManager(String login) {
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity identity = securityManager.findIdentityByName(login);
+		if (identity != null) {
+			return identity;
+		}
+
+		User user = CoreSpringFactory.getImpl(UserManager.class)
+				.createUser("first" + login, "last" + login, login + "@" + maildomain);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		addToDefaultOrganisation(identity, OrganisationRoles.learnresourcemanager);
+		addToDefaultOrganisation(identity, OrganisationRoles.user);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+		return identity;
+	}
+	
 	private static void addToDefaultOrganisation(Identity identity, OrganisationRoles role) {
 		CoreSpringFactory.getImpl(OrganisationService.class).addMember(identity, role);
 	}
@@ -224,12 +251,10 @@ public class JunitTestHelper {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null, r, 0, defOrganisation);
-		if(membersOnly) {
-			re.setAccess(RepositoryEntry.ACC_OWNERS);
-			re.setMembersOnly(true);
-		} else {
-			re.setAccess(RepositoryEntry.ACC_USERS);
+		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null,
+				r, RepositoryEntryStatusEnum.published, defOrganisation);
+		if(!membersOnly) {
+			re.setAllUsers(true);
 		}
 		repositoryService.update(re);
 		return re;
@@ -243,7 +268,7 @@ public class JunitTestHelper {
 		RepositoryEntry re = null;
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Demo-Kurs-7.1.zip");
-			re = deployCourse(initialAuthor, "Demo-Kurs-7.1", RepositoryEntry.ACC_USERS, courseUrl);
+			re = deployCourse(initialAuthor, "Demo-Kurs-7.1", RepositoryEntryStatusEnum.published, true, false, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -258,7 +283,7 @@ public class JunitTestHelper {
 	 */
 	public static RepositoryEntry deployBasicCourse(Identity initialAuthor) {
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		return deployBasicCourse(initialAuthor, displayname, RepositoryEntry.ACC_USERS);
+		return deployBasicCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, true, false);
 	}
 	
 	/**
@@ -268,9 +293,10 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, int access) {
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		return deployBasicCourse(initialAuthor, displayname, access);
+		return deployBasicCourse(initialAuthor, displayname, status, allUsers, guests);
 	}
 
 	/**
@@ -281,20 +307,22 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname, int access) {
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Basic_course.zip");
-			return deployCourse(initialAuthor, displayname, access, courseUrl);
+			return deployCourse(initialAuthor, displayname, status, allUsers, guests, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
-	public static RepositoryEntry deployEmptyCourse(Identity initialAuthor, String displayname, int access) {
+	public static RepositoryEntry deployEmptyCourse(Identity initialAuthor, String displayname,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Empty_course.zip");
-			return deployCourse(initialAuthor, displayname, access, courseUrl);
+			return deployCourse(initialAuthor, displayname, status, allUsers, guests, courseUrl);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -310,7 +338,7 @@ public class JunitTestHelper {
 	 * @return The repository entry of the course
 	 */
 	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, URL courseUrl) {
-		return deployCourse(initialAuthor, displayname, RepositoryEntry.ACC_USERS, courseUrl);
+		return deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, true, false, courseUrl);
 	}
 	
 	/**
@@ -321,10 +349,11 @@ public class JunitTestHelper {
 	 * @param courseUrl The file to import
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, int access, URL courseUrl) {
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, URL courseUrl) {
 		try {
 			File courseFile = new File(courseUrl.toURI());
-			return deployCourse(initialAuthor, displayname, courseFile, access);
+			return deployCourse(initialAuthor, displayname, courseFile, status, allUsers, guests);
 		} catch (URISyntaxException e) {
 			log.error("", e);
 			return null;
@@ -340,7 +369,7 @@ public class JunitTestHelper {
 	 * @return The repository entry of the course
 	 */
 	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile) {	
-		return deployCourse(initialAuthor, displayname, courseFile, RepositoryEntry.ACC_USERS) ;
+		return deployCourse(initialAuthor, displayname, courseFile, RepositoryEntryStatusEnum.published, true, false) ;
 	}
 	
 	/**
@@ -351,7 +380,8 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile, int access) {		
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {		
 		try {
 			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
@@ -360,7 +390,7 @@ public class JunitTestHelper {
 			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course", true, defOrganisation, Locale.ENGLISH, courseFile, null);
 			
 			ICourse course = CourseFactory.loadCourse(re);
-			CourseFactory.publishCourse(course, access, false,  initialAuthor, Locale.ENGLISH);
+			CourseFactory.publishCourse(course, status, allUsers, guests, initialAuthor, Locale.ENGLISH);
 			return  CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(re.getKey());
 		} catch (Exception e) {
 			log.error("", e);

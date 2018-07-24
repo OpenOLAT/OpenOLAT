@@ -50,31 +50,12 @@ public class RepositoryEntryAccessColumnDescriptor implements CustomCellRenderer
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry)val;
-			if(re.isMembersOnly()) {
-				sb.append(translator.translate("table.header.access.membersonly")); 
-			} else {
-				switch (re.getAccess()) {
-					case RepositoryEntry.ACC_OWNERS:
-						sb.append(translator.translate("table.header.access.owner"));
-						break;
-					case RepositoryEntry.ACC_OWNERS_AUTHORS:
-						sb.append(translator.translate("table.header.access.author"));
-						break;
-					case RepositoryEntry.ACC_USERS:
-						sb.append(translator.translate("table.header.access.user"));
-						break;
-					case RepositoryEntry.ACC_USERS_GUESTS: {
-						if(!guestLoginEnabled) {
-							sb.append(translator.translate("table.header.access.user"));
-						} else {
-							sb.append(translator.translate("table.header.access.guest"));
-						}
-						break;
-					} default:						
-						// OLAT-6272 in case of broken repo entries with no access code
-						// return error instead of nothing
-						sb.append("ERROR");
-				}
+			sb.append(translator.translate("table.status.".concat(re.getEntryStatus().name())));
+			if(re.isAllUsers()) {
+				sb.append(translator.translate("table.allusers"));
+			}
+			if(re.isGuests() && guestLoginEnabled) {
+				sb.append(translator.translate("table.guests"));
 			}
 		}
 	}

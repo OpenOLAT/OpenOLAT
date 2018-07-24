@@ -48,6 +48,7 @@ import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		forumNode.setNoAccessExplanation("You don't have access");
 		course1.getEditorTreeModel().addCourseNode(forumNode, course1.getRunStructure().getRootNode());
 		
-		CourseFactory.publishCourse(course1, RepositoryEntry.ACC_USERS, false, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course1, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
 		
 		dbInstance.intermediateCommit();
 	}

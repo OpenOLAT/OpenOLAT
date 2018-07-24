@@ -41,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.CourseVO;
@@ -76,7 +77,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("My-course-");
 		
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(user);
-		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_OWNERS, true);
+		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
 		repositoryService.addRole(user, courseRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -84,7 +85,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		Assert.assertTrue(conn.login(user.getName(), JunitTestHelper.PWD));
 		
 		//without paging
-		URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(user.getKey().toString()).path("/courses/my").build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(user.getKey().toString()).path("courses").path("my").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
@@ -93,7 +94,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		Assert.assertEquals(1, courses.size());
 
 		//with paging
-		URI pagedRequest = UriBuilder.fromUri(getContextURI()).path("/users").path(user.getKey().toString()).path("/courses/my")
+		URI pagedRequest = UriBuilder.fromUri(getContextURI()).path("users").path(user.getKey().toString()).path("courses").path("my")
 				.queryParam("start", "0").queryParam("limit", "10").build();
 		HttpGet pagedMethod = conn.createGet(pagedRequest, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse pagedResponse = conn.execute(pagedMethod);
@@ -112,7 +113,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		//prepare a course with a tutor
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-teacher-");
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(teacher);
-		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_OWNERS, true);
+		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, false, false);
 		repositoryService.addRole(teacher, courseRe, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -148,7 +149,7 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 		//prepare a course with a tutor
 		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("Course-teacher-" + UUID.randomUUID().toString());
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(me);
-		repositoryManager.setAccess(courseRe, RepositoryEntry.ACC_USERS, false);
+		repositoryManager.setAccess(courseRe, RepositoryEntryStatusEnum.published, true, false);
 		markManager.setMark(courseRe, me, null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
 		dbInstance.commitAndCloseSession();
 

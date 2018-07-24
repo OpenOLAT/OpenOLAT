@@ -34,6 +34,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
@@ -54,6 +55,7 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -550,7 +552,7 @@ public class LectureBlockRollCallDAO {
 			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		
-		StringBuilder sb = new StringBuilder(2048);
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select ident.key as participantKey, ident.name as participantName,")
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
@@ -589,11 +591,10 @@ public class LectureBlockRollCallDAO {
 		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
 		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
 		  .append("     and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
-		  .append("     and re.access >= ").append(RepositoryEntry.ACC_OWNERS)
+		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
 		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("     and (re.access >= ").append(RepositoryEntry.ACC_USERS)
-		  .append("     or (re.access = ").append(RepositoryEntry.ACC_OWNERS).append(" and re.membersOnly=true))")
+		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ))");
 	
 
@@ -715,7 +716,7 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams,
-			List<UserPropertyHandler> userPropertyHandlers, StringBuilder sb) {
+			List<UserPropertyHandler> userPropertyHandlers, QueryBuilder sb) {
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
 			if (login.contains("_") && dbInstance.isOracle()) {

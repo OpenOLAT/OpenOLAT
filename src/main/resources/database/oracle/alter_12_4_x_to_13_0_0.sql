@@ -189,6 +189,16 @@ alter table o_re_to_tax_level add constraint re_to_lev_tax_lev_idx foreign key (
 create index idx_re_to_lev_tax_lev_idx on o_re_to_tax_level (fk_taxonomy_level);
 
 
+alter table o_repositoryentry add status varchar(16) default 'preparation' not null;
+alter table o_repositoryentry add allusers number default 0 not null;
+alter table o_repositoryentry add guests number default 0 not null;
+alter table o_repositoryentry modify canlaunch number default 0;
+alter table o_repositoryentry modify accesscode number(11) default 0;
+alter table o_repositoryentry modify statuscode number(11) default 0 not null;
+
+create index re_status_idx on o_repositoryentry (status);
+
+
 -- evaluation forms
 create table o_eva_form_survey (
    id number(20) GENERATED ALWAYS AS IDENTITY,

@@ -58,6 +58,7 @@ import org.olat.modules.webFeed.ui.FeedRuntimeController;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -91,7 +92,7 @@ public class BlogHandler implements RepositoryHandler {
 		OLATResourceable ores = FeedManager.getInstance().createBlogResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -116,7 +117,7 @@ public class BlogHandler implements RepositoryHandler {
 		FileResource.copyResource(file, filename, blogRoot);
 		FeedManager.getInstance().importFeedFromXML(resource, true);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
 	}

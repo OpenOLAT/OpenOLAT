@@ -25,13 +25,14 @@ import java.util.List;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class AutomaticLifecycleService {
 	
 	public void manage() {
 		close();
-		unpublish();
+		//unpublish();
 		delete();
 	}
 	
@@ -84,13 +85,12 @@ public class AutomaticLifecycleService {
 	}
 	
 	public List<RepositoryEntry> getRepositoryEntriesToClose(Date date) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(512);//TODO repo unit
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.statusCode=").append(RepositoryEntryStatus.REPOSITORY_STATUS_OPEN)
-		  .append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());//TODO repo access
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -102,7 +102,7 @@ public class AutomaticLifecycleService {
 				.setParameter("now", endOfDay)
 				.getResultList();
 	}
-	
+	/*
 	private void unpublish() {
 		String autoUnpublish = repositoryModule.getLifecycleAutoUnpublish();
 		if(StringHelper.containsNonWhitespace(autoUnpublish)) {
@@ -126,13 +126,13 @@ public class AutomaticLifecycleService {
 	}
 	
 	public List<RepositoryEntry> getRepositoryEntriesToUnpublish(Date date) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();//TODO repo unit
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
 		  .append(" where lifecycle.validTo<:now and not(v.statusCode=").append(RepositoryEntryStatus.REPOSITORY_STATUS_UNPUBLISHED).append(")")
-		  .append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+		  .append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);//TODO repo access
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -143,7 +143,7 @@ public class AutomaticLifecycleService {
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("now", endOfDay)
 				.getResultList();
-	}
+	}*/
 	
 	private void delete() {
 		String autoDelete = repositoryModule.getLifecycleAutoDelete();
@@ -168,12 +168,12 @@ public class AutomaticLifecycleService {
 	}
 	
 	public List<RepositoryEntry> getRepositoryEntriesToDelete(Date date) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+		  .append(" inner join fetch v.lifecycle as lifecycle")//TODO repo access
+		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);

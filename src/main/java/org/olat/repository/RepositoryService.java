@@ -58,7 +58,7 @@ public interface RepositoryService {
 
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt,
 			String resourceName, String displayname, String description,
-			OLATResource resource, int access, Organisation organisation);
+			OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation);
 
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname);
 

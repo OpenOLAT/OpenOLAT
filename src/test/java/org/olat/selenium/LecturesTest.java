@@ -46,7 +46,7 @@ import org.olat.selenium.page.lecture.RollCallInterceptorPage;
 import org.olat.selenium.page.lecture.TeacherRollCallPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
-import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
+import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;

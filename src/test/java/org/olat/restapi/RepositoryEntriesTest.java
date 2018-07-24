@@ -58,6 +58,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -296,7 +297,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
 		assertEquals("CP demo", re.getDisplayname());
-		assertEquals(RepositoryEntry.ACC_USERS, re.getAccess());
+		Assert.assertTrue(re.isAllUsers());
+		Assert.assertFalse(re.isGuests());//TODO repo access
 		
 		conn.shutdown();
 	}
@@ -462,7 +464,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		dbInstance.intermediateCommit();
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry d = repositoryService.create(null, displayName, "-", displayName, "Repo entry", r, 0, defOrganisation);
+		RepositoryEntry d = repositoryService.create(null, displayName, "-", displayName, "Repo entry",
+				r, RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commit();
 		return d;
 	}

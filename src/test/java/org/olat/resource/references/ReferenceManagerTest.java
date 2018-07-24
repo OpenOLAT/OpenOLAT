@@ -42,6 +42,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
@@ -216,9 +217,12 @@ public class ReferenceManagerTest extends OlatTestCase {
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("Asuka");
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry course1 = repositoryService.create(null,"Asuka Langley", "-", "Reference Manager course 1", "", null, 0, defOrganisation);
-		RepositoryEntry course2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 2", "", null, 0, defOrganisation);
-		RepositoryEntry test = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test ", "", null, 0, defOrganisation);
+		RepositoryEntry course1 = repositoryService.create(null,"Asuka Langley", "-", "Reference Manager course 1", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 2", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry test = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test ", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		// add the references
 		referenceManager.addReference(course1.getOlatResource(), test.getOlatResource(), "86234");
 		referenceManager.addReference(course2.getOlatResource(), test.getOlatResource(), "78437590");
@@ -257,13 +261,20 @@ public class ReferenceManagerTest extends OlatTestCase {
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("Asuka");
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry course1 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 1", "", null, 0, defOrganisation);
-		RepositoryEntry course2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 2", "", null, 0, defOrganisation);
-		RepositoryEntry course3 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 3", "", null, 0, defOrganisation);
-		RepositoryEntry course4 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 4", "", null, 0, defOrganisation);
-		RepositoryEntry test12 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 12", "", null, 0, defOrganisation);
-		RepositoryEntry test2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 2", "", null, 0, defOrganisation);
-		RepositoryEntry test234 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 234", "", null, 0, defOrganisation);
+		RepositoryEntry course1 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 1", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 2", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course3 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 3", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course4 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 4", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry test12 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 12", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry test2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 2", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry test234 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 234", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		// add the references
 		referenceManager.addReference(course1.getOlatResource(), test12.getOlatResource(), "45345");
 		referenceManager.addReference(course2.getOlatResource(), test12.getOlatResource(), "453421");
@@ -337,15 +348,22 @@ public class ReferenceManagerTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Rei");
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry course1 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 1 permission", "", null, 0, defOrganisation);
-		RepositoryEntry course2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 2 permission", "", null, 0, defOrganisation);
-		RepositoryEntry course3 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 3 permission", "", null, 0, defOrganisation);
-		RepositoryEntry course4 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 4 permission", "", null, 0, defOrganisation);
-		RepositoryEntry test12 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 12 permission", "", null, 0, defOrganisation);
+		RepositoryEntry course1 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 1 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 2 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course3 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 3 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry course4 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager course 4 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry test12 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 12 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		repositoryEntryRelationDao.addRole(id1, test12, GroupRoles.owner.name());
-		RepositoryEntry test2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 2 permission", "", null, 0, defOrganisation);
+		RepositoryEntry test2 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 2 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		repositoryEntryRelationDao.addRole(id2, test2, GroupRoles.owner.name());
-		RepositoryEntry test234 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 234 permission", "", null, 0, defOrganisation);
+		RepositoryEntry test234 = repositoryService.create(null, "Asuka Langley", "-", "Reference Manager test 234 permission", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		repositoryEntryRelationDao.addRole(id2, test234, GroupRoles.owner.name());
 		
 		// add the references

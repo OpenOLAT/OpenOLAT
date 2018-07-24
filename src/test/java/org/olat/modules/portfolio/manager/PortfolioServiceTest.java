@@ -52,6 +52,7 @@ import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
@@ -903,14 +904,6 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 	}
 	
-	private RepositoryEntry createTemplate(Identity initialAuthor, String displayname, String description) {
-		OLATResource resource = portfolioService.createBinderTemplateResource();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
-		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, Locale.ENGLISH);
-		return re;
-	}
-	
 	@Test
 	public void deleteBinder() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("del-binder-");
@@ -1206,6 +1199,18 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// the media
 		Media reloadedPermanentMedia = portfolioService.getMediaByKey(permanentMedia.getKey());
 		Assert.assertNotNull(reloadedPermanentMedia);
-		
+	}
+	
+	private RepositoryEntry createTemplate(Identity initialAuthor,  String displayname, String description) {
+		return createTemplate(initialAuthor, RepositoryEntryStatusEnum.preparation, displayname, description);
+	}
+	
+	private RepositoryEntry createTemplate(Identity initialAuthor, RepositoryEntryStatusEnum status, String displayname, String description) {
+		OLATResource resource = portfolioService.createBinderTemplateResource();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description,
+				resource, status, defOrganisation);
+		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, Locale.ENGLISH);
+		return re;
 	}
 }

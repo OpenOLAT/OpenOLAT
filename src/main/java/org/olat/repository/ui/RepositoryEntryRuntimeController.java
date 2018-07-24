@@ -68,6 +68,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -447,11 +448,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		entries = removeRepositoryEntry(entries);
-		if(entries != null && entries.size() > 0) {
+		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equalsIgnoreCase(type)) {
 				if(handler.supportsEdit(re) == EditionSupport.yes
-						&& !repositoryManager.createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
+						&& re.getEntryStatus() != RepositoryEntryStatusEnum.closed) {
 					doEdit(ureq);
 				}
 			} else if("Catalog".equalsIgnoreCase(type)) {
@@ -794,15 +795,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			launchContent(ureq, security);
 		} else {
 			// guest are allowed to see resource with BARG 
-			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
+			if(re.isAllUsers() && ureq.getUserSession().getRoles().isGuestOnly()) {
 				launchContent(ureq, security);
 			} else {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
 				if(acResult.isAccessible()) {
 					launchContent(ureq, security);
 				} else if (re != null
-						&& !re.getRepositoryEntryStatus().isUnpublished()
-						&& !re.getRepositoryEntryStatus().isClosed()
+						&& !re.getEntryStatus().decommissioned()
 						&& !acResult.getAvailableMethods().isEmpty()) {
 					//try auto booking
 					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);

@@ -36,8 +36,9 @@ import org.olat.repository.RepositoryEntry;
 public class RepositoryEntryAccessVO {
 
 	private Long repoEntryKey;
-	private int access;
-	private boolean membersOnly;
+	private String status;
+	private boolean allUsers;
+	private boolean guests;
 	
 	public RepositoryEntryAccessVO() {
 		//
@@ -46,8 +47,9 @@ public class RepositoryEntryAccessVO {
 	public static RepositoryEntryAccessVO valueOf(RepositoryEntry entry) {
 		RepositoryEntryAccessVO accessVo = new RepositoryEntryAccessVO();
 		accessVo.setRepoEntryKey(entry.getKey());
-		accessVo.setAccess(entry.getAccess());
-		accessVo.setMembersOnly(entry.isMembersOnly());
+		accessVo.setStatus(entry.getEntryStatus().name());
+		accessVo.setAllUsers(entry.isAllUsers());
+		accessVo.setGuests(entry.isGuests());
 		return accessVo;
 	}
 
@@ -59,19 +61,27 @@ public class RepositoryEntryAccessVO {
 		this.repoEntryKey = repoEntryKey;
 	}
 
-	public int getAccess() {
-		return access;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public boolean isAllUsers() {
+		return allUsers;
 	}
 
-	public void setMembersOnly(boolean membersOnly) {
-		this.membersOnly = membersOnly;
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+
+	public boolean isGuests() {
+		return guests;
+	}
+
+	public void setGuests(boolean guests) {
+		this.guests = guests;
 	}
 }

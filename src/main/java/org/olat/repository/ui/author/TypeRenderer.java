@@ -30,6 +30,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
@@ -60,12 +61,12 @@ public class TypeRenderer implements FlexiCellRenderer {
 		
 		String cssClass = "";
 		boolean managed = false;
-		int access = -1;
+		RepositoryEntryStatusEnum status = null;
 		if(cellValue instanceof AuthoringEntryRow) {
 			AuthoringEntryRow re = (AuthoringEntryRow) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = re.isManaged();
-			access = re.getAccess();
+			status = re.getEntryStatus();
 		} else if (cellValue instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
@@ -73,7 +74,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 			RepositoryEntry re = (RepositoryEntry) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
-			access = re.getStatusCode();
+			status = re.getEntryStatus();
 		}
 		
 		if(renderer == null) {
@@ -85,7 +86,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 			if (managed) {
 				target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"> </i> ");
 			}
-			if (access == 0) {
+			if (status == null || status == RepositoryEntryStatusEnum.trash || status == RepositoryEntryStatusEnum.deleted) {
 				target.append(" <i class='o_icon o_icon-lg o_icon_deleted'> </i> ");
 			}
 			target.append("</div>");

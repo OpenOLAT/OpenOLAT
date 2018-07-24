@@ -40,6 +40,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDocumentFactory;
@@ -146,7 +147,8 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 						logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
 						continue;
 					}
-					if(repositoryEntry.getAccess() == RepositoryEntry.DELETED) {
+					if(repositoryEntry.getEntryStatus() == RepositoryEntryStatusEnum.trash
+							|| repositoryEntry.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 						continue;
 					}
 					
@@ -212,7 +214,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		if (repositoryEntry == null) {
 			return false;
 		}
-		if(roles.isGuestOnly() && repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
+		if(roles.isGuestOnly() && !repositoryEntry.isGuests()) {
 			return false;
 		}
 		

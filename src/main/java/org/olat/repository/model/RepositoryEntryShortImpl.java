@@ -21,6 +21,7 @@ package org.olat.repository.model;
 
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 
 /**
@@ -34,9 +35,9 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 	private String displayName;
 	private String description;
 	private OLATResource resource;
-	private int access;
-	private int statusCode;
-	private boolean membersOnly;
+	private String status;
+	private boolean allUsers;
+	private boolean guests;
 	
 	
 	@Override
@@ -69,30 +70,34 @@ public class RepositoryEntryShortImpl extends PersistentObject implements Reposi
 	public void setOlatResource(OLATResource resource) {
 		this.resource = resource;
 	}
-
-	public int getAccess() {
-		return access;
+	
+	public String getStatus() {
+		return status;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	@Override
-	public int getStatusCode() {
-		return statusCode;
-	}
-	
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return RepositoryEntryStatusEnum.valueOf(status);
 	}
 
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public boolean isAllUsers() {
+		return allUsers;
 	}
 
-	public void setMembersOnly(boolean membersOnly) {
-		this.membersOnly = membersOnly;
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+
+	public boolean isGuests() {
+		return guests;
+	}
+
+	public void setGuests(boolean guests) {
+		this.guests = guests;
 	}
 
 	@Override

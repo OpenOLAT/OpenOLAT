@@ -70,6 +70,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 
@@ -145,11 +146,13 @@ class GTANotifications {
 		}
 		CourseNode node = course.getRunStructure().getNode(subIdentifier);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		if(entry.getRepositoryEntryStatus().isClosed() || entry.getRepositoryEntryStatus().isUnpublished()) {
+		if(entry == null || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 			return Collections.emptyList();
 		}
 		
-		if(entry != null && node instanceof GTACourseNode) {
+		if(node instanceof GTACourseNode) {
 			gtaNode = (GTACourseNode)node;
 			displayName = entry.getDisplayname();
 			courseEnv = course.getCourseEnvironment();
@@ -770,7 +773,7 @@ class GTANotifications {
 	 */
 	private Task checkRevisionStep(Identity assessedIdentity, BusinessGroup assessedGroup, Task task) {
 		if(task != null) {
-			if(task != null && task.getTaskStatus() == TaskProcess.revision
+			if(task.getTaskStatus() == TaskProcess.revision
 					&& task.getRevisionsDueDate() != null
 					&& task.getRevisionsDueDate().compareTo(new Date()) < 0) {
 				//push to the next step
@@ -791,7 +794,7 @@ class GTANotifications {
 				if(task.getTaskStatus() == TaskProcess.solution || task.getTaskStatus() == TaskProcess.grading || task.getTaskStatus() == TaskProcess.graded) {
 					// step solution or beyond
 					return true;
-				} else if((task == null || task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit
+				} else if((task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit
 						|| task.getTaskStatus() == TaskProcess.review || task.getTaskStatus() == TaskProcess.correction
 						|| task.getTaskStatus() == TaskProcess.revision)
 						&& gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {

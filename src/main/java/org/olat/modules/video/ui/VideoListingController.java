@@ -166,7 +166,7 @@ public class VideoListingController extends FormBasicController implements Activ
 		RepositoryEntry videoEntry = repositoryManager.lookupRepositoryEntry(id);
 		if (repositoryManager.isAllowed(ureq, videoEntry).canLaunch()) {
 			
-			boolean readOnly = repositoryManager.createRepositoryEntryStatus(videoEntry.getStatusCode()).isClosed();
+			boolean readOnly = videoEntry.getEntryStatus().decommissioned();
 			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, true, null, false, true, null, readOnly);
 			listenTo(videoDisplayCtr);
 			toolbarPanel.pushController(videoEntry.getDisplayname(), videoDisplayCtr);

@@ -155,10 +155,54 @@ public class NativeQueryBuilder {
 		sb.append(String.valueOf(sMin));
 		return this;
 	}
+	
+	public NativeQueryBuilder append(Object o) {
+		sb.append(o);
+		return this;
+	}
+	
+	public NativeQueryBuilder in(Object... objects) {
+		if(objects != null && objects.length > 0) {
+			sb.append(" in ('");
+			boolean first = true;
+			for(Object object:objects) {
+				if(object != null) {
+					if(first) {
+						first = false;
+					} else {
+						sb.append("','");
+					}
+					sb.append(object);
+				}
+			}
+			sb.append("')");
+		}
+		return this;
+	}
+	
+	public NativeQueryBuilder in(Enum<?>... objects) {
+		if(objects != null && objects.length > 0) {
+			if(objects.length == 1) {
+				sb.append(" ='").append(objects[0].name()).append("' ");
+			} else {
+				sb.append(" in ('");
+				boolean first = true;
+				for(Enum<?> object:objects) {
+					if(object != null) {
+						if(first) {
+							first = false;
+						} else {
+							sb.append("','");
+						}
+						sb.append(object.name());
+					}
+				}
+				sb.append("')");
+			}
+		}
+		return this;
+	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return sb.toString();

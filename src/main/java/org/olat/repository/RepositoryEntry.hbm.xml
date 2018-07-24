@@ -15,9 +15,9 @@
 
 		<property name="displayname" column="displayname" type="string"/>
 		<property name="description" column="description" type="string"/>
-		<property name="access" column="accesscode" type="int"/>
-		<property name="statusCode" column="statuscode" type="int"/>
-		<property name="membersOnly" column="membersonly" type="boolean"/>
+		<property name="status" column="status" type="string"/>
+		<property name="allUsers" column="allusers" type="boolean"/>
+		<property name="guests" column="guests" type="boolean"/>
 
 		<many-to-one name="olatResource"
                      column="fk_olatresource"

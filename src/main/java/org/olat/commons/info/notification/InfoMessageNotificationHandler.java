@@ -46,6 +46,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +86,8 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 				final String resName = subscriber.getPublisher().getResName();
 				String resSubPath = subscriber.getPublisher().getSubidentifier();
 				
-				String displayName, notificationtitle;
+				String displayName;
+				String notificationtitle;
 				if ("BusinessGroup".equals(resName)) {
 					BusinessGroupService groupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 					BusinessGroup group = groupService.loadBusinessGroup(resId);
@@ -93,7 +95,9 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 					notificationtitle = "notification.title.group";
 				} else {
 					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(resName, resId), false);
-					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					if(re== null || re.getEntryStatus() == RepositoryEntryStatusEnum.closed
+							|| re.getEntryStatus() == RepositoryEntryStatusEnum.trash
+							|| re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}					
 					displayName = re.getDisplayname();	

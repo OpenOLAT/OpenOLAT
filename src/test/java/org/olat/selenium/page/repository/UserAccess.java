@@ -17,22 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository;
-
-
+package org.olat.selenium.page.repository;
 
 /**
  * 
+ * Initial date: 23 juil. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface RepositoryEntryLight extends RepositoryEntryShort {
-
-	public String getDescription();
-	
-	public RepositoryEntryStatusEnum getEntryStatus();
-	
-	public boolean isAllUsers();
-	
-	public boolean isGuests();
-	
+public enum UserAccess {
+	registred,		// published -> all users
+	guest,			// published -> all users, guests
+	membersOnly		// published
 }

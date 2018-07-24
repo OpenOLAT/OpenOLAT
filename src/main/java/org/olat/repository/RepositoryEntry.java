@@ -43,7 +43,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -81,33 +80,11 @@ import org.olat.resource.OLATResourceImpl;
 	@NamedQuery(name="getDisplayNameByResourceKey", query="select v.displayname from repositoryentry v where v.olatResource.key=:resKey"),
 	@NamedQuery(name="getDisplayNameByOlatResourceRedId", query="select v.displayname from repositoryentry v inner join v.olatResource as ores where ores.resId=:resid"),
 	@NamedQuery(name="getDisplayNameByRepositoryEntryKey", query="select v.displayname from repositoryentry v where v.key=:reKey")
-
 })
 public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntryRef, ModifiedInfo, OLATResourceable {
 
 	private static final long serialVersionUID = 5319576295875289054L;
-	// IMPORTANT: Keep relation ACC_OWNERS < ACC_OWNERS_AUTHORS < ACC_USERS < ACC_USERS_GUESTS
-	
-	public static final int DELETED = 0;
-	/**
-	 * limit access to owners
-	 */
-	public static final int ACC_OWNERS = 1; // limit access to owners
-	/**
-	 * limit access to owners and authors
-	 */
-	public static final int ACC_OWNERS_AUTHORS = 2; // limit access to owners and authors
-	/**
-	 * limit access to owners, authors and users
-	 */
-	public static final int ACC_USERS = 3; // limit access to owners, authors and users
-	/**
-	 * no limits
-	 */
-	public static final int ACC_USERS_GUESTS = 4; // no limits
-	
-	public static final String MEMBERS_ONLY =  "membersonly";
-	
+
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
@@ -189,20 +166,19 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@JoinColumn(name="fk_stats", nullable=false, insertable=true, updatable=false)
 	private RepositoryEntryStatistics statistics;
 
-	@Column(name="accesscode", nullable=false, insertable=true, updatable=true)
-	private int access;
+	@Column(name="status", nullable=false, insertable=true, updatable=true)
+	private String status;
+	@Column(name="allusers", nullable=false, insertable=true, updatable=true)
+	private boolean allUsers;
+	@Column(name="guests", nullable=false, insertable=true, updatable=true)
+	private boolean guests;
+	
 	@Column(name="cancopy", nullable=false, insertable=true, updatable=true)
 	private boolean canCopy;
 	@Column(name="canreference", nullable=false, insertable=true, updatable=true)
 	private boolean canReference;
-	@Column(name="canlaunch", nullable=false, insertable=true, updatable=true)
-	private boolean canLaunch;
 	@Column(name="candownload", nullable=false, insertable=true, updatable=true)
 	private boolean canDownload;
-	@Column(name="membersonly", nullable=false, insertable=true, updatable=true)
-	private boolean membersOnly;
-	@Column(name="statuscode", nullable=false, insertable=true, updatable=true)
-	private int statusCode;
 	@Column(name="allowToLeave", nullable=true, insertable=true, updatable=true)
 	private String allowToLeave;
 
@@ -212,14 +188,12 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_deleted_by", nullable=true, insertable=true, updatable=true)
 	private Identity deletedBy;
-
 	
 	/**
 	 * Default constructor.
 	 */
 	public RepositoryEntry() {
 		softkey = CodeHelper.getGlobalForeverUniqueID();
-		access = ACC_OWNERS;
 	}
 
 	@Override
@@ -231,8 +205,6 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	public Date getCreationDate() {
 		return creationDate;
 	}
-
-
 
 	/**
 	 * @return The softkey associated with this repository entry.
@@ -318,8 +290,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 * @return description as HTML snippet
 	 */
 	public String getFormattedDescription() {
-		String descr = Formatter.formatLatexFormulas(getDescription());
-		return descr;		
+		return Formatter.formatLatexFormulas(getDescription());		
 	}
 	
 	/**
@@ -344,25 +315,6 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setAuthors(String authors) {
 		this.authors = authors;
-	}
-
-	/**
-	 * @return Returns the statusCode.
-	 */
-	public int getStatusCode() {
-		return statusCode;
-	}
-
-	/**
-	 * @param statusCode The statusCode to set.
-	 */
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
-	}
-	
-	@Transient
-	public RepositoryEntryStatus getRepositoryEntryStatus() {
-		return new RepositoryEntryStatus(statusCode);
 	}
 	
 	/**
@@ -434,28 +386,6 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	}
 
 	/**
-	 * @return Wether this repo entry can be launched.
-	 */
-	public boolean getCanLaunch() {
-		return canLaunch;
-	}
-
-	/**
-	 * @return Access restrictions.
-	 */
-	public int getAccess() {
-		return access;
-	}
-	
-	/**
-	 * Is the repository entry exclusive
-	 * @return
-	 */
-	public boolean isMembersOnly() {
-		return membersOnly;
-	}
-
-	/**
 	 * @param b
 	 */
 	public void setCanCopy(boolean b) {
@@ -476,27 +406,36 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		canDownload = b;
 	}
 
-	/**
-	 * @param b
-	 */
-	public void setCanLaunch(boolean b) {
-		canLaunch = b;
+	public String getStatus() {
+		return status;
 	}
 
-	/**
-	 * Set access restrictions.
-	 * @param i
-	 */
-	public void setAccess(int i) {
-		access = i;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
-	/**
-	 * Set if the repository entry is exclusive 
-	 * @param membersOnly
-	 */
-	public void setMembersOnly(boolean membersOnly) {
-		this.membersOnly = membersOnly;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return RepositoryEntryStatusEnum.valueOf(status);
+	}
+	
+	public void setEntryStatus(RepositoryEntryStatusEnum status) {
+		this.status = status.name();
+	}
+
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+
+	public boolean isGuests() {
+		return guests;
+	}
+
+	public void setGuests(boolean guests) {
+		this.guests = guests;
 	}
 
 	public String getAllowToLeave() {

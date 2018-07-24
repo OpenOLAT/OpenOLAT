@@ -43,6 +43,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -141,38 +142,39 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		// generate some repo entries
 		int numbRes = 500;
 		for (int i = 0; i < numbRes; i++) {
-			
+
+			// create course and persist as OLATResourceImpl
 			
 			int rest = i%4;
-			int access = 0;
+			boolean guests = false;
+			boolean allUsers = false;
 			Identity owner = null;
 			switch(rest) {
 				case 0: {
-					access = RepositoryEntry.ACC_USERS_GUESTS;
+					guests = true;
+					allUsers = true;
 					owner = user1;
 					break;
 				}
 				case 1: {
-					access = RepositoryEntry.ACC_USERS;
+					allUsers = true;
 					owner = id2;
 					break;
 				}
 				case 2: {
-					access = RepositoryEntry.ACC_OWNERS;
 					owner = learnResourceManager1;
 					break;
 				}
 				case 3: {
-					access = RepositoryEntry.ACC_OWNERS;
 					owner = learnResourceManager2;
 					break;
 				}
 			}
-			
-			// create course and persist as OLATResourceImpl
-			RepositoryEntry re = createCourseRepositoryEntry(owner, i, organisation);
-			re.setAccess(access);
 
+			RepositoryEntry re = createCourseRepositoryEntry(owner, i, organisation);
+			re.setEntryStatus(RepositoryEntryStatusEnum.published);
+			re.setAllUsers(allUsers);
+			re.setGuests(guests);
 			repositoryService.update(re);
 			if (i % 20 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -258,6 +260,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 		params.setRoles(Roles.administratorRoles());
+		params.setIdentity(owner);
 		params.setAuthor(owner.getName());
 		List<RepositoryEntry> myEntries = repositoryEntryQueries.searchEntries(params, 0, -1, true);
 		Assert.assertNotNull(myEntries);
@@ -270,6 +273,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		RepositoryEntry managedRe = JunitTestHelper.createAndPersistRepositoryEntry();
 		managedRe.setManagedFlagsString("all");
 		managedRe = dbInstance.getCurrentEntityManager().merge(managedRe);
+		Identity learnResourceManager = JunitTestHelper.createAndPersistIdentityAsRndLearnResourceManager("repo-admin");
 		RepositoryEntry freeRe = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		
@@ -277,6 +281,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		SearchRepositoryEntryParameters paramsManaged = new SearchRepositoryEntryParameters();
 		paramsManaged.setRoles(Roles.administratorRoles());
 		paramsManaged.setManaged(Boolean.TRUE);
+		paramsManaged.setIdentity(learnResourceManager);
 		List<RepositoryEntry> managedEntries = repositoryEntryQueries.searchEntries(paramsManaged, 0, -1, true);
 		Assert.assertNotNull(managedEntries);
 		Assert.assertTrue(managedEntries.size() > 0);
@@ -287,6 +292,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		SearchRepositoryEntryParameters paramsFree = new SearchRepositoryEntryParameters();
 		paramsFree.setRoles(Roles.administratorRoles());
 		paramsFree.setManaged(Boolean.FALSE);
+		paramsFree.setIdentity(learnResourceManager);
 		List<RepositoryEntry> freeEntries = repositoryEntryQueries.searchEntries(paramsFree, 0, -1, true);
 		Assert.assertNotNull(freeEntries);
 		Assert.assertTrue(freeEntries.size() > 0);
@@ -316,7 +322,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertFalse(entries1.contains(re1));
 		Assert.assertFalse(entries1.contains(re2));
 		for(RepositoryEntry entry:entries1) {
-			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS);
+			Assert.assertTrue(entry.isAllUsers());
 		}
 		
 		//check for identity 1 (participant re2 + re1 accessible to all users)
@@ -330,7 +336,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries2.contains(re2));
 		for(RepositoryEntry entry:entries2) {
 			if(!entry.equals(re2)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+				Assert.assertTrue(entry.isAllUsers());
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
 		
@@ -344,7 +351,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries3.contains(re1));
 		Assert.assertFalse(entries3.contains(re2));
 		for(RepositoryEntry entry:entries3) {
-			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			Assert.assertTrue(entry.isAllUsers());
+			Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 		}
 	}
 	
@@ -372,7 +380,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries1.contains(re));
 		for(RepositoryEntry entry:entries1) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+				Assert.assertTrue(entry.isAllUsers());
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
 		
@@ -387,7 +396,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries2.contains(re));
 		for(RepositoryEntry entry:entries2) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+				Assert.assertTrue(entry.isAllUsers());
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
 		
@@ -400,7 +410,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertNotNull(entries3);
 		Assert.assertFalse(entries3.contains(re));
 		for(RepositoryEntry entry:entries3) {
-			Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+			Assert.assertTrue(entry.isAllUsers());
+			Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 		}
 	}
 	
@@ -421,7 +432,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries.contains(re));
 		for(RepositoryEntry entry:entries) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+				Assert.assertTrue(entry.isAllUsers());
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
 	}
@@ -443,7 +455,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries.contains(re));
 		for(RepositoryEntry entry:entries) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+				Assert.assertTrue(entry.isAllUsers());
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
 	}
@@ -472,7 +485,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		Assert.assertTrue(entries.contains(re));
 		for(RepositoryEntry entry:entries) {
 			if(!entry.equals(re)) {
-				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
+				Assert.assertTrue(entry.isAllUsers());
+				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
 	}
@@ -481,8 +495,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		OLATResource r =  resourceManager.createOLATResourceInstance(TEST_RES_NAME);
 		resourceManager.saveOLATResource(r);
 		// now make a repository entry for this course
-		RepositoryEntry re = repositoryService.create(owner, null,
-				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "Description of learning by OLAT " + i, r, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i,
+				"Description of learning by OLAT " + i, r, RepositoryEntryStatusEnum.preparation, organisation);
 		return re;
 	}
 }

@@ -43,6 +43,7 @@ import org.olat.core.util.Util;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -96,7 +97,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, re);
-		if(re.getAccess() == RepositoryEntry.DELETED) {
+		if(re.getEntryStatus() == RepositoryEntryStatusEnum.trash || re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 			Roles roles = usess.getRoles();
 			if(!reSecurity.isEntryAdmin() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
 				return messageController(ureq, wControl, "repositoryentry.deleted");

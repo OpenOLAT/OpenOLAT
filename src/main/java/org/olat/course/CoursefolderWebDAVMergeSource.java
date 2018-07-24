@@ -37,6 +37,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
@@ -71,7 +72,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		boolean useTerms = webDAVModule.isTermsFoldersEnabled();
 		if (useTerms) {
 			// prepare no-terms folder for all resources without semester term info or private date
-			terms = new HashMap<String, VFSContainer>();
+			terms = new HashMap<>();
 			noTermContainer = new VirtualContainer("_other");
 		} else {
 			finishedContainer = new VirtualContainer("_finished");
@@ -96,10 +97,10 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 
 		if (useTerms) {
 			// add no-terms folder if any have been found
-			if (noTermContainer.getItems().size() > 0) {
+			if (!noTermContainer.getItems().isEmpty()) {
 				addContainerToList(noTermContainer, containers);
 			}
-		} else if(finishedContainer.getItems().size() > 0) {
+		} else if(!finishedContainer.getItems().isEmpty()) {
 			addContainerToList(finishedContainer, containers);
 		}
 
@@ -123,7 +124,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			}
 			String courseTitle = RequestUtil.normalizeFilename(displayName);
 			
-			if(finishedContainer != null && re.getRepositoryEntryStatus().isClosed()) {
+			if(finishedContainer != null && re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				String name = container.getFinishedUniqueName(courseTitle);
 				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 				finishedContainer.getItems().add(cfContainer);

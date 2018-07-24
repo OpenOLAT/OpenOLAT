@@ -59,6 +59,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.LinkVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -81,7 +82,8 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		conn = new RestConnection();
 		
 		admin = securityManager.findIdentityByName("administrator");
-		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(admin, "Empty course", RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(admin, "Empty course",
+				RepositoryEntryStatusEnum.preparation, false, false);
 		course1 = CourseFactory.loadCourse(courseEntry);
 		
 		//copy a couple of files in the resource folder

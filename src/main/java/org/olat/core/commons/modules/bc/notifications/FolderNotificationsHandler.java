@@ -94,7 +94,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 				if("CourseModule".equals(p.getResName())) {
 					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
-					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					if(re == null || re.getEntryStatus().decommissioned()) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
 				}

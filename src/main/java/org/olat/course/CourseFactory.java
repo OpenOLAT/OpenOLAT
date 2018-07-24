@@ -126,6 +126,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -566,20 +567,12 @@ public class CourseFactory {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void publishCourse(ICourse course, int access, boolean membersOnly, Identity identity, Locale locale) {
+	public static void publishCourse(ICourse course, RepositoryEntryStatusEnum accessStatus, boolean allUsers, boolean guests,
+			Identity identity, Locale locale) {
 		 CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		 PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, locale);
 		 PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
-
-		 int newAccess = (access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS)
-				 ? RepositoryEntry.ACC_USERS : access;
-		 //access rule -> all users can the see course
-		 //RepositoryEntry.ACC_OWNERS
-		 //only owners can the see course
-		 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
-		 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
-		 //fxdiff VCRP-1,2: access control of resources
-		 publishProcess.changeGeneralAccess(identity, newAccess, membersOnly);
+		 publishProcess.changeGeneralAccess(identity, accessStatus, allUsers, guests);
 
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<>();
@@ -655,12 +648,12 @@ public class CourseFactory {
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
 		
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		boolean isOLATAdmin = roles.isAdministrator()
+		boolean isAdministrator = roles.isAdministrator()
 				&& repositoryService.hasRoleExpanded(identity, courseRe, OrganisationRoles.administrator.name());
 		boolean isOresOwner = repositoryService.hasRole(identity, courseRe, GroupRoles.owner.name());
 		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
 				&& repositoryService.hasRoleExpanded(identity, courseRe, OrganisationRoles.learnresourcemanager.name());
-		archiveCourse(identity, course, charset, locale, exportDirectory, isOLATAdmin, isOresOwner, isOresInstitutionalManager);
+		archiveCourse(identity, course, charset, locale, exportDirectory, isAdministrator, isOresOwner, isOresInstitutionalManager);
 	}
 
 	/**
@@ -672,7 +665,7 @@ public class CourseFactory {
 	 * @param locale
 	 * @param identity
 	 */
-	public static void archiveCourse(Identity archiveOnBehalfOf, ICourse course, String charset, Locale locale, File exportDirectory, boolean isOLATAdmin, boolean... oresRights) {
+	public static void archiveCourse(Identity archiveOnBehalfOf, ICourse course, String charset, Locale locale, File exportDirectory, boolean isAdministrator, boolean... oresRights) {
 		// archive course results overview
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
@@ -694,9 +687,9 @@ public class CourseFactory {
 		boolean isOresOwner = (oresRights.length > 0)?oresRights[0]:false;
 		boolean isOresInstitutionalManager = (oresRights.length > 1)?oresRights[1]:false;
 
-		boolean aLogV = isOresOwner || isOresInstitutionalManager || isOLATAdmin;
-		boolean uLogV = isOLATAdmin;
-		boolean sLogV = isOresOwner || isOresInstitutionalManager || isOLATAdmin;
+		boolean aLogV = isOresOwner || isOresInstitutionalManager || isAdministrator;
+		boolean uLogV = isAdministrator;
+		boolean sLogV = isOresOwner || isOresInstitutionalManager || isAdministrator;
 
 		// make an intermediate commit here to make sure long running course log export doesn't
 		// cause db connection timeout to be triggered

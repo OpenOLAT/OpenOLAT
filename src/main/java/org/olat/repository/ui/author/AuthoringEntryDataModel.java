@@ -25,7 +25,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -128,8 +128,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				if(handler.supportsEdit(item.getOLATResourceable()) == EditionSupport.no) {
 					return Boolean.FALSE;
 				}
-				RepositoryEntryStatus status = new RepositoryEntryStatus(item.getStatusCode());
-				if(status.isClosed() || status.isUnpublished()) {
+				RepositoryEntryStatusEnum status = item.getEntryStatus();
+				if(status.decommissioned()) {
 					return Boolean.FALSE;
 				}
 				return Boolean.TRUE;

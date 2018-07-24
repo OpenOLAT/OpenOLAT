@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryService;
 import org.olat.test.OlatTestCase;
@@ -57,7 +58,8 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 	public void createRelation() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-1", null, null, null, null);
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntryToOrganisation relation = repositoryEntryToOrganisationDao
@@ -70,7 +72,8 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 	public void getRelations() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-2", null, null, null, null);
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel2", "rel2", null, null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel2", "rel2", null, null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		RepositoryEntryToOrganisation relation = repositoryEntryToOrganisationDao
 				.createRelation(organisation, re, true);
 		dbInstance.commitAndCloseSession();
@@ -86,7 +89,8 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 	public void getOrganisationReferences() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-3", null, null, defOrganisation, null);
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel3", "rel3", null, null, 0, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel3", "rel3", null, null,
+				RepositoryEntryStatusEnum.trash, null);
 		repositoryEntryToOrganisationDao.createRelation(organisation, re, true);
 		dbInstance.commitAndCloseSession();
 		
@@ -101,7 +105,8 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 	public void deleteRelation() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-4", null, null, defOrganisation, null);
-		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel4", "rel4", null, null, 0, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel4", "rel4", null, null,
+				RepositoryEntryStatusEnum.trash, null);
 		repositoryEntryToOrganisationDao.createRelation(organisation, re, true);
 		dbInstance.commitAndCloseSession();
 		

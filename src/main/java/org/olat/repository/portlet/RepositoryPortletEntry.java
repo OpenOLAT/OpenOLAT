@@ -22,6 +22,7 @@ package org.olat.repository.portlet;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * Description:<br>
@@ -60,18 +61,18 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight
 		private final String displayname;
 		private final String description;
 		private final String type;
-		private final int access;
-		private final int statusCode;
-		private final boolean membersOnly;
+		private final RepositoryEntryStatusEnum status;
+		private final boolean allUsers;
+		private final boolean guests;
 		
 		public REShort(RepositoryEntryLight entry) {
 			key = entry.getKey();
 			displayname = entry.getDisplayname();
 			description = entry.getDescription();
 			type = entry.getResourceType();
-			statusCode = entry.getStatusCode();
-			access = entry.getAccess();
-			membersOnly = entry.isMembersOnly();
+			status = entry.getEntryStatus();
+			allUsers = entry.isAllUsers();
+			guests = entry.isGuests();
 		}
 		
 		public REShort(RepositoryEntry entry) {
@@ -79,9 +80,9 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight
 			displayname = entry.getDisplayname();
 			description = entry.getDescription();
 			type = entry.getOlatResource().getResourceableTypeName();
-			statusCode = entry.getStatusCode();
-			access = entry.getAccess();
-			membersOnly = entry.isMembersOnly();
+			status = entry.getEntryStatus();
+			allUsers = entry.isAllUsers();
+			guests = entry.isGuests();
 		}
 
 		@Override
@@ -100,23 +101,23 @@ public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight
 		}
 
 		@Override
-		public int getAccess() {
-			return access;
+		public RepositoryEntryStatusEnum getEntryStatus() {
+			return status;
 		}
 
 		@Override
-		public boolean isMembersOnly() {
-			return membersOnly;
+		public boolean isAllUsers() {
+			return allUsers;
+		}
+
+		@Override
+		public boolean isGuests() {
+			return guests;
 		}
 
 		@Override
 		public String getResourceType() {
 			return type;
-		}
-
-		@Override
-		public int getStatusCode() {
-			return statusCode;
 		}
 	}
 }

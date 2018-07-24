@@ -44,6 +44,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -406,8 +407,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		// now make a repository entry for this resource
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, "Florian Gnägi", "Access controlled by OLAT ",
-				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description", r, 0, defOrganisation);
-		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
+				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description",
+				r, RepositoryEntryStatusEnum.review, defOrganisation);
+		//TODO repo re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		re = repositoryService.update(re);
 		dbInstance.commitAndCloseSession();
 		return re;

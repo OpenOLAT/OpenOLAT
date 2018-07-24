@@ -226,7 +226,7 @@ public class BookmarksController extends BasicController {
 		 */
 		private String getBookmarkTitle(Bookmark bookmark) {
 			String title = bookmark.getTitle();
-			if (new RepositoryEntryStatus(bookmark.getStatusCode()).isClosed() || new RepositoryEntryStatus(bookmark.getStatusCode()).isUnpublished()) {
+			if (bookmark.getEntryStatus().decommissioned()) {
 				Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 				title = "[" + pT.translate("title.prefix.closed") + "] ".concat(title);
 			}

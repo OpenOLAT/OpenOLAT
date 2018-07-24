@@ -447,14 +447,13 @@ create table o_repositoryentry (
    fk_olatresource int8 unique,
    description text,
    initialauthor varchar(128) not null,
-   accesscode int4 not null,
-   membersonly boolean default false,
-   statuscode int4,
    allowtoleave varchar(16),
-   canlaunch bool not null,
    candownload bool not null,
    cancopy bool not null,
    canreference bool not null,
+   status varchar(16) default 'preparation' not null,
+   allusers boolean default false not null,
+   guests boolean default false not null,
    deletiondate timestamp default null,
    fk_deleted_by int8 default null,
    primary key (repositoryentry_id)
@@ -2944,12 +2943,10 @@ create index id_idx on o_olatresource (resid);
 
 -- repository
 create index descritpion_idx on o_repositoryentry (description);
-create index access_idx on o_repositoryentry (accesscode);
+create index re_status_idx on o_repositoryentry (status);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
 create index displayname_idx on o_repositoryentry (displayname);
--- index created softkey_idx on unique constraint
-create index repo_members_only_idx on o_repositoryentry (membersonly);
 create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 create index idx_re_lifecycle_extid_idx on o_repositoryentry (external_id);
 create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);

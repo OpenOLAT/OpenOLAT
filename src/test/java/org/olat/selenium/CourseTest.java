@@ -63,9 +63,9 @@ import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
-import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
-import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
+import org.olat.selenium.page.repository.UserAccess;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -573,7 +573,7 @@ public class CourseTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.guest)
+			.selectAccess(UserAccess.registred)
 			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)

@@ -47,6 +47,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -90,7 +91,8 @@ public class ContactsTest extends OlatJerseyTestCase {
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = rs.create(null, "administrator", "-", "rest-re", null, course, 0, defOrganisation);
+		RepositoryEntry re = rs.create(null, "administrator", "-", "rest-re", null, course,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		rs.update(re);
 		DBFactory.getInstance().commit();
 			

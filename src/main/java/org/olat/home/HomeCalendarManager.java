@@ -44,6 +44,7 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -64,6 +65,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserDataExportable;
@@ -300,19 +302,19 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 	 * @return List of array, first the repository entry, second the role
 	 */
 	private List<Object[]> getCourses(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select v, membership.role from repositoryentry  v ")
 		  .append(" inner join fetch v.olatResource as resource ")
 		  .append(" inner join v.groups as retogroup")
 		  .append(" inner join retogroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where v.olatResource.resName='CourseModule' and membership.identity.key=:identityKey and")
-		  .append(" (")
-		  .append("   (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("'))")
+		  .append(" (")//TODO repo access
+		  .append("   (v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(" and membership.role='").append(GroupRoles.owner.name()).append("')")
 		  .append("   or")
-		  .append("   (v.access>=").append(RepositoryEntry.ACC_OWNERS).append(" and membership.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("   (v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(" and membership.role='").append(GroupRoles.coach.name()).append("')")
 		  .append("   or")
-		  .append("   (v.access>=").append(RepositoryEntry.ACC_USERS).append(" and membership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("'))")
+		  .append("   (v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" and membership.role='").append(GroupRoles.participant.name()).append("')")
 		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager()

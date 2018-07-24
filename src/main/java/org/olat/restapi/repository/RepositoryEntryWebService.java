@@ -85,6 +85,7 @@ import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -745,7 +746,7 @@ public class RepositoryEntryWebService {
 	@POST
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
-	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
+	public Response postStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -802,7 +803,11 @@ public class RepositoryEntryWebService {
 		if(accessVo.getRepoEntryKey() != null && !accessVo.getRepoEntryKey().equals(entry.getKey())) {
 			return Response.serverError().status(Status.BAD_REQUEST).build();
 		}
-		entry = repositoryManager.setAccess(entry, accessVo.getAccess(), accessVo.isMembersOnly());
+		
+		boolean guests = accessVo.isGuests();
+		boolean allUsers = accessVo.isAllUsers();
+		RepositoryEntryStatusEnum status = RepositoryEntryStatusEnum.valueOf(accessVo.getStatus());
+		entry = repositoryManager.setAccess(entry, status, allUsers, guests);
 		return Response.ok(RepositoryEntryAccessVO.valueOf(entry)).build();
 	}
 	

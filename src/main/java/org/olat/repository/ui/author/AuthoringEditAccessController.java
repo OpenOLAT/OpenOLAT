@@ -32,6 +32,7 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -80,12 +81,12 @@ public class AuthoringEditAccessController extends BasicController {
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(), true, !managedBookings);
 		listenTo(acCtr);
-		int access = propPupForm.getAccess();
+		
 		int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
-		if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
+		if(propPupForm.isAllUsers() || propPupForm.isGuests()) {
 			if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
 				editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-				editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+				editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(propPupForm.isGuests()));
 			}
 		}
 		putInitialPanel(editproptabpubVC);
@@ -110,24 +111,24 @@ public class AuthoringEditAccessController extends BasicController {
 		if (source == propPupForm) {
 			if (event == Event.DONE_EVENT) {
 				// inform user about inconsistent configuration: doesn't make sense to set a repositoryEntry canReference=true if it is only accessible to owners
-				if (!entry.getCanReference() && propPupForm.canReference() && (propPupForm.getAccess() < RepositoryEntry.ACC_OWNERS_AUTHORS && !propPupForm.isMembersOnly())) {					
-					showError("warn.config.reference.no.access");
-				}
-			
-				int access = propPupForm.getAccess();
+				//TODO repo access				
+				// showError("warn.config.reference.no.access");
+
 				int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
-				entry = repositoryManager.setAccessAndProperties(entry,
-						access, propPupForm.isMembersOnly(),
+				boolean guests = propPupForm.isGuests();
+				boolean allUsers = propPupForm.isAllUsers();
+				RepositoryEntryStatusEnum status = propPupForm.getEntryStatus();
+				entry = repositoryManager.setAccessAndProperties(entry, status, allUsers, guests,
 						propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());
 				if(entry == null) {
 					showWarning("repositoryentry.not.existing");
 					fireEvent(ureq, Event.CLOSE_EVENT);
 				} else {
 					boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-					if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
+					if(allUsers || guests) {
 						if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
 							editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-							editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+							editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(guests));
 						}
 					} else {
 						editproptabpubVC.remove(acCtr.getInitialComponent());

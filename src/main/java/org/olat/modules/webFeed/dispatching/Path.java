@@ -519,7 +519,7 @@ public class Path {
 			// private.
 			boolean isPrivate = true;
 			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(feed, false);
-			if (entry != null && entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+			if (entry != null && entry.isGuests()) {
 				isPrivate = false;
 			}
 

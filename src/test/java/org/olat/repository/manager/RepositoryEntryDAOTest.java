@@ -31,6 +31,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -59,7 +60,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void loadByKey() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 1", "", null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 1", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 
@@ -71,7 +73,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void loadByResourceKey() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 2", "", null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 2", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 
@@ -83,8 +86,10 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void loadByResourceKeys() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 3a", "", null, 0, defOrganisation);
-		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 3b", "", null, 0, defOrganisation);
+		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 3a", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 3b", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 
 		List<Long> resourceKeys = new ArrayList<>(2);
@@ -107,7 +112,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void searchByIdAndRefs() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 4", "", null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 4", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commit();
 		String externalId = UUID.randomUUID().toString();
 		String externalRef = UUID.randomUUID().toString();
@@ -156,7 +162,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void getAllRepositoryEntries() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 4", "", null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 4", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 
@@ -169,7 +176,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void loadRepositoryEntryResource() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 5", "", null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 5", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		Assert.assertNotNull(re.getSoftkey());
@@ -183,7 +191,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Test
 	public void loadRepositoryEntryResourceBySoftKey() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 5", "", null, 0, defOrganisation);
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 5", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		Assert.assertNotNull(re.getSoftkey());
@@ -207,10 +216,12 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 
 		// insert test data
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 7a", "", null, 0, defOrganisation);
+		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 7a", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		re1.setExternalId(externalId);
 		repositoryService.update(re1);
-		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 7b", "", null, 0, defOrganisation);
+		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 7b", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		re2.setExternalId(externalId);
 		repositoryService.update(re2);
 		dbInstance.commitAndCloseSession();
@@ -238,10 +249,12 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 
 		// insert test data
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8a", "", null, 0, defOrganisation);
+		RepositoryEntry re1 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8a", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		re1.setExternalRef(externalRef);
 		repositoryService.update(re1);
-		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8b", "", null, 0, defOrganisation);
+		RepositoryEntry re2 = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 8b", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
 		re2.setExternalRef(externalRef);
 		repositoryService.update(re2);
 		dbInstance.commitAndCloseSession();

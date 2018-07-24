@@ -106,6 +106,7 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -145,8 +146,8 @@ public class CourseHandler implements RepositoryHandler {
 			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-		RepositoryEntry re = repositoryService
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
+						RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 
 		String shortDisplayname = Formatter.truncateOnly(displayname, 25);
@@ -230,8 +231,8 @@ public class CourseHandler implements RepositoryHandler {
 		}
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry re = repositoryService
-				.create(initialAuthor, null, "", displayname, description, newCourseResource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, newCourseResource,
+				RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 
 		// create empty run structure
@@ -340,7 +341,8 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, null,
-				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, RepositoryEntry.ACC_OWNERS, organisation);
+				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores,
+				RepositoryEntryStatusEnum.preparation, organisation);
 
 		// set the new shared folder reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
@@ -374,7 +376,8 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner,
-				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, RepositoryEntry.ACC_OWNERS, organisation);
+				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores,
+				RepositoryEntryStatusEnum.preparation, organisation);
 
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();

@@ -80,6 +80,7 @@ import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntry.Style;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -294,8 +295,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		List<CatalogEntryRow> closedItems = new ArrayList<>();
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
-			List<PriceMethod> types = new ArrayList<PriceMethod>();
-			if (entry.isMembersOnly()) {
+			List<PriceMethod> types = new ArrayList<>();
+			if (!entry.isAllUsers() && !entry.isGuests()) {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 			} else {
@@ -318,7 +319,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				row.setAccessTypes(types);
 			}
 			
-			if(entry.getRepositoryEntryStatus().isClosed()) {
+			if(entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				closedItems.add(row);
 			} else {
 				items.add(row);

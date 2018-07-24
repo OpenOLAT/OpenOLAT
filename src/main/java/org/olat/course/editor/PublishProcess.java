@@ -73,6 +73,7 @@ import org.olat.course.tree.PublishTreeModel;
 import org.olat.properties.Property;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -698,8 +699,8 @@ public class PublishProcess {
 		return publishTreeModel;
 	}
 
-	public void changeGeneralAccess(Identity author, int access, boolean membersOnly) {
-		RepositoryManager.getInstance().setAccess(repositoryEntry, access, membersOnly);
+	public void changeGeneralAccess(Identity author, RepositoryEntryStatusEnum access, boolean allUsers, boolean guests) {
+		RepositoryManager.getInstance().setAccess(repositoryEntry, access, allUsers, guests);
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
 	}
@@ -707,9 +708,9 @@ public class PublishProcess {
 	public void changeAccessAndProperties(Identity author, CourseAccessAndProperties accessAndProps) {
 		RepositoryManager manager = RepositoryManager.getInstance();
 		
-		manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(), accessAndProps.getAccess(),
-				accessAndProps.isMembersOnly(), accessAndProps.isCanCopy(), accessAndProps.isCanReference(),
-				accessAndProps.isCanDownload());
+		manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(),
+				accessAndProps.getStatus(), accessAndProps.isAllUsers(), accessAndProps.isGuests(),
+				accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload());
 		manager.setLeaveSetting(accessAndProps.getRepositoryEntry(), accessAndProps.getSetting());
 		
 		List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();

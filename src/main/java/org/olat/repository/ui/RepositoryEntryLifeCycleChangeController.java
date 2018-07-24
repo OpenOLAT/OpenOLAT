@@ -42,8 +42,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryStatus;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -86,8 +85,6 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
 	public RepositoryEntryLifeCycleChangeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RepositoryEntrySecurity reSecurity, RepositoryHandler handler) {
 		super(ureq, wControl);
@@ -98,8 +95,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		lifeCycleVC = createVelocityContainer("lifecycle_change");
 		putInitialPanel(lifeCycleVC);
 		
-		RepositoryEntryStatus reStatus = repositoryManager.createRepositoryEntryStatus(re.getStatusCode());
-		boolean isClosed = reStatus.isClosed();
+		boolean isClosed = re.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 		boolean closeManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
 		if (!closeManaged) {
 			closeLink = LinkFactory.createButton("close", lifeCycleVC, this);

@@ -99,21 +99,21 @@ public class CourseLogsArchiveController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
-		boolean isOLATAdmin = roles.isAdministrator()
+		boolean isAdministrator = roles.isAdministrator()
 				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.administrator.name());
 		boolean isOresOwner = repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
 		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
 				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.learnresourcemanager.name());
 		boolean aLogV = isOresOwner || isOresInstitutionalManager;
-		boolean uLogV = isOLATAdmin;
+		boolean uLogV = isAdministrator;
 		boolean sLogV = isOresOwner || isOresInstitutionalManager;
 		
 		if (asyncExportManager.asyncArchiveCourseLogOngoingFor(getIdentity())) {
 			// then show the ongoing feedback
 			showExportOngoing(false);
-		} else if (isOLATAdmin || aLogV || uLogV || sLogV){
+		} else if (isAdministrator || aLogV || uLogV || sLogV){
 			myContent.contextPut("hasLogArchiveAccess", true);
-			logFileChooserForm = new LogFileChooserForm(ureq, wControl, isOLATAdmin, aLogV, uLogV, sLogV);
+			logFileChooserForm = new LogFileChooserForm(ureq, wControl, isAdministrator, aLogV, uLogV, sLogV);
 			listenTo(logFileChooserForm);
 			myContent.put("logfilechooserform",logFileChooserForm.getInitialComponent());
 			ICourse course = CourseFactory.loadCourse(ores);

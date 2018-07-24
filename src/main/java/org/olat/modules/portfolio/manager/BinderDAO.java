@@ -36,6 +36,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -59,6 +60,7 @@ import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -1175,16 +1177,15 @@ public class BinderDAO {
 	 * @return
 	 */
 	public List<RepositoryEntry> searchCourseTemplates(IdentityRef participant) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join fetch v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("')")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where (v.access >= ").append(RepositoryEntry.ACC_USERS).append(" or ")
-		  .append("  (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" left join fetch v.lifecycle as lifecycle")//TODO repo access
+		  .append(" where v.status ").in(RepositoryEntryStatusEnum.published)
 		  .append(" and exists (select ref.key from references as ref ")
 		  .append("   inner join ref.target as targetOres")
 		  .append("   where ref.source.key=ores.key and targetOres.resName='BinderTemplate'")

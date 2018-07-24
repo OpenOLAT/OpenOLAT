@@ -74,6 +74,11 @@ public class HistoryManager {
 		historyReadStream.omitField(RepositoryEntry.class, "organisations");
 		historyReadStream.omitField(RepositoryEntry.class, "storedSnapshot");
 		historyReadStream.omitField(RepositoryEntry.class, "statistics");
+		historyReadStream.omitField(RepositoryEntry.class, "access");
+		historyReadStream.omitField(RepositoryEntry.class, "statusCode");
+		historyReadStream.omitField(RepositoryEntry.class, "canLaunch");
+		historyReadStream.omitField(RepositoryEntry.class, "membersOnly");
+		
 		historyReadStream.omitField(org.olat.core.commons.persistence.PersistentObject.class, "version");
 		
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);

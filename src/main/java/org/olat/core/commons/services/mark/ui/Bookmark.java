@@ -25,6 +25,7 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * Internal wrapper
@@ -39,13 +40,13 @@ class Bookmark {
 	private final String description;
 	private final Date creationDate;
 	private final String displayrestype;
-	private int statusCode;
+	private RepositoryEntryStatusEnum status;
 	
 	public Bookmark(Mark mark, RepositoryEntry entry) {
 		this.mark = mark;
 		title = entry.getDisplayname();
 		description = entry.getDescription();
-		statusCode = entry.getStatusCode();
+		status = entry.getEntryStatus();
 		creationDate = entry.getCreationDate();
 		displayrestype = entry.getOlatResource().getResourceableTypeName();
 	}
@@ -54,7 +55,7 @@ class Bookmark {
 		this.mark = mark;
 		title = group.getName();
 		description = group.getDescription();
-		statusCode = -1;
+		status = null;
 		creationDate = group.getCreationDate();
 		displayrestype = group.getResourceableTypeName();
 	}
@@ -79,8 +80,8 @@ class Bookmark {
 		return displayrestype;
 	}
 	
-	public int getStatusCode() {
-		return statusCode;
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return status;
 	}
 	
 	public OLATResourceable getOLATResourceable() {

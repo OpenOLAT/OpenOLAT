@@ -64,6 +64,7 @@ import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -101,7 +102,8 @@ public class BinderTemplateHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		OLATResource resource = portfolioService.createBinderTemplateResource();
-		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
+				RepositoryEntryStatusEnum.preparation, organisation);
 		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, locale);
 		DBFactory.getInstance().commit();
 		return re;
@@ -132,8 +134,8 @@ public class BinderTemplateHandler implements RepositoryHandler {
 			FileResource.copyResource(file, filename, zipRoot);
 
 			//create repository entry
-			RepositoryEntry re = repositoryService
-					.create(initialAuthor, initialAuthorAlt, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+			RepositoryEntry re = repositoryService.create(initialAuthor, initialAuthorAlt, "", displayname, description, resource,
+					RepositoryEntryStatusEnum.preparation, organisation);
 			
 			//import binder
 			File binderFile = new File(zipRoot, BinderTemplateResource.BINDER_XML);

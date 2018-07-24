@@ -351,7 +351,7 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 	 */
 	private boolean allowsGuestAccess(final RepositoryEntry repoEntry) {
 		boolean guestsAllowed = false;
-		if (repoEntry != null && repoEntry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+		if (repoEntry != null && repoEntry.isGuests()) {
 			guestsAllowed = true;
 		}
 		return guestsAllowed;

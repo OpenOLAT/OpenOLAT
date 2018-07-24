@@ -31,6 +31,7 @@ import org.olat.core.id.Organisation;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -106,8 +107,8 @@ public class IQTestHelper extends OlatTestCase {
 		dbInstance.commit();
 		
 		Organisation defOrganisation = CoreSpringFactory.getImpl(OrganisationService.class).getDefaultOrganisation();
-		RepositoryEntry d = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(null, "Rei Ayanami", "QTIStatisticsTest", "QTIStatisticsTest", "Repo entry", r, 0, defOrganisation);
+		RepositoryEntry d = CoreSpringFactory.getImpl(RepositoryService.class).create(null, "Rei Ayanami", "QTIStatisticsTest", "QTIStatisticsTest", "Repo entry", r,
+						RepositoryEntryStatusEnum.trash, defOrganisation);
 		d.setOlatResource(r);
 		dbInstance.getCurrentEntityManager().persist(d);
 		dbInstance.commit();

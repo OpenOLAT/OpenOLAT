@@ -55,6 +55,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
@@ -119,7 +120,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		//create a repository entry
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "template-1", "map-template-1", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "template-1", "map-template-1", resource,
+				RepositoryEntryStatusEnum.preparation, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		//create the template owned by ident1
 		PortfolioStructureMap templateEl = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
@@ -209,7 +211,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		//create a repository entry
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource,
+				RepositoryEntryStatusEnum.preparation, defOrganisation);
 		//create the template owned by ident1
 		PortfolioStructureMap templateEl = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
 		//create five pages
@@ -472,7 +475,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		
 		//create a repository entry
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "test repo", "desc repo", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "test repo", "desc repo", resource,
+				RepositoryEntryStatusEnum.preparation, defOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//create the template owned by ident1
@@ -501,7 +505,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		//create a repository entry
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
+		RepositoryEntry addedEntry = repositoryService.create(ident1, null, "-", "Template in user", "Template in use", resource,
+				RepositoryEntryStatusEnum.preparation, defOrganisation);
 		//create the template owned by ident1
 		PortfolioStructureMap template = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
 		dbInstance.commitAndCloseSession();
@@ -810,7 +815,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry re = repositoryService.create(id, null, "", "Template to delete", "", resource, RepositoryEntry.ACC_OWNERS, defOrganisation);
+		RepositoryEntry re = repositoryService.create(id, null, "", "Template to delete", "", resource,
+				RepositoryEntryStatusEnum.preparation, defOrganisation);
 		PortfolioStructureMap template = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(id, re);
 		PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(template, "Page while be deleted", "Page description");
 		dbInstance.commitAndCloseSession();

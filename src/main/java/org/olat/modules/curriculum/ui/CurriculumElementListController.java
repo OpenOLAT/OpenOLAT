@@ -304,7 +304,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		if(row.getRepositoryEntryKey() == null) return;
 			
 		List<PriceMethod> types = new ArrayList<>();
-		if (row.isMembersOnly()) {
+		if (!row.isAllUsers() && !row.isGuests()) {
 			// members only always show lock icon
 			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 		} else {
@@ -345,17 +345,17 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private void forgeStartLink(CurriculumElementWithViewsRow row) {
 		String label;
 		boolean isStart = true;
-		if(!row.isMembersOnly() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
-			if(guestOnly) {
+		if((row.isAllUsers() || row.isGuests()) && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
+			/*if(guestOnly) {
 				if(row.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
 					label = "start";
 				} else {
 					return;
 				}
-			} else {
+			} else {*/ //TODO repo access
 				label = "book";
 				isStart = false;
-			}
+			//}
 		} else {
 			label = "start";
 		}

@@ -43,6 +43,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.test.JunitTestHelper;
@@ -79,7 +80,8 @@ public class CoursesInfosTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetCourseInfos_byId() throws IOException, URISyntaxException {
 		Identity admin = securityManager.findIdentityByName("administrator");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-info 1", RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-info 1",
+				RepositoryEntryStatusEnum.preparation, false, false);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();

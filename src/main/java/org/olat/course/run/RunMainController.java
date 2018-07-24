@@ -94,6 +94,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -180,7 +181,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
 
-		// build up the running structure for this user;
+		// build up the running structure for this user
 		// get all group memberships for this course
 		uce = loadUserCourseEnvironment(ureq, reSecurity);
 
@@ -203,7 +204,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		currentCourseNode = updateTreeAndContent(ureq, currentCourseNode, null);
 
-		if (courseRepositoryEntry != null && courseRepositoryEntry.getRepositoryEntryStatus().isClosed()) {
+		if (courseRepositoryEntry != null && courseRepositoryEntry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			wControl.setWarning(translate("course.closed"));
 		}
 
@@ -542,7 +543,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (needsRebuildAfterPublish) {
 				needsRebuildAfterPublish = false;
 				
-			  // rebuild up the running structure for this user, after publish;
+			  // rebuild up the running structure for this user, after publish
 				course = CourseFactory.loadCourse(course.getResourceableId());
 				uce = loadUserCourseEnvironment(ureq, reSecurity);
 				// build score now

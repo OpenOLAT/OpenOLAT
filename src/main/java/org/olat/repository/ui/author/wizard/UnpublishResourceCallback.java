@@ -52,7 +52,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
 
@@ -118,7 +118,8 @@ public class UnpublishResourceCallback implements StepRunnerCallback {
 
 		//update status
 		repositoryEntry = repositoryService.loadByKey(repositoryEntry.getKey());
-		repositoryEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
+		//TODO repo access unpublish
+		repositoryEntry.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		repositoryEntry = DBFactory.getInstance().getCurrentEntityManager().merge(repositoryEntry);
 
 		// clean catalog

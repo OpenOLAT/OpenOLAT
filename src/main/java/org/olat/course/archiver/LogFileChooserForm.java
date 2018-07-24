@@ -55,16 +55,16 @@ public class LogFileChooserForm extends FormBasicController {
      * 
      * @param ureq
      * @param wControl
-     * @param isOLATAdmin
+     * @param isAdministrator
      * @param a adminLogVisibility
      * @param u userLogVisibility
      * @param s statisticLogVisibility
      */
     
-    public LogFileChooserForm(UserRequest ureq, WindowControl wControl, boolean isOLATAdmin, boolean a, boolean u, boolean s) {
+    public LogFileChooserForm(UserRequest ureq, WindowControl wControl, boolean isAdministrator, boolean a, boolean u, boolean s) {
         super(ureq, wControl);
         
-        this.admin = isOLATAdmin;
+        this.admin = isAdministrator;
         
         this.u = u;
         this.a = a; 
@@ -73,9 +73,7 @@ public class LogFileChooserForm extends FormBasicController {
         initForm (ureq);
     }
     
-    /**
-     * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
-     */
+    @Override
     public boolean validateFormLogic(UserRequest ureq) {
     	boolean logChecked = false;
     	boolean beginLessThanEndOk = true;

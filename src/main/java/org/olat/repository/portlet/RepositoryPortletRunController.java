@@ -49,6 +49,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryOrder;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoryEntryTypeColumnDescriptor;
 
@@ -127,7 +128,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		} else {
 			List<RepositoryEntry> fullEntries = RepositoryManager.getInstance()
 					.getLearningResourcesAsTeacher(getIdentity(), 0, maxResults, orderBy);
-			entries = new ArrayList<RepositoryEntryLight>();
+			entries = new ArrayList<>();
 			for(RepositoryEntry fullEntry:fullEntries) {
 				entries.add(new FullReWrapper(fullEntry));
 			}
@@ -136,10 +137,10 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	}
 
 	private List<PortletEntry<RepositoryEntryLight>> convertShortRepositoryEntriesToPortletEntryList(List<RepositoryEntryLight> items) {
-		List<PortletEntry<RepositoryEntryLight>> convertedList = new ArrayList<PortletEntry<RepositoryEntryLight>>();
+		List<PortletEntry<RepositoryEntryLight>> convertedList = new ArrayList<>();
 		for(RepositoryEntryLight item:items) {
-			boolean closed = RepositoryManager.getInstance().createRepositoryEntryStatus(item.getStatusCode()).isClosed();
-			if(!closed) {
+			RepositoryEntryStatusEnum status = item.getEntryStatus();
+			if(!status.decommissioned()) {
 				RepositoryPortletEntry entry = new RepositoryPortletEntry(item);
 				convertedList.add(entry);
 			}
@@ -148,10 +149,10 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	}
 	
 	private List<PortletEntry<RepositoryEntryLight>> convertRepositoryEntriesToPortletEntryList(List<RepositoryEntry> items) {
-		List<PortletEntry<RepositoryEntryLight>> convertedList = new ArrayList<PortletEntry<RepositoryEntryLight>>();
+		List<PortletEntry<RepositoryEntryLight>> convertedList = new ArrayList<>();
 		for(RepositoryEntry item:items) {
-			boolean closed = RepositoryManager.getInstance().createRepositoryEntryStatus(item.getStatusCode()).isClosed();
-			if(!closed) {
+			RepositoryEntryStatusEnum status = item.getEntryStatus();
+			if(!status.decommissioned()) {
 				RepositoryPortletEntry entry = new RepositoryPortletEntry(item);
 				convertedList.add(entry);
 			}
@@ -305,23 +306,23 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		}
 
 		@Override
-		public int getStatusCode() {
-			return re.getStatusCode();
-		}
-
-		@Override
 		public String getDescription() {
 			return re.getDescription();
 		}
 
 		@Override
-		public int getAccess() {
-			return re.getAccess();
+		public RepositoryEntryStatusEnum getEntryStatus() {
+			return re.getEntryStatus();
 		}
 
 		@Override
-		public boolean isMembersOnly() {
-			return re.isMembersOnly();
-		} 
+		public boolean isAllUsers() {
+			return re.isAllUsers();
+		}
+
+		@Override
+		public boolean isGuests() {
+			return re.isGuests();
+		}
 	}
 }

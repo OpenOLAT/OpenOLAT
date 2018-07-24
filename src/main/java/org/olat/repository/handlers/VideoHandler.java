@@ -55,6 +55,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -116,7 +117,7 @@ public class VideoHandler extends FileHandler {
 		FileResource ores = new VideoFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
 		RepositoryEntry repoEntry = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "",
-				displayname, description, resource, RepositoryEntry.ACC_OWNERS, organisation);
+				displayname, description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		
 		if(fileName == null) {
 			fileName = file.getName();

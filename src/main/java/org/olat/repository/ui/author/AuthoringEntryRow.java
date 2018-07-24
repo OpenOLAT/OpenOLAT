@@ -31,7 +31,7 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
 
@@ -52,9 +52,9 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private final String location;
 	private final String shortenedDescription;
 	
-	private final boolean membersOnly;
-	private final int access;
-	private final int statusCode;
+	private RepositoryEntryStatusEnum status;
+	private final boolean allUsers;
+	private final boolean guests;
 
 	private final Date lastUsage;
 	private final Date creationDate;
@@ -109,9 +109,9 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		managed = view.getManagedFlags() != null && view.getManagedFlags().length > 0;
 		managedFlags = view.getManagedFlags();
 		
-		membersOnly = view.isMembersOnly();
-		access = view.getAccess();
-		statusCode = view.getStatusCode();
+		status = view.getEntryStatus();
+		allUsers = view.isAllUsers();
+		guests = view.isGuests();
 		
 		olatResource = OresHelper.clone(view.getOlatResource());
 		
@@ -145,22 +145,18 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	}
 	
 	@Override
-	public int getStatusCode() {
-		return statusCode;
-	}
-	
-	public RepositoryEntryStatus getRepositoryEntryStatus() {
-		return new RepositoryEntryStatus(statusCode);
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return status;
 	}
 
 	@Override
-	public boolean isMembersOnly() {
-		return membersOnly;
+	public boolean isAllUsers() {
+		return allUsers;
 	}
 
 	@Override
-	public int getAccess() {
-		return access;
+	public boolean isGuests() {
+		return guests;
 	}
 
 	public Date getLastUsage() {

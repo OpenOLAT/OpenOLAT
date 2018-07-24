@@ -83,6 +83,7 @@ import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -91,6 +92,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
@@ -216,15 +218,28 @@ public class CourseWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response publishCourse(@QueryParam("locale") Locale locale,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
+			@QueryParam("status") String status, @QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
 			@Context HttpServletRequest request) {
 		UserRequest ureq = getUserRequest(request);
 		if (!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		int newAccess = access == null ? RepositoryEntry.ACC_USERS : access.intValue();
-		boolean members = membersOnly != null && membersOnly.booleanValue();
-		CourseFactory.publishCourse(course, newAccess, members, ureq.getIdentity(), locale);
+		boolean accessGuests = false;
+		boolean accessAllUsers = false;
+		RepositoryEntryStatusEnum accessStatus = RepositoryEntryStatusEnum.preparation;
+		if(RepositoryEntryStatusEnum.isValid(status)) {
+			accessStatus = RepositoryEntryStatusEnum.valueOf(status);
+			accessAllUsers = allUsers != null && allUsers.booleanValue();
+			accessGuests = guests != null && guests.booleanValue();
+		} else if(access != null) {
+			boolean members = membersOnly != null && membersOnly.booleanValue();
+			accessStatus = RestSecurityHelper.convertToEntryStatus(access.intValue(), members);
+			accessAllUsers = access.longValue() >= 3;
+			accessGuests = access.longValue() >= 4;
+		}
+
+		CourseFactory.publishCourse(course, accessStatus, accessAllUsers, accessGuests, ureq.getIdentity(), locale);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}

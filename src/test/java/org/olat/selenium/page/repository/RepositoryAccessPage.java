@@ -44,30 +44,36 @@ public class RepositoryAccessPage {
 	}
 	
 	public RepositoryAccessPage setUserAccess(UserAccess access) {
-		if(access == UserAccess.none) {
-			By userSwitch = By.cssSelector("#o_cousersSwitch input[type='radio'][value='n']");
-			browser.findElement(userSwitch).click();
-			OOGraphene.waitBusy(browser);
-		} else {
-			By userSwitch = By.cssSelector("#o_cousersSwitch input[type='radio'][value='y']");
-			browser.findElement(userSwitch).click();
-			OOGraphene.waitBusy(browser);
-			
-			By publishForUserBy = By.cssSelector("#o_fiopublishedForUsers_SELBOX");
-			WebElement publishForUserEl = browser.findElement(publishForUserBy);
-			Select publishForUserSelect = new Select(publishForUserEl);
-			switch(access) {
-				case registred: publishForUserSelect.selectByValue("u"); break;
-				case guest: publishForUserSelect.selectByValue("g"); break;
-				case membersOnly: publishForUserSelect.selectByValue("m"); break;
-				default: {}
-			}
+		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
+		OOGraphene.waitElement(publishStatusBy, browser);
+		WebElement publishStatusEl = browser.findElement(publishStatusBy);
+		Select publishStatusSelect = new Select(publishStatusEl);
+		publishStatusSelect.selectByValue("published");
+
+		if(access == UserAccess.registred || access == UserAccess.guest) {
+			By allUsersBy = By.xpath("//label/input[@name='cif.allusers' and @value='y']");
+			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
 		}
-		
+		if(access == UserAccess.guest) {
+			By guestsBy = By.xpath("//label[input[@name='cif.guests' and @value='y']]");
+			By labelGuestsBy = By.xpath("//label/input[@name='cif.guests' and @value='y']");
+			OOGraphene.scrollTo(guestsBy, browser);
+			
+			WebElement guestsEl = browser.findElement(guestsBy);
+			WebElement labelGuestsEl = browser.findElement(labelGuestsBy);
+			OOGraphene.check(labelGuestsEl, guestsEl, Boolean.TRUE);
+		}
+
 		By saveSwitch = By.cssSelector("fieldset.o_sel_repositoryentry_access button.btn.btn-primary");
 		browser.findElement(saveSwitch).click();
 		OOGraphene.waitBusy(browser);
+
+		if(access == UserAccess.registred || access == UserAccess.guest) {
+			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
+			OOGraphene.waitElement(accessConfigurationBy, browser);
+		}
+		
 		return this;
 	}
 	
@@ -86,12 +92,5 @@ public class RepositoryAccessPage {
 		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
-	}
-	
-	public enum UserAccess {
-		none,
-		registred,
-		guest,
-		membersOnly
 	}
 }

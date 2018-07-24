@@ -176,7 +176,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	}
 	
 	private Object getAccessControl(RepositoryEntry re) {
-		if (re.isMembersOnly()) {
+		if (!re.isAllUsers() && !re.isGuests()) {
 			// members only always show lock icon
 			return Collections.singletonList("o_ac_membersonly");
 		}
@@ -200,7 +200,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	 */
 	private String getDisplayName(RepositoryEntry repositoryEntry, Locale locale) {
 		String displayName = repositoryEntry.getDisplayname();
-		if (repositoryEntry.getRepositoryEntryStatus().isClosed()) {
+		if (repositoryEntry.getEntryStatus().decommissioned()) {
 			Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
 		}

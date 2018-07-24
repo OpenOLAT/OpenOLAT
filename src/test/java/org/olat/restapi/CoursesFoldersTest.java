@@ -62,6 +62,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
@@ -99,7 +100,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		bcNode.setNoAccessExplanation("You don't have access");
 		course1.getEditorTreeModel().addCourseNode(bcNode, course1.getRunStructure().getRootNode());
 
-		CourseFactory.publishCourse(course1, RepositoryEntry.ACC_USERS, false, admin, Locale.ENGLISH);
+		CourseFactory.publishCourse(course1, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
 		
 		dbInstance.intermediateCommit();
 	}

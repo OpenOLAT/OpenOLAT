@@ -40,6 +40,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class InstitutionPortletRunController extends BasicController {
 	
@@ -49,6 +50,9 @@ public class InstitutionPortletRunController extends BasicController {
 	private List<String> polyLinks;
 	private Map<Link, PolymorphLink> mapLinks;
 	private InstitutionPortletEntry ipe;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	protected InstitutionPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -111,11 +115,11 @@ public class InstitutionPortletRunController extends BasicController {
 
 			this.portletVC.contextPut("hasPolymorphLink", Boolean.FALSE);
 
-			polyLinks = new ArrayList<String>();
-			mapLinks = new HashMap<Link, PolymorphLink>();
+			polyLinks = new ArrayList<>();
+			mapLinks = new HashMap<>();
 
 			List<PolymorphLink> polyList = ipe.getPolymorphLinks();
-			if (polyList != null && polyList.size() > 0) {
+			if (polyList != null && !polyList.isEmpty()) {
 				int i = 0;
 				for (PolymorphLink polymorphLink : polyList) {
 					if ((polymorphLink.hasConditions() && (polymorphLink.getResultIDForUser(ureq) != null)) || !(polymorphLink.hasConditions())) {
@@ -128,7 +132,7 @@ public class InstitutionPortletRunController extends BasicController {
 						i++;
 					}
 				}
-				if (polyLinks.size() > 0) {
+				if (!polyLinks.isEmpty()) {
 					this.portletVC.contextPut("polyLinks", polyLinks);
 					this.portletVC.contextPut("numPolyLinks", polyLinks.size());
 					this.portletVC.contextPut("hasPolymorphLink", Boolean.TRUE);
@@ -138,10 +142,7 @@ public class InstitutionPortletRunController extends BasicController {
 		putInitialPanel(this.portletVC);
 	}
 
-	/**
-	 * @see org.olat.gui.control.DefaultController#event(org.olat.gui.UserRequest,
-	 *      org.olat.gui.components.Component, org.olat.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to catch
 		if (source instanceof Link) {
@@ -166,17 +167,16 @@ public class InstitutionPortletRunController extends BasicController {
 			}
 
 			if (polyLink.getLinkType().equals(InstitutionPortlet.TYPE_COURSE)) {
-				RepositoryManager rm = RepositoryManager.getInstance();
 				RepositoryEntry re = null;
 
 				// id corresponding to the conditions set for this user
-				if (polyLink != null && resultIDForUser != null) re = rm.lookupRepositoryEntry(resultIDForUser);
+				if (resultIDForUser != null) re = repositoryManager.lookupRepositoryEntry(resultIDForUser);
 
 				// if ressource is not available choose default link
-				if (re == null && defaultID != null) re = rm.lookupRepositoryEntry(defaultID);
+				if (re == null && defaultID != null) re = repositoryManager.lookupRepositoryEntry(defaultID);
 
 				if (re != null) {
-					if (!rm.isAllowedToLaunch(ureq, re)) {
+					if (!repositoryManager.isAllowedToLaunch(getIdentity(), ureq.getUserSession().getRoles(), re)) {
 						getWindowControl().setWarning(translate("warn.cantlaunch"));
 					} else {
 						WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), re);
@@ -198,14 +198,11 @@ public class InstitutionPortletRunController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		if(portletVC != null) portletVC = null;
 		if(polyLinks != null) polyLinks = null;
 		if(mapLinks != null) mapLinks = null;
 		if(ipe != null) ipe = null;
 	}
-
 }

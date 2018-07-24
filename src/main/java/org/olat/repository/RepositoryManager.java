@@ -49,6 +49,7 @@ import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
@@ -142,13 +143,6 @@ public class RepositoryManager {
 	 */
 	public static RepositoryManager getInstance() {
 		return CoreSpringFactory.getImpl(RepositoryManager.class);
-	}
-
-	/**
-	 * @param repositoryEntryStatusCode
-	 */
-	public RepositoryEntryStatus createRepositoryEntryStatus(int repositoryEntryStatusCode) {
-		return new RepositoryEntryStatus(repositoryEntryStatusCode);
 	}
 
 	/**
@@ -518,16 +512,6 @@ public class RepositoryManager {
 				.getResultList();
 	}
 
-	/**
-	 * Test a repo entry if identity is allowed to launch.
-	 * @param ureq
-	 * @param re
-	 * @return True if current identity is allowed to launch the given repo entry.
-	 */
-	public boolean isAllowedToLaunch(UserRequest ureq, RepositoryEntry re) {
-		return isAllowedToLaunch(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
-	}
-
 	public RepositoryEntrySecurity isAllowed(UserRequest ureq, RepositoryEntry re) {
 		return isAllowed(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
 	}
@@ -540,27 +524,8 @@ public class RepositoryManager {
 	 * @return True if current identity is allowed to launch the given repo entry.
 	 */
 	public boolean isAllowedToLaunch(Identity identity, Roles roles, RepositoryEntry re) {
-		// allow if identity is owner
-		// allow for administrators, institutional resource manager and principals
-		if (repositoryEntryRelationDao.hasRole(identity, re, true, OrganisationRoles.administrator.name(),
-				OrganisationRoles.learnresourcemanager.name(), OrganisationRoles.principal.name(),
-				GroupRoles.owner.name())) {
-			return true;
-		}
-		// allow for authors if access granted at least for authors
-		if (roles.isAuthor() && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) return true;
-		// allow for guests if access granted for guests
-		if (roles.isGuestOnly()) {
-			return (re.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS);
-		}
-		// else allow if access granted for users
-		if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
-			return true;
-		} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
-			return repositoryEntryRelationDao.isMember(identity, re);
-		}
-
-		return false;
+		RepositoryEntrySecurity reSecurity = isAllowed(identity, roles, re);
+		return reSecurity.canLaunch();
 	}
 
 	public RepositoryEntrySecurity isAllowed(Identity identity, Roles roles, RepositoryEntry re) {
@@ -580,11 +545,13 @@ public class RepositoryManager {
 		boolean isLearnRessourceManager = false;
 		
 		boolean canLaunch = false;
-
+		
+		RepositoryEntryStatusEnum status = re.getEntryStatus();
 		if (roles.isGuestOnly()) {
-			if (re.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS) {
+			if (re.isGuests()) {
 				// allow for guests if access granted for guests
-				canLaunch = true;
+				canLaunch = status == RepositoryEntryStatusEnum.published
+						|| status == RepositoryEntryStatusEnum.closed;
 			}
 		} else {
 			// allow if identity is owner
@@ -655,22 +622,23 @@ public class RepositoryManager {
 				isEntryAdmin = true;
 			} else if(isPrincipal) {
 				canLaunch = true;
-			}
-			if (isAuthor && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) {
+			} else if (isAuthor && (status == RepositoryEntryStatusEnum.review
+					|| status == RepositoryEntryStatusEnum.coachpublished
+					|| status == RepositoryEntryStatusEnum.published
+					|| status == RepositoryEntryStatusEnum.closed)) {
 				// allow for authors if access granted at least for authors
 				canLaunch = true;
-			} else if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
+			} else if(re.isAllUsers() || re.isGuests()) {
 				// allow if access granted for users
-				canLaunch = true;
-			} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
+				canLaunch = (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
+			} else if(!canLaunch && (isGroupParticipant || isGroupCoach || isCourseParticipant || isCourseCoach
+					|| isCurriculumParticipant || isCurriculumCoach)) {
 				// check if it's a member
-				if(!canLaunch && (isGroupParticipant || isGroupCoach || isCourseParticipant || isCourseCoach || isCurriculumParticipant || isCurriculumCoach)) {
-					canLaunch = true;
-				}
+				canLaunch = (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
 			}
 		}
 
-		boolean readOnly = new RepositoryEntryStatus(re.getStatusCode()).isClosed();
+		boolean readOnly = re.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 
 		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
@@ -679,13 +647,14 @@ public class RepositoryManager {
 				isAuthor, isPrincipal, canLaunch, readOnly);
 	}
 
-	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {
+	public RepositoryEntry setAccess(final RepositoryEntry re, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
-		reloadedRe.setAccess(access);
-		reloadedRe.setMembersOnly(membersOnly);
+		reloadedRe.setEntryStatus(status);
+		reloadedRe.setAllUsers(allUsers);
+		reloadedRe.setGuests(guests);
 		reloadedRe.setLastModified(new Date());
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
@@ -694,22 +663,21 @@ public class RepositoryManager {
 	}
 
 	public RepositoryEntry setAccessAndProperties(final RepositoryEntry re,
-			int access, boolean membersOnly,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
 			boolean canCopy, boolean canReference, boolean canDownload) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
-		//access
-		reloadedRe.setAccess(access);
-		reloadedRe.setMembersOnly(membersOnly);
+		reloadedRe.setEntryStatus(status);
+		reloadedRe.setAllUsers(allUsers);
+		reloadedRe.setGuests(guests);
 		reloadedRe.setLastModified(new Date());
 		//properties
 		reloadedRe.setCanCopy(canCopy);
 		reloadedRe.setCanReference(canReference);
 		reloadedRe.setCanDownload(canDownload);
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-
 		//fetch the values
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
@@ -913,36 +881,35 @@ public class RepositoryManager {
 	}
 
 	/**
-	 * Count by type, limit by role accessability.
+	 * Count by type, exclude deleted.
 	 * @param restrictedType
 	 * @param roles
 	 * @return Number of repo entries
 	 */
-	public int countByTypeLimitAccess(String restrictedType, int restrictedAccess) {
-		StringBuilder query = new StringBuilder(400);
-		query.append("select count(*) from org.olat.repository.RepositoryEntry v")
+	public int countByType(String restrictedType) {
+		QueryBuilder query = new QueryBuilder(400);
+		query.append("select count(*) from repositoryentry v")
 			 .append(" inner join v.olatResource res")
-		     .append(" where res.resName=:restrictedType and v.access>=:restrictedAccess");
+		     .append(" where res.resName=:restrictedType and v.status ").in(RepositoryEntryStatusEnum.authors());
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Number.class)
 				.setParameter("restrictedType", restrictedType)
-				.setParameter("restrictedAccess", restrictedAccess)
 				.getResultList();
 		return count == null || count.isEmpty() || count.get(0) == null ? null : count.get(0).intValue();
 	}
 
-	public long countPublished(String restrictedType) {
+	public int countPublished(String restrictedType) {
 		StringBuilder query = new StringBuilder(400);
-		query.append("select count(*) from org.olat.repository.RepositoryEntry v")
+		query.append("select count(*) from repositoryentry v")
 		     .append(" inner join v.olatResource res")
-		     .append(" where res.resName=:restrictedType ")
-		     .append(" and ((v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true) or v.access>=").append(RepositoryEntry.ACC_USERS).append(")");
+		     .append(" where res.resName=:restrictedType")
+		     .append(" and v.status='").append(RepositoryEntryStatusEnum.published).append("'");
 
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Number.class)
 				.setParameter("restrictedType", restrictedType)
 				.getResultList();
-		return count == null || count.isEmpty() || count.get(0) == null ? null : count.get(0).longValue();
+		return count == null || count.isEmpty() || count.get(0) == null ? null : count.get(0).intValue();
 	}
 
 	/**
@@ -954,7 +921,7 @@ public class RepositoryManager {
 	 */
 	public List<RepositoryEntry> queryByOwner(IdentityRef identity, String... limitTypes) {
 		if (identity == null) throw new AssertException("identity can not be null!");
-		StringBuilder sb = new StringBuilder(400);
+		QueryBuilder sb = new QueryBuilder(400);
 		sb.append("select v from repositoryentry v")
 		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
@@ -962,7 +929,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS).append(" and membership.identity.key=:identityKey");
+		  .append(" where membership.identity.key=:identityKey and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		if (limitTypes != null && limitTypes.length > 0) {
 			sb.append(" and res.resName in (:types)");
 		}
@@ -991,11 +958,11 @@ public class RepositoryManager {
 	 * @param limitTypes
 	 * @return The entries or an empty list if no role is specified
 	 */
-	public List<RepositoryEntry> queryByMembership(IdentityRef identity, boolean owner, boolean coach, boolean participant, String... limitTypes) {
+	public List<RepositoryEntry> queryByMembership(IdentityRef identity, boolean owner, boolean coach, boolean participant, String limitType) {
 		if (identity == null) throw new AssertException("identity can not be null!");
 		if (!owner && !coach && !participant) return Collections.emptyList();
 
-		StringBuilder sb = new StringBuilder(512);
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry v ")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" inner join fetch v.statistics as statistics")
@@ -1003,41 +970,29 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where membership.identity.key=:identityKey and (");
+		  .append(" where res.resName=:type and membership.identity.key=:identityKey and (");//TODO repo access
 		if(owner) {
-			sb.append(" (v.access >= ").append(RepositoryEntry.ACC_OWNERS).append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
+			sb.append(" (v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(" and membership.role='").append(GroupRoles.owner).append("')");
 		}
-		if(coach || participant) {
+		if(coach) {
 			if(owner) {
 				sb.append(" or");
 			}
-			sb.append(" ((v.access >= ").append(RepositoryEntry.ACC_USERS).append(" or ")
-			  .append("  (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
-			  .append("   and membership.role");
-			if(coach && participant) {
-				sb.append(" in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')");
-			} else {
-				sb.append(" ='").append(coach ? GroupRoles.coach.name() : GroupRoles.participant.name()).append("'");
+			sb.append(" (v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(" and membership.role='").append(GroupRoles.coach).append("')");
+		}
+		if(participant) {
+			if(owner || coach) {
+				sb.append(" or");
 			}
-			sb.append(")");
+			sb.append(" (v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" and membership.role='").append(GroupRoles.participant).append("')");
 		}
 		sb.append(")");
 
-		if (limitTypes != null && limitTypes.length > 0) {
-			sb.append(" and res.resName in (:types)");
-		}
-
-		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
-				.setParameter("identityKey", identity.getKey());
-		if(limitTypes != null && limitTypes.length > 0) {
-			List<String> types = new ArrayList<>();
-			for(String type:limitTypes) {
-				types.add(type);
-			}
-			query.setParameter("types", types);
-		}
-		return query.getResultList();
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("type", limitType)
+				.getResultList();
 	}
 
 	/**
@@ -1079,60 +1034,43 @@ public class RepositoryManager {
 
 		// Build the query
 		// 1) Joining tables
-		StringBuilder query = new StringBuilder(400);
-		query.append("select distinct v from repositoryentry v ")
-		     .append(" inner join fetch v.olatResource as res" )
-			 .append(" inner join fetch v.statistics as statistics")
-		     .append(" left join fetch v.lifecycle as lifecycle")
-			 .append(" left join v.groups as relGroup")
-			 .append(" left join relGroup.group as baseGroup")
-			 .append(" left join baseGroup.members as membership");
-		if(roles.isAdministrator()) {//TODO roles repo
-			query.append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS);
-		} else {
-			query.append(" where membership.identity.key=:identityKey and (");
-			// as owner
-			query.append("(v.access>=").append(RepositoryEntry.ACC_OWNERS)
-			     .append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
-			
-			if(roles.isLearnResourceManager()) {
-				// as learn resource manager
-				query.append(" or (v.access>=").append(RepositoryEntry.ACC_OWNERS);
-				if(checkCanReference) {
-					query.append(" and v.canReference=true");
-				}
-				if(checkCanCopy) {
-					query.append(" and v.canCopy=true");
-				}
-				query.append("  and membership.role='").append(OrganisationRoles.learnresourcemanager.name()).append("')");
-			} 
-			
-			if(roles.isAuthor()) {
-				// as author
-				query.append(" or (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS);
-				if(checkCanReference) {
-					query.append(" and v.canReference=true");
-				}
-				if(checkCanCopy) {
-					query.append(" and v.canCopy=true");
-				}
-				query.append(" and membership.role='").append(OrganisationRoles.author.name()).append("')");
-				
-			}
-			query.append(")");
+		QueryBuilder sb = new QueryBuilder(400);
+		sb.append("select distinct v from repositoryentry v ")
+		  .append(" inner join fetch v.olatResource as res" )
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" left join v.groups as relGroup")
+		  .append(" left join relGroup.group as baseGroup")//TODO roles repo
+		  .append(" left join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey")
+		  .append(" and (");
+		//owner, learn resource manager, administrator
+		sb.append("(membership.role ").in(GroupRoles.owner, OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager)
+		  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
+		//author
+		if(roles.isAuthor()) {
+			sb.append(" or (membership.role ").in(OrganisationRoles.author)
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(")")
+			  .append(" and (v.canReference=true or v.canCopy=true)");
 		}
-
+		sb.append(")");
+		if(checkCanReference) {
+			sb.append(" and v.canReference=true");
+		}
+		if(checkCanCopy) {
+			sb.append(" and v.canCopy=true");
+		}	 
 		// restrict on type
 		if (resourceTypes != null) {
-			query.append(" and res.resName in (:resourcetypes)");
+			sb.append(" and res.resName in (:resourcetypes)");
 		}
 		// restrict on author
 		if (author != null) { // fuzzy author search
 			author = author.replace('*','%');
 			author = '%' + author + '%';
-			query.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
-			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
-		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and user.identity.key=identity.key")
+			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
+			  .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
+		      .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and user.identity.key=identity.key")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 		         .append("      and (user.firstName like :author or user.lastName like :author or identity.name like :author)")
 		         .append("  )");
@@ -1141,34 +1079,28 @@ public class RepositoryManager {
 		if (displayName != null) {
 			displayName = displayName.replace('*','%');
 			displayName = '%' + displayName + '%';
-			query.append(" and v.displayname like :displayname");
+			sb.append(" and v.displayname like :displayname");
 		}
 		// restrict on resource description
 		if (desc != null) {
 			desc = desc.replace('*','%');
 			desc = '%' + desc + '%';
-			query.append(" and v.description like :desc");
+			sb.append(" and v.description like :desc");
 		}
 
 		// create query an set query data
 		TypedQuery<RepositoryEntry> dbquery = dbInstance.getCurrentEntityManager()
-				.createQuery(query.toString(), RepositoryEntry.class);
-		if(!roles.isAdministrator()) {//TODO roles repo
-			dbquery.setParameter("identityKey", identity.getKey());
-		}
-		
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", identity.getKey());
 		if (author != null) {
 			dbquery.setParameter("author", author);
 		}
-		
 		if (displayName != null) {
 			dbquery.setParameter("displayname", displayName);
 		}
-		
 		if (desc != null) {
 			dbquery.setParameter("desc", desc);
 		}
-		
 		if (resourceTypes != null) {
 			dbquery.setParameter("resourcetypes", resourceTypes);
 		}
@@ -1183,18 +1115,16 @@ public class RepositoryManager {
 	 * @param limitAccess
 	 * @return Results
 	 */
-	public List<RepositoryEntry> queryByOwnerLimitAccess(Identity identity) {
-		StringBuilder sb = new StringBuilder();
+	public List<RepositoryEntry> queryByOwnerLimitAccess(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v from repositoryentry v")
 		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
-		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join relGroup.group as baseGroup")//TODO repo access
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" where membership.identity.key=:identityKey and (v.access>=").append(RepositoryEntry.ACC_USERS)
-		  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true)")
-		  .append(")");
+		  .append(" where membership.identity.key=:identityKey and v.status ").in(RepositoryEntryStatusEnum.authors());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
@@ -1580,17 +1510,19 @@ public class RepositoryManager {
 		return allOk;
 	}
 
-	public int countLearningResourcesAsStudent(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder(1200);
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+	public int countLearningResourcesAsStudent(IdentityRef identity, String type) {
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select count(distinct v) from repositoryentry as v")
+		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
-		  .append(" and membership.identity.key=:identityKey");
+		  .append(" inner join relGroup.group as baseGroup")//TODO repo access
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant).append("'")
+		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" and res.resName=:resourceType");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceType", type)
 				.getSingleResult().intValue();
 	}
 
@@ -1599,21 +1531,21 @@ public class RepositoryManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
-	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, String type, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(1200);
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, String type, int firstResult, int maxResults,
+			RepositoryEntryOrder... orderby) {
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select distinct v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
-		  .append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
+		  .append(" inner join baseGroup.members as membership")//TODO repo queries
+		  .append(" where membership.identity.key=:identityKey and membership.role ").in(GroupRoles.participant)
+		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 		if(StringHelper.containsNonWhitespace(type)) {
 			sb.append(" and res.resName=:resourceType");
 		}
-
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
@@ -1626,94 +1558,83 @@ public class RepositoryManager {
 		if(StringHelper.containsNonWhitespace(type)) {
 			query.setParameter("resourceType", type);
 		}
-		List<RepositoryEntry> repoEntries = query.getResultList();
-		return repoEntries;
+		return query.getResultList();
 	}
 
 	/**
 	 * Gets all learning resources where the user is in a learning group as participant.
-	 * @param identity
+	 * 
+	 * @param identity The identity (mandatory)
+	 * @param type The resource type (mandatory)
 	 * @return list of RepositoryEntries
 	 */
 	public List<RepositoryEntry> getLearningResourcesAsParticipantAndCoach(Identity identity, String type) {
-		StringBuilder sb = new StringBuilder(1200);
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		  .append(" inner join fetch v.olatResource as res ")
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select distinct v from repositoryentry as v")
+		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
-		  .append(" and membership.identity.key=:identityKey and membership.role in('").append(GroupRoles.participant.name()).append("','").append(GroupRoles.coach.name()).append("')");
-		if(StringHelper.containsNonWhitespace(type)) {
-			sb.append(" and res.resName=:resourceType");
-		}
-
-		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+		  .append(" inner join baseGroup.members as membership")//TODO repo access
+		  .append(" where membership.identity.key=:identityKey and (")
+		  .append("   (membership.role='").append(GroupRoles.participant.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+		  .append("   or")
+		  .append("   (membership.role='").append(GroupRoles.coach.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")")
+		  .append(" ) and res.resName=:resourceType");
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
-				.setParameter("identityKey", identity.getKey());
-
-		if(StringHelper.containsNonWhitespace(type)) {
-			query.setParameter("resourceType", type);
-		}
-		return query.getResultList();
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceType", type)
+				.getResultList();
 	}
 
-	public List<RepositoryEntry> getLearningResourcesAsBookmark(Identity identity, Roles roles, String type, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
+	public List<RepositoryEntry> getLearningResourcesAsBookmark(Identity identity, Roles roles, String type, int firstResult, int maxResults) {
 		if(roles.isGuestOnly()) {
 			return Collections.emptyList();
 		}
 
-		StringBuilder sb = new StringBuilder(1200);
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select v from repositoryentry as v")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where exists (select mark.key from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
-		  .append(" ) ");
-		if(StringHelper.containsNonWhitespace(type)) {
-			sb.append(" and res.resName=:resourceType");
-		}
-		sb.append(" and (v.access >= ");
-		if (roles.isAuthor()) {
-			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
-		} else {
-			sb.append(RepositoryEntry.ACC_USERS);
-		}
-		sb.append(" or (")
-		  .append("  v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
-		  .append("  and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append(" ) ")
+		  .append(" and res.resName=:resourceType")
+		  .append(" and (")
+		  .append("  (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+		  .append("  or exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
 		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
-		  .append("      and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-		  .append("  )")
-		  .append(" )")
-		  .append(")");
-
-		appendOrderBy(sb, "v", orderby);
+		  .append("    and (")
+		  .append("     (membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(" and v.status").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")")
+		  .append("     or")
+		  .append("     (membership.role ").in(GroupRoles.coach).append(" and v.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")")
+		  .append("     or")
+		  .append("     (membership.role ").in(GroupRoles.participant).append(" and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+		  .append("    )")
+		  .append(" ))");
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceType", type)
 				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
-		}
-		if(StringHelper.containsNonWhitespace(type)) {
-			query.setParameter("resourceType", type);
 		}
 		return query.getResultList();
 	}
 
 	public List<RepositoryEntryLight> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(512);
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repoentrylight as v ")
 		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append(" where (exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
 		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
 		  .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
-		  .append(" and (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		  .append(" or v.allUsers=true) and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed());
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
@@ -1722,36 +1643,16 @@ public class RepositoryManager {
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		return query.getResultList();
-	}
-
-	public List<RepositoryEntryLight> getTutorRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(512);
-		sb.append("select v from repoentrylight as v ")
-		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
-		  .append("      and membership.role='").append(GroupRoles.coach.name()).append("')")
-		  .append("  and (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
-		appendOrderBy(sb, "v", orderby);
-
-		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryLight.class)
-				.setParameter("identityKey", identity.getKey());
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-
 		return query.getResultList();
 	}
 
 	public int countLearningResourcesAsOwner(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder(200);
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
-		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select count(v) from repositoryentry v")
+		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where v.access>=").append(RepositoryEntry.ACC_OWNERS).append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'");
+		  .append(" where v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
@@ -1772,9 +1673,9 @@ public class RepositoryManager {
 	}
 
 	public int countLearningResourcesAsTeacher(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder(1200);
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
-		  .append(" inner join v.olatResource as res ");
+		QueryBuilder sb = new QueryBuilder(1200);
+		sb.append("select count(v) from repositoryentry v")
+		  .append(" inner join v.olatResource as res");
 		whereClauseLearningResourcesAsTeacher(sb);
 
 		return dbInstance.getCurrentEntityManager()
@@ -1784,7 +1685,7 @@ public class RepositoryManager {
 	}
 
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(1200);
+		QueryBuilder sb = new QueryBuilder(1200);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" inner join fetch v.statistics as statistics")
@@ -1806,17 +1707,17 @@ public class RepositoryManager {
 	 * Write the where clause for countLearningResourcesAsTeacher and getLearningResourcesAsTeacher
 	 * @param sb
 	 */
-	private final void whereClauseLearningResourcesAsTeacher(StringBuilder sb) {
+	private final void whereClauseLearningResourcesAsTeacher(QueryBuilder sb) {
 		sb.append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role ='").append(GroupRoles.coach.name()).append("'")
-		  .append(" where (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
-		  .append(" and membership.identity.key=:identityKey");
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.role ='").append(GroupRoles.coach.name()).append("' and membership.identity.key=:identityKey")
+		  .append(" and v.status ").in(RepositoryEntryStatusEnum.coachpublished, RepositoryEntryStatusEnum.published, RepositoryEntryStatusEnum.closed);
 	}
 
 	public int countFavoritLearningResourcesAsTeacher(Identity identity, List<String> types) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(v) from repositoryentry v")
 		  .append(" inner join v.olatResource as res ")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -1839,8 +1740,8 @@ public class RepositoryManager {
 
 	public List<RepositoryEntry> getFavoritLearningResourcesAsTeacher(IdentityRef identity, List<String> types, int firstResult, int maxResults,
 			RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct v from repositoryentry v")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
@@ -1876,34 +1777,22 @@ public class RepositoryManager {
 	 * @param identity
 	 * @return
 	 */
-	public List<RepositoryEntryMembership> getRepositoryEntryMembership(RepositoryEntryRef re, Identity... identity) {
-		if(re == null && (identity == null || identity.length == 0)) return Collections.emptyList();
+	public List<RepositoryEntryMembership> getRepositoryEntryMembership(RepositoryEntryRef re, IdentityRef identity) {
+		if(re == null || identity == null) return Collections.emptyList();
 
-		StringBuilder sb = new StringBuilder(400);
-		sb.append("select distinct membership from repoentrymembership as membership ");
-		boolean and = false;
+		QueryBuilder sb = new QueryBuilder(400);
+		sb.append("select distinct membership from repoentrymembership as membership")
+		  .append(" where membership.identityKey=:identityKey");
 		if(re != null) {
-			and = and(sb, and);
-			sb.append("membership.repoKey=:repoKey");
-		}
-		if(identity != null && identity.length > 0) {
-			and = and(sb, and);
-			sb.append("membership.identityKey=:identityKeys");
+			sb.append(" and membership.repoKey=:repoKey");
 		}
 
 		TypedQuery<RepositoryEntryMembership> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryMembership.class);
+				.createQuery(sb.toString(), RepositoryEntryMembership.class)
+				.setParameter("identityKey", identity.getKey());
 		if(re != null) {
 			query.setParameter("repoKey", re.getKey());
 		}
-		if(identity != null && identity.length > 0) {
-			List<Long> ids = new ArrayList<>(identity.length);
-			for(Identity id:identity) {
-				ids.add(id.getKey());
-			}
-			query.setParameter("identityKeys", ids);
-		}
-
 		return query.getResultList();
 	}
 
@@ -1999,13 +1888,7 @@ public class RepositoryManager {
 		}
 	}
 
-	private final boolean and(StringBuilder sb, boolean and) {
-		if(and) sb.append(" and ");
-		else sb.append(" where ");
-		return true;
-	}
-
-	private void appendOrderBy(StringBuilder sb, String var, RepositoryEntryOrder... orderby) {
+	private void appendOrderBy(QueryBuilder sb, String var, RepositoryEntryOrder... orderby) {
 		if(orderby != null && orderby.length > 0) {
 			sb.append(" order by ");
 			for(RepositoryEntryOrder o:orderby) {

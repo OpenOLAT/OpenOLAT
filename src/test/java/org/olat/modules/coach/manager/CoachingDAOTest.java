@@ -54,6 +54,7 @@ import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -470,9 +471,12 @@ public class CoachingDAOTest extends OlatTestCase {
 	public void getStatistics_permissionOnCourses()
 	throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntry.ACC_OWNERS, courseUrl);
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntry.ACC_OWNERS_AUTHORS, courseUrl);
-		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", RepositoryEntry.ACC_USERS, courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1",
+				RepositoryEntryStatusEnum.preparation, false, false, courseUrl);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2",
+				RepositoryEntryStatusEnum.review, false, false, courseUrl);
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3",
+				RepositoryEntryStatusEnum.published, true, false, courseUrl);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
@@ -956,12 +960,15 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void isCoach_notPermitted() throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntry.ACC_OWNERS, courseUrl);
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course",
+				RepositoryEntryStatusEnum.published, false, false, courseUrl);
 		dbInstance.commitAndCloseSession();
 	
 		//owner of course
 		Identity courseOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1");
+		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("Participant-1");
 		repositoryService.addRole(courseOwner, re, GroupRoles.owner.name());
+		repositoryService.addRole(courseParticipant, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		//coach in a group of the course
@@ -974,7 +981,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		boolean canCourseCoach = coachingDAO.isCoach(courseOwner);
 		Assert.assertTrue(canCourseCoach);
 		boolean canGroupCoach = coachingDAO.isCoach(groupCoach);
-		Assert.assertFalse(canGroupCoach);
+		Assert.assertTrue(canGroupCoach);
+		boolean canCourseParticipant= coachingDAO.isCoach(courseParticipant);
+		Assert.assertFalse(canCourseParticipant);
 	}
 	
 	private StudentStatEntry getStudentStatEntry(IdentityRef identity, List<StudentStatEntry> entries) {

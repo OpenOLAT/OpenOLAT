@@ -21,6 +21,7 @@ package org.olat.group.model;
 
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * Better caching, done in the first place for the list
@@ -44,7 +45,6 @@ public class BGRepositoryEntryShortImpl extends PersistentObject implements Repo
 		this.displayname = displayname;
 	}
 	
-	
 	@Override
 	public String getDisplayname() {
 		return displayname;
@@ -54,12 +54,12 @@ public class BGRepositoryEntryShortImpl extends PersistentObject implements Repo
 	public String getResourceType() {
 		return null;
 	}
-
-	@Override
-	public int getStatusCode() {
-		return -1;
-	}
 	
+	@Override
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return null;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 2939985 : getKey().hashCode();

@@ -98,7 +98,7 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 					if(!checkPublisher(subscriber.getPublisher())) {
 						return notificationsManager.getNoSubscriptionInfo();
 					}
-				} else if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+				} else if(re.getEntryStatus().decommissioned()) {
 					return notificationsManager.getNoSubscriptionInfo();
 				}
 
