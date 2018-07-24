@@ -80,11 +80,24 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 	public void deleteRelation(RepositoryEntryRef entry, TaxonomyLevelRef taxonomyLevel) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from repositoryentrytotaxonomylevel rel")
-		  .append(" where rel.entry.key=:entryKey and rel.taxonomyLevel.key=:levelKey ");
+		  .append(" where rel.entry.key=:entryKey and rel.taxonomyLevel.key=:levelKey");
 		List<RepositoryEntryToTaxonomyLevel> relationsToDelete = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryToTaxonomyLevel.class)
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("levelKey", taxonomyLevel.getKey())
+				.getResultList();
+		for(RepositoryEntryToTaxonomyLevel relationToDelete:relationsToDelete) {
+			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+	}
+	
+	public void deleteRelation(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel from repositoryentrytotaxonomylevel rel")
+		  .append(" where rel.entry.key=:entryKey");
+		List<RepositoryEntryToTaxonomyLevel> relationsToDelete = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryToTaxonomyLevel.class)
+				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 		for(RepositoryEntryToTaxonomyLevel relationToDelete:relationsToDelete) {
 			dbInstance.getCurrentEntityManager().remove(relationToDelete);

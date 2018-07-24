@@ -117,23 +117,32 @@ public class LectureBlockDAO {
 			.createQuery(deleteToGroup)
 			.setParameter("lectureBlockKey", reloadedBlock.getKey())
 			.executeUpdate();
+		
 		//delete LectureBlockRollCallImpl
 		String deleteRollCall = "delete from lectureblockrollcall rollcall where rollcall.lectureBlock.key=:lectureBlockKey";
 		rows += dbInstance.getCurrentEntityManager()
 			.createQuery(deleteRollCall)
 			.setParameter("lectureBlockKey", reloadedBlock.getKey())
 			.executeUpdate();
+		
 		//delete LectureBlockReminderImpl
 		String deleteReminder = "delete from lecturereminder reminder where reminder.lectureBlock.key=:lectureBlockKey";
 		rows += dbInstance.getCurrentEntityManager()
 			.createQuery(deleteReminder)
 			.setParameter("lectureBlockKey", reloadedBlock.getKey())
 			.executeUpdate();
+		
+		//delete LectureBlockToTaxonomyLevelImpl
+		String deleteTaxanomyLevels = "delete from lectureblocktotaxonomylevel relTax where relTax.lectureBlock.key=:lectureBlockKey";
+		rows += dbInstance.getCurrentEntityManager()
+			.createQuery(deleteTaxanomyLevels)
+			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.executeUpdate();
 
 		dbInstance.getCurrentEntityManager()
 			.remove(reloadedBlock);
 		rows++;
-		
+
 		return rows;
 	}
 	

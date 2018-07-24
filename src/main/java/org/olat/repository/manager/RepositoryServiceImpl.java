@@ -470,6 +470,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);
 		repositoryEntryToOrganisationDao.delete(entry);
+		repositoryEntryToTaxonomyLevelDao.deleteRelation(entry);
 		dbInstance.commit();
 
 		if(debug) log.debug("deleteRepositoryEntry after reload entry=" + entry);

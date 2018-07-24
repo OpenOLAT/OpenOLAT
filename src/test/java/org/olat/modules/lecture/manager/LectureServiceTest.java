@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.lecture.LectureBlock;
@@ -261,6 +263,27 @@ public class LectureServiceTest extends OlatTestCase {
 	    Assert.assertEquals(1, lectureBlockToGroups.size());
 	    LectureBlockToGroup lectureBlockToGroup = lectureBlockToGroups.iterator().next();
 	    Assert.assertEquals(defGroup, lectureBlockToGroup.getGroup());
+	}
+	
+	@Test
+	public void deleteLectureBlocksWithTeachers() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-owner-del");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-del");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner);
+		LectureBlock lectureBlock1 = createMinimalLectureBlock(entry);
+		LectureBlock lectureBlock2 = createMinimalLectureBlock(entry);
+		LectureBlock lectureBlock3 = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock1, teacher);
+		lectureService.addTeacher(lectureBlock2, teacher);
+		lectureService.addTeacher(lectureBlock3, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//delete and hope
+		Roles roles = Roles.administratorRoles();
+		repositoryService.deletePermanently(entry, owner, roles, Locale.ENGLISH);
+		dbInstance.commit();
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
