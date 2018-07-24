@@ -488,7 +488,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getRelations_repositoryEntry() {
+	public void getBusinessGroupAndCurriculumRelations() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-member-lc-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 
@@ -497,9 +497,9 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	    dbInstance.commitAndCloseSession();
 	    
 	    //get the relations from the business group's base group to the repository entry
-	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(re);
+	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getBusinessGroupAndCurriculumRelations(re);
 	    Assert.assertNotNull(relations);
-	    Assert.assertEquals(3, relations.size());
+	    Assert.assertEquals(1, relations.size());
 		Assert.assertTrue(relations.get(0).getEntry().equals(re));
 	}
 	

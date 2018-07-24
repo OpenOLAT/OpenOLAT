@@ -623,20 +623,16 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
-	/**
-	 * Get all the relations of a repository entries
-	 * 
-	 * @param groups
-	 * @return The list of relations
-	 */
-	public List<RepositoryEntryToGroupRelation> getRelations(RepositoryEntryRef re) {
+	public List<RepositoryEntryToGroupRelation> getBusinessGroupAndCurriculumRelations(RepositoryEntryRef re) {
 		if(re == null) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rel from repoentrytogroup as rel")
 		  .append(" inner join fetch rel.entry as entry")
 		  .append(" inner join fetch rel.group as baseGroup")
-		  .append(" where entry.key=:repoKey");
+		  .append(" left join businessgroup as bgp on (bgp.baseGroup.key=baseGroup.key)")
+		  .append(" left join curriculumelement curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" where entry.key=:repoKey and (curEl.key is not null or bgp.key is not null)");
 
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
