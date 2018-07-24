@@ -139,15 +139,6 @@ public interface RepositoryService {
 
 	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry);
 
-	/**
-	 * The unpublish will remove the users (coaches and participants) but will let
-	 * the owners. Catalog entries will be removed and the relations to the business groups
-	 * will be deleted.
-	 *
-	 * @param entry
-	 * @return
-	 */
-	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry);
 
 	/**
 	 * Increment the launch counter and the last usage date.

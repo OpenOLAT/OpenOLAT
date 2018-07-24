@@ -63,9 +63,9 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 
 /**
  * Description:<br>
@@ -339,7 +339,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 			
 			RepositoryEntryStatusEnum status = bookmark.getEntryStatus();
 			if (status.decommissioned()) {
-				Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
+				Translator pT = Util.createPackageTranslator(RepositoryModule.class, locale);
 				title = "[" + pT.translate("title.prefix.closed") + "] ".concat(title);
 			}
 			return title;

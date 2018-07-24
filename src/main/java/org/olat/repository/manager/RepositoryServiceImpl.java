@@ -528,27 +528,6 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry) {
-		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
-		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.trash);
-		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
-		dbInstance.commit();
-		// remove catalog entries
-		catalogManager.resourceableDeleted(reloadedEntry);
-		// remove users and participants
-		//remove participant and coach
-		removeMembers(reloadedEntry, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
-		//remove relation to business groups
-		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getRelations(reloadedEntry);
-		for(RepositoryEntryToGroupRelation relation:relations) {
-			if(!relation.isDefaultGroup()) {
-				reToGroupDao.removeRelation(relation);
-			}
-		}
-		return reloadedEntry;
-	}
-
-	@Override
 	public void incrementLaunchCounter(RepositoryEntry re) {
 		repositoryEntryStatisticsDao.incrementLaunchCounter(re);
 	}

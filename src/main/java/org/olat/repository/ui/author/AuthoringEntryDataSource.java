@@ -105,7 +105,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	public final ResultInfos<AuthoringEntryRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
-		if(filters != null && filters.size() > 0) {
+		if(filters != null && !filters.isEmpty()) {
 			String filter = filters.get(0).getFilter();
 			if(StringHelper.containsNonWhitespace(filter)) {
 				searchParams.setResourceTypes(Collections.singletonList(filter));
@@ -132,7 +132,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		List<AuthoringEntryRow> rows = processViewModel(views);
 		ResultInfos<AuthoringEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
-			count = new Integer(views.size() );
+			count = Integer.valueOf(views.size() );
 		}
 		return results;
 	}

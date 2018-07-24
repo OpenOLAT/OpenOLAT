@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.nodes.INode;
@@ -45,6 +46,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,7 +65,7 @@ public class QuickPublishController extends BasicController {
 	private RepositoryManager repositoryManager;
 	
 	public QuickPublishController(UserRequest ureq, WindowControl wControl, ICourse course) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryModule.class, ureq.getLocale()));
 		this.courseOres = OresHelper.clone(course);
 
 		VelocityContainer mainVC = createVelocityContainer("quick_publish");

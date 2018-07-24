@@ -48,7 +48,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -86,7 +85,6 @@ import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
@@ -481,36 +479,7 @@ public class RepositoryManager {
 				.getResultList();
     }
 
-	/**
-	 * Load a list of repository entry without all the security groups ...
-	 * @param resources
-	 * @return
-	 */
-	public List<RepositoryEntryShort> loadRepositoryEntryShorts(List<OLATResource> resources) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(RepositoryEntryShortImpl.class.getName()).append(" v ")
-		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" where ores.key in (:resKeys)");
 
-		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryShort.class)
-				.setParameter("resKeys", resourceKeys)
-				.getResultList();
-	}
-
-	/**
-	 * Load a list of repository entry without all the security groups ...
-	 * @param resources
-	 * @return
-	 */
-	public List<RepositoryEntryShortImpl> loadRepositoryEntryShortsByResource(Collection<Long> resIds, String resourceType) {
-		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadRepositoryEntryShortsByResourceableIds", RepositoryEntryShortImpl.class)
-				.setParameter("resIds", resIds)
-				.setParameter("resName", resourceType)
-				.getResultList();
-	}
 
 	public RepositoryEntrySecurity isAllowed(UserRequest ureq, RepositoryEntry re) {
 		return isAllowed(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
@@ -890,7 +859,7 @@ public class RepositoryManager {
 		QueryBuilder query = new QueryBuilder(400);
 		query.append("select count(*) from repositoryentry v")
 			 .append(" inner join v.olatResource res")
-		     .append(" where res.resName=:restrictedType and v.status ").in(RepositoryEntryStatusEnum.authors());
+		     .append(" where res.resName=:restrictedType and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Number.class)
 				.setParameter("restrictedType", restrictedType)
@@ -1124,7 +1093,7 @@ public class RepositoryManager {
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")//TODO repo access
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" where membership.identity.key=:identityKey and v.status ").in(RepositoryEntryStatusEnum.authors());
+		  .append(" where membership.identity.key=:identityKey and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
@@ -1627,9 +1596,9 @@ public class RepositoryManager {
 		return query.getResultList();
 	}
 
-	public List<RepositoryEntryLight> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
+	public List<RepositoryEntry> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
 		QueryBuilder sb = new QueryBuilder(512);
-		sb.append("select v from repoentrylight as v ")
+		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" where (exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
 		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
@@ -1637,8 +1606,8 @@ public class RepositoryManager {
 		  .append(" or v.allUsers=true) and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed());
 		appendOrderBy(sb, "v", orderby);
 
-		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryLight.class)
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);

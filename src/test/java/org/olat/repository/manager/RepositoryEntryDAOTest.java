@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -107,6 +108,71 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		List<RepositoryEntry> emptyRes = repositoryEntryDao.loadByResourceKeys(Collections.<Long>emptyList());
 		Assert.assertNotNull(emptyRes);
 		Assert.assertEquals(0,  emptyRes.size());
+	}
+	
+	@Test
+	public void loadByResource() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 12", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		RepositoryEntry loadedRe = repositoryEntryDao.loadByResource(re.getOlatResource());
+		Assert.assertNotNull(loadedRe.getStatistics());
+		Assert.assertEquals(re, loadedRe);
+		Assert.assertEquals(re.getOlatResource(), loadedRe.getOlatResource());
+	}
+	
+	@Test
+	public void loadByResources() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 14", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		List<OLATResource> resources = Collections.singletonList(re.getOlatResource());
+		List<RepositoryEntry> loadedRes = repositoryEntryDao.loadByResources(resources);
+		Assert.assertNotNull(loadedRes);
+		Assert.assertEquals(1, loadedRes.size());
+		RepositoryEntry loadedRe = loadedRes.get(0);
+		Assert.assertNotNull(loadedRe.getStatistics());
+		Assert.assertEquals(re, loadedRe);
+		Assert.assertEquals(re.getOlatResource(), loadedRe.getOlatResource());
+	}
+	
+	@Test
+	public void loadByResourceId() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 10", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		OLATResourceable ores = re.getOlatResource();
+		RepositoryEntry loadedRe = repositoryEntryDao.loadByResourceId(ores.getResourceableTypeName(), ores.getResourceableId());
+		Assert.assertNotNull(loadedRe.getStatistics());
+		Assert.assertEquals(re.getOlatResource(), loadedRe.getOlatResource());
+	}
+	
+	@Test
+	public void loadByResourceIds() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 11", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		OLATResourceable ores = re.getOlatResource();
+		Collection<Long> oresIds = Collections.singletonList(ores.getResourceableId());
+		List<RepositoryEntry> loadedRes = repositoryEntryDao.loadByResourceIds(ores.getResourceableTypeName(), oresIds);
+		Assert.assertNotNull(loadedRes);
+		Assert.assertEquals(1, loadedRes.size());
+		RepositoryEntry loadedRe = loadedRes.get(0);
+		Assert.assertEquals(re, loadedRe);
+		Assert.assertEquals(re.getOlatResource(), loadedRe.getOlatResource());
+		Assert.assertNotNull(loadedRe.getStatistics());
 	}
 
 	@Test
@@ -268,4 +334,7 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(emptyRes);
 		Assert.assertEquals(0, emptyRes.size());
 	}
+	
+	
+	
 }

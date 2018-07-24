@@ -69,7 +69,7 @@ public class AccessTransactionGatling extends OlatTestCase {
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")//TODO repo access
+		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where ores.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		
 		List<RepositoryEntry> courses= dbInstance.getCurrentEntityManager()

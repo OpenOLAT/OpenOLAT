@@ -415,10 +415,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(row.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			return "o_entry_closed";
 		}
-		/*
-		if(row.getRepositoryEntryStatus().isUnpublished()) {//TODO repo unpublished
-			return "o_entry_unpublished";
-		}*/
 		return null;
 	}
 

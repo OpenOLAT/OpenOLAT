@@ -66,34 +66,15 @@ public class AccessRenderer implements FlexiCellRenderer {
 	private void render(StringOutput sb, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
 		if(status == RepositoryEntryStatusEnum.trash || status == RepositoryEntryStatusEnum.deleted) {
 			sb.append(translator.translate("table.header.access.deleted"));
-		} else if(!allUsers && !guests) {
-			sb.append(translator.translate("table.header.access.membersonly")); 
-		} else {
-			//TODO repo access
-			/*
-			switch (access) {
-				case RepositoryEntry.ACC_OWNERS:
-					sb.append(translator.translate("table.header.access.owner"));
-					break;
-				case RepositoryEntry.ACC_OWNERS_AUTHORS:
-					sb.append(translator.translate("table.header.access.author"));
-					break;
-				case RepositoryEntry.ACC_USERS:
-					sb.append(translator.translate("table.header.access.user"));
-					break;
-				case RepositoryEntry.ACC_USERS_GUESTS: {
-					if(!guestLoginEnabled) {
-						sb.append(translator.translate("table.header.access.user"));
-					} else {
-						sb.append(translator.translate("table.header.access.guest"));
-					}
-					break;
-				} default:						
-					// OLAT-6272 in case of broken repo entries with no access code
-					// return error instead of nothing
-					sb.append("ERROR");
+		} else  {
+			
+			sb.append(translator.translate("table.status.".concat(status.name())));
+			if(allUsers) {
+				sb.append(translator.translate("table.allusers"));
 			}
-			*/
+			if(guests && guestLoginEnabled) {
+				sb.append(translator.translate("table.guests"));
+			}
 		}
 	}
 }

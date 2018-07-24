@@ -57,12 +57,11 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
-import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
@@ -108,6 +107,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -498,7 +499,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				return !result.isFailed();
 			}
 		} else {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 			if(entry != null) {
 				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
@@ -536,7 +537,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				return true;
 			}
 		} else {
-			RepositoryEntryRef entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			RepositoryEntryRef entry = repositoryEntryDao.loadByResource(resource);
 			if(entry != null) {
 				if(repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
@@ -556,7 +557,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				return group.getName();
 			}
 		} else {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 			if(entry != null) {
 				return entry.getDisplayname();
 			}
@@ -599,12 +600,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 		}
 		if(!repositoryResources.isEmpty()) {
-			List<RepositoryEntryShort> repoEntries = repositoryManager.loadRepositoryEntryShorts(repositoryResources);
-			for(RepositoryEntryShort repoEntry:repoEntries) {
+			List<RepositoryEntry> repoEntries = repositoryEntryDao.loadByResources(repositoryResources);
+			for(RepositoryEntry repoEntry:repoEntries) {
 				ACResourceInfoImpl info = new ACResourceInfoImpl();
 				info.setName(repoEntry.getDisplayname());
-				info.setDescription(((RepositoryEntryShortImpl)repoEntry).getDescription());
-				info.setResource(((RepositoryEntryShortImpl)repoEntry).getOlatResource());
+				info.setDescription(repoEntry.getDescription());
+				info.setResource(repoEntry.getOlatResource());
 				resourceInfos.add(info);
 			}
 		}

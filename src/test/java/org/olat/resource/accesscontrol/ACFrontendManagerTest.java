@@ -409,7 +409,6 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		RepositoryEntry re = repositoryService.create(null, "Florian Gnägi", "Access controlled by OLAT ",
 				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description",
 				r, RepositoryEntryStatusEnum.review, defOrganisation);
-		//TODO repo re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		re = repositoryService.update(re);
 		dbInstance.commitAndCloseSession();
 		return re;

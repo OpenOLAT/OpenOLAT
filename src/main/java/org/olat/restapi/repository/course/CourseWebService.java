@@ -398,11 +398,6 @@ public class CourseWebService {
 			log.audit("REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
-		} else if("unpublished".equals(newStatus)) {
-			repositoryService.unpublishRepositoryEntry(re);
-			log.audit("REST unpublishing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
 			repositoryService.deleteSoftly(re, identity, true);

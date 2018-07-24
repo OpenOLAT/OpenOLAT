@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
@@ -85,6 +86,22 @@ public class RepositoryEntryDAO {
 		}
 		return entries.get(0);
 	}
+	
+	public RepositoryEntry loadByResource(OLATResource resource) {
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryByResourceKey", RepositoryEntry.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+
+	public List<RepositoryEntry> loadByResources(Collection<OLATResource> resources) {
+		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).collect(Collectors.toList());
+		return loadByResourceKeys(resourceKeys);
+	}
 
 	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> resourceKeys) {
 		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptyList();
@@ -134,6 +151,14 @@ public class RepositoryEntryDAO {
 			return null;
 		}
 		return entries.get(0);
+	}
+	
+	public List<RepositoryEntry> loadByResourceIds(String resourceName, Collection<Long> resourceIds) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryByResourceIds", RepositoryEntry.class)
+				.setParameter("resIds", resourceIds)
+				.setParameter("resName", resourceName)
+				.getResultList();
 	}
 	
 	public List<RepositoryEntry> searchByIdAndRefs(String idAndRefs) {

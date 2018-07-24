@@ -25,7 +25,7 @@ import java.util.Locale;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.repository.RepositoryEntryLight;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Description:<br>
@@ -36,11 +36,11 @@ import org.olat.repository.RepositoryEntryLight;
  * Initial Date:  06.03.2009 <br>
  * @author gnaegi, rhaag
  */
-public class RepositoryPortletTableDataModel extends PortletDefaultTableDataModel<RepositoryEntryLight> {
+public class RepositoryPortletTableDataModel extends PortletDefaultTableDataModel<RepositoryEntry> {
 	/**
 	 * @see org.olat.core.gui.components.table.DefaultTableDataModel#getValueAt(int, int)
 	 */
-	public  RepositoryPortletTableDataModel(List<PortletEntry<RepositoryEntryLight>> objects, Locale locale) {
+	public  RepositoryPortletTableDataModel(List<PortletEntry<RepositoryEntry>> objects, Locale locale) {
 		super(objects, 3);
 		super.setLocale(locale);
 	}
@@ -63,8 +63,8 @@ public class RepositoryPortletTableDataModel extends PortletDefaultTableDataMode
 		}
 	}	
 
-	public RepositoryEntryLight getRepositoryEntry(int row) {
-		PortletEntry<RepositoryEntryLight> portletEntry = getObject(row);
+	public RepositoryEntry getRepositoryEntry(int row) {
+		PortletEntry<RepositoryEntry> portletEntry = getObject(row);
 		return portletEntry.getValue();
 	}
 }

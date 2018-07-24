@@ -453,13 +453,13 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntryLight> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
+		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		
 		boolean found = false;
 		Set<Long> duplicates = new HashSet<Long>();
-		for(RepositoryEntryLight entry:entries) {
+		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(entry.getKey().equals(re.getKey())) {
 				found = true;
@@ -488,13 +488,13 @@ public class RepositoryManagerTest extends OlatTestCase {
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntryLight> entries = repositoryManager.getParticipantRepositoryEntry(id, -1);
+		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		
 		boolean found = false;
 		Set<Long> duplicates = new HashSet<Long>();
-		for(RepositoryEntryLight entry:entries) {
+		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			
 			if(entry.getKey().equals(re.getKey())) {

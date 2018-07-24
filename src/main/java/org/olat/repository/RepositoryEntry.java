@@ -77,6 +77,9 @@ import org.olat.resource.OLATResourceImpl;
 	@NamedQuery(name="loadRepositoryEntryByKey", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle where v.key = :repoKey"),
 	@NamedQuery(name="loadRepositoryEntryByResourceKey", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle where ores.key = :resourceKey"),
 	@NamedQuery(name="loadRepositoryEntryByResourceId", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle where ores.resId=:resId and ores.resName=:resName"),
+	@NamedQuery(name="loadRepositoryEntryByResourceIds", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle where ores.resId in (:resIds) and ores.resName=:resName"),
+	
+	
 	@NamedQuery(name="getDisplayNameByResourceKey", query="select v.displayname from repositoryentry v where v.olatResource.key=:resKey"),
 	@NamedQuery(name="getDisplayNameByOlatResourceRedId", query="select v.displayname from repositoryentry v inner join v.olatResource as ores where ores.resId=:resid"),
 	@NamedQuery(name="getDisplayNameByRepositoryEntryKey", query="select v.displayname from repositoryentry v where v.key=:reKey")

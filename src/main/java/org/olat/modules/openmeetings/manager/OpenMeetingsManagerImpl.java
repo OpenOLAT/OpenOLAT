@@ -61,8 +61,8 @@ import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoomReference;
 import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.modules.openmeetings.model.RoomReturnInfo;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.model.RepositoryEntryShortImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +85,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
 
@@ -188,8 +188,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		}
 		
 		if(!resourceIdToRoomIds.isEmpty()) {
-			List<RepositoryEntryShortImpl> shortRepos = repositoryManager.loadRepositoryEntryShortsByResource(resourceIdToRoomIds.keySet(), "CourseModule");
-			for(RepositoryEntryShortImpl repoEntry : shortRepos) {
+			List<RepositoryEntry> shortRepos = repositoryEntryDao.loadByResourceIds("CourseModule", resourceIdToRoomIds.keySet());
+			for(RepositoryEntry repoEntry : shortRepos) {
 				List<Long> roomIds = resourceIdToRoomIds.get(repoEntry.getOlatResource().getResourceableId());
 				for(Long roomId:roomIds) {
 					roomIdToResourceName.put(roomId, repoEntry.getDisplayname());

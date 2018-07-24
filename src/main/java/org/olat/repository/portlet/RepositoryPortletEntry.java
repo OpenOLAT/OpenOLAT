@@ -21,8 +21,6 @@ package org.olat.repository.portlet;
 
 import org.olat.core.gui.control.generic.portal.PortletEntry;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryLight;
-import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * Description:<br>
@@ -33,91 +31,26 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  * 
  * @author gnaegi
  */
-public class RepositoryPortletEntry implements PortletEntry<RepositoryEntryLight> {
-	private RepositoryEntryLight value;
+public class RepositoryPortletEntry implements PortletEntry<RepositoryEntry> {
+	
+	private RepositoryEntry value;
 
-	public RepositoryPortletEntry(RepositoryEntryLight repoEntry) {
-		value = new REShort(repoEntry);
-	}
 	
 	public RepositoryPortletEntry(RepositoryEntry repoEntry) {
-		value = new REShort(repoEntry);
+		value = repoEntry;
 	}
 
+	@Override
 	public Long getKey() {
 		return value.getKey();
 	}
 
-	public RepositoryEntryLight getValue() {
+	@Override
+	public RepositoryEntry getValue() {
 		return value;
 	}
 	
 	public String getDescription() {
 		return value.getDescription();
-	}
-
-	private static class REShort implements RepositoryEntryLight {
-		private final Long key;
-		private final String displayname;
-		private final String description;
-		private final String type;
-		private final RepositoryEntryStatusEnum status;
-		private final boolean allUsers;
-		private final boolean guests;
-		
-		public REShort(RepositoryEntryLight entry) {
-			key = entry.getKey();
-			displayname = entry.getDisplayname();
-			description = entry.getDescription();
-			type = entry.getResourceType();
-			status = entry.getEntryStatus();
-			allUsers = entry.isAllUsers();
-			guests = entry.isGuests();
-		}
-		
-		public REShort(RepositoryEntry entry) {
-			key = entry.getKey();
-			displayname = entry.getDisplayname();
-			description = entry.getDescription();
-			type = entry.getOlatResource().getResourceableTypeName();
-			status = entry.getEntryStatus();
-			allUsers = entry.isAllUsers();
-			guests = entry.isGuests();
-		}
-
-		@Override
-		public Long getKey() {
-			return key;
-		}
-
-		@Override
-		public String getDisplayname() {
-			return displayname;
-		}
-
-		@Override
-		public String getDescription() {
-			return description;
-		}
-
-		@Override
-		public RepositoryEntryStatusEnum getEntryStatus() {
-			return status;
-		}
-
-		@Override
-		public boolean isAllUsers() {
-			return allUsers;
-		}
-
-		@Override
-		public boolean isGuests() {
-			return guests;
-		}
-
-		@Override
-		public String getResourceType() {
-			return type;
-		}
 	}
 }

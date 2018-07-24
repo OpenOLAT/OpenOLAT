@@ -37,7 +37,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
@@ -201,7 +201,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	private String getDisplayName(RepositoryEntry repositoryEntry, Locale locale) {
 		String displayName = repositoryEntry.getDisplayname();
 		if (repositoryEntry.getEntryStatus().decommissioned()) {
-			Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
+			Translator pT = Util.createPackageTranslator(RepositoryModule.class, locale);
 			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
 		}
 		return displayName;

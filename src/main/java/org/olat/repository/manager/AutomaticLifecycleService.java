@@ -102,48 +102,6 @@ public class AutomaticLifecycleService {
 				.setParameter("now", endOfDay)
 				.getResultList();
 	}
-	/*
-	private void unpublish() {
-		String autoUnpublish = repositoryModule.getLifecycleAutoUnpublish();
-		if(StringHelper.containsNonWhitespace(autoUnpublish)) {
-			RepositoryEntryLifeCycleValue autoUnpublishVal = RepositoryEntryLifeCycleValue.parse(autoUnpublish);
-			Date markerDate = autoUnpublishVal.limitDate(new Date());
-			List<RepositoryEntry> entriesToUnpublish = getRepositoryEntriesToUnpublish(markerDate);
-			for(RepositoryEntry entry:entriesToUnpublish) {
-				try {
-					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
-					if(!closeManaged) {
-						log.audit("Automatic unpublishing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
-						repositoryService.unpublishRepositoryEntry(entry);
-						dbInstance.commit();
-					}
-				} catch (Exception e) {
-					log.error("",  e);
-					dbInstance.commitAndCloseSession();
-				}
-			}
-		}
-	}
-	
-	public List<RepositoryEntry> getRepositoryEntriesToUnpublish(Date date) {
-		StringBuilder sb = new StringBuilder();//TODO repo unit
-		sb.append("select v from repositoryentry as v ")
-		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and not(v.statusCode=").append(RepositoryEntryStatus.REPOSITORY_STATUS_UNPUBLISHED).append(")")
-		  .append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);//TODO repo access
-		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		CalendarUtils.getEndOfDay(cal);
-		Date endOfDay = cal.getTime();
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntry.class)
-				.setParameter("now", endOfDay)
-				.getResultList();
-	}*/
 	
 	private void delete() {
 		String autoDelete = repositoryModule.getLifecycleAutoDelete();

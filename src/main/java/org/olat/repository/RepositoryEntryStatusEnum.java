@@ -80,20 +80,6 @@ public enum RepositoryEntryStatusEnum {
 		};
 	}
 	
-	public static RepositoryEntryStatusEnum[] authors() {
-		return new RepositoryEntryStatusEnum[] {
-			RepositoryEntryStatusEnum.preparation, RepositoryEntryStatusEnum.review,
-			RepositoryEntryStatusEnum.coachpublished, RepositoryEntryStatusEnum.published,
-			RepositoryEntryStatusEnum.closed
-		};
-	}
-	
-	public static RepositoryEntryStatusEnum[] users() {
-		return new RepositoryEntryStatusEnum[] {
-			RepositoryEntryStatusEnum.published, RepositoryEntryStatusEnum.closed
-		};
-	}
-	
 	public static boolean isValid(String string) {
 		boolean allOk = false;
 		if(StringHelper.containsNonWhitespace(string)) {
