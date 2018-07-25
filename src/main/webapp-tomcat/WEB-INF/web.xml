@@ -199,4 +199,12 @@
 	<session-config>
 		<session-timeout>60</session-timeout>
     </session-config>
+    
+    <error-page>
+    	<exception-type>java.lang.Throwable</exception-type>
+    	<location>/errors/error.html</location>
+    </error-page>
+    <error-page>
+    	<location>/errors/error.html</location>
+    </error-page>
 </web-app>

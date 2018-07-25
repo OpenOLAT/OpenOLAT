@@ -46,6 +46,9 @@
 				<entry key="/error/">
 					<ref bean="errorMailBean" />
 				</entry>
+				<entry key="/errors/">
+					<ref bean="errorsBean" />
+				</entry>
 				<entry key="/math/">
 					<ref bean="mathwebbean" />
 				</entry>
@@ -80,6 +83,8 @@
 		<property name="mailManager" ref="mailManager"/>
 		<property name="securityManager" ref="baseSecurityManager"/>
 	</bean>
+	
+	<bean id="errorsBean" class="org.olat.core.dispatcher.ErrorsDispatcher" />
 
 	<!--  all olat dispatchers -->
 	<bean id="dmzbean" class="org.olat.dispatcher.DMZDispatcher">
