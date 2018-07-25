@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.SessionCookieConfig;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -122,6 +123,12 @@ public class OpenOLATServlet extends HttpServlet {
 			if(!legacyContext.endsWith("/")) {
 				legacyContext += "/";
 			}
+		}
+		
+		if(Settings.isSecurePortAvailable()) {
+			SessionCookieConfig cookieConfig = servletConfig.getServletContext().getSessionCookieConfig();
+			cookieConfig.setSecure(true);
+			cookieConfig.setHttpOnly(true);
 		}
 		
 		//preload extensions

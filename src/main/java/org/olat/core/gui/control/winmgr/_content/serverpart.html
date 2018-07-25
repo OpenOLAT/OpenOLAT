@@ -30,7 +30,7 @@ var timestampLastPoll = new Date().getTime();
 // set timestamp cookie to inform other windows that they are outdated
 var sbtimestamp = new Date().getTime();
 var sbcookie = 'OLAT-UI-TIMESTAMP';
-if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/';
+if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/; SameSite=strict';
 
 ## starts an interval which checks every second whether to send an poll request based on
 ## the pollperiod or not 10 min after the last click the poll process stops
