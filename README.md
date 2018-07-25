@@ -38,8 +38,8 @@ With regard to licensing and copyright please refer to the file [LICENSE](LICENS
 We strongly suggest to participate in the OpenOLAT community membership program. 
 Even though this software is free and open source, the development and management
 has to be funded by someone. If you like what we do and want the product to be
-maintained and developed in the long run you should consider purchasing a member
-ship: [Partner program](https://www.openolat.com/open-source/partner-program/?lang=en).
+maintained and developed in the long run you should consider purchasing a membership:
+[Partner program](https://www.openolat.com/open-source/partner-program/?lang=en).
 
 ## Developers
 
@@ -49,16 +49,14 @@ This is an installation guide for developers.
 
 #### Preconditions
 * Check that you are using maven 3.1 or higher (mvn -V)
-* Check that you have the mercurial plugin installed in eclipse
-  [MercurialEclipse update site](https://bitbucket.org/mercurialeclipse/update-site/raw/default/)
-* Check that you have Mercurial (hg) installed
+* Check that you have the git plugin installed in eclipse
+* Check that you have git installed
 * MySQL 5.6 or greater or PostreSQL 9.4
 
 #### 1. In Eclipse
 
-Create a Mercurial repository location (https://hg.openolat.org/openolat) and
-clone the repo. Do not add a password and make sure you uncheck the init Mercurial repo
-checkbox at the end. Right click to clone the repository into your workspace.
+Create a repository location (https://github.com/OpenOLAT/OpenOLAT.git) and
+clone the repo. Right click to clone the repository into your workspace.
 
 If M2_REPO Eclipse variable is missing in Eclipse then execute in terminal:
 

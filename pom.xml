@@ -7,7 +7,7 @@
 	<version>13.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
-	<url>http://www.openolat.org</url>
+	<url>https://www.openolat.com</url>
 	<description>
   Welcome to the OpenOLAT (Open Online Learning And Training) Developer Project Site.  This site
   contains materials chiefly of concern to developers (e.g., unit testing and SCA output etc.)
@@ -17,7 +17,7 @@
   </description>
 	<organization>
 		<name>OpenOLAT</name>
-		<url>http://www.openolat.org</url>
+		<url>https://www.openolat.com</url>
 	</organization>
 	<licenses>
 		<license>
@@ -41,12 +41,12 @@
 	</distributionManagement>
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://jira.openolat.org</url>
+		<url>https://jira.openolat.org</url>
 	</issueManagement>
 	<scm>
-		<connection>scm:hg:http://hg.openolat.org</connection>
-		<developerConnection>scm:hg:http://hg.openolat.org</developerConnection>
-		<url>http://hg.openolat.org</url>
+		<url>https://github.com/OpenOLAT/OpenOLAT</url>
+		<connection>scm:git:git://github.com/OpenOLAT/OpenOLAT.git</connection>
+		<developerConnection>scm:git:git@github.com:OpenOLAT/OpenOLAT.git</developerConnection>
 	</scm>
 	<mailingLists>
 		<mailingList>
@@ -63,12 +63,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>5.0.7.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.3.2.Final</org.hibernate.version>
+		<org.hibernate.version>5.3.3.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.2.4</apache.cxf>
 		<jackson.version>2.9.5</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.2</org.postgresql.version>
+		<org.postgresql.version>42.2.4</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>3.13.0</version.selenium>
