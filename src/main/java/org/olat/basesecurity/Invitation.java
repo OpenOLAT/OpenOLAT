@@ -20,6 +20,8 @@
 
 package org.olat.basesecurity;
 
+import org.olat.core.id.Identity;
+
 /**
  * Description:<br>
  * Invitation to Olat.
@@ -47,4 +49,6 @@ public interface Invitation {
 	public void setMail(String mail);
 	
 	public Group getBaseGroup();
+	
+	public Identity getIdentity();
 }

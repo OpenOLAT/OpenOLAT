@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
@@ -68,7 +69,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
-import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
@@ -94,11 +94,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
-	private InvitationDAO invitationDao;
+	private OrganisationService organisationService;
 	@Autowired
 	private AuthenticationHistoryDAO authenticationHistoryDao;
-	@Autowired
-	private OrganisationService organisationService;
 	@Autowired
 	private IdentityPowerSearchQueries identityPowerSearchQueries;
 	
@@ -145,10 +143,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public Roles getRoles(IdentityRef identity, boolean withInherited) {
-		boolean isGuestOnly = false;
-		boolean isInvitee = false;
-		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select org.key, org.identifier, membership.role from organisation as org ")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
@@ -163,24 +158,26 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				.getResultList();
 		Map<OrganisationRef, List<OrganisationRoles>> orgToRoles = new HashMap<>();
 
+		Set<String> rolesStr = new HashSet<>();
 		for(Object[] rawObject:rawObjects) {
 			Long organisationKey = (Long)rawObject[0];
 			String role = (String)rawObject[2];
 			if(!OrganisationRoles.isValue(role)) {
 				continue;
 			}
+			rolesStr.add(role);
 
 			List<OrganisationRoles> roleList = orgToRoles
 					.computeIfAbsent(new OrganisationRefImpl(organisationKey), key -> new ArrayList<>());
 			roleList.add(OrganisationRoles.valueOf(role));
 		}
 
-		List<String> rolesStr = getRolesAsString(identity);
+		boolean isInvitee = rolesStr.contains(OrganisationRoles.invitee.name());
+		boolean isGuestOnly = false;
 		if(!rolesStr.contains(OrganisationRoles.user.name())) {
-			isInvitee = invitationDao.isInvitee(identity);
 			isGuestOnly = rolesStr.contains(OrganisationRoles.guest.name());
 		}
-				
+		
 		List<RolesByOrganisation> rolesByOrganisations = new ArrayList<>();
 		for(Map.Entry<OrganisationRef, List<OrganisationRoles>> entry:orgToRoles.entrySet()) {
 			rolesByOrganisations.add(new RolesByOrganisation(entry.getKey(), entry.getValue()));

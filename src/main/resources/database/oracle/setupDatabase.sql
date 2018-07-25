@@ -854,6 +854,7 @@ create table o_bs_invitation (
    last_name varchar(64 char),
    mail varchar(128 char),
    fk_group_id number(20),
+   fk_identity_id number(20),
    primary key (id)
 );
 
@@ -2979,6 +2980,8 @@ create index FK7B6288B4B85B522C on o_bs_membership (secgroup_id);
 
 alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index idx_inv_to_group_group_ctx on o_bs_invitation (fk_group_id);
+alter table o_bs_invitation add constraint invit_to_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_invit_to_id_idx on o_bs_invitation (fk_identity_id);
 
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);

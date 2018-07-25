@@ -796,6 +796,7 @@ create table o_bs_invitation (
    last_name varchar(64),
    mail varchar(128),
    fk_group_id int8,
+   fk_identity_id int8,
    primary key (id)
 );
 
@@ -2864,6 +2865,8 @@ create index idx_membership_sec_ident_idx on o_bs_membership (identity_id, secgr
 
 alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index idx_inv_to_group_group_ctx on o_bs_invitation (fk_group_id);
+alter table o_bs_invitation add constraint invit_to_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_invit_to_id_idx on o_bs_invitation (fk_identity_id);
 
 create index idx_secgroup_creationdate_idx on o_bs_secgroup (creationdate);
 

@@ -68,6 +68,12 @@ create index idx_rel_org_to_re_idx on o_re_to_organisation (fk_entry);
 alter table o_re_to_organisation add constraint rel_org_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_rel_org_to_org_idx on o_re_to_organisation (fk_organisation);
 
+-- invitation
+alter table o_bs_invitation add fk_identity_id number(20);
+
+alter table o_bs_invitation add constraint invit_to_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_invit_to_id_idx on o_bs_invitation (fk_identity_id);
+
 
 -- curriculum
 create table o_cur_element_type (

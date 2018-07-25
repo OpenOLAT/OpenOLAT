@@ -19,6 +19,7 @@
  */
 package org.olat.upgrade;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityImpl;
@@ -46,6 +47,8 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRollCallRefImpl;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.portfolio.manager.InvitationDAO;
+import org.olat.portfolio.model.InvitationImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
@@ -53,6 +56,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
 import org.olat.upgrade.model.RepositoryEntryAccessUpgrade;
 import org.olat.upgrade.model.RepositoryEntryAccessUpgradeStatus;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,6 +69,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_13.0.0";
 	private static final String MIGRATE_ROLE = "MIGRATE ROLE";
+	private static final String MIGRATE_INVITEE = "MIGRATE INVITEE";
 	private static final String MIGRATE_REPO_ENTRY_DEFAULT_ORG = "MIGRATE REPO ENTRY TO DEF ORG";
 	private static final String MIGRATE_PORTFOLIO_EVAL_FORM = "PORTFOLIO EVALUATION FORM";
 	private static final String MIGRATE_SEND_APPEAL_DATES = "LECTURES SEND APPEAL DATES";
@@ -73,6 +78,10 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private InvitationDAO invitationDao;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -118,6 +127,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateRole(upgradeManager, uhd);
+		allOk &= migrateInvitee(upgradeManager, uhd);
 		allOk &= migrateRepositoryEntriesToDefaultOrganisation(upgradeManager, uhd);
 		allOk &= migratePortfolioEvaluationForm(upgradeManager, uhd);
 		allOk &= migrateLecturesSendAppealDates(upgradeManager, uhd);
@@ -331,6 +341,70 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			repositoryEntryRelationDao.createRelation(defOrganisation.getGroup(), entry);
 			dbInstance.commitAndCloseSession();
 		}
+	}
+	
+	private boolean migrateInvitee(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_INVITEE)) {
+			try {
+
+				List<Organisation> defOrganisations = organisationDao.loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+				Organisation defOrganisation = null;
+				if(!defOrganisations.isEmpty()) {
+					defOrganisation = defOrganisations.get(0);
+				}
+				List<Long> invitationKeys = getInvitations();
+				for(Long invitationKey:invitationKeys) {
+					InvitationImpl invitation = (InvitationImpl)invitationDao.loadByKey(invitationKey);
+					migrateInvitee(invitation, defOrganisation);
+					dbInstance.commitAndCloseSession();
+				}
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_INVITEE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private void migrateInvitee(InvitationImpl invitation, Organisation defOrganisation) {
+		if(invitation.getIdentity() != null) return;
+		
+		String mail = invitation.getMail();
+		List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
+		
+		Identity identity = null;
+		if(identities.size() == 1) {
+			identity = identities.get(0);
+		} else if(identities.size() > 1) {
+			for(Identity possibleIdentity:identities) {
+				String username = possibleIdentity.getName();
+				if(username.length() >= 32 && username.length() <= 36) {
+					//UUID
+					identity = possibleIdentity;
+				}
+			}
+		}
+		
+		if(identity != null) {
+			invitation.setIdentity(identity);
+			dbInstance.getCurrentEntityManager().merge(invitation);
+			if(defOrganisation != null) {
+				organisationService.addMember(defOrganisation, identity, OrganisationRoles.invitee);
+			}
+		}
+	}
+	
+	private List<Long> getInvitations() {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select invitation.key from binvitation as invitation");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.getResultList();
 	}
 	
 	private boolean migrateRole(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

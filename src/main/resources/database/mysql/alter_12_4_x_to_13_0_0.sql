@@ -66,6 +66,11 @@ alter table o_re_to_organisation ENGINE = InnoDB;
 alter table o_re_to_organisation add constraint rel_org_to_re_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 alter table o_re_to_organisation add constraint rel_org_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
+-- invitation
+alter table o_bs_invitation add column fk_identity_id bigint;
+
+alter table o_bs_invitation add constraint invit_to_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+
 
 -- curriculum
 create table o_cur_element_type (

@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -36,9 +37,11 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 
 /**
@@ -85,6 +88,11 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group baseGroup;
 	
+	//optional, nullable and updatable for compatible reasons
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity_id", nullable=true, insertable=true, updatable=true)
+	private Identity identity;
+	
 	@Override
 	public Long getKey() {
 		return key;
@@ -99,6 +107,7 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public String getToken() {
 		return token;
 	}
@@ -106,37 +115,52 @@ public class InvitationImpl implements CreateInfo, Persistable, Invitation {
 	public void setToken(String token) {
 		this.token = token;
 	}
-	
+
+	@Override
 	public String getFirstName() {
 		return firstName;
 	}
 
+	@Override
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
 
+	@Override
 	public String getLastName() {
 		return lastName;
 	}
 
+	@Override
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
 
+	@Override
 	public String getMail() {
 		return mail;
 	}
 
+	@Override
 	public void setMail(String mail) {
 		this.mail = mail;
 	}
 
+	@Override
 	public Group getBaseGroup() {
 		return baseGroup;
 	}
 
 	public void setBaseGroup(Group baseGroup) {
 		this.baseGroup = baseGroup;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
 	}
 
 	@Override

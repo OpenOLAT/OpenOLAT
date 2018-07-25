@@ -799,6 +799,7 @@ create table if not exists o_bs_invitation (
    last_name varchar(64),
    mail varchar(128),
    fk_group_id bigint,
+   fk_identity_id bigint,
    primary key (id)
 );
 
@@ -2993,6 +2994,7 @@ alter table o_bs_membership add constraint FK7B6288B45259603C foreign key (ident
 alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgroup_id) references o_bs_secgroup (id);
 
 alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_bs_invitation add constraint invit_to_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);

@@ -272,7 +272,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 	
 		mailEl.clearError();
 		if (mailEl != null) {
@@ -306,7 +306,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean isAtLeastOneUser(Collection<Identity> identites) {
