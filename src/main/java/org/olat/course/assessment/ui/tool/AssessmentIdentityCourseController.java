@@ -105,7 +105,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 
 		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
-			certificateCtrl = new IdentityCertificatesController(ureq, wControl, courseEntry, assessedIdentity);
+			certificateCtrl = new IdentityCertificatesController(ureq, wControl, coachCourseEnv, courseEntry, assessedIdentity);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
 			listenTo(certificateCtrl);
 		}

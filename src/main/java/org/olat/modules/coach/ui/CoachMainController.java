@@ -43,6 +43,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
+import org.olat.modules.coach.CoachingService;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.coach.LecturesSearchController;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -69,16 +70,22 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private LayoutMain3ColsController columnLayoutCtr;
 	private LecturesSearchController lecturesSearchCtrl;
 	
-	private final boolean userSearch;
+	private final boolean ownCourses;
+	private final boolean lecturesAllowed;
+	private final boolean userSearchAllowed;
 	
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private CoachingService coachingService;
 	
 	public CoachMainController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		userSearch = roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator() || roles.isPrincipal();
+		userSearchAllowed = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal();
+		ownCourses = coachingService.isCoach(getIdentity());
+		lecturesAllowed = lectureModule.isEnabled() && (roles.isAdministrator() || roles.isLectureManager() || roles.isPrincipal());
 
 		menu = new MenuTree(null, "coachMenu", this);
 		menu.setExpandSelectedNode(false);
@@ -114,18 +121,31 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			selectMenuItem(ureq, "Members");
+			selectMenuItem(ureq, getDefaultMenuItem());
 		} else {
 			ContextEntry currentEntry = entries.get(0);
 			String cmd = currentEntry.getOLATResourceable().getResourceableTypeName();
 			Activateable2 selectedCtrl = selectMenuItem(ureq, cmd);
 			if(selectedCtrl == null) {
-				selectMenuItem(ureq, "Members");
+				selectMenuItem(ureq, getDefaultMenuItem());
 			} else {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				selectedCtrl.activate(ureq, subEntries, currentEntry.getTransientState());
 			}  
 		}
+	}
+	
+	private String getDefaultMenuItem() {
+		if(ownCourses) {
+			return "Members";
+		}
+		if(userSearchAllowed) {
+			return "Search";
+		}
+		if(lecturesAllowed) {
+			return "Lectures";
+		}
+		return "Members";
 	}
 	
 	private Activateable2 selectMenuItem(UserRequest ureq, String cmd) {
@@ -166,7 +186,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(lecturesSearchCtrl);
 			}
 			selectedCtrl = lecturesSearchCtrl;
-		} else if("search".equalsIgnoreCase(cmd) && userSearch) {
+		} else if("search".equalsIgnoreCase(cmd) && userSearchAllowed) {
 			if(userSearchCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -196,26 +216,28 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		GenericTreeModel gtm = new GenericTreeModel();
 		GenericTreeNode root = new GenericTreeNode();
 		gtm.setRootNode(root);
-
-		GenericTreeNode students = new GenericTreeNode();
-		students.setUserObject("Members");
-		students.setTitle(translate("students.menu.title"));
-		students.setAltText(translate("students.menu.title.alt"));
-		root.addChild(students);
 		
-		GenericTreeNode groups = new GenericTreeNode();
-		groups.setUserObject("Groups");
-		groups.setTitle(translate("groups.menu.title"));
-		groups.setAltText(translate("groups.menu.title.alt"));
-		root.addChild(groups);
+		if(ownCourses) {
+			GenericTreeNode students = new GenericTreeNode();
+			students.setUserObject("Members");
+			students.setTitle(translate("students.menu.title"));
+			students.setAltText(translate("students.menu.title.alt"));
+			root.addChild(students);
+			
+			GenericTreeNode groups = new GenericTreeNode();
+			groups.setUserObject("Groups");
+			groups.setTitle(translate("groups.menu.title"));
+			groups.setAltText(translate("groups.menu.title.alt"));
+			root.addChild(groups);
+			
+			GenericTreeNode courses = new GenericTreeNode();
+			courses.setUserObject("Courses");
+			courses.setTitle(translate("courses.menu.title"));
+			courses.setAltText(translate("courses.menu.title.alt"));
+			root.addChild(courses);
+		}
 		
-		GenericTreeNode courses = new GenericTreeNode();
-		courses.setUserObject("Courses");
-		courses.setTitle(translate("courses.menu.title"));
-		courses.setAltText(translate("courses.menu.title.alt"));
-		root.addChild(courses);
-		
-		if(lectureModule.isEnabled()) {
+		if(lecturesAllowed) {
 			GenericTreeNode lectures = new GenericTreeNode();
 			lectures.setUserObject("Lectures");
 			lectures.setTitle(translate("lectures.menu.title"));
@@ -223,7 +245,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(lectures);
 		}
 		
-		if(userSearch) {
+		if(userSearchAllowed) {
 			GenericTreeNode search = new GenericTreeNode();
 			search.setUserObject("Search");
 			search.setTitle(translate("search.menu.title"));

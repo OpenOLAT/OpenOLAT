@@ -171,7 +171,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		if(businessGroup == null && courseRepo != null) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams(statementOwner, false, true);
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, courseRepo, 0, -1);
-			if(groups.size() > 0) {
+			if(!groups.isEmpty()) {
 				businessGroup = groups.get(0);
 			}
 		}

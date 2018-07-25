@@ -93,7 +93,7 @@ public class IdentityCertificatesController extends BasicController implements G
 	private CertificatesManager certificatesManager;
 	
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry courseEntry, Identity assessedIdentity) {
+			UserCourseEnvironment coachCourseEnv, RepositoryEntry courseEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 
@@ -101,11 +101,11 @@ public class IdentityCertificatesController extends BasicController implements G
 		this.assessedIdentity = assessedIdentity;
 		
 		CourseConfig courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
-		canDelete = courseConfig.isManualCertificationEnabled();
+		canDelete = courseConfig.isManualCertificationEnabled() && !coachCourseEnv.isCourseReadOnly();
 		mainVC = createVelocityContainer("certificate_overview");
 		formatter = Formatter.getInstance(getLocale());
 
-		if(courseConfig.isManualCertificationEnabled()) {
+		if(courseConfig.isManualCertificationEnabled() && !coachCourseEnv.isCourseReadOnly()) {
 			generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
 			generateLink.setElementCssClass("o_sel_certificate_generate");
 		}

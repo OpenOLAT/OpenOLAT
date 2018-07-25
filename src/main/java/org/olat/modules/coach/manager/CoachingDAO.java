@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Query;
 
@@ -38,9 +39,9 @@ import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.modules.coach.model.CourseStatEntry;
@@ -83,13 +84,8 @@ public class CoachingDAO {
 		  .append(" inner join v.olatResource as res on res.resName='CourseModule'")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role ").in(GroupRoles.owner ,GroupRoles.coach.name())
-		  .append(" where membership.identity.key=:identityKey")
-		  .append(" and (")//TODO repo access
-		  .append("  (membership.role = '").append(GroupRoles.coach.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-		  .append("  or")
-		  .append("  (membership.role = '").append(GroupRoles.owner.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-		  .append(" )");
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role ").in(GroupRoles.owner, GroupRoles.coach.name()).append(")")
+		  .append(" where v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -547,12 +543,12 @@ public class CoachingDAO {
 	
 	protected List<StudentStatEntry> getStudentsStatisticsNative(Identity coach, List<UserPropertyHandler> userPropertyHandlers) {
 		Map<Long, StudentStatEntry> map = new HashMap<>();
-		long start1 = System.nanoTime();
+		//long start1 = System.nanoTime();
 		boolean hasCoachedStudents = getStudentsStastisticInfosForCoach(coach, map, userPropertyHandlers);
-		CodeHelper.printNanoTime(start1, "Coached infos");
-		long start2 = System.nanoTime();
+		//CodeHelper.printNanoTime(start1, "Coached infos");
+		//long start2 = System.nanoTime();
 		boolean hasOwnedStudents = getStudentsStastisticInfosForOwner(coach, map, userPropertyHandlers);
-		CodeHelper.printNanoTime(start2, "Owned infos");
+		//CodeHelper.printNanoTime(start2, "Owned infos");
 		if(hasOwnedStudents || hasCoachedStudents) {
 			for(StudentStatEntry entry:map.values()) {
 				entry.setCountRepo(entry.getRepoIds().size());
@@ -560,9 +556,9 @@ public class CoachingDAO {
 				entry.setInitialLaunch(entry.getLaunchIds().size());
 				entry.setLaunchIds(null);
 			}
-			long start3 = System.nanoTime();
+			//long start3 = System.nanoTime();
 			getStudentsStatisticStatement(coach, hasCoachedStudents, hasOwnedStudents, map);
-			CodeHelper.printNanoTime(start3, "Statistics students");
+			//CodeHelper.printNanoTime(start3, "Statistics students");
 			for(StudentStatEntry entry:map.values()) {
 				int notAttempted = entry.getCountRepo() - entry.getCountPassed() - entry.getCountFailed();
 				entry.setCountNotAttempted(notAttempted);
@@ -964,6 +960,25 @@ public class CoachingDAO {
 				queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
 			}
 		}
+		
+		/*if(params.hasOrganisations()) {
+		sb.append(" and exists (select org_group.id from o_re_to_group as org_group ")
+		  .append("  inner join o_org_organisation as org on (org.fk_group=org_group.fk_group_id)")
+		  .append("  where org_group.fk_entry_id = sg_re.repositoryentry_id and org.id in (:organisationKey))");
+		
+		Set<Long> organisationKeys = params.getOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
+		queryParams.put("organisationKey", organisationKeys);
+	}*/
+		
+		if(params.hasOrganisations()) {
+			sb.append(" and exists (select orgtomember.id from o_bs_group_member as orgtomember ")
+			  .append("  inner join o_org_organisation as org on (org.fk_group=orgtomember.fk_group_id)")
+			  .append("  where orgtomember.fk_identity_id=id_participant.id and org.id in (:organisationKey))");
+			
+			Set<Long> organisationKeys = params.getOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
+			queryParams.put("organisationKey", organisationKeys);
+		}
+
 		return sb;
 	}
 	

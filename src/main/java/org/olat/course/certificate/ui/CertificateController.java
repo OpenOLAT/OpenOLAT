@@ -57,9 +57,7 @@ public class CertificateController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("certificate");
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-		if(certificateLeaf == null) {
-			//show an error
-		} else {
+		if(certificate != null) {
 			Formatter formatter = Formatter.getInstance(getLocale());
 			String creationDate = formatter.formatDateAndTime(certificate.getCreationDate());
 			String creationDateMsg = translate("certificate.creationdate", creationDate);
@@ -73,7 +71,9 @@ public class CertificateController extends BasicController {
 			mainVC.contextPut("certificateUrl", url);
 			String name = DownloadCertificateCellRenderer.getName(certificate);
 			mainVC.contextPut("certificateName", name);
-			
+		}
+		
+		if(certificateLeaf != null) {
 			VFSContainer container = certificateLeaf.getParentContainer();
 			String filename = certificateLeaf.getName();
 			pageCtrl = new SinglePageController(ureq, getWindowControl(), container, filename, false);

@@ -22,6 +22,8 @@ package org.olat.modules.coach.ui;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -31,9 +33,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,12 +51,24 @@ public class UserSearchController extends BasicController implements Activateabl
 	private UserListController userListCtrl;
 	private final UserSearchForm searchForm;
 	private final TooledStackedPanel stackPanel;
+	private final List<OrganisationRef> searcheableOrganisations;
+	
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public UserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
+		Roles roles = ureq.getUserSession().getRoles();
 		
+		if(organisationModule.isEnabled()) {
+			searcheableOrganisations = roles.getOrganisationsWithRoles(OrganisationRoles.administrator,
+				OrganisationRoles.principal, OrganisationRoles.learnresourcemanager);
+		} else {
+			searcheableOrganisations = null;
+		}
+
 		//search form
 		searchForm = new UserSearchForm(ureq, getWindowControl());
 		listenTo(searchForm);
@@ -92,6 +109,7 @@ public class UserSearchController extends BasicController implements Activateabl
 	private void doSearchByIdentityKey(UserRequest ureq, Long identityKey) {
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setIdentityKey(identityKey);
+		params.setOrganisations(searcheableOrganisations);
 		userListCtrl = new UserListController(ureq, getWindowControl(), stackPanel);
 		userListCtrl.search(params);
 		if(userListCtrl.size() == 1) {
@@ -111,6 +129,7 @@ public class UserSearchController extends BasicController implements Activateabl
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setLogin(login);
 		params.setUserProperties(searchProps);
+		params.setOrganisations(searcheableOrganisations);
 		if(onlyActive) {
 			params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
 		}

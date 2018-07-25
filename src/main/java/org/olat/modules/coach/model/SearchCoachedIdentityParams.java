@@ -19,7 +19,11 @@
  */
 package org.olat.modules.coach.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import org.olat.core.id.OrganisationRef;
 
 /**
  * 
@@ -33,6 +37,7 @@ public class SearchCoachedIdentityParams {
 	private Integer status; 
 	private Long identityKey;
 	private Map<String,String> userProperties;
+	private List<OrganisationRef> organisations;
 	
 	public String getLogin() {
 		return login;
@@ -64,5 +69,21 @@ public class SearchCoachedIdentityParams {
 	
 	public void setUserProperties(Map<String, String> userProperties) {
 		this.userProperties = userProperties;
+	}
+	
+	public boolean hasOrganisations() {
+		return organisations != null && !organisations.isEmpty();
+	}
+	
+	public List<OrganisationRef> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(List<? extends OrganisationRef> organisations) {
+		if(organisations == null) {
+			this.organisations = null;
+		} else {
+			this.organisations = new ArrayList<>(organisations);
+		}
 	}
 }

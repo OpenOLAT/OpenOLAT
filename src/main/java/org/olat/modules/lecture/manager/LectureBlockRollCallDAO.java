@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
@@ -36,6 +37,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
@@ -758,6 +760,15 @@ public class LectureBlockRollCallDAO {
 				}
 				queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
 			}
+		}
+		
+		if(params.hasOrganisations()) {
+			sb.append(" and exists (select orgtomember.key from bgroupmember as orgtomember")
+			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey))");
+			
+			Set<Long> organisationKeys = params.getOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
+			queryParams.put("organisationKey", organisationKeys);
 		}
 	}
 	
