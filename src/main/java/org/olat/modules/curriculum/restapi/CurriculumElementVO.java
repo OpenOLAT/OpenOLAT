@@ -65,8 +65,8 @@ public class CurriculumElementVO {
 		vo.setIdentifier(element.getIdentifier());
 		vo.setDisplayName(element.getDisplayName());
 		vo.setDescription(element.getDescription());
-		if(element.getStatus() != null) {
-			vo.setStatus(element.getStatus().name());
+		if(element.getElementStatus() != null) {
+			vo.setStatus(element.getElementStatus().name());
 		}
 		vo.setBeginDate(element.getBeginDate());
 		vo.setEndDate(element.getEndDate());

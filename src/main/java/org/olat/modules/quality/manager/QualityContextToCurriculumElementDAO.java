@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextToCurriculumElement;
@@ -85,6 +86,20 @@ class QualityContextToCurriculumElementDAO {
 				.executeUpdate();
 		
 		log.debug("All quality context to curriculum element deleted: " + context.toString());
+	}
+	
+	boolean hasRelations(CurriculumElementRef curriculumElement) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select rel.key from contexttocurriculumelement as rel")
+		  .append(" where rel.curriculumElement.key=:curriculumElementKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
 	}
 	
 }

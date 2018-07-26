@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityContext;
@@ -85,5 +86,20 @@ class QualityContextToOrganisationDAO {
 				.executeUpdate();
 		
 		log.debug("All quality context to organisation deleted: " + context.toString());
+	}
+	
+	boolean hasRelations(OrganisationRef organisation) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel.key");
+		sb.append("  from contexttoorganisation as rel");
+		sb.append(" where rel.organisation.key = :organisationKey");
+		
+		 List<Long> relations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("organisationKey", organisation.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return relations != null && !relations.isEmpty() && relations.get(0) != null;
 	}
 }

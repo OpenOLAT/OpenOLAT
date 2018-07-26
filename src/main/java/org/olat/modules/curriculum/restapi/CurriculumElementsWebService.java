@@ -262,9 +262,7 @@ public class CurriculumElementsWebService {
 		elementToSave.setExternalId(curriculumElement.getExternalId());
 		elementToSave.setManagedFlags(CurriculumElementManagedFlag.toEnum(curriculumElement.getManagedFlagsString()));
 		if(StringHelper.containsNonWhitespace(curriculumElement.getStatus())) {
-			elementToSave.setStatus(CurriculumElementStatus.valueOf(curriculumElement.getStatus()));
-		} else {
-			elementToSave.setStatus(null);
+			elementToSave.setElementStatus(CurriculumElementStatus.valueOf(curriculumElement.getStatus()));
 		}
 		
 		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);

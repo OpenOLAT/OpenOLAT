@@ -39,6 +39,7 @@ import javax.persistence.Transient;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -168,10 +169,12 @@ public class OrganisationImpl implements Persistable, Organisation {
 		this.description = description;
 	}
 
+	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
 
+	@Override
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 	}
@@ -182,6 +185,22 @@ public class OrganisationImpl implements Persistable, Organisation {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	@Override
+	@Transient
+	public OrganisationStatus getOrganisationStatus() {
+		return StringHelper.containsNonWhitespace(status)
+				? OrganisationStatus.valueOf(status) : OrganisationStatus.active;
+	}
+
+	@Override
+	public void setOrganisationStatus(OrganisationStatus status) {
+		if(status == null) {
+			this.status = OrganisationStatus.active.name();
+		} else {
+			this.status = status.name();
+		}
 	}
 
 	@Override

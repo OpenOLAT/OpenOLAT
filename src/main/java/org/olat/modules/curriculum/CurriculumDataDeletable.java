@@ -19,33 +19,26 @@
  */
 package org.olat.modules.curriculum;
 
-import org.olat.core.util.StringHelper;
-
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * Initial date: 26 juil. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum CurriculumElementStatus {
-	active,
-	inactive,
-	deleted;
+public interface CurriculumDataDeletable {
 	
-	public static boolean isValueOf(String val) {
-		boolean ok = false;
-		if(StringHelper.containsNonWhitespace(val)) {
-			for(CurriculumElementStatus status:values()) {
-				if(status.name().equals(val)) {
-					ok = true;
-				}
-			}
-		}
-		return ok;
-	}
+	/**
+	 * 
+	 * @param curriculum The curriculum which will be delete or marked as deleted
+	 * @return false to veto the complete deletion of the curriculum.
+	 */
+	public boolean deleteCurriculumData(Curriculum curriculum);
 	
-	public static CurriculumElementStatus[] notDeleted() {
-		return new CurriculumElementStatus[] { CurriculumElementStatus.active, CurriculumElementStatus.inactive };
-	}
+	/**
+	 * 
+	 * @param curriculumElement The curriculum element which will be delete or marked as deleted
+	 * @return false to veto the complete deletion of the curriculum element.
+	 */
+	public boolean deleteCurriculumElementData(CurriculumElement curriculumElement);
 
 }

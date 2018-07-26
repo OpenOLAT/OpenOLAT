@@ -72,6 +72,13 @@ public interface OrganisationService {
 	public Organisation updateOrganisation(Organisation organisation);
 	
 	/**
+	 * Delete or mark as deleted the organization and its children.
+	 * 
+	 * @param organisation
+	 */
+	public void deleteOrganisation(OrganisationRef organisation);
+	
+	/**
 	 * Move an organization to a new place in the organization structure.
 	 * 
 	 * @param organisationToMove The organization to move
@@ -79,6 +86,10 @@ public interface OrganisationService {
 	 */
 	public void moveOrganisation(OrganisationRef organisationToMove, OrganisationRef newParent);
 	
+	/**
+	 * 
+	 * @return A list of active or inactive organisations.
+	 */
 	public List<Organisation> getOrganisations();
 	
 	/**

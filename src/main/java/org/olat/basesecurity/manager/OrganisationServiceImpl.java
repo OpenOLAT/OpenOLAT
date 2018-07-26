@@ -32,15 +32,18 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeRef;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.SearchMemberParameters;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -118,6 +121,44 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public Organisation updateOrganisation(Organisation organisation) {
 		return organisationDao.update(organisation);
+	}
+
+	@Override
+	public void deleteOrganisation(OrganisationRef organisation) {
+		OrganisationImpl reloadedOrganisation = (OrganisationImpl)organisationDao.loadByKey(organisation.getKey());
+		if(DEFAULT_ORGANISATION_IDENTIFIER.equals(reloadedOrganisation.getIdentifier())) {
+			log.error("Someone try to delete the default organisation");
+			return;
+		}
+		
+		List<Organisation> children = organisationDao.getChildren(reloadedOrganisation, OrganisationStatus.values());
+		for(Organisation child:children) {
+			deleteOrganisation(child);
+		}
+		
+		//TODO organisation: move memberships to default organisation or a lost+found???
+		Group organisationGroup = reloadedOrganisation.getGroup();
+		List<GroupMembership> users = groupDao.getMemberships(organisationGroup, OrganisationRoles.user.name());
+		for(GroupMembership user:users) {
+			addMember(user.getIdentity(), OrganisationRoles.user);
+		}
+		groupDao.removeMemberships(organisationGroup);
+		
+		boolean delete = true;
+		Map<String,OrganisationDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(OrganisationDataDeletable.class);
+		for(OrganisationDataDeletable delegate:deleteDelegates.values()) {
+			delete &= delegate.deleteOrganisationData(reloadedOrganisation);
+		}
+		
+		if(delete) {
+			organisationDao.delete(reloadedOrganisation);
+		} else {
+			reloadedOrganisation.setParent(null);
+			reloadedOrganisation.setMaterializedPathKeys("");
+			reloadedOrganisation.setExternalId(null);
+			reloadedOrganisation.setStatus(OrganisationStatus.deleted.name());
+			organisationDao.update(reloadedOrganisation);
+		}
 	}
 
 	@Override

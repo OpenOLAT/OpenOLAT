@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 
 /**
@@ -57,9 +58,9 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	
 	public void setExternalId(String externalId);
 	
-	public String getStatus();
+	public OrganisationStatus getOrganisationStatus();
 	
-	public void setStatus(String status);
+	public void setOrganisationStatus(OrganisationStatus status);
 	
 	public OrganisationManagedFlag[] getManagedFlags();
 	

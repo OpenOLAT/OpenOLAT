@@ -103,5 +103,13 @@ public class RepositoryEntryToOrganisationDAO {
 				.setParameter("entryKey", entry.getKey())
 				.executeUpdate();
 	}
+	
+	public int delete(OrganisationRef organisation) {
+		String query = "delete from repoentrytoorganisation as reToOrganisation where reToOrganisation.organisation.key=:organisationKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("organisationKey", organisation.getKey())
+				.executeUpdate();
+	}
 
 }

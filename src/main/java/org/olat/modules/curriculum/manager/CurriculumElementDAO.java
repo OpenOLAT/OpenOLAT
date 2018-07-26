@@ -36,12 +36,14 @@ import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -77,6 +79,7 @@ public class CurriculumElementDAO {
 		element.setEndDate(endDate);
 		element.setCurriculum(curriculum);
 		element.setType(elementType);
+		element.setStatus(CurriculumElementStatus.active.name());
 		element.setGroup(groupDao.createGroup());
 		CurriculumElement parent = parentRef == null ? null : loadByKey(parentRef.getKey());
 		element.setParent(parent);
@@ -175,16 +178,16 @@ public class CurriculumElementDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return keys != null && keys.size() > 0 && keys.get(0) != null;
+		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 	
 	public List<CurriculumElement> loadElements(CurriculumRef curriculum) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
 		  .append(" left join el.parent parentEl")
-		  .append(" where el.curriculum.key=:curriculumKey");
+		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class)
@@ -193,7 +196,7 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumRef curriculum) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select el, ")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
 		  .append("  where reToGroup.group.key=baseGroup.key")
@@ -202,7 +205,7 @@ public class CurriculumElementDAO {
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
 		  .append(" left join el.parent parentEl")
-		  .append(" where el.curriculum.key=:curriculumKey");
+		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
 		
 		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)

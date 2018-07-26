@@ -33,6 +33,8 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
@@ -139,6 +141,34 @@ class QualityDataCollectionDAO {
 				.createQuery(sb.toString(), Long.class)
 				.getResultList();
 		return Math.toIntExact(counts.get(0));
+	}
+	
+	boolean hasDataCollection(OrganisationRef organisation) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select collection.key from qualitydatacollection as collection")
+		  .append(" where collection.topicOrganisation.key=:organisationKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("organisationKey", organisation.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null;
+	}
+	
+	boolean hasDataCollection(CurriculumElementRef curriculumElement) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select collection.key from qualitydatacollection as collection")
+		  .append(" where collection.topicCurriculumElement.key=:curriculumElementKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 
 	List<QualityDataCollectionView> loadDataCollections(Translator translator, int firstResult, int maxResults, SortKey... orderBy) {

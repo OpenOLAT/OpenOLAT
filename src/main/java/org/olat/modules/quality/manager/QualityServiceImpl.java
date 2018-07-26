@@ -29,12 +29,16 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -67,7 +71,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class QualityServiceImpl implements QualityService {
+public class QualityServiceImpl implements QualityService, OrganisationDataDeletable, CurriculumDataDeletable {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
 
@@ -318,4 +322,26 @@ public class QualityServiceImpl implements QualityService {
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		return evaluationFormManager.loadParticipations(survey, status);
 	}
+
+	/**
+	 * If the organisation has relations to a context, send a veto.
+	 */
+	@Override
+	public boolean deleteOrganisationData(Organisation organisation) {
+		return !contextToOrganisationDao.hasRelations(organisation)
+				&& !dataCollectionDao.hasDataCollection(organisation);
+	}
+
+	@Override
+	public boolean deleteCurriculumData(Curriculum curriculum) {
+		return true;
+	}
+
+	@Override
+	public boolean deleteCurriculumElementData(CurriculumElement curriculumElement) {
+		return !contextDao.hasContexts(curriculumElement)
+				&& !contextToCurriculumElementDao.hasRelations(curriculumElement)
+				&& !dataCollectionDao.hasDataCollection(curriculumElement);
+	}
+	
 }

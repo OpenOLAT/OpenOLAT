@@ -17,17 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.basesecurity;
 
 import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * 
+ * Initial date: 26 juil. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum CurriculumElementStatus {
+public enum OrganisationStatus {
+	
 	active,
 	inactive,
 	deleted;
@@ -35,7 +37,7 @@ public enum CurriculumElementStatus {
 	public static boolean isValueOf(String val) {
 		boolean ok = false;
 		if(StringHelper.containsNonWhitespace(val)) {
-			for(CurriculumElementStatus status:values()) {
+			for(OrganisationStatus status:values()) {
 				if(status.name().equals(val)) {
 					ok = true;
 				}
@@ -44,8 +46,8 @@ public enum CurriculumElementStatus {
 		return ok;
 	}
 	
-	public static CurriculumElementStatus[] notDeleted() {
-		return new CurriculumElementStatus[] { CurriculumElementStatus.active, CurriculumElementStatus.inactive };
+	public static OrganisationStatus[] notDelete() {
+		return new OrganisationStatus[] { OrganisationStatus.active, OrganisationStatus.inactive };
 	}
 
 }

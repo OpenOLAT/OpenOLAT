@@ -63,7 +63,7 @@ public class OrganisationVO {
 		vo.setDisplayName(organisation.getDisplayName());
 		vo.setDescription(organisation.getDescription());
 		vo.setCssClass(organisation.getCssClass());
-		vo.setStatus(organisation.getStatus());
+		vo.setStatus(organisation.getOrganisationStatus().name());
 		vo.setExternalId(organisation.getExternalId());
 		vo.setManagedFlagsString(OrganisationManagedFlag.toString(organisation.getManagedFlags()));
 		if(organisation.getRoot() != null) {

@@ -42,6 +42,7 @@ import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
@@ -50,6 +51,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -278,7 +280,9 @@ public class OrganisationsWebService {
 		organisationToSave.setCssClass(organisation.getCssClass());
 		organisationToSave.setExternalId(organisation.getExternalId());
 		organisationToSave.setManagedFlags(OrganisationManagedFlag.toEnum(organisation.getManagedFlagsString()));
-		organisationToSave.setStatus(organisation.getStatus());
+		if(StringHelper.containsNonWhitespace(organisation.getStatus())) {
+			organisationToSave.setOrganisationStatus(OrganisationStatus.valueOf(organisation.getStatus()));
+		}
 		
 		Organisation savedOrganisation = organisationService.updateOrganisation(organisationToSave);
 		if(move) {

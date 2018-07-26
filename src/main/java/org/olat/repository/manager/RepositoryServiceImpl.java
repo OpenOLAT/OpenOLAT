@@ -33,6 +33,7 @@ import java.util.Set;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -106,7 +107,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("repositoryService")
-public class RepositoryServiceImpl implements RepositoryService {
+public class RepositoryServiceImpl implements RepositoryService, OrganisationDataDeletable {
 
 	private static final OLog log = Tracing.createLoggerFor(RepositoryServiceImpl.class);
 
@@ -741,5 +742,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public List<RepositoryEntry> getRepositoryEntryByTaxonomy(TaxonomyLevelRef taxonomyLevel) {
 		return repositoryEntryToTaxonomyLevelDao.getRepositoryEntries(taxonomyLevel);
+	}
+
+	@Override
+	public boolean deleteOrganisationData(Organisation organisation) {
+		repositoryEntryToOrganisationDao.delete(organisation);
+		reToGroupDao.removeRelation(organisation.getGroup());
+		return true;
 	}
 }

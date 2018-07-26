@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntry;
@@ -116,18 +117,12 @@ public class CurriculumRepositoryEntryRelationDAO {
 	 * @return A map of curriculum element to their repository entries
 	 */
 	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(CurriculumRef curriculum) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el, rel.entry.key from curriculumelement el")
 		  .append(" inner join el.curriculum curriculum")
 		  .append(" left join fetch el.parent parentEl")
 		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")
-		  .append(" where curriculum.key=:curriculumKey");
-		
-		  //.append(" inner join fetch el.group as bGroup")
-		  //.append(" left join fetch el.parent as parentEl")
-		  //.append(" left join fetch el.type as elementType")
-		  //.append(" left join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
-		 // .append(" where el.curriculum.key=:curriculumKey");
+		  .append(" where curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
 
 		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)

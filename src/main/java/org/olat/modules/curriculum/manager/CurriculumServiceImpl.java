@@ -33,12 +33,14 @@ import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -245,7 +247,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 			deleteCurriculumElement(child);
 		}
 
-		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(element.getKey());
+		CurriculumElementImpl reloadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(element.getKey());
 
 		// remove relations to repository entries
 		List<RepositoryEntryToGroupRelation> relationsToRepo = repositoryEntryRelationDao.getCurriculumRelations(reloadedElement);
@@ -256,15 +258,23 @@ public class CurriculumServiceImpl implements CurriculumService {
 		}
 		// remove relations to taxonomy
 		curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedElement);
+		
+		boolean delete = true;
+		Map<String,CurriculumDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(CurriculumDataDeletable.class);
+		for(CurriculumDataDeletable deleteDelegate:deleteDelegates.values()) {
+			delete &= deleteDelegate.deleteCurriculumElementData(reloadedElement);
+		}
 
-		if(curriculumElementDao.hasRelations(reloadedElement)) {
+		if(delete) {
+			curriculumElementDao.deleteCurriculumElement(reloadedElement);
+		} else {
 			groupDao.removeMemberships(reloadedElement.getGroup());
 			//only flag as deleted
-			((CurriculumElementImpl)reloadedElement).setParent(null);
-			reloadedElement.setStatus(CurriculumElementStatus.deleted);
+			reloadedElement.setParent(null);
+			reloadedElement.setExternalId(null);
+			reloadedElement.setMaterializedPathKeys(null);
+			reloadedElement.setElementStatus(CurriculumElementStatus.deleted);
 			curriculumElementDao.update(reloadedElement);
-		} else {
-			curriculumElementDao.deleteCurriculumElement(reloadedElement);
 		}
 	}
 

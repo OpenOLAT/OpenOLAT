@@ -202,7 +202,8 @@ public interface CurriculumService {
 	
 	/**
 	 * Return all the elements of a curriculum, flat, with additional informations
-	 * like the number of resources linked to the elements.
+	 * like the number of resources linked to the elements. List element in state
+	 * active and inactive.
 	 * 
 	 * @param curriculum The curriculum
 	 * @return A list of curriculum elements with additional informations

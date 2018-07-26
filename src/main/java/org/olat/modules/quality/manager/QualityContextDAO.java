@@ -218,6 +218,20 @@ class QualityContextDAO {
 		return types != null && !types.isEmpty() && types.get(0) != null && types.get(0).longValue() > 0;
 	}
 	
+	public boolean hasContexts(CurriculumElementRef curriculumElementRef) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select context.key from qualitycontext as context")
+		  .append(" where context.audienceCurriculumElement.key=:curriculumElementKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("curriculumElementKey", curriculumElementRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
+	
 	void deleteContext(QualityContextRef contextRef) {
 		if (contextRef == null || contextRef.getKey() == null) return;
 		

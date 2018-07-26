@@ -79,6 +79,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	private EditOrganisationController newOrganisationCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private OrganisationOverviewController organisationOverviewCtrl;
+	private ConfirmOrganisationDeleteController confirmDeleteCtrl;
 	
 	private int counter = 0;
 	private boolean modelDirty = false;
@@ -195,13 +196,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 			} else if(event == Event.CHANGED_EVENT) {
 				modelDirty = true;
 			}	
-		} else if(newOrganisationCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel(true);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(moveCtrl == source) {
+		} else if(newOrganisationCtrl == source || moveCtrl == source || confirmDeleteCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(true);
 			}
@@ -215,9 +210,11 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(newOrganisationCtrl);
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(moveCtrl);
 		removeAsListenerAndDispose(cmc);
 		newOrganisationCtrl = null;
+		confirmDeleteCtrl = null;
 		moveCtrl = null;
 		cmc = null;
 	}
@@ -315,7 +312,16 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, OrganisationRow row) {
-		getWindowControl().setWarning("Not implement"); //TODO
+		if(confirmDeleteCtrl != null) return;
+		
+		confirmDeleteCtrl = new ConfirmOrganisationDeleteController(ureq, getWindowControl(), row);
+		listenTo(confirmDeleteCtrl);
+
+		String title = translate("confirm.delete.organisation.title", new String[] { row.getDisplayName() });
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+		
 	}
 
 	private class ToolsController extends BasicController {

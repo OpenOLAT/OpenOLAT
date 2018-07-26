@@ -17,35 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.basesecurity;
 
-import org.olat.core.util.StringHelper;
+import org.olat.core.id.Organisation;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * Initial date: 26 juil. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum CurriculumElementStatus {
-	active,
-	inactive,
-	deleted;
+public interface OrganisationDataDeletable {
 	
-	public static boolean isValueOf(String val) {
-		boolean ok = false;
-		if(StringHelper.containsNonWhitespace(val)) {
-			for(CurriculumElementStatus status:values()) {
-				if(status.name().equals(val)) {
-					ok = true;
-				}
-			}
-		}
-		return ok;
-	}
-	
-	public static CurriculumElementStatus[] notDeleted() {
-		return new CurriculumElementStatus[] { CurriculumElementStatus.active, CurriculumElementStatus.inactive };
-	}
+	/**
+	 * 
+	 * @param organisation The organization which be deleted
+	 * @return false if the organization cannot be completely deleted
+	 */
+	public boolean deleteOrganisationData(Organisation organisation);
 
 }

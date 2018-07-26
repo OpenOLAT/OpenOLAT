@@ -239,7 +239,7 @@ public class LectureBlockWebService {
 		boolean changed = false;
 		for(CurriculumElement element:elements) {
 			Group elementGroup = element.getGroup();
-			if(element.getStatus() != CurriculumElementStatus.deleted && !currentGroups.contains(elementGroup)) {
+			if(element.getElementStatus() != CurriculumElementStatus.deleted && !currentGroups.contains(elementGroup)) {
 				currentGroups.add(elementGroup);
 				changed = true;
 			}

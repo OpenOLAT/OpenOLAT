@@ -34,6 +34,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
@@ -41,6 +42,7 @@ import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -72,6 +74,7 @@ public class OrganisationDAO {
 		organisation.setIdentifier(identifier);
 		organisation.setDescription(description);
 		organisation.setParent(parentOrganisation);
+		organisation.setStatus(OrganisationStatus.active.name());
 		if(parentOrganisation != null && parentOrganisation.getRoot() != null) {
 			organisation.setRoot(parentOrganisation.getRoot());
 		} else {
@@ -124,6 +127,10 @@ public class OrganisationDAO {
 		return dbInstance.getCurrentEntityManager().merge(organisation);
 	}
 	
+	public void delete(Organisation organisation) {
+		dbInstance.getCurrentEntityManager().remove(organisation);
+	}
+	
 	/**
 	 * The method fetch the group, the organisation type and the parent
 	 * organisation but not the root.
@@ -151,12 +158,12 @@ public class OrganisationDAO {
 	}
 	
 	public List<Organisation> loadByIdentifier(String identifier) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where org.identifier=:identifier");
+		  .append(" where org.identifier=:identifier and org.status ").in(OrganisationStatus.notDelete());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("identifier", identifier)
@@ -164,18 +171,19 @@ public class OrganisationDAO {
 	}
 	
 	public List<Organisation> find() {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
-		  .append(" left join fetch org.parent parentOrg");
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where org.status ").in(OrganisationStatus.notDelete());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.getResultList();
 	}
 	
 	public List<OrganisationMember> getMembers(OrganisationRef organisation, SearchMemberParameters params) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select ident, membership.role, membership.inheritanceModeString from organisation org")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
@@ -204,7 +212,7 @@ public class OrganisationDAO {
 		return members;
 	}
 	
-	private void createUserPropertiesQueryPart(StringBuilder sb, String searchString, List<UserPropertyHandler> handlers) {
+	private void createUserPropertiesQueryPart(QueryBuilder sb, String searchString, List<UserPropertyHandler> handlers) {
 		if(!StringHelper.containsNonWhitespace(searchString)) return;
 		
 		// treat login and userProperties as one element in this query
@@ -272,13 +280,14 @@ public class OrganisationDAO {
 	}
 	
 	public List<Organisation> getOrganisations(IdentityRef identity, List<String> roleList) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select distinct org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)");
+		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)")
+		  .append(" and org.status ").in(OrganisationStatus.notDelete());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("identityKey", identity.getKey())
@@ -301,13 +310,27 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
-	public List<Organisation> getDescendants(Organisation organisation) {
-		StringBuilder sb = new StringBuilder(128);
+	public List<Organisation> getChildren(OrganisationRef organisation, OrganisationStatus[] status) {
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where org.materializedPathKeys like :materializedPathKeys and not(org.key=:organisationKey)");
+		  .append(" where parentOrg.key=:organisationKey and org.status ").in(status);
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("organisationKey", organisation.getKey())
+				.getResultList();
+	}
+	
+	public List<Organisation> getDescendants(Organisation organisation) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where org.materializedPathKeys like :materializedPathKeys and not(org.key=:organisationKey)")
+		  .append(" and org.status ").in(OrganisationStatus.notDelete());
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("materializedPathKeys", organisation.getMaterializedPathKeys() + "%")

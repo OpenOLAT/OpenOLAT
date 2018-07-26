@@ -40,6 +40,7 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
@@ -89,7 +90,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private String description;
 	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
-	private String statusString;
+	private String status;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="c_begin", nullable=true, insertable=true, updatable=true)
 	private Date beginDate;
@@ -189,28 +190,29 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	}
 
 	@Override
-	public CurriculumElementStatus getStatus() {
-		if(StringHelper.containsNonWhitespace(statusString)) {
-			return CurriculumElementStatus.valueOf(statusString);
+	@Transient
+	public CurriculumElementStatus getElementStatus() {
+		if(StringHelper.containsNonWhitespace(status)) {
+			return CurriculumElementStatus.valueOf(status);
 		}
 		return null;
 	}
 
 	@Override
-	public void setStatus(CurriculumElementStatus status) {
+	public void setElementStatus(CurriculumElementStatus status) {
 		if(status == null) {
-			statusString = null;
+			this.status = null;
 		} else {
-			statusString = status.name();
+			this.status = status.name();
 		}
 	}
 
-	public String getStatusString() {
-		return statusString;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setStatusString(String statusString) {
-		this.statusString = statusString;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	@Override

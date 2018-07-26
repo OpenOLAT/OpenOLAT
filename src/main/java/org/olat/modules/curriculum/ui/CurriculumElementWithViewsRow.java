@@ -113,7 +113,8 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	public boolean isActive() {
 		if(element != null) {
-			return element.getStatus() == null || element.getStatus() == CurriculumElementStatus.active;
+			return element.getElementStatus() == null
+					|| element.getElementStatus() == CurriculumElementStatus.active;
 		}
 		return true;
 	}
