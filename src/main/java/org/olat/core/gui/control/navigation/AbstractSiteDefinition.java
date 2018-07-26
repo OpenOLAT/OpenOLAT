@@ -30,12 +30,16 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractConfigOnOff;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
  * @author Christian Guretzki
  */
 public abstract class AbstractSiteDefinition extends AbstractConfigOnOff implements SiteDefinition {
+	
+	private static final OLog log = Tracing.createLoggerFor(AbstractSiteDefinition.class);
 	
 	private int order;
 	private String defaultSiteSecurityCallbackBeanId;
@@ -69,7 +73,7 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 		
 		String secCallbackBeanId = config.getSecurityCallbackBeanId();
 		if(StringHelper.containsNonWhitespace(secCallbackBeanId)) {
-			Object siteSecCallback = CoreSpringFactory.getBean(secCallbackBeanId);
+			Object siteSecCallback = getSiteSecurityCallback(secCallbackBeanId);
 			if (siteSecCallback instanceof SiteViewSecurityCallback) {
 				if(!((SiteViewSecurityCallback)siteSecCallback).isAllowedToViewSite(ureq)) {
 					return null;
@@ -79,6 +83,15 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 			}
 		}
 		return createSite(ureq, wControl, config);
+	}
+	
+	private Object getSiteSecurityCallback(String secCallbackBeanId) {
+		try {
+			return CoreSpringFactory.getBean(secCallbackBeanId);
+		} catch (Exception e) {
+			log.error("Cannot find security callback: " + secCallbackBeanId + " return administrator only security callback");
+			return CoreSpringFactory.getBean("adminSiteSecurityCallback");
+		}
 	}
 	
 	protected abstract SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config);
