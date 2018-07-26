@@ -496,17 +496,25 @@ public class RepositoryServiceImpl implements RepositoryService {
 		}
 		reToGroupDao.removeRelations(reloadedEntry);
 		dbInstance.commit();
-		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
-		if(defaultGroup != null) {
-			groupDao.removeGroup(defaultGroup);
-		}
-		dbInstance.commit();
+		
+		// has a delete veto?
+		boolean hasVetoRelations = reToGroupDao.hasRelationsInQualityManagement(reloadedEntry);
+		if(hasVetoRelations) {
+			dbInstance.getCurrentEntityManager().remove(reloadedEntry);
+			if(defaultGroup != null) {
+				groupDao.removeGroup(defaultGroup);
+			}
+			dbInstance.commit();
 
-		OLATResource reloadedResource = resourceManager.findResourceById(resourceKey);
-		if(reloadedResource != null) {
-			dbInstance.getCurrentEntityManager().remove(reloadedResource);
+			OLATResource reloadedResource = resourceManager.findResourceById(resourceKey);
+			if(reloadedResource != null) {
+				dbInstance.getCurrentEntityManager().remove(reloadedResource);
+			}
+		} else {
+			reloadedEntry.setExternalId(null);
+			reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.deleted);
+			dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		}
-
 		dbInstance.commit();
 	}
 

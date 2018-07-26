@@ -777,4 +777,18 @@ public class RepositoryEntryRelationDAO {
 			.setParameter("organisationKey", organisation.getKey())
 			.getResultList();
 	}
+	
+	public boolean hasRelationsInQualityManagement(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select context.key from qualitycontext as context")
+		  .append(" where context.audienceRepositoryEntry.key=:entryKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && keys.size() > 0 && keys.get(0) != null;
+	}
 }

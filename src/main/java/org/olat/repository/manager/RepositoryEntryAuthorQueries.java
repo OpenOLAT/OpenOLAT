@@ -334,28 +334,32 @@ public class RepositoryEntryAuthorQueries {
 			return false;
 		}
 
-		sb.append("(")
-		  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-		  // or owner, principal, lear resource manager and administrator which can see all
-		  .append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-		  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(")")
-		  .append("     and v.status ");
-		if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {// only administrator and learn resource manager see the trash
-			sb.append("='").append(RepositoryEntryStatusEnum.trash).append("'");
-		} else {
-			sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-		}
-		sb.append(")");// End or of owner
-		
-		if(roles.isAuthor()) {
-			sb.append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+		if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {
+			sb.append(" (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("     and membership.role ='").append(OrganisationRoles.author).append("')")
-			  .append("     and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
-			  .append(")");// End or of autho
+			  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(")")
+			  .append("     and v.status ").in(RepositoryEntryStatusEnum.trash)
+			  .append(")");// End or of owner
+		} else {
+			sb.append("(")
+			  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
+			  // or owner, principal, lear resource manager and administrator which can see all
+			  .append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(")")
+			  .append("     and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
+			  .append(")");// End or of owner
+			
+			if(roles.isAuthor()) {
+				sb.append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+				  .append("     and membership.role ='").append(OrganisationRoles.author).append("')")
+				  .append("     and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
+				  .append(")");// End or of autho
+			}
+			sb.append(")");
 		}
-		sb.append(")");
+
 		return true;
 	}
 	
