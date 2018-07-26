@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -36,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,15 +66,15 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
-		StringBuilder sb = new StringBuilder(256);
+	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element, RepositoryEntryStatusEnum[] status) {
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select distinct v from repositoryentry as v")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as rel")
 		  .append(" inner join curriculumelement as el on (el.group.key=rel.group.key)")
-		  .append(" where el.key=:elementKey");
+		  .append(" where el.key=:elementKey and v.status ").in(status);
 
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntry.class)

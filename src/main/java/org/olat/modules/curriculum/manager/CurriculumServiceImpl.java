@@ -43,12 +43,14 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -61,9 +63,11 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -235,6 +239,36 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public void deleteCurriculumElement(CurriculumElementRef element) {
+		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
+		for(CurriculumElement child:children) {
+			deleteCurriculumElement(child);
+		}
+
+		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(element.getKey());
+
+		// remove relations to repository entries
+		List<RepositoryEntryToGroupRelation> relationsToRepo = repositoryEntryRelationDao.getCurriculumRelations(reloadedElement);
+		for(RepositoryEntryToGroupRelation relationToRepo:relationsToRepo) {
+			if(!relationToRepo.isDefaultGroup()) {// only paranoia
+				repositoryEntryRelationDao.removeRelation(relationToRepo);
+			}
+		}
+		// remove relations to taxonomy
+		curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedElement);
+
+		if(curriculumElementDao.hasRelations(reloadedElement)) {
+			groupDao.removeMemberships(reloadedElement.getGroup());
+			//only flag as deleted
+			((CurriculumElementImpl)reloadedElement).setParent(null);
+			reloadedElement.setStatus(CurriculumElementStatus.deleted);
+			curriculumElementDao.update(reloadedElement);
+		} else {
+			curriculumElementDao.deleteCurriculumElement(reloadedElement);
+		}
+	}
+
+	@Override
 	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
 		return curriculumElementDao.update(element);
 	}
@@ -373,7 +407,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 
 	@Override
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
-		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(element);
+		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(element, RepositoryEntryStatusEnum.preparationToClosed());
 	}
 
 	@Override

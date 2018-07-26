@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -612,7 +613,7 @@ public class RepositoryEntryRelationDAO {
 	 * @return The number of relations
 	 */
 	public int countRelations(Group group) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select count(rel) from repoentrytogroup as rel")
 		  .append(" where rel.group.key=:groupKey");
 
@@ -626,7 +627,7 @@ public class RepositoryEntryRelationDAO {
 	public List<RepositoryEntryToGroupRelation> getBusinessGroupAndCurriculumRelations(RepositoryEntryRef re) {
 		if(re == null) return Collections.emptyList();
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select rel from repoentrytogroup as rel")
 		  .append(" inner join fetch rel.entry as entry")
 		  .append(" inner join fetch rel.group as baseGroup")
@@ -637,6 +638,22 @@ public class RepositoryEntryRelationDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
 			.setParameter("repoKey", re.getKey())
+			.getResultList();
+	}
+	
+	public List<RepositoryEntryToGroupRelation> getCurriculumRelations(CurriculumElementRef curriculumElement) {
+		if(curriculumElement == null || curriculumElement.getKey() == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select rel from repoentrytogroup as rel")
+		  .append(" inner join fetch rel.entry as entry")
+		  .append(" inner join fetch rel.group as baseGroup")
+		  .append(" inner join curriculumelement curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" where curEl.key=:elementKey");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+			.setParameter("elementKey", curriculumElement.getKey())
 			.getResultList();
 	}
 	

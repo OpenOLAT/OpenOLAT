@@ -87,6 +87,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementController newSubElementCtrl;
 	private MoveCurriculumElementController moveElementCtrl;
+	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	
 	private int counter;
 	private final Curriculum curriculum;
@@ -195,7 +196,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source) {
+		if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source || confirmDeleteCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -208,9 +209,11 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(moveElementCtrl);
 		removeAsListenerAndDispose(newElementCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteCtrl = null;
 		moveElementCtrl = null;
 		newElementCtrl = null;
 		cmc = null;
@@ -346,6 +349,18 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
+	private void doConfirmDelete(UserRequest ureq, CurriculumElementRow row) {
+		if(confirmDeleteCtrl != null) return;
+		
+		confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), row);
+		listenTo(confirmDeleteCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true,
+				translate("confirmation.delete.element.title", new String[] { row.getDisplayName() }));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
@@ -453,7 +468,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				doMoveCurriculumElement(ureq, row);
 			} else if(deleteLink == source) {
 				close();
-				showWarning("Not implemented");
+				doConfirmDelete(ureq, row);
 			} else if(newLink == source) {
 				close();
 				doNewSubCurriculumElement(ureq, row);

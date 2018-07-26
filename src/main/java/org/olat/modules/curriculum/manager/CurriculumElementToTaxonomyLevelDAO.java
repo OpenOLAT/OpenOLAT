@@ -76,6 +76,27 @@ public class CurriculumElementToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
+	public List<CurriculumElementToTaxonomyLevel> getRelations(CurriculumElementRef curriculumElement) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel from curriculumelementtotaxonomylevel rel")
+		  .append(" where rel.curriculumElement.key=:elementKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElementToTaxonomyLevel.class)
+				.setParameter("elementKey", curriculumElement.getKey())
+				.getResultList();
+	}
+	
+	public void removeRelation(CurriculumElementToTaxonomyLevel rel) {
+		dbInstance.getCurrentEntityManager().remove(rel);
+	}
+	
+	public void deleteRelation(CurriculumElementRef curriculumElement) {
+		List<CurriculumElementToTaxonomyLevel> relationsToDelete = getRelations(curriculumElement);
+		for(CurriculumElementToTaxonomyLevel relationToDelete:relationsToDelete) {
+			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+	}
+	
 	public void deleteRelation(CurriculumElementRef curriculumElement, TaxonomyLevelRef taxonomyLevel) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from curriculumelementtotaxonomylevel rel")

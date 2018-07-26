@@ -141,5 +141,4 @@ public class CurriculumListController extends FormBasicController implements Act
 		listenTo(elementlistCtrl);
 		stackPanel.pushController(row.getDisplayName(), elementlistCtrl);
 	}
-
 }

@@ -32,6 +32,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -87,14 +88,14 @@ public class CurriculumDAO {
 	}
 	
 	public List<Curriculum> getMyCurriculums(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select cur from curriculum cur")
 		  .append(" left join fetch cur.organisation organis")
 		  .append(" inner join fetch cur.group baseGroup")
 		  .append(" where exists (select curElement from curriculumelement curElement")
 		  .append("  inner join curElement.group as bGroup")
 		  .append("  inner join bGroup.members membership")
-		  .append("  where curElement.curriculum.key=cur.key and membership.identity.key=:memberKey and membership.role in ('").append(CurriculumRoles.participant).append("')")
+		  .append("  where curElement.curriculum.key=cur.key and membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach)
 		  .append(" )");
 	
 		return dbInstance.getCurrentEntityManager()

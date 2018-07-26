@@ -57,6 +57,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
@@ -113,6 +115,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -216,6 +220,10 @@ public class EditLectureBlockController extends FormBasicController {
 		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
 		for(BusinessGroup businessGroup:businessGroups) {
 			groupBox.add(new GroupBox(businessGroup));
+		}
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		for(CurriculumElement element:elements) {
+			groupBox.add(new GroupBox(element));
 		}
 		String[] groupKeys = new String[groupBox.size()];
 		String[] groupValues = new String[groupBox.size()];
@@ -345,7 +353,7 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -381,7 +389,7 @@ public class EditLectureBlockController extends FormBasicController {
 		allOk &= validateInt(startMinuteEl, 60);
 		allOk &= validateInt(endHourEl, 24);
 		allOk &= validateInt(endMinuteEl, 60);
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInt(TextElement element, int max) {
@@ -560,6 +568,7 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		private BusinessGroup businessGroup;
 		private RepositoryEntry repoEntry;
+		private CurriculumElement curriculumElement;
 		private final Group baseGroup;
 		
 		public GroupBox(RepositoryEntry entry, Group baseGroup) {
@@ -572,12 +581,20 @@ public class EditLectureBlockController extends FormBasicController {
 			baseGroup = businessGroup.getBaseGroup();
 		}
 		
+		public GroupBox(CurriculumElement curriculumElement) {
+			this.curriculumElement = curriculumElement;
+			baseGroup = curriculumElement.getGroup();
+		}
+		
 		public String getName() {
 			if(repoEntry != null) {
 				return repoEntry.getDisplayname();
 			}
 			if(businessGroup != null) {
 				return businessGroup.getName();
+			}
+			if(curriculumElement != null) {
+				return curriculumElement.getDisplayName();
 			}
 			return null;
 		}

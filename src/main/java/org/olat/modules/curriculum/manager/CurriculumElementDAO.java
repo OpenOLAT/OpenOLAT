@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -86,6 +87,19 @@ public class CurriculumElementDAO {
 		}
 		element.setMaterializedPathKeys(getMaterializedPathKeys(parent, element));
 		return element;
+	}
+	
+	/**
+	 * The element must be loaded. The method doesn't do a relead.
+	 * 
+	 * @param element
+	 */
+	public void deleteCurriculumElement(CurriculumElement element) {
+		dbInstance.getCurrentEntityManager().remove(element);
+		
+		Group group = element.getGroup();
+		groupDao.removeMemberships(group);
+		groupDao.removeGroup(group);
 	}
 	
 	public CurriculumElement loadByKey(Long key) {
@@ -148,6 +162,20 @@ public class CurriculumElementDAO {
 		}		
 		dbInstance.commit();
 		return elementImpl;
+	}
+	
+	public boolean hasRelations(CurriculumElementRef curriculumElementRef) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select context.key from qualitycontext as context")
+		  .append(" where context.audienceCurriculumElement.key=:curriculumElementKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("curriculumElementKey", curriculumElementRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && keys.size() > 0 && keys.get(0) != null;
 	}
 	
 	public List<CurriculumElement> loadElements(CurriculumRef curriculum) {

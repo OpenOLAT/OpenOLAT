@@ -190,6 +190,8 @@ public interface CurriculumService {
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
 	
+	public void deleteCurriculumElement(CurriculumElementRef element);
+	
 	/**
 	 * Return all the elements of a curriculum, but flat.
 	 * 

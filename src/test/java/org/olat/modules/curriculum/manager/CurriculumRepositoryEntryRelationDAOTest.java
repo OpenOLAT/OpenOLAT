@@ -31,6 +31,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao.getRepositoryEntries(element);
+		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao.getRepositoryEntries(element, RepositoryEntryStatusEnum.preparationToClosed());
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entry, entries.get(0));

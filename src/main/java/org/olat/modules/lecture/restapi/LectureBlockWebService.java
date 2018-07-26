@@ -34,9 +34,13 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
@@ -64,6 +68,8 @@ public class LectureBlockWebService {
 	private final LectureBlock lectureBlock;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private LectureService lectureService;
@@ -71,6 +77,8 @@ public class LectureBlockWebService {
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
@@ -193,6 +201,7 @@ public class LectureBlockWebService {
 			currentGroups.add(defGroup);
 			reloadedBlock = lectureService.save(reloadedBlock, currentGroups);
 		}
+		dbInstance.commit();
 		lectureService.syncParticipantSummaries(reloadedBlock);
 		return Response.ok().build();
 	}
@@ -213,6 +222,64 @@ public class LectureBlockWebService {
 			lectureService.save(reloadedBlock, currentGroups);
 		}
 		return Response.ok().build();
+	}
+	
+	/**
+	 * Add the group of all curriculum elements to the lecture block participants list.
+	 * @response.representation.200.doc Successfully added
+	 * @return 200 if all ok
+	 */
+	@PUT
+	@Path("participants/curriculum")
+	public Response addCurriculumElementParticipantGroup() {
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		List<Group> currentGroups = lectureService.getLectureBlockToGroups(reloadedBlock);
+		
+		boolean changed = false;
+		for(CurriculumElement element:elements) {
+			Group elementGroup = element.getGroup();
+			if(element.getStatus() != CurriculumElementStatus.deleted && !currentGroups.contains(elementGroup)) {
+				currentGroups.add(elementGroup);
+				changed = true;
+			}
+		}
+		if(changed) {
+			reloadedBlock = lectureService.save(reloadedBlock, currentGroups);
+		}
+		dbInstance.commit();
+		lectureService.syncParticipantSummaries(reloadedBlock);
+		Status status = changed ? Status.OK : Status.NOT_MODIFIED;
+		return Response.ok(status).build();
+	}
+	
+	/**
+	 * Remove the group of all curriculum elements from the lecture block participants.
+	 * @response.representation.200.doc Successfully removed
+	 * @return 200 if all ok
+	 */
+	@DELETE
+	@Path("participants/curriculum")
+	public Response deleteCurriculumElementParticipantGroup() {
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		List<Group> currentGroups = lectureService.getLectureBlockToGroups(reloadedBlock);
+		
+		boolean changed = false;
+		for(CurriculumElement element:elements) {
+			Group elementGroup = element.getGroup();
+			if(currentGroups.contains(elementGroup)) {
+				currentGroups.remove(elementGroup);
+				changed = true;
+			}
+		}
+		
+		if(changed) {
+			lectureService.save(reloadedBlock, currentGroups);
+		}
+		
+		Status status = changed ? Status.OK : Status.NOT_MODIFIED;
+		return Response.ok(status).build();
 	}
 	
 	@GET
