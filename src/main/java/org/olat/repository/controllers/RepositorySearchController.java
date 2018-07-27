@@ -84,8 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 */
 public class RepositorySearchController extends BasicController implements Activateable2 {
 
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositorySearchController.class);
-
+	
 	private VelocityContainer vc;
 	private RepositoryTableModel repoTableModel;
 	private SearchForm searchForm;
@@ -185,10 +184,8 @@ public class RepositorySearchController extends BasicController implements Activ
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
-			return;
 		} else if (source == backLink){
 			displaySearchForm();
-			return;
 		} else if (source == loginLink){
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		}
@@ -271,7 +268,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param roles The users roles
 	 */
 	public void doSearchForReferencableResourcesLimitType(Identity owner, String limitType, Roles roles) {
-		doSearchForReferencableResourcesLimitType(owner, limitType.equals("")?null:new String[] {limitType}, roles);
+		doSearchForReferencableResourcesLimitType(owner, limitType.equals("") ? null : new String[] { limitType }, roles);
 	}
 
 	/**
@@ -399,45 +396,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		tableCtr.modelChanged();
 		displaySearchResults(null);
 	}
-
-	private void doSearchMyCoursesStudent(UserRequest ureq){
-		doSearchMyCoursesStudent(ureq, null, true);
-	}
-		
-	private void doSearchMyCoursesStudent(UserRequest ureq, String limitType, boolean updateFilters) {
-		searchType = SearchType.myAsStudent;
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(getIdentity(), limitType, 0, -1);
-		filterRepositoryEntries(entries);
-		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
-	}
-	
-	private void doSearchMyCoursesTeacher(UserRequest ureq){
-		doSearchMyCoursesTeacher(ureq, null, true);
-	}
-	
-	private void doSearchMyCoursesTeacher(UserRequest ureq, String limitType, boolean updateFilters) {
-		searchType = SearchType.myAsTeacher;
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsTeacher(ureq.getIdentity(), 0, -1);
-		filterRepositoryEntries(entries);
-		doSearchMyRepositoryEntries(ureq, entries, limitType, updateFilters);
-	}
-
-	private void doSearchMyRepositoryEntries(UserRequest ureq, List<RepositoryEntry> entries, String limitType, boolean updateFilters) {
-		if(limitType != null) {
-			for(Iterator<RepositoryEntry> it=entries.iterator(); it.hasNext(); ) {
-				RepositoryEntry next = it.next();
-				if(!next.getOlatResource().getResourceableTypeName().equals(limitType)) {
-					it.remove();
-				}
-			}	
-		}
-		repoTableModel.setObjects(entries);
-		if(updateFilters) {
-			updateFilters(entries, null);
-		}
-		tableCtr.modelChanged();
-		displaySearchResults(ureq);
-	}
 	
 	protected void updateFilters(List<RepositoryEntry> entries, Identity owner) {
 		List<ShortName> restrictedTypes = new ArrayList<>();
@@ -478,7 +436,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	public void displaySearchForm() {
 		searchForm.setVisible(true);
 		searchForm.setAdminSearch(false);
-		vc.setPage(VELOCITY_ROOT + "/search.html");
+		vc.setPage(velocity_root + "/search.html");
 	}
 	
 	/**
@@ -487,7 +445,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	public void displayAdminSearchForm() {
 		searchForm.setVisible(true);
 		searchForm.setAdminSearch(true);
-		vc.setPage(VELOCITY_ROOT + "/search.html");
+		vc.setPage(velocity_root + "/search.html");
 	}
 	
 	/**
@@ -498,16 +456,13 @@ public class RepositorySearchController extends BasicController implements Activ
 		if (repoTableModel.getRowCount() == 0) vc.contextPut("hasResults", Boolean.FALSE);
 		else vc.contextPut("hasResults", Boolean.TRUE);
 		backLink = LinkFactory.createLinkBack(vc, this);
-		vc.setPage(VELOCITY_ROOT + "/results.html");
+		vc.setPage(velocity_root + "/results.html");
 		//REVIEW:pb why can ureq be null here?
 		vc.contextPut("isGuest", (ureq != null) ? Boolean.valueOf(identityRoles.isGuestOnly()) : Boolean.FALSE);
 		loginLink = LinkFactory.createLink("repo.login", vc, this);
 		cancelButton = LinkFactory.createButton("cancel", vc, this);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == tableCtr) { // process table actions
@@ -540,10 +495,6 @@ public class RepositorySearchController extends BasicController implements Activ
 				TypeFilter typeFilter = (TypeFilter) tableCtr.getActiveFilter();
 				if(searchType == SearchType.byOwner) {
 					doSearchByOwnerLimitTypeInternal(typeFilter.getOwner(), new String[]{typeFilter.getType()}, false);
-				} else if(searchType == SearchType.myAsStudent) {
-					doSearchMyCoursesStudent(urequest, typeFilter.getType(), false);
-				} else if(searchType == SearchType.myAsTeacher) {
-					doSearchMyCoursesTeacher(urequest, typeFilter.getType(), false);
 				} else if(searchType == SearchType.searchForm) {
 					if(enableSearchforAllInSearchForm != null) {
 						doSearchAllReferencables(urequest, typeFilter.getType(), false);
@@ -554,10 +505,6 @@ public class RepositorySearchController extends BasicController implements Activ
 			} else if (TableController.EVENT_NOFILTER_SELECTED.equals(event)) {
 				if(searchType == SearchType.byOwner) {
 					doSearchByOwnerLimitTypeInternal(getIdentity(), new String[]{}, false);
-				} else if(searchType == SearchType.myAsStudent) {
-					doSearchMyCoursesStudent(urequest);
-				} else if(searchType == SearchType.myAsTeacher) {
-					doSearchMyCoursesTeacher(urequest);
 				} else if(searchType == SearchType.searchForm) {
 					if(enableSearchforAllInSearchForm != null) {
 						doSearchAllReferencables(urequest, null, false);
@@ -570,7 +517,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		else if (event instanceof EntryChangedEvent) { // remove deleted entry
 			EntryChangedEvent ecv = (EntryChangedEvent)event;
 			if (ecv.getChange() == Change.deleted) {
-				List<RepositoryEntry> newEntries = new ArrayList<RepositoryEntry>();
+				List<RepositoryEntry> newEntries = new ArrayList<>();
 				for (int i = 0; i < repoTableModel.getRowCount(); i++) {
 					RepositoryEntry foo = repoTableModel.getObject(i);
 					if (!foo.getKey().equals(ecv.getRepositoryEntryKey())) {
@@ -669,8 +616,6 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	public enum SearchType {
 		byOwner,
-		myAsStudent,
-		myAsTeacher,
 		searchForm,
 	}
 	

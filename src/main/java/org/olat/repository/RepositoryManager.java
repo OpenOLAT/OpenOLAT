@@ -1019,16 +1019,16 @@ public class RepositoryManager {
 		//author
 		if(roles.isAuthor()) {
 			sb.append(" or (membership.role ").in(OrganisationRoles.author)
-			  .append(" and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(")")
-			  .append(" and (v.canReference=true or v.canCopy=true)");
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(")");
+			if(checkCanReference) {
+				sb.append(" and v.canReference=true");
+			}
+			if(checkCanCopy) {
+				sb.append(" and v.canCopy=true");
+			}
 		}
 		sb.append(")");
-		if(checkCanReference) {
-			sb.append(" and v.canReference=true");
-		}
-		if(checkCanCopy) {
-			sb.append(" and v.canCopy=true");
-		}	 
+		 
 		// restrict on type
 		if (resourceTypes != null) {
 			sb.append(" and res.resName in (:resourcetypes)");
