@@ -64,9 +64,11 @@ import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.comparator.BusinessGroupRowComparator;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
@@ -99,6 +101,7 @@ public class EditMembershipController extends FormBasicController {
 	private final boolean overrideManaged;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
+	private final Curriculum curriculum;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -117,6 +120,7 @@ public class EditMembershipController extends FormBasicController {
 		this.members = null;
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
+		this.curriculum = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
 		
@@ -152,6 +156,7 @@ public class EditMembershipController extends FormBasicController {
 		this.members = (members == null ? null : new ArrayList<>(members));
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
+		this.curriculum = null;
 		this.withButtons = true;
 		this.overrideManaged = overrideManaged;
 		
@@ -162,13 +167,14 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged, Form rootForm) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, Curriculum curriculum, boolean overrideManaged, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		this.member = null;
 		this.members = (members == null ? null : new ArrayList<>(members));
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
+		this.curriculum = curriculum;
 		this.withButtons = false;
 		this.overrideManaged = overrideManaged;
 		
@@ -228,8 +234,15 @@ public class EditMembershipController extends FormBasicController {
 		groupTableDataModel.setObjects(options);
 		groupTableEl.setVisible(!options.isEmpty());
 		
-		List<CurriculumElement> curriculumElements = repoEntry == null
-				? Collections.emptyList() : curriculumService.getCurriculumElements(repoEntry);	
+		List<CurriculumElement> curriculumElements;
+		if(curriculum != null) {
+			curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
+		} else if (repoEntry != null) {
+			curriculumElements = curriculumService.getCurriculumElements(repoEntry);
+		} else {
+			curriculumElements = Collections.emptyList();
+		}
+	
 		List<CurriculumElement> editableElements = curriculumService.filterElementsWithoutManagerRole(curriculumElements, roles);
 		curriculumElementMemberships = memberToLoad == null ? Collections.emptyList() :
 				 curriculumService.getCurriculumElementMemberships(curriculumElements, memberToLoad);

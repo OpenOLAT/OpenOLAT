@@ -354,7 +354,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, overrideManaged);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, null, overrideManaged);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			return StepsMainRunController.DONE_MODIFIED;
@@ -369,7 +369,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, overrideManaged);
+		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, null, overrideManaged);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			if(runContext.containsKey("notFounds")) {

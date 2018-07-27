@@ -154,19 +154,15 @@ public class OrganisationDAO {
 	}
 	
 	public List<Organisation> loadDefaultOrganisation() {
-		return loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
-	}
-	
-	public List<Organisation> loadByIdentifier(String identifier) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where org.identifier=:identifier and org.status ").in(OrganisationStatus.notDelete());
+		  .append(" where org.identifier=:identifier ");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
-				.setParameter("identifier", identifier)
+				.setParameter("identifier", OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER)
 				.getResultList();
 	}
 	

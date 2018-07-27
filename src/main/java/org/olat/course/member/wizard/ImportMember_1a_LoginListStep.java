@@ -27,6 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -35,9 +36,9 @@ import org.olat.repository.RepositoryEntry;
  */
 public class ImportMember_1a_LoginListStep extends BasicStep {
 	
-	public ImportMember_1a_LoginListStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group, boolean overrideManaged) {
+	public ImportMember_1a_LoginListStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum, boolean overrideManaged) {
 		super(ureq);
-		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group, overrideManaged));
+		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group, curriculum, overrideManaged));
 		setI18nTitleAndDescr("import.import.title", "import.import.title");
 	}
 

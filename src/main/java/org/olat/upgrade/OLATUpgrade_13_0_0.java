@@ -348,7 +348,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(MIGRATE_INVITEE)) {
 			try {
 
-				List<Organisation> defOrganisations = organisationDao.loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+				List<Organisation> defOrganisations = organisationDao.loadDefaultOrganisation();
 				Organisation defOrganisation = null;
 				if(!defOrganisations.isEmpty()) {
 					defOrganisation = defOrganisations.get(0);
@@ -411,7 +411,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MIGRATE_ROLE)) {
 			try {
-				List<Organisation> defOrganisations = organisationDao.loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+				List<Organisation> defOrganisations = organisationDao.loadDefaultOrganisation();
 				if(defOrganisations.isEmpty()) {
 					allOk &= false;
 				} else {

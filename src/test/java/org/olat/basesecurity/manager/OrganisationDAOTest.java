@@ -112,16 +112,11 @@ public class OrganisationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadByIdentifier() {
-		String identifier = UUID.randomUUID().toString();
-		Organisation organisation = organisationDao.createAndPersistOrganisation("Org-2", identifier, null, null, null);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(organisation);
-		
-		List<Organisation> organisations = organisationDao.loadByIdentifier(identifier);
+	public void loadDefaultOrganisation() {
+		List<Organisation> organisations = organisationDao.loadDefaultOrganisation();
 		Assert.assertNotNull(organisations);
 		Assert.assertEquals(1, organisations.size());
-		Assert.assertEquals(organisation, organisations.get(0));
+		Assert.assertEquals(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER, organisations.get(0).getIdentifier());
 	}
 	
 	@Test

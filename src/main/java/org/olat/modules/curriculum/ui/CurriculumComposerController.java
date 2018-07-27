@@ -52,11 +52,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
+import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -79,6 +86,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private FlexiTableElement tableEl;
 	private CurriculumComposerTableModel tableModel;
 	private TooledStackedPanel toolbarPanel;
+	private FormLink addMemberLink;
+	private FormLink importMemberLink;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -117,6 +126,14 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members) && secCallback.canEditCurriculum()) {
+			addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
+			addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+
+			importMemberLink = uifactory.addFormLink("import.member", formLayout, Link.BUTTON);
+			importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key, "select"));
 
@@ -234,7 +251,11 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(addMemberLink == source) {
+			doChooseMembers(ureq);
+		} else if(importMemberLink == source) {
+			doImportMembers(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
@@ -309,6 +330,45 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(cmc);
 			cmc.activate();
 		}
+	}
+	
+	private StepsMainRunController importMembersWizard;
+	
+	private void doChooseMembers(UserRequest ureq) {
+		removeAsListenerAndDispose(importMembersWizard);
+
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, null, curriculum, false);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(uureq, runContext);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("add.member"), "o_sel_group_import_1_wizard");
+		listenTo(importMembersWizard);
+		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
+	}
+	
+	private void doImportMembers(UserRequest ureq) {
+		removeAsListenerAndDispose(importMembersWizard);
+
+		Step start = new ImportMember_1a_LoginListStep(ureq, null, null, curriculum, false);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(uureq, runContext);
+			if(runContext.containsKey("notFounds")) {
+				showWarning("user.notfound", runContext.get("notFounds").toString());
+			}
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("import.member"), "o_sel_group_import_logins_wizard");
+		listenTo(importMembersWizard);
+		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
+	}
+	
+	private void addMembers(UserRequest ureq, StepsRunContext runContext) {
+		
 	}
 	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {

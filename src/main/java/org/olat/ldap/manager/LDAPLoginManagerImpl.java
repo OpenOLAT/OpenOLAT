@@ -964,7 +964,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		ctx.close();
 		ctx = bindSystem();
 		
-		List<Organisation> organisations = organisationDao.loadByIdentifier(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+		List<Organisation> organisations = organisationDao.loadDefaultOrganisation();
 		Organisation organisation = organisations.get(0);
 		
 		//authors

@@ -80,7 +80,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		List<Organisation> defaultOrganisations = organisationDao.loadByIdentifier(DEFAULT_ORGANISATION_IDENTIFIER);
+		List<Organisation> defaultOrganisations = organisationDao.loadDefaultOrganisation();
 		if(defaultOrganisations.isEmpty()) {
 			Organisation organisation = organisationDao.create("OpenOLAT", DEFAULT_ORGANISATION_IDENTIFIER, null, null, null);
 			organisation.setManagedFlags(new OrganisationManagedFlag[] {

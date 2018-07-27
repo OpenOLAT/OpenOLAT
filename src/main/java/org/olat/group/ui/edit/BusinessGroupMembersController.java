@@ -200,13 +200,10 @@ public class BusinessGroupMembersController extends BasicController {
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, businessGroup, false);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(runContext);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, businessGroup, null, false);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(runContext);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -218,7 +215,7 @@ public class BusinessGroupMembersController extends BasicController {
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, null, businessGroup, false);
+		Step start = new ImportMember_1a_LoginListStep(ureq, null, businessGroup, null, false);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {

@@ -144,13 +144,10 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, false);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(uureq, runContext);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, null, false);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(uureq, runContext);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -162,16 +159,13 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, false);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(uureq, runContext);
-				if(runContext.containsKey("notFounds")) {
-					showWarning("user.notfound", runContext.get("notFounds").toString());
-				}
-				return StepsMainRunController.DONE_MODIFIED;
+		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, null, false);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addMembers(uureq, runContext);
+			if(runContext.containsKey("notFounds")) {
+				showWarning("user.notfound", runContext.get("notFounds").toString());
 			}
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,

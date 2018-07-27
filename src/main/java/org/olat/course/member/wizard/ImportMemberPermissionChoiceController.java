@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.EditMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -40,11 +41,11 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 	private EditMembershipController permissionCtrl;
 
 	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repoEntry, BusinessGroup group, boolean overrideManaged,
+			RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum, boolean overrideManaged,
 			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		
-		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, group, overrideManaged, rootForm);
+		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, group, curriculum, overrideManaged, rootForm);
 		listenTo(permissionCtrl);
 
 		initForm (ureq);
