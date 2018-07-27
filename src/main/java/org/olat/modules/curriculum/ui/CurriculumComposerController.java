@@ -182,7 +182,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		
 		FormLink resourcesLink = null;
-		if(element.getNumOfResources() > 1) {
+		if(element.getNumOfResources() > 0) {
 			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(element.getNumOfResources()), null, null, Link.NONTRANSLATED);
 		}
 		CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(), element.getNumOfResources(),

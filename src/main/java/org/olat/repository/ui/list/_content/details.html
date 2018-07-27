@@ -259,6 +259,23 @@
 							</ul></td>
 						</tr>
 						#end
+						#if($r.isNotEmpty($organisations))
+						<tr>
+							<th>$r.translate("cif.organisations")</th>
+							<td>$organisations</td>
+						</tr>
+						#end
+						#if($r.isNotEmpty($curriculums))
+						<tr>
+							<th>$r.translate("cif.curriculums")</th>
+							<td><ul class="list-unstyled">
+								#foreach($curriculum in $curriculums)
+									<li>$curriculum</li>
+								#end
+							</ul></td>
+						</tr>
+						#end
+						
 					</tbody></table>
 				</div>
 			</div>

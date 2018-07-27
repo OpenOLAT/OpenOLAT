@@ -21,12 +21,14 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -57,6 +59,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
@@ -80,6 +83,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.login.LoginModule;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -163,6 +170,13 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private LicenseModule licenseModule;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumModule curriculumModule;
+
 	
 	private String baseUrl;
 	private final boolean guestOnly;
@@ -375,7 +389,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);
 				startLink.setFocus(true);
-				accessI18n = translate("cif.access.".concat(entry.getEntryStatus().name()));
+				accessI18n = translate("cif.status.".concat(entry.getEntryStatus().name()));
 			}
 			layoutCont.contextPut("accessI18n", accessI18n);
 			
@@ -452,8 +466,17 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
 						refLinks.add(name);
 					}
-	            		layoutCont.contextPut("referenceLinks", refLinks);
+	            	layoutCont.contextPut("referenceLinks", refLinks);
 				}
+            }
+            
+            if(organisationModule.isEnabled()) {
+            	String organisations = getOrganisationsToString();
+            	layoutCont.contextPut("organisations", organisations);
+            }
+            if(curriculumModule.isEnabled()) {
+            	List<String> curriculums = getCurriculumsToString();
+            	layoutCont.contextPut("curriculums", curriculums);
             }
             
             // Link to bookmark entry
@@ -490,6 +513,37 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				layoutCont.contextPut("licSwitch", Boolean.FALSE);
 			}
 		}
+	}
+	
+	private List<String> getCurriculumsToString() {
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(entry);
+    	Map<Curriculum, StringBuilder> curriculumToElementsMap = new HashMap<>();
+    	for(CurriculumElement curriculumElement:curriculumElements) {
+    		Curriculum curriculum = curriculumElement.getCurriculum();
+    		StringBuilder sc = curriculumToElementsMap.computeIfAbsent(curriculum, c -> {
+    			StringBuilder sb = new StringBuilder(64);
+    			sb.append(StringHelper.escapeHtml(c.getDisplayName())).append(" (");
+    			return sb;
+    		});
+    		sc.append(StringHelper.escapeHtml(curriculumElement.getDisplayName())).append(", ");
+    	}
+    	
+    	List<String> curriculumList = new ArrayList<>(curriculumToElementsMap.size());
+    	for(StringBuilder sb:curriculumToElementsMap.values()) {
+    		String line = sb.toString().substring(0, sb.length() -2).concat(")");
+    		curriculumList.add(line);
+    	}
+    	return curriculumList;
+	}
+	
+	private String getOrganisationsToString() {
+		List<Organisation> organisations = repositoryService.getOrganisations(entry);
+    	StringBuilder sb = new StringBuilder(64);
+    	for(Organisation organisation:organisations) {
+    		if(sb.length() > 0) sb.append(", ");
+    		sb.append(StringHelper.escapeHtml(organisation.getDisplayName()));
+    	}
+    	return sb.toString();
 	}
 	
 	@Override
