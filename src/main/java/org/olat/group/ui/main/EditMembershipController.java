@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.olat.basesecurity.GroupRoles;
@@ -41,14 +43,22 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -187,15 +197,20 @@ public class EditMembershipController extends FormBasicController {
 	private void loadModel(UserRequest ureq, Identity memberToLoad) {
 		Roles roles = ureq.getUserSession().getRoles();
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
-		if(repoEntry == null) {
+		if(repoEntry == null && businessGroup != null) {
 			params.setBusinessGroupKey(businessGroup.getKey());
 		} else {
 			params.setRepositoryEntry(repoEntry);
 		}
 
-		List<StatisticsBusinessGroupRow> groups = businessGroupService.findBusinessGroupsStatistics(params);
-		if(groups.size() > 1) {
-			Collections.sort(groups, new BusinessGroupRowComparator(getLocale()));
+		List<StatisticsBusinessGroupRow> groups;
+		if(repoEntry != null || businessGroup != null) {
+			groups = businessGroupService.findBusinessGroupsStatistics(params);
+			if(groups.size() > 1) {
+				Collections.sort(groups, new BusinessGroupRowComparator(getLocale()));
+			}
+		} else {
+			groups = new ArrayList<>(1);
 		}
 
 		boolean defaultMembership = false;
@@ -237,6 +252,7 @@ public class EditMembershipController extends FormBasicController {
 		List<CurriculumElement> curriculumElements;
 		if(curriculum != null) {
 			curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
+			curriculumElements = orderCurriculumElements(curriculumElements);
 		} else if (repoEntry != null) {
 			curriculumElements = curriculumService.getCurriculumElements(repoEntry);
 		} else {
@@ -265,6 +281,36 @@ public class EditMembershipController extends FormBasicController {
 		curriculumTableEl.setVisible(!curriculumOptions.isEmpty());
 	}
 	
+	//TODO curriculum order doesn't work
+	private List<CurriculumElement> orderCurriculumElements(List<CurriculumElement> curriculumElements) {
+		try {
+			List<CurriculumElementRow> rows = new ArrayList<>(curriculumElements.size());
+			Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
+			for(CurriculumElement element:curriculumElements) {
+				CurriculumElementRow row = new CurriculumElementRow(element);
+				rows.add(row);
+				keyToRows.put(element.getKey(), row);
+			}
+			//parent line
+			for(CurriculumElementRow row:rows) {
+				if(row.getParentKey() != null) {
+					row.setParent(keyToRows.get(row.getParentKey()));
+				}
+			}
+			
+			Collections.sort(rows, new FlexiTreeNodeComparator());
+			
+			List<CurriculumElement> orderedElements = new ArrayList<>(rows.size());
+			for(CurriculumElementRow row:rows) {
+				orderedElements.add(row.getElement());
+			}
+			return orderedElements;
+		} catch (Exception e) {
+			logError("", e);
+			return curriculumElements;
+		}
+	}
+	
 	private MultipleSelectionElement createSelection(boolean selected, boolean enabled, String role) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.horizontal);
@@ -282,7 +328,16 @@ public class EditMembershipController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String name = repoEntry == null ? businessGroup.getName() : repoEntry.getDisplayname();
+			String name;
+			if(repoEntry != null) {
+				name = repoEntry.getDisplayname();
+			} else if(businessGroup != null) {
+				name = businessGroup.getName();
+			} else if(curriculum != null) {
+				name = curriculum.getDisplayName();
+			} else {
+				name = "";
+			}
 			name = StringHelper.escapeHtml(name);
 			String title = translate("edit.member.title", new String[]{ name });
 			layoutCont.contextPut("editTitle", title);
@@ -321,8 +376,12 @@ public class EditMembershipController extends FormBasicController {
 		
 		// curriculum rights
 		FlexiTableColumnModel curriculumTableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculum));
-		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculumElement));
+		if(curriculum == null) {
+			curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculum));
+			curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculumElement));
+		} else {
+			curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.curriculumElement, new CurriculumElementIndentRenderer()));
+		}
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.owner));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.coach));
 		curriculumTableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.participant));
@@ -586,8 +645,8 @@ public class EditMembershipController extends FormBasicController {
 			MemberGroupOption option = getObject(row);
 			switch(GroupCols.values()[col]) {
 				case groupName: return option.getGroupName();
-				case tutorCount: return new Long(option.getTutorCount());
-				case participantCount: return new Long(option.getParticipantCount() + option.getNumOfPendings());
+				case tutorCount: return Long.valueOf(option.getTutorCount());
+				case participantCount: return Long.valueOf(option.getParticipantCount() + option.getNumOfPendings());
 				case freePlaces: {
 					Integer maxParticipants = option.getMaxParticipants();
 					if(maxParticipants != null && maxParticipants.intValue() > 0) {
@@ -607,6 +666,82 @@ public class EditMembershipController extends FormBasicController {
 		public EditGroupMembershipTableDataModel createCopyWithEmptyList() {
 			return new EditGroupMembershipTableDataModel(new ArrayList<>(), getTableColumnModel());
 		}
+	}
+	
+	private static class CurriculumElementIndentRenderer implements FlexiCellRenderer {
+
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+				URLBuilder ubu, Translator translator) {
+			MemberCurriculumOption memberRow = (MemberCurriculumOption)source.getFlexiTableElement().getTableDataModel().getObject(row);
+			indent(target, memberRow);
+			if(cellValue instanceof String) {
+				target.append(StringHelper.escapeHtml((String)cellValue));
+			}
+		}
+		
+		private void indent(StringOutput target, MemberCurriculumOption memberRow) {
+			CurriculumElement element = memberRow.getElement();
+			String path = element.getMaterializedPathKeys();
+			if(StringHelper.containsNonWhitespace(path)) {
+				char[] pathArr = path.toCharArray();
+				for(int i=pathArr.length; i-->1; ) {
+					if(pathArr[i] == '/') {
+						target.append("&nbsp;&nbsp;");
+					}
+				}
+			}
+		}
+	}
+	
+	private static class CurriculumElementRow implements FlexiTreeTableNode {
+		
+		private final CurriculumElement element;
+		private CurriculumElementRow parent;
+		
+		public CurriculumElementRow(CurriculumElement element) {
+			this.element = element;
+		}
+		
+		public CurriculumElement getElement() {
+			return element;
+		}
+		
+		public Long getParentKey() {
+			if(element.getParent() == null) return null;
+			return element.getParent().getKey();
+		}
+
+		@Override
+		public CurriculumElementRow getParent() {
+			return parent;
+		}
+		
+		public void setParent(CurriculumElementRow parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public String getCrump() {
+			return element.getDisplayName();
+		}
+
+		@Override
+		public int hashCode() {
+			return element.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof CurriculumElementRow) {
+				CurriculumElementRow row = (CurriculumElementRow)obj;
+				return element.equals(row.element);
+			}
+			return false;
+		}	
 	}
 	
 	public static enum CurriculumCols implements FlexiColumnDef {

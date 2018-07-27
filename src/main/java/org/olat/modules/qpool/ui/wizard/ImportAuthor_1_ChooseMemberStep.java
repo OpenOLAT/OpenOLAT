@@ -55,7 +55,6 @@ public class ImportAuthor_1_ChooseMemberStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put("items", items);
-		ImportAuthorBySearchController controller = new ImportAuthorBySearchController(ureq, wControl, form, runContext);
-		return controller;
+		return new ImportAuthorBySearchController(ureq, wControl, form, runContext);
 	}
 }

@@ -1,1 +1,11 @@
+#if($r.available("add.member") || $r.available("import.member"))
+<div class="o_button_group o_button_group_right"><div class="btn-group">
+	#if($r.available("add.member"))
+		$r.render("add.member")
+	#end
+	#if($r.available("import.member"))
+		$r.render("import.member")
+	#end
+</div></div>
+#end
 $r.render("table")

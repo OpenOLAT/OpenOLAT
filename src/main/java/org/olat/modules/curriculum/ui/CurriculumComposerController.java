@@ -56,17 +56,21 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
-import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumElementStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
@@ -126,7 +130,8 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members) && secCallback.canEditCurriculum()) {
+		//TODO curriculum !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members) && 
+		if(secCallback.canManagerCurriculumElementUsers()) {
 			addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 
@@ -213,7 +218,16 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source || confirmDeleteCtrl == source) {
+		if(source == importMembersWizard) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(importMembersWizard);
+				importMembersWizard = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel();
+				}
+			}
+		} else if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source || confirmDeleteCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -368,7 +382,16 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void addMembers(UserRequest ureq, StepsRunContext runContext) {
+		Roles roles = ureq.getUserSession().getRoles();
+
+		@SuppressWarnings("unchecked")
+		List<Identity> members = (List<Identity>)runContext.get("members");
+		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
+		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
 		
+		//commit all changes to the curriculum memberships
+		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);
 	}
 	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {

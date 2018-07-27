@@ -48,7 +48,6 @@ public class ImportAuthor_2_ConfirmMemberChoiceStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		ImportAuthorOverviewIdentitiesController controller = new ImportAuthorOverviewIdentitiesController(ureq, wControl, form, runContext);
-		return controller;
+		return new ImportAuthorOverviewIdentitiesController(ureq, wControl, form, runContext);
 	}
 }
