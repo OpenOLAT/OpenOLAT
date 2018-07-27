@@ -93,6 +93,14 @@ public interface OrganisationService {
 	public List<Organisation> getOrganisations();
 	
 	/**
+	 * Search the organisations by status.
+	 * 
+	 * @param status The status (mandatory)
+	 * @return A list of organisations
+	 */
+	public List<Organisation> getOrganisations(OrganisationStatus[] status);
+	
+	/**
 	 * Create a new organization type.
 	 * 
 	 * @param displayName The name

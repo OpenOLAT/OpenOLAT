@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -270,13 +271,13 @@ public class DataCollectionConfigurationController extends FormBasicController i
 				topicIdentitySelectLink.setVisible(true);
 				break;
 			case ORGANISATION:
-				List<Organisation> organisations = organisationSevice.getOrganisations();
+				List<Organisation> organisations = organisationSevice.getOrganisations(OrganisationStatus.values());
 				OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 				organisationModel.loadTreeModel(organisations);
 				KeysValues organistionKeysValues = QualityUIFactory.getOrganisationKeysValues(organisationModel);
 				topicOrganisationEl.setKeysAndValues(organistionKeysValues.getKeys(), organistionKeysValues.getValues(), null);
 				if (topicOrganisation != null) {
-					topicOrganisationEl.select(QualityUIFactory.getOrganisationKey(topicOrganisation), true);;
+					topicOrganisationEl.select(QualityUIFactory.getOrganisationKey(topicOrganisation), true);
 				}
 				topicOrganisationEl.setVisible(true);
 				break;

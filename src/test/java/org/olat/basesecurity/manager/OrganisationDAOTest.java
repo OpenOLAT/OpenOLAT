@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
@@ -130,7 +131,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organisation);
 		
-		List<Organisation> allOrganisations = organisationDao.find();
+		List<Organisation> allOrganisations = organisationDao.find(OrganisationStatus.values());
 		Assert.assertNotNull(allOrganisations);
 		Assert.assertFalse(allOrganisations.isEmpty());
 		Assert.assertTrue(allOrganisations.contains(organisation));

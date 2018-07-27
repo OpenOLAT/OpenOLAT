@@ -170,13 +170,13 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
-	public List<Organisation> find() {
+	public List<Organisation> find(OrganisationStatus[] status) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
-		  .append(" where org.status ").in(OrganisationStatus.notDelete());
+		  .append(" where org.status ").in(status);
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.getResultList();

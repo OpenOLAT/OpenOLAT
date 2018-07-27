@@ -310,7 +310,12 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public List<Organisation> getOrganisations() {
-		return organisationDao.find();
+		return organisationDao.find(OrganisationStatus.notDelete());
+	}
+	
+	@Override
+	public List<Organisation> getOrganisations(OrganisationStatus[] status) {
+		return organisationDao.find(status);
 	}
 
 	@Override
