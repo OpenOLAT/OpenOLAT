@@ -311,6 +311,12 @@ public interface TaxonomyService {
 	public int countRelations(List<? extends TaxonomyLevelRef> taxonomyLevels);
 	
 	/**
+	 * @param taxonomyLevels A list of taxonomy levels
+	 * @return The number of surveys related to the specified taxonomy levels
+	 */
+	public int countQualityManagementsRelations(List<? extends TaxonomyLevelRef> taxonomyLevels);
+	
+	/**
 	 * 
 	 * @param action
 	 * @param before

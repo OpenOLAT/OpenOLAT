@@ -111,7 +111,7 @@ public class CurriculumElementsWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElements() {
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(curriculum);
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
 		List<CurriculumElementVO> voes = new ArrayList<>(elements.size());
 		for(CurriculumElement element:elements) {
 			voes.add(CurriculumElementVO.valueOf(element));

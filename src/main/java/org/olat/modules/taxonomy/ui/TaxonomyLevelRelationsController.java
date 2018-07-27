@@ -37,6 +37,8 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelRelationsTableModel.RelationsCols;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelRelationTypeRenderer;
@@ -57,6 +59,8 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 	
 	private final TaxonomyLevelRef taxonomyLevel;
 	
+	@Autowired
+	private QualityService qualityService;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -106,6 +110,11 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(taxonomyLevel);
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			rows.add(new TaxonomyLevelRelationRow(lectureBlock));
+		}
+		
+		List<QualityDataCollection> qualityDataCollections = qualityService.loadDataCollectionsByTaxonomyLevel(taxonomyLevel);
+		for(QualityDataCollection qualityDataCollection:qualityDataCollections) {
+			rows.add(new TaxonomyLevelRelationRow(qualityDataCollection));
 		}
 		
 		tableModel.setObjects(rows);

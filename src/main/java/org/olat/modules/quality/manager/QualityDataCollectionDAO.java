@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -42,6 +43,7 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +54,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-class QualityDataCollectionDAO {
+public class QualityDataCollectionDAO {
 	
 	@Autowired
 	private DB dbInstance;
@@ -118,6 +120,37 @@ class QualityDataCollectionDAO {
 				.setParameter("status", Arrays.asList(READY, RUNNING))
 				.setParameter("until", until)
 				.getResultList();
+	}
+	
+	List<QualityDataCollection> loadDataCollectionsByTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
+		if (taxonomyLevel == null || taxonomyLevel.getKey() == null) return Collections.emptyList();
+			
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct collection from qualitydatacollection as collection")
+		  .append(" inner join qualitycontext context on (context.dataCollection.key=collection.key)")
+		  .append(" inner join context.contextToTaxonomyLevel ctxToTax")
+		  .append(" where ctxToTax.taxonomyLevel.key=:taxonomyLevelKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class)
+				.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+				.getResultList();
+	}
+	
+	public int countDataCollectionsByTaxonomyLevel(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		if (taxonomyLevels == null || taxonomyLevels.isEmpty()) return 0;
+			
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(distinct collection.key) from qualitydatacollection as collection")
+		  .append(" inner join qualitycontext context on (context.dataCollection.key=collection.key)")
+		  .append(" inner join context.contextToTaxonomyLevel ctxToTax")
+		  .append(" where ctxToTax.taxonomyLevel.key in (:taxonomyLevelKeys)");
+		
+		List<Long> taxonomyLevelKeys = taxonomyLevels.stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("taxonomyLevelKeys", taxonomyLevelKeys)
+				.getSingleResult().intValue();
 	}
 
 	void deleteDataCollection(QualityDataCollectionRef dataCollectionRef) {

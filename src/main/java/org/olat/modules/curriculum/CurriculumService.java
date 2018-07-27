@@ -196,9 +196,10 @@ public interface CurriculumService {
 	 * Return all the elements of a curriculum, but flat.
 	 * 
 	 * @param curriculum The curriculum
+	 * @param status List of status (mandatory)
 	 * @return A list of curriculum elements
 	 */
-	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum);
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status);
 	
 	/**
 	 * Return all the elements of a curriculum, flat, with additional informations

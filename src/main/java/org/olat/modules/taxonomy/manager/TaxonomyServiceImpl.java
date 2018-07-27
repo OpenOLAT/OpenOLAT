@@ -29,6 +29,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.quality.manager.QualityDataCollectionDAO;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog.Action;
@@ -71,6 +72,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private TaxonomyLevelTypeToTypeDAO taxonomyLevelTypeToTypeDao;
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
+	@Autowired
+	private QualityDataCollectionDAO dataCollectionDao;
 	
 	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
@@ -340,6 +343,11 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Override
 	public int countRelations(List<? extends TaxonomyLevelRef> taxonomyLevels) {
 		return taxonomyRelationsDao.countQuestionItems(taxonomyLevels);
+	}
+	
+	@Override
+	public int countQualityManagementsRelations(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		return dataCollectionDao.countDataCollectionsByTaxonomyLevel(taxonomyLevels);
 	}
 
 	@Override

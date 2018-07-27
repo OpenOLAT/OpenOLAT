@@ -63,6 +63,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -298,7 +299,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 					topicCurriculumEl.select(QualityUIFactory.getCurriculumKey(topicCurriculum), true);
 				}
 				if (topicCurriculum != null) {
-					List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(topicCurriculum);
+					List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(topicCurriculum, CurriculumElementStatus.values());
 					CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
 					curriculumTreeModel.loadTreeModel(curriculumElements);
 					KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel);

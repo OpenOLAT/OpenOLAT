@@ -31,6 +31,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -65,6 +66,8 @@ public interface QualityService {
 
 	public List<QualityDataCollectionView> loadDataCollections(Translator translator, int firstResult, int maxResults,
 			SortKey... orderBy);
+	
+	public List<QualityDataCollection> loadDataCollectionsByTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
 
 	/**
 	 * Deletes a data collection, the whole survey and all contexts.

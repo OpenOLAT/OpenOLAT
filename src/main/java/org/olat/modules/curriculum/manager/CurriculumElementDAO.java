@@ -181,13 +181,13 @@ public class CurriculumElementDAO {
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 	
-	public List<CurriculumElement> loadElements(CurriculumRef curriculum) {
+	public List<CurriculumElement> loadElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
 		  .append(" left join el.parent parentEl")
-		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
+		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(status);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class)

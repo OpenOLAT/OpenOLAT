@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.ui;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -64,6 +65,13 @@ public class TaxonomyLevelRelationRow {
 		key = lectureBlock.getKey();
 		displayName = lectureBlock.getTitle();
 		externalId = lectureBlock.getExternalId();
+	}
+	
+	public TaxonomyLevelRelationRow(QualityDataCollection collection) {
+		this.relation = collection;
+		key = collection.getKey();
+		displayName = collection.getTitle();
+		externalId = null;
 	}
 	
 	public Long getKey() {

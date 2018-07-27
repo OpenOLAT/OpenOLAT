@@ -60,6 +60,7 @@ import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -111,6 +112,11 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	@Override
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef) {
 		return dataCollectionDao.loadDataCollectionByKey(dataCollectionRef);
+	}
+
+	@Override
+	public List<QualityDataCollection> loadDataCollectionsByTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
+		return dataCollectionDao.loadDataCollectionsByTaxonomyLevel(taxonomyLevel);
 	}
 
 	@Override

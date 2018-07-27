@@ -36,6 +36,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -99,7 +100,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 			CurriculumRef curriculumRef = QualityUIFactory.getCurriculumRef(curriculumKey);
 			Curriculum curriculum = curriculumService.getCurriculum(curriculumRef);
 			if (curriculum != null) {
-				List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculum);
+				List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
 				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
 				curriculumTreeModel.loadTreeModel(curriculumElements);
 				KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel);

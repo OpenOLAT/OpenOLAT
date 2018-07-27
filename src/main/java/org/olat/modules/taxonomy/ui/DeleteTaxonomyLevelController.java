@@ -94,12 +94,13 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 			sb.append(StringHelper.escapeHtml(level.getDisplayName()));
 		}
 		
+		boolean canDelete = true;
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String text = translate("confirmation.delete.level", new String[] { sb.toString() });
 			layoutCont.contextPut("msg", text);
 			layoutCont.contextPut("msgForList", translate("error.delete.num"));
-			buildDangerMessage(layoutCont);
+			canDelete &= buildDangerMessage(layoutCont);
 		}
 		
 		List<String> keyList = new ArrayList<>();
@@ -112,7 +113,9 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		mergeToEl.setEscapeHtml(false);
 
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("delete", formLayout);
+		if(canDelete) {
+			uifactory.addFormSubmitButton("delete", formLayout);
+		}
 	}
 	
 	private void initErrorMessage(FormItemContainer formLayout, UserRequest ureq) {
@@ -137,7 +140,12 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		}
 	}
 	
-	private void buildDangerMessage(FormLayoutContainer layoutCont) {
+	/**
+	 * 
+	 * @param layoutCont The layout container
+	 * @return false if the taxonomy level cannot be deleted
+	 */
+	private boolean buildDangerMessage(FormLayoutContainer layoutCont) {
 		List<String> messages = new ArrayList<>();
 		
 		// child (no partially selection allowed for deletion)
@@ -147,7 +155,7 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 			TreeNode node = treeModel.getNodeById(nodeId);
 			childrenToDelete.addAll(treeModel.getDescendants(node));
 		}
-		if(childrenToDelete.size() > 0) {
+		if(!childrenToDelete.isEmpty()) {
 			messages.add(translate("error.delete.num.child.levels", new String[]{ Integer.toString(childrenToDelete.size()) }));
 		}
 		
@@ -162,6 +170,11 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 			messages.add(translate("error.delete.num.relations", new String[]{ Integer.toString(relations) }));
 		}
 		
+		int surveys = taxonomyService.countQualityManagementsRelations(refs);
+		if(surveys > 0) {
+			messages.add(translate("error.delete.num.surveys", new String[]{ Integer.toString(surveys) }));
+		}
+		
 		// competences
 		int competences = taxonomyService.countTaxonomyCompetences(refs);
 		if(competences > 0) {
@@ -170,6 +183,8 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 
 		layoutCont.contextPut("messages", messages);
 		layoutCont.contextPut("mergeToMessage", translate("info.delete.merge.to"));	
+		
+		return surveys == 0;
 	}
 
 	@Override

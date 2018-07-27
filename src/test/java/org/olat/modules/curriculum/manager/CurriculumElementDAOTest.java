@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -113,7 +114,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load all elements of the curriculum
-		List<CurriculumElement> elements = curriculumElementDao.loadElements(curriculum);
+		List<CurriculumElement> elements = curriculumElementDao.loadElements(curriculum, CurriculumElementStatus.values());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(elements);
 		Assert.assertEquals(3, elements.size());

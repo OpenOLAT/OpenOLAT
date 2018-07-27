@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
@@ -86,7 +87,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<CurriculumElement> allElements = curriculumService.getCurriculumElements(curriculum);
+		List<CurriculumElement> allElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
 		curriculumModel.loadTreeModel(allElements);
 		
 		//remove children of the curriculum element to move

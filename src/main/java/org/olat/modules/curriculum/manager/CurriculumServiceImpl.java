@@ -289,8 +289,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
-	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum) {
-		return curriculumElementDao.loadElements(curriculum);
+	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
+		return curriculumElementDao.loadElements(curriculum, status);
 	}
 
 	@Override
