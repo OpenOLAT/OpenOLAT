@@ -128,7 +128,7 @@
 	</bean>
 	
 	<bean id="survey" class="org.olat.course.nodes.survey.SurveyCourseNodeConfiguration" scope="prototype">
-		<property name="enabled" value="${course.node.from.survey.enabled}" />
+		<property name="enabled" value="${course.node.form.survey.enabled}" />
 		<property name="order" value="175" />
 	</bean>
 	
