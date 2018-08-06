@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,6 +68,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -429,6 +431,15 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		Roles roles = usess.getRoles();
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+
+		List<Organisation> reOrganisations = repositoryService.getOrganisations(repositoryEntry);
+		for(Organisation reOrganisation:reOrganisations) {
+			if(!organisations.contains(reOrganisation)) {
+				organisations.add(reOrganisation);
+			}
+		}
+		
+		Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
 		
 		List<String> keyList = new ArrayList<>();
 		List<String> valueList = new ArrayList<>();
@@ -436,14 +447,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			keyList.add(organisation.getKey().toString());
 			valueList.add(organisation.getDisplayName());
 		}
-		List<Organisation> reOrganisations = repositoryService.getOrganisations(repositoryEntry);
 		repositoryEntryOrganisations = new ArrayList<>(reOrganisations.size());
-		for(Organisation reOrganisation:reOrganisations) {
-			if(!keyList.contains(reOrganisation.getKey().toString())) {
-				keyList.add(reOrganisation.getKey().toString());
-				valueList.add(reOrganisation.getDisplayName());
-			}
-		}
 		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]),
 				null, null);

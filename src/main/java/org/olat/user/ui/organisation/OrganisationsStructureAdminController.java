@@ -129,6 +129,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(24);
+		tableEl.setAndLoadPersistedPreferences(ureq, "organisations-structure");
 	}
 
 	@Override

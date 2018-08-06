@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.license.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,8 +30,6 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
