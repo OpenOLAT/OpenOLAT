@@ -107,6 +107,8 @@ public class EvaluationFormResponseDAO {
 	}
 
 	public List<EvaluationFormResponse> loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		if (sessionRefs == null || sessionRefs.isEmpty()) return new ArrayList<>(0);
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from evaluationformresponse as response");
 		sb.append(" inner join fetch response.session as session");
@@ -121,7 +123,7 @@ public class EvaluationFormResponseDAO {
 	}
 
 	List<EvaluationFormResponse> loadResponsesBySurvey(EvaluationFormSurvey survey) {
-		if (survey == null) return new ArrayList<>();
+		if (survey == null) return new ArrayList<>(0);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from evaluationformresponse as response");
