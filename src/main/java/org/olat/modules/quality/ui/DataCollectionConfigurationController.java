@@ -235,6 +235,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 		topicTypeEl.setEnabled(updateBaseConfiguration);
 		topicCustomTextEl.setEnabled(updateBaseConfiguration);
 		topicIdentityNameEl.setEnabled(updateBaseConfiguration);
+		topicOrganisationEl.setEnabled(updateBaseConfiguration);
 		topicCurriculumEl.setEnabled(updateBaseConfiguration);
 		topicCurriculumElementEl.setEnabled(updateBaseConfiguration);
 		topicRepositoryNameEl.setEnabled(updateBaseConfiguration);
@@ -268,7 +269,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 					: translate("data.collection.topic.identity.none");
 				topicIdentityNameEl.setValue(userName);
 				topicIdentityNameEl.setVisible(true);
-				topicIdentitySelectLink.setVisible(true);
+				topicIdentitySelectLink.setVisible(secCallback.canUpdateBaseConfiguration(dataCollection));
 				break;
 			case ORGANISATION:
 				List<Organisation> organisations = organisationSevice.getOrganisations(OrganisationStatus.values());
@@ -318,7 +319,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 						: translate("data.collection.topic.repository.none");
 				topicRepositoryNameEl.setValue(repositoryName);
 				topicRepositoryNameEl.setVisible(true);
-				topicRepositorySelectLink.setVisible(true);
+				topicRepositorySelectLink.setVisible(secCallback.canUpdateBaseConfiguration(dataCollection));
 				break;
 			}
 		}
