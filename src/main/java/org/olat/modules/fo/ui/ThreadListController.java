@@ -22,7 +22,6 @@ package org.olat.modules.fo.ui;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
@@ -92,8 +91,6 @@ public class ThreadListController extends FormBasicController {
 	private SearchModule searchModule;
 	@Autowired
 	private ForumManager forumManager;
-	@Autowired
-	private BaseSecurityModule securityModule;
 	
 	public ThreadListController(UserRequest ureq, WindowControl wControl, Forum forum, ForumCallback foCallback) {
 		super(ureq, wControl, "threads");
@@ -118,7 +115,7 @@ public class ThreadListController extends FormBasicController {
 			archiveForumButton.setIconLeftCSS("o_icon o_icon-fw o_icon_archive_tool");
 			archiveForumButton.setElementCssClass("o_sel_forum_archive");
 		}
-		if(securityModule.isUserAllowedAutoComplete(ureq.getUserSession().getRoles()) && foCallback.mayFilterForUser() ) {
+		if(foCallback.mayFilterForUser() ) {
 			userListButton = uifactory.addFormLink("filter", formLayout, Link.BUTTON_SMALL);
 			userListButton.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
 			userListButton.setElementCssClass("o_sel_forum_filter");
