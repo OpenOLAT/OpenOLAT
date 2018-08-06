@@ -333,11 +333,12 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 	private void update(RolesElement wrapper, RolesByOrganisation editedRolesByOrg) {
 		for(OrganisationRoles role:OrganisationRoles.values()) {
-			wrapper.setRole(role, editedRolesByOrg.hasRole(role));
+			boolean hasRole = editedRolesByOrg != null && editedRolesByOrg.hasRole(role);
+			wrapper.setRole(role, hasRole);
 		}
 		wrapper.saveSelectedRoles();
 		
-		if(editedRolesByOrg.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.sysadmin, OrganisationRoles.rolesmanager)) {
+		if(editedRolesByOrg != null && editedRolesByOrg.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.sysadmin, OrganisationRoles.rolesmanager)) {
 			statusEl.setEnabled(false);
 		}
 
@@ -387,6 +388,28 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		selectOrganisationCtrl = null;
 		cmc = null;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(rolesEls.isEmpty()) {
+			
+			allOk &= false;
+		} else {
+			int numOfRoles = 0;
+			for(MultipleSelectionElement rolesEl:rolesEls) {
+				numOfRoles += rolesEl.getSelectedKeys().size();
+			}
+			
+			if(numOfRoles == 0) {
+				rolesEls.get(0).setErrorKey("error.roles.atleastone", null);
+				allOk &= false;
+			}
+		}
+
+		return allOk;
 	}
 
 	@Override
