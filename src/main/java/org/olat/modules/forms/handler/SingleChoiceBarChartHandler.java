@@ -22,7 +22,6 @@ package org.olat.modules.forms.handler;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormSessionRef;
@@ -30,6 +29,8 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.BarChartController;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.BarSeriesDataSource;
+import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
+import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.model.SingleChoiceDataSource;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 
@@ -47,13 +48,13 @@ public class SingleChoiceBarChartHandler implements EvaluationFormReportHandler 
 	}
 
 	@Override
-	public Component getReportComponent(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
 			PageElement element, List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
 			BarSeriesDataSource dataSource = new SingleChoiceDataSource(singleChoice, sessions);
 			Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
-			return ctrl.getInitialComponent();
+			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;
 	}

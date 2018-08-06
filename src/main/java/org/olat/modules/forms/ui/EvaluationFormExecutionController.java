@@ -246,7 +246,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	
 	@Override
 	protected void doDispose() {
-		//
+		for (ExecutionFragment fragment: fragments) {
+			fragment.dispose();
+		}
 	}
 
 	@Override
@@ -382,5 +384,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		public void save(EvaluationFormSession session) {
 			executionElement.saveResponse(session);
 		}
+		
+		public void dispose() {
+			executionElement.dispose();
+		}
+		
 	}
 }

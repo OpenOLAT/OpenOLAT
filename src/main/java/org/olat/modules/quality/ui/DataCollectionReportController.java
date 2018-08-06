@@ -56,6 +56,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataCollectionReportController extends BasicController {
 	
 	private final VelocityContainer mainVC;
+	private Controller reportHeaderCtrl;
+	private Controller reportsCtrl;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -74,7 +76,7 @@ public class DataCollectionReportController extends BasicController {
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
 				EvaluationFormSessionStatus.done);
 		
-		Controller reportHeaderCtrl = new DataCollectionReportHeaderController(ureq, wControl, dataCollectionView);
+		reportHeaderCtrl = new DataCollectionReportHeaderController(ureq, wControl, dataCollectionView);
 		List<EvaluationFormFigure> figures = new ArrayList<>();
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.title"), dataCollectionView.getTitle()));
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.topic"), formatTopic(dataCollectionView)));
@@ -82,7 +84,7 @@ public class DataCollectionReportController extends BasicController {
 				getLocale());
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.period"), period));
 		
-		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form,
+		reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form,
 				sessions, reportHeaderCtrl.getInitialComponent(), figures);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 
@@ -96,6 +98,9 @@ public class DataCollectionReportController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(reportHeaderCtrl);
+		removeAsListenerAndDispose(reportsCtrl);
+		reportHeaderCtrl = null;
+		reportsCtrl = null;
 	}
 }

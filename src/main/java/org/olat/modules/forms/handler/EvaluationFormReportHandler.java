@@ -22,10 +22,10 @@ package org.olat.modules.forms.handler;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
@@ -38,7 +38,7 @@ public interface EvaluationFormReportHandler {
 	
 	public String getType();
 
-	public Component getReportComponent(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
 			PageElement element, List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper);
 
 }

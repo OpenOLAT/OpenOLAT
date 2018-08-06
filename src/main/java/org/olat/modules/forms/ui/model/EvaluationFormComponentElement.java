@@ -85,4 +85,9 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 		//
 	}
 
+	@Override
+	public void dispose() {
+		//
+	}
+
 }

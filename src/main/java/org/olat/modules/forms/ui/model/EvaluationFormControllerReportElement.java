@@ -19,24 +19,31 @@
  */
 package org.olat.modules.forms.ui.model;
 
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
-import org.olat.resource.accesscontrol.ui.FormController;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 
 /**
  * 
- * Initial date: 13.04.2018<br>
+ * Initial date: 20.07.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormResponseController extends FormController {
+public class EvaluationFormControllerReportElement implements EvaluationFormReportElement {
 	
-	public void setReadOnly(boolean readOnly);
-	
-	public boolean hasResponse();
-	
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
-	
-	public void saveResponse(EvaluationFormSession session);
-	
+	private final Controller controller;
+
+	public EvaluationFormControllerReportElement(Controller controller) {
+		this.controller = controller;
+	}
+
+	@Override
+	public Component getReportComponent() {
+		return controller.getInitialComponent();
+	}
+
+	@Override
+	public void dispose() {
+		controller.dispose();
+	}
+
 }

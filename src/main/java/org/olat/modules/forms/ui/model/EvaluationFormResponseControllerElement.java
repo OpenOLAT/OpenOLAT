@@ -86,4 +86,9 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 		controller.saveResponse(session);
 	}
 
+	@Override
+	public void dispose() {
+		controller.dispose();
+	}
+
 }

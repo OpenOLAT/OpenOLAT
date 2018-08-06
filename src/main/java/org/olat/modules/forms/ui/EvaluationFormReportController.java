@@ -35,6 +35,7 @@ import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 
 /**
  * 
@@ -87,11 +88,11 @@ public class EvaluationFormReportController extends FormBasicController {
 		for (AbstractElement element: form.getElements()) {
 			EvaluationFormReportHandler reportHandler = provider.getReportHandler(element);
 			if (reportHandler != null) {
-				Component component = reportHandler.getReportComponent(ureq, getWindowControl(), element, sessions,
+				EvaluationFormReportElement reportElement = reportHandler.getReportElement(ureq, getWindowControl(), element, sessions,
 						reportHelper);
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
-				flc.put(cmpId, component);
-				fragments.add(new ReportFragment(reportHandler.getType(), cmpId));
+				flc.put(cmpId, reportElement.getReportComponent());
+				fragments.add(new ReportFragment(reportHandler.getType(), cmpId, reportElement));
 			}
 		}
 		flc.contextPut("fragments", fragments);
@@ -104,17 +105,21 @@ public class EvaluationFormReportController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		for (ReportFragment fragment: fragments) {
+			fragment.dispose();
+		}
 	}
 	
 	public static final class ReportFragment {
 
 		private final String type;
 		private final String componentName;
+		private final EvaluationFormReportElement reportElement;
 		
-		public ReportFragment(String type, String componentName) {
+		public ReportFragment(String type, String componentName, EvaluationFormReportElement reportElement) {
 			this.type = type;
 			this.componentName = componentName;
+			this.reportElement = reportElement;
 		}
 		
 		public String getCssClass() {
@@ -123,6 +128,10 @@ public class EvaluationFormReportController extends FormBasicController {
 		
 		public String getComponentName() {
 			return componentName;
+		}
+		
+		public void dispose() {
+			reportElement.dispose();
 		}
 	}
 

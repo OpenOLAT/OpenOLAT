@@ -43,5 +43,7 @@ public interface EvaluationFormExecutionElement extends PageRunElement {
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
 	
 	public void saveResponse(EvaluationFormSession session);
+	
+	public void dispose();
 
 }

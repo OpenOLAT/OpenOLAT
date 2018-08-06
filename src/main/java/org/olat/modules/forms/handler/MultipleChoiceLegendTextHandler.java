@@ -22,13 +22,14 @@ package org.olat.modules.forms.handler;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.LegendTextController;
 import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
+import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.model.LegendTextDataSource;
 import org.olat.modules.forms.ui.model.MultipleChoiceLegendTextDataSource;
 import org.olat.modules.portfolio.ui.editor.PageElement;
@@ -47,13 +48,13 @@ public class MultipleChoiceLegendTextHandler implements EvaluationFormReportHand
 	}
 
 	@Override
-	public Component getReportComponent(UserRequest ureq, WindowControl windowControl, PageElement element,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
 			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
 		if (element instanceof MultipleChoice) {
 			MultipleChoice multipleChoice = (MultipleChoice) element;
 			LegendTextDataSource dataSource = new MultipleChoiceLegendTextDataSource(multipleChoice, sessions, reportHelper);
 			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
-			return ctrl.getInitialComponent();
+			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;
 	}

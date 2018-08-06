@@ -158,7 +158,14 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(sessionSelectionCtrl);
+		removeAsListenerAndDispose(diagramReportCtrl);
+		removeAsListenerAndDispose(tableReportCtrl);
+		removeAsListenerAndDispose(overviewCtrl);
+		sessionSelectionCtrl = null;
+		diagramReportCtrl = null;
+		tableReportCtrl = null;
+		overviewCtrl = null;
 	}
 
 }
