@@ -30,6 +30,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.generator.QualityGenerator;
 
 /**
  * 
@@ -148,4 +149,45 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	private boolean isNotFinished(QualityDataCollectionLight dataCollection) {
 		return !FINISHED.equals(dataCollection.getStatus());
 	}
+
+	@Override
+	public boolean canViewGenerators() {
+		return canViewDataCollections();
+	}
+
+	@Override
+	public boolean canCreateGenerators() {
+		return canEditGenerators();
+	}
+
+	@Override
+	public boolean canEditGenerators() {
+		return canEditDataCollections();
+	}
+
+	@Override
+	public boolean canEditGenerator(QualityGenerator generator) {
+		return canEditGenerators() && !generator.isEnabled();
+	}
+
+	@Override
+	public boolean canEditGeneratorForm(QualityGenerator generator, Long numOfDataCollections) {
+		return canEditGenerator(generator) && numOfDataCollections < 1;
+	}
+
+	@Override
+	public boolean canActivateGenerators() {
+		return canEditGenerators();
+	}
+
+	@Override
+	public boolean canDeleteGenerators() {
+		return canEditGenerators();
+	}
+
+	@Override
+	public boolean canDeleteGenerator(long numberDataCollections) {
+		return canDeleteGenerators() && numberDataCollections < 1;
+	}
+
 }

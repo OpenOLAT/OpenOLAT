@@ -27,6 +27,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -72,4 +73,8 @@ public interface QualityDataCollection extends QualityDataCollectionLight, Creat
 	public RepositoryEntry getTopicRepositoryEntry();
 	
 	public void setTopicRepositoryEntry(RepositoryEntry entry);
+
+	public QualityGenerator getGenerator();
+	
+	public Long getGeneratorProviderKey();
 }

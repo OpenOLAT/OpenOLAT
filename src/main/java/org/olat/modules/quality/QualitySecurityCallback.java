@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality;
 
+import org.olat.modules.quality.generator.QualityGenerator;
+
 /**
  * 
  * Initial date: 08.06.2018<br>
@@ -60,5 +62,21 @@ public interface QualitySecurityCallback {
 	public boolean canViewReport(QualityDataCollectionLight dataCollection);
 
 	public boolean canExecute(QualityExecutorParticipation participation);
+
+	public boolean canViewGenerators();
+	
+	public boolean canCreateGenerators();
+
+	public boolean canEditGenerators();
+
+	public boolean canEditGenerator(QualityGenerator generator);
+
+	public boolean canEditGeneratorForm(QualityGenerator generator, Long numOfDataCollections);
+
+	public boolean canActivateGenerators();
+
+	public boolean canDeleteGenerators();
+
+	public boolean canDeleteGenerator(long numberDataCollections);
 
 }

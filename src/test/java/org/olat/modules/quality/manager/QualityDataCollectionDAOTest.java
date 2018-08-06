@@ -46,6 +46,7 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.OlatTestCase;
@@ -82,7 +83,24 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(dataCollection).isNotNull();
 		assertThat(dataCollection.getCreationDate()).isNotNull();
 		assertThat(dataCollection.getLastModified()).isNotNull();
-		assertThat(dataCollection.getStatus()).isEqualByComparingTo(QualityDataCollectionStatus.PREPARATION);
+		assertThat(dataCollection.getStatus()).isEqualTo(QualityDataCollectionStatus.PREPARATION);
+		assertThat(dataCollection.getGenerator()).isNull();
+		assertThat(dataCollection.getGeneratorProviderKey()).isNull();
+	}
+	
+	@Test
+	public void shouldCreateNewDataCollectionFromGenerator() {
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		Long providerKey = 123l;
+		QualityDataCollection dataCollection = sut.createDataCollection(generator, 123l);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(dataCollection).isNotNull();
+		assertThat(dataCollection.getCreationDate()).isNotNull();
+		assertThat(dataCollection.getLastModified()).isNotNull();
+		assertThat(dataCollection.getStatus()).isEqualTo(QualityDataCollectionStatus.PREPARATION);
+		assertThat(dataCollection.getGenerator()).isEqualTo(generator);
+		assertThat(dataCollection.getGeneratorProviderKey()).isEqualTo(providerKey);
 	}
 
 	@Test

@@ -64,6 +64,7 @@ import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResourceManager;
@@ -114,13 +115,27 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
+		createDataCollectionReferences(organisations, formEntry, dataCollection);
+		return dataCollection;
+	}
+
+	@Override
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
+			QualityGenerator generator, Long generatorProviderKey) {
+		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection(generator, generatorProviderKey);
+		createDataCollectionReferences(organisations, formEntry, dataCollection);
+		log.info("Quality data collection " + dataCollection + " created by generator " + generator);
+		return dataCollection;
+	}
+
+	private void createDataCollectionReferences(Collection<Organisation> organisations, RepositoryEntry formEntry,
+			QualityDataCollection dataCollection) {
 		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
 		resourceManager.findOrPersistResourceable(dataCollection);
 		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
-		for (Organisation organisation: organisations) {
+		for (Organisation organisation : organisations) {
 			dataCollectionToOrganisationDao.createRelation(dataCollection, organisation);
 		}
-		return dataCollection;
 	}
 
 	@Override

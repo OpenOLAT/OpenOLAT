@@ -48,6 +48,8 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.model.QualityGeneratorImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -104,6 +106,13 @@ public class QualityDataCollectionImpl implements QualityDataCollection, Persist
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="q_topic_fk_repository", nullable=true, insertable=true, updatable=true)
 	private RepositoryEntry topicRepositoryEntry;
+	
+	@Column(name="q_generator_provider_key", nullable=true, insertable=true, updatable=true)
+	private Long generatorProviderKey;
+	
+	@ManyToOne(targetEntity=QualityGeneratorImpl.class)
+	@JoinColumn(name="fk_generator", nullable=true, insertable=true, updatable=false)
+	private QualityGenerator generator;
 	
 	@Override
 	public String getResourceableTypeName() {
@@ -247,6 +256,24 @@ public class QualityDataCollectionImpl implements QualityDataCollection, Persist
 	@Override
 	public void setTopicRepositoryEntry(RepositoryEntry topicRepositoryEntry) {
 		this.topicRepositoryEntry = topicRepositoryEntry;
+	}
+
+	@Override
+	public Long getGeneratorProviderKey() {
+		return generatorProviderKey;
+	}
+
+	public void setGeneratorProviderKey(Long generatorProviderKey) {
+		this.generatorProviderKey = generatorProviderKey;
+	}
+
+	@Override
+	public QualityGenerator getGenerator() {
+		return generator;
+	}
+
+	public void setGenerator(QualityGenerator generator) {
+		this.generator = generator;
 	}
 
 	@Override

@@ -44,6 +44,7 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,10 +63,16 @@ public class QualityDataCollectionDAO {
 	private DB dbInstance;
 
 	QualityDataCollection createDataCollection() {
+		return createDataCollection(null, null);
+	}
+	
+	QualityDataCollection createDataCollection(QualityGenerator generator, Long generatorProviderKey) {
 		QualityDataCollectionImpl dataCollectionImpl = new QualityDataCollectionImpl();
 		dataCollectionImpl.setCreationDate(new Date());
 		dataCollectionImpl.setLastModified(dataCollectionImpl.getCreationDate());
 		dataCollectionImpl.setStatus(QualityDataCollectionStatus.PREPARATION);
+		dataCollectionImpl.setGenerator(generator);
+		dataCollectionImpl.setGeneratorProviderKey(generatorProviderKey);
 		dbInstance.getCurrentEntityManager().persist(dataCollectionImpl);
 		return dataCollectionImpl;
 	}

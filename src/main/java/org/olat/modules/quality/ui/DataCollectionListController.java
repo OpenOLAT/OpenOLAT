@@ -193,7 +193,7 @@ public class DataCollectionListController extends FormBasicController implements
 		if(createDataCollectionLink == source) {
 			doSelectEvaluationForm(ureq);
 		} else if (stackPanel == source && event instanceof PopEvent && stackPanel.getLastController() == this) {
-			tableEl.reset(true, false, true);
+			tableEl.reset(false, false, true);
 		} 
 		super.event(ureq, source, event);
 	}

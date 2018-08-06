@@ -37,6 +37,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.generator.ui.GeneratorListController;
 
 /**
  * 
@@ -48,14 +49,17 @@ public class QualityHomeController extends BasicController implements Activateab
 
 	private static final String ORES_MY_TYPE = "my";
 	private static final String ORES_DATA_COLLECTIONS_TYPE = "datacollections";
+	private static final String ORES_GENERATORS_TYPE = "generators";
 	
 	private final VelocityContainer mainVC;
 	private Link dataCollectionLink;
 	private Link executorParticipationLink;
+	private Link generatorsLink;
 	
 	private final TooledStackedPanel stackPanel;
 	private DataCollectionListController dataCollectionListCtrl;
 	private ExecutorParticipationsListController executorParticipationListCtrl;
+	private GeneratorListController generatorsListCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	
@@ -78,6 +82,13 @@ public class QualityHomeController extends BasicController implements Activateab
 			dataCollectionLink.setIconRightCSS("o_icon o_icon_start");
 			wrappers.add(new PanelWrapper(translate("goto.data.collection.title"),
 					translate("goto.data.collection.help"), dataCollectionLink));
+		}
+		
+		if (secCallback.canViewGenerators()) {
+			generatorsLink = LinkFactory.createLink("goto.generator.link", mainVC, this);
+			generatorsLink.setIconRightCSS("o_icon o_icon_start");
+			wrappers.add(new PanelWrapper(translate("goto.generator.title"),
+					translate("goto.generator.help"), generatorsLink));
 		}
 		
 		mainVC.contextPut("panels", wrappers);
@@ -104,6 +115,11 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenDataCollection(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			dataCollectionListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if (ORES_GENERATORS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+				&& secCallback.canViewGenerators()) {
+			doOpenGenerators(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			generatorsListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if (canOnlyExecute()) {
 			doOpenUserParticipations(ureq);
 		}
@@ -119,6 +135,8 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenUserParticipations(ureq);
 		} else if (dataCollectionLink == source) {
 			doOpenDataCollection(ureq);
+		} else if (generatorsLink == source) {
+			doOpenGenerators(ureq);
 		}
 	}
 
@@ -136,6 +154,15 @@ public class QualityHomeController extends BasicController implements Activateab
 		dataCollectionListCtrl = new DataCollectionListController(ureq, bwControl, stackPanel, secCallback);
 		listenTo(dataCollectionListCtrl);
 		stackPanel.pushController(translate("breadcrumb.data.collections"), dataCollectionListCtrl);
+	}
+
+	private void doOpenGenerators(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_GENERATORS_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		generatorsListCtrl = new GeneratorListController(ureq, bwControl, stackPanel, secCallback);
+		listenTo(generatorsListCtrl);
+		stackPanel.pushController(translate("breadcrumb.generators"), generatorsListCtrl);
 	}
 
 	@Override

@@ -22,9 +22,11 @@ package org.olat.modules.quality.manager;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -41,8 +43,12 @@ public class QualityJob extends JobWithDB {
 		QualityModule qualityModule = CoreSpringFactory.getImpl(QualityModule.class);
 		if (!qualityModule.isEnabled()) return;
 		
-		QualityService qualityService = CoreSpringFactory.getImpl(QualityService.class);
 		Date until = new Date();
+		QualityGeneratorService generatorService = CoreSpringFactory.getImpl(QualityGeneratorService.class);
+		generatorService.generateDataCollections();
+		DBFactory.getInstance().commitAndCloseSession();
+		
+		QualityService qualityService = CoreSpringFactory.getImpl(QualityService.class);
 		qualityService.startDataCollection(until);
 		qualityService.stopDataCollections(until);
 		qualityService.sendRemainders(until);
