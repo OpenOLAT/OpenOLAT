@@ -121,6 +121,7 @@ public class ParticipationListController extends FormBasicController implements 
 		ParticipationDataSource dataSource = new ParticipationDataSource(dataCollection);
 		dataModel = new ParticipationDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
 		if (secCallback.canRevomeParticipation(dataCollection)) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);

@@ -145,6 +145,7 @@ public class DataCollectionListController extends FormBasicController implements
 		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getLocale(), secCallback);
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "quality-data-collection");
 	}
 
 	@Override

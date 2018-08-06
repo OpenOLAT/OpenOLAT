@@ -108,6 +108,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		dataModel = new ExecutorParticipationDataModel(dataSource, columnsModel, secCallback, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "user-participations", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_exec_list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "quality-executor-participation");
 	}
 	
 	@Override
