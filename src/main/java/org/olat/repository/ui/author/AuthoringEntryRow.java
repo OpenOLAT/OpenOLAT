@@ -69,7 +69,10 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
 	
-	private int numOfReferences;
+	private final int numOfReferences;
+	
+	private final boolean lectureEnabled;
+	private final boolean rollCallEnabled;
 	
 	private final String deletedByFullName;
 	private final Date deletionDate;
@@ -126,6 +129,8 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		}
 		
 		numOfReferences = view.getNumOfReferences();
+		lectureEnabled = view.isLectureEnabled();
+		rollCallEnabled = view.isRollCallEnabled();
 		
 		deletedByFullName = view.getDeletedByFullName();
 		deletionDate = view.getDeletionDate();
@@ -211,6 +216,14 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	public int getNumOfReferences() {
 		return numOfReferences;
+	}
+
+	public boolean isLectureEnabled() {
+		return lectureEnabled;
+	}
+
+	public boolean isRollCallEnabled() {
+		return rollCallEnabled;
 	}
 
 	public String getDeletedByFullName() {

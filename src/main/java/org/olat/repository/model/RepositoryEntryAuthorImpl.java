@@ -59,6 +59,9 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	public final int numOfReferences;
 	
+	private final boolean lectureEnabled;
+	private final boolean rollCallEnabled;
+	
 	private final Date deletionDate;
 	private final String deletedByFullName;
 	
@@ -69,7 +72,8 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final long offers;
 	
-	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers, int numOfReferences, String deletedByFullName) {
+	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers, int numOfReferences, String deletedByFullName,
+			boolean lectureEnabled, boolean rollCallEnabled) {
 		key = re.getKey();
 		creationDate = re.getCreationDate();
 		
@@ -91,6 +95,9 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		lastUsage = re.getStatistics().getLastUsage();
 		
 		this.numOfReferences = numOfReferences;
+		
+		this.lectureEnabled = lectureEnabled;
+		this.rollCallEnabled = rollCallEnabled;
 		
 		deletionDate = re.getDeletionDate();
 		this.deletedByFullName = deletedByFullName;
@@ -198,6 +205,16 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public int getNumOfReferences() {
 		return numOfReferences;
+	}
+
+	@Override
+	public boolean isLectureEnabled() {
+		return lectureEnabled;
+	}
+
+	@Override
+	public boolean isRollCallEnabled() {
+		return rollCallEnabled;
 	}
 
 	@Override

@@ -391,10 +391,11 @@ public class PersistenceHelper {
 	
 	public static List<String> toList(String... strings) {
 		List<String> stringList = new ArrayList<>();
-		if(strings != null && strings.length > 0)
-		for(String string:strings) {
-			if(StringHelper.containsNonWhitespace(string)) {
-				stringList.add(string);
+		if(strings != null && strings.length > 0) {
+			for(String string:strings) {
+				if(StringHelper.containsNonWhitespace(string)) {
+					stringList.add(string);
+				}
 			}
 		}
 		return stringList;
@@ -409,13 +410,13 @@ public class PersistenceHelper {
 	public static String extractString(Object[] results, int pos) {
 		if(results == null || pos >= results.length ) return null;
 		Object obj = results[pos];
-		return obj == null ? null : (obj instanceof String ? (String)obj : obj.toString());
+		return obj == null ? null : obj.toString();
 	}
 	
 	public static boolean extractBoolean(Object[] results, int pos, boolean def) {
 		if(results == null || pos >= results.length) return def;
 		Object obj = results[pos];
-		return obj == null ? null : ((Boolean)obj).booleanValue();
+		return obj == null ? def : ((Boolean)obj).booleanValue();
 	}
 	
 	public static final String convert(String content) {

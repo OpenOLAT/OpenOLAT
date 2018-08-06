@@ -55,6 +55,10 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	
 	public int getNumOfReferences();
 	
+	public boolean isLectureEnabled();
+	
+	public boolean isRollCallEnabled();
+	
 	public Date getDeletionDate();
 	
 	public String getDeletedByFullName();

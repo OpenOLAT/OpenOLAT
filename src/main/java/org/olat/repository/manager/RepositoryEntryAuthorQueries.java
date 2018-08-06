@@ -38,6 +38,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -69,6 +70,8 @@ public class RepositoryEntryAuthorQueries {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LectureModule lectureModule;
 	
 	public int countViews(SearchAuthorRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -97,12 +100,19 @@ public class RepositoryEntryAuthorQueries {
 		for(Object[] object:objects) {
 			RepositoryEntry re = (RepositoryEntry)object[0];
 			Number numOfMarks = (Number)object[1];
-			boolean hasMarks = numOfMarks == null ? false : numOfMarks.longValue() > 0;
+			boolean hasMarks = numOfMarks != null && numOfMarks.longValue() > 0;
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
 			
 			Number numOfReferences = (Number)object[3];
 			int references = numOfReferences == null ? 0 : numOfReferences.intValue();
+			
+			boolean lectureEnabled = false;
+			boolean rollCallEnabled = false;
+			if(object.length > 4) {
+				lectureEnabled = PersistenceHelper.extractBoolean(object, 4, false);
+				rollCallEnabled = PersistenceHelper.extractBoolean(object, 5, false);
+			}
 			
 			String deletedByName = null;
 			if(params.isDeleted()) {
@@ -112,7 +122,7 @@ public class RepositoryEntryAuthorQueries {
 				}
 			}
 			
-			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, references, deletedByName));
+			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, references, deletedByName, lectureEnabled, rollCallEnabled));
 		}
 		return views;
 	}
@@ -147,14 +157,21 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" ) as offers,")
 			  .append(" (select count(ref.key) from references as ref ")
 			  .append("   where ref.target.key=res.key")
-			  .append(" ) as references")
-			  .append(" from repositoryentry as v")
+			  .append(" ) as references");
+			if(lectureModule.isEnabled()) {
+				sb.append(", lectureConfig.lectureEnabled")
+				  .append(", case when lectureConfig.rollCallEnabled=true then true else ").append(lectureModule.isRollCallDefaultEnabled()).append(" end as rollCallEnabled");
+			}
+			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
 			  .append(" left join fetch v.lifecycle as lifecycle ");
 			if(params.isDeleted()) {
 				sb.append(" left join fetch v.deletedBy as deletedBy")
 				  .append(" left join fetch deletedBy.user as deletedByUser");
+			}
+			if(lectureModule.isEnabled()) {
+				sb.append(" left join fetch lectureentryconfig as lectureConfig on (lectureConfig.entry.key=v.key) ");
 			}
 		}
 
@@ -464,6 +481,15 @@ public class RepositoryEntryAuthorQueries {
 						appendAsc(sb, asc).append(" nulls last, deletedByUser.firstName ");
 						appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					}
+					break;
+				case lectureEnabled:
+					sb.append(" order by");
+					if(asc) {
+						sb.append(" lectureConfig.lectureEnabled").appendAsc(asc).append(" nulls first");
+					} else {
+						sb.append(" lectureConfig.lectureEnabled").appendAsc(asc).append(" nulls last");
+					}
+					sb.append(", lower(v.displayname) asc");
 					break;
 				case license:
 					sb.append(" order by v.key");

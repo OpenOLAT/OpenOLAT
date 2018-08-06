@@ -134,6 +134,9 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				}
 				return Boolean.TRUE;
 			}
+			case lectureInfos: {
+				return item.isLectureEnabled();
+			}
 		}
 		return null;
 	}
@@ -162,7 +165,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		mark("table.header.mark"),
 		detailsSupported("table.header.details"),
 		tools("table.header.actions"),
-		editionSupported("table.header.edit");
+		editionSupported("table.header.edit"),
+		lectureInfos("table.header.lecture.infos");
 		
 		private final String i18nKey;
 		
