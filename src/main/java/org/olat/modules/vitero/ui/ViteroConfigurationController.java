@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.TimeZone;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +43,7 @@ import org.olat.modules.vitero.ViteroTimezoneIDs;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.CheckUserInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,10 +56,10 @@ import org.olat.modules.vitero.model.CheckUserInfo;
  */
 public class ViteroConfigurationController extends FormBasicController {
 	
-	private final ViteroModule viteroModule;
-	private final ViteroManager viteroManager;
+	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
 	
-	private FormLink checkLink, checkUserLink;
+	private FormLink checkLink;
+	private FormLink checkUserLink;
 	private TextElement urlEl;
 	private TextElement loginEl;
 	private TextElement passwordEl;
@@ -70,13 +70,14 @@ public class ViteroConfigurationController extends FormBasicController {
 	private static final String[] enabledKeys = new String[]{"on"};
 	private String[] enabledValues;
 	
-	public ViteroConfigurationController(UserRequest ureq, WindowControl wControl, ViteroModule viteroModule) {
+	@Autowired
+	private ViteroModule viteroModule;
+	@Autowired
+	private ViteroManager viteroManager;
+	
+	public ViteroConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "adminconfig");
-		
-		this.viteroModule = viteroModule;
-		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		enabledValues = new String[]{translate("enabled")};
-
 		initForm(ureq);
 	}
 
@@ -122,6 +123,9 @@ public class ViteroConfigurationController extends FormBasicController {
 			String login = viteroModule.getAdminLogin();
 			loginEl = uifactory.addTextElement("vitero-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = viteroModule.getAdminPassword();
+			if(StringHelper.containsNonWhitespace(password)) {
+				password = PLACEHOLDER;
+			}
 			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, password, moduleFlc);
 			passwordEl.setAutocomplete("new-password");
 			int customerId = viteroModule.getCustomerId();
@@ -152,8 +156,9 @@ public class ViteroConfigurationController extends FormBasicController {
 			viteroModule.setAdminLogin(login);
 			
 			String password = passwordEl.getValue();
-			viteroModule.setAdminPassword(password);
-			
+			if(!PLACEHOLDER.equals(password)) {
+				viteroModule.setAdminPassword(password);
+			}
 			String customerId = customerEl.getValue();
 			viteroModule.setCustomerId(Integer.parseInt(customerId));
 			if(timeZoneEl.isOneSelected()) {
@@ -171,7 +176,7 @@ public class ViteroConfigurationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		//validate only if the module is enabled
 		if(viteroModule.isEnabled()) {
@@ -192,7 +197,11 @@ public class ViteroConfigurationController extends FormBasicController {
 				
 				if(customerId > 0) {
 					try {
-						boolean ok = viteroManager.checkConnection(urlEl.getValue(), loginEl.getValue(), passwordEl.getValue(), customerId);
+						String password = passwordEl.getValue();
+						if(PLACEHOLDER.equals(password)) {
+							password = viteroModule.getAdminPassword();
+						}
+						boolean ok = viteroManager.checkConnection(urlEl.getValue(), loginEl.getValue(), password, customerId);
 						if(!ok) {
 							customerEl.setErrorKey("error.customerDoesntExist", null);
 							allOk = false;
@@ -204,7 +213,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			}
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateURL() {
@@ -281,6 +290,9 @@ public class ViteroConfigurationController extends FormBasicController {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
 		String password = passwordEl.getValue();
+		if(PLACEHOLDER.equals(password)) {
+			password = viteroModule.getAdminPassword();
+		}
 		String customerIdObj = customerEl.getValue();
 
 		try {
