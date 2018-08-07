@@ -26,6 +26,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.site.ui.ForbiddenCourseSiteController;
 
@@ -39,6 +41,7 @@ import org.olat.course.site.ui.ForbiddenCourseSiteController;
  */
 public abstract class AbstractSiteInstance implements SiteInstance {
 	
+	private static final OLog log = Tracing.createLoggerFor(AbstractSiteDefinition.class);
 	private final SiteDefinition siteDef;
 	
 	public AbstractSiteInstance(SiteDefinition siteDef) {
@@ -54,13 +57,22 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
 		if(config != null && StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			String secCallbackBeanId = config.getSecurityCallbackBeanId();
-			Object siteSecCallback = CoreSpringFactory.getBean(secCallbackBeanId);
+			Object siteSecCallback = getSiteSecurityCallback(secCallbackBeanId);;
 			if (siteSecCallback instanceof SiteSecurityCallback
 					&& !((SiteSecurityCallback)siteSecCallback).isAllowedToLaunchSite(ureq)) {
 				return getAlternativeController(ureq, wControl, config);
 			}
 		}
 		return createController(ureq, wControl, config);
+	}
+	
+	private Object getSiteSecurityCallback(String secCallbackBeanId) {
+		try {
+			return CoreSpringFactory.getBean(secCallbackBeanId);
+		} catch (Exception e) {
+			log.error("Cannot find security callback: " + secCallbackBeanId + " return administrator only security callback");
+			return CoreSpringFactory.getBean("adminSiteSecurityCallback");
+		}
 	}
 	
 	protected abstract Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config);
