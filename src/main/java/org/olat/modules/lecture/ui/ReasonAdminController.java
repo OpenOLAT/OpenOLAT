@@ -101,11 +101,13 @@ public class ReasonAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(editColumn);
 		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ReasonCols.tools);
 		toolsColumn.setExportable(false);
+		toolsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsColumn);
 		
 		dataModel = new ReasonAdminDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "absences-reasons");
 	}
 	
 	private void loadModel() {

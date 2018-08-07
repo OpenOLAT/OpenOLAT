@@ -311,6 +311,8 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 							Float[] scores = assessmentRow.getScores();
 							if(checked && scores != null && scores.length > 0 && propIndex < scores.length) {
 								dataRow.addCell(pos++, scores[propIndex], null);
+							} else {
+								dataRow.addCell(pos++, null);
 							}
 						}
 					} else {
