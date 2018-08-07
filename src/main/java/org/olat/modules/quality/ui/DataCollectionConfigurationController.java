@@ -20,10 +20,6 @@
 package org.olat.modules.quality.ui;
 
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
-import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
-import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
-import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
-import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
 import java.io.File;
 import java.util.Date;
@@ -34,9 +30,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -44,14 +37,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -72,8 +61,6 @@ import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionLight;
-import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
@@ -92,22 +79,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionConfigurationController extends FormBasicController implements TooledController {
-	
+public class DataCollectionConfigurationController extends AbstractDataCollectionEditController {
 
 	private static final String[] EMPTY_ARRAY = new String[] {};
-	
-	private Link statusPreparationLink;
-	private Link statusReadyLink;
-	private Link statusRunningLink;
-	private Link statusFinishedLink;
 	
 	private TextElement titleEl;
 	private FormLink evaFormPreviewLink;
 	private FormLink evaFormReplaceLink;
 	private FormLink evaFormEditLink;
-	private DateChooser startEl;
-	private DateChooser deadlineEl;
+	DateChooser startEl;
+	DateChooser deadlineEl;
 	private SingleSelection topicTypeEl;
 	private TextElement topicCustomTextEl;
 	private StaticTextElement topicIdentityNameEl;
@@ -119,16 +100,10 @@ public class DataCollectionConfigurationController extends FormBasicController i
 	private StaticTextElement topicRepositoryNameEl;
 	private FormLayoutContainer buttonLayout;
 
-	private final TooledStackedPanel stackPanel;
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController formSearchCtrl;
 	private TopicIdentitySearchController topicIdentitySearchCtrl;
 	private ReferencableEntriesSearchController topicRepositorySearchCtrl;
-	private DataCollectionStartConfirmationController startConfirmationController;
-	private DataCollectionFinishConfirmationController finishConfirmationController;
-
-	private final QualitySecurityCallback secCallback;
-	private QualityDataCollection dataCollection;
 	private RepositoryEntry formEntry;
 	private boolean formEntryChanged = false;
 	private QualityDataCollectionTopicType topicType;
@@ -139,7 +114,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 	private RepositoryEntry topicRepository;
 	
 	@Autowired
-	private QualityService qualityService;
+	QualityService qualityService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -149,11 +124,8 @@ public class DataCollectionConfigurationController extends FormBasicController i
 
 	public DataCollectionConfigurationController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
-			QualityDataCollectionLight dataCollectionLight) {
-		super(ureq, wControl);
-		this.secCallback = secCallback;
-		this.stackPanel = stackPanel;
-		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionLight);
+			QualityDataCollection dataCollection, boolean validate) {
+		super(ureq, wControl, secCallback, stackPanel, dataCollection);
 		this.formEntry = qualityService.loadFormEntry(dataCollection);
 		this.topicType = dataCollection.getTopicType();
 		this.topicIdentity = dataCollection.getTopicIdentity();
@@ -166,8 +138,12 @@ public class DataCollectionConfigurationController extends FormBasicController i
 		this.topicRepository = dataCollection.getTopicRepositoryEntry();
 		
 		initForm(ureq);
+		if (validate) {
+			validateFormLogic(ureq);
+			validateExtendedFormLogic(true);
+		}
 	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		titleEl = uifactory.addTextElement("data.collection.title", 200, dataCollection.getTitle(), formLayout);
@@ -225,10 +201,18 @@ public class DataCollectionConfigurationController extends FormBasicController i
 		updateUI();
 	}
 	
-	private void updateUI() {
+	@Override
+	protected void updateUI(UserRequest ureq) {
+		startEl.setDate(dataCollection.getStart());
+		deadlineEl.setDate(dataCollection.getDeadline());
+		updateUI();
+	}
+	
+	protected void updateUI() {
 		boolean updateBaseConfiguration = secCallback.canUpdateBaseConfiguration(dataCollection);
 		titleEl.setEnabled(updateBaseConfiguration);
 		evaFormReplaceLink.setVisible(updateBaseConfiguration);
+		evaFormEditLink.setVisible(updateBaseConfiguration);
 		startEl.setEnabled(updateBaseConfiguration);
 		deadlineEl.setEnabled(updateBaseConfiguration);
 		buttonLayout.setVisible(updateBaseConfiguration);
@@ -327,73 +311,6 @@ public class DataCollectionConfigurationController extends FormBasicController i
 	}
 	
 	@Override
-	public void initTools() {
-		stackPanel.removeAllTools();
-		initStatusTools(); 
-	}
-
-	private void initStatusTools() {
-		Component statusCmp;
-		if (canChangeStatus()) {
-			statusCmp = buildStatusDrowdown();
-		} else {
-			statusCmp = buildStatusLink();
-		}
-		stackPanel.addTool(statusCmp, Align.left);
-	}
-	
-	private boolean canChangeStatus() {
-		return secCallback.canSetPreparation(dataCollection)
-				|| secCallback.canSetReady(dataCollection)
-				|| secCallback.canSetRunning(dataCollection)
-				|| secCallback.canSetFinished(dataCollection);
-	}
-	
-	private Dropdown buildStatusDrowdown() {
-		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
-
-		Dropdown statusDropdown = new Dropdown("process.states", "data.collection.status." + actualStatus.name().toLowerCase(), false, getTranslator());
-		statusDropdown.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
-		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
-		statusDropdown.setOrientation(DropdownOrientation.normal);
-	
-		statusPreparationLink = LinkFactory.createToolLink("data.collection.status.preparation", translate("data.collection.status.preparation"), this);
-		statusPreparationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_preparation");
-		statusPreparationLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_preparation");
-		statusPreparationLink.setVisible(secCallback.canSetPreparation(dataCollection));
-		statusDropdown.addComponent(statusPreparationLink);
-
-		statusReadyLink = LinkFactory.createToolLink("data.collection.status.ready", translate("data.collection.status.ready"), this);
-		statusReadyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_ready");
-		statusReadyLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_ready");
-		statusReadyLink.setVisible(secCallback.canSetReady(dataCollection));
-		statusDropdown.addComponent(statusReadyLink);
-		
-		statusRunningLink = LinkFactory.createToolLink("data.collection.status.running", translate("data.collection.status.running"), this);
-		statusRunningLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_running");
-		statusRunningLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_running");
-		statusRunningLink.setVisible(secCallback.canSetRunning(dataCollection));
-		statusDropdown.addComponent(statusRunningLink);
-		
-		statusFinishedLink = LinkFactory.createToolLink("data.collection.status.finished", translate("data.collection.status.finished"), this);
-		statusFinishedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_finished");
-		statusFinishedLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_finished");
-		statusFinishedLink.setVisible(secCallback.canSetFinished(dataCollection));
-		statusDropdown.addComponent(statusFinishedLink);
-		
-		return statusDropdown;
-	}
-
-	private Component buildStatusLink() {
-		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
-		Link statusLink = LinkFactory.createToolLink("status.link",
-				translate("data.collection.status." + actualStatus.name().toLowerCase()), this);
-		statusLink.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
-		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
-		return statusLink;
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == evaFormReplaceLink) {
 			doSelectFormEntry(ureq);
@@ -420,20 +337,6 @@ public class DataCollectionConfigurationController extends FormBasicController i
 	}
 	
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == statusPreparationLink) {
-			doSetStatusPreparation();
-		} else if (source == statusReadyLink) {
-			doSetStatusReady(ureq);
-		} else if (source == statusRunningLink) {
-			doConfirmStatusRunning(ureq);
-		} else if (source == statusFinishedLink) {
-			doConfirmStatusFinished(ureq);
-		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == formSearchCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
@@ -458,39 +361,23 @@ public class DataCollectionConfigurationController extends FormBasicController i
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == startConfirmationController) {
-			if (event.equals(Event.DONE_EVENT)) {
-				doSetStatusRunning();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (source == finishConfirmationController) {
-			if (event.equals(Event.DONE_EVENT)) {
-				doSetStatusFinished();
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-
+	
 	private void cleanUp() {
-		removeAsListenerAndDispose(finishConfirmationController);
-		removeAsListenerAndDispose(startConfirmationController);
 		removeAsListenerAndDispose(topicRepositorySearchCtrl);
 		removeAsListenerAndDispose(topicIdentitySearchCtrl);
 		removeAsListenerAndDispose(formSearchCtrl);
 		removeAsListenerAndDispose(cmc);
-		finishConfirmationController = null;
-		startConfirmationController = null;
 		topicRepositorySearchCtrl = null;
 		topicIdentitySearchCtrl = null;
 		formSearchCtrl = null;
 		cmc = null;
 	}
-	
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
@@ -522,7 +409,7 @@ public class DataCollectionConfigurationController extends FormBasicController i
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
-	private boolean validateExtendedFormLogic(boolean validateStart) {
+	boolean validateExtendedFormLogic(boolean validateStart) {
 		boolean allOk = true;
 		
 		if (!titleEl.hasError()) {
@@ -724,65 +611,6 @@ public class DataCollectionConfigurationController extends FormBasicController i
 		stackPanel.pushController(translate("data.collection.form.preview.title"), previewCtrl);
 	}
 	
-	private void doSetStatusPreparation() {
-		doChangeStatus(PREPARATION);
-	}
-
-	private void doSetStatusReady(UserRequest ureq) {
-		boolean allOk = true;
-		allOk &= validateFormLogic(ureq);
-		allOk &= validateExtendedFormLogic(true);
-		if (allOk) {
-			doChangeStatus(READY);
-		}
-	}
-
-	private void doConfirmStatusRunning(UserRequest ureq) {
-		boolean allOk = true;
-		allOk &= validateFormLogic(ureq);
-		allOk &= validateExtendedFormLogic(false);
-		if (allOk) {
-			startConfirmationController = new DataCollectionStartConfirmationController(ureq, getWindowControl());
-			this.listenTo(startConfirmationController);
-
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					startConfirmationController.getInitialComponent(), true,
-					translate("data.collection.start.confirm.title"));
-			cmc.activate();
-		}
-	}
-
-	private void doSetStatusRunning() {
-		dataCollection.setStart(new Date());
-		dataCollection = qualityService.updateDataCollection(dataCollection);
-		startEl.setDate(dataCollection.getStart());
-		doChangeStatus(RUNNING);
-	}
-
-	private void doConfirmStatusFinished(UserRequest ureq) {
-		finishConfirmationController = new DataCollectionFinishConfirmationController(ureq, getWindowControl());
-		this.listenTo(finishConfirmationController);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				finishConfirmationController.getInitialComponent(), true,
-				translate("data.collection.finish.confirm.title"));
-		cmc.activate();
-	}
-
-	private void doSetStatusFinished() {
-		dataCollection.setDeadline(new Date());
-		dataCollection = qualityService.updateDataCollection(dataCollection);
-		deadlineEl.setDate(dataCollection.getDeadline());
-		doChangeStatus(FINISHED);
-	}
-
-	private void doChangeStatus(QualityDataCollectionStatus status) {
-		dataCollection.setStatus(status);
-		dataCollection = qualityService.updateDataCollection(dataCollection);
-		initTools();
-		updateUI();
-	}
-
 	@Override
 	protected void doDispose() {
 		//

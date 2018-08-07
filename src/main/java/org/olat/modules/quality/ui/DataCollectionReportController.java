@@ -27,12 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -44,7 +42,11 @@ import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.EvaluationFormFigure;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,20 +55,25 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionReportController extends BasicController {
+public class DataCollectionReportController extends AbstractDataCollectionEditController {
 	
-	private final VelocityContainer mainVC;
 	private Controller reportHeaderCtrl;
 	private Controller reportsCtrl;
 	
 	@Autowired
+	private QualityService qualityService;
+	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public DataCollectionReportController(UserRequest ureq, WindowControl wControl, QualityDataCollectionView dataCollectionView) {
-		super(ureq, wControl);
-		mainVC = createVelocityContainer("report");
-		
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollectionView, null);
+	public DataCollectionReportController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
+			TooledStackedPanel stackPanel, QualityDataCollection dataCollection) {
+		super(ureq, wControl, secCallback, stackPanel, dataCollection, "report");
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		File repositoryDir = new File(
 				FileResourceManager.getInstance().getFileResourceRoot(survey.getFormEntry().getOlatResource()),
 				FileResourceManager.ZIPDIR);
@@ -76,7 +83,10 @@ public class DataCollectionReportController extends BasicController {
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
 				EvaluationFormSessionStatus.done);
 		
-		reportHeaderCtrl = new DataCollectionReportHeaderController(ureq, wControl, dataCollectionView);
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		QualityDataCollectionView dataCollectionView = qualityService.loadDataCollections(getTranslator(), searchParams, 0, -1).get(0);
+		reportHeaderCtrl = new DataCollectionReportHeaderController(ureq, getWindowControl(), dataCollectionView);
 		List<EvaluationFormFigure> figures = new ArrayList<>();
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.title"), dataCollectionView.getTitle()));
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.topic"), formatTopic(dataCollectionView)));
@@ -84,15 +94,18 @@ public class DataCollectionReportController extends BasicController {
 				getLocale());
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.period"), period));
 		
-		reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form,
+		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form,
 				sessions, reportHeaderCtrl.getInitialComponent(), figures);
-		mainVC.put("report", reportsCtrl.getInitialComponent());
-
-		putInitialPanel(mainVC);
+		flc.put("report", reportsCtrl.getInitialComponent());
+	}
+	
+	@Override
+	protected void updateUI(UserRequest ureq) {
+		//
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formOK(UserRequest ureq) {
 		//
 	}
 

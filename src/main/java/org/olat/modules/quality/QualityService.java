@@ -64,9 +64,9 @@ public interface QualityService {
 
 	public int getDataCollectionCount();
 
-	public List<QualityDataCollectionView> loadDataCollections(Translator translator, int firstResult, int maxResults,
-			SortKey... orderBy);
-	
+	public List<QualityDataCollectionView> loadDataCollections(Translator translator,
+			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy);
+
 	public List<QualityDataCollection> loadDataCollectionsByTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
 
 	/**

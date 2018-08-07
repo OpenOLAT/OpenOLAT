@@ -17,45 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.ui.event;
-
-import org.olat.core.gui.control.Event;
-import org.olat.modules.quality.QualityDataCollection;
+package org.olat.modules.quality;
 
 /**
  * 
- * Initial date: 11.06.2018<br>
+ * Initial date: 07.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionEvent extends Event {
-
-	private static final long serialVersionUID = -6758258801303070361L;
+public class QualityDataCollectionViewSearchParams {
 	
-	public enum Action {
-		CHANGED,
-		STATUS_PREPARATION_SELECTED,
-		STATUS_READY_SELECTED,
-		STATUS_RUNNING_SELECTED,
-		STATUS_FINISHED_SELECTED,
-		DELETE
+	private QualityDataCollectionRef dataCollectionRef;
+
+	public QualityDataCollectionRef getDataCollectionRef() {
+		return dataCollectionRef;
 	}
 
-	private final QualityDataCollection dataCollection;
-	private final Action action;
-
-	public DataCollectionEvent(QualityDataCollection dataCollection, Action action) {
-		super("data-collection-event");
-		this.dataCollection = dataCollection;
-		this.action = action;
-	}
-
-	public QualityDataCollection getDataCollection() {
-		return dataCollection;
-	}
-
-	public Action getAction() {
-		return action;
+	public void setDataCollectionRef(QualityDataCollectionRef dataCollectionRef) {
+		this.dataCollectionRef = dataCollectionRef;
 	}
 
 }

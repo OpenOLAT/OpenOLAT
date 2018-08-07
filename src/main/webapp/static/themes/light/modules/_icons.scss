@@ -671,11 +671,9 @@ $fa-css-prefix: "o_icon" !default;
 /* Quality management */
 .o_icon_qual_dc_create:before { content: $fa-var-plus-circle; }
 .o_icon_qual_dc_delete:before { content: $fa-var-trash; }
-.o_icon_qual_dc_edit:before { content: $fa-var-edit; }
 .o_icon_qual_dc_finished:before { content: $fa-var-check-circle; }
 .o_icon_qual_dc_preparation:before { content: $fa-var-edit; }
 .o_icon_qual_dc_ready:before { content: $fa-var-play-circle-o; }
-.o_icon_qual_dc_report:before { content: $fa-var-line-chart; }
 .o_icon_qual_dc_running:before { content: $fa-var-play-circle; }
 .o_icon_qual_exec_future:before { content: $fa-var-times-circle-o; }
 .o_icon_qual_exec_over:before { content: $fa-var-times-circle; }

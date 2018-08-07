@@ -28,13 +28,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -46,11 +44,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
@@ -58,6 +55,8 @@ import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
+import org.olat.modules.quality.ui.event.DataCollectionEvent;
+import org.olat.modules.quality.ui.event.DataCollectionEvent.Action;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataCollectionListController extends FormBasicController implements TooledController, Activateable2 {
 
 	private static final String CMD_EDIT = "edit";
-	private static final String CMD_DELETE = "delete";
-	private static final String CMD_REPORT = "report";
-	private static final String ORES_REPORT = "report";
 	
 	private final TooledStackedPanel stackPanel;
 	private Link createDataCollectionLink;
@@ -81,6 +77,7 @@ public class DataCollectionListController extends FormBasicController implements
 	private FlexiTableElement tableEl;
 	
 	private CloseableModalController cmc;
+	private DataCollectionController dataCollectionCtrl;
 	private ReferencableEntriesSearchController formSearchCtrl;
 	private DataCollectionDeleteConfirmationController deleteConfirmationCtrl;
 	
@@ -103,7 +100,11 @@ public class DataCollectionListController extends FormBasicController implements
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.status, new DataCollectionStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title));
+		if (secCallback.canEditDataCollections() || secCallback.canViewDataCollections()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title, CMD_EDIT));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.deadline));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.topicType));
@@ -113,39 +114,13 @@ public class DataCollectionListController extends FormBasicController implements
 		numParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		numParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(numParticipantsColumn);
-		if (secCallback.canEditDataCollections() || secCallback.canViewDataCollections()) {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(DataCollectionCols.edit.i18nHeaderKey(),
-					DataCollectionCols.edit.ordinal(), CMD_EDIT,
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_qual_dc_edit", null),
-							null));
-			editColumn.setExportable(false);
-			columnsModel.addFlexiColumnModel(editColumn);
-		}
-		if (secCallback.canDeleteDataCollections()) {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(DataCollectionCols.delete.i18nHeaderKey(),
-					DataCollectionCols.delete.ordinal(), CMD_DELETE,
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer("", CMD_DELETE, "o_icon o_icon-lg o_icon_qual_dc_delete", null),
-							null));
-			editColumn.setExportable(false);
-			columnsModel.addFlexiColumnModel(editColumn);
-		}
-		if (secCallback.canViewReports()) {
-			DefaultFlexiColumnModel reportColumn = new DefaultFlexiColumnModel(DataCollectionCols.report.i18nHeaderKey(),
-					DataCollectionCols.report.ordinal(), CMD_REPORT,
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer("", CMD_REPORT, "o_icon o_icon-lg o_icon_qual_dc_report", null),
-							null));
-			reportColumn.setExportable(false);
-			columnsModel.addFlexiColumnModel(reportColumn);
-		}
 		
 		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator());
-		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getLocale(), secCallback);
+		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getTranslator(), secCallback);
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-data-collection");
+		tableEl.setEmtpyTableMessageKey("data.collection.empty.table");
 	}
 
 	@Override
@@ -163,7 +138,7 @@ public class DataCollectionListController extends FormBasicController implements
 		
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if (QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME.equals(type) || ORES_REPORT.equals(type)) {
+		if (QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME.equals(type)) {
 			Long key = entry.getOLATResourceable().getResourceableId();
 			DataCollectionRow row = dataModel.getObjectByKey(key);
 			if (row == null) {
@@ -188,8 +163,6 @@ public class DataCollectionListController extends FormBasicController implements
 	private void doOpenDataCollection(UserRequest ureq, String type, QualityDataCollectionView dataCollectionView) {
 		if (QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME.equals(type)) {
 			doEditDataCollection(ureq, dataCollectionView);
-		} else if (ORES_REPORT.equals(type) && secCallback.canViewReport(dataCollectionView)) {
-			doOpenReport(ureq, dataCollectionView);
 		}
 	}
 
@@ -201,10 +174,6 @@ public class DataCollectionListController extends FormBasicController implements
 			DataCollectionRow row = dataModel.getObject(se.getIndex());
 			if (CMD_EDIT.equals(cmd)) {
 				doEditDataCollection(ureq, row.getDataCollection());
-			} else if (CMD_DELETE.equals(cmd)) {
-				doConfirmDeleteDataCollection(ureq, row.getDataCollection());
-			} else if (CMD_REPORT.equals(cmd)) {
-				doOpenReport(ureq, row.getDataCollection());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -222,7 +191,14 @@ public class DataCollectionListController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == formSearchCtrl) {
+		if (source == dataCollectionCtrl && event instanceof DataCollectionEvent) {
+			DataCollectionEvent dccEvent = (DataCollectionEvent) event;
+			Action action = dccEvent.getAction();
+			if (Action.DELETE.equals(action)) {
+				QualityDataCollection dataCollectionToDelete = dccEvent.getDataCollection();
+				doConfirmDeleteDataCollection(ureq, dataCollectionToDelete);
+			}
+		} else if (source == formSearchCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry formEntry = formSearchCtrl.getSelectedEntry();
 				doCreateDataCollection(ureq, formEntry);
@@ -236,7 +212,7 @@ public class DataCollectionListController extends FormBasicController implements
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == cmc) {
+		} else if (source == cmc) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -267,10 +243,14 @@ public class DataCollectionListController extends FormBasicController implements
 	
 	private void doEditDataCollection(UserRequest ureq, QualityDataCollectionLight dataCollection) {
 		WindowControl bwControl = addToHistory(ureq, dataCollection, null);
-		DataCollectionController dataCollectionCtrl = new DataCollectionController(ureq, bwControl, secCallback, stackPanel,
+		dataCollectionCtrl = new DataCollectionController(ureq, bwControl, secCallback, stackPanel,
 				dataCollection);
+		listenTo(dataCollectionCtrl);
 		String title = dataCollection.getTitle();
-		stackPanel.pushController(Formatter.truncate(title, 50), dataCollectionCtrl);
+		String formattedTitle = StringHelper.containsNonWhitespace(title)
+				? Formatter.truncate(title, 50)
+				: translate("data.collection.title.empty");
+		stackPanel.pushController(formattedTitle, dataCollectionCtrl);
 		dataCollectionCtrl.activate(ureq, null, null);
 	}
 
@@ -287,14 +267,7 @@ public class DataCollectionListController extends FormBasicController implements
 	private void doDeleteDataCollection(QualityDataCollectionLight dataCollection) {
 		qualityService.deleteDataCollection(dataCollection);
 		tableEl.reset(true, false, true);
-	}
-	
-	private void doOpenReport(UserRequest ureq, QualityDataCollectionView dataCollectionView) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_REPORT, dataCollectionView.getKey());
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		DataCollectionReportController reportCtrl = new DataCollectionReportController(ureq, bwControl, dataCollectionView);
-		String title = dataCollectionView.getTitle();
-		stackPanel.pushController(Formatter.truncate(title, 50), reportCtrl);
+		stackPanel.popUpToController(this);
 	}
 
 	@Override

@@ -42,6 +42,7 @@ import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -204,7 +205,8 @@ public class QualityDataCollectionDAO {
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 
-	List<QualityDataCollectionView> loadDataCollections(Translator translator, int firstResult, int maxResults, SortKey... orderBy) {
+	List<QualityDataCollectionView> loadDataCollections(Translator translator,
+			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityDataCollectionViewImpl(");
 		sb.append("       collection.key as key");
@@ -251,11 +253,14 @@ public class QualityDataCollectionDAO {
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
 		sb.append("       left join curriculumElement.type as curriculumElementType");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
+		sb.append(" where 1=1");
+		appendWhereClause(sb, searchParams);
 		
 		appendOrderBy(sb, orderBy);
 
 		TypedQuery<QualityDataCollectionView> query = dbInstance.getCurrentEntityManager().
 				createQuery(sb.toString(), QualityDataCollectionView.class);
+		appendParameter(query, searchParams);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -266,6 +271,22 @@ public class QualityDataCollectionDAO {
 		return query.getResultList();
 	}
 	
+	private void appendWhereClause(StringBuilder sb, QualityDataCollectionViewSearchParams searchParams) {
+		if (searchParams != null) {
+			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
+				sb.append(" and collection.key = :collectionKey");
+			}
+		}
+	}
+	
+	private void appendParameter(TypedQuery<QualityDataCollectionView> query, QualityDataCollectionViewSearchParams searchParams) {
+		if (searchParams != null) {
+			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
+				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
+			}
+		}
+	}
+
 	private void appendOrderBy(StringBuilder sb, SortKey... orderBy) {
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			String sortKey = orderBy[0].getKey();

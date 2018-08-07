@@ -54,6 +54,7 @@ import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityParticipation;
@@ -153,9 +154,9 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	}
 
 	@Override
-	public List<QualityDataCollectionView> loadDataCollections(Translator translator, int firstResult, int maxResults,
-			SortKey... orderBy) {
-		return dataCollectionDao.loadDataCollections(translator, firstResult, maxResults, orderBy);
+	public List<QualityDataCollectionView> loadDataCollections(Translator translator,
+			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
+		return dataCollectionDao.loadDataCollections(translator, null, firstResult, maxResults, orderBy);
 	}
 
 	@Override

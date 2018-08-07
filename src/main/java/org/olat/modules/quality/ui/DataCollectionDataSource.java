@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,11 +66,12 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	@Override
 	public ResultInfos<DataCollectionRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		
-		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, firstResult,
-				maxResults, orderBy);
+
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, searchParams,
+				firstResult, maxResults, orderBy);
 		List<DataCollectionRow> rows = new ArrayList<>();
-		for (QualityDataCollectionView dataCollection: dataCollections) {
+		for (QualityDataCollectionView dataCollection : dataCollections) {
 			rows.add(new DataCollectionRow(dataCollection));
 		}
 

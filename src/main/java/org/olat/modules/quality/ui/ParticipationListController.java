@@ -30,14 +30,12 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -53,7 +51,6 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
@@ -74,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipationListController extends FormBasicController implements TooledController {
+public class ParticipationListController extends AbstractDataCollectionEditController {
 
 	private Link addUsersLink;
 	private Link addCourseUsersLink;
@@ -83,13 +80,9 @@ public class ParticipationListController extends FormBasicController implements 
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
-	private final TooledStackedPanel stackPanel;
 	private StepsMainRunController wizard;
 	private CloseableModalController cmc;
 	private ParticipationRemoveConfirmationController removeConfirmationCtrl;
-	
-	private final QualitySecurityCallback secCallback;
-	private QualityDataCollection dataCollection;
 	
 	@Autowired
 	private QualityService qualityService;
@@ -100,16 +93,22 @@ public class ParticipationListController extends FormBasicController implements 
 
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
-			QualityDataCollectionLight dataCollection) {
-		super(ureq, windowControl, "participation_list");
-		this.secCallback = secCallback;
-		this.stackPanel = stackPanel;
-		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollection);
+			QualityDataCollection dataCollection) {
+		super(ureq, windowControl, secCallback, stackPanel, dataCollection, "participation_list");
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		updateUI(ureq);
+	}
+	
+	@Override
+	protected void updateUI(UserRequest ureq) {
+		initTable(ureq);
+	}
+
+	private void initTable(UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.firstname));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.lastname));
@@ -120,20 +119,23 @@ public class ParticipationListController extends FormBasicController implements 
 		
 		ParticipationDataSource dataSource = new ParticipationDataSource(dataCollection);
 		dataModel = new ParticipationDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
+		tableEl.setEmtpyTableMessageKey("participation.empty.table");
 		if (secCallback.canRevomeParticipation(dataCollection)) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 		}
 		
+		if (removeUsersLink != null) flc.remove(removeUsersLink);
 		if (secCallback.canRevomeParticipation(dataCollection)) {
-			removeUsersLink = uifactory.addFormLink("participation.remove", formLayout, Link.BUTTON);
+			removeUsersLink = uifactory.addFormLink("participation.remove", flc, Link.BUTTON);
 		}
 	}
 
 	@Override
 	public void initTools() {
+		super.initTools();
 		if (secCallback.canAddParticipants(dataCollection)) {
 			addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
 			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");

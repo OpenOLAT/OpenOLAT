@@ -20,12 +20,13 @@
 package org.olat.modules.quality.ui;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.quality.QualitySecurityCallback;
 
 /**
@@ -36,13 +37,13 @@ import org.olat.modules.quality.QualitySecurityCallback;
  */
 public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<DataCollectionRow> {
 
-	private final Locale locale;
+	private final Translator translator;
 	private final QualitySecurityCallback secCallback;
 	
 	public DataCollectionDataModel(FlexiTableDataSourceDelegate<DataCollectionRow> dataSource,
-			FlexiTableColumnModel columnsModel, Locale locale, QualitySecurityCallback secCallback) {
+			FlexiTableColumnModel columnsModel, Translator translator, QualitySecurityCallback secCallback) {
 		super(dataSource, columnsModel);
-		this.locale = locale;
+		this.translator = translator;
 		this.secCallback = secCallback;
 	}
 	
@@ -61,23 +62,25 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 		DataCollectionRow dataCollectionRow = getObject(row);
 		switch (DataCollectionCols.values()[col]) {
 			case status: return dataCollectionRow.getStatus();
-			case title: return dataCollectionRow.getTitle();
+			case title: {
+				String title = dataCollectionRow.getTitle();
+			return StringHelper.containsNonWhitespace(title)
+					? title
+					: translator.translate("data.collection.title.empty");
+			}
 			case start: return dataCollectionRow.getStart();
 			case deadline: return dataCollectionRow.getDeadline();
 			case topicType: return dataCollectionRow.getTopicType();
 			case topic: return dataCollectionRow.getTopic();
 			case formName: return dataCollectionRow.getFormName();
 			case numberParticipants: return dataCollectionRow.getNumberOfParticipants();
-			case edit: return Boolean.TRUE;
-			case delete: return secCallback.canDeleteDataCollection(dataCollectionRow.getDataCollection());
-			case report: return secCallback.canViewReport(dataCollectionRow.getDataCollection());
 			default: return null;
 		}
 	}
 
 	@Override
 	public DefaultFlexiTableDataSourceModel<DataCollectionRow> createCopyWithEmptyList() {
-		return new DataCollectionDataModel(getSourceDelegate(), getTableColumnModel(), locale, secCallback);
+		return new DataCollectionDataModel(getSourceDelegate(), getTableColumnModel(), translator, secCallback);
 	}
 
 	public enum DataCollectionCols implements FlexiSortableColumnDef {
@@ -88,10 +91,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 		topicType("data.collection.topic.type"),
 		topic("data.collection.topic"),
 		formName("data.collection.form"),
-		numberParticipants("data.collection.number.of.participants"),
-		edit("data.collection.edit"),
-		delete("data.collection.delete"),
-		report("data.collection.report");
+		numberParticipants("data.collection.number.of.participants");
 		
 		private final String i18nKey;
 		

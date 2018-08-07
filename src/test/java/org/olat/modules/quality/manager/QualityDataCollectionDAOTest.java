@@ -25,7 +25,6 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -44,6 +43,7 @@ import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.OlatTestCase;
@@ -132,7 +132,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		sut.deleteDataCollection(dataCollection);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityDataCollectionView> collections = sut.loadDataCollections(TRANSLATOR, 0, -1);
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		List<QualityDataCollectionView> collections = sut.loadDataCollections(TRANSLATOR, searchParams , 0, -1);
 		
 		assertThat(collections).isEmpty();
 	}
@@ -216,7 +217,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityTestHelper.createDataCollection();
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, 0, -1);
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
 		assertThat(dataCollections).hasSize(2);
 	}
@@ -227,7 +229,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityTestHelper.createDataCollection();
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, 1, 1);
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 1, 1);
 		
 		assertThat(dataCollections).hasSize(1);
 	}
@@ -240,8 +243,9 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollectionA.setTitle("A");
 		dbInstance.commitAndCloseSession();
 		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
 		SortKey sortKey = new SortKey(DataCollectionCols.title.name(), true);
-		List<QualityDataCollectionView> dataCollectionViews = sut.loadDataCollections(TRANSLATOR, 0, -1, sortKey);
+		List<QualityDataCollectionView> dataCollectionViews = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1, sortKey);
 		
 		assertThat(dataCollectionViews.get(0).getTitle()).isEqualTo("A");
 		assertThat(dataCollectionViews.get(1).getTitle()).isEqualTo("Z");
@@ -252,16 +256,29 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityTestHelper.createDataCollection();
 		dbInstance.commitAndCloseSession();
 		
-		List<DataCollectionCols> excludedCols = Arrays.asList(DataCollectionCols.edit, DataCollectionCols.delete,
-				DataCollectionCols.report);
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
 		for (DataCollectionCols col: DataCollectionCols.values()) {
-			if (!excludedCols.contains(col)) {
-				SortKey sortKey = new SortKey(col.name(), true);
-				sut.loadDataCollections(TRANSLATOR, 0, -1, sortKey);
-			}
+			SortKey sortKey = new SortKey(col.name(), true);
+			sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1, sortKey);
 		}
 		
 		// Only check that no Exception is thrown to be sure that hql syntax is ok.
 	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByKey() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections).hasSize(1);
+		QualityDataCollectionView dataCollectionView = dataCollections.get(0);
+		assertThat(dataCollectionView.getKey()).isEqualTo(dataCollection.getKey());
+	}
+
 
 }

@@ -99,14 +99,11 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenUserParticipations(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			executorParticipationListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
-		} else if (ORES_DATA_COLLECTIONS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())) {
-			if (secCallback.canViewDataCollections()) {
-				doOpenDataCollection(ureq);
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				dataCollectionListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
-			} else {
-				doOpenUserParticipations(ureq);
-			}
+		} else if (ORES_DATA_COLLECTIONS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+				&& secCallback.canViewDataCollections()) {
+			doOpenDataCollection(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			dataCollectionListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if (canOnlyExecute()) {
 			doOpenUserParticipations(ureq);
 		}
