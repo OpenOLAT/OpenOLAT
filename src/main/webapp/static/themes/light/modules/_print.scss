@@ -145,6 +145,21 @@
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
 			background-color: #fff !important;
+			
+			.bgIcon {
+				opacity: 0.3;
+				transition: opacity 0.3;
+			}
+			.bgIcon:before, .o_icon_progress_danger:before, .o_icon_progress_success:before {
+				opacity: 0.3;
+				transition: opacity 0.3;
+				color: #777 !important;
+			}
+		}
+		&:not([data-progress="0"]) .inset .bgIcon {
+			opacity: 0.3;
+			transition: opacity 0.3;
+			color: #777 !important;
 		}
 	}
 	
