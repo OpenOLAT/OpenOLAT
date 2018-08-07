@@ -431,19 +431,20 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		Roles roles = usess.getRoles();
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+		List<Organisation> organisationList = new ArrayList<>(organisations);
 
 		List<Organisation> reOrganisations = repositoryService.getOrganisations(repositoryEntry);
 		for(Organisation reOrganisation:reOrganisations) {
-			if(!organisations.contains(reOrganisation)) {
-				organisations.add(reOrganisation);
+			if(reOrganisation != null && !organisationList.contains(reOrganisation)) {
+				organisationList.add(reOrganisation);
 			}
 		}
 		
-		Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
+		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
 		
 		List<String> keyList = new ArrayList<>();
 		List<String> valueList = new ArrayList<>();
-		for(Organisation organisation:organisations) {
+		for(Organisation organisation:organisationList) {
 			keyList.add(organisation.getKey().toString());
 			valueList.add(organisation.getDisplayName());
 		}

@@ -292,7 +292,7 @@ public class OrganisationDAO {
 	}
 	
 	public List<Organisation> getOrganisations(Collection<OrganisationRef> rootOrganisations) {
-		if(rootOrganisations == null || rootOrganisations.isEmpty()) return Collections.emptyList();
+		if(rootOrganisations == null || rootOrganisations.isEmpty()) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select org from organisation org")
