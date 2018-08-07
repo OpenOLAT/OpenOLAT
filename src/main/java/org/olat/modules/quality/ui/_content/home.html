@@ -1,0 +1,21 @@
+<div class="o_qual_main clearfix">
+	#foreach($panel in $panels)
+		#if($index % 2 == 1)<div class="row">#end
+			<div class="col-sm-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							$panel.title
+						</h4>
+					</div>
+					<div class="panel-body">
+						$panel.helpText
+						<div class="o_button_group o_button_group_right">
+							$r.render($panel.link)
+						</div>
+					</div>
+				</div>
+			</div>
+		#if($index % 2 == 1 || $index == $panels.size())</div>#end
+	#end
+</div>

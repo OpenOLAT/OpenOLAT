@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -75,11 +76,13 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	private ExecutionController executionCtrl;
 	private LayoutMain3ColsBackController fullLayoutCtrl;
 	
+	private final TooledStackedPanel stackPanel;
 	private final QualitySecurityCallback secCallback;
 
 	public ExecutorParticipationsListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback) {
+			TooledStackedPanel stackPanel, QualitySecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		initForm(ureq);
 	}
@@ -87,7 +90,8 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.executionStatus, new QualityExecutionParticipationStatusRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.executionStatus,
+				new QualityExecutionParticipationStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.deadline));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.title));
@@ -198,12 +202,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		executionCtrl = new ExecutionController(ureq, bwControl, participation);
 		listenTo(executionCtrl);
-		
-		fullLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null,
-				executionCtrl.getInitialComponent(), null);
-		fullLayoutCtrl.addDisposableChildController(executionCtrl);
-		fullLayoutCtrl.activate();
-		listenTo(fullLayoutCtrl);
+		stackPanel.pushController(participation.getTitle(), executionCtrl);
 	}
 
 	@Override
