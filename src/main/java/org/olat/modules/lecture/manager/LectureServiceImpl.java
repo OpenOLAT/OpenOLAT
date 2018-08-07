@@ -42,6 +42,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.commons.persistence.DB;
@@ -468,6 +469,49 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			}
 			participants.add(participantAndSummary.getIdentity());
 		}
+		return new ArrayList<>(participants);
+	}
+	
+	@Override
+	public List<Identity> syncParticipantSummariesAndRollCalls(LectureBlock lectureBlock, LectureBlockAuditLog.Action action) {
+		RepositoryEntry entry = lectureBlock.getEntry();
+		Date firstAdmission = lectureBlock.getStartDate();
+		firstAdmission = CalendarUtils.removeTime(firstAdmission);
+
+		//load data
+		List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(lectureBlock);
+		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(r -> r.getIdentity(), r -> r));
+		List<ParticipantAndLectureSummary> participantsAndSummaries = lectureParticipantSummaryDao.getLectureParticipantSummaries(lectureBlock);
+		
+		Set<Identity> participants = new HashSet<>();
+		for(ParticipantAndLectureSummary participantAndSummary:participantsAndSummaries) {
+			if(participants.contains(participantAndSummary.getIdentity())) {
+				continue;
+			}
+			
+			// update or create summary
+			if(participantAndSummary.getSummary() == null) {
+				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), firstAdmission);
+			} else if(participantAndSummary.getSummary().getFirstAdmissionDate() == null || participantAndSummary.getSummary().getFirstAdmissionDate().after(firstAdmission)) {
+				participantAndSummary.getSummary().setFirstAdmissionDate(firstAdmission);
+				lectureParticipantSummaryDao.update(participantAndSummary.getSummary());
+			}
+
+			LectureBlockRollCall rollCall = rollCallMap.get(participantAndSummary.getIdentity());
+			String before = auditLogDao.toXml(rollCall);
+			if(rollCall == null) {
+				rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(), null, null, null, new ArrayList<>());
+			} else if(rollCall.getLecturesAbsentList().isEmpty() && rollCall.getLecturesAttendedList().isEmpty()) {
+				rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
+			}
+
+			String after = auditLogDao.toXml(rollCall);
+			auditLogDao.auditLog(action, before, after, null,
+					lectureBlock, rollCall, lectureBlock.getEntry(), participantAndSummary.getIdentity(), null);
+
+			participants.add(participantAndSummary.getIdentity());
+		}
+		
 		return new ArrayList<>(participants);
 	}
 

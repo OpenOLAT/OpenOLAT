@@ -22,6 +22,7 @@ package org.olat.modules.lecture.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,10 +41,12 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,17 +147,18 @@ public class LectureBlocksWebService {
 	private LectureBlock saveLectureBlock(LectureBlockVO blockVo) {
 		LectureBlock block;
 		int currentPlannedLectures;
-		boolean syncParticipants = false;
+		boolean autoclose = false;
 		if(blockVo.getKey() != null && blockVo.getKey() > 0) {
 			block = lectureService.getLectureBlock(blockVo);
 			currentPlannedLectures = block.getPlannedLecturesNumber();
+			if("autoclosed".equals(blockVo.getRollCallStatus()) && block.getRollCallStatus() != LectureRollCallStatus.autoclosed) {
+				autoclose = true;
+			}
 		} else {
 			block = lectureService.createLectureBlock(entry);
 			currentPlannedLectures = -1;
 			if("autoclosed".equals(blockVo.getRollCallStatus())) {
-				block.setStatus(LectureBlockStatus.done);
-				block.setRollCallStatus(LectureRollCallStatus.autoclosed);
-				syncParticipants = true;
+				autoclose = true;
 			}
 		}
 		
@@ -189,12 +193,24 @@ public class LectureBlocksWebService {
 			block.setManagedFlagsString(blockVo.getManagedFlagsString());
 		}
 		block.setPlannedLecturesNumber(blockVo.getPlannedLectures());
+		
+		if(autoclose) {
+			block.setStatus(LectureBlockStatus.done);
+			block.setRollCallStatus(LectureRollCallStatus.autoclosed);
+			if(block.getAutoClosedDate() != null) {
+				((LectureBlockImpl)block).setAutoClosedDate(new Date());
+			}
+			if(block.getEffectiveLecturesNumber() <= 0) {
+				block.setEffectiveLecturesNumber(block.getPlannedLecturesNumber());
+			}
+		}
+		
 		LectureBlock savedLectureBlock = lectureService.save(block, null);
 		if(currentPlannedLectures > 0 && currentPlannedLectures != savedLectureBlock.getPlannedLecturesNumber()) {
 			lectureService.adaptRollCalls(savedLectureBlock);
 		}
-		if(syncParticipants) {
-			lectureService.syncParticipantSummaries(savedLectureBlock);
+		if(autoclose) {
+			lectureService.syncParticipantSummariesAndRollCalls(savedLectureBlock, LectureBlockAuditLog.Action.autoclose);
 		}
 		return savedLectureBlock;
 	}

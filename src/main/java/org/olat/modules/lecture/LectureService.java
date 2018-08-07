@@ -290,6 +290,18 @@ public interface LectureService {
 	 */
 	public List<Identity> syncParticipantSummaries(LectureBlock lectureBlock);
 	
+	/**
+	 * This will sync and update the first admission date if it is before to current one
+	 * base on the start date of the lecture block. This will sync the roll call with the
+	 * current participants.<br>
+	 * This method is meaned for REST API
+	 * 
+	 * @param lectureBlock The lecture block
+	 * @param firstAdmissionDate The admission date to set
+	 * @return The list of participant.
+	 */
+	public List<Identity> syncParticipantSummariesAndRollCalls(LectureBlock lectureBlock, LectureBlockAuditLog.Action action);
+	
 	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block);
 	

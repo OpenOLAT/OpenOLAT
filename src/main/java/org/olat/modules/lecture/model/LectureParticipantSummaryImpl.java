@@ -127,10 +127,12 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 		this.requiredAttendanceRate = requiredAttendanceRate;
 	}
 
+	@Override
 	public Date getFirstAdmissionDate() {
 		return firstAdmissionDate;
 	}
 
+	@Override
 	public void setFirstAdmissionDate(Date firstAdmissionDate) {
 		this.firstAdmissionDate = firstAdmissionDate;
 	}
