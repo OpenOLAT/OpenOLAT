@@ -257,7 +257,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		table.setCustomizeColumns(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		table.setSortSettings(sortOptions);
-		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment");
+		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment-" + courseNode.getIdent());
 		
 		pdfExportButton = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
 		pdfExportButton.setEnabled(numOfCheckbox > 0);

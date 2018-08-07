@@ -127,6 +127,7 @@ public class ForumUserListController extends FormBasicController {
 		dataModel = new ForumUserDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "users", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setPageSize(25);
+		tableEl.setAndLoadPersistedPreferences(ureq, "forum-users");
 	}
 	
 	private void loadModel() {

@@ -692,12 +692,12 @@ public class ForumManager {
 	public List<Message> getNewMessageInfo(Long forumKey, Date latestRead) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from fomessage as msg ")
-		     .append(" inner join fetch msg.creator as creator")
+		     .append(" left join fetch msg.creator as creator")
 		     .append(" where msg.forum.key=:forumKey and msg.lastModified>:latestRead order by msg.lastModified desc");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Message.class)
-				.setParameter("forumKey", forumKey.longValue())
+				.setParameter("forumKey", forumKey)
 				.setParameter("latestRead", latestRead, TemporalType.TIMESTAMP)
 				.getResultList();
 	}
