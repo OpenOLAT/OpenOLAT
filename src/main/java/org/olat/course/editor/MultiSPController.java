@@ -73,8 +73,8 @@ public class MultiSPController extends FormBasicController {
 	private FormLink sameLevel;
 	private FormLink asChild;
 	private MultipleSelectionElement rootSelection;
-	private final Map<String,MultipleSelectionElement> identToSelectionMap = new HashMap<String,MultipleSelectionElement>();
-	private final List<MultipleSelectionElement> nodeSelections = new ArrayList<MultipleSelectionElement>();
+	private final Map<String,MultipleSelectionElement> identToSelectionMap = new HashMap<>();
+	private final List<MultipleSelectionElement> nodeSelections = new ArrayList<>();
 
 	private int position;
 	private CourseEditorTreeNode selectedNode;
@@ -252,7 +252,14 @@ public class MultiSPController extends FormBasicController {
 	private CourseNode createCourseNode(VFSItem item, String type) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode newNode = newNodeConfig.getInstance();
-		newNode.setShortTitle(item.getName());
+		String name = item.getName();
+		if (name.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) {
+			String shortName = name.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);
+			newNode.setShortTitle(shortName);
+			newNode.setLongTitle(name);
+		} else {
+			newNode.setShortTitle(name);
+		}
 		newNode.setLearningObjectives(item.getName());
 		newNode.setNoAccessExplanation("You don't have access");
 		return newNode;
@@ -298,7 +305,7 @@ public class MultiSPController extends FormBasicController {
 		private final int indentation;
 		private final VFSItem item;
 		private final String id;
-		private final List<MultipleSelectionElement> children = new ArrayList<MultipleSelectionElement>();
+		private final List<MultipleSelectionElement> children = new ArrayList<>();
 		
 		public SelectNodeObject(VFSItem item, String id, int indentation) {
 			this.id = id;
