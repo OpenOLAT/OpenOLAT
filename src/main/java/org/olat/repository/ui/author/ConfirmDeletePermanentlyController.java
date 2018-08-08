@@ -235,7 +235,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 	
 	private void doCompleteDelete(UserRequest ureq) {
 		List<ErrorList> errorList = new ArrayList<>();
-		boolean allOk = deleteEntries(ureq, rows, errorList) ;
+		boolean allOk = deleteEntries(ureq, rows, errorList);
 		
 		if(allOk && deleteReferencesEl.isVisible() && deleteReferencesEl.isEnabled()
 				&& deleteReferencesEl.isOneSelected() && deleteReferencesEl.isSelected(0)) {

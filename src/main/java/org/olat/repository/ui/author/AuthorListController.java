@@ -92,6 +92,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseModule;
+import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
@@ -110,6 +111,7 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -782,7 +784,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void doSearch(UserRequest ureq, SearchEvent se) {
 		if(se.getTypes() != null && se.getTypes().size() > 0) {
-			searchParams.setResourceTypes(new ArrayList<String>(se.getTypes()));
+			searchParams.setResourceTypes(new ArrayList<>(se.getTypes()));
 		} else {
 			searchParams.setResourceTypes(null);
 		}
@@ -1184,6 +1186,13 @@ public class AuthorListController extends FormBasicController implements Activat
 				refLinks.add(name);
 			}
 			mainVC.contextPut("referenceLinks", refLinks);
+			
+			List<Reference> references = referenceManager.getReferencesTo(entry.getOlatResource(),
+					QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME);
+			if (!references.isEmpty()) {
+				mainVC.contextPut("qualityDataCollections", translate("details.referenceinfo.data.collections",
+						new String[] { String.valueOf(references.size()) }));
+			}
 			
 			putInitialPanel(mainVC);
 		}

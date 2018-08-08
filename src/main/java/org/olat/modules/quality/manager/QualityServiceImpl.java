@@ -63,6 +63,9 @@ import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResourceManager;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -97,11 +100,17 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	private QualityMailing qualityMailing;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
+	private ReferenceManager referenceManager;
 	
 	@Override
 	public QualityDataCollection createDataCollection(RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
 		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
+		resourceManager.findOrPersistResourceable(dataCollection);
+		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
 		return dataCollection;
 	}
 
@@ -167,6 +176,8 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 		}
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		evaluationFormManager.deleteSurvey(survey);
+		deleteReferences(dataCollection);
+		resourceManager.deleteOLATResourceable(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
 		log.info("Quality management data collection deleted: " + dataCollection.toString());
 	}
@@ -186,7 +197,16 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	@Override
 	public void updateFormEntry(QualityDataCollection dataCollection, RepositoryEntry formEntry) {
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		deleteReferences(dataCollection);
+		
 		evaluationFormManager.updateSurveyForm(survey, formEntry);
+		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
+	}
+
+	private void deleteReferences(QualityDataCollectionLight dataCollection) {
+		for (Reference reference : referenceManager.getReferences(dataCollection)) {
+			referenceManager.delete(reference);
+		}
 	}
 
 	@Override

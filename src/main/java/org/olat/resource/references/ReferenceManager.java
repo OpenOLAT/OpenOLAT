@@ -108,7 +108,7 @@ public class ReferenceManager {
 	public List<Reference> getReferences(OLATResourceable source) {
 		Long sourceKey = getResourceKey(source);
 		if (sourceKey == null) {
-			return new ArrayList<Reference> (0);
+			return new ArrayList<>(0);
 		}
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("referencesBySourceId", Reference.class)
@@ -125,11 +125,30 @@ public class ReferenceManager {
 	public List<Reference> getReferencesTo(OLATResourceable target) {
 		Long targetKey = getResourceKey(target);
 		if (targetKey == null) {
-			return new ArrayList<Reference>(0);
+			return new ArrayList<>(0);
 		}
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("referencesByTargetId", Reference.class)
 				.setParameter("targetKey", targetKey)
+				.getResultList();
+	}
+	
+	public List<Reference> getReferencesTo(OLATResourceable target, String sourceResName) {
+		Long targetKey = getResourceKey(target);
+		if (targetKey == null) {
+			return new ArrayList<>(0);
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v");
+		sb.append("  from references as v");
+		sb.append(" where v.target.key = :targetKey");
+		sb.append("   and v.source.resName = :resName");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Reference.class)
+				.setParameter("targetKey", targetKey)
+				.setParameter("resName", sourceResName)
 				.getResultList();
 	}
 	
