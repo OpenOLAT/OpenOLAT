@@ -49,6 +49,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.QTIRuntimeController;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
@@ -80,7 +81,7 @@ public class QTISurveyHandler extends QTIHandler {
 	
 	@Override
 	public boolean isCreate() {
-		return true;
+		return CoreSpringFactory.getImpl(QTIModule.class).isCreateSurveyResourcesEnabled();
 	}
 
 	@Override

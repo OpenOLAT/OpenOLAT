@@ -41,12 +41,14 @@ import org.springframework.stereotype.Service;
  * @author Mike Stock
  */
 @Service
-public class QTIModule extends AbstractSpringModule {	
+public class QTIModule extends AbstractSpringModule {
 	
 	private static final String CREATE_RESOURCES_ENABLED = "qti12.create.resources.enabled";
 
 	@Value("${qti12.create.resources.enabled:false}")
 	private boolean createResourcesEnabled;
+	@Value("${qti12.survey.create.resources.enabled:false}")
+	private boolean createSurveyResourcesEnabled;
 
 	@Autowired
 	public QTIModule(CoordinatorManager coordinatorManager) {
@@ -75,5 +77,9 @@ public class QTIModule extends AbstractSpringModule {
 	public void setCreateResourcesEnabled(boolean enabled) {
 		createResourcesEnabled = enabled;
 		setStringProperty(CREATE_RESOURCES_ENABLED, enabled ? "true" : "false", true);
+	}
+	
+	public boolean isCreateSurveyResourcesEnabled() {
+		return createSurveyResourcesEnabled;
 	}
 }
