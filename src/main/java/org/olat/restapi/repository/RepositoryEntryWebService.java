@@ -77,6 +77,9 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -136,6 +139,8 @@ public class RepositoryEntryWebService {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
@@ -197,6 +202,18 @@ public class RepositoryEntryWebService {
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
+	
+	@GET
+	@Path("curriculum/elements")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCurriculumElements() {
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(entry);
+		CurriculumElementVO[] voArray = new CurriculumElementVO[curriculumElements.size()];
+		for( int i=curriculumElements.size(); i-->0; ) {
+			voArray[i] = CurriculumElementVO.valueOf(curriculumElements.get(i));
+		}
+		return Response.ok(voArray).build();
+	}
   
 	/**
 	 * Returns the list of owners of the repository entry specified by the groupKey.
@@ -216,7 +233,7 @@ public class RepositoryEntryWebService {
 		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(entry, GroupRoles.owner.name());
+		return getMembers(entry, GroupRoles.owner.name());
 	}
 	
 	/**
@@ -312,7 +329,7 @@ public class RepositoryEntryWebService {
 		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(entry, GroupRoles.coach.name());
+		return getMembers(entry, GroupRoles.coach.name());
 	}
 	
 	/**
@@ -404,7 +421,7 @@ public class RepositoryEntryWebService {
 		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		return getIdentityInSecurityGroup(entry, GroupRoles.participant.name());
+		return getMembers(entry, GroupRoles.participant.name());
 	}
 	
 	/**
@@ -899,7 +916,7 @@ public class RepositoryEntryWebService {
 		return Response.ok().build();
 	}
 	
-	private Response getIdentityInSecurityGroup(RepositoryEntry re, String role) {
+	private Response getMembers(RepositoryEntry re, String role) {
 		List<Identity> identities = repositoryService.getMembers(re, RepositoryEntryRelationType.defaultGroup, role);
 		
 		int count = 0;

@@ -212,9 +212,10 @@ public interface CurriculumService {
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum);
 	
 	/**
-	 * Retrieve the children elements of the specified curriculum element.
+	 * Retrieve the children elements of the specified curriculum element. The method
+	 * returns all the children, inclusive the elements marked as deleted.
 	 * 
-	 * @param parentElement the parent element
+	 * @param parentElement The parent element
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement);

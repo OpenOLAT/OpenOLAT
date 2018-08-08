@@ -307,6 +307,12 @@ public class CurriculumElementDAO {
 		return elements;
 	}
 	
+	/**
+	 * The method returns all the children, inclusive the marked as deleted.
+	 * 
+	 * @param curriculumElement The parent element
+	 * @return A list of curriculum elements
+	 */
 	public List<CurriculumElement> getChildren(CurriculumElementRef curriculumElement) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement el")
