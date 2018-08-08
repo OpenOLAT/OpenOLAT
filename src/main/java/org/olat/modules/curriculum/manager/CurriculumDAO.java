@@ -105,15 +105,14 @@ public class CurriculumDAO {
 	}
 	
 	public List<Curriculum> search(CurriculumSearchParameters params) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select cur from curriculum cur")
 		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis")
 		  .append(" inner join fetch cur.group baseGroup");
 		
-		boolean where = false;
 		if(!params.getOrganisations().isEmpty()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" organis.key in (:organisationKeys)");
+			sb.and()
+			  .append(" organis.key in (:organisationKeys)");
 		}
 		
 		Long key = null;
@@ -123,11 +122,15 @@ public class CurriculumDAO {
 			ref = params.getSearchString();
 			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
 			
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" (cur.externalId=:ref or ");
-			PersistenceHelper.appendFuzzyLike(sb, "cur.displayName", "fuzzyRef", dbInstance.getDbVendor());
-			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "cur.identifier", "fuzzyRef", dbInstance.getDbVendor());
+			sb.and()
+			  .append(" (cur.externalId=:ref or ")
+			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or exists (select curEl.key from curriculumelement as curEl where")
+			  .append("  curEl.curriculum.key=cur.key and")
+			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(")");
 			if(StringHelper.isLong(ref)) {
 				key = Long.valueOf(ref);
 				sb.append(" or cur.key=:curriculumKey");
@@ -136,8 +139,8 @@ public class CurriculumDAO {
 		}
 		
 		if(params.getManagerIdentity() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("exists (select membership.key from bgroupmember as membership")
+			sb.and()
+			  .append("exists (select membership.key from bgroupmember as membership")
 			  .append("  where membership.identity.key=:managerKey")
 			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
 			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("')")
@@ -167,7 +170,7 @@ public class CurriculumDAO {
 	}
 	
 	public List<CurriculumInfos> searchWithInfos(CurriculumSearchParameters params) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select cur,")
 		  .append(" (select count(curElement.key) from curriculumelement curElement")
 		  .append("  where curElement.curriculum.key=cur.key")
@@ -176,10 +179,8 @@ public class CurriculumDAO {
 		  .append(" inner join fetch cur.group baseGroup")
 		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis");
 		
-		boolean where = false;
 		if(!params.getOrganisations().isEmpty()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" organis.key in (:organisationKeys)");
+			sb.and().append(" organis.key in (:organisationKeys)");
 		}
 		
 		Long key = null;
@@ -189,11 +190,15 @@ public class CurriculumDAO {
 			ref = params.getSearchString();
 			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
 			
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" (cur.externalId=:ref or ");
-			PersistenceHelper.appendFuzzyLike(sb, "cur.displayName", "fuzzyRef", dbInstance.getDbVendor());
-			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "cur.identifier", "fuzzyRef", dbInstance.getDbVendor());
+			sb.and()
+			  .append(" (cur.externalId=:ref or ")
+			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or exists (select curEl.key from curriculumelement as curEl where")
+			  .append("  curEl.curriculum.key=cur.key and")
+			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(")");
 			if(StringHelper.isLong(ref)) {
 				key = Long.valueOf(ref);
 				sb.append(" or cur.key=:curriculumKey");
@@ -202,8 +207,8 @@ public class CurriculumDAO {
 		}
 		
 		if(params.getManagerIdentity() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("exists (select membership.key from bgroupmember as membership")
+			sb.and()
+			  .append("exists (select membership.key from bgroupmember as membership")
 			  .append("  where membership.identity.key=:managerKey")
 			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
 			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("','").append(OrganisationRoles.principal).append("')")

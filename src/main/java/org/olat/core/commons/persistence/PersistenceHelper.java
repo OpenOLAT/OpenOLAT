@@ -131,23 +131,6 @@ public class PersistenceHelper {
 		return true;
 	}
 	
-	public static boolean appendGroupBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
-		boolean appended = false;
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-			sb.append(" order by ");
-			for(SortKey sort:orderBy) {
-				sb.append(dbRef).append(".").append(sort.getKey());
-				if(sort.isAsc()) {
-					sb.append(" asc ");
-				} else {
-					sb.append(" desc ");
-				}
-				appended = true;
-			}
-		}
-		return appended;
-	}
-	
 	public static final void appendFuzzyLike(Appendable sb, String var, String key, String dbVendor) {
 		try {
 			if(dbVendor.equals("mysql")) {

@@ -177,6 +177,18 @@ public class QueryBuilder implements Appendable {
 		return this;
 	}
 	
+	public QueryBuilder likeFuzzy(String var, String key, String dbVendor) {
+		if(dbVendor.equals("mysql")) {
+			append(" ").append(var).append(" like :").append(key);
+		} else {
+			append(" lower(").append(var).append(") like :").append(key);
+		}
+		if(dbVendor.equals("oracle")) {
+			append(" escape '\\'");
+		}
+		return this;
+	}
+	
 	public QueryBuilder appendAsc(boolean asc) {
 		if(asc) {
 			sb.append(" asc");
