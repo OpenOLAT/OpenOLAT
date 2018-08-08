@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,9 +51,8 @@ import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OpenMeetingsConfigurationController extends FormBasicController {
-	
-	private final OpenMeetingsModule openMeetingsModule;
-	private final OpenMeetingsManager openMeetingsManager;
+
+	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
 	
 	private FormLink checkLink;
 	private TextElement urlEl;
@@ -64,11 +63,13 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 	private static final String[] enabledKeys = new String[]{"on"};
 	private String[] enabledValues;
 	
-	public OpenMeetingsConfigurationController(UserRequest ureq, WindowControl wControl, OpenMeetingsModule openMeetingsModule) {
+	@Autowired
+	private OpenMeetingsModule openMeetingsModule;
+	@Autowired
+	private OpenMeetingsManager openMeetingsManager;
+	
+	public OpenMeetingsConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "adminconfig");
-		
-		this.openMeetingsModule = openMeetingsModule;
-		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		enabledValues = new String[]{translate("enabled")};
 
 		initForm(ureq);
@@ -97,6 +98,9 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			String login = openMeetingsModule.getAdminLogin();
 			loginEl = uifactory.addTextElement("openmeetings-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = openMeetingsModule.getAdminPassword();
+			if(StringHelper.containsNonWhitespace(password)) {
+				password = PLACEHOLDER;
+			}
 			passwordEl = uifactory.addPasswordElement("openmeetings-password", "option.adminpassword", 32, password, moduleFlc);
 			passwordEl.setAutocomplete("new-password");
 			
@@ -126,8 +130,9 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			openMeetingsModule.setAdminLogin(login);
 			
 			String password = passwordEl.getValue();
-			openMeetingsModule.setAdminPassword(password);
-			
+			if(!PLACEHOLDER.equals(password)) {
+				openMeetingsModule.setAdminPassword(password);
+			}
 		} catch (URISyntaxException e) {
 			logError("", e);
 			urlEl.setErrorKey("error.url.invalid", null);
@@ -146,7 +151,11 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			allOk &= validateURL();
 
 			try {
-				boolean ok = openMeetingsManager.checkConnection(urlEl.getValue(), loginEl.getValue(), passwordEl.getValue());
+				String password = passwordEl.getValue();
+				if(PLACEHOLDER.equals(password)) {
+					password = openMeetingsModule.getAdminPassword();
+				}
+				boolean ok = openMeetingsManager.checkConnection(urlEl.getValue(), loginEl.getValue(), password);
 				if(!ok) {
 					urlEl.setErrorKey("error.customerDoesntExist", null);
 					allOk = false;
@@ -214,6 +223,9 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
 		String password = passwordEl.getValue();
+		if(PLACEHOLDER.equals(password)) {
+			password = openMeetingsModule.getAdminPassword();
+		}
 
 		try {
 			boolean ok = openMeetingsManager.checkConnection(url, login, password);

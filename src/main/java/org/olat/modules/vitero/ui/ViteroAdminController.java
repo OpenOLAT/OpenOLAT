@@ -19,7 +19,6 @@
  */
 package org.olat.modules.vitero.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,7 +30,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.vitero.ViteroModule;
 
 /**
  * 
@@ -43,8 +41,6 @@ import org.olat.modules.vitero.ViteroModule;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ViteroAdminController extends BasicController  {
-
-	private final ViteroModule viteroModule;
 	
 	private final Link accountLink;
 	private Link bookingsLink;
@@ -57,7 +53,6 @@ public class ViteroAdminController extends BasicController  {
 	public ViteroAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		viteroModule = (ViteroModule)CoreSpringFactory.getBean("viteroModule");
 		mainVC = createVelocityContainer("vitero_admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -95,7 +90,7 @@ public class ViteroAdminController extends BasicController  {
 	
 	private void doOpenAccountSettings(UserRequest ureq) {
 		if(configController == null) {
-			configController = new ViteroConfigurationController(ureq, getWindowControl(), viteroModule);
+			configController = new ViteroConfigurationController(ureq, getWindowControl());
 			listenTo(configController);
 		} 
 		mainVC.put("segmentCmp", configController.getInitialComponent());

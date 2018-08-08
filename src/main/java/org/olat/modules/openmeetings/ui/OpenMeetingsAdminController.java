@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openmeetings.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,7 +30,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.openmeetings.OpenMeetingsModule;
 
 /**
  * 
@@ -41,9 +39,8 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
  */
 public class OpenMeetingsAdminController extends BasicController  {
 
-	private final OpenMeetingsModule openMeetingsModule;
-
-	private final Link accountLink, roomsLink;
+	private final Link accountLink;
+	private final Link roomsLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
@@ -53,7 +50,6 @@ public class OpenMeetingsAdminController extends BasicController  {
 	public OpenMeetingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		mainVC = createVelocityContainer("openmeetings_admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -91,7 +87,7 @@ public class OpenMeetingsAdminController extends BasicController  {
 	
 	private void doOpenAccountSettings(UserRequest ureq) {
 		if(configController == null) {
-			configController = new OpenMeetingsConfigurationController(ureq, getWindowControl(), openMeetingsModule);
+			configController = new OpenMeetingsConfigurationController(ureq, getWindowControl());
 			listenTo(configController);
 		} 
 		mainVC.put("segmentCmp", configController.getInitialComponent());
