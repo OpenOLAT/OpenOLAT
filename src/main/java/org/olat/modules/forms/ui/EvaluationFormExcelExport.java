@@ -120,7 +120,7 @@ public class EvaluationFormExcelExport {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			addHeader(exportSheet);
-			addContent(exportSheet);
+			addContent(workbook, exportSheet);
 		} catch (IOException e) {
 			log.error("", e);
 		} catch (Exception e) {
@@ -143,36 +143,36 @@ public class EvaluationFormExcelExport {
 		}
 	}
 
-	private void addContent(OpenXMLWorksheet exportSheet) {
+	private void addContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
 		for (AbstractElement element: form.getElements()) {
 			String elementType = element.getType();
 			switch (elementType) {
 			case Title.TYPE:
-				addTitle(exportSheet, (Title) element);
+				addTitle(workbook, exportSheet, (Title) element);
 				break;
 			case HTMLRaw.TYPE:
-				addHtmlRaw(exportSheet, (HTMLRaw) element);
+				addHtmlRaw(workbook, exportSheet, (HTMLRaw) element);
 				break;
 			case Spacer.TYPE:
 				exportSheet.newRow();// empty row
 				break;
 			case TextInput.TYPE:
-				addTextInput(exportSheet, (TextInput) element);
+				addTextInput(workbook, exportSheet, (TextInput) element);
 				break;
 			case FileUpload.TYPE:
-				addFileUpload(exportSheet, (FileUpload) element);
+				addFileUpload(workbook, exportSheet, (FileUpload) element);
 				break;
 			case Disclaimer.TYPE:
 				addDisclaimer(exportSheet, (Disclaimer) element);
 				break;
 			case SessionInformations.TYPE:
-				addSessionInformations(exportSheet, (SessionInformations) element);
+				addSessionInformations(workbook, exportSheet, (SessionInformations) element);
 				break;
 			case SingleChoice.TYPE:
-				addSingleChoice(exportSheet, (SingleChoice) element);
+				addSingleChoice(workbook, exportSheet, (SingleChoice) element);
 				break;
 			case MultipleChoice.TYPE:
-				addMultipleChoice(exportSheet, (MultipleChoice) element);
+				addMultipleChoice(workbook, exportSheet, (MultipleChoice) element);
 				break;
 			case Rubric.TYPE:
 				addRubric(exportSheet, (Rubric) element);
@@ -183,19 +183,19 @@ public class EvaluationFormExcelExport {
 		}
 	}
 
-	private void addTitle(OpenXMLWorksheet exportSheet, Title title) {
+	private void addTitle(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, Title title) {
 		String content = title.getContent();
 		content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
-		exportSheet.newRow().addCell(0, content);
+		exportSheet.newRow().addCell(0, content, workbook.getStyles().getTopAlignStyle());
 	}
 
-	private void addHtmlRaw(OpenXMLWorksheet exportSheet, HTMLRaw htmlRaw) {
+	private void addHtmlRaw(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, HTMLRaw htmlRaw) {
 		String content = htmlRaw.getContent();
 		content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
-		exportSheet.newRow().addCell(0, content);
+		exportSheet.newRow().addCell(0, content, workbook.getStyles().getTopAlignStyle());
 	}
 
-	private void addTextInput(OpenXMLWorksheet exportSheet, TextInput textinput) {
+	private void addTextInput(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, TextInput textinput) {
 		Row row = exportSheet.newRow();
 		int col = 1;
 		for (EvaluationFormSession session: sessions) {
@@ -203,14 +203,15 @@ public class EvaluationFormExcelExport {
 			if (response != null) {
 				String value = response.getStringuifiedResponse();
 				if (StringHelper.containsNonWhitespace(value)) {
-					row.addCell(col, value.replaceAll("\n", ""));
+					value = value.replaceAll("\n", "");
+					row.addCell(col, value, workbook.getStyles().getTopAlignStyle());
 				}
 			}
 			col++;
 		}
 	}
 
-	private void addFileUpload(OpenXMLWorksheet exportSheet, FileUpload fileUpload) {
+	private void addFileUpload(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, FileUpload fileUpload) {
 		Row row = exportSheet.newRow();
 		int col = 1;
 		for (EvaluationFormSession session: sessions) {
@@ -218,7 +219,7 @@ public class EvaluationFormExcelExport {
 			if (response != null) {
 				String value = response.getStringuifiedResponse();
 				if (StringHelper.containsNonWhitespace(value)) {
-					row.addCell(col, value);
+					row.addCell(col, value, workbook.getStyles().getTopAlignStyle());
 				}
 			}
 			col++;
@@ -241,7 +242,7 @@ public class EvaluationFormExcelExport {
 		}
 	}
 
-	private void addSessionInformations(OpenXMLWorksheet exportSheet, SessionInformations sessionInformations) {
+	private void addSessionInformations(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, SessionInformations sessionInformations) {
 		for (InformationType informationType: sessionInformations.getInformationTypes()) {
 			Row row = exportSheet.newRow();
 			int col = 0;
@@ -249,14 +250,14 @@ public class EvaluationFormExcelExport {
 			for (EvaluationFormSession session: sessions) {
 				String value = SessionInformationsUIFactory.getValue(informationType, session);
 				if (StringHelper.containsNonWhitespace(value)) {
-					row.addCell(col, value);
+					row.addCell(col, value, workbook.getStyles().getTopAlignStyle());
 				}
 				col++;
 			}
 		}
 	}
 
-	private void addSingleChoice(OpenXMLWorksheet exportSheet, SingleChoice singleChoice) {
+	private void addSingleChoice(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, SingleChoice singleChoice) {
 		Row row = exportSheet.newRow();
 		int col = 1;
 		Map<String, String> keyToValue = singleChoice.getChoices().asList().stream()
@@ -266,14 +267,14 @@ public class EvaluationFormExcelExport {
 			if (response != null) {
 				String value = keyToValue.get(response.getStringuifiedResponse());
 				if (value != null) {
-					row.addCell(col, value);
+					row.addCell(col, value, workbook.getStyles().getTopAlignStyle());
 				}
 			}
 			col++;
 		}
 	}
 
-	private void addMultipleChoice(OpenXMLWorksheet exportSheet, MultipleChoice multipleChoice) {
+	private void addMultipleChoice(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, MultipleChoice multipleChoice) {
 		Row row = exportSheet.newRow();
 		int col = 1;
 		Map<String, String> keyToValue = multipleChoice.getChoices().asList().stream()
@@ -292,7 +293,7 @@ public class EvaluationFormExcelExport {
 			}
 			String joinedValues = values.stream().collect(Collectors.joining(","));
 			if (StringHelper.containsNonWhitespace(joinedValues)) {
-				row.addCell(col, joinedValues);
+				row.addCell(col, joinedValues, workbook.getStyles().getTopAlignStyle());
 			}
 			col++;
 		}
