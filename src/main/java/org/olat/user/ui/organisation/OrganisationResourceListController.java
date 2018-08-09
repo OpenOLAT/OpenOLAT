@@ -35,7 +35,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -48,6 +50,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositorySearchController.Can;
@@ -64,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrganisationResourceListController extends FormBasicController {
+public class OrganisationResourceListController extends FormBasicController implements FlexiTableCssDelegate {
 
 	private FormLink addResourcesButton;
 	private FormLink removeResourcesButton;
@@ -114,7 +117,31 @@ public class OrganisationResourceListController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
+		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-resources-list");
+	}
+	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		RepositoryEntry row = tableModel.getObject(pos);
+		if(row == null || row.getEntryStatus() == RepositoryEntryStatusEnum.trash
+				|| row.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
+			return "o_entry_deleted";
+		}
+		if(row.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+			return "o_entry_closed";
+		}
+		return null;
 	}
 	
 	private void loadModel() {

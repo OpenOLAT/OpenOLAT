@@ -437,6 +437,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 			} else if("details".equals(link.getCmd())) {
 				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
 				doOpenDetails(ureq, row);
+			} else if ("select".equals(link.getCmd())) {
+				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
+				if (row.isMember()) {
+					doOpen(ureq, row, null);					
+				} else {
+					doOpenDetails(ureq, row);
+				}
 			} else if("mark".equals(link.getCmd())) {
 				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
 				boolean marked = doMark(ureq, row);

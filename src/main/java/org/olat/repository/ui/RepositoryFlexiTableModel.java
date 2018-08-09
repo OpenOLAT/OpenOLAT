@@ -37,7 +37,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
@@ -92,7 +91,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 		switch (RepoCols.values()[col]) {
 			case ac: return getAccessControl(re);
 			case repoEntry: return re; 
-			case displayname: return getDisplayName(re, translator.getLocale());
+			case displayname: return re.getDisplayname();
 			case author: return getFullname(re.getInitialAuthor());
 			case access: return re;
 			case creationDate: return re.getCreationDate();
@@ -192,19 +191,6 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 			return fullNames.get(author);
 		}
 		return author;
-	}
-
-	/**
-	 * Get displayname of a repository entry. If repository entry a course 
-	 * and is this course closed then add a prefix to the title.
-	 */
-	private String getDisplayName(RepositoryEntry repositoryEntry, Locale locale) {
-		String displayName = repositoryEntry.getDisplayname();
-		if (repositoryEntry.getEntryStatus().decommissioned()) {
-			Translator pT = Util.createPackageTranslator(RepositoryModule.class, locale);
-			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
-		}
-		return displayName;
 	}
 
 	@Override
