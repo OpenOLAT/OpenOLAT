@@ -104,7 +104,7 @@
 	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef">
 	   <property name="order" value="15" />
 	   <!-- this one is hard coded and cannot be changed -->
-	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToAdminAndSysAdminSiteSecurityCallback"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToSysAdminSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
 	   <property name="order" value="16" />
