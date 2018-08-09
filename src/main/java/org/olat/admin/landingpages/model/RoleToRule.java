@@ -62,4 +62,13 @@ public enum RoleToRule {
 	public final OrganisationRoles role() {
 		return role;
 	}
+	
+	public static RoleToRule valueOfConfiguration(String string) {
+		for(RoleToRule roleToRule:values()) {
+			if(string.equals(roleToRule.name()) || string.equals(roleToRule.roleName)) {
+				return roleToRule;
+			}
+		}
+		return null;
+	}
 }

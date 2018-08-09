@@ -21,6 +21,8 @@ package org.olat.admin.landingpages.model;
 
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 
@@ -31,6 +33,8 @@ import org.olat.core.util.UserSession;
  *
  */
 public class Rule {
+	
+	private static final OLog log = Tracing.createLoggerFor(Rule.class);
 	
 	private String role;
 	private String userAttributeKey;
@@ -79,7 +83,12 @@ public class Rule {
 		//match the role?
 		if(!"none".equals(role) && StringHelper.containsNonWhitespace(role)) {
 			Roles roles = userSession.getRoles();
-			match &= roles.hasRole(RoleToRule.valueOf(role).role());
+			RoleToRule roleToRule = RoleToRule.valueOfConfiguration(role);
+			if(roleToRule != null) {
+				match &= roles.hasRole(roleToRule.role());
+			} else {
+				log.warn("Landing page rule with an unkown role: " + role);
+			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(userAttributeKey)) {
