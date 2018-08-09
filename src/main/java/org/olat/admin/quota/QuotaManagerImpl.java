@@ -117,6 +117,8 @@ public class QuotaManagerImpl extends QuotaManager {
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_COURSE, defaultQuotaCourseFolder);
 		Quota defaultQuotaNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_NODES, defaultQuotaNodeFolder);
+		Quota defaultQuotaPfNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES);
+		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES, defaultQuotaPfNodeFolder);
 		Quota defaultQuotaFeed = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, defaultQuotaFeed);
 	}

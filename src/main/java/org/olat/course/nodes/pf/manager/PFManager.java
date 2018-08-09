@@ -266,7 +266,7 @@ public class PFManager {
 	 * @param dropbox
 	 * @return the VFSSecurityCallback
 	 */
-	private VFSSecurityCallback calculateCallback (CourseEnvironment courseEnv, PFCourseNode pfNode, VFSContainer dropbox, boolean webdav) {
+	private VFSSecurityCallback calculateCallback(CourseEnvironment courseEnv, String quotaPath, PFCourseNode pfNode, VFSContainer dropbox, boolean webdav) {
 		VFSSecurityCallback callback;
 		SubscriptionContext folderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		int count = countFiles(dropbox);
@@ -280,9 +280,9 @@ public class PFManager {
 		} else if (limitCount && alterFile) {
 			callback = new ReadDeleteCallback(folderSubContext);
 		} else if (!limitCount && !alterFile) {
-			callback = new ReadWriteCallback(folderSubContext);
+			callback = new ReadWriteCallback(folderSubContext, quotaPath);
 		} else {
-			callback = new ReadWriteDeleteCallback(folderSubContext);
+			callback = new ReadWriteDeleteCallback(folderSubContext, quotaPath);
 		}
 		return callback;
 	}
@@ -321,6 +321,7 @@ public class PFManager {
 		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
+		String quotaPath = path + "/" + pfNode.getIdent();
 		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
 		VirtualContainer namedCourseFolder = new VirtualContainer(identity.getName());
 		Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(identity));
@@ -332,7 +333,7 @@ public class PFManager {
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-				VFSSecurityCallback callback = calculateCallback(courseEnv, pfNode, dropbox, true);
+				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, true);
 				dropContainer.setLocalSecurityCallback(callback);
 			}
 			namedCourseFolder.addItem(dropContainer);
@@ -358,8 +359,10 @@ public class PFManager {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
-		List<Identity> participants =  getParticipants(identity, courseEnv, admin); 
-		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
+		List<Identity> participants =  getParticipants(identity, courseEnv, admin);
+		String courseContainerRelPath = courseEnv.getCourseBaseContainer().getRelPath();
+		String path = courseContainerRelPath + "/" + FILENAME_PARTICIPANTFOLDER;
+		String quotaPath = path + "/" + pfNode.getIdent();
 		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
 		VirtualContainer namedCourseFolder = new VirtualContainer(translator.translate("participant.folder"));
 		for (Identity participant : participants) {
@@ -375,7 +378,7 @@ public class PFManager {
 				//if coach is also participant, can user his/her webdav folder with participant rights
 				if (identity.equals(participant)){
 					VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-					VFSSecurityCallback callback = calculateCallback(courseEnv, pfNode, dropbox, true);
+					VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, true);
 					dropContainer.setLocalSecurityCallback(callback);
 				} else {
 					dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
@@ -386,7 +389,7 @@ public class PFManager {
 			if (pfNode.hasCoachBoxConfigured()){
 				VFSContainer returnContainer = new NamedContainerImpl(translator.translate("return.box"),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
-				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext));
+				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(returnContainer);
 			}
 		}
@@ -410,6 +413,7 @@ public class PFManager {
 		participants = new ArrayList<>(new HashSet<>(participants));
 		
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
+		String quotaPath = path + "/" + pfNode.getIdent();
 		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
 		VirtualContainer namedCourseFolder = new VirtualContainer(translator.translate("participant.folder"));
 		for (Identity participant : participants) {
@@ -430,7 +434,7 @@ public class PFManager {
 			if (pfNode.hasCoachBoxConfigured()){
 				VFSContainer returnContainer = new NamedContainerImpl(translator.translate("return.box"),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
-				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext));
+				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 				participantFolder.addItem(returnContainer);
 			}
 		}		
@@ -454,6 +458,7 @@ public class PFManager {
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
+		String quotaPath = path + "/" + pfNode.getIdent();
 		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
 
 		Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(identity));
@@ -488,10 +493,10 @@ public class PFManager {
 		} else {
 			if (isCoach) {
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
-				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext));
+				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-				VFSSecurityCallback callback = calculateCallback(courseEnv, pfNode, dropbox, false);
+				VFSSecurityCallback callback = calculateCallback(courseEnv, path, pfNode, dropbox, false);
 				dropContainer.setLocalSecurityCallback(callback);
 				returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
 			}

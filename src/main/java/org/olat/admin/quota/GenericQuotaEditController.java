@@ -148,6 +148,7 @@ public class GenericQuotaEditController extends BasicController {
 		myContent.contextPut("repository",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO));
 		myContent.contextPut("coursefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE));
 		myContent.contextPut("nodefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES));
+		myContent.contextPut("pfNodefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES));
 		myContent.contextPut("feeds",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS));
 		
 	}

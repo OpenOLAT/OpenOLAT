@@ -20,35 +20,15 @@
 package org.olat.course.nodes.pf.manager;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class ReadWriteDeleteCallback implements VFSSecurityCallback {
+public class ReadWriteDeleteCallback extends ReadWriteCallback {
 	
-	private SubscriptionContext subsContext;
-
-	public ReadWriteDeleteCallback(SubscriptionContext subsContext) {
-		super();
-		this.subsContext = subsContext;
-	}
-
-	@Override
-	public boolean canRead() {
-		return true;
-	}
-
-	@Override
-	public boolean canWrite() {
-		return true;
-	}
-
-	@Override
-	public boolean canCreateFolder() {
-		return true;
+	public ReadWriteDeleteCallback(SubscriptionContext subsContext, String folderPath) {
+		super(subsContext, folderPath);
 	}
 
 	@Override
@@ -57,33 +37,7 @@ public class ReadWriteDeleteCallback implements VFSSecurityCallback {
 	}
 
 	@Override
-	public boolean canList() {
-		return true;
-	}
-
-	@Override
-	public boolean canCopy() {
-		return true;
-	}
-
-	@Override
 	public boolean canDeleteRevisionsPermanently() {
 		return false;
 	}
-
-	@Override
-	public Quota getQuota() {
-		return null;
-	}
-
-	@Override
-	public void setQuota(Quota quota) {
-
-	}
-
-	@Override
-	public SubscriptionContext getSubscriptionContext() {
-		return subsContext;
-	}
-
 }
