@@ -96,7 +96,7 @@ public class CurriculumDAO {
 		  .append(" where exists (select curElement from curriculumelement curElement")
 		  .append("  inner join curElement.group as bGroup")
 		  .append("  inner join bGroup.members membership")
-		  .append("  where curElement.curriculum.key=cur.key and membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach)
+		  .append("  where curElement.curriculum.key=cur.key and membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach, CurriculumRoles.owner)
 		  .append(" )");
 	
 		return dbInstance.getCurrentEntityManager()

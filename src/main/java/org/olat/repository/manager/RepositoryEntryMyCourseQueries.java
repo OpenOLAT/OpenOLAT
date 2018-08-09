@@ -364,7 +364,7 @@ public class RepositoryEntryMyCourseQueries {
 	
 	private boolean appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
 		if(roles.isGuestOnly()) {
-			sb.append(" v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());//TODO repo access	
+			sb.append(" v.guests=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());//TODO repo access	
 			return false;
 		}
 
@@ -381,26 +381,35 @@ public class RepositoryEntryMyCourseQueries {
 			}
 		}
 		//+ membership
-		sb.append(" v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" and ");
 		if(inRoles.isEmpty() && !membershipMandatory) {
 			//sub select are very quick
-			sb.append(" (v.allUsers=true or v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("    and membership.role ").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
-			  .append(" ))");
-		} else {
-			if(inRoles.isEmpty()) {
-				inRoles.add(GroupRoles.owner);
-				inRoles.add(GroupRoles.coach);
-				inRoles.add(GroupRoles.participant);
-			}
-		
-			//make sure that in all case the role is mandatory
-			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("    and membership.role ").in(inRoles.toArray(new GroupRoles[inRoles.size()]))
-			  .append(" )");
+			sb.append("(v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(") or ");
 		}
+		if(inRoles.isEmpty()) {
+			inRoles.add(GroupRoles.owner);
+			inRoles.add(GroupRoles.coach);
+			inRoles.add(GroupRoles.participant);
+		}
+
+		//make sure that in all case the role is mandatory
+		sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("    and (");
+		boolean or = false;
+		if(inRoles.contains(GroupRoles.owner)) {
+			sb.append(" (membership.role='").append(GroupRoles.owner).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
+			or = true;
+		}
+		if(inRoles.contains(GroupRoles.coach)) {
+			if(or) sb.append(" or ");
+			sb.append(" (membership.role='").append(GroupRoles.coach).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")");
+			or = true;
+		}
+		if(inRoles.contains(GroupRoles.participant)) {
+			if(or) sb.append(" or ");
+			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+		}
+		sb.append(" ))");
 		return true;
 	}
 	
