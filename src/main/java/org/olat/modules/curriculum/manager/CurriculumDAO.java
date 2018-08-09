@@ -38,6 +38,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumImpl;
@@ -173,7 +174,7 @@ public class CurriculumDAO {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select cur,")
 		  .append(" (select count(curElement.key) from curriculumelement curElement")
-		  .append("  where curElement.curriculum.key=cur.key")
+		  .append("  where curElement.curriculum.key=cur.key and curElement.status ").in(CurriculumElementStatus.active, CurriculumElementStatus.inactive)
 		  .append(" ) as numOfElements")
 		  .append(" from curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")

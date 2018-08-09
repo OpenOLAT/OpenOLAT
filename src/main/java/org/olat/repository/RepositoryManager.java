@@ -1414,7 +1414,7 @@ public class RepositoryManager {
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
 		try{
-			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
