@@ -124,7 +124,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		if (inheritingContainer != null) {
 			secCallback = inheritingContainer.getLocalSecurityCallback();
 			actualUsage = VFSManager.getUsageKB(inheritingContainer);
-			ubar.setActual(actualUsage/ 1024);
+			ubar.setActual(actualUsage / 1024f);
 			if (inheritingContainer.getLocalSecurityCallback().getQuota() != null) {
 				quotaKB = secCallback.getQuota().getQuotaKB().longValue();
 				uploadLimitKB = (int) secCallback.getQuota().getUlLimitKB().longValue();

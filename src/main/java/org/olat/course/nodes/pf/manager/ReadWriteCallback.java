@@ -19,8 +19,11 @@
  */
 package org.olat.course.nodes.pf.manager;
 
+import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 /**
 *
@@ -30,10 +33,15 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 public class ReadWriteCallback implements VFSSecurityCallback {
 	
 	private SubscriptionContext subsContext;
+	private Quota quota;
+	private final String folderPath;
+	private final String defaultQuota;
 	
-	public ReadWriteCallback(SubscriptionContext subsContext) {
+	public ReadWriteCallback(SubscriptionContext subsContext, String folderPath) {
 		super();
 		this.subsContext = subsContext;
+		this.folderPath = folderPath;
+		this.defaultQuota = QuotaConstants.IDENTIFIER_DEFAULT_PFNODES;
 	}
 
 	@Override
@@ -73,13 +81,21 @@ public class ReadWriteCallback implements VFSSecurityCallback {
 
 	@Override
 	public Quota getQuota() {
-		return null;
+		if(quota == null) {
+			QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
+			Quota q = qm.getCustomQuota(folderPath);
+			if (q == null) {
+				Quota defQuota = qm.getDefaultQuota(defaultQuota);
+				q = qm.createQuota(folderPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			}
+			setQuota(q);
+		}
+		return quota;
 	}
 
 	@Override
 	public void setQuota(Quota quota) {
-
-
+		this.quota = quota;
 	}
 
 	@Override

@@ -56,6 +56,11 @@
 			<tr><td>$r.translate("qd.nodefolder")</td><td>$r.formatBytes($nodefolderQuotaBytes) ($nodefolder.getQuotaKB())</td>
 			#set ($nodefolderUlLimitBytes = $nodefolder.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($nodefolderUlLimitBytes) ($nodefolder.getUlLimitKB())</td></tr>
+			
+			#set ($pfNodefolderQuotaBytes = $pfNodefolder.getQuotaKB() * 1000)
+			<tr><td>$r.translate("qd.pfnodefolder")</td><td>$r.formatBytes($pfNodefolderQuotaBytes) ($pfNodefolder.getQuotaKB())</td>
+			#set ($pfNodefolderUlLimitBytes = $pfNodefolder.getUlLimitKB() * 1000)
+			<td>$r.formatBytes($pfNodefolderUlLimitBytes) ($pfNodefolder.getUlLimitKB())</td></tr>
 
 			#set ($feedsQuotaBytes = $feeds.getQuotaKB() * 1000)
 			<tr><td>$r.translate("qd.feeds")</td><td>$r.formatBytes($feedsQuotaBytes) ($feeds.getQuotaKB())</td>
