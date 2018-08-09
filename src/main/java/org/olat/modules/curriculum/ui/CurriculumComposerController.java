@@ -37,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -193,7 +192,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				row.setParent(keyToRows.get(row.getParentKey()));
 			}
 		}
-		Collections.sort(rows, new FlexiTreeNodeComparator());
+		Collections.sort(rows, new CurriculumElementTreeRowComparator());
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(false, true, true);
@@ -388,7 +387,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
 		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
-		
+		//TODO curriculum
 		//commit all changes to the curriculum memberships
 		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
 		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges);

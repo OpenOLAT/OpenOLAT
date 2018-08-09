@@ -49,14 +49,14 @@ public class FlexiTreeNodeComparator implements Comparator<FlexiTreeTableNode> {
 			c = compareNodes(o1, o2);
 		} else if(p1 != null && p1.equals(p2)) {
 			c = compareNodes(o1, o2);
-		} else if(p1 == null && p2 != null) {
+		} else if(p1 == null) {
 			FlexiTreeTableNode r2 = root(p2);
 			if(o1.equals(r2)) {
 				c = -1;
 			} else {
 				c = compareNodes(o1, r2);
 			}
-		} else if(p1 != null && p2 == null) {
+		} else if(p2 == null) {
 			FlexiTreeTableNode r1 = root(p1);
 			if(r1.equals(o2)) {
 				c = 1;
