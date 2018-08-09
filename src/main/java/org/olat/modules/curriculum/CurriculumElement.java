@@ -32,13 +32,11 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElement extends CurriculumElementRef, CreateInfo, ModifiedInfo {
+public interface CurriculumElement extends CurriculumElementShort, CreateInfo, ModifiedInfo {
 	
 	public String getIdentifier();
 	
 	public void setIdentifier(String identifier);
-	
-	public String getDisplayName();
 	
 	public void setDisplayName(String displayName);
 	
@@ -63,8 +61,6 @@ public interface CurriculumElement extends CurriculumElementRef, CreateInfo, Mod
 	public void setElementStatus(CurriculumElementStatus status);
 	
 	public String getMaterializedPathKeys();
-	
-	public CurriculumElementManagedFlag[] getManagedFlags();
 	
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
 	

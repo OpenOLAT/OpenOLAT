@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -33,7 +34,7 @@ import org.olat.core.util.Util;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseRoleCellRenderer implements FlexiCellRenderer {
+public class CourseRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
 	
 	private final Translator translator;
 	
@@ -41,6 +42,13 @@ public class CourseRoleCellRenderer implements FlexiCellRenderer {
 		translator = Util.createPackageTranslator(CourseRoleCellRenderer.class, locale);
 	}
 	
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		if (val instanceof CourseMembership) {
+			render(sb, (CourseMembership) val);
+		}
+	}
+
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator trans) {

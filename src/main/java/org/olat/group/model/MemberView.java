@@ -30,7 +30,9 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementShort;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -42,9 +44,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class MemberView extends UserPropertiesRow {
 	
-	private String repositoryEntryDisplayName;
-	private RepositoryEntryManagedFlag[] managedFlags;
-	
+	private RepositoryEntry repositoryEntry;
 	private List<BusinessGroupShort> groups;
 	private List<CurriculumElementShort> curriculumElements;
 	
@@ -81,20 +81,36 @@ public class MemberView extends UserPropertiesRow {
 		this.lastModified = lastModified;
 	}
 
-	public String getRepositoryEntryDisplayName() {
-		return repositoryEntryDisplayName;
+	public Long getRepositoryEntryKey() {
+		return repositoryEntry == null ? null : repositoryEntry.getKey();
+	}
+	
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
 	}
 
-	public void setRepositoryEntryDisplayName(String displayName) {
-		this.repositoryEntryDisplayName = displayName;
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
+	}
+	
+	public OLATResource getOLATResource() {
+		return repositoryEntry == null ? null : repositoryEntry.getOlatResource();
+	}
+
+	public String getRepositoryEntryDisplayName() {
+		return repositoryEntry == null ? null : repositoryEntry.getDisplayname();
+	}
+
+	public String getRepositoryEntryExternalId() {
+		return repositoryEntry == null ? null : repositoryEntry.getExternalId();
+	}
+
+	public String getRepositoryEntryExternalRef() {
+		return repositoryEntry == null ? null : repositoryEntry.getExternalRef();
 	}
 
 	public RepositoryEntryManagedFlag[] getManagedFlags() {
-		return managedFlags;
-	}
-
-	public void setManagedFlags(RepositoryEntryManagedFlag[] managedFlags) {
-		this.managedFlags = managedFlags;
+		return repositoryEntry == null ? null : repositoryEntry.getManagedFlags();
 	}
 
 	public List<BusinessGroupShort> getGroups() {

@@ -37,6 +37,8 @@ import org.olat.resource.OLATResource;
  */
 public interface UserCourseInformationsManager {
 	
+	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity);
+	
 	public UserCourseInformations getUserCourseInformations(OLATResource resource, IdentityRef identity);
 
 	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity, List<OLATResource> resources);
