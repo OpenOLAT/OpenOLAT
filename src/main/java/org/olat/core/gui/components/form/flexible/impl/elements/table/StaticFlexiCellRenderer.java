@@ -74,6 +74,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 	public String getLabel() {
 		return label;
 	}
+	
+	public FlexiCellRenderer getLabelDelegate() {
+		return labelDelegate;
+	}
 
 	public String getIconLeftCSS() {
 		return iconLeftCSS;

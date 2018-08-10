@@ -48,6 +48,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -68,6 +70,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModel.ElementViewCols;
+import org.olat.modules.curriculum.ui.component.CurriculumElementCompositeRenderer;
 import org.olat.modules.curriculum.ui.component.CurriculumElementIndentRenderer;
 import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowComparator;
 import org.olat.repository.RepositoryEntry;
@@ -147,10 +150,14 @@ public class CurriculumElementListController extends FormBasicController impleme
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementDisplayName, new CurriculumElementIndentRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementIdentifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryDisplayName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryExternalRef));
+		DefaultFlexiColumnModel elementNameCol = new DefaultFlexiColumnModel(ElementViewCols.elementDisplayName, "select");
+		elementNameCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new CurriculumElementIndentRenderer()));
+		columnsModel.addFlexiColumnModel(elementNameCol);
+		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.elementIdentifier, "select");
+		elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(elementIdentifierCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryDisplayName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryExternalRef, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
@@ -451,6 +458,16 @@ public class CurriculumElementListController extends FormBasicController impleme
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
+			}
+		} else if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				CurriculumElementWithViewsRow row = tableModel.getObject(se.getIndex());
+				if (row.isMember()) {
+					doOpen(ureq, row, null);					
+				} else {
+					doOpenDetails(ureq, row);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

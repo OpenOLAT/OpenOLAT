@@ -123,16 +123,16 @@ public class OverviewRepositoryListController extends BasicController implements
 		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
 		
-		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
-		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
-		segmentView.addSegment(closedCourseLink, false);
-		
 		if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
 			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
 			curriculumLink.setElementCssClass("o_sel_mycurriculums");
 			segmentView.addSegment(curriculumLink, false);
 		}
 		
+		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
+		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
+		segmentView.addSegment(closedCourseLink, false);
+
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
 			catalogLink.setElementCssClass("o_sel_mycourses_catlog");

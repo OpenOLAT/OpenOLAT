@@ -133,7 +133,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<RepositoryEntryRow> rows = processViewModel(views);
 		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<RepositoryEntryRow>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
-			count = new Integer(views.size());
+			count = Integer.valueOf(views.size());
 		}
 		return results;
 	}

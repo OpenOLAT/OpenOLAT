@@ -521,6 +521,14 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				allOk &= false;
 			}
 		}
+		
+		if (organisationsEl != null) {
+			organisationsEl.clearError();
+			if(!organisationsEl.isAtLeastSelected(1)) {
+				organisationsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 
 		return allOk;
 	}
