@@ -139,6 +139,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public boolean isCurriculumManager(IdentityRef identity) {
+		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculummanager.name());
+	}
+
+	@Override
 	public void addMember(Curriculum curriculum, Identity identity, CurriculumRoles role) {
 		if(!groupDao.hasRole(curriculum.getGroup(), identity, role.name())) {
 			groupDao.addMembershipOneWay(curriculum.getGroup(), identity, role.name(), GroupMembershipInheritance.none);

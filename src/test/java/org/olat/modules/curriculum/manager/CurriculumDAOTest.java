@@ -223,6 +223,22 @@ public class CurriculumDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasCurriculumRole() {
+		// add a curriculum manager
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
+		dbInstance.commitAndCloseSession();
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		// is curriculum manager
+		boolean isCurriculumManager = curriculumDao.hasCurriculumRole(manager, CurriculumRoles.curriculummanager.name());
+		Assert.assertTrue(isCurriculumManager);
+		boolean isAdministrator = curriculumDao.hasCurriculumRole(manager, OrganisationRoles.administrator.name());
+		Assert.assertFalse(isAdministrator);
+	}
+	
+	@Test
 	public void hasRoleExpanded() {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");

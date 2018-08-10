@@ -49,8 +49,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -81,6 +79,8 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.curriculum.ui.CurriculumElementRow;
+import org.olat.modules.curriculum.ui.CurriculumElementTreeRowComparator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -281,7 +281,6 @@ public class EditMembershipController extends FormBasicController {
 		curriculumTableEl.setVisible(!curriculumOptions.isEmpty());
 	}
 	
-	//TODO curriculum order doesn't work
 	private List<CurriculumElement> orderCurriculumElements(List<CurriculumElement> curriculumElements) {
 		try {
 			List<CurriculumElementRow> rows = new ArrayList<>(curriculumElements.size());
@@ -298,11 +297,11 @@ public class EditMembershipController extends FormBasicController {
 				}
 			}
 			
-			Collections.sort(rows, new FlexiTreeNodeComparator());
+			Collections.sort(rows, new CurriculumElementTreeRowComparator());
 			
 			List<CurriculumElement> orderedElements = new ArrayList<>(rows.size());
 			for(CurriculumElementRow row:rows) {
-				orderedElements.add(row.getElement());
+				orderedElements.add(row.getCurriculumElement());
 			}
 			return orderedElements;
 		} catch (Exception e) {
@@ -694,55 +693,6 @@ public class EditMembershipController extends FormBasicController {
 		}
 	}
 	
-	private static class CurriculumElementRow implements FlexiTreeTableNode {
-		
-		private final CurriculumElement element;
-		private CurriculumElementRow parent;
-		
-		public CurriculumElementRow(CurriculumElement element) {
-			this.element = element;
-		}
-		
-		public CurriculumElement getElement() {
-			return element;
-		}
-		
-		public Long getParentKey() {
-			if(element.getParent() == null) return null;
-			return element.getParent().getKey();
-		}
-
-		@Override
-		public CurriculumElementRow getParent() {
-			return parent;
-		}
-		
-		public void setParent(CurriculumElementRow parent) {
-			this.parent = parent;
-		}
-
-		@Override
-		public String getCrump() {
-			return element.getDisplayName();
-		}
-
-		@Override
-		public int hashCode() {
-			return element.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj) {
-				return true;
-			}
-			if(obj instanceof CurriculumElementRow) {
-				CurriculumElementRow row = (CurriculumElementRow)obj;
-				return element.equals(row.element);
-			}
-			return false;
-		}	
-	}
 	
 	public static enum CurriculumCols implements FlexiColumnDef {
 		curriculum("table.header.curriculum"),

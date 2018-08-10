@@ -266,6 +266,22 @@ public class CurriculumDAO {
 				.getResultList();
 	}
 	
+	public boolean hasCurriculumRole(IdentityRef identity, String role) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select cur.key from curriculum cur")
+		  .append(" inner join cur.group baseGroup")
+		  .append(" left join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role =:role");
+		List<Long> has = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", role)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return has != null && !has.isEmpty() && has.get(0) != null;
+	}
+	
 	public boolean hasRoleExpanded(CurriculumRef curriculum, IdentityRef identity, String... roles) {
 		List<String> roleList = GroupRoles.toList(roles);
 		StringBuilder sb = new StringBuilder(256);

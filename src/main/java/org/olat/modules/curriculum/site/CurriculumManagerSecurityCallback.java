@@ -23,6 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.modules.curriculum.CurriculumService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,6 +35,9 @@ import org.springframework.stereotype.Service;
  */
 @Service("curriculumManagerSiteSecurityCallback")
 public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
+	
+	@Autowired
+	private CurriculumService curriculumService;
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
@@ -40,6 +45,7 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 		if(usess == null ) return false;
 		
 		Roles roles = usess.getRoles();
-		return roles != null && (roles.isAdministrator() || roles.isPrincipal() || roles.isCurriculumManager());
+		return roles != null && (roles.isAdministrator() || roles.isPrincipal() || roles.isCurriculumManager()
+				|| curriculumService.isCurriculumManager(ureq.getIdentity()));
 	}
 }

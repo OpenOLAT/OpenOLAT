@@ -100,6 +100,12 @@ public interface CurriculumService {
 	public boolean hasRoleExpanded(CurriculumRef curriculum, IdentityRef identity, String... role);
 	
 	/**
+	 * @param identity The identity
+	 * @return true if the identity is manager of at least one curriculum
+	 */
+	public boolean isCurriculumManager(IdentityRef identity);
+	
+	/**
 	 * Add a member to the curriculum with the specified role.
 	 * 
 	 * @param curriculum The curriculum

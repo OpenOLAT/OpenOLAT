@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -66,6 +67,7 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -91,6 +93,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private TooledStackedPanel toolbarPanel;
 	private FormLink addMemberLink;
 	private FormLink importMemberLink;
+	private FormLink overrideLink;
+	private FormLink unOverrideLink;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -102,6 +106,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	
 	private int counter;
+	private final boolean managed;
+	private boolean overrideManaged;
 	private final Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
 	
@@ -114,6 +120,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		this.toolbarPanel = toolbarPanel;
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
+		managed = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
+		
 		initForm(ureq);
 		loadModel();
 	}
@@ -129,13 +137,23 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//TODO curriculum !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members) && 
 		if(secCallback.canManagerCurriculumElementUsers()) {
+			if(isAllowedToOverrideManaged(ureq)) {
+				overrideLink = uifactory.addFormLink("override.member", formLayout, Link.BUTTON);
+				overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
+				
+				unOverrideLink = uifactory.addFormLink("unoverride.member", formLayout, Link.BUTTON);
+				unOverrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
+				unOverrideLink.setVisible(false);
+			}
+
 			addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			addMemberLink.setVisible(!managed);
 
 			importMemberLink = uifactory.addFormLink("import.member", formLayout, Link.BUTTON);
 			importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+			importMemberLink.setVisible(!managed);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -170,6 +188,15 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
+	}
+	
+	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
+		if(curriculum != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			return roles.isAdministrator() && curriculumService.hasRoleExpanded(curriculum, getIdentity(),
+					OrganisationRoles.administrator.name());
+		}
+		return false;
 	}
 
 	@Override
@@ -268,6 +295,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			doChooseMembers(ureq);
 		} else if(importMemberLink == source) {
 			doImportMembers(ureq);
+		} else if (source == overrideLink) {
+			doOverrideManagedResource();
+		} else if (source == unOverrideLink) {
+			doUnOverrideManagedResource();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -287,6 +318,25 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+
+	private void doOverrideManagedResource() {
+		overrideManagedResource(true);
+	}
+	
+	private void doUnOverrideManagedResource() {
+		overrideManagedResource(false);
+	}
+	
+	private void overrideManagedResource(boolean override) {
+		overrideManaged = override;
+
+		overrideLink.setVisible(!overrideManaged);
+		unOverrideLink.setVisible(overrideManaged);
+		
+		addMemberLink.setVisible(overrideManaged);
+		importMemberLink.setVisible(overrideManaged);
 	}
 	
 	private void doNewCurriculumElement(UserRequest ureq) {
@@ -350,7 +400,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, null, curriculum, false);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, null, curriculum, overrideManaged);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			return StepsMainRunController.DONE_MODIFIED;
@@ -365,7 +415,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, null, null, curriculum, false);
+		Step start = new ImportMember_1a_LoginListStep(ureq, null, null, curriculum, overrideManaged);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
 			if(runContext.containsKey("notFounds")) {

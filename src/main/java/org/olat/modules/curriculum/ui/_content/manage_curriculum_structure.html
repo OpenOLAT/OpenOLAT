@@ -8,4 +8,16 @@
 	#end
 </div></div>
 #end
+#if($r.visible("override.member") || $r.visible("unoverride.member"))
+	<div class="o_warning">
+		$r.translate("override.member.hint")
+		<div class="o_button_group">
+		#if($r.visible("override.member"))
+			$r.render("override.member")
+		#elseif($r.visible("unoverride.member"))
+			$r.render("unoverride.member")
+		#end
+		</div>
+	</div>
+#end
 $r.render("table")

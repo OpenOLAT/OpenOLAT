@@ -44,6 +44,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
 	
+	public CurriculumElementRow(CurriculumElement element) {
+		this.element = element;
+		parentKey = element.getParent() == null ? null : element.getParent().getKey();
+		numOfResources = 0l;
+		toolsLink = null;
+		resourcesLink = null;
+	}
+	
 	public CurriculumElementRow(CurriculumElement element, long numOfResources, FormLink toolsLink, FormLink resourcesLink) {
 		this.element = element;
 		this.toolsLink = toolsLink;
@@ -55,6 +63,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	@Override
 	public Long getKey() {
 		return element.getKey();
+	}
+	
+	public CurriculumElement getCurriculumElement() {
+		return element;
 	}
 	
 	public String getIdentifier() {
