@@ -138,7 +138,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(secCallback.canManagerCurriculumElementUsers()) {
-			if(isAllowedToOverrideManaged(ureq)) {
+			if(managed && isAllowedToOverrideManaged(ureq)) {
 				overrideLink = uifactory.addFormLink("override.member", formLayout, Link.BUTTON);
 				overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
 				
