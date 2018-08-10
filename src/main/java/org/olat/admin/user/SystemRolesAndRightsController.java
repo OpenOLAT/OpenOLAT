@@ -509,8 +509,6 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		boolean iAmAdmin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
 				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager)
 				|| managerRoles.isSystemAdmin();
-		
-		RolesByOrganisation editedOrganisationRoles = editedRoles.getRoles(wrapper.getOrganisation());
 
 		// 2) system roles
 		List<OrganisationRoles> rolesToAdd = new ArrayList<>();
@@ -538,7 +536,11 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			wrapper.commit(OrganisationRoles.administrator, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.sysadmin, rolesToAdd, rolesToRemove);
 		}
-		
+
+		RolesByOrganisation editedOrganisationRoles = editedRoles.getRoles(wrapper.getOrganisation());
+		if(editedOrganisationRoles == null) {
+			editedOrganisationRoles = new RolesByOrganisation(wrapper.getOrganisation(), OrganisationRoles.EMPTY_ROLES);
+		}
 		RolesByOrganisation updatedRoles = RolesByOrganisation.enhance(editedOrganisationRoles, rolesToAdd, rolesToRemove);
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);
 	}
