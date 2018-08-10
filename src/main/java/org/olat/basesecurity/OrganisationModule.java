@@ -50,11 +50,15 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 	
 	@Override
 	public void init() {
-		//
+		updateProperties();
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
+		updateProperties();
+	}
+	
+	private void updateProperties() {
 		String enabledObj = getStringPropertyValue(ORGANISATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
