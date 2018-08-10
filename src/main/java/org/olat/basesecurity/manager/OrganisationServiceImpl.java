@@ -406,7 +406,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public void removeMember(IdentityRef member, OrganisationRoles role) {
 		Organisation defOrganisation = getDefaultOrganisation();
-		removeMember(defOrganisation, member, role);
+		removeMember(defOrganisation, member, role, true);
 	}
 	
 
@@ -491,10 +491,22 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 	}
 	
-
 	@Override
-	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role) {
-		groupDao.removeMembership(organisation.getGroup(), member, role.name());
+	public boolean removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role, boolean excludeInherited) {
+		GroupMembership membership = groupDao.getMembership(organisation.getGroup(), member, role.name());
+		if(membership != null && (!excludeInherited || membership.getInheritanceMode() == GroupMembershipInheritance.root
+				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
+			groupDao.removeMembership(membership);
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.root
+					|| membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+				OrganisationNode organisationTree = organisationDao.getDescendantTree(organisation);
+				for(OrganisationNode child:organisationTree.getChildrenNode()) {
+					removeInherithedMembership(child, member, role.name());
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

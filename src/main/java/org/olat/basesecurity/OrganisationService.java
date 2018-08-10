@@ -193,11 +193,33 @@ public interface OrganisationService {
 	 */
 	public void addMember(Organisation organisation, Identity member, OrganisationRoles role, GroupMembershipInheritance inheritanceMode);
 	
+	/**
+	 * Remove the role on the default organisation.
+	 * 
+	 * @param member The user
+	 * @param role The role to remove
+	 */
 	public void removeMember(IdentityRef member, OrganisationRoles role);
 
+	/**
+	 * Remove all roles the user user has from the specified organization. The method
+	 * will recursively remove the root and inherited roles.
+	 * 
+	 * @param organisation The organization
+	 * @param member The member
+	 */
 	public void removeMember(Organisation organisation, IdentityRef member);
 	
-	public void removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role);
+	/**
+	 * Remove the specified user's role from the organization. The method will
+	 * recursively remove root and inherited roles but only membership
+	 * 
+	 * @param organisation The organization
+	 * @param member The user
+	 * @param role The role to remove
+	 * @param excludeInherited true if you want to ignore inherited membership
+	 */
+	public boolean removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role, boolean excludeInherited);
 	
 	public void setAsGuest(Identity identity);
 	

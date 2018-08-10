@@ -245,6 +245,17 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.sysadmin, actingIdentity, updatedIdentity);
 	}
 	
+	/**
+	 * The method only works with root and none role. The changes to inherited
+	 * membership are delegated to the organization service.
+	 * 
+	 * @param organisation The organization
+	 * @param roles The roles
+	 * @param currentRoles The roles the user currently has
+	 * @param role The role to change
+	 * @param actingIdentity The user who makes the change
+	 * @param updatedIdentity The identity to change
+	 */
 	private void updateRoles(Organisation organisation, RolesByOrganisation roles, List<String> currentRoles, OrganisationRoles role,
 			Identity actingIdentity, Identity updatedIdentity) {
 		boolean hasBeenRole = currentRoles.contains(role.name());
@@ -253,6 +264,17 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				role, hasBeenRole, isRole);	
 	}
 	
+	/**
+	 * The method only works with root and none role. The changes to inherited
+	 * membership are delegated to the organization service.
+	 * 
+	 * @param organisation The organization
+	 * @param actingIdentity The user who makes the change
+	 * @param updatedIdentity The user to edit
+	 * @param role The role to add or remove
+	 * @param hasBeen
+	 * @param isNow
+	 */
 	private void updateRolesInOrganisation(Organisation organisation, Identity actingIdentity, Identity updatedIdentity,
 			OrganisationRoles role, boolean hasBeen, boolean isNow) {
 		if (!hasBeen && isNow) {
@@ -261,8 +283,10 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getKey(), null);
 		} else if (hasBeen && !isNow) {
 			// user not anymore in security group, remove him
-			organisationService.removeMember(organisation, updatedIdentity, role);
-			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getKey(), null);
+			boolean deleted = organisationService.removeMember(organisation, updatedIdentity, role, true);
+			if(deleted) {
+				log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getKey(), null);
+			}
 		}
 	}
 

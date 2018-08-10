@@ -95,7 +95,7 @@ public class InstitutionNamesToOrganisationMigrator {
 				Organisation institution = nameToOrganisations.get(institutionName.toLowerCase());
 				if(institution != null) {
 					organisationService
-						.removeMember(defOrganisation, manager, OrganisationRoles.learnresourcemanager);
+						.removeMember(defOrganisation, manager, OrganisationRoles.learnresourcemanager, true);
 					organisationService
 						.addMember(institution, manager, OrganisationRoles.learnresourcemanager);
 					dbInstance.commit();

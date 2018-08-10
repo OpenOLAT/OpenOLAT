@@ -468,7 +468,7 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		organisationService.removeMember(organisation, identity, role);
+		organisationService.removeMember(organisation, identity, role, true);
 		return Response.ok().build();
 	}
 	
