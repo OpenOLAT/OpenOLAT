@@ -381,6 +381,7 @@ public class RepositoryEntryMyCourseQueries {
 			}
 		}
 		//+ membership
+		sb.append("(");
 		if(inRoles.isEmpty() && !membershipMandatory) {
 			//sub select are very quick
 			sb.append("(v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(") or ");
@@ -409,7 +410,7 @@ public class RepositoryEntryMyCourseQueries {
 			if(or) sb.append(" or ");
 			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
 		}
-		sb.append(" ))");
+		sb.append(")))");
 		return true;
 	}
 	

@@ -76,7 +76,7 @@ public class RepositoryEntryQueries {
 			query.append("select count(v.key) from repositoryentry v ");
 			query.append(" inner join v.olatResource as res");
 		} else if(params.getParentEntry() != null) {
-			query.append("select v from ").append(CatalogEntry.class.getName()).append(" cei ")
+			query.append("select distinct v from ").append(CatalogEntry.class.getName()).append(" cei ")
 			     .append(" inner join cei.parent parentCei")
 			     .append(" inner join cei.repositoryEntry v")
 			     .append(" inner join fetch v.olatResource as res")
@@ -194,7 +194,7 @@ public class RepositoryEntryQueries {
 	 */
 	private boolean appendAccessSubSelects(QueryBuilder sb, Roles roles, boolean onlyExplicitMember) {
 		if(roles.isGuestOnly()) {
-			sb.append(" where v.guests=true and v.status not in ('").append(RepositoryEntryStatusEnum.trash).append("','").append(RepositoryEntryStatusEnum.deleted).append("')");
+			sb.append(" where v.guests=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			return false;
 		}
 		
