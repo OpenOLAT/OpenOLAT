@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationDataDeletable;
@@ -53,6 +55,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
+import org.olat.modules.quality.QualityDataCollectionToOrganisation;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipation;
@@ -83,6 +86,8 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
 	@Autowired
+	private QualityDataCollectionToOrganisationDAO dataCollectionToOrganisationDao;
+	@Autowired
 	private QualityContextDAO contextDao;
 	@Autowired
 	private QualityContextToCurriculumDAO contextToCurriculumDao;
@@ -106,11 +111,15 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	private ReferenceManager referenceManager;
 	
 	@Override
-	public QualityDataCollection createDataCollection(RepositoryEntry formEntry) {
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
+			RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
 		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
 		resourceManager.findOrPersistResourceable(dataCollection);
 		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
+		for (Organisation organisation: organisations) {
+			dataCollectionToOrganisationDao.createRelation(dataCollection, organisation);
+		}
 		return dataCollection;
 	}
 
@@ -119,6 +128,11 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 		return dataCollectionDao.updateDataCollection(dataCollection);
 	}
 
+	@Override
+	public List<QualityDataCollection> loadAllDataCollections() {
+		return dataCollectionDao.loadAllDataCollections();
+	}
+	
 	@Override
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef) {
 		return dataCollectionDao.loadDataCollectionByKey(dataCollectionRef);
@@ -165,7 +179,7 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	@Override
 	public List<QualityDataCollectionView> loadDataCollections(Translator translator,
 			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
-		return dataCollectionDao.loadDataCollections(translator, null, firstResult, maxResults, orderBy);
+		return dataCollectionDao.loadDataCollections(translator, searchParams, firstResult, maxResults, orderBy);
 	}
 
 	@Override
@@ -178,6 +192,7 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 		evaluationFormManager.deleteSurvey(survey);
 		deleteReferences(dataCollection);
 		resourceManager.deleteOLATResourceable(dataCollection);
+		dataCollectionToOrganisationDao.deleteRelations(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
 		log.info("Quality management data collection deleted: " + dataCollection.toString());
 	}
@@ -206,6 +221,35 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	private void deleteReferences(QualityDataCollectionLight dataCollection) {
 		for (Reference reference : referenceManager.getReferences(dataCollection)) {
 			referenceManager.delete(reference);
+		}
+	}
+
+	@Override
+	public List<Organisation> loadDataCollectionOrganisations(QualityDataCollectionRef dataCollectionRef) {
+		return dataCollectionToOrganisationDao.loadOrganisationsByDataCollectionKey(dataCollectionRef);
+	}
+
+	@Override
+	public void updateDataCollectionOrganisations(QualityDataCollection dataCollection,
+			List<Organisation> organisations) {
+		Set<QualityDataCollectionToOrganisation> currentRelations = new HashSet<>(dataCollectionToOrganisationDao
+				.loadByDataCollectionKey(dataCollection));
+		List<QualityDataCollectionToOrganisation> copyRelations = new ArrayList<>(currentRelations);
+		List<Organisation> currentOrganisationsByRelations = new ArrayList<>();
+		for(QualityDataCollectionToOrganisation relation:copyRelations) {
+			if(!organisations.contains(relation.getOrganisation())) {
+				dataCollectionToOrganisationDao.delete(relation);
+				currentRelations.remove(relation);
+			} else {
+				currentOrganisationsByRelations.add(relation.getOrganisation());
+			}
+		}
+		
+		for(Organisation organisation:organisations) {
+			if(!currentOrganisationsByRelations.contains(organisation)) {
+				QualityDataCollectionToOrganisation newRelation = dataCollectionToOrganisationDao.createRelation(dataCollection, organisation);
+				currentRelations.add(newRelation);
+			}
 		}
 	}
 
@@ -370,5 +414,4 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 				&& !contextToCurriculumElementDao.hasRelations(curriculumElement)
 				&& !dataCollectionDao.hasDataCollection(curriculumElement);
 	}
-	
 }

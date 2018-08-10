@@ -76,6 +76,9 @@ public class EvaluationFormTestsHelper {
 				.createQuery("delete from qualitycontext")
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitydatacollectiontoorganisation")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from qualitydatacollection")
 				.executeUpdate();
 		// evaluation forms

@@ -20,6 +20,7 @@
 package org.olat.modules.quality.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityService;
@@ -44,12 +46,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<DataCollectionRow> {
 	
 	private final Translator translator;
+	private final Collection<? extends OrganisationRef> organsationRefs;
 	
 	@Autowired
 	private QualityService qualityService;
-	
-	public DataCollectionDataSource(Translator translator) {
+
+	public DataCollectionDataSource(Translator translator, Collection<? extends OrganisationRef> organsationRefs) {
 		this.translator = translator;
+		this.organsationRefs = organsationRefs;
 		CoreSpringFactory.autowireObject(this);
 	}
 
@@ -68,6 +72,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(organsationRefs);
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, searchParams,
 				firstResult, maxResults, orderBy);
 		List<DataCollectionRow> rows = new ArrayList<>();

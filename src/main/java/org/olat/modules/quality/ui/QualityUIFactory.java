@@ -22,10 +22,15 @@ package org.olat.modules.quality.ui;
 import static org.olat.modules.quality.QualityDataCollectionTopicType.CUSTOM;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
@@ -33,6 +38,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
@@ -68,6 +74,46 @@ public class QualityUIFactory {
 		}
 		formatedTopic.append(topic);
 		return formatedTopic.toString();
+	}
+	
+	static String getTopicTypeKey(QualityDataCollectionTopicType topicType) {
+		return topicType.name();
+	}
+	
+	static QualityDataCollectionTopicType getTopicTypeEnum(String key) {
+		return QualityDataCollectionTopicType.valueOf(key);
+	}
+
+	static String[] getTopicTypeKeys(QualityDataCollectionTopicType actual) {
+		return Arrays.stream(QualityDataCollectionTopicType.values())
+				.filter(organisationDisabled(actual))
+				.filter(curriculumDisabled(actual))
+				.map(QualityDataCollectionTopicType::name)
+				.toArray(String[]::new);
+	}
+
+	static String[] getTopicTypeValues(Translator translator, QualityDataCollectionTopicType actual) {
+		return Arrays.stream(QualityDataCollectionTopicType.values())
+				.filter(organisationDisabled(actual))
+				.filter(curriculumDisabled(actual))
+				.map(type -> type.getI18nKey())
+				.map(i18n -> translator.translate(i18n))
+				.toArray(String[]::new);
+	}
+	
+	private static Predicate<QualityDataCollectionTopicType> organisationDisabled(QualityDataCollectionTopicType actual) {
+		return tt ->
+				   (actual != null && actual.equals(tt))
+				|| !QualityDataCollectionTopicType.ORGANISATION.equals(tt)
+				|| CoreSpringFactory.getImpl(OrganisationModule.class).isEnabled();
+	}
+	
+	private static Predicate<QualityDataCollectionTopicType> curriculumDisabled(QualityDataCollectionTopicType actual) {
+		return tt -> 
+				   (actual != null && actual.equals(tt))
+				|| !(QualityDataCollectionTopicType.CURRICULUM.equals(tt)
+						|| QualityDataCollectionTopicType.CURRICULUM_ELEMENT.equals(tt))
+				|| CoreSpringFactory.getImpl(CurriculumModule.class).isEnabled();
 	}
 	
 	public static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums) {

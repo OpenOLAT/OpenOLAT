@@ -45,7 +45,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -88,6 +90,8 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	private QualityService qualityService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
 
@@ -141,9 +145,11 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
 			stackPanel.addTool(addCourseUsersLink, Align.right);
 			
-			addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.add.curele"), this);
-			addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_curele");
-			stackPanel.addTool(addCurriculumElementUsersLink, Align.right);;
+			if (curriculumModule.isEnabled()) {
+				addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.add.curele"), this);
+				addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_curele");
+				stackPanel.addTool(addCurriculumElementUsersLink, Align.right);
+			}
 			
 			addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
 			addUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
@@ -260,10 +266,11 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	}
 	
 	private void doAddCurriculumElementUsers(UserRequest ureq) {
+		List<Organisation> organisations = qualityService.loadDataCollectionOrganisations(dataCollection);
 		removeAsListenerAndDispose(wizard);
 		wizard = new StepsMainRunController(ureq, getWindowControl(),
-				new AddCurriculumElementUser_1_ChooseCurriculumElementStep(ureq), addSelectedCurriculumElementUsers(),
-				null, translate("participation.user.curele.add.title"), "");
+				new AddCurriculumElementUser_1_ChooseCurriculumElementStep(ureq, organisations),
+				addSelectedCurriculumElementUsers(), null, translate("participation.user.curele.add.title"), "");
 		listenTo(wizard);
 		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
 	}

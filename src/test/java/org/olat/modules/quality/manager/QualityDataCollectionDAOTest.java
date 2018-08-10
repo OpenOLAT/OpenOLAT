@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
@@ -27,6 +28,7 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -136,6 +138,18 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		List<QualityDataCollectionView> collections = sut.loadDataCollections(TRANSLATOR, searchParams , 0, -1);
 		
 		assertThat(collections).isEmpty();
+	}
+	
+	@Test
+	public void shouldReturnAllDataCollections() {
+		QualityDataCollection dataCollection1 = sut.createDataCollection();
+		QualityDataCollection dataCollection2 = sut.createDataCollection();
+		QualityDataCollection dataCollection3 = sut.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityDataCollection> dataCollections = sut.loadAllDataCollections();
+		
+		assertThat(dataCollections).containsExactlyInAnyOrder(dataCollection1, dataCollection2, dataCollection3);
 	}
 	
 	@Test
@@ -279,6 +293,23 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		QualityDataCollectionView dataCollectionView = dataCollections.get(0);
 		assertThat(dataCollectionView.getKey()).isEqualTo(dataCollection.getKey());
 	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByOrganisations() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
 
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
+		assertThat(loadedKeys)
+				.containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey())
+				.doesNotContain(otherDataCollection.getKey());
+	}
 
 }

@@ -19,10 +19,6 @@
  */
 package org.olat.modules.quality;
 
-import java.util.Arrays;
-
-import org.olat.core.gui.translator.Translator;
-
 /**
  * 
  * Initial date: 15.06.2018<br>
@@ -46,27 +42,6 @@ public enum QualityDataCollectionTopicType {
 	
 	public String getI18nKey() {
 		return i18nKey;
-	}
-
-	public String getKey() {
-		return name();
-	}
-	
-	public static QualityDataCollectionTopicType getEnum(String key) {
-		return QualityDataCollectionTopicType.valueOf(key);
-	}
-
-	public static String[] getKeys() {
-		return Arrays.stream(QualityDataCollectionTopicType.values())
-				.map(QualityDataCollectionTopicType::name)
-				.toArray(String[]::new);
-	}
-	
-	public static String[] getValues(Translator translator) {
-		return Arrays.stream(QualityDataCollectionTopicType.values())
-				.map(type -> type.getI18nKey())
-				.map(i18n -> translator.translate(i18n))
-				.toArray(String[]::new);
 	}
 
 }

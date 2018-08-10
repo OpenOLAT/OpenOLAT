@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import static java.util.stream.Collectors.toList;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
@@ -77,7 +78,15 @@ public class QualityDataCollectionDAO {
 		}
 		return dataCollection;
 	}
-
+	
+	List<QualityDataCollection> loadAllDataCollections() {
+		String query = "select collection from qualitydatacollection as collection";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, QualityDataCollection.class)
+				.getResultList();
+	}
+ 
 	QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef) {
 		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return null;
 			
@@ -276,6 +285,13 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				sb.append(" and collection.key = :collectionKey");
 			}
+			if (searchParams.getOrgansationRefs() != null && !searchParams.getOrgansationRefs().isEmpty()) {
+				sb.append(" and collection.key in (");
+				sb.append("     select collectionToOrganisation.dataCollection.key");
+				sb.append("       from qualitydatacollectiontoorganisation as collectionToOrganisation");
+				sb.append("      where collectionToOrganisation.organisation.key in :organisationKeys");
+				sb.append(" )");
+			}
 		}
 	}
 	
@@ -283,6 +299,10 @@ public class QualityDataCollectionDAO {
 		if (searchParams != null) {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
+			}
+			if (searchParams.getOrgansationRefs() != null && !searchParams.getOrgansationRefs().isEmpty()) {
+				List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+				query.setParameter("organisationKeys", organiationKeys);
 			}
 		}
 	}

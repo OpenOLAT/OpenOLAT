@@ -50,7 +50,8 @@ public class DataCollectionDeleteConfirmationController extends FormBasicControl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormInfo("data.collection.delete.confirm", new String[] { dataCollection.getTitle() });
+		String formattedTitle = dataCollection.getTitle() == null? "": dataCollection.getTitle();
+		setFormInfo("data.collection.delete.confirm", new String[] { formattedTitle });
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

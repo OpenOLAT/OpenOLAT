@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.ui.wizard;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -26,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.modules.quality.ui.ParticipationListController;
 
@@ -37,8 +40,12 @@ import org.olat.modules.quality.ui.ParticipationListController;
  */
 public class AddCurriculumElementUser_1_ChooseCurriculumElementStep extends BasicStep {
 	
-	public AddCurriculumElementUser_1_ChooseCurriculumElementStep(UserRequest ureq) {
+	private final List<? extends OrganisationRef> organisationRefs;
+
+	public AddCurriculumElementUser_1_ChooseCurriculumElementStep(UserRequest ureq,
+			List<? extends OrganisationRef> organisationRefs) {
 		super(ureq);
+		this.organisationRefs = organisationRefs;
 		setNextStep(new AddCurriculumElementUser_2_ChooseRolesStep(ureq));
 		setTranslator(Util.createPackageTranslator(ParticipationListController.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("participation.user.curele.add.choose.curele.title", "participation.user.curele.add.choose.curele.title");
@@ -54,6 +61,6 @@ public class AddCurriculumElementUser_1_ChooseCurriculumElementStep extends Basi
 		if(!runContext.containsKey("context")) {
 			runContext.put("context", new CurriculumElementContext());
 		}
-		return new AddCurriculumElementUserSelectionController(ureq, wControl, form, runContext);
+		return new AddCurriculumElementUserSelectionController(ureq, wControl, form, runContext, organisationRefs);
 	}
 }

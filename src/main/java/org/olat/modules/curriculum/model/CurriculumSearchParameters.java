@@ -35,16 +35,16 @@ public class CurriculumSearchParameters {
 	
 	private String searchString;
 	private Identity managerIdentity;
-	private List<OrganisationRef> organisations;
+	private List<? extends OrganisationRef> organisations;
 
-	public List<OrganisationRef> getOrganisations() {
+	public List<? extends OrganisationRef> getOrganisations() {
 		if(organisations == null) {
 			organisations = new ArrayList<>();
 		}
 		return organisations;
 	}
 
-	public void setOrganisations(List<OrganisationRef> organisations) {
+	public void setOrganisations(List<? extends OrganisationRef> organisations) {
 		this.organisations = organisations;
 	}
 

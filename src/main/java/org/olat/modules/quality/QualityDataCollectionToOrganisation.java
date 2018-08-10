@@ -19,35 +19,19 @@
  */
 package org.olat.modules.quality;
 
-import java.util.Collection;
-
-import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Organisation;
 
 /**
  * 
- * Initial date: 07.08.2018<br>
+ * Initial date: 10.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityDataCollectionViewSearchParams {
+public interface QualityDataCollectionToOrganisation extends CreateInfo {
+
+	public QualityDataCollection getDataCollection();
 	
-	private QualityDataCollectionRef dataCollectionRef;
-	private Collection<? extends OrganisationRef> organsationRefs;
-
-	public QualityDataCollectionRef getDataCollectionRef() {
-		return dataCollectionRef;
-	}
-
-	public void setDataCollectionRef(QualityDataCollectionRef dataCollectionRef) {
-		this.dataCollectionRef = dataCollectionRef;
-	}
-
-	public Collection<? extends OrganisationRef> getOrgansationRefs() {
-		return organsationRefs;
-	}
-
-	public void setOrgansationRefs(Collection<? extends OrganisationRef> organsationRefs) {
-		this.organsationRefs = organsationRefs;
-	}
-
+	public Organisation getOrganisation();
+	
 }

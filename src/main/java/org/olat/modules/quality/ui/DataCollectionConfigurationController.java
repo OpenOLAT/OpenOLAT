@@ -22,18 +22,27 @@ package org.olat.modules.quality.ui;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -47,8 +56,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -87,8 +99,9 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	private FormLink evaFormPreviewLink;
 	private FormLink evaFormReplaceLink;
 	private FormLink evaFormEditLink;
-	DateChooser startEl;
-	DateChooser deadlineEl;
+	private DateChooser startEl;
+	private DateChooser deadlineEl;
+	private MultipleSelectionElement organisationsEl;
 	private SingleSelection topicTypeEl;
 	private TextElement topicCustomTextEl;
 	private StaticTextElement topicIdentityNameEl;
@@ -106,6 +119,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	private ReferencableEntriesSearchController topicRepositorySearchCtrl;
 	private RepositoryEntry formEntry;
 	private boolean formEntryChanged = false;
+	private List<Organisation> dataCollectionOrganisations;
 	private QualityDataCollectionTopicType topicType;
 	private Identity topicIdentity;
 	private Organisation topicOrganisation;
@@ -118,7 +132,9 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private OrganisationService organisationSevice;
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
 
@@ -165,13 +181,21 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				"btn btn-default o_xsmall");
 		evaFormEditLink = uifactory.addFormLink("data.collection.form.edit", formCont, "btn btn-default o_xsmall");
 		
+		organisationsEl = uifactory.addCheckboxesDropdown("data.collection.organisations", formLayout);
+		if (organisationModule.isEnabled()) {
+			initFormOrganisations(ureq.getUserSession());
+			organisationsEl.addActionListener(FormEvent.ONCLICK);
+		}
+		
 		// topic
+		QualityDataCollectionTopicType actual = dataCollection.getTopicType();
 		topicTypeEl = uifactory.addDropdownSingleselect("data.collection.topic.type.select", formLayout,
-				QualityDataCollectionTopicType.getKeys(), QualityDataCollectionTopicType.getValues(getTranslator()));
+				QualityUIFactory.getTopicTypeKeys(actual),
+				QualityUIFactory.getTopicTypeValues(getTranslator(), actual));
 		topicTypeEl.setAllowNoSelection(true);
 		topicTypeEl.addActionListener(FormEvent.ONCHANGE);
 		if (topicType != null) {
-			topicTypeEl.select(topicType.getKey(), true);
+			topicTypeEl.select(QualityUIFactory.getTopicTypeKey(topicType), true);
 		}
 		// topic custom
 		topicCustomTextEl = uifactory.addTextElement("data.collection.topic.custom.text", 200,
@@ -201,6 +225,37 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		updateUI();
 	}
 	
+	private void initFormOrganisations(UserSession usess) {
+		Roles roles = usess.getRoles();
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
+		List<Organisation> organisationList = new ArrayList<>(organisations);
+
+		List<Organisation> dcOrganisations = qualityService.loadDataCollectionOrganisations(dataCollection);
+		for(Organisation dcOrganisation:dcOrganisations) {
+			if(dcOrganisation != null && !organisationList.contains(dcOrganisation)) {
+				organisationList.add(dcOrganisation);
+			}
+		}
+		
+		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
+		
+		List<String> keyList = new ArrayList<>();
+		List<String> valueList = new ArrayList<>();
+		for(Organisation organisation:organisationList) {
+			keyList.add(organisation.getKey().toString());
+			valueList.add(organisation.getDisplayName());
+		}
+		dataCollectionOrganisations = new ArrayList<>(dcOrganisations.size());
+		organisationsEl.setKeysAndValues(keyList.toArray(new String[keyList.size()]),
+				valueList.toArray(new String[valueList.size()]));
+		for(Organisation reOrganisation:dcOrganisations) {
+			if(keyList.contains(reOrganisation.getKey().toString())) {
+				organisationsEl.select(reOrganisation.getKey().toString(), true);
+			}
+		}
+	}
+	
 	@Override
 	protected void updateUI(UserRequest ureq) {
 		startEl.setDate(dataCollection.getStart());
@@ -216,6 +271,8 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		startEl.setEnabled(updateBaseConfiguration);
 		deadlineEl.setEnabled(updateBaseConfiguration);
 		buttonLayout.setVisible(updateBaseConfiguration);
+		organisationsEl.setEnabled(updateBaseConfiguration);
+		organisationsEl.setVisible(organisationModule.isEnabled());
 		topicTypeEl.setEnabled(updateBaseConfiguration);
 		topicCustomTextEl.setEnabled(updateBaseConfiguration);
 		topicIdentityNameEl.setEnabled(updateBaseConfiguration);
@@ -242,7 +299,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		topicRepositorySelectLink.setVisible(false);
 		if (topicTypeEl.isOneSelected()) {
 			String selectedKey = topicTypeEl.getSelectedKey();
-			topicType = QualityDataCollectionTopicType.getEnum(selectedKey);
+			topicType = QualityUIFactory.getTopicTypeEnum(selectedKey);
 			switch (topicType) {
 			case CUSTOM: 
 				topicCustomTextEl.setVisible(true);
@@ -256,7 +313,11 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				topicIdentitySelectLink.setVisible(secCallback.canUpdateBaseConfiguration(dataCollection));
 				break;
 			case ORGANISATION:
-				List<Organisation> organisations = organisationSevice.getOrganisations(OrganisationStatus.values());
+				List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
+						OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
+				if (topicOrganisation != null && !organisations.contains(topicOrganisation)) {
+					organisations.add(topicOrganisation);
+				}
 				OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 				organisationModel.loadTreeModel(organisations);
 				KeysValues organistionKeysValues = QualityUIFactory.getOrganisationKeysValues(organisationModel);
@@ -268,7 +329,13 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				break;
 			case CURRICULUM:
 				CurriculumSearchParameters params = new CurriculumSearchParameters();
+				if (organisationsEl.isVisible()) {
+					params.setOrganisations(getSelectedOrganisations());
+				}
 				List<Curriculum> curriculums = curriculumService.getCurriculums(params);
+				if (topicCurriculum != null && !curriculums.contains(topicCurriculum)) {
+					curriculums.add(topicCurriculum);
+				}
 				KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums);
 				topicCurriculumEl.setKeysAndValues(curriculumKeysValues.getKeys(), curriculumKeysValues.getValues(), null);
 				if (topicCurriculum != null) {
@@ -278,7 +345,13 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				break;
 			case CURRICULUM_ELEMENT:
 				CurriculumSearchParameters params2 = new CurriculumSearchParameters();
+				if (organisationsEl.isVisible()) {
+					params2.setOrganisations(getSelectedOrganisations());
+				}
 				List<Curriculum> curriculums2 = curriculumService.getCurriculums(params2);
+				if (topicCurriculum != null && !curriculums2.contains(topicCurriculum)) {
+					curriculums2.add(topicCurriculum);
+				}
 				KeysValues curriculumKeysValues2 = QualityUIFactory.getCurriculumKeysValues(curriculums2);
 				topicCurriculumEl.setKeysAndValues(curriculumKeysValues2.getKeys(), curriculumKeysValues2.getValues(), null);
 				if (topicCurriculum != null) {
@@ -318,6 +391,8 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 			doEditEvaluationForm(ureq);
 		} else if (source == evaFormPreviewLink) {
 			doPreviewEvaluationForm(ureq);
+		} else if (source == organisationsEl) {
+			updateTopicUI();
 		} else if (source == topicTypeEl) {
 			updateTopicUI();
 		} else if (source == topicIdentitySelectLink) {
@@ -383,6 +458,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		boolean allOk = true;
 		
 		deadlineEl.clearError();
+		organisationsEl.clearError();
 		topicTypeEl.clearError();
 		topicCustomTextEl.clearError();
 		topicIdentityNameEl.clearError();
@@ -434,6 +510,11 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				deadlineEl.setErrorKey("form.mandatory.hover", null);
 				allOk = false;
 			}
+		}
+		
+		if (organisationsEl.isVisible() && !organisationsEl.isAtLeastSelected(1)) {
+			organisationsEl.setErrorKey("form.mandatory.hover", null);
+			allOk = false;
 		}
 		
 		if (topicType == null) {
@@ -515,7 +596,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				if (topicOrganisationEl.isOneSelected()) {
 					String organiationKey = topicOrganisationEl.getSelectedKey();
 					OrganisationRef organisationRef = QualityUIFactory.getOrganisationRef(organiationKey);
-					Organisation organisation = organisationSevice.getOrganisation(organisationRef);
+					Organisation organisation = organisationService.getOrganisation(organisationRef);
 					dataCollection.setTopicOrganisation(organisation);
 				} 
 				break;
@@ -555,7 +636,39 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 			}
 		}
 		
+		// organisations
+		if (organisationsEl.isVisible()) {
+			List<Organisation> organisations = getSelectedOrganisations();
+			qualityService.updateDataCollectionOrganisations(dataCollection, organisations);
+		}
+		
 		fireEvent(ureq, new DataCollectionEvent(dataCollection, Action.CHANGED));
+	}
+
+	private List<Organisation> getSelectedOrganisations() {
+		List<Organisation> organisations = new ArrayList<>(dataCollectionOrganisations);
+
+		Set<String> organisationKeys = organisationsEl.getKeys();
+		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
+
+		Set<String> currentOrganisationKeys = new HashSet<>();
+		for(Iterator<Organisation> it=organisations.iterator(); it.hasNext(); ) {
+			String key = it.next().getKey().toString();
+			currentOrganisationKeys.add(key);
+			if(organisationKeys.contains(key) && !selectedOrganisationKeys.contains(key)) {
+				it.remove();
+			}
+		}
+
+		for(String selectedOrganisationKey:selectedOrganisationKeys) {
+			if(!currentOrganisationKeys.contains(selectedOrganisationKey)) {
+				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(selectedOrganisationKey)));
+				if(organisation != null) {
+					organisations.add(organisation);
+				}
+			}
+		}
+		return organisations;
 	}
 	
 	private void doSelectFormEntry(UserRequest ureq) {

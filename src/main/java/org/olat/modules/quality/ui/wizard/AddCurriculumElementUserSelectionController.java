@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -60,12 +61,15 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 	private SingleSelection curriculumElementEl;
 	
 	private CurriculumElementContext context;
+	private final List<? extends OrganisationRef> organisationRefs;
 
 	@Autowired
 	private CurriculumService curriculumService;
 
-	public AddCurriculumElementUserSelectionController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public AddCurriculumElementUserSelectionController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, List<? extends OrganisationRef> organisationRefs) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		this.organisationRefs = organisationRefs;
 		setTranslator(Util.createPackageTranslator(ParticipationListController.class, getLocale(), getTranslator()));
 		context = (CurriculumElementContext) getFromRunContext("context");
 		initForm(ureq);
@@ -83,6 +87,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
+		params.setOrganisations(organisationRefs);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
 		KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums);
 		curriculumEl = uifactory.addDropdownSingleselect("participation.user.curele.add.choose.curriculum", formLayout,

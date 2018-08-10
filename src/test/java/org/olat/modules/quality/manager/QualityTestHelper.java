@@ -20,6 +20,7 @@
 package org.olat.modules.quality.manager;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -82,9 +83,10 @@ public class QualityTestHelper {
 		evaTestHelper.deleteAll();
 	}
 
-	QualityDataCollection createDataCollection(String title) {
+	QualityDataCollection createDataCollection(String title, Organisation organisation) {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(formEntry);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry);
 		dataCollection.setTitle(title);
 		dataCollection.setStart(new Date());
 		dataCollection.setDeadline(new Date());
@@ -97,9 +99,23 @@ public class QualityTestHelper {
 		return createDataCollection(UUID.randomUUID().toString());
 	}
 	
+	QualityDataCollection createDataCollection(String title) {
+		return createDataCollection(title, organisationService.getDefaultOrganisation());
+	}
+	
+	QualityDataCollection createDataCollection(Organisation organisation) {
+		return createDataCollection(UUID.randomUUID().toString(), organisation);
+	}
+	
 	QualityDataCollection createDataCollectionWithoutValues() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		return qualityService.createDataCollection(formEntry);
+		List<Organisation> organisations = Collections.singletonList(organisationService.getDefaultOrganisation());
+		return qualityService.createDataCollection(organisations, formEntry);
+	}
+
+	QualityDataCollection createDataCollectionWithoutOrganisation() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		return qualityService.createDataCollection(Collections.emptyList(), formEntry);
 	}
 	
 	QualityDataCollection createDataCollectionWithStartInFuture() {

@@ -27,6 +27,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -42,9 +43,12 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface QualityService {
 
-	public QualityDataCollection createDataCollection(RepositoryEntry formEntry);
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
+			RepositoryEntry formEntry);
 	
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection);
+
+	public List<QualityDataCollection> loadAllDataCollections();
 
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef);
 	
@@ -81,6 +85,11 @@ public interface QualityService {
 	public boolean isFormEntryUpdateable(QualityDataCollection dataCollection);
 
 	public void updateFormEntry(QualityDataCollection dataCollection, RepositoryEntry formEntry);
+
+	public List<Organisation> loadDataCollectionOrganisations(QualityDataCollectionRef dataCollectionRef);
+
+	public void updateDataCollectionOrganisations(QualityDataCollection dataCollection,
+			List<Organisation> organisations);
 
 	/**
 	 * Add the executors to the data collection and returns the participations of
