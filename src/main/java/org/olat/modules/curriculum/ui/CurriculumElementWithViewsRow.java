@@ -135,8 +135,16 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		return repositoryEntry == null || singleEntry ? element.getIdentifier() : null;
 	}
 	
+	public String getCurriculumElementExternalId() {
+		return element == null ? null : element.getExternalId();
+	}
+	
 	public String getCurriculumElementDisplayName() {
 		return repositoryEntry == null || singleEntry ? element.getDisplayName() : null;
+	}
+	
+	public Long getCurriculumElementKey() {
+		return element == null ? null : element.getKey();
 	}
 	
 	public Date getCurriculumElementBeginDate() {
@@ -147,11 +155,21 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		return element == null ? null : element.getEndDate();
 	}
 	
-	public long getPosition() {
-		if(this.isRepositoryEntryOnly()) {
-			return -1l;
+	public Long getCurriculumElementPos() {
+		return element == null ? null : element.getPos();
+	}
+	
+	public String getExternalId() {
+		if(element != null && repositoryEntry != null) {
+			return element.getExternalId() + " " + repositoryEntry.getExternalId();
 		}
-		return element == null ? -1l : element.getPos();
+		if(element != null && repositoryEntry == null) {
+			return element.getExternalId();
+		}
+		if(element == null && repositoryEntry != null) {
+			return repositoryEntry.getExternalId();
+		}
+		return null;
 	}
 	
 	public String getMaterializedPathKeys() {
@@ -406,8 +424,24 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		if(obj instanceof CurriculumElementWithViewsRow) {
 			CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)obj;
 			return ((element == null && row.element == null) || (element != null && element.getKey().equals(row.element.getKey())))
-					&& ((repositoryEntry == null && row.repositoryEntry == null) || (repositoryEntry != null && repositoryEntry.getKey().equals(row.repositoryEntry.getKey())));
+					&& ((repositoryEntry == null && row.repositoryEntry == null)
+							|| (repositoryEntry != null && row.repositoryEntry != null && repositoryEntry.getKey().equals(row.repositoryEntry.getKey())));
 		}
 		return false;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if(isCurriculumElementOnly()) {
+			sb.append("element[key").append(element.getKey()).append(":identifier=").append(element.getIdentifier()).append("]");
+		} else if(isRepositoryEntryOnly()) {
+			sb.append("repositoryEntry[key").append(repositoryEntry.getKey()).append(":identifier=").append(repositoryEntry.getExternalRef()).append("]");
+		} else if(isCurriculumElementWithEntry()) {
+			sb.append("composite[key").append(element.getKey()).append(":identifier=").append(element.getIdentifier()).append("]")
+			  .append("entry[key").append(repositoryEntry.getKey()).append(":identifier=").append(repositoryEntry.getExternalRef()).append("]");
+		}
+		
+		return sb.toString();
 	}
 }

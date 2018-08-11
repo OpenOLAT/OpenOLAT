@@ -6,6 +6,7 @@
 			<i class=" o_icon o_icon_start o_icon-lg"></i>
 		</div>
 		<h4 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h4>
+		## <h5><small>$row.externalId</small></h5>
 		
 		#if($row.curriculumElementBeginDate || $row.curriculumElementEndDate)
 			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
@@ -37,7 +38,8 @@
 			#if(${row.isCurriculumElementWithEntry()})
 				<h5 class="o_title">$r.escapeHtml($row.curriculumElementDisplayName) <small>$r.escapeHtml($row.curriculumElementIdentifier)</small></h5>
 			#end
-			<h4 class="o_title">$r.render($row.getSelectLinkName()) <small>$r.escapeHtml($row.repositoryEntryExternalRef)</small></h4>
+			<h4 class="o_title">$r.render($row.getSelectLinkName()) <small>$r.escapeHtml($row.repositoryEntryExternalRef)</small>
+			## <h5><small>$row.externalId</small></h4></h5>
 
 			#if($row.authors && !$row.authors.empty)
 				<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>

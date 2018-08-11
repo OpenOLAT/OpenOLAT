@@ -175,6 +175,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		VelocityContainer row = createVelocityContainer("curriculum_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-" + curriculum.getKey());
 	}
 
 	@Override
@@ -270,6 +272,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		});
 		
 		Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
+		
 		removeByPermissions(rows);
 		removeDeactivated(rows);
 

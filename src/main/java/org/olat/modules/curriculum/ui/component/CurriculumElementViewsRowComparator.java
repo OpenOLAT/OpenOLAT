@@ -20,13 +20,10 @@
 package org.olat.modules.curriculum.ui.component;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsRow;
 
 /**
@@ -37,7 +34,7 @@ import org.olat.modules.curriculum.ui.CurriculumElementWithViewsRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementViewsRowComparator implements Comparator<CurriculumElementWithViewsRow > {
+public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator {
 
 	private final Collator collator;
 	
@@ -46,97 +43,121 @@ public class CurriculumElementViewsRowComparator implements Comparator<Curriculu
 	}
 
 	@Override
-	public int compare(CurriculumElementWithViewsRow element1, CurriculumElementWithViewsRow element2) {
-		int c = 0;
+	protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
+		if(o1 == null || o2 == null) {
+			return compareNullObjects(o1, o2);
+		}
 		
-		List<CurriculumElementWithViewsRow> parents1 = getParentLine(element1);
-		List<CurriculumElementWithViewsRow> parents2 = getParentLine(element2);
-		if(parents1.size() == parents2.size()) {
-			c = compareParents(element1, element2);
-		} else if(parents1.size() > parents2.size()) {
-			int sharedLevel = parents2.size() - 1;
-			c = compareParents(parents1.get(sharedLevel), parents2.get(sharedLevel));
-		} else if(parents1.size() < parents2.size()) {
-			int sharedLevel = parents1.size() - 1;
-			c = compareParents(parents1.get(sharedLevel), parents2.get(sharedLevel));
+		CurriculumElementWithViewsRow c1 = (CurriculumElementWithViewsRow)o1;
+		CurriculumElementWithViewsRow c2 = (CurriculumElementWithViewsRow)o2;
+		Long parentKey1 = c1.getParentKey();
+		Long parentKey2 = c2.getParentKey();
+		
+		int c = 0;
+		if(parentKey1 == null && parentKey2 == null) {
+			c = compareCurriculumElements(c1, c2);
+		} else if(parentKey1 != null && parentKey1.equals(parentKey2)) {
+			c = compareSameParent(c1, c2);
+		} else if(parentKey1 != null && parentKey2 != null) {
+			// This case is usually not possible
+			CurriculumElementWithViewsRow p1 = c1.getParent();
+			CurriculumElementWithViewsRow p2 = c2.getParent();
+			c = compareCurriculumElements(p1, p2);
+		} else {
+			// This case is usually not possible
+			c = compareDisplayName(c1, c2);
 		}
 		
 		if(c == 0) {
-			c = element1.getKey().compareTo(element2.getKey());
+			c = Long.compare(c1.getKey().longValue(), c2.getKey().longValue());
 		}
 		return c;
 	}
 	
-	private List<CurriculumElementWithViewsRow> getParentLine(CurriculumElementWithViewsRow row) {
-		List<CurriculumElementWithViewsRow> parentLine = new ArrayList<>();
-		for(CurriculumElementWithViewsRow view=row; view != null; view=view.getParent()) {
-			parentLine.add(view);
+	private int compareSameParent(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
+		int c = 0;
+		if((c1.isCurriculumElementOnly() || c1.isCurriculumElementWithEntry()) && (c2.isCurriculumElementOnly() || c2.isCurriculumElementWithEntry())) {
+			// compare by position
+			Long pos1 = c1.getCurriculumElementPos();
+			Long pos2 = c2.getCurriculumElementPos();
+			if(pos1 == null || pos2 == null) {
+				c = compareNullObjects(pos1, pos2);
+			} else {
+				c = Long.compare(pos1.longValue(), pos2.longValue());
+			}	
+		} else if(c1.isCurriculumElementOnly() || c1.isCurriculumElementWithEntry()) {
+			c = 1;
+		} else if(c2.isCurriculumElementOnly() || c2.isCurriculumElementWithEntry()) {
+			c = -1;
+		} else {
+			c = compareRepositoryEntry(c1, c2);
 		}
-		if(parentLine.size() > 1) {
-			Collections.reverse(parentLine);
-		}
-		return parentLine;
+		return c;
 	}
-
-	private int compareParents(CurriculumElementWithViewsRow element1, CurriculumElementWithViewsRow element2) {
-		CurriculumElementWithViewsRow parent1 = element1.getParent();
-		CurriculumElementWithViewsRow parent2 = element2.getParent();
+	
+	private int compareCurriculumElements(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
+		int c = 0;
+		if(c1.getCurriculumElementBeginDate() == null || c2.getCurriculumElementBeginDate() == null) {
+			c = compareNullObjects(c1.getCurriculumElementBeginDate(), c2.getCurriculumElementBeginDate());
+		} else {
+			c = c1.getCurriculumElementBeginDate().compareTo(c2.getCurriculumElementBeginDate());
+		}
 		
-		int c = 0;
-		// root
-		if(parent1 == null && parent2 == null) {
-			c = compareRows(element1, element2);
-		} else if(parent1.equals(parent2)) {
-			c = compareRows(element1, element2);
-		} else {
-			c = compareParents(parent1, parent2);
-		}
-		return c;
-	}
-	
-	private int compareRows(CurriculumElementWithViewsRow element1, CurriculumElementWithViewsRow element2) {
-		Date start1 = getStartDate(element1);
-		Date start2 = getStartDate(element2);
-		int c = compareDates(start1, start2);
 		if(c == 0) {
-			String display1 = getDisplayName(element1);
-			String display2 = getDisplayName(element2);
-			c = compareStrings(display1, display2); 
+			if(c1.getCurriculumElementDisplayName() == null || c2.getCurriculumElementDisplayName() == null) {
+				c = compareNullObjects(c1.getCurriculumElementDisplayName(), c2.getCurriculumElementDisplayName());
+			} else {
+				c = collator.compare(c1.getCurriculumElementDisplayName(), c2.getCurriculumElementDisplayName());
+			}
+		}
+		
+		if(c == 0) {
+			if(c1.getCurriculumElementIdentifier() == null || c2.getCurriculumElementIdentifier() == null) {
+				c = compareNullObjects(c1.getCurriculumElementIdentifier(), c2.getCurriculumElementIdentifier());
+			} else {
+				c = collator.compare(c1.getCurriculumElementIdentifier(), c2.getCurriculumElementIdentifier());
+			}
+		}
+		
+		if(c == 0) {
+			c = Long.compare(c1.getCurriculumElementKey().longValue(), c2.getCurriculumElementKey().longValue());
 		}
 		return c;
 	}
 	
-	private int compareStrings(String d1, String d2) {
+	private int compareRepositoryEntry(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
 		int c = 0;
-		if(d1 == null || d2 == null) {
-			c = compareNulls(d1, d2);
+		if(c1.getRepositoryEntryDisplayName() == null || c2.getRepositoryEntryDisplayName() == null) {
+			c = compareNullObjects(c1.getRepositoryEntryDisplayName(), c2.getRepositoryEntryDisplayName());
 		} else {
-			c = collator.compare(d1, d2);
+			c = collator.compare(c1.getRepositoryEntryDisplayName(), c2.getRepositoryEntryDisplayName());
+		}
+		
+		if(c == 0) {
+			if(c1.getRepositoryEntryExternalRef() == null || c2.getRepositoryEntryExternalRef() == null) {
+				c = compareNullObjects(c1.getRepositoryEntryExternalRef(), c2.getRepositoryEntryExternalRef());
+			} else {
+				c = collator.compare(c1.getRepositoryEntryExternalRef(), c2.getRepositoryEntryExternalRef());
+			}
+		}
+		
+		if(c == 0) {
+			c = Long.compare(c1.getRepositoryEntryKey().longValue(), c2.getRepositoryEntryKey().longValue());
 		}
 		return c;
 	}
 	
-	private int compareDates(Date d1, Date d2) {
-		int c = 0;
+	private int compareDisplayName(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
+		String d1 = getDisplayName(c1);
+		String d2 = getDisplayName(c2);
 		if(d1 == null || d2 == null) {
-			c = compareNulls(d1, d2);
-		} else {
-			c = d1.compareTo(d2);
+			return compareNullObjects(d1, d2);
+		}
+		int c = d1.compareTo(d2);
+		if(c == 0) {
+			
 		}
 		return c;
-	}
-	
-	private int compareNulls(Object o1, Object o2) {
-		if(o1 == null && o2 == null) {
-			return 0;
-		} 
-		if(o1 == null) {
-			return -1;
-		}
-		if( o2 == null) {
-			return 1;
-		}
-		return 0;
 	}
 	
 	private String getDisplayName(CurriculumElementWithViewsRow row) {
@@ -149,22 +170,6 @@ public class CurriculumElementViewsRowComparator implements Comparator<Curriculu
 		String d = row.getRepositoryEntryDisplayName();
 		if(d == null) {
 			d = row.getCurriculumElementDisplayName();
-		}
-		return d;
-	}
-	
-	private Date getStartDate(CurriculumElementWithViewsRow row) {
-		if(row.isCurriculumElementOnly()) {
-			return row.getCurriculumElementBeginDate();
-		}
-		if(row.isRepositoryEntryOnly()) {
-			return row.getLifecycleStart();
-		}
-		Date d = row.getLifecycleStart();
-		if(d == null) {
-			d = row.getCurriculumElementBeginDate();
-		} else if(row.getCurriculumElementBeginDate() != null && d.after(row.getCurriculumElementBeginDate())) {
-			d = row.getCurriculumElementBeginDate();
 		}
 		return d;
 	}
