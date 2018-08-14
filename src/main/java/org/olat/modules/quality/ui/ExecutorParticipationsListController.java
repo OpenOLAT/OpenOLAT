@@ -167,6 +167,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 
 	private void doDeactivateExecution(UserRequest ureq) {
 		stackPanel.popController(executionCtrl);
+		showInfo("executor.participation.future.done.message");
 		addToHistory(ureq, this);
 		cleanUp();
 		tableEl.reloadData();
