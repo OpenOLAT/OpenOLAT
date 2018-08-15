@@ -91,6 +91,11 @@ public class LoginModule extends AbstractSpringModule {
 	private int attackPreventionMaxAttempts;
 	@Value("${login.AttackPreventionTimeoutmin:5}")
 	private int attackPreventionTimeout;
+
+	@Value("${password.change.valid.hours.gui}")
+	private Integer validUntilHoursGui;
+	@Value("${password.change.valid.hours.rest}")
+	private Integer validUntilHoursRest;
 	
 	@Value("${password.change.once:false}")
 	private boolean passwordChangeOnce;
@@ -240,6 +245,16 @@ public class LoginModule extends AbstractSpringModule {
 		String changeOnce = getStringPropertyValue(CHANGE_ONCE, true);
 		if(StringHelper.containsNonWhitespace(changeOnce)) {
 			passwordChangeOnce = "true".equals(changeOnce);
+		}
+		
+		int validUntilHoursGuiInt = getIntPropertyValue("password.change.valid.hours.gui");
+		if (validUntilHoursGuiInt > 0) {
+			validUntilHoursGui = validUntilHoursGuiInt;
+		}
+		
+		int validUntilHoursRestInt = getIntPropertyValue("password.change.valid.hours.rest");
+		if (validUntilHoursRestInt > 0) {
+			validUntilHoursRest = validUntilHoursRestInt;
 		}
 		
 		passwordMaxAge = getAgeValue(MAX_AGE, passwordMaxAge);
@@ -431,6 +446,24 @@ public class LoginModule extends AbstractSpringModule {
 		allowLoginUsingEmail = allow;
 		setStringProperty("login.using.username.or.email.enabled", Boolean.toString(allow), true);
 	}
+	
+	public Integer getValidUntilHoursGui() {
+		return validUntilHoursGui;
+	}
+
+	public void setValidUntilHoursGui(Integer validUntilHoursGui) {
+		this.validUntilHoursGui = validUntilHoursGui;
+		setIntProperty("password.change.valid.hours.gui", validUntilHoursGui, true);
+	}
+
+	public Integer getValidUntilHoursRest() {
+		return validUntilHoursRest;
+	}
+
+	public void setValidUntilHoursRest(Integer validUntilHoursRest) {
+		this.validUntilHoursRest = validUntilHoursRest;
+		setIntProperty("password.change.valid.hours.rest", validUntilHoursRest, true);
+	}
 
 	public boolean isPasswordChangeOnce() {
 		return passwordChangeOnce;
@@ -456,7 +489,7 @@ public class LoginModule extends AbstractSpringModule {
 	/**
 	 * 
 	 * @param roles The roles
-	 * @return A number of seconds
+	 * @return A number of hours
 	 */
 	public int getPasswordAgePolicy(Roles roles) {
 		int age = passwordMaxAge;
@@ -471,7 +504,7 @@ public class LoginModule extends AbstractSpringModule {
 	/**
 	 * 
 	 * @param roleMaxAge The max. age
-	 * @return A number of seconds
+	 * @return A number of hours
 	 */
 	private int getMaxAgeOrDefault(int currentAge, int roleMaxAge) {
 		if(currentAge <= 0 || (roleMaxAge > 0 && roleMaxAge < currentAge)) {
@@ -481,18 +514,18 @@ public class LoginModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * The default max. age for a password in seconds.
+	 * The default max. age for a password in hours.
 	 * 
-	 * @return A number of seconds
+	 * @return A number of hours
 	 */
 	public int getPasswordMaxAge() {
 		return passwordMaxAge;
 	}
 
 	/**
-	 * The default max. age in seconds.
+	 * The default max. age in hours.
 	 * 
-	 * @param maxAge The age in seconds
+	 * @param maxAge The age in hours
 	 */
 	public void setPasswordMaxAge(int maxAge) {
 		this.passwordMaxAge = maxAge;

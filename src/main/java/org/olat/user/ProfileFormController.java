@@ -563,7 +563,7 @@ public class ProfileFormController extends FormBasicController {
 		XStream xml = XStreamHelper.createXStreamInstance();
 		String serMailMap = xml.toXML(mailMap);
 		
-		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identityToModify.getKey(), serMailMap, ip, RegistrationManager.EMAIL_CHANGE);
+		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identityToModify.getKey(), serMailMap, ip, RegistrationManager.EMAIL_CHANGE, null);
 		
 		// create date, time string
 		Calendar cal = Calendar.getInstance();

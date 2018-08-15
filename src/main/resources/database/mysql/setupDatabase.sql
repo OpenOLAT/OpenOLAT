@@ -100,6 +100,7 @@ create table if not exists o_temporarykey (
    email varchar(255) not null,
    regkey varchar(255) not null,
    ip varchar(255) not null,
+   valid_until datetime,
    mailsent bit not null,
    action varchar(255) not null,
    fk_identity_id bigint,

@@ -63,6 +63,10 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean selfRegistrationLinkEnabled;
 	@Value("${registration.enableSelfRegistration.login}")
 	private boolean selfRegistrationLoginEnabled;
+	@Value("${registration.valid.hours.gui}")
+	private Integer validUntilHoursGui;
+	@Value("${registration.valid.hours.rest}")
+	private Integer validUntilHoursRest;
 	
 	@Value("${registration.enableNotificationEmail}")
 	private boolean registrationNotificationEmailEnabled;
@@ -155,6 +159,24 @@ public class RegistrationModule extends AbstractSpringModule {
 		setStringProperty("registration.login.enabled", value, true);
 	}
 	
+	public Integer getValidUntilHoursGui() {
+		return validUntilHoursGui;
+	}
+
+	public void setValidUntilHoursGui(Integer validUntilHoursGui) {
+		this.validUntilHoursGui = validUntilHoursGui;
+		setIntProperty("registration.valid.hours.gui", validUntilHoursGui, true);
+	}
+
+	public Integer getValidUntilHoursRest() {
+		return validUntilHoursRest;
+	}
+
+	public void setValidUntilHoursRest(Integer validUntilHoursRest) {
+		this.validUntilHoursRest = validUntilHoursRest;
+		setIntProperty("registration.valid.hours.rest", validUntilHoursRest, true);
+	}
+
 	public String getDomainListRaw() {
 		return domainList;
 	}
@@ -173,7 +195,7 @@ public class RegistrationModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(domainList)) {
 			return Arrays.asList(domainList.split(","));
 		}
-		return new ArrayList<String>(1);
+		return new ArrayList<>(1);
 	}
 	
 	public List<String> getDomainList(String list) {
@@ -236,6 +258,16 @@ public class RegistrationModule extends AbstractSpringModule {
 		String loginEnabledObj = getStringPropertyValue("registration.login.enabled", true);
 		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
 			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
+		}
+		
+		int validUntilHoursGuiInt = getIntPropertyValue("registration.valid.hours.gui");
+		if (validUntilHoursGuiInt > 0) {
+			validUntilHoursGui = validUntilHoursGuiInt;
+		}
+		
+		int validUntilHoursRestInt = getIntPropertyValue("registration.valid.hours.rest");
+		if (validUntilHoursRestInt > 0) {
+			validUntilHoursRest = validUntilHoursRestInt;
 		}
 		
 		//white list of domains

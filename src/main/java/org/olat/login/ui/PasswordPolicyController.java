@@ -47,6 +47,8 @@ public class PasswordPolicyController extends FormBasicController {
 	private SingleSelection historyEl;
 	private MultipleSelectionElement changeOnceEl;
 	
+	private TextElement validUntilGuiEl;
+	private TextElement validUntilRestEl;
 	private TextElement maxAgeEl;
 	private TextElement maxAgeAuthorEl;
 	private TextElement maxAgeGroupManagerEl;
@@ -76,6 +78,11 @@ public class PasswordPolicyController extends FormBasicController {
 		
 		setFormTitle("password.policy.title");
 		setFormDescription("max.age.description");
+		
+		validUntilGuiEl = uifactory.addTextElement("password.change.valid.until.gui", 20, loginModule.getValidUntilHoursGui().toString(), formLayout);
+		validUntilGuiEl.setMandatory(true);
+		validUntilRestEl = uifactory.addTextElement("password.change.valid.until.rest", 20, loginModule.getValidUntilHoursRest().toString(), formLayout);
+		validUntilRestEl.setMandatory(true);
 
 		String[] onValues = new String[] { translate("on") };
 		changeOnceEl = uifactory.addCheckboxesHorizontal("change.once", "change.once", formLayout, onKeys, onValues);
@@ -173,6 +180,8 @@ public class PasswordPolicyController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validateInteger(validUntilGuiEl, 1);
+		allOk &= validateInteger(validUntilRestEl, 1);
 		allOk &= validateMaxAgeEl(maxAgeEl);
 		allOk &= validateMaxAgeEl(maxAgeAuthorEl);
 		allOk &= validateMaxAgeEl(maxAgeGroupManagerEl);
@@ -197,6 +206,28 @@ public class PasswordPolicyController extends FormBasicController {
 		return allOk;
 	}
 	
+	private boolean validateInteger(TextElement el, int min) {
+		boolean allOk = true;
+		el.clearError();
+		String val = el.getValue();
+		if(StringHelper.containsNonWhitespace(val)) {	
+			try {
+				double value = Integer.parseInt(val);
+				if(min > value) {
+					el.setErrorKey("error.wrong.int", null);
+					allOk = false;
+				}
+			} catch (NumberFormatException e) {
+				el.setErrorKey("error.wrong.int", null);
+				allOk = false;
+			}
+		} else {
+			el.setErrorKey("error.wrong.int", null);
+			allOk = false;
+		}
+		return allOk;	
+	}
+	
 	private boolean validateMaxAgeEl(TextElement el) {
 		boolean allOk = true;
 		
@@ -216,6 +247,12 @@ public class PasswordPolicyController extends FormBasicController {
 		
 		int history = Integer.parseInt(historyEl.getSelectedKey());
 		loginModule.setPasswordHistory(history);
+		
+		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
+		loginModule.setValidUntilHoursGui(validUntilHoursGui);
+		Integer validUntilHoursRest = Integer.parseInt(validUntilRestEl.getValue());
+		loginModule.setValidUntilHoursRest(validUntilHoursRest);
+		
 		loginModule.setPasswordMaxAge(getMaxAge(maxAgeEl));
 		loginModule.setPasswordMaxAgeFor(OrganisationRoles.author, getMaxAge(maxAgeAuthorEl));
 		loginModule.setPasswordMaxAgeFor(OrganisationRoles.groupmanager, getMaxAge(maxAgeGroupManagerEl));
@@ -236,7 +273,7 @@ public class PasswordPolicyController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(el.getValue())
 				&& StringHelper.isLong(el.getValue())) {
 			int ageInDay = Integer.parseInt(el.getValue());
-			return ageInDay * 24 * 60 * 60;//convert in seconds
+			return ageInDay * 24 * 60 * 60;//convert in hours
 		}
 		return 0;
 	}

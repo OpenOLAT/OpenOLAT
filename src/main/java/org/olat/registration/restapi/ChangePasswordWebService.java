@@ -38,6 +38,7 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.login.LoginModule;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 import org.olat.user.UserModule;
@@ -62,6 +63,8 @@ public class ChangePasswordWebService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RegistrationManager rm;
+	@Autowired
+	private LoginModule loginModule;
 	
 	/**
 	 * 
@@ -86,7 +89,8 @@ public class ChangePasswordWebService {
 
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, null); 
 		String ip = request.getRemoteAddr();
-		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip, RegistrationManager.PW_CHANGE);
+		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
+				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursRest());
 		return Response.ok(new TemporaryKeyVO(tk)).build();
 	}
 	

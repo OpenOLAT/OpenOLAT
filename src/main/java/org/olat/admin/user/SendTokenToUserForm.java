@@ -46,6 +46,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.login.LoginModule;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,8 @@ public class SendTokenToUserForm extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private LoginModule loginModule;
 
 	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity) {
 		super(ureq, wControl);
@@ -160,7 +163,8 @@ public class SendTokenToUserForm extends FormBasicController {
 		String emailAdress = user.getUser().getProperty(UserConstants.EMAIL, locale);
 
 		String ip = ureq.getHttpReq().getRemoteAddr();
-		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(user.getKey(), emailAdress, ip, RegistrationManager.PW_CHANGE);
+		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(user.getKey(), emailAdress, ip,
+				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursGui());
 		
 		if(text.indexOf(dummyKey) < 0) {
 			showWarning("changeuserpwd.failed");

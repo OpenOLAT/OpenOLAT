@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -83,6 +84,8 @@ import com.thoughtworks.xstream.XStream;
 public class RegistrationManager implements UserDataDeletable, UserDataExportable {
 	
 	private static final OLog log = Tracing.createLoggerFor(RegistrationManager.class);
+
+	private static final int VALID_UNTIL_30_DAYS = 30*24;
 
 	public static final String PW_CHANGE = "PW_CHANGE";
 	public static final String REGISTRATION = "REGISTRATION";
@@ -227,14 +230,14 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * 
 	 * @return 
 	 */
-	public TemporaryKey loadOrCreateTemporaryKeyByEmail(String email, String ip, String action) {
+	public TemporaryKey loadOrCreateTemporaryKeyByEmail(String email, String ip, String action, Integer validForHours) {
 		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadTemporaryKeyByEmailAddress", TemporaryKey.class)
 				.setParameter("email", email)
 				.getResultList();
 		TemporaryKey tk;
 		if ((tks == null) || (tks.size() != 1)) { // no user found, create a new one
-			tk = createAndPersistTemporaryKey(email, ip, action);
+			tk = createAndPersistTemporaryKey(email, ip, action, validForHours);
 		} else {
 			tk = tks.get(0);
 		}
@@ -253,25 +256,35 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * @param action
 	 * @return
 	 */
-	public TemporaryKey createAndDeleteOldTemporaryKey(Long identityKey, String email, String ip, String action) {
+	public TemporaryKey createAndDeleteOldTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForHours) {
 		deleteTemporaryKeys(identityKey, action);
-		return createAndPersistTemporaryKey(identityKey, email, ip, action);
+		return createAndPersistTemporaryKey(identityKey, email, ip, action, validForHours);
 	}
 
-	private TemporaryKey createAndPersistTemporaryKey(String emailaddress, String ipaddress, String action) {
-		return createAndPersistTemporaryKey(null, emailaddress, ipaddress, action);
+	private TemporaryKey createAndPersistTemporaryKey(String emailaddress, String ipaddress, String action, Integer validForHours) {
+		return createAndPersistTemporaryKey(null, emailaddress, ipaddress, action, validForHours);
 	}
 
-	private TemporaryKey createAndPersistTemporaryKey(Long identityKey, String email, String ip, String action) {
+	private TemporaryKey createAndPersistTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForHours) {
 		TemporaryKeyImpl tk = new TemporaryKeyImpl();
 		tk.setCreationDate(new Date());
 		tk.setIdentityKey(identityKey);
 		tk.setEmailAddress(email);
 		tk.setIpAddress(ip);
 		tk.setRegistrationKey(createRegistrationKey(email, ip));
+		Integer validHours = validForHours != null? validForHours: VALID_UNTIL_30_DAYS;
+		Date validUntil = addHours(tk.getCreationDate(), validHours);
+		tk.setValidUntil(validUntil);
 		tk.setRegAction(action);
 		dbInstance.getCurrentEntityManager().persist(tk);
 		return tk;
+	}
+	
+	private Date addHours(Date date, Integer seconds) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.HOUR, seconds);
+		return c.getTime();
 	}
 	
 	public void deleteTemporaryKey(TemporaryKey key) {
@@ -297,7 +310,15 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 				.setParameter("identityKey", identityKey)
 				.executeUpdate();
 	}
-
+	
+	public void deleteInvalidTemporaryKeys() {
+		String query = "delete from otemporarykey tk where tk.validUntil < :validUntil";
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(query) 
+				.setParameter("validUntil", new Date())
+				.executeUpdate();
+	}
 	
 	/**
 	 * returns an existing TemporaryKey by a given email address or null if none
@@ -362,6 +383,12 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 				.createNamedQuery("loadTemporaryKeyByIdentity", TemporaryKey.class)
 				.setParameter("identityKey", identityKey)
 				.setParameter("action", action)
+				.getResultList();
+	}
+
+	public List<TemporaryKey> loadAll() {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadAll", TemporaryKey.class)
 				.getResultList();
 	}
 

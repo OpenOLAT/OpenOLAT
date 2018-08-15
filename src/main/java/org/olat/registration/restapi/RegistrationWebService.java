@@ -111,6 +111,7 @@ public class RegistrationWebService {
 		MailManager mailM = CoreSpringFactory.getImpl(MailManager.class);
 		UserManager userManager = UserManager.getInstance();
 		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
+		RegistrationModule rModule = CoreSpringFactory.getImpl(RegistrationModule.class);
 		
 		boolean foundUser = userManager.findUniqueIdentityByEmail(email) != null;
 		boolean noNewUserWithEmail = !userManager.isEmailAllowed(email);
@@ -128,7 +129,7 @@ public class RegistrationWebService {
 				tk = rm.loadTemporaryKeyByEmail(email);
 			}
 			if (tk == null) {
-				tk = rm.loadOrCreateTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
+				tk = rm.loadOrCreateTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION, rModule.getValidUntilHoursRest());
 			}
 			String today = DateFormat.getDateInstance(DateFormat.LONG, locale).format(new Date());
 			String[] bodyAttrs = new String[] {

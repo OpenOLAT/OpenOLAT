@@ -108,6 +108,7 @@ CREATE TABLE o_temporarykey (
   email varchar2(255 char) NOT NULL,
   regkey varchar2(255 char) NOT NULL,
   ip varchar2(255 char) NOT NULL,
+  valid_until date,
   mailsent number NOT NULL,
   action varchar2(255 char) NOT NULL,
   fk_identity_id number(20),
