@@ -164,7 +164,7 @@ public class VelocityContainer extends Container implements VelocityComponent {
 	 * @param page The page to set
 	 */
 	public void setPage(String page) {
-		this.page = page.intern();//prevent thausends of same strings
+		this.page = page.intern(); //prevent thousands of same strings
 		setDirty(true);
 	}
 
