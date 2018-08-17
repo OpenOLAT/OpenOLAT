@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.WebappHelper;
 import org.olat.user.UserDataExport;
 import org.olat.user.UserDataExportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class UserDataController extends FormBasicController {
 			
 			UserDataExport data = userDataExportService.getCurrentData(dataIdentity);
 			layoutCont.contextPut("data", Boolean.valueOf(data != null));
+			layoutCont.contextPut("mailSupport", WebappHelper.getMailConfig("mailSupport"));
 			if(data == null) {
 				layoutCont.contextPut("dataStatus", UserDataExport.ExportStatus.none.name());
 			} else {
