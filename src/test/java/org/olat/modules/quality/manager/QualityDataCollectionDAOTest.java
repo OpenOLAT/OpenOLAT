@@ -238,7 +238,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		int count = sut.getDataCollectionCount();
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		int count = sut.getDataCollectionCount(searchParams);
 		
 		assertThat(count).isEqualTo(numberOfDataCollections);
 	}

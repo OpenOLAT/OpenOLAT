@@ -182,16 +182,6 @@ public class QualityDataCollectionDAO {
 				.setParameter("collectionKey", dataCollectionRef.getKey())
 				.executeUpdate();
 	}
-
-	int getDataCollectionCount() {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select count(collection.key) from qualitydatacollection as collection");
-		
-		List<Long> counts = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.getResultList();
-		return Math.toIntExact(counts.get(0));
-	}
 	
 	boolean hasDataCollection(OrganisationRef organisation) {
 		StringBuilder sb = new StringBuilder(256);
@@ -219,6 +209,21 @@ public class QualityDataCollectionDAO {
 				.setMaxResults(1)
 				.getResultList();
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
+	}
+
+	int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(collection)");
+		sb.append("  from qualitydatacollection as collection");
+		sb.append(" where 1=1");
+		appendWhereClause(sb, searchParams);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameter(query, searchParams);
+		
+		List<Long> counts = query.getResultList();
+		return Math.toIntExact(counts.get(0));
 	}
 
 	List<QualityDataCollectionView> loadDataCollections(Translator translator,
@@ -302,7 +307,7 @@ public class QualityDataCollectionDAO {
 		}
 	}
 	
-	private void appendParameter(TypedQuery<QualityDataCollectionView> query, QualityDataCollectionViewSearchParams searchParams) {
+	private void appendParameter(TypedQuery<?> query, QualityDataCollectionViewSearchParams searchParams) {
 		if (searchParams != null) {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());

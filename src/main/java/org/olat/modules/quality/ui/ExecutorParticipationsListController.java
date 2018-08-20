@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -73,6 +74,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	private FlexiTableElement tableEl;
 
 	private ExecutionController executionCtrl;
+	private LayoutMain3ColsBackController fullLayoutCtrl;
 	
 	private final TooledStackedPanel stackPanel;
 	private final QualitySecurityCallback secCallback;
@@ -160,21 +162,25 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl && event == Event.DONE_EVENT) {
+			showInfo("executor.participation.future.done.message");
+			doDeactivateExecution(ureq);
+		} else if (source == fullLayoutCtrl) {
 			doDeactivateExecution(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void doDeactivateExecution(UserRequest ureq) {
-		stackPanel.popController(executionCtrl);
-		showInfo("executor.participation.future.done.message");
 		addToHistory(ureq, this);
+		fullLayoutCtrl.deactivate();
 		cleanUp();
 		tableEl.reloadData();
 	}
-	
+
 	private void cleanUp() {
+		removeAsListenerAndDispose(fullLayoutCtrl);
 		removeAsListenerAndDispose(executionCtrl);
+		fullLayoutCtrl = null;
 		executionCtrl = null;
 	}
 
@@ -198,7 +204,12 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		executionCtrl = new ExecutionController(ureq, bwControl, participation);
 		listenTo(executionCtrl);
-		stackPanel.pushController(participation.getTitle(), executionCtrl);
+		
+		fullLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null,
+				executionCtrl.getInitialComponent(), null);
+		fullLayoutCtrl.addDisposableChildController(executionCtrl);
+		fullLayoutCtrl.activate();
+		listenTo(fullLayoutCtrl);
 	}
 
 	@Override
