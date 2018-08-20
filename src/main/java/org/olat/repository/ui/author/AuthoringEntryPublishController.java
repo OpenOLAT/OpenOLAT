@@ -176,38 +176,55 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		// make configuration read only when managed by external system
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
 		final boolean managedAccess = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.access);
+		final boolean closedOrDeleted = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted;
 		
-		String[] publishedKeys = new String[] {
-				RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
-				RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name()
-		};
-		String[] publishedValues = new String[] {
-				translate("cif.status.preparation"), translate("cif.status.review"),
-				translate("cif.status.coachpublished"), translate("cif.status.published")
-		};
+		String[] publishedKeys;
+		String[] publishedValues;
+		if(closedOrDeleted) {
+			publishedKeys = new String[] {
+					RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
+					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name(),
+					RepositoryEntryStatusEnum.closed.name(), RepositoryEntryStatusEnum.deleted.name()
+			};
+			publishedValues = new String[] {
+					translate("cif.status.preparation"), translate("cif.status.review"),
+					translate("cif.status.coachpublished"), translate("cif.status.published"),
+					translate("cif.status.closed"), translate("cif.status.deleted")
+			};
+		} else {
+			publishedKeys = new String[] {
+					RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
+					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name()
+			};
+			publishedValues = new String[] {
+					translate("cif.status.preparation"), translate("cif.status.review"),
+					translate("cif.status.coachpublished"), translate("cif.status.published")
+			};
+		}
 		publishedStatus = uifactory.addDropdownSingleselect("publishedStatus", "cif.publish", formLayout, publishedKeys, publishedValues, null);
 		publishedStatus.setElementCssClass("o_sel_repositoryentry_access_publication");
-		publishedStatus.setEnabled(!managedAccess);
+		publishedStatus.setEnabled(!managedAccess && !closedOrDeleted);
 		publishedStatus.addActionListener(FormEvent.ONCHANGE);
 
 		uifactory.addSpacerElement("usersSpacer", formLayout, true);
 		
 		allUsers = uifactory.addCheckboxesVertical("cif.allusers", "cif.allusers", formLayout, yesKeys, new String[] { translate("cif.release") }, 1);
 		allUsers.setElementCssClass("o_sel_repositoryentry_access_all_users");
-		allUsers.setEnabled(!managedAccess);
+		allUsers.setEnabled(!managedAccess && !closedOrDeleted);
 		guests = uifactory.addCheckboxesVertical("cif.guests", "cif.guests", formLayout, yesKeys, new String[] { translate("cif.release") }, 1);
 		guests.setElementCssClass("o_sel_repositoryentry_access_all_users");
-		guests.setEnabled(!managedAccess);
+		guests.setEnabled(!managedAccess && !closedOrDeleted);
 		guests.setVisible(loginModule.isGuestLoginEnabled());
 		
 		uifactory.addSpacerElement("authorSpacer", formLayout, true);
 
 		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.author.can", formLayout, yesKeys, new String[] { translate("cif.canReference") }, 1);
-		canReference.setEnabled(!managedSettings);
+		canReference.setEnabled(!managedSettings && !closedOrDeleted);
 		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", null, formLayout, yesKeys, new String[] { translate("cif.canCopy") }, 1);
-		canCopy.setEnabled(!managedSettings);
+		canCopy.setEnabled(!managedSettings && !closedOrDeleted);
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", null, formLayout, yesKeys, new String[] { translate("cif.canDownload") }, 1);
-		canDownload.setEnabled(!managedSettings);
+		canDownload.setEnabled(!managedSettings && !closedOrDeleted);
 		canDownload.setVisible(handler.supportsDownload());
 
 		if (!managedAccess || !managedSettings) {
