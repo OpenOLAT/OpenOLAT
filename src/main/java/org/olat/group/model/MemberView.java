@@ -91,6 +91,11 @@ public class MemberView extends UserPropertiesRow {
 
 	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
+		if(repositoryEntry != null) {
+			boolean membersManaged = RepositoryEntryManagedFlag
+					.isManaged(repositoryEntry.getManagedFlags(), RepositoryEntryManagedFlag.membersmanagement);
+			membership.setManagedMembersRepo(membersManaged);
+		}
 	}
 	
 	public OLATResource getOLATResource() {

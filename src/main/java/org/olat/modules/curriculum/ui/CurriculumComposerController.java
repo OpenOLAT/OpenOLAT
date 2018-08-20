@@ -165,6 +165,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status, new CurriculumElementStatusCellRenderer(getTranslator())));
 

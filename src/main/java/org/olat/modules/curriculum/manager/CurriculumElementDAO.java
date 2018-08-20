@@ -204,6 +204,7 @@ public class CurriculumElementDAO {
 		  .append(" from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
+		  .append(" left join fetch el.type curElementType")
 		  .append(" left join el.parent parentEl")
 		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
 		

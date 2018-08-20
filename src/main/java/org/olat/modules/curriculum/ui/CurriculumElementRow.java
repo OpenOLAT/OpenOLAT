@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeT
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
  * 
@@ -39,6 +40,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private CurriculumElementRow parent;
 	private final Long parentKey;
 	private final CurriculumElement element;
+	private final CurriculumElementType elementType;
 	private final long numOfResources;
 	
 	private final FormLink toolsLink;
@@ -46,6 +48,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	public CurriculumElementRow(CurriculumElement element) {
 		this.element = element;
+		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		numOfResources = 0l;
 		toolsLink = null;
@@ -57,6 +60,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		this.toolsLink = toolsLink;
 		this.numOfResources = numOfResources;
 		this.resourcesLink = resourcesLink;
+		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 	}
 	
@@ -92,6 +96,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public CurriculumElementStatus getStatus() {
 		CurriculumElementStatus status = element.getElementStatus();
 		return status == null ? CurriculumElementStatus.active : status;
+	}
+	
+	public String getCurriculumElementTypeDisplayName() {
+		return elementType == null ? null : elementType.getDisplayName();
+	}
+	
+	public CurriculumElementType getCurriculumElementType() {
+		return elementType;
 	}
 
 	@Override
