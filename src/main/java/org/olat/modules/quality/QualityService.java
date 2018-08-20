@@ -70,7 +70,7 @@ public interface QualityService {
 	 */
 	public void startDataCollection(Date until);
 
-	public int getDataCollectionCount();
+	public int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams);
 
 	public List<QualityDataCollectionView> loadDataCollections(Translator translator,
 			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy);

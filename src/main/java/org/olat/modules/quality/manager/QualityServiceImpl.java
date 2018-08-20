@@ -187,8 +187,8 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	}
 
 	@Override
-	public int getDataCollectionCount() {
-		return dataCollectionDao.getDataCollectionCount();
+	public int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams) {
+		return dataCollectionDao.getDataCollectionCount(searchParams);
 	}
 
 	@Override

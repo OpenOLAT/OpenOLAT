@@ -59,7 +59,9 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 
 	@Override
 	public int getRowCount() {
-		return qualityService.getDataCollectionCount();
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(organsationRefs);
+		return qualityService.getDataCollectionCount(searchParams);
 	}
 
 	@Override
