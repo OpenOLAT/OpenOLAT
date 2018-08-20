@@ -88,7 +88,7 @@ public class CalWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		List<EventVO> events = new ArrayList<EventVO>();
+		List<EventVO> events = new ArrayList<>();
 		Collection<KalendarEvent> kalEvents = calendar.getKalendar().getEvents();
 		for(KalendarEvent kalEvent:kalEvents) {
 			EventVO eventVo = new EventVO(kalEvent);
@@ -212,10 +212,10 @@ public class CalWebService {
 			}
 		}
 
-		if(kalEventToAdd.size() > 0) {
+		if(!kalEventToAdd.isEmpty()) {
 			calendarManager.addEventTo(calendar.getKalendar(), kalEventToAdd);
 		}
-		if(kalEventToUpdate.size() > 0) {
+		if(!kalEventToUpdate.isEmpty()) {
 			calendarManager.updateEventsFrom(calendar.getKalendar(), kalEventToUpdate);
 		}
 		return Response.ok().build();

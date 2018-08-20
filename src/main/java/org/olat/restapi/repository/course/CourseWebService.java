@@ -61,6 +61,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -88,6 +89,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
@@ -161,11 +163,19 @@ public class CourseWebService {
 				&& (calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar())
 				&& course.getCourseConfig().isCalendarEnabled()) {
 			UserRequest ureq = getUserRequest(request);
+			Roles roles = ureq.getUserSession().getRoles();
 			
 			IdentityEnvironment ienv = new IdentityEnvironment();
 			ienv.setIdentity(ureq.getIdentity());
-			ienv.setRoles(ureq.getUserSession().getRoles());
-			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+			ienv.setRoles(roles);
+			
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq.getIdentity(), roles, courseEntry);
+
+			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null,
+					null, null, null,
+					reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal(), reSecurity.isParticipant(),
+					reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal());
 			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
 			return new CalWebService(wrapper);
 		}
