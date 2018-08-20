@@ -1,0 +1,44 @@
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal o_sel_repo_lecture_settings_form" role="form">
+	<legend>$r.contextHelpWithWrapper("Lectures and absences")		
+		$r.translate("lecture.course.admin.title")
+	</legend> 
+#if($off_warn)
+	<div class="row"><div class="col-sm-12">
+		<div class="o_warning">$off_warn
+			<div class="o_button_group">
+			#if($r.visible("override.lecture"))
+				$r.render("override.lecture")
+			#elseif($r.visible("unoverride.lecture"))
+				$r.render("unoverride.lecture")
+			#end
+			</div>
+		</div>
+	</div></div>
+#end
+
+#foreach ($item in $formitemnames)
+	#if ($f.isVisible($item) && $item != "override.lecture" && $item != "unoverride.lecture")
+	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end clearfix">
+		#if ($f.hasLabel($item) && $r.visible("${item}_LABEL"))
+			$r.render("${item}_LABEL", "$f.getItemId($item)", "col-sm-3")
+		#end
+		<div class='col-sm-9 #if (!$f.hasLabel($item) || !$r.visible("${item}_LABEL")) col-sm-offset-3 #end'>
+			$r.render(${item}, "form")
+			#if($f.hasError($item))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		#if($f.hasExample($item))
+			<div class="o_form_example help-block col-sm-offset-3 col-sm-9">
+				$r.render("${item}_EXAMPLE")
+			</div>
+		#end
+		#if($f.hasError($item))
+			<div class="col-sm-offset-3 col-sm-9">
+				$r.render("${item}_ERROR")
+			</div>
+		#end
+	</div>
+	#end
+#end
+</fieldset>
