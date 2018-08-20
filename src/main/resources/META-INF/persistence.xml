@@ -213,6 +213,9 @@
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
 		<class>org.olat.modules.qpool.model.QuestionItemAuditLogImpl</class>
+		<class>org.olat.modules.quality.generator.model.QualityGeneratorConfigImpl</class>
+		<class>org.olat.modules.quality.generator.model.QualityGeneratorImpl</class>
+		<class>org.olat.modules.quality.generator.model.QualityGeneratorToOrganisationImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextToCurriculumElementImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextToCurriculumImpl</class>

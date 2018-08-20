@@ -81,6 +81,12 @@ public class EvaluationFormTestsHelper {
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from qualitydatacollection")
 				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitygeneratortoorganisation")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from qualitygenerator")
+				.executeUpdate();
 		// evaluation forms
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from evaluationformresponse")

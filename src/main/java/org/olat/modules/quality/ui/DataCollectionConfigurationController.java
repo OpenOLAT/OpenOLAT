@@ -22,21 +22,14 @@ package org.olat.modules.quality.ui;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -56,11 +49,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -119,7 +109,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	private ReferencableEntriesSearchController topicRepositorySearchCtrl;
 	private RepositoryEntry formEntry;
 	private boolean formEntryChanged = false;
-	private List<Organisation> dataCollectionOrganisations;
+	private List<Organisation> currentOrganisations;
 	private QualityDataCollectionTopicType topicType;
 	private Identity topicIdentity;
 	private Organisation topicOrganisation;
@@ -128,7 +118,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	private RepositoryEntry topicRepository;
 	
 	@Autowired
-	QualityService qualityService;
+	private QualityService qualityService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -152,6 +142,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 			this.topicCurriculum = topicCurriculumElement.getCurriculum();
 		}
 		this.topicRepository = dataCollection.getTopicRepositoryEntry();
+		this.currentOrganisations = qualityService.loadDataCollectionOrganisations(dataCollection);
 		
 		initForm(ureq);
 		if (validate) {
@@ -183,7 +174,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		
 		organisationsEl = uifactory.addCheckboxesDropdown("data.collection.organisations", formLayout);
 		if (organisationModule.isEnabled()) {
-			initFormOrganisations(ureq.getUserSession());
+			QualityUIFactory.initOrganisations(ureq.getUserSession(), organisationsEl, currentOrganisations);
 			organisationsEl.addActionListener(FormEvent.ONCLICK);
 		}
 		
@@ -223,37 +214,6 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 
 		updateUI();
-	}
-	
-	private void initFormOrganisations(UserSession usess) {
-		Roles roles = usess.getRoles();
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
-		List<Organisation> organisationList = new ArrayList<>(organisations);
-
-		List<Organisation> dcOrganisations = qualityService.loadDataCollectionOrganisations(dataCollection);
-		for(Organisation dcOrganisation:dcOrganisations) {
-			if(dcOrganisation != null && !organisationList.contains(dcOrganisation)) {
-				organisationList.add(dcOrganisation);
-			}
-		}
-		
-		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
-		
-		List<String> keyList = new ArrayList<>();
-		List<String> valueList = new ArrayList<>();
-		for(Organisation organisation:organisationList) {
-			keyList.add(organisation.getKey().toString());
-			valueList.add(organisation.getDisplayName());
-		}
-		dataCollectionOrganisations = new ArrayList<>(dcOrganisations.size());
-		organisationsEl.setKeysAndValues(keyList.toArray(new String[keyList.size()]),
-				valueList.toArray(new String[valueList.size()]));
-		for(Organisation reOrganisation:dcOrganisations) {
-			if(keyList.contains(reOrganisation.getKey().toString())) {
-				organisationsEl.select(reOrganisation.getKey().toString(), true);
-			}
-		}
 	}
 	
 	@Override
@@ -320,17 +280,17 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 				}
 				OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 				organisationModel.loadTreeModel(organisations);
-				KeysValues organistionKeysValues = QualityUIFactory.getOrganisationKeysValues(organisationModel);
+				KeysValues organistionKeysValues = QualityUIFactory.getTopicOrganisationKeysValues(organisationModel);
 				topicOrganisationEl.setKeysAndValues(organistionKeysValues.getKeys(), organistionKeysValues.getValues(), null);
 				if (topicOrganisation != null) {
-					topicOrganisationEl.select(QualityUIFactory.getOrganisationKey(topicOrganisation), true);
+					topicOrganisationEl.select(QualityUIFactory.getTopicOrganisationKey(topicOrganisation), true);
 				}
 				topicOrganisationEl.setVisible(true);
 				break;
 			case CURRICULUM:
 				CurriculumSearchParameters params = new CurriculumSearchParameters();
 				if (organisationsEl.isVisible()) {
-					params.setOrganisations(getSelectedOrganisations());
+					params.setOrganisations(QualityUIFactory.getSelectedOrganisationRefs(organisationsEl));
 				}
 				List<Curriculum> curriculums = curriculumService.getCurriculums(params);
 				if (topicCurriculum != null && !curriculums.contains(topicCurriculum)) {
@@ -346,7 +306,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 			case CURRICULUM_ELEMENT:
 				CurriculumSearchParameters params2 = new CurriculumSearchParameters();
 				if (organisationsEl.isVisible()) {
-					params2.setOrganisations(getSelectedOrganisations());
+					params2.setOrganisations(QualityUIFactory.getSelectedOrganisationRefs(organisationsEl));
 				}
 				List<Curriculum> curriculums2 = curriculumService.getCurriculums(params2);
 				if (topicCurriculum != null && !curriculums2.contains(topicCurriculum)) {
@@ -638,37 +598,11 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		
 		// organisations
 		if (organisationsEl.isVisible()) {
-			List<Organisation> organisations = getSelectedOrganisations();
-			qualityService.updateDataCollectionOrganisations(dataCollection, organisations);
+			currentOrganisations = QualityUIFactory.getSelectedOrganisations(organisationsEl, currentOrganisations);
+			qualityService.updateDataCollectionOrganisations(dataCollection, currentOrganisations);
 		}
 		
 		fireEvent(ureq, new DataCollectionEvent(dataCollection, Action.CHANGED));
-	}
-
-	private List<Organisation> getSelectedOrganisations() {
-		List<Organisation> organisations = new ArrayList<>(dataCollectionOrganisations);
-
-		Set<String> organisationKeys = organisationsEl.getKeys();
-		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
-
-		Set<String> currentOrganisationKeys = new HashSet<>();
-		for(Iterator<Organisation> it=organisations.iterator(); it.hasNext(); ) {
-			String key = it.next().getKey().toString();
-			currentOrganisationKeys.add(key);
-			if(organisationKeys.contains(key) && !selectedOrganisationKeys.contains(key)) {
-				it.remove();
-			}
-		}
-
-		for(String selectedOrganisationKey:selectedOrganisationKeys) {
-			if(!currentOrganisationKeys.contains(selectedOrganisationKey)) {
-				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(selectedOrganisationKey)));
-				if(organisation != null) {
-					organisations.add(organisation);
-				}
-			}
-		}
-		return organisations;
 	}
 	
 	private void doSelectFormEntry(UserRequest ureq) {

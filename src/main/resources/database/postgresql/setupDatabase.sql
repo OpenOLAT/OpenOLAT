@@ -1786,6 +1786,8 @@ create table o_qual_data_collection (
    q_topic_fk_curriculum int8,
    q_topic_fk_curriculum_element int8,
    q_topic_fk_repository int8,
+   fk_generator bigint,
+   q_generator_provider_key bigint,
    primary key (id)
 );
 
@@ -1850,6 +1852,36 @@ create table o_qual_reminder (
    q_send_planed timestamp,
    q_send_done timestamp,
    fk_data_collection bigint not null,
+   primary key (id)
+);
+
+create table o_qual_generator (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_title varchar(256),
+   q_type varchar(64) not null,
+   q_enabled bool not null,
+   q_last_run timestamp,
+   fk_form_entry bigint,
+   primary key (id)
+);
+
+create table o_qual_generator_config (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_identifier varchar(50) not null,
+   q_value varchar(2048),
+   fk_generator bigint not null,
+   primary key (id)
+);
+
+create table o_qual_generator_to_org (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_generator bigint not null,
+   fk_organisation bigint not null,
    primary key (id)
 );
 
@@ -3418,6 +3450,11 @@ create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level 
 
 alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_rem_to_data_collection_idx on o_qual_reminder (fk_data_collection);
+
+alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);
+
+alter table o_qual_generator_to_org add constraint qual_gen_to_org_idx foreign key (fk_generator) references o_qual_generator (id);
+create unique index idx_qual_gen_to_org_idx on o_qual_generator_to_org (fk_generator, fk_organisation);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

@@ -23,17 +23,29 @@ import static org.olat.modules.quality.QualityDataCollectionTopicType.CUSTOM;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -209,7 +221,7 @@ public class QualityUIFactory {
 		return null;
 	}
 
-	public static KeysValues getOrganisationKeysValues(OrganisationTreeModel organisationModel) {
+	public static KeysValues getTopicOrganisationKeysValues(OrganisationTreeModel organisationModel) {
 		List<Organisation> organisations = new ArrayList<>();
 		organsiationTreeToList(organisations, organisationModel.getRootNode());
 		String[] keys = new String[organisations.size()];
@@ -245,7 +257,7 @@ public class QualityUIFactory {
 		return intendation;
 	}
 	
-	static String getOrganisationKey(Organisation organisation) {
+	static String getTopicOrganisationKey(Organisation organisation) {
 		return String.valueOf(organisation.getKey());
 	}
 
@@ -265,6 +277,150 @@ public class QualityUIFactory {
 			}
 		}
 		return null;
+	}
+	
+	public static void initOrganisations(UserSession usess, MultipleSelectionElement organisationsEl,
+			List<Organisation> currentOrganisations) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		
+		// Get all organisations of the user
+		List<Organisation> userOrganisations = organisationService.getOrganisations(usess.getIdentity(), usess.getRoles(),
+				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
+		List<Organisation> allOrganisations = new ArrayList<>(userOrganisations);
+
+		// Complete with the active organisations
+		for(Organisation activeOrganisation:currentOrganisations) {
+			if(activeOrganisation != null && !allOrganisations.contains(activeOrganisation)) {
+				allOrganisations.add(activeOrganisation);
+			}
+		}
+		
+		// Sort the organisations
+		Collections.sort(allOrganisations, new OrganisationNameComparator(usess.getLocale()));
+		
+		// Make the keys and values for the form element
+		List<String> keyList = new ArrayList<>();
+		List<String> valueList = new ArrayList<>();
+		for(Organisation elOrganisation:allOrganisations) {
+			keyList.add(elOrganisation.getKey().toString());
+			valueList.add(elOrganisation.getDisplayName());
+		}
+		
+		// Update the for element and select the active organisations.
+		organisationsEl.setKeysAndValues(keyList.toArray(new String[keyList.size()]),
+				valueList.toArray(new String[valueList.size()]));
+		for(Organisation reOrganisation:currentOrganisations) {
+			if(keyList.contains(reOrganisation.getKey().toString())) {
+				organisationsEl.select(reOrganisation.getKey().toString(), true);
+			}
+		}
+	}
+	
+	public static List<OrganisationRef> getSelectedOrganisationRefs(MultipleSelectionElement organisationsEl) {
+		return organisationsEl.getSelectedKeys().stream()
+				.map(key -> getOrganisationRef(key))
+				.collect(Collectors.toList());
+	}
+	
+	public static List<Organisation> getSelectedOrganisations(MultipleSelectionElement organisationsEl,
+			List<Organisation> currentOrganisations) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+
+		// Copy the current organisations
+		List<Organisation> organisations = new ArrayList<>(currentOrganisations);
+		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
+		
+		// Remove unselected organisations
+		organisations.removeIf(organisation -> !selectedOrganisationKeys.contains(organisation.getKey().toString()));
+
+		// Add newly selected organisations
+		Collection<String> organisationKeys = organisations.stream()
+				.map(Organisation::getKey)
+				.map(String::valueOf)
+				.collect(Collectors.toList());
+		for (String selectedOrganisationKey: selectedOrganisationKeys) {
+			if (!organisationKeys.contains(selectedOrganisationKey)) {
+				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(selectedOrganisationKey)));
+				if (organisation != null) {
+					organisations.add(organisation);
+				}
+			}
+		}
+		return organisations;
+	}
+	
+	public static boolean validateInteger(TextElement el, int min, int max) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled()) {
+			String val = el.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				
+				try {
+					double value = Integer.parseInt(val);
+					if(min > value) {
+						el.setErrorKey("error.wrong.int", null);
+						allOk = false;
+					} else if(max < value) {
+						el.setErrorKey("error.wrong.int", null);
+						allOk = false;
+					}
+				} catch (NumberFormatException e) {
+					el.setErrorKey("error.wrong.int", null);
+					allOk = false;
+				}
+			}
+		}
+		return allOk;
+	}
+	
+	public static boolean validateIsMandatory(TextElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled()) {
+			String value = el.getValue();
+			if (!StringHelper.containsNonWhitespace(value)) {
+				el.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+	
+	public static boolean validateIsMandatory(SingleSelection el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled()) {
+			if (!el.isOneSelected()) {
+				el.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+
+	public static boolean validateIsMandatory(MultipleSelectionElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled()) {
+			if (!el.isAtLeastSelected(1)) {
+				el.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+	
+	public static boolean validateIsMandatory(DateChooser el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled()) {
+			if (el.getDate() == null) {
+				el.setErrorKey("form.mandatory.hover", null);
+				allOk = false;
+			}
+		}
+		return allOk;
 	}
 	
 	public static class KeysValues {

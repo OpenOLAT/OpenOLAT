@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 
@@ -45,6 +46,9 @@ public interface QualityService {
 
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry);
+	
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
+			RepositoryEntry formEntry, QualityGenerator generator, Long generatorProviderKey);
 	
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection);
 

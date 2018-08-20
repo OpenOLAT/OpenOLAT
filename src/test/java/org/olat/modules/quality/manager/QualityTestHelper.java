@@ -19,7 +19,10 @@
  */
 package org.olat.modules.quality.manager;
 
+import static java.util.Collections.singletonList;
+
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +47,8 @@ import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -61,7 +66,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QualityTestHelper {
-
+	
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -78,6 +83,8 @@ public class QualityTestHelper {
 	private CurriculumService curriculumService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private QualityGeneratorService generatorService;
 	
 	public void deleteAll() {
 		evaTestHelper.deleteAll();
@@ -200,7 +207,7 @@ public class QualityTestHelper {
 		return qualityService.addParticipations(dataCollection, executors);
 	}
 
-	Organisation createOrganisation() {
+	public Organisation createOrganisation() {
 		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, null, null);
 	}
 
@@ -212,7 +219,7 @@ public class QualityTestHelper {
 		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, createCurriculum());
 	}
 
-	RepositoryEntry createRepositoryEntry() {
+	public RepositoryEntry createRepositoryEntry() {
 		return JunitTestHelper.createAndPersistRepositoryEntry();
 	}
 
@@ -229,6 +236,14 @@ public class QualityTestHelper {
 		Date sendDate = new Date();
 		QualityReminderType type = QualityReminderType.REMINDER1;
 		return reminderDao.create(dataCollectionRef, sendDate, type);
+	}
+
+	public QualityGenerator createGenerator() {
+		return generatorService.createGenerator("type", singletonList(createOrganisation()));
+	}
+	
+	public QualityGenerator createGenerator(Collection<Organisation> organsations) {
+		return generatorService.createGenerator("type", organsations);
 	}
 
 }
