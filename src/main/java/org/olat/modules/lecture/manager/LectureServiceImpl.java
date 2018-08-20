@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -320,6 +319,45 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		dbInstance.commit();
 		recalculateSummary(mergedBlock.getEntry());
 		return mergedBlock;
+	}
+
+	public int healMovedLectureBlocks(RepositoryEntry entry, RepositoryEntry originEntry) {
+		int rows = 0;
+		// move log if necessary
+		List<LectureBlockAuditLog> auditLogs = getAuditLog(originEntry);
+		if(!auditLogs.isEmpty()) {
+			List<LectureBlock> blocks = getLectureBlocks(entry);
+			Set<Long> blockKeys = blocks.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
+			for(LectureBlockAuditLog auditLog:auditLogs) {
+				if(auditLog.getLectureBlockKey() != null && blockKeys.contains(auditLog.getLectureBlockKey())) {
+					rows += auditLogDao.moveAudit(auditLog.getLectureBlockKey(), originEntry.getKey(), entry.getKey());
+					blockKeys.remove(auditLog.getLectureBlockKey());// move all log of the lecture block
+					dbInstance.commit();
+				}
+			}
+		}
+		
+		//check summary
+		List<LectureParticipantSummary> originSummaries = lectureParticipantSummaryDao.getSummary(originEntry);
+		if(!originSummaries.isEmpty()) {	
+			Map<Identity, LectureParticipantSummary> originSummariesMap = new HashMap<>();
+			for(LectureParticipantSummary originSummary:originSummaries) {
+				originSummariesMap.put(originSummary.getIdentity(), originSummary);
+			}
+		
+			List<LectureParticipantSummary> summaries = lectureParticipantSummaryDao.getSummary(entry);
+			for(LectureParticipantSummary summary:summaries) {
+				LectureParticipantSummary originSummary = originSummariesMap.get(summary.getIdentity());
+				if(originSummary != null && originSummary.getFirstAdmissionDate() != null && summary.getFirstAdmissionDate() != null
+						&& originSummary.getFirstAdmissionDate().before(summary.getFirstAdmissionDate())) {
+					summary.setFirstAdmissionDate(originSummary.getFirstAdmissionDate());
+					lectureParticipantSummaryDao.update(summary);
+					rows++;
+				}
+			}
+		}
+		dbInstance.commit();
+		return rows;
 	}
 
 	@Override

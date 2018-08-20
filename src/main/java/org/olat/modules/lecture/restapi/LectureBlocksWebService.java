@@ -46,9 +46,11 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.manager.LectureServiceImpl;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,6 +66,8 @@ public class LectureBlocksWebService {
 	
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public LectureBlocksWebService(RepositoryEntry entry, boolean administrator) {
 		this.entry = entry;
@@ -309,6 +313,24 @@ public class LectureBlocksWebService {
 		LectureBlockWebService ws = new LectureBlockWebService(lectureBlock, entry);
 		CoreSpringFactory.autowireObject(ws);
 		return ws;
+	}
+
+	@POST
+	@Path("healmoved/{originEntryKey}")
+	public Response healMoved(@PathParam("originEntryKey") Long originEntryKey) {
+		//check the lecture summary
+		
+		RepositoryEntry originEntry = repositoryService.loadByKey(originEntryKey);
+		if(originEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		int rows = ((LectureServiceImpl)lectureService).healMovedLectureBlocks(entry, originEntry);
+		
+		if(rows == 0) {
+			return Response.ok().status(Status.NOT_MODIFIED).build();
+		}
+		return Response.ok().build();
 	}
 	
 	/**

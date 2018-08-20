@@ -36,8 +36,10 @@ import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
+import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -67,6 +69,8 @@ public class LectureServiceTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private LectureBlockAuditLogDAO lectureBlockAuditLogDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	@Autowired
@@ -284,6 +288,74 @@ public class LectureServiceTest extends OlatTestCase {
 		Roles roles = Roles.administratorRoles();
 		repositoryService.deletePermanently(entry, owner, roles, Locale.ENGLISH);
 		dbInstance.commit();
+	}
+	
+	
+	@Test
+	public void moveAndHeal() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry targetEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-9");
+		// a closed lecture block in the past
+		LectureBlock lectureBlock1 = createClosedLectureBlockInPast(entry);
+		LectureBlock lectureBlock2 = createClosedLectureBlockInPast(entry);
+		LectureBlock lectureBlock3 = createClosedLectureBlockInPast(entry);
+		// create summary in the past
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -4);
+		lectureParticipantSummaryDao.createSummary(entry, participant, cal.getTime());
+		// add participants to the "course"
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		dbInstance.commitAndCloseSession();
+		LectureParticipantSummary firstSummary = lectureParticipantSummaryDao.getSummary(entry, participant);
+		
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		lectureService.updateRepositoryEntryLectureConfiguration(config);
+
+		// add the course to the lectures
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		lectureBlock1 = lectureService.save(lectureBlock1, Collections.singletonList(defGroup));
+		lectureBlock2 = lectureService.save(lectureBlock2, Collections.singletonList(defGroup));
+		lectureBlock3 = lectureService.save(lectureBlock3, Collections.singletonList(defGroup));
+		dbInstance.commitAndCloseSession();
+		
+		lectureBlockAuditLogDao.auditLog(LectureBlockAuditLog.Action.createLectureBlock, "3", "4", "Update absence", lectureBlock1, null, entry, participant, participant);
+
+		// add roll call
+		lectureService.addRollCall(participant, lectureBlock1, null, toList(1, 2));
+		lectureService.addRollCall(participant, lectureBlock2, null, toList(1, 2, 3, 4));
+		lectureService.addRollCall(participant, lectureBlock3, null, toList(2, 3, 4));
+		dbInstance.commitAndCloseSession();
+
+		lectureService.moveLectureBlock(lectureBlock1, targetEntry);
+		lectureService.moveLectureBlock(lectureBlock2, targetEntry);
+		lectureService.moveLectureBlock(lectureBlock3, targetEntry);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlockAuditLog> beforeHealLogs = lectureBlockAuditLogDao.getAuditLog(entry);
+		Assert.assertNotNull(beforeHealLogs);
+		Assert.assertEquals(1, beforeHealLogs.size());
+		
+		
+		// heal
+		int rows = ((LectureServiceImpl)lectureService).healMovedLectureBlocks(targetEntry, entry);
+		dbInstance.commitAndCloseSession();
+		Assert.assertFalse(rows == 0);
+		
+		LectureParticipantSummary summary = lectureParticipantSummaryDao.getSummary(targetEntry, participant);
+		Assert.assertNotNull(summary);
+		Assert.assertEquals(firstSummary.getFirstAdmissionDate(), summary.getFirstAdmissionDate());
+		
+
+		List<LectureBlockAuditLog> targetLogs = lectureBlockAuditLogDao.getAuditLog(targetEntry);
+		Assert.assertNotNull(targetLogs);
+		Assert.assertEquals(1, targetLogs.size());
+		
+		List<LectureBlockAuditLog> logs = lectureBlockAuditLogDao.getAuditLog(entry);
+		Assert.assertNotNull(logs);
+		Assert.assertEquals(0, logs.size());
+		
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {

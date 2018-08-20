@@ -119,6 +119,20 @@ public class LectureParticipantSummaryDAO {
 		return summaries == null || summaries.isEmpty() ? null : summaries.get(0);
 	}
 	
+	public List<LectureParticipantSummary> getSummary(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select summary from lectureparticipantsummary summary")
+		  .append(" inner join fetch summary.entry entry")
+		  .append(" inner join fetch summary.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where entry.key=:entryKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), LectureParticipantSummary.class)
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+	}
+	
 	public int updateStatistics(LectureBlockStatistics statistics) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("update lectureparticipantsummary set lastModified=:now,")

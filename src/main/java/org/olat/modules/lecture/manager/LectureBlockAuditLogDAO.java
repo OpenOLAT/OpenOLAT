@@ -156,6 +156,17 @@ public class LectureBlockAuditLogDAO {
 				.getResultList();
 	}
 	
+	public int moveAudit(Long lectureBlockKey, Long originRepositoryEntry, Long targetRepositoryEntry) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("update lectureblockauditlog log set log.entryKey=:targetEntryKey where log.entryKey=:repoEntryKey and log.lectureBlockKey=:lectureBlockKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("targetEntryKey", targetRepositoryEntry)
+				.setParameter("repoEntryKey", originRepositoryEntry)
+				.setParameter("lectureBlockKey", lectureBlockKey)
+				.executeUpdate();
+	}
+	
 	public String toXml(LectureBlock lectureBlock) {
 		if(lectureBlock == null) return null;
 		return lectureBlockXStream.toXML(lectureBlock);

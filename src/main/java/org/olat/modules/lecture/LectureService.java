@@ -556,4 +556,5 @@ public interface LectureService {
 	 * @param entry
 	 */
 	public void syncCalendars(RepositoryEntry entry);
+	
 }
