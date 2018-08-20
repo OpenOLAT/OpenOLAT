@@ -37,7 +37,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -67,13 +69,13 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
-import org.olat.modules.curriculum.ui.component.CurriculumElementStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -85,7 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumComposerController extends FormBasicController implements TooledController {
+public class CurriculumComposerController extends FormBasicController implements FlexiTableCssDelegate, TooledController {
 	
 	private Link newElementButton;
 	private FlexiTableElement tableEl;
@@ -167,7 +169,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status, new CurriculumElementStatusCellRenderer(getTranslator())));
+		//columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.status, new CurriculumElementStatusCellRenderer(getTranslator())));
 
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
 		selectColumn.setExportable(false);
@@ -189,6 +191,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
+		tableEl.setCssDelegate(this);
 	}
 	
 	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
@@ -198,6 +201,27 @@ public class CurriculumComposerController extends FormBasicController implements
 					OrganisationRoles.administrator.name());
 		}
 		return false;
+	}
+	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		CurriculumElementRow row = tableModel.getObject(pos);
+		if(row.getStatus() == CurriculumElementStatus.inactive) {
+			return "o_curriculum_element_inactive";
+		} else if(row.getStatus() == CurriculumElementStatus.deleted) {
+			return "o_curriculum_element_deleted";
+		}
+		return "o_curriculum_element_active";
 	}
 
 	@Override

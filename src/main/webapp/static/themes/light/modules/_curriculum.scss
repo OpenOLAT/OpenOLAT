@@ -8,6 +8,15 @@
 	}
 }
 
+tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span {
+	color: $o-curriculum-element-inactive-color;
+}
+
+tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span {
+	color: $o-curriculum-element-inactive-color;
+	text-decoration: line-through;
+}
+
 .o_curriculumtable {
 	&.o_rendertype_custom {	
 		.o_table_row.o_curriculum_element {

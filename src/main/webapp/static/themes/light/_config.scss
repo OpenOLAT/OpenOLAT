@@ -333,6 +333,9 @@ $o-course-node-locked			: $state-info-text !default;
 $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
 
+/* Curriculum */
+$o-curriculum-element-inactive-color				: #777;
+
 
 /* Portfolio v2 */
 $o-portfolio-assignment-color						: $brand-danger !default;
