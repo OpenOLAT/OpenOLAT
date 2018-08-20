@@ -57,6 +57,10 @@ public interface TemporaryKey {
 
 	public void setRegistrationKey(String string);
 	
+	public Date getValidUntil();
+	
+	public void setValidUntil(Date date);
+	
 	/**
 	 * @return Wether email has been sent.
 	 */

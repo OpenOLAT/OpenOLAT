@@ -743,17 +743,20 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	
 	private void sendAutoCloseNotifications(LectureBlock lectureBlock) {
 		RepositoryEntry entry = lectureBlock.getEntry();
-		List<Identity> owners = repositoryEntryRelationDao
-				.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
-		List<Identity> teachers = getTeachers(lectureBlock);
-		
-		for(Identity owner:owners) {
-			MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
-					owner, teachers, lectureBlock);
-			if(result.getReturnCode() == MailerResult.OK) {
-				log.audit("Notification of lecture auto-close: " + lectureBlock.getKey() + " in course: " + entry.getKey());
-			} else {
-				log.error("Notification of lecture auto-close cannot be send: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		if(config.isLectureEnabled()) {
+			List<Identity> owners = repositoryEntryRelationDao
+					.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+			List<Identity> teachers = getTeachers(lectureBlock);
+			
+			for(Identity owner:owners) {
+				MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
+						owner, teachers, lectureBlock);
+				if(result.getReturnCode() == MailerResult.OK) {
+					log.audit("Notification of lecture auto-close: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+				} else {
+					log.error("Notification of lecture auto-close cannot be send: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+				}
 			}
 		}
 	}

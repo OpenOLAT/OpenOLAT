@@ -19,7 +19,9 @@
  */
 package org.olat.upgrade;
 
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationService;
@@ -27,6 +29,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,6 +43,7 @@ public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_13.0.0.beta1";
 	private static final String MIGRATE_QUALITY_DATA_COLLECTION_TO_ORGANISATION = "MIGRATE QUALITY DATA COLLECTION TO ORGANISATION";
+	private static final String MIGRATE_TEMP_KEY_VALID_UNTIL = "MIGRATE TEMP KEY VALID UNTIL";
 	
 	@Autowired
 	private DB dbInstance;
@@ -46,6 +51,8 @@ public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
 	private QualityService qualityService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RegistrationManager registrationManager;
 	
 	public OLATUpgrade_13_0_0_beta1() {
 		super();
@@ -73,6 +80,7 @@ public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateQualityDataCollectionToOrganisation(upgradeManager, uhd);
+		allOk &= migrateTemporaryKeys(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -83,7 +91,7 @@ public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
 		}
 		return allOk;
 	}
-	
+
 	private boolean migrateQualityDataCollectionToOrganisation(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MIGRATE_QUALITY_DATA_COLLECTION_TO_ORGANISATION)) {
@@ -107,6 +115,38 @@ public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
 			}
 
 			uhd.setBooleanDataValue(MIGRATE_QUALITY_DATA_COLLECTION_TO_ORGANISATION, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean migrateTemporaryKeys(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_TEMP_KEY_VALID_UNTIL)) {
+			try {
+				Date now = new Date();
+				Calendar c = Calendar.getInstance();
+				c.setTime(now);
+				c.add(Calendar.MONTH, 1);
+				Date oneMonth = c.getTime();
+				List<TemporaryKey> temporaryKeys = registrationManager.loadAll();
+				for (int i=0; i<temporaryKeys.size(); i++) {
+					TemporaryKey temporaryKey = temporaryKeys.get(i);
+					temporaryKey.setValidUntil(oneMonth);
+					dbInstance.getCurrentEntityManager().merge(temporaryKey);
+					log.info("Migration of temporary key: " + temporaryKey.getKey());
+					if (i % 50 == 0) {
+						log.info("Migration of temporary keys: " + i + " / " + temporaryKeys.size());
+					}
+				}
+				log.info("Migration of temporary keys " + temporaryKeys.size());
+				dbInstance.commitAndCloseSession();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_TEMP_KEY_VALID_UNTIL, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;

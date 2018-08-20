@@ -56,6 +56,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.login.LoginModule;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,8 @@ public class PwChangeController extends BasicController {
 	private UserModule userModule;
 	@Autowired
 	private RegistrationManager rm;
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -265,7 +268,8 @@ public class PwChangeController extends BasicController {
 		// mailer configuration
 		String serverpath = Settings.getServerContextPathURI();
 		
-		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip, RegistrationManager.PW_CHANGE);
+		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
+				RegistrationManager.PW_CHANGE, loginModule.getValidUntilHoursGui());
 
 		myContent.contextPut("pwKey", tk.getRegistrationKey());
 		StringBuilder body = new StringBuilder();

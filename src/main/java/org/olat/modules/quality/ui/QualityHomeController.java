@@ -141,6 +141,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 
 	private void doOpenUserParticipations(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_MY_TYPE, 0l);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, stackPanel, secCallback);
@@ -149,6 +150,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 
 	private void doOpenDataCollection(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_DATA_COLLECTIONS_TYPE, 0l);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		dataCollectionListCtrl = new DataCollectionListController(ureq, bwControl, stackPanel, secCallback);

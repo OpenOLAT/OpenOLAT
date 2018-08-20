@@ -56,6 +56,7 @@ import org.olat.core.id.Persistable;
 	@NamedQuery(name="loadTemporaryKeyByRegKey", query="select r from otemporarykey r where r.registrationKey=:regkey"),
 	@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where r.emailAddress=:email"),
 	@NamedQuery(name="loadTemporaryKeyByIdentity", query="select r from otemporarykey r where r.identityKey=:identityKey and action=:action"),
+	@NamedQuery(name="loadAll", query="select r from otemporarykey r"),
 	@NamedQuery(name="deleteTemporaryKeyByIdentityAndAction", query="delete from otemporarykey r where r.identityKey=:identityKey and action=:action"),
 	@NamedQuery(name="deleteTemporaryKeyByIdentity", query="delete from otemporarykey r where r.identityKey=:identityKey")
 })
@@ -88,6 +89,8 @@ public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 	private String ipAddress;
 	@Column(name="regkey", nullable=false, unique=true, insertable=true, updatable=true)
 	private String registrationKey;
+	@Column(name="valid_until", nullable=true, unique=false, insertable=true, updatable=true)
+	private Date validUntil;
 	@Column(name="action", nullable=false, unique=true, insertable=true, updatable=true)
 	private String regAction;
 	@Column(name="mailsent", nullable=false, unique=true, insertable=true, updatable=true)
@@ -146,6 +149,16 @@ public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 	@Override
 	public void setRegistrationKey(String string) {
 		registrationKey = string;
+	}
+
+	@Override
+	public Date getValidUntil() {
+		return validUntil;
+	}
+
+	@Override
+	public void setValidUntil(Date validUntil) {
+		this.validUntil = validUntil;
 	}
 
 	@Override

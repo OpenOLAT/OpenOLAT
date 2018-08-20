@@ -90,10 +90,13 @@ public class RemindersController extends AbstractDataCollectionEditController {
 	}
 	
 	private void updateUI() {
-		invitationEl.setEnabled(secCallback.canEditReminder(dataCollection, invitation));
-		reminder1El.setEnabled(secCallback.canEditReminder(dataCollection, reminder1));
-		reminder2El.setEnabled(secCallback.canEditReminder(dataCollection, reminder2));
-		buttonLayout.setVisible(secCallback.canEditReminders() && secCallback.canUpdateBaseConfiguration(dataCollection));
+		boolean canEditInvitation = secCallback.canEditReminder(dataCollection, invitation);
+		invitationEl.setEnabled(canEditInvitation);
+		boolean canEditReminder1 = secCallback.canEditReminder(dataCollection, reminder1);
+		reminder1El.setEnabled(canEditReminder1);
+		boolean canEditReminder2 = secCallback.canEditReminder(dataCollection, reminder2);
+		reminder2El.setEnabled(canEditReminder2);
+		buttonLayout.setVisible(canEditInvitation || canEditReminder1 || canEditReminder2);
 	}
 
 	@Override

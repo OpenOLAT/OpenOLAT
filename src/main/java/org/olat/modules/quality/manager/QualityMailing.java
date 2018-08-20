@@ -154,7 +154,7 @@ class QualityMailing {
 	private String getUrl(Long participationKey) {
 		StringBuilder url = new StringBuilder();
 		url.append(Settings.getServerContextPathURI());
-		url.append("/QualitySite/0/my/0/");
+		url.append("/url/QualitySite/0/quality/0/my/0/");
 		if (participationKey != null) {
 			url.append("execution/");
 			url.append(participationKey);

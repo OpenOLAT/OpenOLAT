@@ -58,6 +58,8 @@ public class RegistrationAdminController extends FormBasicController {
 	private TextElement propertyValueElement;
 	private TextElement exampleElement;
 	private TextElement domainListElement;
+	private TextElement validUntilGuiEl;
+	private TextElement validUntilRestEl;
 	private FormLayoutContainer domainsContainer;
 	private FormLayoutContainer staticPropContainer;
 	
@@ -82,7 +84,7 @@ public class RegistrationAdminController extends FormBasicController {
 		enableRegistrationValues[0] = translate("admin.enableRegistration.on");
 		
 		List<UserPropertyHandler> allPropertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
-		List<UserPropertyHandler> propertyHandlers = new ArrayList<UserPropertyHandler>(allPropertyHandlers.size());
+		List<UserPropertyHandler> propertyHandlers = new ArrayList<>(allPropertyHandlers.size());
 		for(UserPropertyHandler handler:allPropertyHandlers) {
 			if(handler instanceof Generic127CharTextPropertyHandler) {
 				propertyHandlers.add(handler);
@@ -122,6 +124,11 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationLinkElement = uifactory.addCheckboxesHorizontal("enable.registration.link", "admin.enableRegistrationLink", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationLinkElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLinkElement.select("on", registrationModule.isSelfRegistrationLinkEnabled());
+		
+		validUntilGuiEl = uifactory.addTextElement("admin.registration.valid.until.gui", 20, registrationModule.getValidUntilHoursGui().toString(), settingsContainer);
+		validUntilGuiEl.setMandatory(true);
+		validUntilRestEl = uifactory.addTextElement("admin.registration.valid.until.rest", 20, registrationModule.getValidUntilHoursRest().toString(), settingsContainer);
+		validUntilRestEl.setMandatory(true);
 		
 		String example = generateExampleCode();
 		exampleElement = uifactory.addTextAreaElement("registration.link.example", "admin.registrationLinkExample", 64000, 4, 65, true, false, example, settingsContainer);
@@ -224,6 +231,9 @@ public class RegistrationAdminController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		allOk &= validateInteger(validUntilGuiEl, 1);
+		allOk &= validateInteger(validUntilRestEl, 1);
+		
 		String whiteList = domainListElement.getValue();
 		domainListElement.clearError();
 		if(StringHelper.containsNonWhitespace(whiteList)) {
@@ -258,12 +268,39 @@ public class RegistrationAdminController extends FormBasicController {
 
 		return allOk && super.validateFormLogic(ureq);
 	}
+	
+	private boolean validateInteger(TextElement el, int min) {
+		boolean allOk = true;
+		el.clearError();
+		String val = el.getValue();
+		if(StringHelper.containsNonWhitespace(val)) {	
+			try {
+				double value = Integer.parseInt(val);
+				if(min > value) {
+					el.setErrorKey("error.wrong.int", null);
+					allOk = false;
+				}
+			} catch (NumberFormatException e) {
+				el.setErrorKey("error.wrong.int", null);
+				allOk = false;
+			}
+		} else {
+			el.setErrorKey("error.wrong.int", null);
+			allOk = false;
+		}
+		return allOk;	
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		registrationModule.setSelfRegistrationEnabled(registrationElement.isSelected(0));
 		registrationModule.setSelfRegistrationLinkEnabled(registrationLinkElement.isSelected(0));
 		registrationModule.setSelfRegistrationLoginEnabled(registrationLoginElement.isSelected(0));
+		
+		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
+		registrationModule.setValidUntilHoursGui(validUntilHoursGui);
+		Integer validUntilHoursRest = Integer.parseInt(validUntilRestEl.getValue());
+		registrationModule.setValidUntilHoursRest(validUntilHoursRest);
 		
 		String domains = domainListElement.getValue();
 		registrationModule.setDomainListRaw(domains);

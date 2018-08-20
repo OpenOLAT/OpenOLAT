@@ -46,6 +46,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -59,6 +61,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
@@ -86,25 +90,22 @@ public class UserCreateController extends BasicController  {
 	public UserCreateController (UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
 		super(ureq, wControl, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		
-		Translator pT = userManager.getPropertyHandlerTranslator(getTranslator());		
-		createUserForm = new NewUserForm(ureq, wControl, canCreateOLATPassword, pT);		
+		Translator pT = userManager.getPropertyHandlerTranslator(getTranslator());
+		createUserForm = new NewUserForm(ureq, wControl, canCreateOLATPassword, pT);
 		listenTo(createUserForm);
 
 		putInitialPanel(createUserForm.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//empty		
+		//empty
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == createUserForm) {
-			if (event instanceof SingleIdentityChosenEvent) {			        
+			if (event instanceof SingleIdentityChosenEvent) {
 				showInfo("new.user.successful");
 				fireEvent(ureq, event);
 			} else if(event == Event.FAILED_EVENT) {
@@ -153,6 +154,8 @@ class NewUserForm extends FormBasicController {
 	private SingleSelection organisationsElement;
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
+	
+	private DialogBoxController confirmRemoveCtrl;
 
 	
 	@Autowired
@@ -161,6 +164,8 @@ class NewUserForm extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RegistrationManager registrationManager;
 	@Autowired
 	private OrganisationService organisationService;
 
@@ -187,7 +192,7 @@ class NewUserForm extends FormBasicController {
 	}	 
 	
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {						
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.newuser");
 		setFormDescription("new.form.please.enter");
 		setFormContextHelp("User management");
@@ -275,31 +280,43 @@ class NewUserForm extends FormBasicController {
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (confirmRemoveCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				String email = (String) confirmRemoveCtrl.getUserObject();
+				doDeletePendingRegistration(email);
+				mainForm.submit(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		// validate if username does match the syntactical login requirements
 		String loginName = usernameTextElement.getValue();
 		usernameTextElement.clearError();
-		if (usernameTextElement.isEmpty() || !userManager.syntaxCheckOlatLogin(loginName)) {			
+		if (usernameTextElement.isEmpty() || !userManager.syntaxCheckOlatLogin(loginName)) {
 			usernameTextElement.setErrorKey("new.error.loginname.empty", new String[]{});
 			allOk &= false;
 		} else {
 			// Check if login is still available
 			Identity identity = securityManager.findIdentityByName(loginName);
-			if (identity != null) {			
+			if (identity != null) {
 				usernameTextElement.setErrorKey("new.error.loginname.choosen", new String[]{});
 				allOk &= false;
 			}
 		}
 
 		// validate special rules for each user property
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {			
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			//we assume here that there are only textElements for the user properties
 			FormItem formItem = flc.getFormComponent(userPropertyHandler.getName());
 			formItem.clearError();
 			if ( ! userPropertyHandler.isValid(null, formItem, null) || formItem.hasError()) {
-				allOk &= false;				
+				allOk &= false;
 			}
 		}
 
@@ -307,6 +324,9 @@ class NewUserForm extends FormBasicController {
 		String email = emailTextElement.getValue();
 		emailTextElement.clearError();
 		if (!userManager.isEmailAllowed(email)) {
+			if (registrationManager.isRegistrationPending(email)) {
+				doConfirmDeletePendingRegistration(ureq, email);
+			}
 			emailTextElement.setErrorKey("new.error.email.choosen", new String[] {});
 			allOk &= false;
 		}
@@ -327,8 +347,8 @@ class NewUserForm extends FormBasicController {
 			String pwd = psw1TextElement.getValue();
 			if(psw1TextElement.isEmpty("new.form.mandatory") || psw1TextElement.hasError()) {
 				allOk &= false;
-			} else if (!userManager.syntaxCheckOlatPassword(pwd)) {					
-				psw1TextElement.setErrorKey("form.checkPassword", new String[]{});					
+			} else if (!userManager.syntaxCheckOlatPassword(pwd)) {
+				psw1TextElement.setErrorKey("form.checkPassword", new String[]{});
 				allOk &=  false;
 			}
 			if(psw2TextElement.isEmpty("new.form.mandatory") || psw2TextElement.hasError()) {
@@ -340,19 +360,19 @@ class NewUserForm extends FormBasicController {
 		}
 		return allOk;
 	}
-	
+
 	@Override
 	protected void formOK(UserRequest ureq) {
-    // Create user on database
+		// Create user on database
 		Identity s = doCreateAndPersistIdentity();
-		if (s != null) {			
-			log.audit(USER_CREATE_SUCCESS + s.getKey());				
+		if (s != null) {
+			log.audit(USER_CREATE_SUCCESS + s.getKey());
 			fireEvent(ureq, new SingleIdentityChosenEvent(s));
 		} else {
 			// Could not save form, display error
 			getWindowControl().setError(translate("new.user.unsuccessful"));
 			fireEvent(ureq, Event.FAILED_EVENT);
-		}		
+		}
 	}
 	
 	@Override
@@ -397,8 +417,19 @@ class NewUserForm extends FormBasicController {
 		return securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, pwd, newUser, userOrganisation);
 	}
 	
+	private void doConfirmDeletePendingRegistration(UserRequest ureq, String email) {
+		String title = translate("delete.pending.registration.confirmation.title");
+		confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("delete.pending.registration.confirmation", email), confirmRemoveCtrl);
+		confirmRemoveCtrl.setUserObject(email);
+	}
+
+	private void doDeletePendingRegistration(String email) {
+		TemporaryKey temporaryKey = registrationManager.loadTemporaryKeyByEmail(email);
+		registrationManager.deleteTemporaryKey(temporaryKey);	
+	}
+	
 	@Override
 	protected void doDispose() {
 		//empty
-	}	
+	}
 }

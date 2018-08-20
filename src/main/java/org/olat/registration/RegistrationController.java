@@ -310,7 +310,10 @@ public class RegistrationController extends BasicController implements Activatea
 					if (userModule.isEmailUnique()) {
 						tk = registrationManager.loadTemporaryKeyByEmail(email);
 					}
-					if (tk == null) tk = registrationManager.loadOrCreateTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
+					if (tk == null) {
+						tk = registrationManager.loadOrCreateTemporaryKeyByEmail(email, ip,
+								RegistrationManager.REGISTRATION, registrationModule.getValidUntilHoursGui());
+					}
 					myContent.contextPut("regKey", tk.getRegistrationKey());
 					
 					String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
@@ -522,6 +525,7 @@ public class RegistrationController extends BasicController implements Activatea
 		}
 	}
 
+	@Override
 	protected void doDispose() {
 		//
 	}

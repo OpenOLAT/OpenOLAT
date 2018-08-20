@@ -48,3 +48,8 @@ alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key
 
 alter table o_qual_generator_to_org add constraint qual_gen_to_org_idx foreign key (fk_generator) references o_qual_generator (id);
 create unique index idx_qual_gen_to_org_idx on o_qual_generator_to_org (fk_generator, fk_organisation);
+
+
+-- Temporary keys
+alter table o_temporarykey add valid_until date;
+
