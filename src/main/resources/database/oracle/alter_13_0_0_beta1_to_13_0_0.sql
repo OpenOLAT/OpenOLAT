@@ -28,7 +28,7 @@ create table o_qual_generator_config (
    creationdate date not null,
    lastmodified date not null,
    q_identifier varchar2(50) not null,
-   q_value varchar2(2048),
+   q_value clob,
    fk_generator number(20) not null,
    primary key (id)
 );

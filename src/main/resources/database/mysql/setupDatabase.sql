@@ -1980,7 +1980,7 @@ create table o_qual_generator_config (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_identifier varchar(50) not null,
-   q_value varchar(2048),
+   q_value mediumtext,
    fk_generator bigint not null,
    primary key (id)
 );

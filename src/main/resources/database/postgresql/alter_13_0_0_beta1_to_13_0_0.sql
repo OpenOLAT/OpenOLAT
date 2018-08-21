@@ -28,7 +28,7 @@ create table o_qual_generator_config (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_identifier varchar(50) not null,
-   q_value varchar(2048),
+   q_value text,
    fk_generator bigint not null,
    primary key (id)
 );
