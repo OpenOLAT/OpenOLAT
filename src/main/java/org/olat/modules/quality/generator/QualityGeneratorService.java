@@ -26,9 +26,12 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
+import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 
 /**
@@ -69,6 +72,11 @@ public interface QualityGeneratorService {
 			QualityGenerator generator);
 
 	public String getGeneratorEnableInfo(QualityGenerator generator, Date fromDate, Date toDate, Locale locale);
+
+	public boolean hasWhiteListController(QualityGenerator generator);
+	
+	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator);
 
 	public void generateDataCollections();
 

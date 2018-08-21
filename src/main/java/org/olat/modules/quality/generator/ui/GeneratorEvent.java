@@ -33,6 +33,8 @@ public class GeneratorEvent extends Event {
 	private static final long serialVersionUID = 8386442706262170426L;
 
 	public enum Action {
+		ENABLE,
+		DISABLE,
 		DELETE
 	}
 

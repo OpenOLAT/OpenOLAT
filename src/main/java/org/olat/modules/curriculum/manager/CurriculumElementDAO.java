@@ -118,6 +118,22 @@ public class CurriculumElementDAO {
 				.getResultList();
 		return elements == null || elements.isEmpty() ? null : elements.get(0);
 	}
+
+	public List<CurriculumElement> loadByKeys(Collection<CurriculumElementRef> elementRefs) {
+		if (elementRefs == null || elementRefs.isEmpty()) return new ArrayList<>(0);
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select el");
+		sb.append("  from curriculumelement el");
+		sb.append("       left join fetch el.type");
+		sb.append(" where el.key in :keys");
+		
+		List<Long> keys = elementRefs.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("keys", keys )
+				.getResultList();
+	}
 	
 	public String getMaterializedPathKeys(CurriculumElement parent, CurriculumElement element) {
 		if(parent != null) {

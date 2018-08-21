@@ -197,6 +197,8 @@ public interface CurriculumService {
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
 	
+	public List<CurriculumElement> getCurriculumElements(Collection<CurriculumElementRef> elementRefs);
+	
 	public void deleteCurriculumElement(CurriculumElementRef element);
 	
 	/**

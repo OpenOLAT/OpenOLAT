@@ -28,6 +28,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ public class CurriculumElementProviderDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select curEle");
 		appendFrom(sb);
-		appendWhere(sb, searchParams.isStartDate());
+		appendWhere(sb, searchParams);
 		
 		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class);
@@ -68,7 +69,7 @@ public class CurriculumElementProviderDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select count(curEle)");
 		appendFrom(sb);
-		appendWhere(sb, searchParams.isStartDate());
+		appendWhere(sb, searchParams);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -80,9 +81,8 @@ public class CurriculumElementProviderDAO {
 
 	private boolean validateSearchParams(SearchParameters searchParams) {
 		return searchParams.getGeneratorRef() == null || searchParams.getGeneratorRef().getKey() == null
-				|| searchParams.getOrganisations() == null || searchParams.getOrganisations().isEmpty()
-				|| searchParams.getCeTypeKey() == null || searchParams.getFrom() == null
-				|| searchParams.getTo() == null;
+				|| searchParams.getOrganisationRefs().isEmpty() || searchParams.getCeTypeKey() == null
+				|| searchParams.getFrom() == null || searchParams.getTo() == null;
 	}
 
 	private void appendFrom(StringBuilder sb) {
@@ -90,7 +90,7 @@ public class CurriculumElementProviderDAO {
 		sb.append("       inner join curEle.curriculum cur");
 	}
 
-	private void appendWhere(StringBuilder sb, boolean startDate) {
+	private void appendWhere(StringBuilder sb, SearchParameters searchParams) {
 		sb.append(" where curEle.type.key = :ceTypeKey");
 		sb.append("   and curEle.status = '").append(CurriculumElementStatus.active.name()).append("'");
 		sb.append("   and cur.organisation.key in :organisationKeys");
@@ -99,20 +99,30 @@ public class CurriculumElementProviderDAO {
 		sb.append("         from qualitydatacollection as datacollection");
 		sb.append("        where datacollection.generator.key = :generatorKey");
 		sb.append("     )");
-		if (startDate) {
-			sb.append("   and curEle.beginDate > :from and curEle.beginDate <= :to");
+		
+		if (searchParams.isStartDate()) {
+			sb.append(" and curEle.beginDate > :from and curEle.beginDate <= :to");
 		} else {
-			sb.append("   and curEle.endDate > :from and curEle.endDate <= :to");
+			sb.append(" and curEle.endDate > :from and curEle.endDate <= :to");
+		}
+		
+		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
+			sb.append(" and curEle.key in :curEleKeys");
 		}
 	}
 	
 	private void appendParameter(TypedQuery<?> query, SearchParameters searchParams) {
-		List<Long> organisationKeys = searchParams.getOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+		List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 		query.setParameter("ceTypeKey", searchParams.getCeTypeKey())
 				.setParameter("organisationKeys", organisationKeys)
 				.setParameter("generatorKey", searchParams.getGeneratorRef().getKey())
 				.setParameter("from", searchParams.getFrom())
 				.setParameter("to", searchParams.getTo());
+		
+		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
+			List<Long> curEleKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
+			query.setParameter("curEleKeys", curEleKeys);
+		}
 	}
 
 }

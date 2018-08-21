@@ -80,7 +80,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 	
 	private CloseableModalController cmc;
 	private GeneratorCreationController creationCtrl;
-	private GeneratorEditController editCtrl;
+	private GeneratorController generatorCtrl;
 	private GeneratorDeleteConfirmationController deleteConfirmationCtrl;
 	
 	private final QualitySecurityCallback secCallback;
@@ -189,7 +189,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == editCtrl && event instanceof GeneratorEvent) {
+		} else if (source == generatorCtrl && event instanceof GeneratorEvent) {
 			GeneratorEvent gEvent = (GeneratorEvent) event;
 			GeneratorEvent.Action action = gEvent.getAction();
 			if (GeneratorEvent.Action.DELETE.equals(action)) {
@@ -242,13 +242,14 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	private void doEditGenerator(UserRequest ureq, QualityGenerator generator) {
 		WindowControl bwControl = addToHistory(ureq, generator, null);
-		editCtrl = new GeneratorEditController(ureq, bwControl, secCallback, stackPanel, generator);
-		listenTo(editCtrl);
+		generatorCtrl = new GeneratorController(ureq, bwControl, secCallback, stackPanel, generator);
+		listenTo(generatorCtrl);
 		String title = generator.getTitle();
 		String formattedTitle = StringHelper.containsNonWhitespace(title)
 				? Formatter.truncate(title, 50)
 				: translate("generator.title.empty");
-		stackPanel.pushController(formattedTitle, editCtrl);
+		stackPanel.pushController(formattedTitle, generatorCtrl);
+		generatorCtrl.activate(ureq, null, null);
 	}
 	
 	private void doConfirmDeleteGenerator(UserRequest ureq, QualityGenerator generator) {
@@ -270,7 +271,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 			initTools();
 		} else {
 			showInfo("generator.delete.has.data.collections");
-			editCtrl.initTools();
+			generatorCtrl.initTools();
 		}
 	}
 

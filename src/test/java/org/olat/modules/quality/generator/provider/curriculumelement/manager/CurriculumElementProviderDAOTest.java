@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.provider.curriculumelement.manager;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Calendar;
@@ -153,6 +154,33 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending).contains(curriculumElement).doesNotContain(otherCurriculumElement);
+	}
+	
+	@Test
+	public void shouldFilterByCurriculumElement() {
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
+		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(),
+				oneDayAgo(), inOneDay(), null, ceType, curriculum);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(),
+				oneDayAgo(), inOneDay(), null, ceType, curriculum);
+		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				oneDayAgo(), inOneDay(), null, ceType, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
+		searchParams.setCurriculumElementRefs(asList(curriculumElement1, curriculumElement2));
+		searchParams.setStartDate(true);
+		List<CurriculumElement> pending = sut.loadPending(searchParams);
+
+		assertThat(pending)
+				.containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
+				.doesNotContain(otherCurriculumElement);
 	}
 	
 	@Test

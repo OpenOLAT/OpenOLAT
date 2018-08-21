@@ -24,12 +24,15 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
+import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.springframework.stereotype.Service;
@@ -62,14 +65,26 @@ public class FallbackProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
-		//
-	}
-
-	@Override
 	public String getEnableInfo(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate,
 			Date toDate, Locale locale) {
 		return "";
+	}
+
+	@Override
+	public boolean hasWhiteListController() {
+		return false;
+	}
+
+	@Override
+	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
+			QualityGeneratorConfigs configs) {
+		return null;
+	}
+
+	@Override
+	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
+		//
 	}
 
 }

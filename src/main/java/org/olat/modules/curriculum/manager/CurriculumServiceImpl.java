@@ -248,6 +248,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public List<CurriculumElement> getCurriculumElements(Collection<CurriculumElementRef> elementRefs) {
+		return curriculumElementDao.loadByKeys(elementRefs);
+	}
+
+	@Override
 	public void deleteCurriculumElement(CurriculumElementRef element) {
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {

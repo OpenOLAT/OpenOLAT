@@ -156,8 +156,6 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 				rolesEl.select(role, true);
 			}
 		}
-		
-		// TODO uh whiteliste
 	}
 
 	@Override

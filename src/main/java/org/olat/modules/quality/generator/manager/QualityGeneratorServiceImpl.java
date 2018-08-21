@@ -30,11 +30,13 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
+import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfig;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
@@ -43,6 +45,7 @@ import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorToOrganisation;
 import org.olat.modules.quality.generator.QualityGeneratorView;
+import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -173,6 +176,20 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 		return provider.getEnableInfo(generator, configs, fromDate, toDate, locale);
+	}
+
+	@Override
+	public boolean hasWhiteListController(QualityGenerator generator) {
+		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
+		return provider.hasWhiteListController();
+	}
+
+	@Override
+	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
+		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
+		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
+		return provider.getWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);
 	}
 
 	@Override

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -103,6 +104,21 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals("2. Element", reloadedElement.getDisplayName());
 		Assert.assertEquals(curriculum, reloadedElement.getCurriculum());
 		Assert.assertEquals(type, reloadedElement.getType());
+	}
+	
+	@Test
+	public void loadByKeys() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null, null, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null, null, curriculum);
+		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElement> elements = curriculumElementDao.loadByKeys(Arrays.asList(element1, element2));
+		
+		Assert.assertTrue(elements.contains(element1));
+		Assert.assertTrue(elements.contains(element2));
+		Assert.assertFalse(elements.contains(otherElement));
 	}
 	
 	@Test

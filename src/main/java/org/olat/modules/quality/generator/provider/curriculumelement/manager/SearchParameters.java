@@ -19,10 +19,13 @@
  */
 package org.olat.modules.quality.generator.provider.curriculumelement.manager;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 
 /**
@@ -32,16 +35,17 @@ import org.olat.modules.quality.generator.QualityGeneratorRef;
 public class SearchParameters {
 	
 	private QualityGeneratorRef generatorRef;
-	private List<Organisation> organisations;
+	private Collection<? extends OrganisationRef> organisationRefs;
 	private Long ceTypeKey;
+	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
 	private Date from;
 	private Date to;
 	private boolean startDate;
 
-	public SearchParameters(QualityGeneratorRef generatorRef, List<Organisation> organisations, Long ceTypeKey,
-			Date from, Date to) {
+	public SearchParameters(QualityGeneratorRef generatorRef, Collection<? extends OrganisationRef> organisationRefs,
+			Long ceTypeKey, Date from, Date to) {
 		this.generatorRef = generatorRef;
-		this.organisations = organisations;
+		this.organisationRefs = organisationRefs;
 		this.ceTypeKey = ceTypeKey;
 		this.from = from;
 		this.to = to;
@@ -55,12 +59,26 @@ public class SearchParameters {
 		this.generatorRef = generatorRef;
 	}
 
-	public List<Organisation> getOrganisations() {
-		return organisations;
+	public Collection<? extends OrganisationRef> getOrganisationRefs() {
+		if (organisationRefs == null) {
+			organisationRefs = new ArrayList<>(0);
+		}
+		return organisationRefs;
 	}
 
-	public void setOrganisations(List<Organisation> organisations) {
-		this.organisations = organisations;
+	public void setOrganisations(Collection<Organisation> organisations) {
+		this.organisationRefs = organisations;
+	}
+
+	public Collection<? extends CurriculumElementRef> getCurriculumElementRefs() {
+		if (curriculumElementRefs == null) {
+			curriculumElementRefs = new ArrayList<>(0);
+		}
+		return curriculumElementRefs;
+	}
+
+	public void setCurriculumElementRefs(Collection<? extends CurriculumElementRef> curriculumElementRefs) {
+		this.curriculumElementRefs = curriculumElementRefs;
 	}
 
 	public Long getCeTypeKey() {

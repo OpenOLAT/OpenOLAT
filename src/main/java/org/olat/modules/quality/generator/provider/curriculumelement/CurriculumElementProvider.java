@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -35,6 +36,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -42,6 +44,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminderType;
+import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
@@ -50,6 +53,8 @@ import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAO;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.curriculumelement.ui.CurriculumElementProviderConfigController;
+import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
+import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +120,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		String ceTypeKeyString = configs.getValue(CONFIG_KEY_CURRICULUM_ELEMENT_TYPE);
 		Long ceTypeKey = Long.valueOf(ceTypeKeyString);
 		SearchParameters searchParams = new SearchParameters(generator, organisations, ceTypeKey, fromDate, toDate);
+		List<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		searchParams.setCurriculumElementRefs(curriculumElementRefs);
 		
 		Long count = 0l;
 		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
@@ -128,6 +135,18 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		
 		return translator.translate("generate.info", new String[] { String.valueOf(count)});
 	}
+	
+	@Override
+	public boolean hasWhiteListController() {
+		return true;
+	}
+
+	@Override
+	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator gnerator,
+			QualityGeneratorConfigs configs) {
+		return new CurriculumElementWhiteListController(ureq, wControl, secCallback, stackPanel, gnerator, configs);
+	}
 
 	@Override
 	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
@@ -136,6 +155,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		String ceTypeKeyString = configs.getValue(CONFIG_KEY_CURRICULUM_ELEMENT_TYPE);
 		Long ceTypeKey = Long.valueOf(ceTypeKeyString);
 		SearchParameters searchParams = new SearchParameters(generator, organisations, ceTypeKey, fromDate, toDate);
+		List<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		searchParams.setCurriculumElementRefs(curriculumElementRefs);
 		
 		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
 		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);

@@ -70,6 +70,7 @@ public class QualityGeneratorDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select generator");
 		sb.append("  from qualitygenerator as generator");
+		sb.append("       left join generator.formEntry");
 		sb.append(" where generator.key = :generatorKey");
 		
 		List<QualityGenerator> generators = dbInstance.getCurrentEntityManager()
