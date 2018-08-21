@@ -275,12 +275,9 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 			case ORGANISATION:
 				List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
 						OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
-				if (topicOrganisation != null && !organisations.contains(topicOrganisation)) {
-					organisations.add(topicOrganisation);
-				}
 				OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 				organisationModel.loadTreeModel(organisations);
-				KeysValues organistionKeysValues = QualityUIFactory.getTopicOrganisationKeysValues(organisationModel);
+				KeysValues organistionKeysValues = QualityUIFactory.getTopicOrganisationKeysValues(organisationModel, topicOrganisation);
 				topicOrganisationEl.setKeysAndValues(organistionKeysValues.getKeys(), organistionKeysValues.getValues(), null);
 				if (topicOrganisation != null) {
 					topicOrganisationEl.select(QualityUIFactory.getTopicOrganisationKey(topicOrganisation), true);
@@ -293,10 +290,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 					params.setOrganisations(QualityUIFactory.getSelectedOrganisationRefs(organisationsEl));
 				}
 				List<Curriculum> curriculums = curriculumService.getCurriculums(params);
-				if (topicCurriculum != null && !curriculums.contains(topicCurriculum)) {
-					curriculums.add(topicCurriculum);
-				}
-				KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums);
+				KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, topicCurriculum);
 				topicCurriculumEl.setKeysAndValues(curriculumKeysValues.getKeys(), curriculumKeysValues.getValues(), null);
 				if (topicCurriculum != null) {
 					topicCurriculumEl.select(QualityUIFactory.getCurriculumKey(topicCurriculum), true);
@@ -309,19 +303,14 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 					params2.setOrganisations(QualityUIFactory.getSelectedOrganisationRefs(organisationsEl));
 				}
 				List<Curriculum> curriculums2 = curriculumService.getCurriculums(params2);
-				if (topicCurriculum != null && !curriculums2.contains(topicCurriculum)) {
-					curriculums2.add(topicCurriculum);
-				}
-				KeysValues curriculumKeysValues2 = QualityUIFactory.getCurriculumKeysValues(curriculums2);
+				KeysValues curriculumKeysValues2 = QualityUIFactory.getCurriculumKeysValues(curriculums2, topicCurriculum);
 				topicCurriculumEl.setKeysAndValues(curriculumKeysValues2.getKeys(), curriculumKeysValues2.getValues(), null);
 				if (topicCurriculum != null) {
 					topicCurriculumEl.select(QualityUIFactory.getCurriculumKey(topicCurriculum), true);
-				}
-				if (topicCurriculum != null) {
 					List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(topicCurriculum, CurriculumElementStatus.values());
 					CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
 					curriculumTreeModel.loadTreeModel(curriculumElements);
-					KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel);
+					KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel, topicCurriculumElement);
 					topicCurriculumElementEl.setKeysAndValues(curriculumElementKeysValues.getKeys(), curriculumElementKeysValues.getValues(), null);
 					if (topicCurriculumElement != null) {
 						topicCurriculumElementEl.select(QualityUIFactory.getCurriculumElementKey(topicCurriculumElement), true);

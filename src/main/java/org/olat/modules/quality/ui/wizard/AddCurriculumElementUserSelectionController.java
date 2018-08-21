@@ -89,7 +89,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setOrganisations(organisationRefs);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
-		KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums);
+		KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, null);
 		curriculumEl = uifactory.addDropdownSingleselect("participation.user.curele.add.choose.curriculum", formLayout,
 				curriculumKeysValues.getKeys(), curriculumKeysValues.getValues());
 		curriculumEl.addActionListener(FormEvent.ONCHANGE);
@@ -108,7 +108,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 				List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
 				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
 				curriculumTreeModel.loadTreeModel(curriculumElements);
-				KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel);
+				KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel, null);
 				curriculumElementEl.setKeysAndValues(curriculumElementKeysValues.getKeys(), curriculumElementKeysValues.getValues(), null);
 			}
 		}

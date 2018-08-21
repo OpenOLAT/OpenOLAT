@@ -128,13 +128,17 @@ public class QualityUIFactory {
 				|| CoreSpringFactory.getImpl(CurriculumModule.class).isEnabled();
 	}
 	
-	public static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums) {
-		String[] keys = curriculums.stream()
+	public static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums, Curriculum current) {
+		List<Curriculum> curriculumsCopy = new ArrayList<>(curriculums);
+		if (current != null && !curriculumsCopy.contains(current)) {
+			curriculumsCopy.add(0, current);
+		}
+		String[] keys = curriculumsCopy.stream()
 				.sorted(DISPLAY_NAME_COMPARATOR)
 				.map(Curriculum::getKey)
 				.map(String::valueOf)
 				.toArray(String[]::new);
-		String[] values = curriculums.stream()
+		String[] values = curriculumsCopy.stream()
 				.sorted(DISPLAY_NAME_COMPARATOR)
 				.map(Curriculum::getDisplayName)
 				.toArray(String[]::new);
@@ -163,9 +167,12 @@ public class QualityUIFactory {
 		return null;
 	}
 
-	public static KeysValues getCurriculumElementKeysValues(CurriculumTreeModel curriculumTreeModel) {
+	public static KeysValues getCurriculumElementKeysValues(CurriculumTreeModel curriculumTreeModel, CurriculumElement current) {
 		List<CurriculumElement> elements = new ArrayList<>();
 		curriculumElementTreeToList(elements, curriculumTreeModel.getRootNode());
+		if (current != null && !elements.contains(current)) {
+			elements.add(0, current);
+		}
 		String[] keys = new String[elements.size()];
 		String[] values = new String[elements.size()];
 		for (int i = elements.size(); i-->0; ) {
@@ -221,9 +228,12 @@ public class QualityUIFactory {
 		return null;
 	}
 
-	public static KeysValues getTopicOrganisationKeysValues(OrganisationTreeModel organisationModel) {
+	public static KeysValues getTopicOrganisationKeysValues(OrganisationTreeModel organisationModel, Organisation current) {
 		List<Organisation> organisations = new ArrayList<>();
 		organsiationTreeToList(organisations, organisationModel.getRootNode());
+		if (current != null && !organisations.contains(current)) {
+			organisations.add(0, current);
+		}
 		String[] keys = new String[organisations.size()];
 		String[] values = new String[organisations.size()];
 		for (int i = organisations.size(); i-->0; ) {

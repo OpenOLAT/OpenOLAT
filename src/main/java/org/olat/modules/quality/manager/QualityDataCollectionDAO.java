@@ -98,7 +98,10 @@ public class QualityDataCollectionDAO {
 		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return null;
 			
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select collection from qualitydatacollection as collection");
+		sb.append("select collection");
+		sb.append("  from qualitydatacollection as collection");
+		sb.append("       left join fetch collection.topicIdentity");
+		sb.append("       left join fetch collection.topicOrganisation");
 		sb.append(" where collection.key=:collectionKey");
 		
 		 List<QualityDataCollection> dataCollections = dbInstance.getCurrentEntityManager()
