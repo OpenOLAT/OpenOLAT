@@ -31,6 +31,7 @@ import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -391,5 +392,8 @@ public interface CurriculumService {
 	
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum);
+	
+
+	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity);
 
 }

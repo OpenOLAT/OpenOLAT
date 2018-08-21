@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -36,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -81,6 +83,39 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.createQuery(sb.toString(), RepositoryEntry.class)
 			.setParameter("elementKey", element.getKey())
 			.getResultList();
+	}
+	
+	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity, List<String> roles) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel.entry.key, el.key, el.displayName, el.identifier,")
+		  .append(" parentEl.key, parentEl.displayName, parentEl.identifier")
+		  .append(" from curriculumelement as el")
+		  .append(" inner join el.group as bGroup")
+		  .append(" inner join bGroup.members as memberships")
+		  .append(" left join el.parent as parentEl")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" where memberships.identity.key=:identityKey and memberships.role in (:roles)")
+		  .append(" group by rel.entry.key, el.key, el.displayName, el.identifier, parentEl.key, parentEl.displayName, parentEl.identifier");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roles)
+				.getResultList();
+		List<CurriculumElementWebDAVInfos> infos = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			Long repositoryEntryKey = (Long)rawObject[0];
+			Long curriculumElementKey = (Long)rawObject[1];
+			String curriculumElementDisplayName = (String)rawObject[2];
+			String curriculumElementIdentifier = (String)rawObject[3];
+			Long parentCurriculumElementKey = (Long)rawObject[4];
+			String parentCurriculumElementDisplayName = (String)rawObject[5];
+			String parentCurriculumElementIdentifier = (String)rawObject[6];	
+			infos.add(new CurriculumElementWebDAVInfos(repositoryEntryKey,
+					curriculumElementKey, curriculumElementDisplayName, curriculumElementIdentifier,
+					parentCurriculumElementKey, parentCurriculumElementDisplayName, parentCurriculumElementIdentifier));
+		}
+		return infos;
 	}
 	
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry, Identity identity, Collection<CurriculumRoles> roles) {

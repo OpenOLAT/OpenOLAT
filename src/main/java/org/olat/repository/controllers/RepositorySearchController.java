@@ -339,7 +339,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	
 	private void doSearchByOwnerLimitTypeInternal(Identity owner, String[] limitTypes, boolean updateFilters) {
 		searchType = SearchType.byOwner;
-		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, limitTypes);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, true, limitTypes);
 		filterRepositoryEntries(entries);
 		if(updateFilters) {
 			updateFilters(entries, owner);

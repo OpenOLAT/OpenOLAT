@@ -36,6 +36,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -53,49 +55,52 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private final WebDAVModule webDAVModule;
 	private final RepositoryManager repositoryManager;
+	private final CurriculumService curriculumService;
 	
 	public CoursefolderWebDAVMergeSource(IdentityEnvironment identityEnv) {
 		super(identityEnv.getIdentity());
 		this.identityEnv = identityEnv;
 		webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 	}
 	
 	@Override
 	protected List<VFSContainer> loadMergedContainers() {
 		List<VFSContainer> containers = new ArrayList<>();
 		
-		Map<String, VFSContainer> terms = null;
-		VirtualContainer noTermContainer = null;
+		Map<String, VFSContainer> terms = new HashMap<>();
+		VirtualContainer noTermContainer = new VirtualContainer("_other");
 		VirtualContainer finishedContainer = null;
 		
-		boolean useTerms = webDAVModule.isTermsFoldersEnabled();
-		if (useTerms) {
-			// prepare no-terms folder for all resources without semester term info or private date
-			terms = new HashMap<>();
-			noTermContainer = new VirtualContainer("_other");
-		} else {
-			finishedContainer = new VirtualContainer("_finished");
-		}
+		boolean useSemestersTerms = webDAVModule.isTermsFoldersEnabled();
+		boolean useCurriculumElementsTerms = webDAVModule.isCurriculumElementFoldersEnabled();
 		boolean prependReference = webDAVModule.isPrependCourseReferenceToTitle();
 		
-		UniqueNames container = new UniqueNames();
-		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), "CourseModule");
-		appendCourses(editorEntries, true, containers, useTerms, terms, noTermContainer, finishedContainer, prependReference, container);
+		NamingAndGrouping namingAndGrouping = new NamingAndGrouping(useSemestersTerms, useCurriculumElementsTerms);
+		if(useCurriculumElementsTerms) {
+			namingAndGrouping.setCurriculumElementInfos(getCurriculumElementWebDAVInfosMap());
+		}
+		if(!useSemestersTerms && !useCurriculumElementsTerms) {
+			finishedContainer = new VirtualContainer("_finished");
+		}
+		
+		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), true, "CourseModule");
+		appendCourses(editorEntries, true, containers, terms, noTermContainer, finishedContainer, prependReference, namingAndGrouping);
 		
 		//add courses as participant and coaches
 		if(webDAVModule.isEnableLearnersParticipatingCourses()) {
 			List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsParticipantAndCoach(getIdentity(), "CourseModule");
-			appendCourses(entries, false, containers, useTerms, terms, noTermContainer, finishedContainer, prependReference, container);
+			appendCourses(entries, false, containers, terms, noTermContainer, finishedContainer, prependReference, namingAndGrouping);
 		}
 		
 		//add bookmarked courses
 		if(webDAVModule.isEnableLearnersBookmarksCourse()) {
 			List<RepositoryEntry> bookmarkedEntries = repositoryManager.getLearningResourcesAsBookmark(getIdentity(), identityEnv.getRoles(), "CourseModule", 0, -1);
-			appendCourses(bookmarkedEntries, false, containers, useTerms, terms, noTermContainer, finishedContainer, prependReference, container);
+			appendCourses(bookmarkedEntries, false, containers, terms, noTermContainer, finishedContainer, prependReference, namingAndGrouping);
 		}
 
-		if (useTerms) {
+		if (useSemestersTerms || useCurriculumElementsTerms) {
 			// add no-terms folder if any have been found
 			if (!noTermContainer.getItems().isEmpty()) {
 				addContainerToList(noTermContainer, containers);
@@ -107,52 +112,85 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		return containers;
 	}
 	
+	private Map<Long,List<CurriculumElementWebDAVInfos>> getCurriculumElementWebDAVInfosMap() {
+		List<CurriculumElementWebDAVInfos> infos = curriculumService.getCurriculumElementInfosForWebDAV(getIdentity());
+		Map<Long,List<CurriculumElementWebDAVInfos>> infoMap = new HashMap<>();
+		for(CurriculumElementWebDAVInfos info:infos) {
+			List<CurriculumElementWebDAVInfos> repoInfos = infoMap
+					.computeIfAbsent(info.getRepositoryEntryKey(), i -> new ArrayList<>());
+			if(!repoInfos.contains(info)) {
+				repoInfos.add(info);
+			}
+		}
+		return infoMap;
+	}
+	
 	private void appendCourses(List<RepositoryEntry> courseEntries, boolean editor, List<VFSContainer> containers,
-			boolean useTerms, Map<String, VFSContainer> terms, VirtualContainer noTermContainer, VirtualContainer finishedContainer,
-			boolean prependReference, UniqueNames container) {	
+			Map<String, VFSContainer> terms, VirtualContainer noTermContainer, VirtualContainer finishedContainer,
+			boolean prependReference, NamingAndGrouping namingAndGrouping) {	
 		
 		// Add all found repo entries to merge source
 		int count = 0;
 		for (RepositoryEntry re:courseEntries) {
-			if(container.isDuplicate(re)) {
+			if(namingAndGrouping.isDuplicate(re)) {
 				continue;
 			}
-			
-			String displayName = re.getDisplayname();
-			if(prependReference && StringHelper.containsNonWhitespace(re.getExternalRef())) {
-				displayName = re.getExternalRef() + " " + displayName;
-			}
-			String courseTitle = RequestUtil.normalizeFilename(displayName);
-			
+
 			if(finishedContainer != null && re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
-				String name = container.getFinishedUniqueName(courseTitle);
+				String courseTitle = getCourseTitle(re, prependReference);
+				String name = namingAndGrouping.getFinishedUniqueName(courseTitle);
 				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 				finishedContainer.getItems().add(cfContainer);
-			} else if (useTerms) {
+			} else if (namingAndGrouping.isUseSemesterTerms() || namingAndGrouping.isUseCurriculumElementsTerms()) {
 				RepositoryEntryLifecycle lc = re.getLifecycle();
-				if (lc != null && !lc.isPrivateCycle()) {
+				
+				boolean termed = false;
+				if (namingAndGrouping.isUseSemesterTerms() && lc != null && !lc.isPrivateCycle()) {
 					// when a semester term info is found, add it to corresponding term folder
 					String termSoftKey = lc.getSoftKey();
-					VFSContainer termContainer = terms.get(termSoftKey);
-					if (termContainer == null) {
-						// folder for this semester term does not yet exist, create one and add to map
-						String normalizedKey = RequestUtil.normalizeFilename(termSoftKey);
-						termContainer = new VirtualContainer(normalizedKey);
-						terms.put(termSoftKey, termContainer);
-						addContainerToList(termContainer, containers);
-					}
-					
-					String name = container.getTermUniqueName(termSoftKey, courseTitle);
+					VFSContainer termContainer = terms.computeIfAbsent(termSoftKey, term -> {
+						String normalizedKey = RequestUtil.normalizeFilename(term);
+						VirtualContainer container = new VirtualContainer(normalizedKey);
+						addContainerToList(container, containers);
+						return container;
+					});
+
+					String courseTitle = getCourseTitle(re, prependReference);
+					String name = namingAndGrouping.getTermUniqueName(termSoftKey, courseTitle);
 					NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 					termContainer.getItems().add(cfContainer);
-				} else {
+					termed = true;
+				}
+				
+				if(namingAndGrouping.isUseCurriculumElementsTerms() && namingAndGrouping.hasCurriculumElements(re)) {
+					List<CurriculumElementWebDAVInfos> elements = namingAndGrouping.getCurriculumElementInfos().get(re.getKey());
+					for(CurriculumElementWebDAVInfos element:elements) {
+						String termSoftKey = getTermSoftKey(element);
+						VFSContainer termContainer = terms.computeIfAbsent(termSoftKey, term -> {
+							String normalizedKey = RequestUtil.normalizeFilename(term);
+							VirtualContainer container = new VirtualContainer(normalizedKey);
+							addContainerToList(container, containers);
+							return container;
+						});	
+
+						String courseTitle = getCourseTitle(re, false);
+						String name = namingAndGrouping.getTermUniqueName(termSoftKey, courseTitle);
+						NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+						termContainer.getItems().add(cfContainer);
+						termed = true;
+					}
+				}
+				
+				if(!termed) {
 					// no semester term found, add to no-term folder
-					String name = container.getNoTermUniqueName(courseTitle);
+					String courseTitle = getCourseTitle(re, prependReference);
+					String name = namingAndGrouping.getNoTermUniqueName(courseTitle);
 					NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 					noTermContainer.getItems().add(cfContainer);
 				}
 			} else {
-				String name = container.getContainersUniqueName(courseTitle);
+				String courseTitle = getCourseTitle(re, prependReference);
+				String name = namingAndGrouping.getContainersUniqueName(courseTitle);
 				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 				addContainerToList(cfContainer, containers);
 			}
@@ -162,7 +200,35 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		}
 	}
 	
-	private static class UniqueNames {
+	private String getCourseTitle(RepositoryEntry re, boolean prependReference) {
+		String displayName = re.getDisplayname();
+		if(prependReference && StringHelper.containsNonWhitespace(re.getExternalRef())) {
+			displayName = re.getExternalRef() + " " + displayName;
+		}
+		return RequestUtil.normalizeFilename(displayName);
+		
+	}
+	
+	private String getTermSoftKey(CurriculumElementWebDAVInfos element) {
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(element.getParentCurriculumElementDisplayName())) {
+			if(StringHelper.containsNonWhitespace(element.getParentCurriculumElementIdentifier())) {
+				sb.append(element.getParentCurriculumElementIdentifier()).append(" ");
+			}
+			sb.append(element.getParentCurriculumElementDisplayName());
+		} else if(StringHelper.containsNonWhitespace(element.getCurriculumElementDisplayName())) {
+			if(StringHelper.containsNonWhitespace(element.getCurriculumElementIdentifier())) {
+				sb.append(element.getCurriculumElementIdentifier()).append(" ");
+			}
+			sb.append(element.getCurriculumElementDisplayName());
+		}
+		return sb.toString();
+	}
+	
+	private static class NamingAndGrouping {
+		
+		private final boolean useSemesterTerms;
+		private final boolean useCurriculumElementsTerms;
 		
 		private final Set<RepositoryEntry> duplicates = new HashSet<>();
 		private final Set<String> containers = new HashSet<>();
@@ -170,6 +236,33 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		private final Set<String> finishedContainer = new HashSet<>();
 		private final Map<String,Set<String>> termContainers = new HashMap<>();
 		
+		private Map<Long,List<CurriculumElementWebDAVInfos>> curriculumElementInfos;
+		
+		public NamingAndGrouping(boolean useSemesterTerms, boolean useCurriculumElementsTerms) {
+			this.useSemesterTerms = useSemesterTerms;
+			this.useCurriculumElementsTerms = useCurriculumElementsTerms;
+		}
+		
+		public boolean isUseSemesterTerms() {
+			return useSemesterTerms;
+		}
+
+		public boolean isUseCurriculumElementsTerms() {
+			return useCurriculumElementsTerms;
+		}
+
+		public Map<Long, List<CurriculumElementWebDAVInfos>> getCurriculumElementInfos() {
+			return curriculumElementInfos;
+		}
+
+		public void setCurriculumElementInfos(Map<Long, List<CurriculumElementWebDAVInfos>> curriculumElementInfos) {
+			this.curriculumElementInfos = curriculumElementInfos;
+		}
+		
+		public boolean hasCurriculumElements(RepositoryEntry re) {
+			return curriculumElementInfos != null && curriculumElementInfos.containsKey(re.getKey());
+		}
+
 		public boolean isDuplicate(RepositoryEntry re) {
 			boolean duplicate = duplicates.contains(re);
 			if(!duplicate) {

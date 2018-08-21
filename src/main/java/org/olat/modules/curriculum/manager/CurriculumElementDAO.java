@@ -342,7 +342,6 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	
 	public List<CurriculumElementMembership> getMembershipInfos(CurriculumRef curriculum, Collection<CurriculumElement> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el.key, membership from curriculumelement el")

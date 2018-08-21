@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -56,6 +57,7 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -458,6 +460,15 @@ public class CurriculumServiceImpl implements CurriculumService {
 	@Override
 	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level) {
 		return curriculumElementToTaxonomyLevelDao.getCurriculumElements(level);
+	}
+
+	@Override
+	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity) {
+		List<String> roles = new ArrayList<>();
+		roles.add(GroupRoles.owner.name());
+		roles.add(GroupRoles.coach.name());
+		roles.add(GroupRoles.participant.name());
+		return curriculumRepositoryEntryRelationDao.getCurriculumElementInfosForWebDAV(identity, roles);
 	}
 
 	@Override

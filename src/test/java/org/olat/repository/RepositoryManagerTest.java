@@ -234,12 +234,12 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(participant, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner, true);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));
 		
-		List<RepositoryEntry> partEntries = repositoryManager.queryByOwner(participant);
+		List<RepositoryEntry> partEntries = repositoryManager.queryByOwner(participant, true);
 		Assert.assertNotNull(partEntries);
 		Assert.assertEquals(0, partEntries.size());
 	}
@@ -253,7 +253,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByOwner(id);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(id, true);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));

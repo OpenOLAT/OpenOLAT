@@ -888,14 +888,14 @@ public class RepositoryManager {
 	 * @param limitType
 	 * @return Results
 	 */
-	public List<RepositoryEntry> queryByOwner(IdentityRef identity, String... limitTypes) {
+	public List<RepositoryEntry> queryByOwner(IdentityRef identity, boolean follow, String... limitTypes) {
 		if (identity == null) throw new AssertException("identity can not be null!");
 		QueryBuilder sb = new QueryBuilder(400);
 		sb.append("select v from repositoryentry v")
 		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join v.groups as relGroup ").append(" on relGroup.defaultGroup=true", !follow)
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
 		  .append(" where membership.identity.key=:identityKey and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
