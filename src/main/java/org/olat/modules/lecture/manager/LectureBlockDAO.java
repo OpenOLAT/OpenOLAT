@@ -168,9 +168,12 @@ public class LectureBlockDAO {
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join fetch block.entry entry");
-		boolean where = false;
-		where = addSearchParametersToQuery(sb, where, searchParams);
-		
+		boolean where = addSearchParametersToQuery(sb, false, searchParams);
+		where = PersistenceHelper.appendAnd(sb, where);
+		sb.append(" exists (select config.key from lectureentryconfig config")
+		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
+		  .append(" )");
+
 		TypedQuery<LectureBlock> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlock.class);
 		addSearchParametersToQuery(query, searchParams);
@@ -185,7 +188,10 @@ public class LectureBlockDAO {
 		  .append(" inner join fetch block.entry entry")
 		  .append(" where membership.identity.key=:teacherKey");
 		addSearchParametersToQuery(sb, true, searchParams);
-		
+		sb.append(" and exists (select config.key from lectureentryconfig config")
+		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
+		  .append(" )");
+
 		TypedQuery<LectureBlock> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlock.class)
 				.setParameter("teacherKey", identityRef.getKey());

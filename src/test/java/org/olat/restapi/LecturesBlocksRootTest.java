@@ -39,6 +39,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.restapi.LectureBlockVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -72,7 +73,7 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
 		
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = deployCourseWithLecturesEnabled(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, author);
@@ -114,7 +115,7 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-hacker");
 		
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = deployCourseWithLecturesEnabled(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, author);
@@ -134,7 +135,7 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 	public void getLecturesBlock_date()
 	throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = deployCourseWithLecturesEnabled(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, author);
@@ -163,6 +164,15 @@ public class LecturesBlocksRootTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(lectureBlockVo);
 		Assert.assertEquals(block.getKey(), lectureBlockVo.getKey());
 		Assert.assertEquals(entry.getKey(), lectureBlockVo.getRepoEntryKey());
+	}
+	
+	private RepositoryEntry deployCourseWithLecturesEnabled(Identity author) {
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		lectureService.updateRepositoryEntryLectureConfiguration(config);
+		dbInstance.commit();
+		return entry;
 	}
 	
 	private LectureBlock createLectureBlock(RepositoryEntry entry) {

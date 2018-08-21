@@ -152,7 +152,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	public void searchLectureBlocks() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
 		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
@@ -169,6 +169,27 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, blocks.size());
 		LectureBlock loadedBlock = blocks.get(0);
 		Assert.assertEquals(lectureBlock, loadedBlock);
+	}
+	
+	@Test
+	public void searchLectureBlocks_lectureDisabled() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
+		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecture manager");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(lectureManager);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertTrue(blocks.isEmpty());
 	}
 	
 	@Test
@@ -190,10 +211,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void loadByTeachers() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
-
 		lectureService.addTeacher(lectureBlock, teacher);
 		dbInstance.commitAndCloseSession();
 		
@@ -206,9 +226,25 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadByTeachers_searchString() {
+	public void loadByTeachers_lectureDisabled() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//search all
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		List<LectureBlock> blocks = lectureBlockDao.loadByTeacher(teacher, searchParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertTrue(blocks.isEmpty());
+	}
+	
+	@Test
+	public void loadByTeachers_searchString() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
@@ -234,7 +270,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void loadByTeachers_startEndDates() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
@@ -267,7 +303,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void loadByTeachers_startDate() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
@@ -296,7 +332,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void loadByTeachers_endDate() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
@@ -557,6 +593,16 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		// try to relaod the block
 		LectureBlock deletedBlock = lectureBlockDao.loadByKey(blockKey);
 		Assert.assertNull(deletedBlock);
+	}
+	
+	private RepositoryEntry createResourceWithLecturesEnabled() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		lectureService.updateRepositoryEntryLectureConfiguration(config);
+		dbInstance.commit();
+		return entry;
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {

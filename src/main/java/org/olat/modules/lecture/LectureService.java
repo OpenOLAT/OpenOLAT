@@ -402,7 +402,9 @@ public interface LectureService {
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
 	
 	/**
-	 * Search lecture blocks. It returns only lecture blocks with a teacher.
+	 * Search lecture blocks. It returns only lecture blocks with a teacher and
+	 * if the repository entry has the lectures enabled.
+	 * 
 	 * 
 	 * @param searchParams The search parameters
 	 * @return A list of lecture blocks
@@ -427,7 +429,9 @@ public interface LectureService {
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher, LecturesBlockSearchParameters searchParams);
 
 	/**
-	 * The list of lecture blocks of a specific teacher
+	 * The list of lecture blocks of a specific teacher. The lecture blocks come
+	 * from repository entry where the lectures are enabled.
+	 * 
 	 * @param teacher The teacher to search with.
 	 * @return A list of lecture blocks.
 	 */
