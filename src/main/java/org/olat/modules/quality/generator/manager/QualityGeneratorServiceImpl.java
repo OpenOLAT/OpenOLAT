@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -88,6 +89,20 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	@Override
 	public List<QualityGeneratorView> loadGenerators(QualityGeneratorSearchParams searchParams) {
 		return generatorDao.load(searchParams);
+	}
+
+	@Override
+	public long getNumberOfDataCollections(QualityGenerator generator) {
+		QualityGeneratorSearchParams searchParams = new QualityGeneratorSearchParams();
+		searchParams.setGeneratorRefs(Collections.singletonList(generator));
+		List<QualityGeneratorView> generators = generatorDao.load(searchParams);
+		return !generators.isEmpty()? generators.get(0).getNumberDataCollections(): 0l;
+	}
+
+	@Override
+	public void deleteGenerator(QualityGeneratorRef generatorRef) {
+		generatorToOrganisationDao.deleteRelations(generatorRef);
+		generatorDao.delete(generatorRef);
 	}
 
 	@Override

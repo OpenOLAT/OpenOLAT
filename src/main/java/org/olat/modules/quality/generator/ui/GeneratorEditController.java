@@ -52,6 +52,7 @@ public class GeneratorEditController extends FormBasicController implements Tool
 
 	private Link enableLink;
 	private Link disableLink;
+	private Link deleteLink;
 	
 	private GeneratorConfigController configCtrl;
 	private ProviderConfigController providerConfigCtrl;
@@ -125,14 +126,23 @@ public class GeneratorEditController extends FormBasicController implements Tool
 			
 			stackPanel.addTool(enableDropdown, Align.left);
 		}
+		
+		long numberDataCollections = generatorService.getNumberOfDataCollections(generator);
+		if (secCallback.canDeleteGenerator(numberDataCollections)) {
+			deleteLink = LinkFactory.createToolLink("generator.delete", translate("generator.delete"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_delete");
+			stackPanel.addTool(deleteLink, Align.left);
+		}
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == enableLink) {
-			doConfirmEnableGenerator(ureq);;
+			doConfirmEnableGenerator(ureq);
 		} else if (source == disableLink) {
 			doConfirmDisableGenerator(ureq);
+		} else if (source == deleteLink) {
+			fireEvent(ureq, new GeneratorEvent(generator, GeneratorEvent.Action.DELETE));
 		}
 		super.event(ureq, source, event);
 	}
@@ -152,7 +162,7 @@ public class GeneratorEditController extends FormBasicController implements Tool
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == cmc) {
+		}  else if (source == cmc) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);

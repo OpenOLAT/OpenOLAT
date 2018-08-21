@@ -88,7 +88,7 @@ class QualityGeneratorToOrganisationDAO {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}
 
-	void deleteRelations(QualityGeneratorRef generator) {
+	void deleteRelations(QualityGeneratorRef generatorRef) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("delete");
 		sb.append("  from qualitygeneratortoorganisation rel");
@@ -96,7 +96,7 @@ class QualityGeneratorToOrganisationDAO {
 		
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
-				.setParameter("generatorKey", generator.getKey())
+				.setParameter("generatorKey", generatorRef.getKey())
 				.executeUpdate();
 	}
 	

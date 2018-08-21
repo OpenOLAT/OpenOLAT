@@ -81,6 +81,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 	private CloseableModalController cmc;
 	private GeneratorCreationController creationCtrl;
 	private GeneratorEditController editCtrl;
+	private GeneratorDeleteConfirmationController deleteConfirmationCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	private final List<Organisation> organisations;
@@ -188,6 +189,20 @@ public class GeneratorListController extends FormBasicController implements Tool
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == editCtrl && event instanceof GeneratorEvent) {
+			GeneratorEvent gEvent = (GeneratorEvent) event;
+			GeneratorEvent.Action action = gEvent.getAction();
+			if (GeneratorEvent.Action.DELETE.equals(action)) {
+				QualityGenerator generator = gEvent.getGenerator();
+				doConfirmDeleteGenerator(ureq, generator);
+			}
+		} else if (source == deleteConfirmationCtrl) {
+			if (Event.DONE_EVENT.equals(event)) {
+				QualityGenerator generator = deleteConfirmationCtrl.getGenerator();
+				doDeleteGenerator(generator);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}
@@ -195,8 +210,10 @@ public class GeneratorListController extends FormBasicController implements Tool
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(creationCtrl);
 		removeAsListenerAndDispose(cmc);
+		deleteConfirmationCtrl = null;
 		creationCtrl = null;
 		cmc = null;
 	}
@@ -233,6 +250,29 @@ public class GeneratorListController extends FormBasicController implements Tool
 				: translate("generator.title.empty");
 		stackPanel.pushController(formattedTitle, editCtrl);
 	}
+	
+	private void doConfirmDeleteGenerator(UserRequest ureq, QualityGenerator generator) {
+		deleteConfirmationCtrl = new GeneratorDeleteConfirmationController(ureq, getWindowControl(), generator);
+		listenTo(deleteConfirmationCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				deleteConfirmationCtrl.getInitialComponent(), true, translate("generator.delete.confirm.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doDeleteGenerator(QualityGenerator generator) {
+		long numberDataCollections = generatorService.getNumberOfDataCollections(generator);
+		if (secCallback.canDeleteGenerator(numberDataCollections)) {
+			generatorService.deleteGenerator(generator);
+			stackPanel.popUpToController(this);
+			loadModel();
+			initTools();
+		} else {
+			showInfo("generator.delete.has.data.collections");
+			editCtrl.initTools();
+		}
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -241,7 +281,9 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	@Override
 	protected void doDispose() {
-		//
+		if (stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 }

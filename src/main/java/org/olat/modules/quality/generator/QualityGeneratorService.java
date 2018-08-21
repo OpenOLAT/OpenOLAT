@@ -46,6 +46,10 @@ public interface QualityGeneratorService {
 	public QualityGenerator loadGenerator(QualityGeneratorRef generatorRef);
 
 	public List<QualityGeneratorView> loadGenerators(QualityGeneratorSearchParams searchParams);
+
+	public long getNumberOfDataCollections(QualityGenerator generator);
+
+	public void deleteGenerator(QualityGeneratorRef generatorRef);
 	
 	public void updateGeneratorOrganisations(QualityGenerator generator, List<Organisation> organisations);
 
