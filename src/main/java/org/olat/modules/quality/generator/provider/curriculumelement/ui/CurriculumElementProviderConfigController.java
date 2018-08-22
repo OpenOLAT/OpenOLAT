@@ -182,7 +182,7 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 		allOk &= validateIsMandatory(dueDateTypeEl);
 		allOk &= validateIsMandatory(dueDateDaysEl) && validateInteger(dueDateDaysEl, -10000, 10000);
 		allOk &= validateIsMandatory(durationEl) && validateInteger(durationEl, 1, 10000);
-		allOk &= validateInteger(invitationDaysEl, -10000, 10000);
+		allOk &= validateInteger(invitationDaysEl, 0, 10000);
 		allOk &= validateInteger(reminder1DaysEl, 1, 10000);
 		allOk &= validateInteger(reminder2DaysEl, 1, 10000);
 		allOk &= validateIsMandatory(rolesEl);

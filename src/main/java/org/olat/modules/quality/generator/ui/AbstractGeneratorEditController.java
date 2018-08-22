@@ -81,12 +81,12 @@ public abstract class AbstractGeneratorEditController extends FormBasicControlle
 			enableDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_gen_" + enabled);
 			enableDropdown.setOrientation(DropdownOrientation.normal);
 		
-			enableLink = LinkFactory.createToolLink("generator.enabled", translate("generator.enabled.hover"), this);
+			enableLink = LinkFactory.createToolLink("generator.enable", translate("generator.enable"), this);
 			enableLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_enabled");
 			enableLink.setVisible(!generator.isEnabled());
 			enableDropdown.addComponent(enableLink);
 			
-			disableLink = LinkFactory.createToolLink("generator.disabled", translate("generator.disabled.hover"), this);
+			disableLink = LinkFactory.createToolLink("generator.disable", translate("generator.disable"), this);
 			disableLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_disabled");
 			disableLink.setVisible(generator.isEnabled());
 			enableDropdown.addComponent(disableLink);

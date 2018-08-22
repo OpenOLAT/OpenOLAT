@@ -152,6 +152,7 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 		
 		assertThat(generatorView).isNotNull();
 		assertThat(generatorView.getKey()).isNotNull();
+		assertThat(generatorView.getCreationDate()).isNotNull();
 		assertThat(generatorView.getType()).isNotNull();
 		assertThat(generatorView.isEnabled()).isNotNull();
 		assertThat(generatorView.getNumberDataCollections()).isNotNull();

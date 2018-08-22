@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.generator.model;
 
+import java.util.Date;
+
 import org.olat.modules.quality.generator.QualityGeneratorView;
 
 /**
@@ -30,13 +32,16 @@ import org.olat.modules.quality.generator.QualityGeneratorView;
 public class QualityGeneratorViewImpl implements QualityGeneratorView {
 
 	private final Long key;
+	private final Date creationDate;
 	private final String type;
 	private final String title;
 	private final Boolean enabled;
 	private final Long numberDataCollections;
 	
-	public QualityGeneratorViewImpl(Long key, String type, String title, Boolean enabled, Long numberDataCollections) {
+	public QualityGeneratorViewImpl(Long key, Date creationDate, String type, String title, Boolean enabled,
+			Long numberDataCollections) {
 		this.key = key;
+		this.creationDate = creationDate;
 		this.type = type;
 		this.title = title;
 		this.enabled = enabled;
@@ -46,6 +51,11 @@ public class QualityGeneratorViewImpl implements QualityGeneratorView {
 	@Override
 	public Long getKey() {
 		return key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
 	}
 
 	@Override

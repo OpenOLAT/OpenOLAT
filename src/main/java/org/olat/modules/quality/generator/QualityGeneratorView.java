@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator;
 
+import org.olat.core.id.CreateInfo;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
 
 /**
@@ -27,7 +28,7 @@ import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityGeneratorView extends QualityGeneratorRef, QualityGeneratorProviderReferenceable {
+public interface QualityGeneratorView extends QualityGeneratorRef, QualityGeneratorProviderReferenceable, CreateInfo {
 	
 	public String getTitle();
 	

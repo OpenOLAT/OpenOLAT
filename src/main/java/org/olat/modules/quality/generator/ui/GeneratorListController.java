@@ -20,6 +20,7 @@
 package org.olat.modules.quality.generator.ui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationRoles;
@@ -72,7 +73,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GeneratorListController extends FormBasicController implements TooledController, Activateable2 {
 	
 	private static final String CMD_EDIT = "edit";
-	
+	private static final Comparator<? super QualityGeneratorView> CREATION_DATE_DESC = 
+			(g1, g2) -> g2.getCreationDate().compareTo(g1.getCreationDate());
+
 	private final TooledStackedPanel stackPanel;
 	private Link createGeneratorLink;
 	private FlexiTableElement tableEl;
@@ -90,6 +93,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private OrganisationService organisationService;
+
 
 	public GeneratorListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualitySecurityCallback secCallback) {
@@ -131,6 +135,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 		QualityGeneratorSearchParams searchParams = new QualityGeneratorSearchParams();
 		searchParams.setOrganisationRefs(organisations);
 		List<QualityGeneratorView> generators = generatorService.loadGenerators(searchParams);
+		generators.sort(CREATION_DATE_DESC);
 		List<GeneratorRow> rows = new ArrayList<>(generators.size());
 		for (QualityGeneratorView generator: generators) {
 			String providerName = generatorService.getProviderDisplayName(generator, getLocale());

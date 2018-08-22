@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -98,7 +99,7 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection) {
-		super(ureq, windowControl, secCallback, stackPanel, dataCollection, "participation_list");
+		super(ureq, windowControl, secCallback, stackPanel, dataCollection);
 		initForm(ureq);
 	}
 
@@ -133,7 +134,10 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 		
 		if (removeUsersLink != null) flc.remove(removeUsersLink);
 		if (secCallback.canRevomeParticipation(dataCollection)) {
-			removeUsersLink = uifactory.addFormLink("participation.remove", flc, Link.BUTTON);
+			FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			flc.add("buttons", buttons);
+			buttons.setElementCssClass("o_button_group");
+			removeUsersLink = uifactory.addFormLink("participation.remove", buttons, Link.BUTTON);
 		}
 	}
 

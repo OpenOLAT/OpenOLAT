@@ -80,7 +80,7 @@ class CurriculumElementSelectionController extends FormBasicController {
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setOrganisations(organisationRefs);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
-		KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums);
+		KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, null);
 		curriculumEl = uifactory.addDropdownSingleselect("curriculum.element.select.curriculum", formLayout,
 				curriculumKeysValues.getKeys(), curriculumKeysValues.getValues());
 		curriculumEl.addActionListener(FormEvent.ONCHANGE);
@@ -107,7 +107,7 @@ class CurriculumElementSelectionController extends FormBasicController {
 				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
 				curriculumTreeModel.loadTreeModel(curriculumElements);
 				KeysValues curriculumElementKeysValues = QualityUIFactory
-						.getCurriculumElementKeysValues(curriculumTreeModel);
+						.getCurriculumElementKeysValues(curriculumTreeModel, null);
 				curriculumElementEl.setKeysAndValues(curriculumElementKeysValues.getKeys(),
 						curriculumElementKeysValues.getValues(), null);
 			}

@@ -109,6 +109,7 @@ public class QualityGeneratorDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.modules.quality.generator.model.QualityGeneratorViewImpl(");
 		sb.append("       generator.key");
+		sb.append("     , generator.creationDate");
 		sb.append("     , generator.type");
 		sb.append("     , generator.title");
 		sb.append("     , generator.enabled");
