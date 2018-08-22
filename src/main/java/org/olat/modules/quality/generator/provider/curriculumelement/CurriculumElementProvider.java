@@ -50,6 +50,7 @@ import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAO;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.curriculumelement.ui.CurriculumElementProviderConfigController;
@@ -89,6 +90,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	private CurriculumElementProviderDAO providerDao;
 	@Autowired
 	private QualityGeneratorService generatorService;
+	@Autowired
+	private TitleCreator titleCreator;
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -194,7 +197,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		Date deadline = addDays(dcStart, duration);
 		dataCollection.setDeadline(deadline);
 		
-		String title = configs.getValue(CONFIG_KEY_TITLE);
+		String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
+		String title = titleCreator.mergeCurriculumElement(titleTemplate, curriculumElement);
 		dataCollection.setTitle(title);
 		
 		dataCollection.setTopicType(QualityDataCollectionTopicType.CURRICULUM_ELEMENT);

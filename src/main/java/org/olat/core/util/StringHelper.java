@@ -289,6 +289,10 @@ public class StringHelper {
 		return !matcher.find();
 	}
 	
+	public static String blankIfNull(String s) {
+		return s != null? s: "";
+	}
+	
 	public static int count(String s, char character) {
 		int count = 0;
 		

@@ -218,6 +218,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.portfolio.manager.BinderUserInformationsDAOTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorDAOTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorConfigDAOTest.class,
+	org.olat.modules.quality.generator.manager.TitleCreatorImplTest.class,
 	org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAOTest.class,
 	org.olat.modules.quality.manager.CurriculumElementQualityContextBuilderTest.class,
 	org.olat.modules.quality.manager.DefaultQualityContextBuilderTest.class,

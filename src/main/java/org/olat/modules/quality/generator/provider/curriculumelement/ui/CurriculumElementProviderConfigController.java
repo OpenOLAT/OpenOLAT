@@ -52,6 +52,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,6 +92,8 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private TitleCreator titleCreator;
 
 	public CurriculumElementProviderConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs) {
@@ -103,7 +106,7 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String title = configs.getValue(CONFIG_KEY_TITLE);
 		titleEl = uifactory.addTextElement("config.title", 200, title, formLayout);
-		//TODO uh example with title generator keys
+		titleEl.setHelpTextKey("config.title.help", new String[] {titleCreator.getMergeCurriculumElementIdentifiers()} );
 
 		// curriculum element type
 		List<CurriculumElementType> ceTypes = curriculumService.getCurriculumElementTypes();
