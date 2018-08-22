@@ -19,13 +19,15 @@
  */
 package org.olat.modules.quality;
 
+import org.olat.core.id.CreateInfo;
+
 /**
  * 
  * Initial date: 16.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityDataCollectionView extends QualityDataCollectionLight {
+public interface QualityDataCollectionView extends QualityDataCollectionLight, CreateInfo {
 	
 	public String getFormName();
 	
@@ -36,5 +38,7 @@ public interface QualityDataCollectionView extends QualityDataCollectionLight {
 	public String getTopic();
 	
 	public Long getNumberOfParticipants();
+	
+	public String getGeneratorTitle();
 
 }

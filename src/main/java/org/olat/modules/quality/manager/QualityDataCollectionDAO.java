@@ -238,6 +238,8 @@ public class QualityDataCollectionDAO {
 		sb.append("     , collection.title as title");
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
+		sb.append("     , collection.creationDate as creationDate");
+		sb.append("     , generator.title as generatorTitle");
 		sb.append("     , form.displayname as formName");
 		sb.append("     , collection.topicType as topicType");
 		sb.append("     , case");
@@ -271,6 +273,7 @@ public class QualityDataCollectionDAO {
 		sb.append("       join evaluationformsurvey survey on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("                                       and survey.resId = collection.key");
 		sb.append("       join survey.formEntry as form");
+		sb.append("       left join collection.generator as generator");
 		sb.append("       left join collection.topicIdentity.user as user");
 		sb.append("       left join collection.topicOrganisation as organisation");
 		sb.append("       left join collection.topicCurriculum as curriculum");
@@ -330,7 +333,7 @@ public class QualityDataCollectionDAO {
 			sb.append(sortKey);
 			appendAsc(sb, asc);
 		} else {
-			sb.append(" order by collection.key asc ");
+			sb.append(" order by collection.deadline desc nulls first ");
 		}
 	}
 	

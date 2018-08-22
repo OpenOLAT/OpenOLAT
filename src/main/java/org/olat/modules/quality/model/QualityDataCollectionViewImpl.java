@@ -39,6 +39,8 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final String title;
 	private final Date start;
 	private final Date deadline;
+	private final Date creationDate;
+	private final String generatorTitle;
 	private final String formName;
 	private final QualityDataCollectionTopicType topicType;
 	private final String translatedTopicType;
@@ -46,14 +48,17 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final Long numberOfParticipants;
 	
 	public QualityDataCollectionViewImpl(Long key, QualityDataCollectionStatus status, String title, Date start,
-			Date deadline, String formName, QualityDataCollectionTopicType topicType, String translatedTopicType,
-			String topic, Long numberOfParticipants) {
+			Date deadline, Date creationDate, String generatorTitle, String formName,
+			QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
+			Long numberOfParticipants) {
 		super();
 		this.key = key;
 		this.status = status;
 		this.title = title;
 		this.start = start;
 		this.deadline = deadline;
+		this.creationDate = creationDate;
+		this.generatorTitle = generatorTitle;
 		this.formName = formName;
 		this.topicType = topicType;
 		this.translatedTopicType = translatedTopicType;
@@ -94,6 +99,16 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	@Override
 	public Date getDeadline() {
 		return deadline;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	@Override
+	public String getGeneratorTitle() {
+		return generatorTitle;
 	}
 
 	@Override

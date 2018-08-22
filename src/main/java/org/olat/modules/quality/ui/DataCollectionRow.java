@@ -77,5 +77,12 @@ class DataCollectionRow {
 	Long getNumberOfParticipants() {
 		return dataCollectionView.getNumberOfParticipants();
 	}
+	
+	Date getCreationDate() {
+		return dataCollectionView.getCreationDate();
+	}
 
+	String getGeneratorTitle() {
+		return dataCollectionView.getGeneratorTitle();
+	}
 }

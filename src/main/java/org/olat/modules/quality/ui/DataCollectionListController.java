@@ -121,6 +121,8 @@ public class DataCollectionListController extends FormBasicController implements
 		numParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		numParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(numParticipantsColumn);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.creationDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.generatorTitle));
 		
 		Collection<? extends OrganisationRef> organisationRefs = organisationService.getOrganisations(getIdentity(),
 				ureq.getUserSession().getRoles(), OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
