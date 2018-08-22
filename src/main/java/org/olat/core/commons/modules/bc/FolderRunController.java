@@ -76,7 +76,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -569,13 +568,13 @@ public class FolderRunController extends BasicController implements Activateable
 				// and can not reuse the standard briefcase way of file delivering, some
 				// very old fancy code
 				// Mapper is cleaned up automatically by basic controller
-				String baseUrl = registerMapper(ureq, new VFSContainerMapper(folderComponent.getRootContainer()));
+				String baseUrl = registerMapper(ureq, new FolderMapper(folderComponent.getRootContainer()));
 				// Trigger auto-download
 				DisplayOrDownloadComponent dordc = new DisplayOrDownloadComponent("downloadcomp", baseUrl + path);
 				folderContainer.put("autoDownloadComp", dordc);
 				
-				if (path.lastIndexOf("/") > 0) {
-					String dirPath = path.substring(0, path.lastIndexOf("/"));
+				if (path.lastIndexOf('/') > 0) {
+					String dirPath = path.substring(0, path.lastIndexOf('/'));
 					if (StringHelper.containsNonWhitespace(dirPath)) {
 						folderComponent.setCurrentContainerPath(dirPath);
 					}
