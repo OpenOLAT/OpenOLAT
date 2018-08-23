@@ -137,6 +137,16 @@
 						</property>
 					</bean>
 				</entry>
+				<entry key="/shibdisclaimer/">
+					<bean
+						class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<!-- creates a BasicFullWebappController with DMZ content -->
+							<bean
+								class="org.olat.shibboleth.ShibDisclaimerCreator" />
+						</property>
+					</bean>
+				</entry>
 				<!-- triggers oauth registration workflow -->
 				<entry key="/oauthregister/">
 					<bean class="org.olat.core.gui.control.ChiefControllerCreator">

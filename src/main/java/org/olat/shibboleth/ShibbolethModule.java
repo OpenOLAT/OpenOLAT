@@ -69,6 +69,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	 * Path identifier for shibboleth registration workflows.
 	 */
 	static final String PATH_REGISTER_SHIBBOLETH = "shibregister";
+	static final String PATH_DISCLAIMER_SHIBBOLETH = "shibdisclaimer";
 
 	@Value("${shibboleth.enable}")
 	private boolean enableShibbolethLogins = false;
