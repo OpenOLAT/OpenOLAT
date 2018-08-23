@@ -165,6 +165,11 @@
 	
 	body {
 		margin: 0; 
+		/* 	Make everything a bit smaller. 
+			OO Layout is designed for mobile-first, thus everything is a bit large for printing 
+			might not work on FF, but hey, better than nothing
+		*/
+		zoom: 0.75;
 	}
 	
 	table, figure, figure {
