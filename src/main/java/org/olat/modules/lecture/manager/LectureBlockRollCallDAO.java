@@ -591,14 +591,13 @@ public class LectureBlockRollCallDAO {
 	
 		// check access permission
 		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
-		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
+		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
 		  .append("     and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
 		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
 		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
 		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ))");
-	
 
 		if(params.getLifecycle() != null) {
 			sb.append(" and re.lifecycle.key=:lifecycleKey");
