@@ -209,7 +209,7 @@ public class AssessmentResultController extends FormBasicController {
 					// Add some meta information about the context of this assessment
 					RepositoryEntry contextRE = candidateSession.getRepositoryEntry();
 					RepositoryEntry testRE = candidateSession.getTestEntry();
-					if (contextRE != null && contextRE != testRE) { 
+					if (contextRE != null && !contextRE.equals(testRE)) { 
 						// Show context only when embedded in course. When launching from RE itself,
 						// contextRE and testRE are the same.
 						layoutCont.contextPut("contextTitle", contextRE.getDisplayname());						
