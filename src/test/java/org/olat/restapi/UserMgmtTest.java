@@ -79,6 +79,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -574,6 +575,60 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
 		assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testCreateUser_emptyLogin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		UserVO vo = new UserVO();
+		vo.setLogin("");
+		vo.setFirstName("John");
+		vo.setLastName("Smith");
+		vo.setEmail(UUID.randomUUID() + "@frentix.com");
+		vo.putProperty("telOffice", "39847592");
+		vo.putProperty("telPrivate", "39847592");
+		vo.putProperty("telMobile", "39847592");
+		vo.putProperty("gender", "Female");//male or female
+		vo.putProperty("birthDay", "12/12/2009");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		int statusCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(406, statusCode);
+	}
+	
+	@Test
+	public void testCreateUser_special() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		UserVO vo = new UserVO();
+		vo.setLogin("tes @-()_" + CodeHelper.getForeverUniqueID());
+		vo.setFirstName("John");
+		vo.setLastName("Smith");
+		vo.setEmail(UUID.randomUUID() + "@frentix.com");
+		vo.putProperty("telOffice", "39847592");
+		vo.putProperty("telPrivate", "39847592");
+		vo.putProperty("telMobile", "39847592");
+		vo.putProperty("gender", "Female");//male or female
+		vo.putProperty("birthDay", "12/12/2009");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		int statusCode = response.getStatusLine().getStatusCode();
+		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(200, statusCode);
 	}
 	
 	/**

@@ -279,6 +279,16 @@ public class UserWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
+		if (!syntaxCheckOlatLogin(user)) {
+			Locale locale = getLocale(request);
+			Translator translator = Util.createPackageTranslator(UserShortDescription.class, locale);
+			String translation = translator.translate("new.error.loginname.empty");
+			ErrorVO[] errorVos = new ErrorVO[]{
+				new ErrorVO("org.olat.admin.user", "new.error.loginname.empty", translation)
+			};
+			return Response.ok(errorVos).status(Status.NOT_ACCEPTABLE).build();
+		}
+			
 		// Check if login is still available
 		Identity identity = securityManager.findIdentityByName(user.getLogin());
 		if (identity != null) {
@@ -305,6 +315,34 @@ public class UserWebService {
 		ErrorVO[] errorVos = new ErrorVO[errors.size()];
 		errors.toArray(errorVos);
 		return Response.ok(errorVos).status(Status.NOT_ACCEPTABLE).build();
+	}
+	
+	/**
+	 * This a minimal syntax check specific to the REST API.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	private boolean syntaxCheckOlatLogin(UserVO user) {
+		String login = user.getLogin();
+		if(!StringHelper.containsNonWhitespace(login)) {
+			return false;
+		}
+		
+		char[] charArr = login.toCharArray();
+		for(char ch:charArr) {
+			if(ch == '/') {
+				return false;
+			}
+			if(ch < 32) {
+				return false;
+			}
+			
+		}
+		if(login.indexOf('/') >= 0) {
+			return false;
+		}
+		return login.length() >= 3;
 	}
 	
 	/**
