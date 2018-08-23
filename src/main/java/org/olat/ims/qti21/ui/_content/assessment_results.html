@@ -29,6 +29,37 @@
 	#end
 </div>
 
+<div class="o_qti_contextinfo o_block_bottom_large">
+	<table class="table table-bordered table-condensed table-striped">
+	<tbody>
+		#if($contextTitle)
+		<tr class="o_qti_coursename">
+			<th>$r.translate("results.contextinfo.context")</th>
+			<td>
+				<strong>$contextTitle</strong>
+				<small class="hidden-xs text-muted small"> 
+					#if($contextExternalRef) ${contextExternalRef} #end
+				</small>
+				<div class="hidden-xs text-muted small">
+					ID: ${contextId}#if($contextSubId) / ${contextSubId}#end
+				</div>
+			</td>
+		</tr>
+		#end
+		<tr class="o_qti_testname">
+			<th>$r.translate("results.contextinfo.test")</th>
+			<td><strong>$testTitle</strong>
+				<small class="hidden-xs text-muted small"> 
+					#if($testExternalRef) ${testExternalRef} #end
+				</small>
+				<div class="hidden-xs text-muted small">
+					ID: ${testId}
+				</div>
+			</td>
+		</tr>
+	</tbody></table>
+</div>
+
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
@@ -360,7 +391,7 @@
 		#if (!$inItem)
 			<div class="o_qti_items">		
 		#end
-		<div class="o_qti_item panel panel-default">
+		<div class="o_qti_item panel panel-default o_print_break_avoid">
 		<div class="panel-heading">
 			<h4 class="panel-title">
 				<i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
@@ -495,7 +526,7 @@
 </div> ## END of o_qti_sections
 
 #if($options.isSectionSummary())
-<div class="o_qti_to_overview o_block_top">			
+<div class="o_qti_to_overview o_block_top o_noprint">			
 	<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
 		<i class="o_icon o_icon_back"></i> 
 		$r.translate("results.goto.overview")

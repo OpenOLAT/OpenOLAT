@@ -87,7 +87,7 @@ drop table o_stat_studybranch3;
 create table o_user_data_export (
    id bigint not null auto_increment,
    creationdate datetime,
-   lastmodifed datetime,
+   lastmodified datetime,
    u_directory varchar(255),
    u_status varchar(16),
    u_export_ids varchar(2000),

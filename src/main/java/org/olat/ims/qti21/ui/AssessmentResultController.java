@@ -60,6 +60,7 @@ import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -203,6 +204,29 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("itemResults", new ArrayList<>());
 				layoutCont.contextPut("testSessionNotFound", Boolean.TRUE);
 			} else {
+				
+				if (candidateSession != null) {
+					// Add some meta information about the context of this assessment
+					RepositoryEntry contextRE = candidateSession.getRepositoryEntry();
+					RepositoryEntry testRE = candidateSession.getTestEntry();
+					if (contextRE != null && contextRE != testRE) { 
+						// Show context only when embedded in course. When launching from RE itself,
+						// contextRE and testRE are the same.
+						layoutCont.contextPut("contextTitle", contextRE.getDisplayname());						
+						layoutCont.contextPut("contextId", contextRE.getResourceableId());						
+						layoutCont.contextPut("contextExternalRef", contextRE.getExternalRef());						
+						// ID of course element
+						layoutCont.contextPut("contextSubId", candidateSession.getSubIdent());						
+					}
+					
+					if (testRE != null) {
+						layoutCont.contextPut("testTitle", testRE.getDisplayname());
+						layoutCont.contextPut("testId", testRE.getResourceableId());						
+						layoutCont.contextPut("testExternalRef", testRE.getExternalRef());						
+						
+					}
+				}
+				
 				layoutCont.contextPut("title", Boolean.valueOf(withTitle));
 				layoutCont.contextPut("print", Boolean.valueOf(withPrint));
 				layoutCont.contextPut("printCommand", Boolean.FALSE);
