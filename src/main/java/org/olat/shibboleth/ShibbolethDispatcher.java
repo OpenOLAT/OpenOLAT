@@ -60,6 +60,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.registration.RegistrationManager;
 import org.olat.shibboleth.manager.ShibbolethAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -164,7 +165,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		if (auth == null) { // no matching authentication...
 			ShibbolethRegistrationController.putShibAttributes(req, shibbolethAttriutes);
 			ShibbolethRegistrationController.putShibUniqueID(req, uid);
-			redirectToShibbolethRegistration(resp);
+			register(resp);
 			return;
 		}
 		if(ureq.getUserSession() != null) {
@@ -178,22 +179,25 @@ public class ShibbolethDispatcher implements Dispatcher{
 			} else {
 				DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
 			}
-			return;
-		}
-
-		// Successful login
-		Identity authenticationedIdentity = ureq.getIdentity();
-		userDeletionManager.setIdentityAsActiv(authenticationedIdentity);
-		shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
-		ureq.getUserSession().getIdentityEnvironment().addAttributes(
-				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttriutes.toMap()));
-
-		MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
-		if (mr instanceof RedirectMediaResource) {
-			RedirectMediaResource rmr = (RedirectMediaResource)mr;
-			rmr.prepare(resp);
 		} else {
-			DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
+			// Successful login
+			Identity authenticationedIdentity = ureq.getIdentity();
+			userDeletionManager.setIdentityAsActiv(authenticationedIdentity);
+			shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
+			ureq.getUserSession().getIdentityEnvironment().addAttributes(
+					shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttriutes.toMap()));
+			
+			if (CoreSpringFactory.getImpl(RegistrationManager.class).needsToConfirmDisclaimer(authenticationedIdentity)) {
+				disclaimer(resp);
+			} else {
+				MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
+				if (mr instanceof RedirectMediaResource) {
+					RedirectMediaResource rmr = (RedirectMediaResource)mr;
+					rmr.prepare(resp);
+				} else {
+					DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
+				}
+			}
 		}
 	}
 
@@ -221,8 +225,16 @@ public class ShibbolethDispatcher implements Dispatcher{
 
 		return attributesMap;
 	}
+	
+	private final void disclaimer(HttpServletResponse response) {
+		try {
+			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + ShibbolethModule.PATH_DISCLAIMER_SHIBBOLETH + "/");
+		} catch (IOException e) {
+			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
+		}
+	}
 
-	private final void redirectToShibbolethRegistration(HttpServletResponse response) {
+	private final void register(HttpServletResponse response) {
 		try {
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + ShibbolethModule.PATH_REGISTER_SHIBBOLETH + "/");
 		} catch (IOException e) {

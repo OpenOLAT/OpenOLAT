@@ -38,7 +38,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
-import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
@@ -216,8 +215,9 @@ public class ImsCPHandler extends FileHandler {
 						
 						CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions,
 								initialUri, entry.getOlatResource(), "", false);
-						MainLayout3ColumnsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
+						LayoutMain3ColsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
 						ctr.addDisposableChildController(cpCtr);
+						ctr.addActivateableDelegate(cpCtr);
 						return ctr;
 					}
 			});

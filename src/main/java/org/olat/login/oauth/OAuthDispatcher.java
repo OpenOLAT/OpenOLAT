@@ -20,8 +20,6 @@
 package org.olat.login.oauth;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +41,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
@@ -85,14 +82,7 @@ public class OAuthDispatcher implements Dispatcher {
 	public void execute(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		
-		String uri = request.getRequestURI();
-		try {
-			uri = URLDecoder.decode(uri, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertException("UTF-8 encoding not supported!!!!");
-		}
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-		
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
@@ -224,7 +214,7 @@ public class OAuthDispatcher implements Dispatcher {
 						identity = securityManager.findIdentityByName(id);
 					}
 					if(identity != null) {
-						auth = securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
+						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
 						registration.setIdentity(identity);
 					} else {
 						log.error("OAuth Login failed, user with user name " + email + " not found.");
