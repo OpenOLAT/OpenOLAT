@@ -240,7 +240,7 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterActveOnly() {
+	public void shouldFilterActiveOnly() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);

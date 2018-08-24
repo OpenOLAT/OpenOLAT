@@ -1,0 +1,377 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.quality.generator.provider.courselectures.manager;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 22.08.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public class CourseLecturesProviderDAOTest extends OlatTestCase {
+	
+	private Date hour = new Date();
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private QualityGeneratorService generatorService;
+	@Autowired
+	private QualityService qualityService;
+	
+	@Autowired
+	private CourseLecturesProviderDAO sut;
+	
+	@Test
+	public void shouldLoadLectureBlockEndDate() {
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Date start = nextHour();
+		Date end = nextHour();
+		createLectureBlock(course, teacher, 1, start, end);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		LectureBlockInfo info = infos.get(0);
+		assertThat(info.getLectureEndDate()).isCloseTo(end, 1000);
+	}
+
+	@Test
+	public void shouldLoadLecturesTotal() {
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		int lecturesPlaned1 = 3;
+		createLectureBlock(course, teacher, lecturesPlaned1);
+		int lecturesPlaned2 = 4;
+		createLectureBlock(course, teacher, lecturesPlaned2);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		LectureBlockInfo info = infos.get(0);
+		assertThat(info.getLecturesTotal()).isEqualTo(lecturesPlaned1 + lecturesPlaned2);
+	}
+	
+	@Test
+	public void shouldLoadLecturesFrom() {
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		int lecturesPlaned1 = 3;
+		LectureBlock lectureBlock1 = createLectureBlock(course, teacher, lecturesPlaned1);
+		int lecturesPlaned2 = 4;
+		LectureBlock lectureBlock2 = createLectureBlock(course, teacher, lecturesPlaned2);
+		int lecturesPlaned3 = 5;
+		LectureBlock lectureBlock3 = createLectureBlock(course, teacher, lecturesPlaned3);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		Map<Long, Long> keysToFrom = infos.stream().collect(Collectors.toMap(LectureBlockInfo::getLectureBlockKey, LectureBlockInfo::getFirstLecture));
+		assertThat(keysToFrom.get(lectureBlock1.getKey())).isEqualTo(1);
+		assertThat(keysToFrom.get(lectureBlock2.getKey())).isEqualTo(1 + lecturesPlaned1);
+		assertThat(keysToFrom.get(lectureBlock3.getKey())).isEqualTo(1 + lecturesPlaned1 + lecturesPlaned2);
+	}
+	
+	@Test
+	public void shouldLoadLecturesTo() {
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		int lecturesPlaned1 = 3;
+		LectureBlock lectureBlock1 = createLectureBlock(course, teacher, lecturesPlaned1);
+		int lecturesPlaned2 = 4;
+		LectureBlock lectureBlock2 = createLectureBlock(course, teacher, lecturesPlaned2);
+		int lecturesPlaned3 = 5;
+		LectureBlock lectureBlock3 = createLectureBlock(course, teacher, lecturesPlaned3);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		Map<Long, Long> keysToTo = infos.stream().collect(Collectors.toMap(LectureBlockInfo::getLectureBlockKey, LectureBlockInfo::getLastLecture));
+		assertThat(keysToTo.get(lectureBlock1.getKey())).isEqualTo(1 + lecturesPlaned1);
+		assertThat(keysToTo.get(lectureBlock2.getKey())).isEqualTo(1 + lecturesPlaned1 + lecturesPlaned2);
+		assertThat(keysToTo.get(lectureBlock3.getKey())).isEqualTo(1 + lecturesPlaned1 + lecturesPlaned2 + lecturesPlaned3);
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByTeacher() {
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		createLectureBlock(course, teacher, 1);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		LectureBlockInfo info = infos.get(0);
+		assertThat(info.getTeacherKey()).isEqualTo(teacher.getKey());
+		assertThat(info.getCourseRepoKey()).isEqualTo(course.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByCourses() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(otherCourse, teacher, 1);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setCourseRefs(Arrays.asList(course1, course2));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherCourse.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByEndDate() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherEndDate = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date start1 = nextHour();
+		Date from = nextHour();
+		Date end1 = nextHour();
+		createLectureBlock(course1, teacher, 1, start1, end1);
+		Date start2 = nextHour();
+		Date end2 = nextHour();
+		Date to = nextHour();
+		createLectureBlock(course2, teacher, 1, start2, end2);
+		Date otherStart = nextHour();
+		Date otherEnd = nextHour();
+		createLectureBlock(otherEndDate, teacher, 1, otherStart, otherEnd);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setFrom(from);
+		searchParams.setTo(to);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherEndDate.getKey());
+	}
+
+	@Test
+	public void shouldFilterLectureBlockInfosByAlreadyCreated() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(course1, organisation);
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(course2, organisation);
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(otherCourse, organisation);
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(otherCourse, teacher, 1);
+		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, otherCourse.getKey());
+		dataCollection.setTopicIdentity(teacher);
+		dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setExcludeGeneratorRef(generator);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherCourse.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByOrganisation() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(course1, organisation);
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(course2, organisation);
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(otherCourse, teacher, 1);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setOrgansationRefs(Arrays.asList(organisation));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherCourse.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByMinTotalLectures() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock1 = createLectureBlock(course1, teacher, 10);
+		LectureBlock lectureBlock2 = createLectureBlock(course2, teacher, 5);
+		LectureBlock lectureBlock3 = createLectureBlock(course2, teacher, 5);
+		LectureBlock lectureBlock4 = createLectureBlock(otherCourse, teacher, 1);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setMinTotalLectures(6);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> lectureBlocksKeys = infos.stream().map(LectureBlockInfo::getLectureBlockKey).collect(Collectors.toList());
+		assertThat(lectureBlocksKeys)
+				.containsExactlyInAnyOrder(lectureBlock1.getKey(), lectureBlock2.getKey(), lectureBlock3.getKey())
+				.doesNotContain(lectureBlock4.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosBySelectingLecture() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock1 = createLectureBlock(course, teacher, 5);
+		LectureBlock lectureBlock2 = createLectureBlock(course, teacher, 5);
+		LectureBlock lectureBlock3 = createLectureBlock(course, teacher, 5);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setSelectingLecture(6);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> lectureBlocksKeys = infos.stream().map(LectureBlockInfo::getLectureBlockKey).collect(Collectors.toList());
+		assertThat(lectureBlocksKeys)
+				.containsExactlyInAnyOrder(lectureBlock2.getKey())
+				.doesNotContain(lectureBlock1.getKey(), lectureBlock3.getKey());
+		
+		searchParams.setSelectingLecture(10);
+		infos = sut.loadLectureBlockInfo(searchParams);
+
+		lectureBlocksKeys = infos.stream().map(LectureBlockInfo::getLectureBlockKey).collect(Collectors.toList());
+		assertThat(lectureBlocksKeys)
+				.containsExactlyInAnyOrder(lectureBlock2.getKey())
+				.doesNotContain(lectureBlock1.getKey(), lectureBlock3.getKey());
+	}
+	
+	@Test
+	public void shouldLoadLectureBlockCount() {
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		createLectureBlock(course, teacher, 1);
+		createLectureBlock(course, teacher, 1);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		Long count = sut.loadLectureBlockCount(searchParams);
+
+		assertThat(count).isEqualTo(2);
+	}
+	
+	public LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures) {
+		return createLectureBlock(course, teacher, numLectures, nextHour(), nextHour());
+	}
+	
+	public LectureBlock createLectureBlock(RepositoryEntry course, Identity teacher, int numLectures, Date start, Date end) {
+		LectureBlock lectureBlock = lectureService.createLectureBlock(course);
+		lectureBlock.setStartDate(start);
+		lectureBlock.setEndDate(end);
+		lectureBlock.setStatus(LectureBlockStatus.active);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
+		lectureBlock.setPlannedLecturesNumber(numLectures);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		lectureService.addTeacher(lectureBlock, teacher);
+		return lectureBlock;
+	}
+	
+	private Date nextHour() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(hour);
+		calendar.add(Calendar.HOUR, 1);
+		hour = calendar.getTime();
+		return hour;
+	}
+	
+
+}
