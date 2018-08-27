@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -103,8 +102,8 @@ public class PoolsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(),
 				true, "publicPool", FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
-						new CSSIconFlexiCellRenderer("o_public"),
-						new CSSIconFlexiCellRenderer("o_private"))
+						new CSSIconFlexiCellRenderer("o_icon_pool_public"),
+						new CSSIconFlexiCellRenderer("o_icon_pool_private"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select-pool"));
@@ -113,7 +112,7 @@ public class PoolsController extends FormBasicController {
 		poolTable = uifactory.addTableElement(getWindowControl(), "pools", model, getTranslator(), formLayout);
 		poolTable.setMultiSelect(true);
 		poolTable.setRendererType(FlexiTableRendererType.classic);
-		reloadModel();
+		reloadModel(ureq);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -122,9 +121,9 @@ public class PoolsController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void reloadModel() {
-		ResultInfos<Pool> pools = qpoolService.getPools(0,	-1);
-		model.setObjects(pools.getObjects());
+	private void reloadModel(UserRequest ureq) {
+		List<Pool> pools = qpoolService.getPools(getIdentity(), ureq.getUserSession().getRoles());
+		model.setObjects(pools);
 		poolTable.reset();
 	}
 
@@ -141,7 +140,7 @@ public class PoolsController extends FormBasicController {
 		} else if(source == selectButton) {
 			Set<Integer> selectIndexes = poolTable.getMultiSelectedIndex();
 			if(!selectIndexes.isEmpty()) {
-				List<Pool> rows = new ArrayList<Pool>(selectIndexes.size());
+				List<Pool> rows = new ArrayList<>(selectIndexes.size());
 				for(Integer index:selectIndexes) {
 					Pool row = model.getObject(index.intValue());
 					rows.add(row);
@@ -225,7 +224,7 @@ public class PoolsController extends FormBasicController {
 	
 		@Override
 		public void setObjects(List<Pool> objects) {
-			rows = new ArrayList<Pool>(objects);
+			rows = new ArrayList<>(objects);
 		}
 	
 		@Override

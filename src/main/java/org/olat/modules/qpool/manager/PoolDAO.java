@@ -92,7 +92,7 @@ public class PoolDAO {
 	public int removeFromPool(List<QuestionItemShort> items, Pool pool) {
 		if(items == null || items.isEmpty()) return 0;
 		
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
