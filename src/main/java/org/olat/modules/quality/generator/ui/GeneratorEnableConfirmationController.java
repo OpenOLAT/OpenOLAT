@@ -68,6 +68,7 @@ public class GeneratorEnableConfirmationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Date fromDate = generator.getLastRun() != null? generator.getLastRun(): new Date();
 		fromEl = uifactory.addDateChooser("generator.from.date", fromDate, formLayout);
+		fromEl.setDateChooserTimeEnabled(true);
 		fromEl.setMandatory(true);
 		fromEl.addActionListener(FormEvent.ONCHANGE);
 		

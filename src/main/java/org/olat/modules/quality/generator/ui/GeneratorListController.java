@@ -158,8 +158,30 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		// TODO uh Auto-generated method stub
+		if(entries == null || entries.isEmpty()) return;
 		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if (QualityGenerator.RESOURCEABLE_TYPE_NAME.equals(type)) {
+			Long key = entry.getOLATResourceable().getResourceableId();
+			GeneratorRow row = dataModel.getObjectByKey(key);
+			if (row == null) {
+				loadModel();
+				row = dataModel.getObjectByKey(key);
+				if (row != null) {
+					doEditGenerator(ureq, row.getGeneratorRef());
+					int index = dataModel.getObjects().indexOf(row);
+					if (index >= 1 && tableEl.getPageSize() > 1) {
+						int page = index / tableEl.getPageSize();
+						tableEl.setPage(page);
+					}
+				} else {
+					tableEl.reset();
+				}
+			} else {
+				doEditGenerator(ureq, row.getGeneratorRef());
+			}
+		}
 	}
 	
 	@Override

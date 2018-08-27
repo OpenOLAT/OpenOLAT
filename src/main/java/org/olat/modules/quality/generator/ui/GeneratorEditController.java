@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
@@ -75,6 +76,14 @@ public class GeneratorEditController extends AbstractGeneratorEditController {
 	protected void updateUI() {
 		configCtrl.setGenerator(generator);
 		providerConfigCtrl.setReadOnly(generator.isEnabled());
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (event instanceof GeneratorEvent) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	boolean validateBeforeActivation(UserRequest ureq) {

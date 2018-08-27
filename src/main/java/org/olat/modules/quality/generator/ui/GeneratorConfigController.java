@@ -253,6 +253,8 @@ public class GeneratorConfigController extends FormBasicController {
 			currentOrganisations = QualityUIFactory.getSelectedOrganisations(organisationsEl, currentOrganisations);
 			generatorService.updateGeneratorOrganisations(generator, currentOrganisations);
 		}
+		
+		fireEvent(ureq, new GeneratorEvent(generator, GeneratorEvent.Action.CHANGED));
 	}
 
 	@Override

@@ -126,10 +126,9 @@ public class GeneratorController extends BasicController implements TooledContro
 			GeneratorEvent gEvent = (GeneratorEvent) event;
 			GeneratorEvent.Action action = gEvent.getAction();
 			generator = gEvent.getGenerator();
-			//TODO uh auch für geenratro
-//			if (Action.CHANGED.equals(action)) {
-//				stackPanel.changeDisplayname(dataCollection.getTitle(), null, this);
-			if (GeneratorEvent.Action.ENABLE.equals(action)) {
+			if (GeneratorEvent.Action.CHANGED.equals(action)) {
+				stackPanel.changeDisplayname(generator.getTitle(), null, this);
+			} else if (GeneratorEvent.Action.ENABLE.equals(action)) {
 				doConfirmEnableGenerator(ureq);
 			} else if (GeneratorEvent.Action.DISABLE.equals(action)) {
 				doConfirmDisableGenerator(ureq);

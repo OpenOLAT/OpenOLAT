@@ -45,6 +45,16 @@ class GeneratorDataModel extends DefaultFlexiTableDataModel<GeneratorRow>
 		super(columnsModel);
 		this.translator = translator;
 	}
+	
+	public GeneratorRow getObjectByKey(Long key) {
+		List<GeneratorRow> rows = getObjects();
+		for (GeneratorRow row: rows) {
+			if (row != null && row.getGeneratorRef().getKey().equals(key)) {
+				return row;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public void sort(SortKey orderBy) {

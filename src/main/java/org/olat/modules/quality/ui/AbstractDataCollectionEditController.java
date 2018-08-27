@@ -73,6 +73,15 @@ abstract class AbstractDataCollectionEditController extends FormBasicController 
 		this.dataCollection = dataCollection;
 	}
 	
+	AbstractDataCollectionEditController(UserRequest ureq, WindowControl wControl,
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
+			QualityDataCollection dataCollection, int layout) {
+		super(ureq, wControl, layout);
+		this.secCallback = secCallback;
+		this.stackPanel = stackPanel;
+		this.dataCollection = dataCollection;
+	}
+	
 	protected void setDataCollection(UserRequest ureq, QualityDataCollection dataCollection) {
 		this.dataCollection = dataCollection;
 		updateUI(ureq);

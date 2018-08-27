@@ -99,7 +99,7 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection) {
-		super(ureq, windowControl, secCallback, stackPanel, dataCollection);
+		super(ureq, windowControl, secCallback, stackPanel, dataCollection, LAYOUT_BAREBONE);
 		initForm(ureq);
 	}
 

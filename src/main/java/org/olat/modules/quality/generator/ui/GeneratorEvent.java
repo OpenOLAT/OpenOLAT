@@ -35,7 +35,8 @@ public class GeneratorEvent extends Event {
 	public enum Action {
 		ENABLE,
 		DISABLE,
-		DELETE
+		DELETE,
+		CHANGED
 	}
 
 	private final QualityGenerator generator;
