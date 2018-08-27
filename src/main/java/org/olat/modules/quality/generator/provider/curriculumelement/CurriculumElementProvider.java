@@ -148,9 +148,9 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 
 	@Override
 	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator gnerator,
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
-		return new CurriculumElementWhiteListController(ureq, wControl, secCallback, stackPanel, gnerator, configs);
+		return new CurriculumElementWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);
 	}
 
 	@Override

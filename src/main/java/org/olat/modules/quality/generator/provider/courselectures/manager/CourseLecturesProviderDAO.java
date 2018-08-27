@@ -31,7 +31,9 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +70,7 @@ public class CourseLecturesProviderDAO {
 		return count.longValueExact();
 	}
 
-	public Long loadLectureBlockCountHql(SearchParameters searchParams) {
+	private Long loadLectureBlockCountHql(SearchParameters searchParams) {
 		return new Long(loadLectureBlockInfoHql(searchParams).size());
 	}
 
@@ -143,10 +145,22 @@ public class CourseLecturesProviderDAO {
 			sb.append("               where ro.fk_organisation in :organisationKeys");
 			sb.append("                 and ro.fk_entry = lb.fk_entry");
 			sb.append("             )");
-			
 		}
 		if (!searchParams.getCourseRefs().isEmpty()) {
 			sb.and().append("lb.fk_entry in :courseKeys");
+		}
+		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
+			sb.and();
+			sb.append("lb.fk_entry in (");
+			sb.append("    select distinct v.repositoryentry_id");
+			sb.append("      from o_repositoryentry v");
+			sb.append("           inner join o_re_to_group rel");
+			sb.append("             on rel.fk_entry_id = v.repositoryentry_id");
+			sb.append("           inner join o_cur_curriculum_element el");
+			sb.append("             on el.fk_group = rel.fk_group_id");
+			sb.append("     where el.id in :curriculumElementKeys");
+			sb.append("       and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
+			sb.append("    )");
 		}
 		if (searchParams.getExcludeGeneratorRef() != null) {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
@@ -280,6 +294,17 @@ public class CourseLecturesProviderDAO {
 		if (!searchParams.getCourseRefs().isEmpty()) {
 			sb.and().append("course.key in :courseKeys");
 		}
+		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
+			sb.and();
+			sb.append("course.key in (");
+			sb.append("    select distinct v.key");
+			sb.append("      from repositoryentry as v");
+			sb.append("           inner join v.groups as rel");
+			sb.append("           inner join curriculumelement as el on (el.group.key=rel.group.key)");
+			sb.append("     where el.key in :curriculumElementKeys");
+			sb.append("       and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
+			sb.append("    )");
+		}
 		if (!searchParams.getOrgansationRefs().isEmpty()) {
 			sb.and();
 			sb.append("course.key in (");
@@ -306,6 +331,10 @@ public class CourseLecturesProviderDAO {
 		if (!searchParams.getCourseRefs().isEmpty()) {
 			List<Long> courseKeys = searchParams.getCourseRefs().stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
 			query.setParameter("courseKeys", courseKeys);
+		}
+		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
+			List<Long> curriculumElementKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
+			query.setParameter("curriculumElementKeys", curriculumElementKeys);
 		}
 		if (!searchParams.getOrgansationRefs().isEmpty()) {
 			List<Long> organisationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());

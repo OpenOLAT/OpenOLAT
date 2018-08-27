@@ -34,6 +34,9 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -71,6 +74,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	@Autowired
 	private CourseLecturesProviderDAO sut;
@@ -191,6 +196,36 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByCurriculumElements() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("", "", null, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("", "", null, null, null, null, curriculum);
+		CurriculumElement otherElement = curriculumService.createCurriculumElement("", "", null, null, null, null, curriculum);
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(otherCourse, teacher, 1);
+		curriculumService.addRepositoryEntry(element, course1, false);
+		curriculumService.addRepositoryEntry(element, course2, false);
+		curriculumService.addRepositoryEntry(otherElement, otherCourse, false);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setCurriculumElementRefs(Arrays.asList(element));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherCourse.getKey());
+	}
+
 	
 	@Test
 	public void shouldFilterLectureBlockInfosByEndDate() {

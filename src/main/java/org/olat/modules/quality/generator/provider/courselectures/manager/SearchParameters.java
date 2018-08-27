@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -41,6 +42,7 @@ public class SearchParameters {
 	private QualityGeneratorRef excludeGeneratorRef;
 	private IdentityRef teacherRef;
 	private Collection<? extends RepositoryEntryRef> courseRefs;
+	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
 	private Collection<? extends OrganisationRef> organsationRefs;
 	private Date from;
 	private Date to;
@@ -86,6 +88,17 @@ public class SearchParameters {
 
 	public void setCourseRefs(Collection<? extends RepositoryEntryRef> courseRefs) {
 		this.courseRefs = courseRefs;
+	}
+
+	public Collection<? extends CurriculumElementRef> getCurriculumElementRefs() {
+		if (curriculumElementRefs == null) {
+			curriculumElementRefs = Collections.emptyList();
+		}
+		return curriculumElementRefs;
+	}
+
+	public void setCurriculumElementRefs(Collection<? extends CurriculumElementRef> curriculumElementRefs) {
+		this.curriculumElementRefs = curriculumElementRefs;
 	}
 
 	public Collection<? extends OrganisationRef> getOrgansationRefs() {

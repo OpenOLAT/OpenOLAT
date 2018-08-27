@@ -40,6 +40,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -57,6 +58,7 @@ import org.olat.modules.quality.generator.provider.courselectures.manager.Lectur
 import org.olat.modules.quality.generator.provider.courselectures.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.courselectures.ui.CourseLectureProviderConfigController;
 import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
+import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -123,23 +125,21 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate);
-		List<LectureBlockInfo> infos = providerDao.loadLectureBlockInfo(searchParams);
+		Long count = providerDao.loadLectureBlockCount(searchParams);
 		
-		return translator.translate("generate.info", new String[] { String.valueOf(infos.size())});
+		return translator.translate("generate.info", new String[] { String.valueOf(count)});
 	}
 
 	@Override
 	public boolean hasWhiteListController() {
-		//TODO uh 
-		return false;
+		return true;
 	}
 
 	@Override
 	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
-		//TODO uh 
-		return null;
+		return new CurriculumElementWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);
 	}
 
 	@Override
@@ -227,6 +227,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		searchParams.setOrgansationRefs(organisations);
 		searchParams.setFrom(fromDate);
 		searchParams.setTo(toDate);
+		Collection<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		searchParams.setCurriculumElementRefs(curriculumElementRefs);
 		Integer minExceedingLectures = Integer.parseInt(configs.getValue(CONFIG_KEY_TOTAL_LECTURES));
 		searchParams.setMinTotalLectures(minExceedingLectures);
 		Integer selectingLecture = Integer.parseInt(configs.getValue(CONFIG_KEY_SURVEY_LECTURE));
