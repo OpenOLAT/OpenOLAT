@@ -25,6 +25,7 @@ import static org.olat.modules.quality.ui.QualityUIFactory.validateInteger;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateIsMandatory;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,12 +34,14 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesProvider;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,8 +87,9 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String title = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TITLE);
 		titleEl = uifactory.addTextElement("config.title", 200, title, formLayout);
-		//TODO uh mit enum...
-//		titleEl.setHelpTextKey("config.title.help", new String[] {titleCreator.getMergeIdentifiers()} );
+		String identifiers = titleCreator.getIdentifiers(Arrays.asList(RepositoryEntry.class, User.class)).stream()
+				.collect(Collectors.joining(", "));
+		titleEl.setHelpTextKey("config.title.help", new String[] {identifiers} );
 
 		// lectures
 		String lecturesTotal = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.provider.curriculumelement.ui;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.generator.provider.curriculumelement.CurriculumElementProvider.CONFIG_KEY_CURRICULUM_ELEMENT_TYPE;
@@ -38,6 +39,7 @@ import static org.olat.modules.quality.ui.QualityUIFactory.validateIsMandatory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -106,7 +109,9 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String title = configs.getValue(CONFIG_KEY_TITLE);
 		titleEl = uifactory.addTextElement("config.title", 200, title, formLayout);
-		titleEl.setHelpTextKey("config.title.help", new String[] {titleCreator.getMergeCurriculumElementIdentifiers()} );
+		String identifiers = titleCreator.getIdentifiers(singletonList(CurriculumElement.class)).stream()
+				.collect(Collectors.joining(", "));
+		titleEl.setHelpTextKey("config.title.help", new String[] {identifiers} );
 
 		// curriculum element type
 		List<CurriculumElementType> ceTypes = curriculumService.getCurriculumElementTypes();

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.generator.provider.curriculumelement;
 
+import static java.util.Collections.singletonList;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -198,7 +200,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		dataCollection.setDeadline(deadline);
 		
 		String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
-		String title = titleCreator.mergeCurriculumElement(titleTemplate, curriculumElement);
+		String title = titleCreator.merge(titleTemplate, singletonList(curriculumElement));
 		dataCollection.setTitle(title);
 		
 		dataCollection.setTopicType(QualityDataCollectionTopicType.CURRICULUM_ELEMENT);

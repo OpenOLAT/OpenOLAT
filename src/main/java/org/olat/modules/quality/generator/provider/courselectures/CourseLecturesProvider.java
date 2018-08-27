@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.provider.courselectures;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -167,13 +168,12 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Date deadline = addDays(dcStart, duration);
 		dataCollection.setDeadline(deadline);
 		
-		//TODO uh
-		String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
-//		String title = titleCreator.mergeCurriculumElement(titleTemplate, curriculumElement);
-//		dataCollection.setTitle(title);
-		dataCollection.setTitle(titleTemplate);
-		
+		RepositoryEntry course = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
 		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
+		String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
+		String title = titleCreator.merge(titleTemplate, Arrays.asList(course, teacher.getUser()));
+		dataCollection.setTitle(title);
+		
 		dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
 		dataCollection.setTopicIdentity(teacher);
 		

@@ -19,19 +19,22 @@
  */
 package org.olat.modules.quality.generator;
 
-import java.util.Collection;
 import java.util.List;
+
+import org.apache.velocity.VelocityContext;
 
 /**
  * 
- * Initial date: 22.08.2018<br>
+ * Initial date: 27.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface TitleCreator {
-
-	public List<String> getIdentifiers(Collection<Class<?>> classes);
-
-	public String merge(String template, Collection<?> objects);
+public interface TitleCreatorHandler {
+	
+	public boolean canHandle(Class<?> clazz);
+	
+	public void mergeContext(VelocityContext context, Object object);
+	
+	public List<String> getIdentifiers();
 
 }

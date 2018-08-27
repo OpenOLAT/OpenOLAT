@@ -17,8 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.generator.manager;
+package org.olat.modules.quality.generator.manager.titlecreator;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
@@ -40,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TitleCreatorImplTest extends OlatTestCase {
+public class CurriculumElementHandlerTest extends OlatTestCase {
 	
 	@Autowired
 	private OrganisationService organisationService;
@@ -48,16 +49,16 @@ public class TitleCreatorImplTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 
 	@Autowired
-	private TitleCreator sut;
+	private TitleCreator titleCreator;
 	
 	@Test
 	public void shouldMergeCurriculumElementDisplayName() {
 		CurriculumElement element = createCurriculumElement();
 		String value = random();
 		element.setDisplayName(value);
-		String template = "$" + TitleCreatorImpl.CURRICULUM_ELEMENT_DISPLAY_NAME;
+		String template = "$" + CurriculumElementHandler.CURRICULUM_ELEMENT_DISPLAY_NAME;
 		
-		String merged = sut.mergeCurriculumElement(template, element);
+		String merged = titleCreator.merge(template, asList(element));
 		
 		assertThat(merged).isEqualTo(value);
 	}
@@ -67,9 +68,9 @@ public class TitleCreatorImplTest extends OlatTestCase {
 		CurriculumElement element = createCurriculumElement();
 		String value = random();
 		element.setIdentifier(value);
-		String template = "$" + TitleCreatorImpl.CURRICULUM_ELEMENT_IDENTIFIER;
+		String template = "$" + CurriculumElementHandler.CURRICULUM_ELEMENT_IDENTIFIER;
 		
-		String merged = sut.mergeCurriculumElement(template, element);
+		String merged = titleCreator.merge(template, asList(element));
 		
 		assertThat(merged).isEqualTo(value);
 	}
@@ -80,9 +81,9 @@ public class TitleCreatorImplTest extends OlatTestCase {
 		CurriculumElementType type = curriculumService.createCurriculumElementType(random(), value, null, null);
 		CurriculumElement element = createCurriculumElement();
 		element.setType(type);
-		String template = "$" + TitleCreatorImpl.CURRICULUM_ELEMENT_TYPE_DISPLAY_NAME;
+		String template = "$" + CurriculumElementHandler.CURRICULUM_ELEMENT_TYPE_DISPLAY_NAME;
 		
-		String merged = sut.mergeCurriculumElement(template, element);
+		String merged = titleCreator.merge(template, asList(element));
 		
 		assertThat(merged).isEqualTo(value);
 	}
@@ -95,9 +96,9 @@ public class TitleCreatorImplTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), value, null, organisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(), null, null, null,
 				null, curriculum);
-		String template = "$" + TitleCreatorImpl.CURRICULUM_DISPLAY_NAME;
+		String template = "$" + CurriculumElementHandler.CURRICULUM_DISPLAY_NAME;
 		
-		String merged = sut.mergeCurriculumElement(template, element);
+		String merged = titleCreator.merge(template, asList(element));
 		
 		assertThat(merged).isEqualTo(value);
 	}
@@ -106,9 +107,9 @@ public class TitleCreatorImplTest extends OlatTestCase {
 	public void shouldMergeCurriculumElemenSupressNulls() {
 		CurriculumElement element = createCurriculumElement();
 		element.setDisplayName(null);
-		String template = "$" + TitleCreatorImpl.CURRICULUM_ELEMENT_DISPLAY_NAME;
+		String template = "$" + CurriculumElementHandler.CURRICULUM_ELEMENT_DISPLAY_NAME;
 		
-		String merged = sut.mergeCurriculumElement(template, element);
+		String merged = titleCreator.merge(template, asList(element));
 		
 		assertThat(merged).isEqualTo("");
 	}
@@ -120,10 +121,10 @@ public class TitleCreatorImplTest extends OlatTestCase {
 		element.setDisplayName(displaName);
 		String identifier = random();
 		element.setIdentifier(identifier);
-		String template = "$" + TitleCreatorImpl.CURRICULUM_ELEMENT_DISPLAY_NAME + " $"
-				+ TitleCreatorImpl.CURRICULUM_ELEMENT_IDENTIFIER;
+		String template = "$" + CurriculumElementHandler.CURRICULUM_ELEMENT_DISPLAY_NAME + " $"
+				+ CurriculumElementHandler.CURRICULUM_ELEMENT_IDENTIFIER;
 
-		String merged = sut.mergeCurriculumElement(template, element);
+		String merged = titleCreator.merge(template, asList(element));
 
 		assertThat(merged).isEqualTo(displaName + " " + identifier);
 	}

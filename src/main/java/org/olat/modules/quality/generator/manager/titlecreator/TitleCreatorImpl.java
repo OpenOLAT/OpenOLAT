@@ -17,14 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.generator.manager;
+package org.olat.modules.quality.generator.manager.titlecreator;
 
-import static org.olat.core.util.StringHelper.blankIfNull;
+import static java.util.Arrays.asList;
 
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -32,10 +37,9 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.quality.generator.TitleCreator;
+import org.olat.modules.quality.generator.TitleCreatorHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -50,14 +54,14 @@ public class TitleCreatorImpl implements TitleCreator {
 	private static final OLog log = Tracing.createLoggerFor(TitleCreatorImpl.class);
 
 	private static final String PREFIX = "$";
-	private static final String SEPARATOR = ", ";
-	static final String CURRICULUM_ELEMENT_DISPLAY_NAME = "curEleDisplayName";
-	static final String CURRICULUM_ELEMENT_IDENTIFIER = "curEleIdentifier";
-	static final String CURRICULUM_ELEMENT_TYPE_DISPLAY_NAME = "curEleTypeDisplayName";
-	static final String CURRICULUM_DISPLAY_NAME = "curDisplayName";
+
+	private static final TitleCreatorHandler NOT_FOUND_HANDLER = new NotFoundHandler();
 	
 	private VelocityEngine velocityEngine;
 	
+	@Autowired
+	private List<TitleCreatorHandler> handlers;
+
 	@PostConstruct
 	public void afterPropertiesSet() {
 		Properties p = new Properties();
@@ -70,37 +74,37 @@ public class TitleCreatorImpl implements TitleCreator {
 	}
 	
 	@Override
-	public String getMergeCurriculumElementIdentifiers() {
-		return new StringBuilder(256)
-				.append(PREFIX).append(CURRICULUM_ELEMENT_DISPLAY_NAME).append(SEPARATOR)
-				.append(PREFIX).append(CURRICULUM_ELEMENT_IDENTIFIER).append(SEPARATOR)
-				.append(PREFIX).append(CURRICULUM_ELEMENT_TYPE_DISPLAY_NAME).append(SEPARATOR)
-				.append(PREFIX).append(CURRICULUM_DISPLAY_NAME)
-				.toString();
+	public List<String> getIdentifiers(Collection<Class<?>> classes) {
+		Set<Class<?>> interfaces = new HashSet<>();
+		for (Class<?> c: classes) {
+			interfaces.addAll(asList(c.getInterfaces()));
+			interfaces.add(c);
+		}
+		
+		List<String> allIdentifiers = new ArrayList<>();
+		for (Class<?> clazz: interfaces) {
+			TitleCreatorHandler handler = getHandler(clazz);
+			List<String> identifiers = handler.getIdentifiers();
+			for (String identifier: identifiers) {
+				allIdentifiers.add(addPrefix(identifier));
+			}
+		}
+
+		return allIdentifiers;
+	}
+	
+	private String addPrefix(String idenitfierString) {
+		return new StringBuilder(PREFIX).append(idenitfierString).toString();
 	}
 
 	@Override
-	public String mergeCurriculumElement(String template, CurriculumElement element) {
-		VelocityContext context = getContext(element);
-		return merge(template, context);
-	}
-	
-	private VelocityContext getContext(CurriculumElement element) {
+	public String merge(String template, Collection<?> objects) {
 		VelocityContext context = new VelocityContext();
-		context.put(CURRICULUM_ELEMENT_DISPLAY_NAME, blankIfNull(element.getDisplayName()));
-		context.put(CURRICULUM_ELEMENT_IDENTIFIER, blankIfNull(element.getIdentifier()));
-		
-		Curriculum curriculum = element.getCurriculum();
-		if (curriculum != null) {
-			context.put(CURRICULUM_DISPLAY_NAME, blankIfNull(curriculum.getDisplayName()));
+		for (Object object: objects) {
+			TitleCreatorHandler handler = getHandler(object.getClass());
+			handler.mergeContext(context, object);
 		}
-		
-		CurriculumElementType type = element.getType();
-		if (type != null) {
-			context.put(CURRICULUM_ELEMENT_TYPE_DISPLAY_NAME, blankIfNull(type.getDisplayName()));
-		}
-		
-		return context;
+		return merge(template, context);
 	}
 
 	private String merge(String template, VelocityContext context) {
@@ -116,6 +120,15 @@ public class TitleCreatorImpl implements TitleCreator {
 			log.error("", e);
 		}
 		return result ? merged : null;
+	}
+	
+	private TitleCreatorHandler getHandler(Class<?> clazz) {
+		for (TitleCreatorHandler handler: handlers) {
+			if (handler.canHandle(clazz)) {
+				return handler;
+			}
+		}
+		return NOT_FOUND_HANDLER;
 	}
 	
 }

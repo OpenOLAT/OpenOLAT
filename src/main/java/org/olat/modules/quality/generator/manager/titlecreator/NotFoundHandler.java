@@ -17,21 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.generator;
+package org.olat.modules.quality.generator.manager.titlecreator;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+
+import org.apache.velocity.VelocityContext;
+import org.olat.modules.quality.generator.TitleCreatorHandler;
 
 /**
  * 
- * Initial date: 22.08.2018<br>
+ * Initial date: 27.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface TitleCreator {
+public class NotFoundHandler implements TitleCreatorHandler {
 
-	public List<String> getIdentifiers(Collection<Class<?>> classes);
+	@Override
+	public boolean canHandle(Class<?> clazz) {
+		return true;
+	}
 
-	public String merge(String template, Collection<?> objects);
+	@Override
+	public void mergeContext(VelocityContext context, Object object) {
+		// nothing to do
+	}
+
+	@Override
+	public List<String> getIdentifiers() {
+		return Collections.emptyList();
+	}
 
 }
