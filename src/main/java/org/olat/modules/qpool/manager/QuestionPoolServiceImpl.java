@@ -943,6 +943,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 	}
 	
+	@Override
 	public Taxonomy getQPoolTaxonomy() {
 		TaxonomyRef ref = getQPoolTaxonomyRef() ;
 		return ref == null ? null: taxonomyDao.loadByKey(ref.getKey());
