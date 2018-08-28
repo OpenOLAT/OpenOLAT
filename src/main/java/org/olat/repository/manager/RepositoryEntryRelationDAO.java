@@ -67,8 +67,8 @@ public class RepositoryEntryRelationDAO {
 	private GroupDAO groupDao;
 	
 	/**
-	 * Get roles in the repository entry, with business groups too but
-	 * not the organizations.
+	 * Get roles in the repository entry, with business groups and curriculums
+	 * too but not the organizations.
 	 * 
 	 * @param identity The identity
 	 * @param re The repository entry
@@ -81,7 +81,8 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
-		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey and (relGroup.defaultGroup=true or businessGroup.key is not null)");
+		  .append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey and (relGroup.defaultGroup=true or businessGroup.key is not null or curEl is not null)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)

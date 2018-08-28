@@ -1189,20 +1189,20 @@ public class RepositoryManager {
 
 	private void removeOwner(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing) {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
-
-		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
-
-		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-		try{
-			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-		} finally {
-			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
-		}
 		if(rows > 0) {
+			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
+	
+			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+			try{
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+			} finally {
+				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+	
 			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
-				+ "' as owner from repositoryentry with key " + re.getKey());
+					+ "' as owner from repositoryentry with key " + re.getKey());
 		}
 	}
 
@@ -1308,18 +1308,17 @@ public class RepositoryManager {
 
 	private void removeTutor(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing) {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
-
-		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
-		
-		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-		try{
-			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-		} finally {
-			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
-		}
 		if(rows > 0) {
+			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
+			
+			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+			try{
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+			} finally {
+				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
 			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 					+ "' as coach from repositoryentry with key " + re.getKey());
 		}
@@ -1410,20 +1409,20 @@ public class RepositoryManager {
 
 	private void removeParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing, boolean sendMail) {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.participant.name());
-
-		if(sendMail) {
-			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
-		}
-
-		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-		try{
-			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(),
-					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-		} finally {
-			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
-		}
 		if(rows > 0) {
+			if(sendMail) {
+				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
+			}
+	
+			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+			try{
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+			} finally {
+				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+		
 			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 				+ "' as participant from repositoryentry with key " + re.getKey());
 		}

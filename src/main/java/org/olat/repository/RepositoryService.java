@@ -252,10 +252,10 @@ public interface RepositoryService {
 	public List<Identity> getCoachedParticipants(IdentityRef coach, RepositoryEntryRef re);
 
 	/**
-	 * Get the role in the specified resource, business group are included in
-	 * the query but not organizations.
+	 * Get the role in the specified resource, business group and curriculums are
+	 * included in the query but not organizations.
 	 *
-	 * @return The list of roles
+	 * @return The list of roles (not deduplicated)
 	 */
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re);
 
