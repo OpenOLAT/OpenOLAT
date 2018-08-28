@@ -260,7 +260,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldFilterLectureBlockInfosByAlreadyCreated() {
+	public void shouldFilterLectureBlockInfosByAlreadyCreatedForTopicIdentity() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
@@ -285,7 +285,42 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setExcludeGeneratorRef(generator);
+		searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
+				.doesNotContain(otherCourse.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByAlreadyCreatedForTopicRepository() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(course1, organisation);
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(course2, organisation);
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(otherCourse, organisation);
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(otherCourse, teacher, 1);
+		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
+		dataCollection.setTopicRepositoryEntry(otherCourse);
+		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setExcludeGeneratorAndTopicRepositoryRef(generator);
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());

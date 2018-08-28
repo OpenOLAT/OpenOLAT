@@ -162,11 +162,19 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	
 	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
 			List<Organisation> organisations, LectureBlockInfo lectureBlockInfo) {
-		// create data collection	
+		// Load data
 		RepositoryEntry formEntry = generator.getFormEntry();
-		Long courseRepoKey = lectureBlockInfo.getCourseRepoKey();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseRepoKey);
+		RepositoryEntry course = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
+		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
+		
+		String topicKey = configs.getValue(CONFIG_KEY_TOPIC);
+		topicKey = StringHelper.containsNonWhitespace(topicKey)? topicKey: CONFIG_KEY_TOPIC_COACH;
+		
+		// create data collection	
+		Long generatorProviderKey = CONFIG_KEY_TOPIC_COACH.equals(topicKey)? teacher.getKey(): course.getKey();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
 
+		// fill in data collection attributes
 		Date dcStart = lectureBlockInfo.getLectureEndDate();
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
@@ -176,15 +184,10 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
 		Date deadline = addDays(dcStart, duration);
 		dataCollection.setDeadline(deadline);
-		
-		RepositoryEntry course = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
-		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
 		String titleTemplate = configs.getValue(CONFIG_KEY_TITLE);
 		String title = titleCreator.merge(titleTemplate, Arrays.asList(course, teacher.getUser()));
 		dataCollection.setTitle(title);
-		
-		String topicKey = configs.getValue(CONFIG_KEY_TOPIC);
-		topicKey = StringHelper.containsNonWhitespace(topicKey)? topicKey: CONFIG_KEY_TOPIC_COACH;
+
 		if (CONFIG_KEY_TOPIC_COACH.equals(topicKey)) {
 			dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
 			dataCollection.setTopicIdentity(teacher);
@@ -262,16 +265,25 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
 			Collection<? extends OrganisationRef> organisations, Date fromDate, Date toDate) {
 		SearchParameters searchParams = new SearchParameters();
-		searchParams.setExcludeGeneratorRef(generator);
+		searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
 		searchParams.setOrgansationRefs(organisations);
-		searchParams.setFrom(fromDate);
-		searchParams.setTo(toDate);
+
+		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
+		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
+		Date from = addMinutes(fromDate, minutesBeforeEnd);
+		searchParams.setFrom(from);
+		Date to = addMinutes(toDate, minutesBeforeEnd);
+		searchParams.setTo(to);
+		
 		Collection<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
 		searchParams.setCurriculumElementRefs(curriculumElementRefs);
+		
 		Integer minExceedingLectures = Integer.parseInt(configs.getValue(CONFIG_KEY_TOTAL_LECTURES));
 		searchParams.setMinTotalLectures(minExceedingLectures);
+		
 		Integer selectingLecture = Integer.parseInt(configs.getValue(CONFIG_KEY_SURVEY_LECTURE));
 		searchParams.setSelectingLecture(selectingLecture);
+		
 		return searchParams;
 	}
 

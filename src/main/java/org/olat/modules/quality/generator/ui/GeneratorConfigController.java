@@ -52,6 +52,7 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorView;
@@ -91,13 +92,13 @@ public class GeneratorConfigController extends FormBasicController {
 	private OrganisationModule organisationModule;
 
 	public GeneratorConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
+			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGeneratorRef generatorRef) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
-		this.generator = generator;
-		this.currentOrganisations = generatorService.loadGeneratorOrganisations(generator);
-		this.formEntry = generator.getFormEntry();
+		this.generator = generatorService.loadGenerator(generatorRef);
+		this.currentOrganisations = generatorService.loadGeneratorOrganisations(generatorRef);
+		this.formEntry = this.generator.getFormEntry();
 		initForm(ureq);
 	}
 
@@ -127,8 +128,9 @@ public class GeneratorConfigController extends FormBasicController {
 		updateUI();
 	}
 
-	public void setGenerator(QualityGenerator generator) {
-		this.generator = generator;
+	public void setGenerator(QualityGeneratorRef generatorRef) {
+		generator = generatorService.loadGenerator(generatorRef);
+		formEntry = generator.getFormEntry();
 		updateUI();
 	}
 
@@ -138,7 +140,6 @@ public class GeneratorConfigController extends FormBasicController {
 		organisationsEl.setEnabled(editGenerator);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		
-
 		boolean hasRepoConfig = formEntry != null;
 		if (hasRepoConfig) {
 			String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());

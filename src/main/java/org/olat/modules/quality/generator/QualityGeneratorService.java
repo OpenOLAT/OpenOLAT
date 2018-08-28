@@ -56,7 +56,7 @@ public interface QualityGeneratorService {
 	
 	public void updateGeneratorOrganisations(QualityGenerator generator, List<Organisation> organisations);
 
-	public List<Organisation> loadGeneratorOrganisations(QualityGenerator generator);
+	public List<Organisation> loadGeneratorOrganisations(QualityGeneratorRef generatorRef);
 
 	public QualityGeneratorConfig createGeneratorConfig(QualityGenerator generator, String identifier, String value);
 

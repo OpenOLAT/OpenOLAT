@@ -133,8 +133,8 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	@Override
-	public List<Organisation> loadGeneratorOrganisations(QualityGenerator generator) {
-		return generatorToOrganisationDao.loadOrganisationsByGeneratorKey(generator);
+	public List<Organisation> loadGeneratorOrganisations(QualityGeneratorRef generatorRef) {
+		return generatorToOrganisationDao.loadOrganisationsByGeneratorKey(generatorRef);
 	}
 
 	@Override

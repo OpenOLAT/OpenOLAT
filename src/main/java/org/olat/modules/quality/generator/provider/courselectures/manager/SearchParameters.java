@@ -39,7 +39,8 @@ public class SearchParameters {
 	
 	private Integer minTotalLectures;
 	private Integer selectingLecture;
-	private QualityGeneratorRef excludeGeneratorRef;
+	private QualityGeneratorRef excludeGeneratorAndTopicIdentityRef;
+	private QualityGeneratorRef excludeGeneratorAndTopicRepositoryRef;
 	private IdentityRef teacherRef;
 	private Collection<? extends RepositoryEntryRef> courseRefs;
 	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
@@ -63,12 +64,20 @@ public class SearchParameters {
 		this.selectingLecture = selectingLecture;
 	}
 
-	public QualityGeneratorRef getExcludeGeneratorRef() {
-		return excludeGeneratorRef;
+	public QualityGeneratorRef getExcludeGeneratorAndTopicIdentityRef() {
+		return excludeGeneratorAndTopicIdentityRef;
 	}
 
-	public void setExcludeGeneratorRef(QualityGeneratorRef excludeGeneratorRef) {
-		this.excludeGeneratorRef = excludeGeneratorRef;
+	public void setExcludeGeneratorAndTopicIdentityRef(QualityGeneratorRef excludeGeneratorRef) {
+		this.excludeGeneratorAndTopicIdentityRef = excludeGeneratorRef;
+	}
+
+	public QualityGeneratorRef getExcludeGeneratorAndTopicRepositoryRef() {
+		return excludeGeneratorAndTopicRepositoryRef;
+	}
+
+	public void setExcludeGeneratorAndTopicRepositoryRef(QualityGeneratorRef excludeGeneratorRef) {
+		this.excludeGeneratorAndTopicRepositoryRef = excludeGeneratorRef;
 	}
 
 	public IdentityRef getTeacherRef() {

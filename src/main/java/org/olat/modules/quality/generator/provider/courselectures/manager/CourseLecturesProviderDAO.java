@@ -164,7 +164,7 @@ public class CourseLecturesProviderDAO {
 			sb.append("     where el.id in :curriculumElementKeys");
 			sb.append("    )");
 		}
-		if (searchParams.getExcludeGeneratorRef() != null) {
+		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
 			sb.append("              select dc.q_topic_fk_identity, dc.q_generator_provider_key");
 			sb.append("                from o_qual_data_collection dc");
@@ -281,14 +281,24 @@ public class CourseLecturesProviderDAO {
 
 	private void appendWhereHql(QueryBuilder sb, SearchParameters searchParams) {
 		sb.and().append("course.status").in(RepositoryEntryStatusEnum.preparationToClosed());
-		if (searchParams.getExcludeGeneratorRef() != null) {
+		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			sb.and();
 			sb.append("(membership.identity.key, course.key) not in (");
 			sb.append("    select datacollection.topicIdentity.key, datacollection.generatorProviderKey");
 			sb.append("      from qualitydatacollection as datacollection");
-			sb.append("     where datacollection.generator.key = :generatorKey");
+			sb.append("     where datacollection.generator.key = :generatorIdentKey");
 			sb.append("       and datacollection.topicIdentity.key = membership.identity.key");
 			sb.append("       and datacollection.generatorProviderKey = course.key");
+			sb.append("    )");
+		}
+		if (searchParams.getExcludeGeneratorAndTopicRepositoryRef() != null) {
+			sb.and();
+			sb.append("(membership.identity.key, course.key) not in (");
+			sb.append("    select datacollection.generatorProviderKey, datacollection.topicRepositoryEntry.key");
+			sb.append("      from qualitydatacollection as datacollection");
+			sb.append("     where datacollection.generator.key = :generatorRepoKey");
+			sb.append("       and datacollection.topicRepositoryEntry.key = course.key");
+			sb.append("       and datacollection.generatorProviderKey = membership.identity.key");
 			sb.append("    )");
 		}
 		if (searchParams.getTeacherRef() != null) {
@@ -324,8 +334,11 @@ public class CourseLecturesProviderDAO {
 	}
 
 	private void appendParameters(Query query, SearchParameters searchParams) {
-		if (searchParams.getExcludeGeneratorRef() != null) {
-			query.setParameter("generatorKey", searchParams.getExcludeGeneratorRef().getKey());
+		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
+			query.setParameter("generatorIdentKey", searchParams.getExcludeGeneratorAndTopicIdentityRef().getKey());
+		}
+		if (searchParams.getExcludeGeneratorAndTopicRepositoryRef() != null) {
+			query.setParameter("generatorRepoKey", searchParams.getExcludeGeneratorAndTopicRepositoryRef().getKey());
 		}
 		if (searchParams.getTeacherRef() != null) {
 			query.setParameter("teacherKey", searchParams.getTeacherRef().getKey());
