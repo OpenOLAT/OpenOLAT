@@ -23,6 +23,16 @@
 						#end
 					#end					
 				#end
+				
+				#if($r.isNotNull($member.curriculumElementInfos))
+					<div class="o_prop o_curriculum_displayname">$member.curriculumDisplayName</div>
+					#if($r.isNotEmpty($member.curriculumRootElementIdentifier))
+						<div class="o_prop o_curriculum_root_el_identifier">$member.curriculumRootElementIdentifier</div>
+					#else if($r.isNotEmpty($member.curriculumRootElementDisplayName))
+						<div class="o_prop o_curriculum_root_el_displayname">$member.curriculumRootElementDisplayName</div>
+					#end
+				#end
+				
 				#if($r.available($member.getEmailComponentName()))
 					$r.render($member.getEmailComponentName())
 				#end

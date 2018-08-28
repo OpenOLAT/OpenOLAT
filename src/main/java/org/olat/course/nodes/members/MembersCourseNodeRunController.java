@@ -22,8 +22,11 @@ package org.olat.course.nodes.members;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.commons.memberlist.manager.MembersExportManager;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.commons.memberlist.ui.MembersDisplayRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -38,6 +41,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,16 +62,21 @@ public class MembersCourseNodeRunController extends BasicController {
 	private MembersDisplayRunController membersDisplayRunController;
 	
 	@Autowired
+	protected BaseSecurity securityManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private BusinessGroupService businessGroupService;	
+	private BusinessGroupService businessGroupService;
 	@Autowired
-	protected BaseSecurity securityManager;
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private MembersExportManager exportManager;
 	
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, ModuleConfiguration config) {
 		super(ureq, wControl);
 		
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 
 		List<Identity> owners;
 		List<Identity> coaches = new ArrayList<>();
@@ -85,7 +94,6 @@ public class MembersCourseNodeRunController extends BasicController {
 		boolean canDownload = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(downloadFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		
 		if(showOwners) {
-			RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
 		} else {
 			owners = Collections.emptyList();
@@ -107,13 +115,17 @@ public class MembersCourseNodeRunController extends BasicController {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
-			
 			showParticipants = true;
 		}
 		
+		Map<Long,CurriculumMemberInfos> curriculumInfos = null;
+		if(curriculumModule.isEnabled()) {
+			curriculumInfos = exportManager.getCurriculumMemberInfos(courseRepositoryEntry);
+		}
+		
 		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), userCourseEnv, null,
-				owners, coaches, participants, new ArrayList<>(), canEmail, canDownload, deduplicateList, showOwners, showCoaches,
-				showParticipants, false, true);
+				owners, coaches, participants, new ArrayList<>(), curriculumInfos, canEmail, canDownload, deduplicateList,
+				showOwners, showCoaches, showParticipants, false, true);
 		listenTo(membersDisplayRunController);
 		
 		putInitialPanel(membersDisplayRunController.getInitialComponent());

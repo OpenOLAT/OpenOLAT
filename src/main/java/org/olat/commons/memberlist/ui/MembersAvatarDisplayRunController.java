@@ -33,6 +33,8 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.memberlist.manager.MembersExportManager;
+import org.olat.commons.memberlist.model.CurriculumElementInfos;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -110,6 +112,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private List<Identity> coaches;
 	private List<Identity> participants;
 	private List<Identity> waiting;
+	private final Map<Long,CurriculumMemberInfos> curriculumInfos;
 
 	private final boolean canEmail;
 	private final boolean canDownload;
@@ -120,6 +123,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private final boolean chatEnabled;
 	private final boolean editable;
 
+	private RepositoryEntry repoEntry;
+	private BusinessGroup businessGroup;
 	
 	private FormBasicController mailCtrl;
 	private ContactFormController emailController;
@@ -144,19 +149,18 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private MembersExportManager exportManager;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
-
-	private BusinessGroup businessGroup;
-	private RepositoryEntry repoEntry;
 	
 	
 	public MembersAvatarDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, UserCourseEnvironment userCourseEnv, BusinessGroup businessGroup,
-			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean canDownload, 
-			  boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
+			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
+			boolean canEmail, boolean canDownload,  boolean deduplicateList,
+			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl, "members", translator);
 		setTranslator(translator);
 		
 		this.userCourseEnv = userCourseEnv;
 		this.businessGroup = businessGroup;
+		this.curriculumInfos = curriculumInfos;
 		this.repoEntry = userCourseEnv != null ? userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry() : null;
 
 		Roles roles = ureq.getUserSession().getRoles();
@@ -191,7 +195,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		Collections.sort(coaches, idComparator);
 		Collections.sort(participants, idComparator);
 		Collections.sort(waiting, idComparator);
-		
+
 		if(canEmail) {
 			allEmailLink = uifactory.addFormLink("email", "members.email.title", null, formLayout, Link.BUTTON);
 			allEmailLink.setIconLeftCSS("o_icon o_icon_mail");
@@ -210,7 +214,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			}
 		}
 
-		Set<Long> duplicateCatcher = deduplicateList ? new HashSet<Long>() : null;
+		Set<Long> duplicateCatcher = deduplicateList ? new HashSet<>() : null;
 		ownerList = initFormMemberList("owners", owners, duplicateCatcher, formLayout, canEmail);
 		coachList = initFormMemberList("coaches", coaches, duplicateCatcher, formLayout, canEmail);
 		participantList = initFormMemberList("participants", participants, duplicateCatcher, formLayout, canEmail);
@@ -357,7 +361,15 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
 		}
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Member(identity, fullname, userPropertyHandlers, getLocale(), hasPortrait, portraitCssClass);
+		
+		CurriculumElementInfos curriculumElementInfos = null;
+		if(curriculumInfos != null) {
+			CurriculumMemberInfos infos = curriculumInfos.get(identity.getKey());
+			if(infos != null && !infos.getCurriculumInfos().isEmpty()) {
+				curriculumElementInfos = infos.getCurriculumInfos().get(0);
+			}
+		}
+		return new Member(identity, fullname, curriculumElementInfos, userPropertyHandlers, getLocale(), hasPortrait, portraitCssClass);
 	}
 	
 	@Override
@@ -406,10 +418,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == cmc) {
 			cleanUp();
-		} else if (source == emailController) {
-			cmc.deactivate();
-			cleanUp();
-		} else if(source == mailCtrl) {
+		} else if (source == emailController || source == mailCtrl) {
 			cmc.deactivate();
 			cleanUp();
 		}
@@ -442,7 +451,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	
 	private void doExport(UserRequest ureq) {
 		MediaResource resource = exportManager.getXlsMediaResource(showOwners, showCoaches, showParticipants, showWaiting, 
-				owners, coaches, participants, waiting, getTranslator(), userPropertyHandlers, repoEntry, businessGroup);
+				owners, coaches, participants, waiting, curriculumInfos, getTranslator(), userPropertyHandlers, repoEntry, businessGroup);
 		
 		ureq.getDispatchResult().setResultingMediaResource(resource);	
 	}
@@ -519,7 +528,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
 			return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
-					participants, waiting, showOwners, showCoaches, showParticipants, showWaiting, 
+					participants, waiting, curriculumInfos, showOwners, showCoaches, showParticipants, showWaiting, 
 					title);
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);

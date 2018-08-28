@@ -20,7 +20,10 @@
 package org.olat.group.ui.main;
 
 import java.util.List;
+import java.util.Map;
 
+import org.olat.commons.memberlist.model.CurriculumElementInfos;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -36,6 +39,7 @@ import org.olat.instantMessaging.model.Presence;
 public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow> {
 	
 	private final boolean onlineStatusEnabled;
+	private Map<Long,CurriculumMemberInfos> curriculumInfos;
 	
 	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled) {
 		super(columnModel);
@@ -89,6 +93,18 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 					}
 					return chatLink;
 				}
+				case curriculumDisplayName: {
+					CurriculumElementInfos curriculumElementInfos = getCurriculumElementInfos(row);
+					return curriculumElementInfos == null ? null : curriculumElementInfos.getCurriculumDisplayName();
+				}
+				case rootCurriculumElementIdentifier: {
+					CurriculumElementInfos curriculumElementInfos = getCurriculumElementInfos(row);
+					return curriculumElementInfos == null ? null : curriculumElementInfos.getRootElementIdentifier();
+				}
+				case rootCurriculumElementDisplayName: {
+					CurriculumElementInfos curriculumElementInfos = getCurriculumElementInfos(row);
+					return curriculumElementInfos == null ? null : curriculumElementInfos.getRootElementDisplayName();
+				}
 				case tools: return row.getToolsLink();
 				default: return "ERROR";
 			}
@@ -96,6 +112,20 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		
 		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
 		return row.getView().getIdentityProp(propPos);
+	}
+	
+	private CurriculumElementInfos getCurriculumElementInfos(MemberRow row) {
+		if(curriculumInfos != null && curriculumInfos.containsKey(row.getIdentityKey())) {
+			List<CurriculumElementInfos> infos = curriculumInfos.get(row.getIdentityKey()).getCurriculumInfos();
+			if(!infos.isEmpty()) {
+				return infos.get(0);
+			}
+		}
+		return null;
+	}
+	
+	public void setCurriculumInfos(Map<Long,CurriculumMemberInfos> curriculumInfos) {
+		this.curriculumInfos = curriculumInfos;
 	}
 
 	@Override
@@ -110,7 +140,10 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		role("table.header.role"),
 		groups("table.header.groups"),
 		online("table.header.online"),
-		tools("tools");
+		tools("tools"),
+		curriculumDisplayName("table.header.curriculum"),
+		rootCurriculumElementIdentifier("table.header.curriculum.root.identifier"),
+		rootCurriculumElementDisplayName("table.header.curriculum.root.displayname");
 		
 		private final String i18n;
 		

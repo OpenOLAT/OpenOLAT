@@ -22,13 +22,18 @@ package org.olat.commons.memberlist.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.commons.memberlist.model.CurriculumElementInfos;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.commons.memberlist.ui.MembersTableController;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -42,7 +47,10 @@ import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.run.GroupMembersRunController;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.user.UserManager;
@@ -63,6 +71,8 @@ public class MembersExportManager {
 	public static final int USER_PROPS_OFFSET = 500;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private MemberViewQueries memberQueries;
@@ -72,6 +82,74 @@ public class MembersExportManager {
 	protected BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	
+	
+	public Map<Long,CurriculumMemberInfos> getCurriculumMemberInfos(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select membership.identity.key, el.key, el.materializedPathKeys")
+		  .append(" from curriculumelement el")
+		  .append(" inner join el.curriculum curriculum")
+		  .append(" inner join el.group bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" where rel.entry.key=:entryKey");
+
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		
+		Set<Long> rootElementKeys = new HashSet<>();
+		Map<Long,Long> elementToRoot = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			Long elementKey = (Long)rawObject[1];
+			String materializedPathKeys = (String)rawObject[2];
+			if(materializedPathKeys.length() > 2) {
+				String[] materializedPathKeyArray = materializedPathKeys.substring(1, materializedPathKeys.length() - 1).split("[/]");
+				if(materializedPathKeyArray.length > 0 && materializedPathKeyArray[0].length() > 0) {
+					Long rootElementKey = Long.valueOf(materializedPathKeyArray[0]);
+					rootElementKeys.add(rootElementKey);
+					elementToRoot.put(elementKey, rootElementKey);
+				}
+			}
+		}
+		
+		List<CurriculumElement> rootElements = loadElements(new ArrayList<>(rootElementKeys));
+		Map<Long,CurriculumElementInfos> rootElementMap = rootElements.stream()
+				.collect(Collectors.toMap(CurriculumElement::getKey, e -> {
+					Curriculum curriculum = e.getCurriculum();
+					return new CurriculumElementInfos(curriculum.getDisplayName(), curriculum.getIdentifier(), e.getDisplayName(), e.getIdentifier());
+				}, (u,v) -> u));
+		
+		Map<Long,CurriculumMemberInfos> memberInfos = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			Long identityKey = (Long)rawObject[0];
+			Long elementKey = (Long)rawObject[1];
+			
+			Long rootElementKey = elementToRoot.get(elementKey);
+			if(rootElementKey != null &&  rootElementMap.containsKey(rootElementKey)) {
+				CurriculumElementInfos rootElement = rootElementMap.get(rootElementKey);
+				
+				CurriculumMemberInfos infos = memberInfos.computeIfAbsent(identityKey, CurriculumMemberInfos::new);
+				
+				infos.getCurriculumInfos().add(rootElement);
+			}
+		}
+		return memberInfos;
+	}
+	
+	public List<CurriculumElement> loadElements(List<Long> elementKeys) {
+		if(elementKeys == null || elementKeys.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el from curriculumelement el")
+		  .append(" inner join fetch el.curriculum curriculum")
+		  .append(" where el.key in (:elementKeys)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("elementKeys", elementKeys)
+				.getResultList();
+	}
 	
 	public Map<Long,RepositoryEntryMembership> getRepoMembershipMap(RepositoryEntry repoEntry) {
 		List<RepositoryEntryMembership> repoMemberships = repositoryManager.getRepositoryEntryMembership(repoEntry);
@@ -105,7 +183,7 @@ public class MembersExportManager {
 	}
 	
 	public MediaResource getXlsMediaResource(boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, 
-			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting,			
+			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,		
 			Translator translator, List<UserPropertyHandler> userPropertyHandlers, RepositoryEntry repoEntry, BusinessGroup businessGroup) {
 		List<MemberView> memberViews;
 		SearchMembersParams params = new SearchMembersParams();
@@ -182,6 +260,6 @@ public class MembersExportManager {
 		
 		Translator handlerTranslator = userManager.getPropertyHandlerTranslator(translator);
 		XlsMembersExport exporter = new XlsMembersExport();
-		return exporter.export(rows, membersMap, handlerTranslator, userPropertyHandlers);		
+		return exporter.export(rows, membersMap, curriculumInfos, handlerTranslator, userPropertyHandlers);		
 	}
 }

@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -97,6 +98,7 @@ public class MembersTableController extends FormBasicController {
 	private final List<MemberRow> membersList;
 	private final RepositoryEntry repoEntry; 
 	private Set<MemberRow> duplicateCatcher;
+	private final Map<Long,CurriculumMemberInfos> curriculumInfos;
 
 	@Autowired
 	private UserManager userManager;
@@ -111,8 +113,10 @@ public class MembersTableController extends FormBasicController {
 	private CourseEnvironment courseEnv;
 	
 	private int pageSize = 20;
+	private boolean curriculum;
 	
-	public MembersTableController(UserRequest ureq, WindowControl wControl, List<Identity> members, Set<MemberRow> duplicateCatcher, Map<Long,Date> recentLaunches, Map<Long,Date> initialLaunches,
+	public MembersTableController(UserRequest ureq, WindowControl wControl, List<Identity> members, Set<MemberRow> duplicateCatcher,
+			Map<Long,Date> recentLaunches, Map<Long,Date> initialLaunches, Map<Long,CurriculumMemberInfos> curriculumInfos,
 			List<UserPropertyHandler> userPropertyHandlers, Map<Long,BusinessGroupMembership> groupmemberships, RepositoryEntry repoEntry, BusinessGroup businessGroup, 
 			CourseEnvironment courseEnv, boolean deduplicateList, Translator translator, boolean editable, boolean canEmail, boolean userLastTimeVisible) {
 		super(ureq, wControl, "table");
@@ -130,8 +134,10 @@ public class MembersTableController extends FormBasicController {
 		
 		this.businessGroup = businessGroup;
 		this.courseEnv = courseEnv;
+		this.curriculumInfos = curriculumInfos;
 		
 		membersList = getMembersFromIdentity(members, groupmemberships, recentLaunches, initialLaunches);
+		curriculum = curriculumInfos != null && !curriculumInfos.isEmpty();
 	
 		initForm(ureq);
 	}
@@ -143,6 +149,7 @@ public class MembersTableController extends FormBasicController {
 		SortKey defaultSortKey = initColumns(columnsModel);		
 		membersModel = new MemberListTableModel(columnsModel, imModule.isOnlineStatusEnabled());
 		membersModel.setObjects(membersList);
+		membersModel.setCurriculumInfos(curriculumInfos);
 		membersTable = uifactory.addTableElement(getWindowControl(), "table", membersModel, pageSize, false, getTranslator(), formLayout);
 		membersTable.setEmtpyTableMessageKey("nomembers");
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
@@ -209,8 +216,8 @@ public class MembersTableController extends FormBasicController {
 		//
 	}
 	
-	private List<MemberRow> getMembersFromIdentity(List<Identity> identities, 
-			Map<Long,BusinessGroupMembership> groupmemberships,	Map<Long,Date> recentLaunches, Map<Long,Date> initialLaunches) {
+	private List<MemberRow> getMembersFromIdentity(List<Identity> identities, Map<Long,BusinessGroupMembership> groupmemberships,
+			Map<Long,Date> recentLaunches, Map<Long,Date> initialLaunches) {
 		if (!deduplicateList) {
 			duplicateCatcher = new HashSet<>();
 		}
@@ -283,6 +290,12 @@ public class MembersTableController extends FormBasicController {
 				defaultSortKey = new SortKey(propName, true);
 			}
 		}
+		
+		if(curriculum) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumDisplayName));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.rootCurriculumElementIdentifier));
+		}
+		
 		if (userLastTimeVisible) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), true, Cols.firstTime.name()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), true, Cols.lastTime.name()));

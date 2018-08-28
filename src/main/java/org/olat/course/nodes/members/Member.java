@@ -22,6 +22,7 @@ package org.olat.course.nodes.members;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -43,13 +44,15 @@ public class Member extends UserPropertiesRow {
 	private final Long key;
 	private boolean portrait;
 	private String portraitCssClass;
+	private final CurriculumElementInfos curriculumElementInfos;
 	
 	private FormLink emailLink;
 	private FormLink chatLink;
 	private FormLink idLink;
 	private FormLink removeLink;
 	
-	public Member(Identity identity, String fullName,  List<UserPropertyHandler> userPropertyHandlers, Locale locale, boolean portrait, String portraitCssClass) {
+	public Member(Identity identity, String fullName, CurriculumElementInfos curriculumElementInfos,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale, boolean portrait, String portraitCssClass) {
 		super(identity, userPropertyHandlers, locale);
 		this.firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, locale);
 		this.lastName = identity.getUser().getProperty(UserConstants.LASTNAME, locale);
@@ -61,6 +64,7 @@ public class Member extends UserPropertiesRow {
 		}
 		this.fullName = fullName;
 		this.key = identity.getKey();
+		this.curriculumElementInfos = curriculumElementInfos;
 		this.portrait = portrait;
 		this.portraitCssClass = portraitCssClass;
 	}
@@ -83,6 +87,22 @@ public class Member extends UserPropertiesRow {
 	
 	public boolean isPortraitAvailable() {
 		return portrait; 
+	}
+	
+	public CurriculumElementInfos getCurriculumElementInfos() {
+		return curriculumElementInfos;
+	}
+	
+	public String getCurriculumDisplayName() {
+		return curriculumElementInfos == null ? "" : curriculumElementInfos.getCurriculumDisplayName();
+	}
+	
+	public String getCurriculumRootElementDisplayName() {
+		return curriculumElementInfos == null ? "" : curriculumElementInfos.getRootElementDisplayName();
+	}
+	
+	public String getCurriculumRootElementIdentifier() {
+		return curriculumElementInfos == null ? "" : curriculumElementInfos.getRootElementIdentifier();
 	}
 
 	public FormLink getIdLink() {

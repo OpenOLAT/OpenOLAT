@@ -79,7 +79,7 @@ public class GroupMembersDisplayController extends BasicController {
 		}	
 		
 		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), null, businessGroup,	new ArrayList<>(), 
-				coaches, participants, waiting, false, false, true, false, showCoaches, showParticipants, showWaiting, false);
+				coaches, participants, waiting, null, false, false, true, false, showCoaches, showParticipants, showWaiting, false);
 		listenTo(membersDisplayRunController);
 		
 		putInitialPanel(membersDisplayRunController.getInitialComponent());	

@@ -184,6 +184,10 @@
 			}
 			color: $text-muted;
 		}
+		
+		.o_curriculum_displayname, .o_curriculum_root_el_identifier, .o_curriculum_root_el_displayname {
+			font-size: 12px;
+		}
 	}
 	
 	.o_cmember a.o_mail {

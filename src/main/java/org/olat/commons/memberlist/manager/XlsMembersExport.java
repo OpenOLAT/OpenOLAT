@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.admin.landingpages.ui.RulesDataModel;
+import org.olat.commons.memberlist.model.CurriculumElementInfos;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -48,19 +50,22 @@ public class XlsMembersExport {
 	private static final OLog log = Tracing.createLoggerFor(XlsMembersExport.class);
 
 
-	public MediaResource export(List<Identity> rows, Map<Identity, StringBuilder> members, Translator translator, List<UserPropertyHandler> userPropertyHandlers) {
+	public MediaResource export(List<Identity> rows, Map<Identity, StringBuilder> members, Map<Long,CurriculumMemberInfos> curriculumInfos,
+			Translator translator, List<UserPropertyHandler> userPropertyHandlers) {
 	
 		String label = "TableExport_"
 				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
+		
+		boolean curriculum = curriculumInfos != null && !curriculumInfos.isEmpty();
 		
 		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
 				try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 					OpenXMLWorksheet sheet = workbook.nextWorksheet();
-					createHeader(userPropertyHandlers, translator, sheet, workbook);
-					createData(members, rows, userPropertyHandlers, sheet);
+					createHeader(userPropertyHandlers, curriculum, translator, sheet, workbook);
+					createData(members, rows, userPropertyHandlers, curriculumInfos, sheet);
 				} catch (IOException e) {
 					log.error("Unable to export xlsx", e);
 				}
@@ -68,27 +73,48 @@ public class XlsMembersExport {
 		};
 	}
 
-	private void createHeader(List<UserPropertyHandler> userPropertyHandlers, Translator translator, 
+	private void createHeader(List<UserPropertyHandler> userPropertyHandlers, boolean curriculum, Translator translator, 
 			OpenXMLWorksheet sheet,	OpenXMLWorkbook workbook) {
 		Row headerRow = sheet.newRow();
-		for (int c = 0; c < userPropertyHandlers.size(); c++) {
+		int c = 0;
+		for ( ; c < userPropertyHandlers.size(); c++) {
 			UserPropertyHandler handler = userPropertyHandlers.get(c);
 			String header = translator.translate("form.name." + handler.getName());
 			headerRow.addCell(c, header, workbook.getStyles().getHeaderStyle());
 		}
+		if(curriculum) {
+			headerRow.addCell(c++, translator.translate("table.header.curriculum"), workbook.getStyles().getHeaderStyle());
+			headerRow.addCell(c++, translator.translate("table.header.curriculum.root.identifier"), workbook.getStyles().getHeaderStyle());
+		}
+		
 		Translator roleTranslator = Util.createPackageTranslator(RulesDataModel.class, translator.getLocale());
-		headerRow.addCell(userPropertyHandlers.size(), roleTranslator.translate("rules.role"));
+		headerRow.addCell(c++, roleTranslator.translate("rules.role"));
 	}
 
-	private void createData(Map<Identity, StringBuilder> members, List<Identity> rows, List<UserPropertyHandler> userPropertyHandlers, OpenXMLWorksheet sheet) {
+	private void createData(Map<Identity, StringBuilder> members, List<Identity> rows, List<UserPropertyHandler> userPropertyHandlers,
+			Map<Long,CurriculumMemberInfos> curriculumInfos, OpenXMLWorksheet sheet) {
 		sheet.setHeaderRows(1);
 		for (int r = 0; r < rows.size(); r++) {
 			Row dataRow = sheet.newRow();
-			for (int c = 0; c < userPropertyHandlers.size(); c++) {
-				String value = userPropertyHandlers.get(c).getUserProperty(rows.get(r).getUser(), null);
+			int c = 0;
+			Identity identity = rows.get(r);
+			for ( ; c < userPropertyHandlers.size(); c++) {
+				String value = userPropertyHandlers.get(c).getUserProperty(identity.getUser(), null);
 				dataRow.addCell(c, value, null);
 			}
-			dataRow.addCell(userPropertyHandlers.size(), members.get(rows.get(r)).toString());
+			
+			if(curriculumInfos != null && !curriculumInfos.isEmpty()) {
+				CurriculumMemberInfos curriculumMemberInfos = curriculumInfos.get(identity.getKey());
+				if(curriculumMemberInfos != null && !curriculumMemberInfos.getCurriculumInfos().isEmpty()) {
+					CurriculumElementInfos infos = curriculumMemberInfos.getCurriculumInfos().get(0);
+					dataRow.addCell(c++, infos.getCurriculumDisplayName(), null);
+					dataRow.addCell(c++, infos.getRootElementIdentifier(), null);
+				} else {
+					c = c + 2;
+				}
+			}
+			
+			dataRow.addCell(c++, members.get(rows.get(r)).toString());
 		}
 	}
 	

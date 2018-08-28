@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.commons.memberlist.model.CurriculumElementInfos;
+import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -74,8 +76,8 @@ public class MembersPrintController extends BasicController {
 	private BaseSecurityModule securityModule;
 	
 	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Identity> owners,
-			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean showOwners,
-			boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
+			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
+			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translator, getTranslator(), getLocale()));
 
@@ -89,17 +91,17 @@ public class MembersPrintController extends BasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyPrintHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_PRINT_ID, isAdministrativeUser);
 		
-		if(showOwners && owners != null && owners.size() > 0) {
-			initFormMemberList("owners", translate("members.owners"), owners);
+		if(showOwners && owners != null && !owners.isEmpty()) {
+			initFormMemberList("owners", translate("members.owners"), owners, curriculumInfos);
 		}
-		if(showCoaches && coaches != null && coaches.size() > 0) {
-			initFormMemberList("coaches", translate("members.coaches"), coaches);
+		if(showCoaches && coaches != null && !coaches.isEmpty()) {
+			initFormMemberList("coaches", translate("members.coaches"), coaches, curriculumInfos);
 		}
-		if(showParticipants && participants != null && participants.size() > 0) {
-			initFormMemberList("participants", translate("members.participants"), participants);
+		if(showParticipants && participants != null && !participants.isEmpty()) {
+			initFormMemberList("participants", translate("members.participants"), participants, curriculumInfos);
 		}
-		if(showWaiting && waiting != null && waiting.size() > 0) {
-			initFormMemberList("waiting", translate("members.waiting"), waiting);
+		if(showWaiting && waiting != null && !waiting.isEmpty()) {
+			initFormMemberList("waiting", translate("members.waiting"), waiting, curriculumInfos);
 		}
 
 		MainPanel mainPanel = new MainPanel("membersPrintPanel");
@@ -107,9 +109,9 @@ public class MembersPrintController extends BasicController {
 		putInitialPanel(mainPanel);
 	}
 	
-	private void initFormMemberList(String name, String label, List<Identity> members) {
+	private void initFormMemberList(String name, String label, List<Identity> members, Map<Long,CurriculumMemberInfos> curriculumInfos) {
 		List<Member> memberWrappers = members.stream()
-				.map(m -> createMember(m)).collect(Collectors.toList());
+				.map(m -> createMember(m, curriculumInfos)).collect(Collectors.toList());
 		
 		VelocityContainer listVC = createVelocityContainer("printList");
 		listVC.contextPut("label", label);
@@ -119,7 +121,7 @@ public class MembersPrintController extends BasicController {
 
 		listVC.contextPut("userPropertyPrintHandlers", userPropertyPrintHandlers);
 		// add lookup table so the avatar properties can be read out from the member object that contains the full list of attributes
-		Map<String, Integer> handlerLookupMap = new HashMap<String, Integer>();
+		Map<String, Integer> handlerLookupMap = new HashMap<>();
 		for(int i=userPropertyPrintHandlers.size(); i-->0; ) {
 			UserPropertyHandler handler = userPropertyPrintHandlers.get(i);
 			handlerLookupMap.put(handler.getName(), i);
@@ -129,7 +131,7 @@ public class MembersPrintController extends BasicController {
 		mainVC.put(name, listVC);
 	}
 	
-	private Member createMember(Identity identity) {
+	private Member createMember(Identity identity, Map<Long,CurriculumMemberInfos> curriculumInfos) {
 		boolean hasPortrait = portraitManager.hasPortrait(identity.getName());
 
 		String portraitCssClass;
@@ -142,7 +144,15 @@ public class MembersPrintController extends BasicController {
 			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
 		}
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Member(identity, fullname, userPropertyPrintHandlers, getLocale(), hasPortrait, portraitCssClass);
+		
+		CurriculumElementInfos curriculumElementInfos = null;
+		if(curriculumInfos != null) {
+			CurriculumMemberInfos infos = curriculumInfos.get(identity.getKey());
+			if(infos != null && !infos.getCurriculumInfos().isEmpty()) {
+				curriculumElementInfos = infos.getCurriculumInfos().get(0);
+			}
+		}
+		return new Member(identity, fullname, curriculumElementInfos, userPropertyPrintHandlers, getLocale(), hasPortrait, portraitCssClass);
 	}
 
 	@Override
