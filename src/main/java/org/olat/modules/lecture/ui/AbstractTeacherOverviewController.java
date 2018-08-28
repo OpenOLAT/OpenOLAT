@@ -92,7 +92,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private LectureService lectureService;
 
 	AbstractTeacherOverviewController(UserRequest ureq, WindowControl wControl, boolean admin,
-			String switchPrefsId, boolean withRepositoryEntry, boolean withTeachers) {
+			String switchPrefsId, boolean withRepositoryEntry, boolean withTeachers, boolean defaultShowAllLectures) {
 		super(ureq, wControl);
 		this.admin = admin;
 		this.switchPrefsId = switchPrefsId;
@@ -106,7 +106,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		startWizardButton.setVisible(false);
 		
 		allTeachersSwitch = LinkFactory.createToolLink("all.teachers.switch", translate("all.teachers.switch"), this);
-		boolean all = isAllTeachersSwitch(ureq, false);
+		boolean all = isAllTeachersSwitch(ureq, defaultShowAllLectures);
 		allTeachersSwitch.setUserObject(all);
 		if(all) {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
@@ -389,7 +389,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private void saveAllTeachersSwitch(UserRequest ureq, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(AbstractTeacherOverviewController.class, switchPrefsId, new Boolean(newValue));
+			guiPrefs.putAndSave(AbstractTeacherOverviewController.class, switchPrefsId, Boolean.valueOf(newValue));
 		}
 		if(newValue) {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");

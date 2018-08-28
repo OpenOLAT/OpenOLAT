@@ -45,7 +45,7 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	private LectureService lectureService;
 	
 	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, false, "Lectures::UserTools", true, false);
+		super(ureq, wControl, false, "Lectures::UserTools", true, false, false);
 		loadModel(null);
 	}
 

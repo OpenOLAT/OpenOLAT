@@ -56,6 +56,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PARTICIPANT_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.participant.calendar.sync.default.enabed";
 	private static final String COURSE_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.course.calendar.sync.default.enabed";
 	private static final String ABSENCE_DEFAULT_AUTHORIZED = "lecture.absence.default.authorized";
+	private static final String COURSE_SHOW_ALL_TEACHERS = "lecture.course.show.all.teachers";
 	
 	@Value("${lecture.enabled:false}")
 	private boolean enabled;
@@ -103,6 +104,9 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean participantCalendarSyncEnabledDefault;
 	@Value("${lecture.course.calendar.sync.default.enabled:true}")
 	private boolean courseCalendarSyncEnabledDefault;
+
+	@Value("${lecture.course.show.all.teachers:false}")
+	private boolean showLectureBlocksAllTeachersDefault;
 	
 	@Autowired
 	public LectureModule(CoordinatorManager coordinatorManager) {
@@ -209,6 +213,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String courseCalendarSyncDefaultEnabledObj = getStringPropertyValue(COURSE_CALENDAR_SYNC_DEFAULT_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(courseCalendarSyncDefaultEnabledObj)) {
 			courseCalendarSyncEnabledDefault = "true".equals(courseCalendarSyncDefaultEnabledObj);
+		}
+		
+		String showAllTeachersEnabledObj = getStringPropertyValue(COURSE_SHOW_ALL_TEACHERS, true);
+		if(StringHelper.containsNonWhitespace(showAllTeachersEnabledObj)) {
+			showLectureBlocksAllTeachersDefault = "true".equals(showAllTeachersEnabledObj);
 		}
 	}
 
@@ -397,6 +406,13 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		courseCalendarSyncEnabledDefault = enable;
 		setStringProperty(COURSE_CALENDAR_SYNC_DEFAULT_ENABLED, Boolean.toString(enable), true);
 	}
-	
-	
+
+	public boolean isShowLectureBlocksAllTeachersDefault() {
+		return showLectureBlocksAllTeachersDefault;
+	}
+
+	public void setShowLectureBlocksAllTeachersDefault(boolean enable) {
+		showLectureBlocksAllTeachersDefault = enable;
+		setStringProperty(COURSE_SHOW_ALL_TEACHERS, Boolean.toString(enable), true);
+	}
 }

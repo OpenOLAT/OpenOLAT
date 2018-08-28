@@ -62,8 +62,8 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 	private LectureService lectureService;
 
 	public TeacherOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry entry, boolean admin) {
-		super(ureq, wControl, admin, "Lectures::" + entry.getKey(), false, true);
+			RepositoryEntry entry, boolean admin, boolean defaultShowAllLectures) {
+		super(ureq, wControl, admin, "Lectures::" + entry.getKey(), false, true, defaultShowAllLectures);
 		this.entry = entry;
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		this.toolbarPanel = toolbarPanel;

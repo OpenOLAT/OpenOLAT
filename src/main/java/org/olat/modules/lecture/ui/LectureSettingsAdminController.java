@@ -49,8 +49,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] yesNoKeys = new String[] { "yes", "no" };
+	private static final String[] showKeys = new String[] { "all", "mine" };
 	
-	private SingleSelection canOverrideStandardConfigEl;
+	private SingleSelection canOverrideStandardConfigEl, showAllTeachersLecturesEl;
 	private TextElement attendanceRateEl, appealPeriodEl, reminderPeriodEl,
 		autoClosePeriodEl;
 	private MultipleSelectionElement enableEl, calculateAttendanceRateEnableEl,
@@ -142,7 +143,13 @@ public class LectureSettingsAdminController extends FormBasicController {
 		appealAbsenceEnableEl.addActionListener(FormEvent.ONCHANGE);
 		appealPeriodEl = uifactory.addTextElement("lecture.appeal.absence.period", "lecture.appeal.absence.period", 16, "", globalCont);
 		appealPeriodEl.setMandatory(true);
-
+		
+		String[] showValues = new String[] {
+				translate("lecture.show.all.teachers.all"), translate("lecture.show.all.teachers.mine")
+		};
+		showAllTeachersLecturesEl = uifactory.addRadiosVertical("lecture.show.all.teachers", "lecture.show.all.teachers",
+				globalCont, showKeys, showValues);
+		
 		//buttons
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
 		buttonsWrapperCont.setRootForm(mainForm);
@@ -244,6 +251,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 			appealAbsenceEnableEl.select(onKeys[0], true);
 		} else {
 			appealAbsenceEnableEl.uncheckAll();
+		}
+		
+		if(lectureModule.isShowLectureBlocksAllTeachersDefault()) {
+			showAllTeachersLecturesEl.select(showKeys[0], true);
+		} else {
+			showAllTeachersLecturesEl.select(showKeys[1], true);
 		}
 		
 		String appealPeriod = "";
@@ -365,7 +378,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 			//enabled user tool
 			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();
-			if(availableTools.size() > 0) {
+			if(!availableTools.isEmpty()) {
 				if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController")) {
 					availableTools.add("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController");
 				}
@@ -398,7 +411,6 @@ public class LectureSettingsAdminController extends FormBasicController {
 			}
 			lectureModule.setAbsenceDefaultAuthorized(absenceDefaultAuthorizedEl.isAtLeastSelected(1));
 			
-			
 			lectureModule.setRollCallReminderEnabled(reminderEnableEl.isAtLeastSelected(1));
 			if(reminderEnableEl.isAtLeastSelected(1)) {
 				int period = Integer.parseInt(reminderPeriodEl.getValue());
@@ -414,6 +426,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 	
 			lectureModule.setTeacherCalendarSyncEnabledDefault(syncTeachersCalendarEnableEl.isAtLeastSelected(1));
 			lectureModule.setCourseCalendarSyncEnabledDefault(syncCourseCalendarEnableEl.isAtLeastSelected(1));
+			
+			lectureModule.setShowLectureBlocksAllTeachersDefault(showAllTeachersLecturesEl.isSelected(0));
 		}
 	}
 }
