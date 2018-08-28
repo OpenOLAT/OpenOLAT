@@ -98,6 +98,7 @@ public class MergedPFCourseNodeContainer extends MergeSource {
 	public VFSItem resolve(String path) {
 		if(!initialized) {
 			init();
+			initialized = true;
 		}
 		return super.resolve(path);
 	}
