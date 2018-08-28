@@ -136,8 +136,11 @@ public class CourseLecturesProviderDAO {
 		sb.append("        , sum(lb.l_planned_lectures_num) OVER (PARTITION BY lb.fk_entry, tm.fk_identity_id order by lb.l_end_date) - lb.l_planned_lectures_num as first_lecture");
 		sb.append("        , sum(lb.l_planned_lectures_num) OVER (PARTITION BY lb.fk_entry, tm.fk_identity_id order by lb.l_end_date) as last_lecture");
 		sb.append("     from o_lecture_block lb");
+		sb.append("          inner join o_repositoryentry course");
+		sb.append("                on course.repositoryentry_id = lb.fk_entry");
 		sb.append("          inner join o_bs_group_member tm");
 		sb.append("                on tm.fk_group_id = lb.fk_teacher_group");
+		sb.and().append("course.status").in(RepositoryEntryStatusEnum.preparationToClosed());
 		if (!searchParams.getOrgansationRefs().isEmpty()) {
 			sb.and().append("exists (");
 			sb.append("              select fk_entry");
@@ -159,7 +162,6 @@ public class CourseLecturesProviderDAO {
 			sb.append("           inner join o_cur_curriculum_element el");
 			sb.append("             on el.fk_group = rel.fk_group_id");
 			sb.append("     where el.id in :curriculumElementKeys");
-			sb.append("       and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 			sb.append("    )");
 		}
 		if (searchParams.getExcludeGeneratorRef() != null) {
@@ -278,6 +280,7 @@ public class CourseLecturesProviderDAO {
 	}
 
 	private void appendWhereHql(QueryBuilder sb, SearchParameters searchParams) {
+		sb.and().append("course.status").in(RepositoryEntryStatusEnum.preparationToClosed());
 		if (searchParams.getExcludeGeneratorRef() != null) {
 			sb.and();
 			sb.append("(membership.identity.key, course.key) not in (");
@@ -302,7 +305,6 @@ public class CourseLecturesProviderDAO {
 			sb.append("           inner join v.groups as rel");
 			sb.append("           inner join curriculumelement as el on (el.group.key=rel.group.key)");
 			sb.append("     where el.key in :curriculumElementKeys");
-			sb.append("       and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 			sb.append("    )");
 		}
 		if (!searchParams.getOrgansationRefs().isEmpty()) {

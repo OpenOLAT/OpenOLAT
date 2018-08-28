@@ -56,7 +56,8 @@ public class GeneratorEnableConfirmationController extends FormBasicController {
 
 	public GeneratorEnableConfirmationController(UserRequest ureq, WindowControl wControl, QualityGenerator generator) {
 		super(ureq, wControl);
-		this.generator = generator;
+		// Load to have the most recent last run date.
+		this.generator = generatorService.loadGenerator(generator);
 		initForm(ureq);
 	}
 

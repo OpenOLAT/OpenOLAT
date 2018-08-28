@@ -47,6 +47,7 @@ import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -367,6 +368,32 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		assertThat(lectureBlocksKeys)
 				.containsExactlyInAnyOrder(lectureBlock2.getKey())
 				.doesNotContain(lectureBlock1.getKey(), lectureBlock3.getKey());
+	}
+	
+	@Test
+	public void shouldNotLoadLecturesOfDeletedCourses() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry trashed = JunitTestHelper.createAndPersistRepositoryEntry();
+		trashed.setEntryStatus(RepositoryEntryStatusEnum.trash);
+		repositoryService.update(trashed);
+		RepositoryEntry deleted = JunitTestHelper.createAndPersistRepositoryEntry();
+		deleted.setEntryStatus(RepositoryEntryStatusEnum.deleted);
+		repositoryService.update(deleted);
+		createLectureBlock(course1, teacher, 1);
+		createLectureBlock(trashed, teacher, 1);
+		createLectureBlock(deleted, teacher, 1);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setCourseRefs(Arrays.asList(course1, trashed));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
+		assertThat(courseKeys)
+				.containsExactlyInAnyOrder(course1.getKey())
+				.doesNotContain(deleted.getKey(), trashed.getKey());
 	}
 	
 	@Test

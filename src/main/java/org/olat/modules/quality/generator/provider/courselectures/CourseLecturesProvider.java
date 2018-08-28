@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.provider.courselectures;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -77,16 +78,21 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 	private static final OLog log = Tracing.createLoggerFor(CourseLecturesProvider.class);
 
-	public static final String CONFIG_KEY_SURVEY_LECTURE = "survey.lecture";
-	public static final String CONFIG_KEY_TOTAL_LECTURES = "total.lecture";
 	public static final String CONFIG_KEY_DURATION_DAYS = "duration.days";
 	public static final String CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS = "invitation.after.dc.start.days";
+	public static final String CONFIG_KEY_MINUTES_BEFORE_END = "minutes before end";
 	public static final String CONFIG_KEY_REMINDER1_AFTER_DC_DAYS = "reminder1.after.dc.start.days";
 	public static final String CONFIG_KEY_REMINDER2_AFTER_DC_DAYS = "reminder2.after.dc.start.days";
 	public static final String CONFIG_KEY_ROLES = "participants.roles";
+	public static final String CONFIG_KEY_SURVEY_LECTURE = "survey.lecture";
 	public static final String CONFIG_KEY_TITLE = "title";
+	public static final String CONFIG_KEY_TOTAL_LECTURES = "total.lecture";
 	public static final String CONFIG_KEY_WHITE_LIST = "white.list";
+	public static final String CONFIG_KEY_TOPIC = "topic";
+	public static final String CONFIG_KEY_TOPIC_COACH = "config.topic.coach";
+	public static final String CONFIG_KEY_TOPIC_COURSE = "config.topic.course";
 	public static final String ROLES_DELIMITER = ",";
+	public static final String TEACHING_COACH = "teaching.coach";
 	
 	@Autowired
 	private CourseLecturesProviderDAO providerDao;
@@ -158,10 +164,13 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			List<Organisation> organisations, LectureBlockInfo lectureBlockInfo) {
 		// create data collection	
 		RepositoryEntry formEntry = generator.getFormEntry();
-		Long generatorProviderKey = lectureBlockInfo.getCourseRepoKey();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
+		Long courseRepoKey = lectureBlockInfo.getCourseRepoKey();
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseRepoKey);
 
 		Date dcStart = lectureBlockInfo.getLectureEndDate();
+		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
+		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";
+		dcStart = addMinutes(dcStart, "-" + minutesBeforeEnd);
 		dataCollection.setStart(dcStart);
 		
 		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
@@ -174,21 +183,43 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		String title = titleCreator.merge(titleTemplate, Arrays.asList(course, teacher.getUser()));
 		dataCollection.setTitle(title);
 		
-		dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
-		dataCollection.setTopicIdentity(teacher);
+		String topicKey = configs.getValue(CONFIG_KEY_TOPIC);
+		topicKey = StringHelper.containsNonWhitespace(topicKey)? topicKey: CONFIG_KEY_TOPIC_COACH;
+		if (CONFIG_KEY_TOPIC_COACH.equals(topicKey)) {
+			dataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+			dataCollection.setTopicIdentity(teacher);
+		} else if (CONFIG_KEY_TOPIC_COURSE.equals(topicKey)) {
+			dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+			dataCollection.setTopicRepositoryEntry(course);
+		}
 		
 		dataCollection.setStatus(QualityDataCollectionStatus.READY);
 		qualityService.updateDataCollection(dataCollection);
 		
 		// add participants
 		String[] roleNames = configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER);
+		boolean teachingCoach = false;
+		boolean allCoaches = false;
 		for (String roleName: roleNames) {
+			if (TEACHING_COACH.equals(roleName)) {
+				teachingCoach = true;
+				continue;
+			} else if (GroupRoles.coach.name().equals(roleName)) {
+				allCoaches = true;
+			}
 			GroupRoles role = GroupRoles.valueOf(roleName);
-			RepositoryEntry repositoryEntry = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
-			Collection<Identity> identities = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, roleName);
+			Collection<Identity> identities = repositoryService.getMembers(course, RepositoryEntryRelationType.all, roleName);
 			List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
 			for (EvaluationFormParticipation participation: participations) {
-				qualityService.createContextBuilder(dataCollection, participation, repositoryEntry, role).build();
+				qualityService.createContextBuilder(dataCollection, participation, course, role).build();
+			}
+		}
+		// add teaching coach
+		if (teachingCoach && !allCoaches) {
+			Collection<Identity> identities = Collections.singletonList(teacher);
+			List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
+			for (EvaluationFormParticipation participation: participations) {
+				qualityService.createContextBuilder(dataCollection, participation, course, GroupRoles.coach).build();
 			}
 		}
 		
@@ -217,6 +248,14 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
 		c.add(Calendar.DATE, days);
+		return c.getTime();
+	}
+	
+	private Date addMinutes(Date date, String minutesToAdd) {
+		int days = Integer.parseInt(minutesToAdd);
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.MINUTE, days);
 		return c.getTime();
 	}
 

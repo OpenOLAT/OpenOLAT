@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
@@ -51,20 +52,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CourseLectureProviderConfigController extends ProviderConfigController {
-
+	
 	private static final String ROLES_PREFIX = "config.roles.";
 	private static final String ROLES_OWNER_KEY = ROLES_PREFIX + CurriculumRoles.owner.name();
 	private static final String ROLES_COACH_KEY = ROLES_PREFIX + CurriculumRoles.coach.name();
+	private static final String ROLES_SINGLE_COACH_KEY = ROLES_PREFIX + CourseLecturesProvider.TEACHING_COACH;
 	private static final String ROLES_PARTICIPANTS_KEY = ROLES_PREFIX + CurriculumRoles.participant.name();
 	private static final String ROLES_KEYS[] = {
 			ROLES_OWNER_KEY,
 			ROLES_COACH_KEY,
+			ROLES_SINGLE_COACH_KEY,
 			ROLES_PARTICIPANTS_KEY
+	};
+	private static final String TOPIC_KEYS[] = {
+			CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH,
+			CourseLecturesProvider.CONFIG_KEY_TOPIC_COURSE
 	};
 
 	private TextElement titleEl;
+	private SingleSelection topicEl;
 	private TextElement lecturesTotalEl;
 	private TextElement surveyLectureEl;
+	private TextElement minutesBeforeEndEl;
 	private TextElement invitationDaysEl;
 	private TextElement reminder1DaysEl;
 	private TextElement reminder2DaysEl;
@@ -90,6 +99,13 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		String identifiers = titleCreator.getIdentifiers(Arrays.asList(RepositoryEntry.class, User.class)).stream()
 				.collect(Collectors.joining(", "));
 		titleEl.setHelpTextKey("config.title.help", new String[] {identifiers} );
+		
+		// topic
+		topicEl = uifactory.addDropdownSingleselect("config.topic", formLayout, TOPIC_KEYS, translateAll(getTranslator(), TOPIC_KEYS));
+		String topicKey = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOPIC);
+		if (topicKey != null && Arrays.stream(TOPIC_KEYS).anyMatch(key -> key.equals(topicKey))) {
+			topicEl.select(topicKey, true);
+		}
 
 		// lectures
 		String lecturesTotal = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES);
@@ -97,6 +113,9 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		
 		String surveyLecture = configs.getValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE);
 		surveyLectureEl = uifactory.addTextElement("config.survey.lectures", 4, surveyLecture, formLayout);
+		
+		String minutesBeforeEnd = configs.getValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END);
+		minutesBeforeEndEl = uifactory.addTextElement("config.minutes.before.end", 3, minutesBeforeEnd, formLayout);
 
 		// duration
 		String duration = configs.getValue(CourseLecturesProvider.CONFIG_KEY_DURATION_DAYS);
@@ -129,8 +148,10 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 	public void setReadOnly(boolean readOnly) {
 		boolean enabled = !readOnly;
 		titleEl.setEnabled(enabled);
+		topicEl.setEnabled(enabled);
 		lecturesTotalEl.setEnabled(enabled);
 		surveyLectureEl.setEnabled(enabled);
+		minutesBeforeEndEl.setEnabled(enabled);
 		invitationDaysEl.setEnabled(enabled);
 		reminder1DaysEl.setEnabled(enabled);
 		reminder2DaysEl.setEnabled(enabled);
@@ -144,8 +165,10 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		boolean allOk = true;
 		
 		allOk &= validateIsMandatory(titleEl);
+		allOk &= validateIsMandatory(topicEl);
 		allOk &= validateIsMandatory(lecturesTotalEl) && validateInteger(lecturesTotalEl, 1, 10000);
 		allOk &= validateIsMandatory(surveyLectureEl) && validateInteger(surveyLectureEl, 1, 10000);
+		allOk &= validateIsMandatory(minutesBeforeEndEl) && validateInteger(minutesBeforeEndEl, 0, 1000);
 		allOk &= validateIsMandatory(durationEl) && validateInteger(durationEl, 1, 10000);
 		allOk &= validateInteger(invitationDaysEl, 0, 10000);
 		allOk &= validateInteger(reminder1DaysEl, 1, 10000);
@@ -158,6 +181,11 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		titleEl.clearError();
+		topicEl.clearError();
+		lecturesTotalEl.clearError();
+		surveyLectureEl.clearError();
+		minutesBeforeEndEl.clearError();
+		durationEl.clearError();
 		invitationDaysEl.clearError();
 		reminder1DaysEl.clearError();
 		reminder2DaysEl.clearError();
@@ -171,11 +199,17 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		String title = titleEl.getValue();
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TITLE, title);
 		
+		String topicKey = topicEl.isOneSelected()? topicEl.getSelectedKey(): null;
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOPIC, topicKey);
+		
 		String lecturesTotal = lecturesTotalEl.getValue();
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES, lecturesTotal);
 		
 		String surveyLecture = surveyLectureEl.getValue();
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE, surveyLecture);
+		
+		String minutesBeforeEnd = minutesBeforeEndEl.getValue();
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END, minutesBeforeEnd);
 		
 		String duration = durationEl.getValue();
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_DURATION_DAYS, duration);

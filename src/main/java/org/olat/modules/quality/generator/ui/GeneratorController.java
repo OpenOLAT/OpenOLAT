@@ -205,6 +205,7 @@ public class GeneratorController extends BasicController implements TooledContro
 		generator.setEnabled(true);
 		generator.setLastRun(fromDate);
 		generator = generatorService.updateGenerator(generator);
+		generator = generatorService.loadGenerator(generator);
 		updateUI();	
 	}
 	
@@ -222,6 +223,7 @@ public class GeneratorController extends BasicController implements TooledContro
 		generator = generatorService.loadGenerator(generator);
 		generator.setEnabled(false);
 		generator = generatorService.updateGenerator(generator);
+		generator = generatorService.loadGenerator(generator);
 		updateUI();
 	}
 	
